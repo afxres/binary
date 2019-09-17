@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Attributes\AttributeTests.fs" />
+    <Compile Include="Classes\AllocatorTests.fs" />
+    <Compile Include="Classes\ConverterTests.fs" />
+    <Compile Include="Classes\ConverterExtensionsTests.fs" />
+    <Compile Include="Classes\GeneratorTests.fs" />
+    <Compile Include="Classes\GeneratorExtensionsTests.fs" />
+    <Compile Include="Classes\TokenTests.fs" />
+    <Compile Include="Creators\ArrayTests.fs" />
+    <Compile Include="Creators\DictionaryTests.fs" />
+    <Compile Include="Creators\SetTests.fs" />
+    <Compile Include="Creators\KeyValuePairTests.fs" />
+    <Compile Include="Creators\ListTests.fs" />
+    <Compile Include="Creators\TupleTests.fs" />
+    <Compile Include="Implementations\CompatibleCollectionTests.fs" />
+    <Compile Include="Implementations\InstanceTests.fs" />
+    <Compile Include="Implementations\InheritanceTests.fs" />
+    <Compile Include="Implementations\NamedObjectTests.fs" />
+    <Compile Include="Implementations\EnumerableTests.fs" />
+    <Compile Include="Miscellaneous\CrossTests.fs" />
+    <Compile Include="Miscellaneous\ThrowTests.fs" />
+    <Compile Include="Others\CollectionTests.fs" />
+    <Compile Include="Others\RecordTests.fs" />
+    <Compile Include="Others\UnionTests.fs" />
+    <Compile Include="Primitives\ClassTypeTests.fs" />
+    <Compile Include="Primitives\ValueTypeTests.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.1" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Binary\Binary.csproj" />
+  </ItemGroup>
+
+</Project>
