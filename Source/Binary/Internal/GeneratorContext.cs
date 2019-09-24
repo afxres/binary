@@ -39,6 +39,8 @@ namespace Mikodev.Binary.Internal
 
         public Converter GetConverter(Type type)
         {
+            if (type.IsByRefLike())
+                throw new ArgumentException($"Invalid byref-like type: {type}");
             if (type.IsAbstract && type.IsSealed)
                 throw new ArgumentException($"Invalid static type: {type}");
             if (type.IsGenericTypeDefinition || type.IsGenericParameter)

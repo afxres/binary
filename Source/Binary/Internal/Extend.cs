@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 
 namespace Mikodev.Binary.Internal
 {
@@ -17,6 +18,15 @@ namespace Mikodev.Binary.Internal
         {
             var type = converter.GetType();
             return type.IsImplementationOf(typeof(UnsafePrimitiveConverter<>));
+        }
+
+        internal static bool IsByRefLike(this Type type)
+        {
+            Debug.Assert(type != null);
+            var value = type.GetRuntimeProperty("IsByRefLike")?.GetValue(type);
+            if (value is bool result)
+                return result;
+            return false;
         }
 
         internal static bool TryGetGenericArguments(this Type type, Type definition, out Type[] arguments)
