@@ -34,21 +34,5 @@ namespace Mikodev.Binary.Adapters.Abstractions
             set.Invoke(list, array);
             return list;
         }
-
-        public T[] ToArray(in ReadOnlySpan<byte> span, bool reverse)
-        {
-            var array = ToArray(in span);
-            if (reverse)
-                Array.Reverse(array);
-            return array;
-        }
-
-        public List<T> ToValue(in ReadOnlySpan<byte> span, bool reverse)
-        {
-            var value = ToValue(in span);
-            if (reverse)
-                value.Reverse();
-            return value;
-        }
     }
 }

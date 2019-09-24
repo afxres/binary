@@ -46,7 +46,7 @@ namespace Mikodev.Binary.Tests
         [Fact(DisplayName = "Null Value To Bytes")]
         public void NullValueToBytes()
         {
-            T DefaultOf<T>(T _) => default;
+            static T DefaultOf<T>(T _) => default;
 
             var a = DefaultOf(new { key = default(string), value = default(int) });
             Assert.Null(a);

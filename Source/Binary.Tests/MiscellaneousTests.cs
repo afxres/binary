@@ -11,7 +11,7 @@ namespace Mikodev.Binary.Tests
         [Fact(DisplayName = "Methods With ByRef Type")]
         public void Argument()
         {
-            bool StartsWith(string name, params string[] patterns)
+            static bool StartsWith(string name, params string[] patterns)
             {
                 foreach (var i in patterns)
                     if (name.StartsWith(i))

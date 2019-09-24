@@ -20,7 +20,7 @@ namespace Mikodev.Binary.Adapters.Abstractions
 
         static Adapter()
         {
-            bool Validate(FieldInfo field)
+            static bool Validate(FieldInfo field)
             {
                 var times = 4;
                 var match = 0;

@@ -46,11 +46,27 @@ namespace Mikodev.Binary.Converters.Abstractions
 
         protected IList<T> GetCollection(in ReadOnlySpan<byte> span)
         {
+            static T[] ToArray(Adapter<T> adapter, in ReadOnlySpan<byte> span, bool reverse)
+            {
+                var array = adapter.ToArray(in span);
+                if (reverse)
+                    Array.Reverse(array);
+                return array;
+            }
+
+            static List<T> ToValue(Adapter<T> adapter, in ReadOnlySpan<byte> span, bool reverse)
+            {
+                var value = adapter.ToValue(in span);
+                if (reverse)
+                    value.Reverse();
+                return value;
+            }
+
             if (span.IsEmpty)
                 return Array.Empty<T>();
             else if (isFixed)
-                return adapter.ToArray(in span, reverse);
-            return adapter.ToValue(in span, reverse);
+                return ToArray(adapter, in span, reverse);
+            return ToValue(adapter, in span, reverse);
         }
 
         public override void ToBytes(ref Allocator allocator, TCollection item)
