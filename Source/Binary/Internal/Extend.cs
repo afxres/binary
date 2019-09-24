@@ -23,10 +23,10 @@ namespace Mikodev.Binary.Internal
         internal static bool IsByRefLike(this Type type)
         {
             Debug.Assert(type != null);
-            var value = type.GetRuntimeProperty("IsByRefLike")?.GetValue(type);
-            if (value is bool result)
-                return result;
-            return false;
+            if (!type.IsValueType)
+                return false;
+            var attributes = type.GetCustomAttributes();
+            return attributes.Select(x => x.GetType()).Any(x => x.FullName == "System.Runtime.CompilerServices.IsByRefLikeAttribute");
         }
 
         internal static bool TryGetGenericArguments(this Type type, Type definition, out Type[] arguments)
