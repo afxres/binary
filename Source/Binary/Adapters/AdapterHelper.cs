@@ -1,4 +1,6 @@
-﻿using Mikodev.Binary.Adapters.Unsafe;
+﻿using Mikodev.Binary.Adapters.Abstractions;
+using Mikodev.Binary.Adapters.Implementations;
+using Mikodev.Binary.Adapters.Implementations.Unsafe;
 using Mikodev.Binary.Delegates;
 using Mikodev.Binary.Internal;
 using System;
@@ -8,9 +10,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Mikodev.Binary.Adapters.Abstractions
+namespace Mikodev.Binary.Adapters
 {
-    internal abstract class Adapter
+    internal static class AdapterHelper
     {
         private static readonly bool available;
 
@@ -18,7 +20,7 @@ namespace Mikodev.Binary.Adapters.Abstractions
 
         private static readonly string countName;
 
-        static Adapter()
+        static AdapterHelper()
         {
             static bool Validate(FieldInfo field)
             {
@@ -42,10 +44,14 @@ namespace Mikodev.Binary.Adapters.Abstractions
             countName = available ? count.Single().Name : null;
         }
 
-        protected static void CreateDelegates<T>(ref GetListItems<T> getList, ref SetListItems<T> setList)
+        private static void CreateDelegates<T>(out GetListItems<T> getList, out SetListItems<T> setList)
         {
             if (!available)
+            {
+                getList = null;
+                setList = null;
                 return;
+            }
 
             var flags = BindingFlags.Instance | BindingFlags.NonPublic;
             var arrayField = typeof(List<T>).GetField(arrayName, flags);
@@ -54,21 +60,30 @@ namespace Mikodev.Binary.Adapters.Abstractions
             var get = Expression.Lambda<GetListItems<T>>(Expression.Field(value, arrayField), value);
 
             var array = Expression.Parameter(typeof(T[]), "array");
+            var count = Expression.Parameter(typeof(int), "count");
             var block = Expression.Block(
                 Expression.Assign(Expression.Field(value, arrayField), array),
-                Expression.Assign(Expression.Field(value, countField), Expression.ArrayLength(array)));
-            var set = Expression.Lambda<SetListItems<T>>(block, value, array);
+                Expression.Assign(Expression.Field(value, countField), count));
+            var set = Expression.Lambda<SetListItems<T>>(block, value, array, count);
 
             getList = get.Compile();
             setList = set.Compile();
         }
 
-        public static Adapter Create(Converter converter)
+        private static Adapter<T> CreateInstance<T>(Converter<T> converter)
         {
-            if (converter.IsUnsafePrimitiveConverter())
-                return (Adapter)Activator.CreateInstance(typeof(UnsafePrimitiveAdapter<>).MakeGenericType(converter.ItemType));
-            var adapterType = converter.Length > 0 ? typeof(ConstantAdapter<>) : typeof(VariableAdapter<>);
-            return (Adapter)Activator.CreateInstance(adapterType.MakeGenericType(converter.ItemType), converter);
+            var adapter = converter.IsUnsafePrimitiveConverter()
+                ? Activator.CreateInstance(typeof(UnsafePrimitiveAdapter<>).MakeGenericType(converter.ItemType))
+                : Activator.CreateInstance((converter.Length > 0 ? typeof(ConstantAdapter<>) : typeof(VariableAdapter<>)).MakeGenericType(converter.ItemType), converter);
+            CreateDelegates<T>(out var get, out var set);
+            return new Adapter<T>((AdapterMember<T>)adapter, get, set);
+        }
+
+        public static object Create(Converter converter)
+        {
+            var method = typeof(AdapterHelper).GetMethod(nameof(CreateInstance), BindingFlags.Static | BindingFlags.NonPublic);
+            var target = method.MakeGenericMethod(converter.ItemType);
+            return target.Invoke(null, new object[] { converter });
         }
     }
 }

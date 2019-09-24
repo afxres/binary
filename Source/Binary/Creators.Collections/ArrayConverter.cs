@@ -1,5 +1,5 @@
 ﻿using Mikodev.Binary.Abstractions;
-using Mikodev.Binary.Adapters.Abstractions;
+using Mikodev.Binary.Adapters;
 using System;
 
 namespace Mikodev.Binary.Creators.Collections
@@ -10,7 +10,7 @@ namespace Mikodev.Binary.Creators.Collections
 
         public ArrayConverter(Adapter<T> adapter) => this.adapter = adapter;
 
-        public override void ToBytes(ref Allocator allocator, T[] item) => adapter.OfArray(ref allocator, item);
+        public override void ToBytes(ref Allocator allocator, T[] item) => adapter.Of(ref allocator, item);
 
         public override T[] ToValue(in ReadOnlySpan<byte> span) => adapter.ToArray(span);
     }

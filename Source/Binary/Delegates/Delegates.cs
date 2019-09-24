@@ -20,7 +20,7 @@ namespace Mikodev.Binary.Delegates
 
     internal delegate T[] GetListItems<T>(List<T> list);
 
-    internal delegate void SetListItems<T>(List<T> list, T[] array);
+    internal delegate void SetListItems<T>(List<T> list, T[] array, int arrayLength);
 
     internal delegate void OfUnion<in T>(ref Allocator allocator, T item, ref int mark);
 

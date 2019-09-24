@@ -1,5 +1,5 @@
 ﻿using Mikodev.Binary.Abstractions;
-using Mikodev.Binary.Adapters.Abstractions;
+using Mikodev.Binary.Adapters;
 using Mikodev.Binary.Delegates;
 using Mikodev.Binary.Internal;
 using System;
@@ -28,7 +28,7 @@ namespace Mikodev.Binary.Converters.Abstractions
         {
             this.reverse = reverse;
             this.converter = converter;
-            adapter = (Adapter<T>)Adapter.Create(converter);
+            adapter = (Adapter<T>)AdapterHelper.Create(converter);
 
             var method = typeof(TCollection).GetMethods(BindingFlags.Instance | BindingFlags.Public)
                 .Where(x => x.Name == "ToArray" && x.ReturnType == typeof(T[]) && x.GetParameters().Length == 0)
@@ -54,9 +54,9 @@ namespace Mikodev.Binary.Converters.Abstractions
                 return array;
             }
 
-            static List<T> ToValue(Adapter<T> adapter, in ReadOnlySpan<byte> span, bool reverse)
+            static List<T> ToList(Adapter<T> adapter, in ReadOnlySpan<byte> span, bool reverse)
             {
-                var value = adapter.ToValue(in span);
+                var value = adapter.ToList(in span);
                 if (reverse)
                     value.Reverse();
                 return value;
@@ -66,7 +66,7 @@ namespace Mikodev.Binary.Converters.Abstractions
                 return Array.Empty<T>();
             else if (isFixed)
                 return ToArray(adapter, in span, reverse);
-            return ToValue(adapter, in span, reverse);
+            return ToList(adapter, in span, reverse);
         }
 
         public override void ToBytes(ref Allocator allocator, TCollection item)
@@ -74,14 +74,14 @@ namespace Mikodev.Binary.Converters.Abstractions
             if (item == null)
                 return;
             else if (item is T[] array)
-                adapter.OfArray(ref allocator, array);
+                adapter.Of(ref allocator, array);
             else if (item is List<T> value)
-                adapter.OfValue(ref allocator, value);
+                adapter.OfList(ref allocator, value);
             else if (item is IList<T> items && items.Count is var itemCount)
                 for (var i = 0; i < itemCount; i++)
                     converter.ToBytesWithMark(ref allocator, items[i]);
             else if (byArray)
-                adapter.OfArray(ref allocator, toArray == null ? Enumerable.ToArray(item) : toArray.Invoke(item));
+                adapter.Of(ref allocator, toArray == null ? Enumerable.ToArray(item) : toArray.Invoke(item));
             else
                 foreach (var i in item)
                     converter.ToBytesWithMark(ref allocator, i);

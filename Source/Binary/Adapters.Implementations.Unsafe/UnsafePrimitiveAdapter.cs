@@ -3,11 +3,11 @@ using Mikodev.Binary.Internal;
 using System;
 using System.Runtime.InteropServices;
 
-namespace Mikodev.Binary.Adapters.Unsafe
+namespace Mikodev.Binary.Adapters.Implementations.Unsafe
 {
-    internal sealed class UnsafePrimitiveAdapter<T> : Adapter<T> where T : unmanaged
+    internal sealed class UnsafePrimitiveAdapter<T> : AdapterMember<T> where T : unmanaged
     {
-        public override void OfArray(ref Allocator allocator, in ReadOnlySpan<T> span)
+        public override void Of(ref Allocator allocator, in ReadOnlySpan<T> span)
         {
             var itemCount = span.Length;
             if (itemCount == 0)
@@ -18,17 +18,23 @@ namespace Mikodev.Binary.Adapters.Unsafe
             Endian<T>.Copy(ref target, ref Memory.AsByte(ref source), byteCount);
         }
 
-        public override T[] ToArray(in ReadOnlySpan<byte> span)
+        public override void To(in ReadOnlySpan<byte> span, out T[] result, out int length)
         {
             var byteCount = span.Length;
             if (byteCount == 0)
-                return Array.Empty<T>();
+                goto fall;
             var itemCount = Define.GetItemCount(byteCount, Memory.SizeOf<T>());
-            var result = new T[itemCount];
+            var items = new T[itemCount];
             ref var source = ref MemoryMarshal.GetReference(span);
-            ref var target = ref result[0];
+            ref var target = ref items[0];
             Memory.Copy(ref Memory.AsByte(ref target), ref source, byteCount);
-            return result;
+            result = items;
+            length = itemCount;
+            return;
+
+        fall:
+            length = 0;
+            result = Array.Empty<T>();
         }
     }
 }

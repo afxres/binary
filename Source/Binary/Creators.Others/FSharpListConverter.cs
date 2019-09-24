@@ -1,6 +1,6 @@
 ﻿using Microsoft.FSharp.Collections;
 using Mikodev.Binary.Abstractions;
-using Mikodev.Binary.Adapters.Abstractions;
+using Mikodev.Binary.Adapters;
 using System;
 
 namespace Mikodev.Binary.Creators.Others
@@ -14,7 +14,7 @@ namespace Mikodev.Binary.Creators.Others
         public FSharpListConverter(Converter<T> converter)
         {
             this.converter = converter;
-            adapter = (Adapter<T>)Adapter.Create(converter);
+            adapter = (Adapter<T>)AdapterHelper.Create(converter);
         }
 
         public override void ToBytes(ref Allocator allocator, FSharpList<T> item)
@@ -35,7 +35,7 @@ namespace Mikodev.Binary.Creators.Others
         public override FSharpList<T> ToValue(in ReadOnlySpan<byte> span)
         {
             // recursive call may cause stackoverflow, so ...
-            var source = adapter.ToValue(in span);
+            var source = adapter.ToList(in span);
             var length = source.Count;
             var result = ListModule.Empty<T>();
             for (var i = length - 1; i >= 0; i--)

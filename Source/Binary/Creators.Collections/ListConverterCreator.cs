@@ -1,4 +1,4 @@
-﻿using Mikodev.Binary.Adapters.Abstractions;
+﻿using Mikodev.Binary.Adapters;
 using Mikodev.Binary.Internal;
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ namespace Mikodev.Binary.Creators.Collections
             if (!type.IsImplementationOf(typeof(List<>)))
                 return null;
             var itemType = type.GetGenericArguments().Single();
-            var adapter = Adapter.Create(context.GetConverter(itemType));
+            var adapter = AdapterHelper.Create(context.GetConverter(itemType));
             var converter = Activator.CreateInstance(typeof(ListConverter<>).MakeGenericType(itemType), adapter);
             return (Converter)converter;
         }
