@@ -14,6 +14,8 @@ namespace Mikodev.Binary.Adapters
 {
     internal static class AdapterHelper
     {
+        private const BindingFlags FieldFlags = BindingFlags.Instance | BindingFlags.NonPublic;
+
         private static readonly bool available;
 
         private static readonly string arrayName;
@@ -35,7 +37,7 @@ namespace Mikodev.Binary.Adapters
                 return match == times;
             }
 
-            var value = typeof(List<int>).GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
+            var value = typeof(List<int>).GetFields(FieldFlags);
             var array = value.Where(x => x.FieldType == typeof(int[])).ToList();
             var count = value.Where(x => x.FieldType == typeof(int) && Validate(x)).ToList();
             available = array.Count == 1 && count.Count == 1;
@@ -44,30 +46,43 @@ namespace Mikodev.Binary.Adapters
             countName = available ? count.Single().Name : null;
         }
 
-        private static void CreateDelegates<T>(out GetListItems<T> getList, out SetListItems<T> setList)
+        private static void CreateDelegates<T>(out OfList<T> ofList, out ToList<T> toList)
         {
             if (!available)
             {
-                getList = null;
-                setList = null;
+                ofList = null;
+                toList = null;
                 return;
             }
 
-            var flags = BindingFlags.Instance | BindingFlags.NonPublic;
-            var arrayField = typeof(List<T>).GetField(arrayName, flags);
-            var countField = typeof(List<T>).GetField(countName, flags);
-            var value = Expression.Parameter(typeof(List<T>), "value");
-            var get = Expression.Lambda<GetListItems<T>>(Expression.Field(value, arrayField), value);
+            var arrayField = typeof(List<T>).GetField(arrayName, FieldFlags);
+            var countField = typeof(List<T>).GetField(countName, FieldFlags);
 
-            var array = Expression.Parameter(typeof(T[]), "array");
-            var count = Expression.Parameter(typeof(int), "count");
-            var block = Expression.Block(
-                Expression.Assign(Expression.Field(value, arrayField), array),
-                Expression.Assign(Expression.Field(value, countField), count));
-            var set = Expression.Lambda<SetListItems<T>>(block, value, array, count);
+            Expression<OfList<T>> Of()
+            {
+                var value = Expression.Parameter(typeof(List<T>), "value");
+                var field = Expression.Field(value, arrayField);
+                return Expression.Lambda<OfList<T>>(field, value);
+            }
 
-            getList = get.Compile();
-            setList = set.Compile();
+            Expression<ToList<T>> To()
+            {
+                var array = Expression.Parameter(typeof(T[]), "array");
+                var count = Expression.Parameter(typeof(int), "count");
+                var value = Expression.Variable(typeof(List<T>), "value");
+                var block = Expression.Block(
+                    new[] { value },
+                    Expression.Assign(value, Expression.New(typeof(List<T>).GetConstructor(Type.EmptyTypes))),
+                    Expression.Assign(Expression.Field(value, arrayField), array),
+                    Expression.Assign(Expression.Field(value, countField), count),
+                    value);
+                return Expression.Lambda<ToList<T>>(block, array, count);
+            }
+
+            var of = Of();
+            var to = To();
+            ofList = of.Compile();
+            toList = to.Compile();
         }
 
         private static Adapter<T> CreateInstance<T>(Converter<T> converter)

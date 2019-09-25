@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="ArrayLike\ArrayLikeTests.fs" />
     <Compile Include="Attributes\AttributeTests.fs" />
     <Compile Include="Classes\AllocatorTests.fs" />
     <Compile Include="Classes\ConverterTests.fs" />

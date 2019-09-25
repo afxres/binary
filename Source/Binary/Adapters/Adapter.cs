@@ -8,17 +8,20 @@ namespace Mikodev.Binary.Adapters
 {
     internal sealed class Adapter<T>
     {
-        private readonly GetListItems<T> get;
+        private readonly OfList<T> ofList;
 
-        private readonly SetListItems<T> set;
+        private readonly ToList<T> toList;
 
         private readonly AdapterMember<T> adapter;
 
-        public Adapter(AdapterMember<T> adapter, GetListItems<T> get, SetListItems<T> set)
+        public Adapter(AdapterMember<T> adapter, OfList<T> ofList, ToList<T> toList)
         {
+            Debug.Assert(adapter != null);
+            Debug.Assert(ofList != null);
+            Debug.Assert(toList != null);
             this.adapter = adapter;
-            this.get = get;
-            this.set = set;
+            this.ofList = ofList;
+            this.toList = toList;
         }
 
         public void Of(ref Allocator allocator, in ReadOnlySpan<T> span)
@@ -31,28 +34,32 @@ namespace Mikodev.Binary.Adapters
             int length;
             if (list == null || (length = list.Count) == 0)
                 return;
-            var buffer = get == null ? list.ToArray() : get.Invoke(list);
+            var buffer = ofList == null ? list.ToArray() : ofList.Invoke(list);
             adapter.Of(ref allocator, new ReadOnlySpan<T>(buffer, 0, length));
+        }
+
+        public ArraySegment<T> To(in ReadOnlySpan<byte> span)
+        {
+            return adapter.To(in span);
         }
 
         public T[] ToArray(in ReadOnlySpan<byte> span)
         {
-            adapter.To(in span, out var result, out var length);
-            Debug.Assert(length <= result.Length);
-            if (result.Length == length)
-                return result;
-            return new ReadOnlySpan<T>(result, 0, length).ToArray();
+            var result = adapter.To(in span);
+            Debug.Assert(result.Array.Length != 0 || ReferenceEquals(result.Array, Array.Empty<T>()));
+            var buffer = result.Array;
+            if (buffer.Length == result.Count)
+                return buffer;
+            return result.AsSpan().ToArray();
         }
 
         public List<T> ToList(in ReadOnlySpan<byte> span)
         {
-            adapter.To(in span, out var result, out var length);
-            Debug.Assert(length <= result.Length);
-            if (set == null)
-                return new List<T>(new ArraySegment<T>(result, 0, length));
-            var list = new List<T>();
-            set.Invoke(list, result, length);
-            return list;
+            var result = adapter.To(in span);
+            Debug.Assert(result.Array.Length != 0 || ReferenceEquals(result.Array, Array.Empty<T>()));
+            if (toList == null)
+                return new List<T>(result);
+            return toList.Invoke(result.Array, result.Count);
         }
     }
 }

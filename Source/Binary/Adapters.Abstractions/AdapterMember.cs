@@ -6,6 +6,6 @@ namespace Mikodev.Binary.Adapters.Abstractions
     {
         public abstract void Of(ref Allocator allocator, in ReadOnlySpan<T> span);
 
-        public abstract void To(in ReadOnlySpan<byte> span, out T[] result, out int length);
+        public abstract ArraySegment<T> To(in ReadOnlySpan<byte> span);
     }
 }

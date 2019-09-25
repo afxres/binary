@@ -18,24 +18,18 @@ namespace Mikodev.Binary.Adapters.Implementations
             Debug.Assert(converter.Length > 0);
         }
 
-        public override void To(in ReadOnlySpan<byte> span, out T[] result, out int length)
+        public override ArraySegment<T> To(in ReadOnlySpan<byte> span)
         {
             Debug.Assert(converter.Length > 0);
             var byteCount = span.Length;
             if (byteCount == 0)
-                goto fall;
+                return new ArraySegment<T>(Array.Empty<T>());
             var definition = converter.Length;
             var itemCount = Define.GetItemCount(byteCount, definition);
             var items = new T[itemCount];
             for (var i = 0; i < itemCount; i++)
                 items[i] = converter.ToValue(span.Slice(i * definition));
-            result = items;
-            length = itemCount;
-            return;
-
-        fall:
-            length = 0;
-            result = Array.Empty<T>();
+            return new ArraySegment<T>(items, 0, itemCount);
         }
     }
 }

@@ -17,7 +17,7 @@ namespace Mikodev.Binary.Adapters.Implementations
             Debug.Assert(converter.Length == 0);
         }
 
-        public override void To(in ReadOnlySpan<byte> span, out T[] result, out int length)
+        public override ArraySegment<T> To(in ReadOnlySpan<byte> span)
         {
             Debug.Assert(converter.Length == 0);
             var buffer = Array.Empty<T>();
@@ -46,8 +46,7 @@ namespace Mikodev.Binary.Adapters.Implementations
             }
 
             Debug.Assert(cursor <= buffer.Length);
-            result = buffer;
-            length = (int)cursor;
+            return new ArraySegment<T>(buffer, 0, (int)cursor);
         }
     }
 }

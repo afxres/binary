@@ -18,9 +18,9 @@ namespace Mikodev.Binary.Delegates
 
     internal delegate T[] ToArray<in TCollection, T>(TCollection collection) where TCollection : IEnumerable<T>;
 
-    internal delegate T[] GetListItems<T>(List<T> list);
+    internal delegate T[] OfList<T>(List<T> list);
 
-    internal delegate void SetListItems<T>(List<T> list, T[] array, int arrayLength);
+    internal delegate List<T> ToList<T>(T[] buffer, int length);
 
     internal delegate void OfUnion<in T>(ref Allocator allocator, T item, ref int mark);
 
