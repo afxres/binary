@@ -13,7 +13,7 @@ type ArrayLikeTests () =
         seq {
             yield [| [| 1; 2 |]; 2 |]
             yield [| [| 1.1; 2.2; 3.3; 4.4; 5.5; 6.6 |]; 6 |]
-            yield [| [| "alpha" |]; 4 |]
+            yield [| [| "alpha" |]; 8 |]
             yield [| [| "a"; "b"; "c"; "d"; "e" |]; 8 |]
             yield [| Enumerable.Range(0, 48) |> Seq.map (sprintf "%2x") |> Seq.toArray; 64 |]
             yield [| Enumerable.Range(0, 192) |> Seq.map (sprintf "%2d") |> Seq.toArray; 256 |]

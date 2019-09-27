@@ -3,8 +3,8 @@
 open Mikodev.Binary
 open Mikodev.Binary.Abstractions
 open System
-open Xunit
 open System.Collections.Generic
+open Xunit
 
 type vlist<'a> = System.Collections.Generic.List<'a>
 
