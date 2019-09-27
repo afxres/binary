@@ -31,11 +31,11 @@ namespace Mikodev.Binary.Adapters
 
         public void OfList(ref Allocator allocator, List<T> list)
         {
-            int length;
-            if (list == null || (length = list.Count) == 0)
+            int itemCount;
+            if (list == null || (itemCount = list.Count) == 0)
                 return;
-            var buffer = ofList == null ? list.ToArray() : ofList.Invoke(list);
-            adapter.Of(ref allocator, new ReadOnlySpan<T>(buffer, 0, length));
+            var items = ofList == null ? list.ToArray() : ofList.Invoke(list);
+            adapter.Of(ref allocator, new ReadOnlySpan<T>(items, 0, itemCount));
         }
 
         public ArraySegment<T> To(in ReadOnlySpan<byte> span)

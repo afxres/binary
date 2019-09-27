@@ -29,7 +29,7 @@ namespace Mikodev.Binary.Adapters.Implementations
             var items = new T[itemCount];
             for (var i = 0; i < itemCount; i++)
                 items[i] = converter.ToValue(span.Slice(i * definition));
-            return new ArraySegment<T>(items, 0, itemCount);
+            return new ArraySegment<T>(items);
         }
     }
 }

@@ -28,7 +28,7 @@ namespace Mikodev.Binary.Adapters.Implementations.Unsafe
             ref var source = ref MemoryMarshal.GetReference(span);
             ref var target = ref items[0];
             Memory.Copy(ref Memory.AsByte(ref target), ref source, byteCount);
-            return new ArraySegment<T>(items, 0, itemCount);
+            return new ArraySegment<T>(items);
         }
     }
 }
