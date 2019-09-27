@@ -10,7 +10,6 @@ namespace Mikodev.Binary.Creators.Collections.ArrayLike
         {
             [typeof(Memory<>)] = typeof(MemoryConverter<>),
             [typeof(ReadOnlyMemory<>)] = typeof(ReadOnlyMemoryConverter<>),
-            [typeof(ArraySegment<>)] = typeof(ArraySegmentConverter<>),
         };
 
         public ArrayLikeConverterCreator() : base(dictionary) { }

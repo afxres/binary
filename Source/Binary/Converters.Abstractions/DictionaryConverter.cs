@@ -20,7 +20,7 @@ namespace Mikodev.Binary.Converters.Abstractions
             definition = Define.GetConverterLength(indexConverter, valueConverter);
         }
 
-        protected IDictionary<TIndex, TValue> GetCollection(in ReadOnlySpan<byte> span)
+        protected Dictionary<TIndex, TValue> To(in ReadOnlySpan<byte> span)
         {
             var byteCount = span.Length;
             if (byteCount == 0)

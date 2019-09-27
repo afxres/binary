@@ -14,8 +14,6 @@ namespace Mikodev.Binary.Converters.Abstractions
     {
         private readonly bool reverse;
 
-        private readonly bool isFixed;
-
         private readonly bool byArray;
 
         private readonly ToArray<TCollection, T> toArray;
@@ -28,45 +26,25 @@ namespace Mikodev.Binary.Converters.Abstractions
         {
             this.reverse = reverse;
             this.converter = converter;
-            adapter = AdapterHelper.Create(converter);
-
             var method = typeof(TCollection).GetMethods(BindingFlags.Instance | BindingFlags.Public)
                 .Where(x => x.Name == "ToArray" && x.ReturnType == typeof(T[]) && x.GetParameters().Length == 0)
                 .FirstOrDefault();
-            if (method != null)
-            {
-                var source = Expression.Parameter(typeof(TCollection), "source");
-                var invoke = Expression.Call(source, method);
-                var lambda = Expression.Lambda<ToArray<TCollection, T>>(invoke, source);
-                toArray = lambda.Compile();
-            }
-            isFixed = converter.Length > 0;
-            byArray = converter.IsUnsafePrimitiveConverter() && (toArray != null || typeof(ICollection<T>).IsAssignableFrom(typeof(TCollection)));
+            adapter = AdapterHelper.Create(converter);
+            byArray = converter.IsUnsafePrimitiveConverter() && (method != null || typeof(ICollection<T>).IsAssignableFrom(typeof(TCollection)));
+            if (method == null)
+                return;
+            var source = Expression.Parameter(typeof(TCollection), "source");
+            var invoke = Expression.Call(source, method);
+            var lambda = Expression.Lambda<ToArray<TCollection, T>>(invoke, source);
+            toArray = lambda.Compile();
         }
 
-        protected IList<T> GetCollection(in ReadOnlySpan<byte> span)
+        protected ArraySegment<T> To(in ReadOnlySpan<byte> span)
         {
-            static T[] ToArray(Adapter<T> adapter, in ReadOnlySpan<byte> span, bool reverse)
-            {
-                var array = adapter.ToArray(in span);
-                if (reverse)
-                    Array.Reverse(array);
-                return array;
-            }
-
-            static List<T> ToList(Adapter<T> adapter, in ReadOnlySpan<byte> span, bool reverse)
-            {
-                var value = adapter.ToList(in span);
-                if (reverse)
-                    value.Reverse();
-                return value;
-            }
-
-            if (span.IsEmpty)
-                return Array.Empty<T>();
-            else if (isFixed)
-                return ToArray(adapter, in span, reverse);
-            return ToList(adapter, in span, reverse);
+            var result = adapter.To(in span);
+            if (reverse)
+                Array.Reverse(result.Array, result.Offset, result.Count);
+            return result;
         }
 
         public override void ToBytes(ref Allocator allocator, TCollection item)
@@ -77,6 +55,8 @@ namespace Mikodev.Binary.Converters.Abstractions
                 adapter.Of(ref allocator, array);
             else if (item is List<T> value)
                 adapter.OfList(ref allocator, value);
+            else if (item is ArraySegment<T> segment)
+                adapter.Of(ref allocator, segment);
             else if (item is IList<T> items)
                 for (int i = 0, itemCount = items.Count; i < itemCount; i++)
                     converter.ToBytesWithMark(ref allocator, items[i]);

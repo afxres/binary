@@ -9,14 +9,14 @@ namespace Mikodev.Binary.Internal.Components
     {
         private readonly IEnumerable<Type> interfaces;
 
-        private readonly IEnumerable<Func<Type[], Type>> assignable;
+        private readonly Type assignable;
 
         private readonly Type definition;
 
-        public PatternConverterCreator(IEnumerable<Type> interfaces, IEnumerable<Func<Type[], Type>> assignable, Type definition)
+        public PatternConverterCreator(IEnumerable<Type> interfaces, Type assignable, Type definition)
         {
             Debug.Assert(interfaces.Any());
-            Debug.Assert(assignable.Any());
+            Debug.Assert(assignable != null);
             Debug.Assert(definition != null);
             this.interfaces = interfaces;
             this.assignable = assignable;
@@ -30,7 +30,7 @@ namespace Mikodev.Binary.Internal.Components
             var arguments = default(Type[]);
             if (!interfaces.Any(x => type.TryGetInterfaceArguments(x, out arguments)))
                 return null;
-            if (!assignable.All(x => type.IsAssignableFrom(x.Invoke(arguments))))
+            if (!type.IsAssignableFrom(assignable.MakeGenericType(arguments)))
                 return null;
             var typeArguments = new[] { type }.Concat(arguments).ToArray();
             var converters = arguments.Select(context.GetConverter).Cast<object>().ToArray();

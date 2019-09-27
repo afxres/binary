@@ -8,6 +8,6 @@ namespace Mikodev.Binary.Creators.Collections
     {
         public IDictionaryConverter(Converter<TIndex> indexConverter, Converter<TValue> valueConverter) : base(indexConverter, valueConverter) { }
 
-        public override TDictionary ToValue(in ReadOnlySpan<byte> span) => (TDictionary)GetCollection(span);
+        public override TDictionary ToValue(in ReadOnlySpan<byte> span) => (TDictionary)(object)To(in span);
     }
 }

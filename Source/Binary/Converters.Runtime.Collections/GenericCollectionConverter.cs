@@ -19,7 +19,7 @@ namespace Mikodev.Binary.Converters.Runtime.Collections
         {
             if (constructor == null)
                 return ThrowHelper.ThrowNoSuitableConstructor<TCollection>();
-            var source = GetCollection(span);
+            var source = To(in span);
             return constructor.Invoke(source);
         }
     }

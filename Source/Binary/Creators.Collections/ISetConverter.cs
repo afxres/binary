@@ -8,6 +8,6 @@ namespace Mikodev.Binary.Creators.Collections
     {
         public ISetConverter(Converter<T> converter) : base(converter, reverse: false) { }
 
-        public override TCollection ToValue(in ReadOnlySpan<byte> span) => (TCollection)(object)new HashSet<T>(GetCollection(span));
+        public override TCollection ToValue(in ReadOnlySpan<byte> span) => (TCollection)(object)new HashSet<T>(To(in span));
     }
 }
