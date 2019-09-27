@@ -85,20 +85,13 @@ namespace Mikodev.Binary.Adapters
             toList = to.Compile();
         }
 
-        private static Adapter<T> CreateInstance<T>(Converter<T> converter)
+        public static Adapter<T> Create<T>(Converter<T> converter)
         {
             var adapter = converter.IsUnsafePrimitiveConverter()
                 ? Activator.CreateInstance(typeof(UnsafePrimitiveAdapter<>).MakeGenericType(converter.ItemType))
                 : Activator.CreateInstance((converter.Length > 0 ? typeof(ConstantAdapter<>) : typeof(VariableAdapter<>)).MakeGenericType(converter.ItemType), converter);
             CreateDelegates<T>(out var get, out var set);
             return new Adapter<T>((AdapterMember<T>)adapter, get, set);
-        }
-
-        public static object Create(Converter converter)
-        {
-            var method = typeof(AdapterHelper).GetMethod(nameof(CreateInstance), BindingFlags.Static | BindingFlags.NonPublic);
-            var target = method.MakeGenericMethod(converter.ItemType);
-            return target.Invoke(null, new object[] { converter });
         }
     }
 }

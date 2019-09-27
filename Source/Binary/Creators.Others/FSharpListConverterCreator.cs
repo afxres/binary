@@ -1,20 +1,10 @@
 ﻿using Microsoft.FSharp.Collections;
-using Mikodev.Binary.Internal;
-using System;
-using System.Linq;
+using Mikodev.Binary.Internal.Components;
 
 namespace Mikodev.Binary.Creators.Others
 {
-    internal sealed class FSharpListConverterCreator : IConverterCreator
+    internal sealed class FSharpListConverterCreator : GenericConverterCreator
     {
-        public Converter GetConverter(IGeneratorContext context, Type type)
-        {
-            if (!type.IsImplementationOf(typeof(FSharpList<>)))
-                return null;
-            var itemType = type.GetGenericArguments().Single();
-            var converterType = typeof(FSharpListConverter<>).MakeGenericType(itemType);
-            var converter = Activator.CreateInstance(converterType, context.GetConverter(itemType));
-            return (Converter)converter;
-        }
+        public FSharpListConverterCreator() : base(typeof(FSharpList<>), typeof(FSharpListConverter<>)) { }
     }
 }

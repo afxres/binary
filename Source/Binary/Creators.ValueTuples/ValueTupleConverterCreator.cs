@@ -1,12 +1,12 @@
-﻿using Mikodev.Binary.Internal;
+﻿using Mikodev.Binary.Internal.Components;
 using System;
 using System.Collections.Generic;
 
 namespace Mikodev.Binary.Creators.ValueTuples
 {
-    internal sealed class ValueTupleConverterCreator : IConverterCreator
+    internal sealed class ValueTupleConverterCreator : GenericConverterCreator
     {
-        private static readonly SimpleConverterCreator creator = new SimpleConverterCreator(new Dictionary<Type, Type>
+        private static readonly IReadOnlyDictionary<Type, Type> dictionary = new Dictionary<Type, Type>
         {
             [typeof(ValueTuple<>)] = typeof(ValueTupleConverter<>),
             [typeof(ValueTuple<,>)] = typeof(ValueTupleConverter<,>),
@@ -16,13 +16,15 @@ namespace Mikodev.Binary.Creators.ValueTuples
             [typeof(ValueTuple<,,,,,>)] = typeof(ValueTupleConverter<,,,,,>),
             [typeof(ValueTuple<,,,,,,>)] = typeof(ValueTupleConverter<,,,,,,>),
             [typeof(ValueTuple<,,,,,,,>)] = typeof(ValueTupleConverter<,,,,,,,>),
-        });
+        };
 
-        public Converter GetConverter(IGeneratorContext context, Type type)
+        public ValueTupleConverterCreator() : base(dictionary) { }
+
+        public override Converter GetConverter(IGeneratorContext context, Type type)
         {
             if (type == typeof(ValueTuple))
                 throw new ArgumentException($"Invalid type: {typeof(ValueTuple)}");
-            return creator.GetConverter(context, type);
+            return base.GetConverter(context, type);
         }
     }
 }

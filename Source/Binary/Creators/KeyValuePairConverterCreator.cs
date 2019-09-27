@@ -1,21 +1,10 @@
-﻿using Mikodev.Binary.Internal;
-using System;
+﻿using Mikodev.Binary.Internal.Components;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Mikodev.Binary.Creators
 {
-    internal sealed class KeyValuePairConverterCreator : IConverterCreator
+    internal sealed class KeyValuePairConverterCreator : GenericConverterCreator
     {
-        public Converter GetConverter(IGeneratorContext context, Type type)
-        {
-            if (!type.IsImplementationOf(typeof(KeyValuePair<,>)))
-                return null;
-            var types = type.GetGenericArguments();
-            var converters = types.Select(context.GetConverter).Cast<object>().ToArray();
-            var converterType = typeof(KeyValuePairConverter<,>).MakeGenericType(types);
-            var converter = Activator.CreateInstance(converterType, converters);
-            return (Converter)converter;
-        }
+        public KeyValuePairConverterCreator() : base(typeof(KeyValuePair<,>), typeof(KeyValuePairConverter<,>)) { }
     }
 }

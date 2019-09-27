@@ -2,6 +2,7 @@
 using Mikodev.Binary.Abstractions;
 using Mikodev.Binary.Adapters;
 using System;
+using System.Diagnostics;
 
 namespace Mikodev.Binary.Creators.Others
 {
@@ -14,7 +15,9 @@ namespace Mikodev.Binary.Creators.Others
         public FSharpListConverter(Converter<T> converter)
         {
             this.converter = converter;
-            adapter = (Adapter<T>)AdapterHelper.Create(converter);
+            adapter = AdapterHelper.Create(converter);
+            Debug.Assert(adapter != null);
+            Debug.Assert(converter != null);
         }
 
         public override void ToBytes(ref Allocator allocator, FSharpList<T> item)

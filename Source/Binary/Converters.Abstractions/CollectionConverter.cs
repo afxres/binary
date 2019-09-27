@@ -28,7 +28,7 @@ namespace Mikodev.Binary.Converters.Abstractions
         {
             this.reverse = reverse;
             this.converter = converter;
-            adapter = (Adapter<T>)AdapterHelper.Create(converter);
+            adapter = AdapterHelper.Create(converter);
 
             var method = typeof(TCollection).GetMethods(BindingFlags.Instance | BindingFlags.Public)
                 .Where(x => x.Name == "ToArray" && x.ReturnType == typeof(T[]) && x.GetParameters().Length == 0)
@@ -77,8 +77,8 @@ namespace Mikodev.Binary.Converters.Abstractions
                 adapter.Of(ref allocator, array);
             else if (item is List<T> value)
                 adapter.OfList(ref allocator, value);
-            else if (item is IList<T> items && items.Count is var itemCount)
-                for (var i = 0; i < itemCount; i++)
+            else if (item is IList<T> items)
+                for (int i = 0, itemCount = items.Count; i < itemCount; i++)
                     converter.ToBytesWithMark(ref allocator, items[i]);
             else if (byArray)
                 adapter.Of(ref allocator, toArray == null ? Enumerable.ToArray(item) : toArray.Invoke(item));

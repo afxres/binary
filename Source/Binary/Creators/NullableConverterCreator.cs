@@ -1,19 +1,10 @@
-﻿using Mikodev.Binary.Internal;
+﻿using Mikodev.Binary.Internal.Components;
 using System;
-using System.Linq;
 
 namespace Mikodev.Binary.Creators
 {
-    internal sealed class NullableConverterCreator : IConverterCreator
+    internal sealed class NullableConverterCreator : GenericConverterCreator
     {
-        public Converter GetConverter(IGeneratorContext context, Type type)
-        {
-            if (!type.IsImplementationOf(typeof(Nullable<>)))
-                return null;
-            var itemType = type.GetGenericArguments().Single();
-            var converterType = typeof(NullableConverter<>).MakeGenericType(itemType);
-            var converter = Activator.CreateInstance(converterType, context.GetConverter(itemType));
-            return (Converter)converter;
-        }
+        public NullableConverterCreator() : base(typeof(Nullable<>), typeof(NullableConverter<>)) { }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Mikodev.Binary.Adapters;
-using System;
+﻿using System;
 
 namespace Mikodev.Binary.Creators.Collections
 {
@@ -12,8 +11,8 @@ namespace Mikodev.Binary.Creators.Collections
             if (type.GetArrayRank() != 1)
                 throw new NotSupportedException("Multidimensional arrays are not supported, use array of arrays instead.");
             var itemType = type.GetElementType();
-            var adapter = AdapterHelper.Create(context.GetConverter(itemType));
-            var converter = Activator.CreateInstance(typeof(ArrayConverter<>).MakeGenericType(itemType), adapter);
+            var arguments = new object[] { context.GetConverter(itemType) };
+            var converter = Activator.CreateInstance(typeof(ArrayConverter<>).MakeGenericType(itemType), arguments);
             return (Converter)converter;
         }
     }

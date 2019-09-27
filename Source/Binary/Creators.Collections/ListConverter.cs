@@ -9,7 +9,7 @@ namespace Mikodev.Binary.Creators.Collections
     {
         private readonly Adapter<T> adapter;
 
-        public ListConverter(Adapter<T> adapter) => this.adapter = adapter;
+        public ListConverter(Converter<T> converter) => adapter = AdapterHelper.Create(converter);
 
         public override void ToBytes(ref Allocator allocator, List<T> item) => adapter.OfList(ref allocator, item);
 

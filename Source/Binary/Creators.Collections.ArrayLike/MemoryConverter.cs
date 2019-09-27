@@ -8,7 +8,7 @@ namespace Mikodev.Binary.Creators.Collections.ArrayLike
     {
         private readonly Adapter<T> adapter;
 
-        public MemoryConverter(Adapter<T> adapter) => this.adapter = adapter;
+        public MemoryConverter(Converter<T> converter) => adapter = AdapterHelper.Create(converter);
 
         public override void ToBytes(ref Allocator allocator, Memory<T> item) => adapter.Of(ref allocator, item.Span);
 
