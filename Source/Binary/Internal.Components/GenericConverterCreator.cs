@@ -20,9 +20,6 @@ namespace Mikodev.Binary.Internal.Components
 
         public virtual Converter GetConverter(IGeneratorContext context, Type type)
         {
-            Debug.Assert(type != null);
-            Debug.Assert(context != null);
-            Debug.Assert(dictionary != null);
             if (!type.IsGenericType || !dictionary.TryGetValue(type.GetGenericTypeDefinition(), out var definition))
                 return null;
             var types = type.GetGenericArguments();

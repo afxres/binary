@@ -25,8 +25,6 @@ namespace Mikodev.Binary.Internal.Components
 
         public Converter GetConverter(IGeneratorContext context, Type type)
         {
-            Debug.Assert(type != null);
-            Debug.Assert(context != null);
             var arguments = default(Type[]);
             if (!interfaces.Any(x => type.TryGetInterfaceArguments(x, out arguments)))
                 return null;

@@ -43,7 +43,7 @@ namespace Mikodev.Binary.Converters.Abstractions
         {
             var result = adapter.To(in span);
             if (reverse)
-                Array.Reverse(result.Array, result.Offset, result.Count);
+                MemoryExtensions.Reverse((Span<T>)result);
             return result;
         }
 

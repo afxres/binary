@@ -32,9 +32,9 @@ namespace Mikodev.Binary.Adapters.Implementations
             {
                 if (cursor >= limits)
                 {
+                    Debug.Assert(cursor > 0 && cursor == buffer.Length);
                     var target = new T[checked((int)(limits *= 2))];
-                    if (cursor != 0)
-                        Array.Copy(buffer, target, cursor);
+                    MemoryExtensions.CopyTo(buffer, (Span<T>)target);
                     buffer = target;
                 }
                 buffer[cursor++] = converter.ToValueWithMark(ref temp);

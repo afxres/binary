@@ -2,23 +2,24 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
-using System.Linq;
 using System.Linq.Expressions;
 
 namespace Mikodev.Binary.Internal
 {
     internal sealed class TokenDynamicMetaObject : DynamicMetaObject
     {
-        private static readonly Type[] assignableTypes;
+        private static readonly List<Type> assignableTypes;
 
         static TokenDynamicMetaObject()
         {
             var type = typeof(Token);
-            var collection = new HashSet<Type>(type.GetInterfaces()) { type };
-            while ((type = type.BaseType) != null)
-                _ = collection.Add(type);
-            assignableTypes = collection.ToArray();
-            Debug.Assert(assignableTypes.Any());
+            var collection = new List<Type>(type.GetInterfaces());
+            do
+                collection.Add(type);
+            while ((type = type.BaseType) != null);
+            assignableTypes = collection;
+            Debug.Assert(assignableTypes.Count == 7);
+            Debug.Assert(new HashSet<Type>(assignableTypes).Count == 7);
         }
 
         public TokenDynamicMetaObject(Expression parameter, object value) : base(parameter, BindingRestrictions.Empty, value) { }
@@ -27,7 +28,7 @@ namespace Mikodev.Binary.Internal
         {
             var value = Value;
             var type = binder.Type;
-            if (Array.IndexOf(assignableTypes, type) < 0)
+            if (!assignableTypes.Contains(type))
                 value = ((Token)value).As(type);
             var constant = Expression.Constant(value, type);
             return new DynamicMetaObject(constant, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
