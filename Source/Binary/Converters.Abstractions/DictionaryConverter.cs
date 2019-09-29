@@ -5,47 +5,37 @@ using System.Collections.Generic;
 
 namespace Mikodev.Binary.Converters.Abstractions
 {
-    internal abstract class DictionaryConverter<TDictionary, TIndex, TValue> : VariableConverter<TDictionary> where TDictionary : IEnumerable<KeyValuePair<TIndex, TValue>>
+    internal abstract class DictionaryConverter<T, K, V> : VariableConverter<T> where T : IEnumerable<KeyValuePair<K, V>>
     {
-        private readonly Converter<TIndex> indexConverter;
+        private readonly Converter<KeyValuePair<K, V>> converter;
 
-        private readonly Converter<TValue> valueConverter;
+        protected DictionaryConverter(Converter<KeyValuePair<K, V>> converter) => this.converter = converter;
 
-        private readonly int definition;
-
-        protected DictionaryConverter(Converter<TIndex> indexConverter, Converter<TValue> valueConverter)
+        protected Dictionary<K, V> To(in ReadOnlySpan<byte> span)
         {
-            this.indexConverter = indexConverter;
-            this.valueConverter = valueConverter;
-            definition = Define.GetConverterLength(indexConverter, valueConverter);
-        }
+            static void Add(Dictionary<K, V> data, KeyValuePair<K, V> item) => data.Add(item.Key, item.Value);
 
-        protected Dictionary<TIndex, TValue> To(in ReadOnlySpan<byte> span)
-        {
             var byteCount = span.Length;
             if (byteCount == 0)
-                return new Dictionary<TIndex, TValue>();
-            var itemCount = definition > 0 ? Define.GetItemCount(byteCount, definition) : 0;
-            var result = new Dictionary<TIndex, TValue>(itemCount);
+                return new Dictionary<K, V>();
+            const int InitialCapacity = 8;
+            var converter = this.converter;
+            var converterLength = converter.Length;
+            var itemCount = converterLength > 0 ? Define.GetItemCount(byteCount, converterLength) : InitialCapacity;
+            var data = new Dictionary<K, V>(itemCount);
             var temp = span;
             while (!temp.IsEmpty)
-            {
-                var index = indexConverter.ToValueWithMark(ref temp);
-                var value = valueConverter.ToValueWithMark(ref temp);
-                result.Add(index, value);
-            }
-            return result;
+                Add(data, converter.ToValueWithMark(ref temp));
+            return data;
         }
 
-        public override void ToBytes(ref Allocator allocator, TDictionary item)
+        public override void ToBytes(ref Allocator allocator, T item)
         {
             if (item == null)
                 return;
+            var converter = this.converter;
             foreach (var i in item)
-            {
-                indexConverter.ToBytesWithMark(ref allocator, i.Key);
-                valueConverter.ToBytesWithMark(ref allocator, i.Value);
-            }
+                converter.ToBytesWithMark(ref allocator, i);
         }
     }
 }

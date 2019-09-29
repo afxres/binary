@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace Mikodev.Binary.Creators.Collections
 {
-    internal sealed class IEnumerableConverter<TCollection, T> : CollectionConverter<TCollection, T> where TCollection : IEnumerable<T>
+    internal sealed class IEnumerableConverter<R, E> : CollectionConverter<R, E> where R : IEnumerable<E>
     {
-        public IEnumerableConverter(Converter<T> converter) : base(converter, reverse: false) { }
+        public IEnumerableConverter(Converter<E> converter) : base(converter, reverse: false) { }
 
-        public override TCollection ToValue(in ReadOnlySpan<byte> span) => (TCollection)(object)To(in span);
+        public override R ToValue(in ReadOnlySpan<byte> span) => (R)(object)To(in span);
     }
 }

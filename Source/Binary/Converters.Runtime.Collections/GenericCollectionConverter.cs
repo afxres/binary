@@ -6,19 +6,19 @@ using System.Collections.Generic;
 
 namespace Mikodev.Binary.Converters.Runtime.Collections
 {
-    internal sealed class GenericCollectionConverter<TCollection, T> : CollectionConverter<TCollection, T> where TCollection : IEnumerable<T>
+    internal sealed class GenericCollectionConverter<R, E> : CollectionConverter<R, E> where R : IEnumerable<E>
     {
-        private readonly ToCollection<TCollection, T> constructor;
+        private readonly ToCollection<R, E> constructor;
 
-        public GenericCollectionConverter(Converter<T> converter, ToCollection<TCollection, T> constructor, bool reverse) : base(converter, reverse)
+        public GenericCollectionConverter(Converter<E> converter, ToCollection<R, E> constructor, bool reverse) : base(converter, reverse)
         {
             this.constructor = constructor;
         }
 
-        public override TCollection ToValue(in ReadOnlySpan<byte> span)
+        public override R ToValue(in ReadOnlySpan<byte> span)
         {
             if (constructor == null)
-                return ThrowHelper.ThrowNoSuitableConstructor<TCollection>();
+                return ThrowHelper.ThrowNoSuitableConstructor<R>();
             var source = To(in span);
             return constructor.Invoke(source);
         }

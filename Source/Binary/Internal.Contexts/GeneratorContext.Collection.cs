@@ -32,7 +32,9 @@ namespace Mikodev.Binary.Internal.Contexts
             var typeArguments = new[] { type, types[0], types[1] };
             var dictionaryType = typeof(IDictionary<,>).MakeGenericType(types);
             var constructor = ToValueAsEnumerable(type, dictionaryType, typeof(ToDictionary<,,>).MakeGenericType(typeArguments));
-            var arguments = types.Select(GetConverter).Cast<object>().Concat(new[] { constructor }).ToArray();
+            var itemType = typeof(KeyValuePair<,>).MakeGenericType(types);
+            var itemConverter = GetConverter(itemType);
+            var arguments = new object[] { itemConverter, constructor };
             var converterType = typeof(GenericDictionaryConverter<,,>).MakeGenericType(typeArguments);
             var converter = Activator.CreateInstance(converterType, arguments);
             return (Converter)converter;

@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Creators.Collections.ArrayLike
+namespace Mikodev.Binary.Creators.ArrayLike
 {
     internal sealed class ArrayLikeConverterCreator : GenericConverterCreator
     {

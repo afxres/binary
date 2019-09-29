@@ -1,9 +1,9 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
 
-namespace Mikodev.Binary.Creators.TupleLike
+namespace Mikodev.Binary.Creators.TupleLike.Tuples
 {
-    internal sealed class TupleConverter<T1, T2, T3, T4, T5, T6, T7> : Converter<Tuple<T1, T2, T3, T4, T5, T6, T7>>
+    internal sealed class TupleConverter<T1, T2, T3, T4, T5, T6, T7, TR> : Converter<Tuple<T1, T2, T3, T4, T5, T6, T7, TR>>
     {
         private readonly Converter<T1> converter1;
 
@@ -19,6 +19,8 @@ namespace Mikodev.Binary.Creators.TupleLike
 
         private readonly Converter<T7> converter7;
 
+        private readonly Converter<TR> converterR;
+
         public TupleConverter(
             Converter<T1> converter1,
             Converter<T2> converter2,
@@ -27,6 +29,7 @@ namespace Mikodev.Binary.Creators.TupleLike
             Converter<T5> converter5,
             Converter<T6> converter6,
             Converter<T7> converter7,
+            Converter<TR> converterR,
             int length) : base(length)
         {
             this.converter1 = converter1;
@@ -36,22 +39,10 @@ namespace Mikodev.Binary.Creators.TupleLike
             this.converter5 = converter5;
             this.converter6 = converter6;
             this.converter7 = converter7;
+            this.converterR = converterR;
         }
 
-        public override void ToBytes(ref Allocator allocator, Tuple<T1, T2, T3, T4, T5, T6, T7> item)
-        {
-            if (item == null)
-                ThrowHelper.ThrowTupleNull(ItemType);
-            converter1.ToBytesWithMark(ref allocator, item.Item1);
-            converter2.ToBytesWithMark(ref allocator, item.Item2);
-            converter3.ToBytesWithMark(ref allocator, item.Item3);
-            converter4.ToBytesWithMark(ref allocator, item.Item4);
-            converter5.ToBytesWithMark(ref allocator, item.Item5);
-            converter6.ToBytesWithMark(ref allocator, item.Item6);
-            converter7.ToBytes(ref allocator, item.Item7);
-        }
-
-        public override void ToBytesWithMark(ref Allocator allocator, Tuple<T1, T2, T3, T4, T5, T6, T7> item)
+        public override void ToBytes(ref Allocator allocator, Tuple<T1, T2, T3, T4, T5, T6, T7, TR> item)
         {
             if (item == null)
                 ThrowHelper.ThrowTupleNull(ItemType);
@@ -62,9 +53,24 @@ namespace Mikodev.Binary.Creators.TupleLike
             converter5.ToBytesWithMark(ref allocator, item.Item5);
             converter6.ToBytesWithMark(ref allocator, item.Item6);
             converter7.ToBytesWithMark(ref allocator, item.Item7);
+            converterR.ToBytes(ref allocator, item.Rest);
         }
 
-        public override Tuple<T1, T2, T3, T4, T5, T6, T7> ToValue(in ReadOnlySpan<byte> span)
+        public override void ToBytesWithMark(ref Allocator allocator, Tuple<T1, T2, T3, T4, T5, T6, T7, TR> item)
+        {
+            if (item == null)
+                ThrowHelper.ThrowTupleNull(ItemType);
+            converter1.ToBytesWithMark(ref allocator, item.Item1);
+            converter2.ToBytesWithMark(ref allocator, item.Item2);
+            converter3.ToBytesWithMark(ref allocator, item.Item3);
+            converter4.ToBytesWithMark(ref allocator, item.Item4);
+            converter5.ToBytesWithMark(ref allocator, item.Item5);
+            converter6.ToBytesWithMark(ref allocator, item.Item6);
+            converter7.ToBytesWithMark(ref allocator, item.Item7);
+            converterR.ToBytesWithMark(ref allocator, item.Rest);
+        }
+
+        public override Tuple<T1, T2, T3, T4, T5, T6, T7, TR> ToValue(in ReadOnlySpan<byte> span)
         {
             var temp = span;
             var item1 = converter1.ToValueWithMark(ref temp);
@@ -73,11 +79,12 @@ namespace Mikodev.Binary.Creators.TupleLike
             var item4 = converter4.ToValueWithMark(ref temp);
             var item5 = converter5.ToValueWithMark(ref temp);
             var item6 = converter6.ToValueWithMark(ref temp);
-            var item7 = converter7.ToValue(in temp);
-            return new Tuple<T1, T2, T3, T4, T5, T6, T7>(item1, item2, item3, item4, item5, item6, item7);
+            var item7 = converter7.ToValueWithMark(ref temp);
+            var itemR = converterR.ToValue(in temp);
+            return new Tuple<T1, T2, T3, T4, T5, T6, T7, TR>(item1, item2, item3, item4, item5, item6, item7, itemR);
         }
 
-        public override Tuple<T1, T2, T3, T4, T5, T6, T7> ToValueWithMark(ref ReadOnlySpan<byte> span)
+        public override Tuple<T1, T2, T3, T4, T5, T6, T7, TR> ToValueWithMark(ref ReadOnlySpan<byte> span)
         {
             var item1 = converter1.ToValueWithMark(ref span);
             var item2 = converter2.ToValueWithMark(ref span);
@@ -86,7 +93,8 @@ namespace Mikodev.Binary.Creators.TupleLike
             var item5 = converter5.ToValueWithMark(ref span);
             var item6 = converter6.ToValueWithMark(ref span);
             var item7 = converter7.ToValueWithMark(ref span);
-            return new Tuple<T1, T2, T3, T4, T5, T6, T7>(item1, item2, item3, item4, item5, item6, item7);
+            var itemR = converterR.ToValueWithMark(ref span);
+            return new Tuple<T1, T2, T3, T4, T5, T6, T7, TR>(item1, item2, item3, item4, item5, item6, item7, itemR);
         }
     }
 }

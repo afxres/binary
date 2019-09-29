@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -19,7 +20,7 @@ namespace Mikodev.Binary.Internal
             return quotient;
         }
 
-        internal static int GetConverterLength(params Converter[] values)
+        internal static int GetConverterLength(IEnumerable<Converter> values)
         {
             Debug.Assert(values.Any());
             Debug.Assert(values.All(x => x != null && x.Length >= 0));

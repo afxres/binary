@@ -1,7 +1,7 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
 
-namespace Mikodev.Binary.Creators.TupleLike
+namespace Mikodev.Binary.Creators.TupleLike.Tuples
 {
     internal sealed class TupleConverter<T1> : Converter<Tuple<T1>>
     {

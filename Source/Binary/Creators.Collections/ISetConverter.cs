@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace Mikodev.Binary.Creators.Collections
 {
-    internal sealed class ISetConverter<TCollection, T> : CollectionConverter<TCollection, T> where TCollection : IEnumerable<T>
+    internal sealed class ISetConverter<R, E> : CollectionConverter<R, E> where R : IEnumerable<E>
     {
-        public ISetConverter(Converter<T> converter) : base(converter, reverse: false) { }
+        public ISetConverter(Converter<E> converter) : base(converter, reverse: false) { }
 
-        public override TCollection ToValue(in ReadOnlySpan<byte> span) => (TCollection)(object)new HashSet<T>(To(in span));
+        public override R ToValue(in ReadOnlySpan<byte> span) => (R)(object)new HashSet<E>(To(in span));
     }
 }

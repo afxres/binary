@@ -8,15 +8,15 @@ namespace Mikodev.Binary.Delegates
 
     internal delegate T ToNamedObject<out T>(in LengthList list);
 
-    internal delegate TCollection ToCollection<out TCollection, in T>(IEnumerable<T> enumerable);
+    internal delegate R ToCollection<out R, in E>(IEnumerable<E> enumerable);
 
-    internal delegate TDictionary ToDictionary<out TDictionary, TIndex, TValue>(IDictionary<TIndex, TValue> dictionary);
+    internal delegate T ToDictionary<out T, K, V>(IDictionary<K, V> dictionary);
 
     internal delegate T ToValueWith<out T>(ref ReadOnlySpan<byte> span);
 
     internal delegate void ToBytesWith<in T>(ref Allocator allocator, T item);
 
-    internal delegate T[] ToArray<in TCollection, T>(TCollection collection) where TCollection : IEnumerable<T>;
+    internal delegate E[] ToArray<in R, E>(R collection) where R : IEnumerable<E>;
 
     internal delegate T[] OfList<T>(List<T> list);
 

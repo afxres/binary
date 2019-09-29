@@ -23,9 +23,9 @@ namespace Mikodev.Binary.Adapters.Implementations
             var byteCount = span.Length;
             if (byteCount == 0)
                 return new ArraySegment<T>(Array.Empty<T>());
-            const int InitialLength = 8;
-            var buffer = new T[InitialLength];
-            var limits = (long)InitialLength;
+            const int InitialCapacity = 8;
+            var buffer = new T[InitialCapacity];
+            var limits = (long)InitialCapacity;
             var cursor = 0L;
             var temp = span;
             while (!temp.IsEmpty)

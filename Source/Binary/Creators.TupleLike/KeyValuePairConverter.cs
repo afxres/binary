@@ -3,46 +3,43 @@ using System.Collections.Generic;
 
 namespace Mikodev.Binary.Creators.TupleLike
 {
-    internal sealed class KeyValuePairConverter<TIndex, TValue> : Converter<KeyValuePair<TIndex, TValue>>
+    internal sealed class KeyValuePairConverter<K, V> : Converter<KeyValuePair<K, V>>
     {
-        private readonly Converter<TIndex> indexConverter;
+        private readonly Converter<K> converterK;
 
-        private readonly Converter<TValue> valueConverter;
+        private readonly Converter<V> converterV;
 
-        public KeyValuePairConverter(
-            Converter<TIndex> indexConverter,
-            Converter<TValue> valueConverter,
-            int length) : base(length)
+        public KeyValuePairConverter(Converter<K> converterK, Converter<V> converterV, int length) : base(length)
         {
-            this.indexConverter = indexConverter;
-            this.valueConverter = valueConverter;
+            this.converterK = converterK;
+            this.converterV = converterV;
         }
 
-        public sealed override void ToBytes(ref Allocator allocator, KeyValuePair<TIndex, TValue> item)
+        public sealed override void ToBytes(ref Allocator allocator, KeyValuePair<K, V> item)
         {
-            indexConverter.ToBytesWithMark(ref allocator, item.Key);
-            valueConverter.ToBytes(ref allocator, item.Value);
+            converterK.ToBytesWithMark(ref allocator, item.Key);
+            converterV.ToBytes(ref allocator, item.Value);
         }
 
-        public sealed override KeyValuePair<TIndex, TValue> ToValue(in ReadOnlySpan<byte> span)
+        public sealed override KeyValuePair<K, V> ToValue(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var index = indexConverter.ToValueWithMark(ref temp);
-            var value = valueConverter.ToValue(in temp);
-            return new KeyValuePair<TIndex, TValue>(index, value);
+            var head = converterK.ToValueWithMark(ref temp);
+            var last = converterV.ToValue(in temp);
+            return new KeyValuePair<K, V>(head, last);
         }
 
-        public sealed override void ToBytesWithMark(ref Allocator allocator, KeyValuePair<TIndex, TValue> item)
+        public sealed override void ToBytesWithMark(ref Allocator allocator, KeyValuePair<K, V> item)
         {
-            indexConverter.ToBytesWithMark(ref allocator, item.Key);
-            valueConverter.ToBytesWithMark(ref allocator, item.Value);
+            converterK.ToBytesWithMark(ref allocator, item.Key);
+            converterV.ToBytesWithMark(ref allocator, item.Value);
         }
 
-        public sealed override KeyValuePair<TIndex, TValue> ToValueWithMark(ref ReadOnlySpan<byte> span)
+        public sealed override KeyValuePair<K, V> ToValueWithMark(ref ReadOnlySpan<byte> span)
         {
-            var index = indexConverter.ToValueWithMark(ref span);
-            var value = valueConverter.ToValueWithMark(ref span);
-            return new KeyValuePair<TIndex, TValue>(index, value);
+            var head = converterK.ToValueWithMark(ref span);
+            var last = converterV.ToValueWithMark(ref span);
+            return new KeyValuePair<K, V>(head, last);
         }
     }
 }

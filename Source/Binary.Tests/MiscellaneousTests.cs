@@ -27,7 +27,7 @@ namespace Mikodev.Binary.Tests
                 typeof(Allocator).Name,
             };
 
-            var types = typeof(Converter).Assembly.GetTypes().Where(x => x.Namespace != "Mikodev.Binary.Creators.Collections.ArrayLike");
+            var types = typeof(Converter).Assembly.GetTypes().Where(x => x.Namespace != "Mikodev.Binary.Creators.ArrayLike");
             var methods = types.SelectMany(x => x.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static)).ToList();
             var parameters = methods.SelectMany(x => x.GetParameters()).ToList();
             var source = parameters.Where(x => StartsWith(x.ParameterType.Name, names)).ToList();

@@ -2,7 +2,7 @@
 using Mikodev.Binary.Adapters;
 using System;
 
-namespace Mikodev.Binary.Creators.Collections.ArrayLike
+namespace Mikodev.Binary.Creators.ArrayLike
 {
     internal sealed class MemoryConverter<T> : VariableConverter<Memory<T>>
     {

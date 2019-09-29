@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Mikodev.Binary.Creators.TupleLike
+namespace Mikodev.Binary.Creators.TupleLike.ValueTuples
 {
     internal sealed class ValueTupleConverter<T1, T2> : Converter<ValueTuple<T1, T2>>
     {
