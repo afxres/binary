@@ -4,7 +4,6 @@ using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Components;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Mikodev.Binary.Creators.TupleLike
 {
@@ -39,7 +38,7 @@ namespace Mikodev.Binary.Creators.TupleLike
         {
             if (type == typeof(ValueTuple))
                 throw new ArgumentException($"Invalid type: {typeof(ValueTuple)}");
-            return this.context.GetConverter(context, type, x => x.Cast<object>().Concat(new object[] { Define.GetConverterLength(x) }));
+            return this.context.GetConverter(context, type, x => new object[] { Define.GetConverterLength(x) });
         }
     }
 }

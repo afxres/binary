@@ -1,4 +1,4 @@
-﻿module Creators.TupleTests
+﻿module TupleLike.TupleTests
 
 open Mikodev.Binary
 open Mikodev.Binary.Abstractions

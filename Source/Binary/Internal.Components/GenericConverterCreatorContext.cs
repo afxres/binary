@@ -16,7 +16,7 @@ namespace Mikodev.Binary.Internal.Components
             this.dictionary = dictionary;
         }
 
-        public Converter GetConverter(IGeneratorContext context, Type type, Func<IReadOnlyCollection<Converter>, IEnumerable<object>> func)
+        public Converter GetConverter(IGeneratorContext context, Type type, Func<IReadOnlyCollection<Converter>, IEnumerable<object>> func = null)
         {
             if (!type.IsGenericType || !dictionary.TryGetValue(type.GetGenericTypeDefinition(), out var definition))
                 return null;
@@ -29,7 +29,10 @@ namespace Mikodev.Binary.Internal.Components
                 .Select(x => x.GetGenericArguments().Single())
                 .ToArray();
             var converters = converterTypes.Select(context.GetConverter).ToList();
-            var converterArguments = func.Invoke(converters).ToArray();
+            var collection = new List<object>(converters);
+            if (func != null)
+                collection.AddRange(func.Invoke(converters));
+            var converterArguments = collection.ToArray();
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }

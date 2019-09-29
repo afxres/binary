@@ -23,7 +23,6 @@ type ArrayLikeTests () =
     [<MemberData("Data Alpha")>]
     member __.``Memory`` (item : 'a array, capacity : int) =
         let converter = generator.GetConverter<Memory<'a>>()
-        Assert.StartsWith("MemoryConverter`1", converter.GetType().Name)
         let buffer = converter.ToBytes(Memory item)
         let result = converter.ToValue buffer
         Assert.Equal<'a>(item, result.ToArray())
@@ -36,13 +35,22 @@ type ArrayLikeTests () =
     [<MemberData("Data Alpha")>]
     member __.``ReadOnlyMemory`` (item : 'a array, capacity : int) =
         let converter = generator.GetConverter<ReadOnlyMemory<'a>>()
-        Assert.StartsWith("ReadOnlyMemoryConverter`1", converter.GetType().Name)
         let buffer = converter.ToBytes(ReadOnlyMemory item)
         let result = converter.ToValue buffer
         Assert.Equal<'a>(item, result.ToArray())
         let (flag, data) = MemoryMarshal.TryGetArray(result)
         Assert.True(flag)
         Assert.Equal(capacity, data.Array.Length)
+        ()
+
+    [<Theory(DisplayName = "ArraySegment")>]
+    [<MemberData("Data Alpha")>]
+    member __.``ArraySegment`` (item : 'a array, capacity : int) =
+        let converter = generator.GetConverter<ArraySegment<'a>>()
+        let buffer = converter.ToBytes(ArraySegment item)
+        let result = converter.ToValue buffer
+        Assert.Equal<'a>(item, result)
+        Assert.Equal(capacity, result.Array.Length)
         ()
 
     static member ``Data Bravo`` : (obj array) seq =

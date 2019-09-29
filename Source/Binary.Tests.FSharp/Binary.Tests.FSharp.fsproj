@@ -18,9 +18,7 @@
     <Compile Include="Creators\DictionaryTests.fs" />
     <Compile Include="Creators\EnumerableTests.fs" />
     <Compile Include="Creators\SetTests.fs" />
-    <Compile Include="Creators\KeyValuePairTests.fs" />
     <Compile Include="Creators\ListTests.fs" />
-    <Compile Include="Creators\TupleTests.fs" />
     <Compile Include="Implementations\CompatibleCollectionTests.fs" />
     <Compile Include="Implementations\InstanceTests.fs" />
     <Compile Include="Implementations\InheritanceTests.fs" />
@@ -33,6 +31,8 @@
     <Compile Include="Others\UnionTests.fs" />
     <Compile Include="Primitives\ClassTypeTests.fs" />
     <Compile Include="Primitives\ValueTypeTests.fs" />
+    <Compile Include="TupleLike\KeyValuePairTests.fs" />
+    <Compile Include="TupleLike\TupleTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

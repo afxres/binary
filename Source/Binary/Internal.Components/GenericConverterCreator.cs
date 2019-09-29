@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Mikodev.Binary.Internal.Components
 {
@@ -12,6 +11,6 @@ namespace Mikodev.Binary.Internal.Components
 
         public GenericConverterCreator(IReadOnlyDictionary<Type, Type> dictionary) => context = new GenericConverterCreatorContext(dictionary);
 
-        public Converter GetConverter(IGeneratorContext context, Type type) => this.context.GetConverter(context, type, x => x.Cast<object>());
+        public Converter GetConverter(IGeneratorContext context, Type type) => this.context.GetConverter(context, type);
     }
 }
