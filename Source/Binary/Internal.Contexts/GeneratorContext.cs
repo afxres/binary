@@ -8,14 +8,10 @@ using System.Linq;
 using System.Reflection;
 using NameDictionary = System.Collections.Generic.IReadOnlyDictionary<System.Reflection.PropertyInfo, string>;
 
-namespace Mikodev.Binary.Internal
+namespace Mikodev.Binary.Internal.Contexts
 {
     internal sealed partial class GeneratorContext : IGeneratorContext
     {
-        private static readonly MethodInfo invokeMethodInfo;
-
-        private static readonly MethodInfo appendWithLengthPrefixMethodInfo;
-
         private readonly HashSet<Type> types = new HashSet<Type>();
 
         private readonly Dictionary<string, byte[]> texts = new Dictionary<string, byte[]>();
@@ -23,13 +19,6 @@ namespace Mikodev.Binary.Internal
         private readonly ConcurrentDictionary<Type, Converter> converters;
 
         private readonly IEnumerable<IConverterCreator> creators;
-
-        static GeneratorContext()
-        {
-            var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-            invokeMethodInfo = typeof(LengthList).GetMethod(nameof(LengthList.Invoke), flags);
-            appendWithLengthPrefixMethodInfo = typeof(Allocator).GetMethod(nameof(Allocator.AppendWithLengthPrefix), flags);
-        }
 
         public GeneratorContext(ConcurrentDictionary<Type, Converter> converters, IEnumerable<IConverterCreator> creators)
         {
@@ -118,9 +107,9 @@ namespace Mikodev.Binary.Internal
 
             // converter as tuple object
             if (attribute is TupleObjectAttribute)
-                return GetConverterAsTupleObject(type, constructor, indexes, metadata);
+                return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, indexes, metadata);
             // converter as named object (or default)
-            return GetConverterAsNamedObject(type, constructor, indexes, metadata, dictionary);
+            return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, indexes, metadata, dictionary, GetOrCache);
         }
         #endregion
     }

@@ -1,6 +1,7 @@
 ﻿using Mikodev.Binary.Converters;
 using Mikodev.Binary.Converters.Unsafe;
 using Mikodev.Binary.Internal;
+using Mikodev.Binary.Internal.Contexts;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

@@ -1,6 +1,7 @@
 ﻿module Creators.TupleTests
 
 open Mikodev.Binary
+open Mikodev.Binary.Abstractions
 open System
 open System.Net
 open Xunit
@@ -190,4 +191,26 @@ let ``Tuple Length`` () =
     testSize<int * double * Guid> 28
     testSize<byte * int16 * int32 * uint64> 15
     testSize<int * int * int * int * int * int * int * int * int> 36
+    ()
+
+
+type FixType = { some : obj }
+
+type FixConverter(length : int) =
+    inherit ConstantConverter<FixType>(length)
+
+    override __.ToBytes(_, _) = raise (NotSupportedException())
+
+    override __.ToValue (_ : inref<ReadOnlySpan<byte>>) : FixType = raise (NotSupportedException())
+
+[<Fact>]
+let ``Tuple Length (overflow)`` () =
+    let fixConverter = FixConverter(0x2000_0000) :> Converter
+    let fixGenerator = Generator(converters = Array.singleton fixConverter)
+    let alpha = fixGenerator.GetConverter<FixType * FixType>()
+    let bravo = fixGenerator.GetConverter<struct (FixType * FixType * FixType)>()
+    Assert.Throws<OverflowException>(fun () -> fixGenerator.GetConverter<FixType * FixType * FixType * FixType>() |> ignore) |> ignore
+    Assert.Throws<OverflowException>(fun () -> fixGenerator.GetConverter<struct (FixType * FixType * FixType * FixType)>() |> ignore) |> ignore
+    Assert.Equal(0x4000_0000, alpha.Length)
+    Assert.Equal(0x6000_0000, bravo.Length)
     ()

@@ -8,7 +8,7 @@ using MetaAttributes = System.Collections.Generic.IEnumerable<(System.Reflection
 using MetaList = System.Collections.Generic.IReadOnlyList<(System.Reflection.PropertyInfo Property, Mikodev.Binary.Converter Converter)>;
 using NameDictionary = System.Collections.Generic.IReadOnlyDictionary<System.Reflection.PropertyInfo, string>;
 
-namespace Mikodev.Binary.Internal
+namespace Mikodev.Binary.Internal.Contexts
 {
     internal sealed partial class GeneratorContext
     {

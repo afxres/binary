@@ -18,6 +18,11 @@ namespace Mikodev.Binary.Internal.Components
             this.dictionary = dictionary;
         }
 
+        protected virtual object[] GetArguments(Converter[] converters)
+        {
+            return converters.Cast<object>().ToArray();
+        }
+
         public virtual Converter GetConverter(IGeneratorContext context, Type type)
         {
             if (!type.IsGenericType || !dictionary.TryGetValue(type.GetGenericTypeDefinition(), out var definition))
@@ -25,7 +30,7 @@ namespace Mikodev.Binary.Internal.Components
             var types = type.GetGenericArguments();
             var converters = types.Select(context.GetConverter).ToArray();
             var converterType = definition.MakeGenericType(types);
-            var arguments = converters.Cast<object>().ToArray();
+            var arguments = GetArguments(converters);
             var converter = Activator.CreateInstance(converterType, arguments);
             return (Converter)converter;
         }

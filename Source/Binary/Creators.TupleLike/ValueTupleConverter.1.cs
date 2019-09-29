@@ -1,14 +1,14 @@
-﻿using Mikodev.Binary.Internal;
-using System;
+﻿using System;
 
-namespace Mikodev.Binary.Creators.ValueTuples
+namespace Mikodev.Binary.Creators.TupleLike
 {
     internal sealed class ValueTupleConverter<T1> : Converter<ValueTuple<T1>>
     {
         private readonly Converter<T1> converter1;
 
-        public ValueTupleConverter(Converter<T1> converter1)
-            : base(Define.GetConverterLength(converter1))
+        public ValueTupleConverter(
+            Converter<T1> converter1,
+            int length) : base(length)
         {
             this.converter1 = converter1;
         }

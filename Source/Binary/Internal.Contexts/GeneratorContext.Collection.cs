@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Mikodev.Binary.Internal
+namespace Mikodev.Binary.Internal.Contexts
 {
     internal sealed partial class GeneratorContext
     {

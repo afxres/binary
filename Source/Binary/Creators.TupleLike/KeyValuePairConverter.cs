@@ -1,8 +1,7 @@
-﻿using Mikodev.Binary.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Creators
+namespace Mikodev.Binary.Creators.TupleLike
 {
     internal sealed class KeyValuePairConverter<TIndex, TValue> : Converter<KeyValuePair<TIndex, TValue>>
     {
@@ -10,7 +9,10 @@ namespace Mikodev.Binary.Creators
 
         private readonly Converter<TValue> valueConverter;
 
-        public KeyValuePairConverter(Converter<TIndex> indexConverter, Converter<TValue> valueConverter) : base(Define.GetConverterLength(indexConverter, valueConverter))
+        public KeyValuePairConverter(
+            Converter<TIndex> indexConverter,
+            Converter<TValue> valueConverter,
+            int length) : base(length)
         {
             this.indexConverter = indexConverter;
             this.valueConverter = valueConverter;

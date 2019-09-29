@@ -1,7 +1,7 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
 
-namespace Mikodev.Binary.Creators.Tuples
+namespace Mikodev.Binary.Creators.TupleLike
 {
     internal sealed class TupleConverter<T1, T2> : Converter<Tuple<T1, T2>>
     {
@@ -9,8 +9,10 @@ namespace Mikodev.Binary.Creators.Tuples
 
         private readonly Converter<T2> converter2;
 
-        public TupleConverter(Converter<T1> converter1, Converter<T2> converter2)
-            : base(Define.GetConverterLength(converter1, converter2))
+        public TupleConverter(
+            Converter<T1> converter1,
+            Converter<T2> converter2,
+            int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;

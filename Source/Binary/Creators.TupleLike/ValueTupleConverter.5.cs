@@ -1,7 +1,6 @@
-﻿using Mikodev.Binary.Internal;
-using System;
+﻿using System;
 
-namespace Mikodev.Binary.Creators.ValueTuples
+namespace Mikodev.Binary.Creators.TupleLike
 {
     internal sealed class ValueTupleConverter<T1, T2, T3, T4, T5> : Converter<ValueTuple<T1, T2, T3, T4, T5>>
     {
@@ -15,8 +14,13 @@ namespace Mikodev.Binary.Creators.ValueTuples
 
         private readonly Converter<T5> converter5;
 
-        public ValueTupleConverter(Converter<T1> converter1, Converter<T2> converter2, Converter<T3> converter3, Converter<T4> converter4, Converter<T5> converter5)
-            : base(Define.GetConverterLength(converter1, converter2, converter3, converter4, converter5))
+        public ValueTupleConverter(
+            Converter<T1> converter1,
+            Converter<T2> converter2,
+            Converter<T3> converter3,
+            Converter<T4> converter4,
+            Converter<T5> converter5,
+            int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;

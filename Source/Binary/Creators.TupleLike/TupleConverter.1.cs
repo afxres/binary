@@ -1,14 +1,15 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
 
-namespace Mikodev.Binary.Creators.Tuples
+namespace Mikodev.Binary.Creators.TupleLike
 {
     internal sealed class TupleConverter<T1> : Converter<Tuple<T1>>
     {
         private readonly Converter<T1> converter1;
 
-        public TupleConverter(Converter<T1> converter1)
-            : base(Define.GetConverterLength(converter1))
+        public TupleConverter(
+            Converter<T1> converter1,
+            int length) : base(length)
         {
             this.converter1 = converter1;
         }
