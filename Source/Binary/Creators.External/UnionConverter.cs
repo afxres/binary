@@ -27,7 +27,6 @@ namespace Mikodev.Binary.Creators.External
             this.toUnionWith = toUnionWith;
         }
 
-        #region validation & exception
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void ThrowNull() => throw new ArgumentNullException("item", $"Union can not be null, type: {ItemType}");
 
@@ -39,7 +38,6 @@ namespace Mikodev.Binary.Creators.External
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ThrowOnInvalid(int mark) { if (mark != MarkNone) ThrowInvalid(mark); }
-        #endregion
 
         public override void ToBytes(ref Allocator allocator, T item)
         {

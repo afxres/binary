@@ -93,28 +93,26 @@ namespace Mikodev.Binary
             Endian<int>.Set(ref target, byteCount);
             Memory.Copy(ref Memory.Add(ref target, sizeof(int)), ref source, byteCount);
         }
-        #endregion
 
-        #region length prefix
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal int AnchorLengthPrefix()
+        internal void LengthPrefixAnchor(out int anchor)
         {
             var offset = cursor;
             var _ = Ensure(offset, sizeof(int));
             var before = offset + sizeof(int);
             cursor = before;
-            return before;
+            anchor = before;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void FinishLengthPrefix(int before)
+        internal void LengthPrefixFinish(int anchor)
         {
-            Debug.Assert(before >= sizeof(int));
+            Debug.Assert(anchor >= sizeof(int));
             var target = buffer;
             // check array length only (for performance reason, ignore maximum capacity)
-            if (target == null || target.Length < before)
+            if (target == null || target.Length < anchor)
                 ThrowHelper.ThrowAllocatorModified();
-            Endian<int>.Set(ref target[before - sizeof(int)], cursor - before);
+            Endian<int>.Set(ref target[anchor - sizeof(int)], cursor - anchor);
         }
         #endregion
 

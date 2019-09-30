@@ -18,9 +18,9 @@ namespace Mikodev.Binary
 
         public virtual void ToBytesWithLengthPrefix(ref Allocator allocator, T item)
         {
-            var anchor = allocator.AnchorLengthPrefix();
+            allocator.LengthPrefixAnchor(out var anchor);
             ToBytes(ref allocator, item);
-            allocator.FinishLengthPrefix(anchor);
+            allocator.LengthPrefixFinish(anchor);
         }
 
         public virtual T ToValueWithLengthPrefix(ref ReadOnlySpan<byte> span)

@@ -51,7 +51,6 @@ namespace Mikodev.Binary.Internal.Contexts
             return bytes;
         }
 
-        #region generate
         private Converter GetConverterByCreator(Type type)
         {
             var (converter, creatorType) = creators
@@ -111,6 +110,5 @@ namespace Mikodev.Binary.Internal.Contexts
             // converter as named object (or default)
             return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, indexes, metadata, dictionary, GetOrCache);
         }
-        #endregion
     }
 }

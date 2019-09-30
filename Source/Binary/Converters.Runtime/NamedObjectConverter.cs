@@ -12,7 +12,6 @@ namespace Mikodev.Binary.Converters.Runtime
 {
     internal sealed class NamedObjectConverter<T> : VariableConverter<T>
     {
-        #region private fields
         private readonly OfNamedObject<T> ofObject;
 
         private readonly ToNamedObject<T> toObject;
@@ -20,7 +19,6 @@ namespace Mikodev.Binary.Converters.Runtime
         private readonly PropertyInfo[] properties;
 
         private readonly HybridList indexes;
-        #endregion
 
         public NamedObjectConverter(OfNamedObject<T> ofObject, ToNamedObject<T> toObject, PropertyInfo[] properties, KeyValuePair<string, byte[]>[] buffers)
         {
@@ -31,7 +29,6 @@ namespace Mikodev.Binary.Converters.Runtime
             indexes = new HybridList(buffers);
         }
 
-        #region exception
         [MethodImpl(MethodImplOptions.NoInlining)]
         private T ThrowKeyExists(int propertyIndex)
         {
@@ -47,7 +44,6 @@ namespace Mikodev.Binary.Converters.Runtime
             var message = $"Key '{property.Name}' not found, property type: {property.PropertyType}, declaring type: {ItemType}";
             throw new ArgumentException(message);
         }
-        #endregion
 
         public override void ToBytes(ref Allocator allocator, T item)
         {
