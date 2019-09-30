@@ -11,11 +11,7 @@ namespace Mikodev.Binary.Creators.TupleLike.Tuples
 
         private readonly Converter<T3> converter3;
 
-        public TupleConverter(
-            Converter<T1> converter1,
-            Converter<T2> converter2,
-            Converter<T3> converter3,
-            int length) : base(length)
+        public TupleConverter(Converter<T1> converter1, Converter<T2> converter2, Converter<T3> converter3, int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;

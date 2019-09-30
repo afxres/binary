@@ -193,24 +193,25 @@ let ``Tuple Length`` () =
     testSize<int * int * int * int * int * int * int * int * int> 36
     ()
 
-
-type FixType = { some : obj }
+type Fix = { some : obj }
 
 type FixConverter(length : int) =
-    inherit ConstantConverter<FixType>(length)
+    inherit ConstantConverter<Fix>(length)
 
     override __.ToBytes(_, _) = raise (NotSupportedException())
 
-    override __.ToValue (_ : inref<ReadOnlySpan<byte>>) : FixType = raise (NotSupportedException())
+    override __.ToValue (_ : inref<ReadOnlySpan<byte>>) : Fix = raise (NotSupportedException())
 
 [<Fact>]
 let ``Tuple Length (overflow)`` () =
     let fixConverter = FixConverter(0x2000_0000) :> Converter
     let fixGenerator = Generator(converters = Array.singleton fixConverter)
-    let alpha = fixGenerator.GetConverter<FixType * FixType>()
-    let bravo = fixGenerator.GetConverter<struct (FixType * FixType * FixType)>()
-    Assert.Throws<OverflowException>(fun () -> fixGenerator.GetConverter<FixType * FixType * FixType * FixType>() |> ignore) |> ignore
-    Assert.Throws<OverflowException>(fun () -> fixGenerator.GetConverter<struct (FixType * FixType * FixType * FixType)>() |> ignore) |> ignore
+    let alpha = fixGenerator.GetConverter<Fix * Fix>()
+    let bravo = fixGenerator.GetConverter<struct (Fix * Fix * Fix)>()
+    let errorAlpha = Assert.Throws<ArgumentException>(fun () -> fixGenerator.GetConverter<Fix * Fix * Fix * Fix>() |> ignore)
+    let errorBravo = Assert.Throws<ArgumentException>(fun () -> fixGenerator.GetConverter<struct (Fix * Fix * Fix * Fix)>() |> ignore)
+    Assert.Equal(sprintf "Converter length overflow, type: %O" typeof<Fix * Fix * Fix * Fix>, errorAlpha.Message)
+    Assert.Equal(sprintf "Converter length overflow, type: %O" typeof<struct (Fix * Fix * Fix * Fix)>, errorBravo.Message)
     Assert.Equal(0x4000_0000, alpha.Length)
     Assert.Equal(0x6000_0000, bravo.Length)
     ()

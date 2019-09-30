@@ -1,6 +1,7 @@
 ﻿module TupleLike.KeyValuePairTests
 
 open Mikodev.Binary
+open Mikodev.Binary.Abstractions
 open System
 open System.Collections.Generic
 open Xunit
@@ -81,4 +82,41 @@ let ``Key-Value Pair Array`` () =
     let bytes = generator.ToBytes alpha
     let array = generator.ToValue<array<byte * uint32>> bytes
     Assert.Equal<byte * uint32>(array, (alpha |> Array.map (|KeyValue|)))
+    ()
+
+type Raw<'a> = { data : 'a }
+
+type RawConverter<'a>(length : int) =
+    inherit ConstantConverter<Raw<'a>>(length)
+
+    override __.ToBytes(_, _) = raise (NotSupportedException())
+
+    override __.ToValue (_ : inref<ReadOnlySpan<byte>>) : Raw<'a> = raise (NotSupportedException())
+
+[<Fact>]
+let ``Key-Value Pair Length`` () =
+    let singleConverter = RawConverter<single>(0x2000_0000) :> Converter
+    let doubleConverter = RawConverter<double>(0x4000_0000) :> Converter
+    let generator = Generator(converters = [| singleConverter; doubleConverter |])
+    let alpha = generator.GetConverter<KeyValuePair<Raw<single>, Raw<single>>>()
+    let bravo = generator.GetConverter<KeyValuePair<Raw<single>, Raw<double>>>()
+    Assert.Equal(0x4000_0000, alpha.Length)
+    Assert.Equal(0x6000_0000, bravo.Length)
+    ()
+
+[<Fact>]
+let ``Key-Value Pair Length (max value)`` () =
+    let doubleConverter = RawConverter<double>(0x4000_0000) :> Converter
+    let stringConverter = RawConverter<string>(0x3FFF_FFFF) :> Converter
+    let generator = Generator(converters = [| doubleConverter; stringConverter |])
+    let delta = generator.GetConverter<KeyValuePair<Raw<double>, Raw<string>>>()
+    Assert.Equal(Int32.MaxValue, delta.Length)
+    ()
+
+[<Fact>]
+let ``Key-Value Pair Length (overflow)`` () =
+    let doubleConverter = RawConverter<double>(0x4000_0000) :> Converter
+    let generator = Generator(converters = [| doubleConverter |])
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter<KeyValuePair<Raw<double>, Raw<double>>>() |> ignore)
+    Assert.Equal(sprintf "Converter length overflow, type: %O" typeof<KeyValuePair<Raw<double>, Raw<double>>>, error.Message)
     ()

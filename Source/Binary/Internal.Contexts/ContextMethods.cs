@@ -12,6 +12,37 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class ContextMethods
     {
+        internal static int GetConverterLength(Type type, IEnumerable<Converter> values)
+        {
+            Debug.Assert(values.Any() && values.All(x => x != null && x.Length >= 0));
+            var length = values.All(x => x.Length > 0) ? values.Sum(x => (long)x.Length) : 0;
+            if (length < 0 || length > int.MaxValue)
+                throw new ArgumentException($"Converter length overflow, type: {type}");
+            return (int)length;
+        }
+
+        internal static MethodInfo GetToBytesMethodInfo(Type type, bool withMark)
+        {
+            var converterType = typeof(Converter<>).MakeGenericType(type);
+            var types = new[] { typeof(Allocator).MakeByRefType(), type };
+            var method = !withMark
+                ? converterType.GetMethod(nameof(IConverter.ToBytes), types)
+                : converterType.GetMethod(nameof(IConverter.ToBytesWithMark), types);
+            Debug.Assert(method != null);
+            return method;
+        }
+
+        internal static MethodInfo GetToValueMethodInfo(Type type, bool withMark)
+        {
+            var converterType = typeof(Converter<>).MakeGenericType(type);
+            var types = new[] { typeof(ReadOnlySpan<byte>).MakeByRefType() };
+            var method = !withMark
+                ? converterType.GetMethod(nameof(IConverter.ToValue), types)
+                : converterType.GetMethod(nameof(IConverter.ToValueWithMark), types);
+            Debug.Assert(method != null);
+            return method;
+        }
+
         internal static bool CanCreateInstance(Type type, ConstructorInfo constructor)
         {
             if (type.IsAbstract || type.IsInterface)

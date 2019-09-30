@@ -20,16 +20,7 @@ namespace Mikodev.Binary.Creators.TupleLike.ValueTuples
 
         private readonly Converter<TR> converterR;
 
-        public ValueTupleConverter(
-            Converter<T1> converter1,
-            Converter<T2> converter2,
-            Converter<T3> converter3,
-            Converter<T4> converter4,
-            Converter<T5> converter5,
-            Converter<T6> converter6,
-            Converter<T7> converter7,
-            Converter<TR> converterR,
-            int length) : base(length)
+        public ValueTupleConverter(Converter<T1> converter1, Converter<T2> converter2, Converter<T3> converter3, Converter<T4> converter4, Converter<T5> converter5, Converter<T6> converter6, Converter<T7> converter7, Converter<TR> converterR, int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;

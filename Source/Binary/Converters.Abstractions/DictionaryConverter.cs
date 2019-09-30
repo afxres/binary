@@ -21,7 +21,7 @@ namespace Mikodev.Binary.Converters.Abstractions
             const int InitialCapacity = 8;
             var converter = this.converter;
             var converterLength = converter.Length;
-            var itemCount = converterLength > 0 ? Define.GetItemCount(byteCount, converterLength) : InitialCapacity;
+            var itemCount = converterLength > 0 ? DefineHelper.GetItemCount(byteCount, converterLength) : InitialCapacity;
             var data = new Dictionary<K, V>(itemCount);
             var temp = span;
             while (!temp.IsEmpty)

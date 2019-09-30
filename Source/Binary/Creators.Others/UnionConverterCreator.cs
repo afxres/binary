@@ -2,6 +2,7 @@
 using Microsoft.FSharp.Reflection;
 using Mikodev.Binary.Delegates;
 using Mikodev.Binary.Internal;
+using Mikodev.Binary.Internal.Contexts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,7 +57,7 @@ namespace Mikodev.Binary.Creators.Others
                     var property = properties[i];
                     var propertyType = property.PropertyType;
                     var converter = context.GetConverter(propertyType);
-                    var method = Define.GetToBytesMethodInfo(propertyType, withMark || i != properties.Length - 1);
+                    var method = ContextMethods.GetToBytesMethodInfo(propertyType, withMark || i != properties.Length - 1);
                     var invoke = Expression.Call(Expression.Constant(converter), method, allocator, Expression.Property(instance, property));
                     result.Add(invoke);
                 }
@@ -110,7 +111,7 @@ namespace Mikodev.Binary.Creators.Others
                 {
                     var parameterType = parameters[i].ParameterType;
                     var converter = context.GetConverter(parameterType);
-                    var method = Define.GetToValueMethodInfo(parameterType, withMark || i != parameters.Length - 1);
+                    var method = ContextMethods.GetToValueMethodInfo(parameterType, withMark || i != parameters.Length - 1);
                     var variable = Expression.Variable(parameterType, $"{i}");
                     variables[i] = variable;
                     var invoke = Expression.Call(Expression.Constant(converter), method, span);

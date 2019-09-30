@@ -25,7 +25,7 @@ namespace Mikodev.Binary.Adapters.Implementations
             if (byteCount == 0)
                 return new ArraySegment<T>(Array.Empty<T>());
             var definition = converter.Length;
-            var itemCount = Define.GetItemCount(byteCount, definition);
+            var itemCount = DefineHelper.GetItemCount(byteCount, definition);
             var items = new T[itemCount];
             for (var i = 0; i < itemCount; i++)
                 items[i] = converter.ToValue(span.Slice(i * definition));

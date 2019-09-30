@@ -5,12 +5,12 @@ namespace Mikodev.Binary.Internal.Components
 {
     internal abstract class GenericConverterCreator : IConverterCreator
     {
-        private readonly GenericConverterCreatorContext context;
+        private readonly GenericConverterCreatorContext creator;
 
         public GenericConverterCreator(Type key, Type value) : this(new Dictionary<Type, Type> { { key, value } }) { }
 
-        public GenericConverterCreator(IReadOnlyDictionary<Type, Type> dictionary) => context = new GenericConverterCreatorContext(dictionary);
+        public GenericConverterCreator(IReadOnlyDictionary<Type, Type> dictionary) => creator = new GenericConverterCreatorContext(dictionary);
 
-        public Converter GetConverter(IGeneratorContext context, Type type) => this.context.GetConverter(context, type);
+        public Converter GetConverter(IGeneratorContext context, Type type) => creator.GetConverter(context, type);
     }
 }

@@ -23,7 +23,7 @@ namespace Mikodev.Binary.Adapters.Implementations.Unsafe
             var byteCount = span.Length;
             if (byteCount == 0)
                 return new ArraySegment<T>(Array.Empty<T>());
-            var itemCount = Define.GetItemCount(byteCount, Memory.SizeOf<T>());
+            var itemCount = DefineHelper.GetItemCount(byteCount, Memory.SizeOf<T>());
             var items = new T[itemCount];
             ref var source = ref MemoryMarshal.GetReference(span);
             ref var target = ref items[0];

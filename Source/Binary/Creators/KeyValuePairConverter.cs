@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Creators.TupleLike
+namespace Mikodev.Binary.Creators
 {
     internal sealed class KeyValuePairConverter<K, V> : Converter<KeyValuePair<K, V>>
     {

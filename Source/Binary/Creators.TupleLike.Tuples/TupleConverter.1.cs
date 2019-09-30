@@ -7,9 +7,7 @@ namespace Mikodev.Binary.Creators.TupleLike.Tuples
     {
         private readonly Converter<T1> converter1;
 
-        public TupleConverter(
-            Converter<T1> converter1,
-            int length) : base(length)
+        public TupleConverter(Converter<T1> converter1, int length) : base(length)
         {
             this.converter1 = converter1;
         }
