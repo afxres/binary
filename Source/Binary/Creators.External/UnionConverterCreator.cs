@@ -1,9 +1,9 @@
 ﻿using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Core;
 using Microsoft.FSharp.Reflection;
-using Mikodev.Binary.Delegates;
 using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Contexts;
+using Mikodev.Binary.Internal.Delegates;
 using System;
 using System.Collections.Generic;
 using System.Linq;

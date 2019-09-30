@@ -1,5 +1,5 @@
 ﻿using Mikodev.Binary.Adapters.Abstractions;
-using Mikodev.Binary.Delegates;
+using Mikodev.Binary.Internal.Delegates;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

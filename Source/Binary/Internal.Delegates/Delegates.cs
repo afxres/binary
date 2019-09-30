@@ -1,8 +1,7 @@
-﻿using Mikodev.Binary.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Delegates
+namespace Mikodev.Binary.Internal.Delegates
 {
     internal delegate void OfNamedObject<in T>(ref Allocator allocator, T item);
 

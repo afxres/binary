@@ -1,7 +1,7 @@
 ﻿using Mikodev.Binary.Abstractions;
 using System;
 
-namespace Mikodev.Binary.Converters
+namespace Mikodev.Binary.Converters.Default
 {
     internal sealed class ObjectConverter : VariableConverter<object>
     {

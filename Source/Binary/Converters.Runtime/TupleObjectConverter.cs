@@ -1,5 +1,5 @@
-﻿using Mikodev.Binary.Delegates;
-using Mikodev.Binary.Internal;
+﻿using Mikodev.Binary.Internal;
+using Mikodev.Binary.Internal.Delegates;
 using System;
 
 namespace Mikodev.Binary.Converters.Runtime
