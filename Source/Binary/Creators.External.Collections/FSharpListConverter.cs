@@ -4,7 +4,7 @@ using Mikodev.Binary.Adapters;
 using System;
 using System.Diagnostics;
 
-namespace Mikodev.Binary.Creators.Others
+namespace Mikodev.Binary.Creators.External.Collections
 {
     internal sealed class FSharpListConverter<T> : VariableConverter<FSharpList<T>>
     {

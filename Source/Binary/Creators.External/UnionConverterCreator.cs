@@ -1,4 +1,5 @@
-﻿using Microsoft.FSharp.Core;
+﻿using Microsoft.FSharp.Collections;
+using Microsoft.FSharp.Core;
 using Microsoft.FSharp.Reflection;
 using Mikodev.Binary.Delegates;
 using Mikodev.Binary.Internal;
@@ -9,7 +10,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Mikodev.Binary.Creators.Others
+namespace Mikodev.Binary.Creators.External
 {
     internal sealed class UnionConverterCreator : IConverterCreator
     {
@@ -17,7 +18,7 @@ namespace Mikodev.Binary.Creators.Others
         {
             const int Limits = 256;
             var flags = FSharpOption<BindingFlags>.None;
-            if (!FSharpType.IsUnion(type, flags))
+            if (!FSharpType.IsUnion(type, flags) || type.IsImplementationOf(typeof(FSharpList<>)))
                 return null;
             var cases = FSharpType.GetUnionCases(type, flags);
             if (cases == null || cases.Length == 0)

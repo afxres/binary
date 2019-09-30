@@ -1,7 +1,7 @@
 ﻿using Mikodev.Binary.Internal.Components;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Creators.Collections
+namespace Mikodev.Binary.Creators.Collections.Common
 {
     internal sealed class IDictionaryConverterCreator : PatternConverterCreator
     {

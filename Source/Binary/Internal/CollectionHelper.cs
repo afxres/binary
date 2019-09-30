@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary.Internal
 {
-    internal static class DefineHelper
+    internal static class CollectionHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int GetItemCount(int byteCount, int definition)

@@ -2,7 +2,7 @@
 using Mikodev.Binary.Abstractions;
 using System;
 
-namespace Mikodev.Binary.Creators.Others
+namespace Mikodev.Binary.Creators.External.Collections
 {
     internal sealed class FSharpSetConverter<T> : VariableConverter<FSharpSet<T>>
     {

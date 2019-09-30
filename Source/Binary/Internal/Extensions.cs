@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Mikodev.Binary.Internal
 {
-    internal static class Extend
+    internal static class Extensions
     {
         internal static bool IsImplementationOf(this Type type, Type definition)
         {

@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Mikodev.Binary.Creators.Others
+namespace Mikodev.Binary.Creators.External
 {
     internal sealed class UnionConverter<T> : Converter<T>
     {

@@ -3,7 +3,7 @@ using Mikodev.Binary.Abstractions;
 using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Creators.Others
+namespace Mikodev.Binary.Creators.External.Collections
 {
     internal sealed class FSharpMapConverter<K, V> : VariableConverter<FSharpMap<K, V>>
     {

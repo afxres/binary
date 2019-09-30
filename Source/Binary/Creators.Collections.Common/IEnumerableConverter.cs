@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Creators.Collections
+namespace Mikodev.Binary.Creators.Collections.Common
 {
     internal sealed class IEnumerableConverter<R, E> : CollectionConverter<R, E> where R : IEnumerable<E>
     {

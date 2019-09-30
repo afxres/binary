@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Creators.Collections
+namespace Mikodev.Binary.Creators.Collections.Common
 {
     internal sealed class IDictionaryConverter<T, K, V> : DictionaryConverter<T, K, V> where T : IEnumerable<KeyValuePair<K, V>>
     {

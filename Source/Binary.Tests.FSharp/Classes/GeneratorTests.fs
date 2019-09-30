@@ -179,5 +179,5 @@ let ``Bad Creator`` () =
 [<Fact>]
 let ``To String (debug)`` () =
     let generator = new Generator()
-    Assert.Equal("Generator(Converters: 22, Creators: 13)", generator.ToString())
+    Assert.Equal("Generator(Converters: 22, Creators: 11)", generator.ToString())
     ()
