@@ -4,8 +4,13 @@ using System.Collections.Generic;
 
 namespace Mikodev.Binary.Creators.Collections.Common
 {
-    internal sealed class IEnumerableConverterCreator : PatternConverterCreator
+    internal sealed class IEnumerableConverterCreator : IConverterCreator
     {
-        public IEnumerableConverterCreator() : base(new[] { typeof(IEnumerable<>) }, typeof(ArraySegment<>), typeof(IEnumerableConverter<,>)) { }
+        private static readonly PatternConverterCreator creator = new PatternConverterCreator(
+            new[] { typeof(IEnumerable<>) },
+            typeof(ArraySegment<>),
+            typeof(IEnumerableConverter<,>));
+
+        public Converter GetConverter(IGeneratorContext context, Type type) => creator.GetConverter(context, type);
     }
 }

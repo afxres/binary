@@ -22,7 +22,8 @@ namespace Mikodev.Binary.Internal.Contexts
                 return GetConverterAsDictionary(type, types);
             var reverse = type.IsGenericType && reverseCollectionTypeDefinitions.Contains(type.GetGenericTypeDefinition());
             var converterType = typeof(GenericCollectionConverter<,>).MakeGenericType(typeArguments);
-            var converter = Activator.CreateInstance(converterType, GetConverter(itemType), constructor, reverse);
+            var converterArguments = new object[] { constructor, GetConverter(itemType), reverse };
+            var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }
 
@@ -34,9 +35,9 @@ namespace Mikodev.Binary.Internal.Contexts
             var constructor = ToValueAsEnumerable(type, dictionaryType, typeof(ToDictionary<,,>).MakeGenericType(typeArguments));
             var itemType = typeof(KeyValuePair<,>).MakeGenericType(types);
             var itemConverter = GetConverter(itemType);
-            var arguments = new object[] { itemConverter, constructor };
             var converterType = typeof(GenericDictionaryConverter<,,>).MakeGenericType(typeArguments);
-            var converter = Activator.CreateInstance(converterType, arguments);
+            var converterArguments = new object[] { constructor, itemConverter, };
+            var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }
 

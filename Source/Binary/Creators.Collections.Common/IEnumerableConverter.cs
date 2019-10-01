@@ -1,13 +1,18 @@
-﻿using Mikodev.Binary.Converters.Abstractions;
+﻿using Mikodev.Binary.Abstractions;
+using Mikodev.Binary.Internal.Components;
 using System;
 using System.Collections.Generic;
 
 namespace Mikodev.Binary.Creators.Collections.Common
 {
-    internal sealed class IEnumerableConverter<R, E> : CollectionConverter<R, E> where R : IEnumerable<E>
+    internal sealed class IEnumerableConverter<T, E> : VariableConverter<T> where T : IEnumerable<E>
     {
-        public IEnumerableConverter(Converter<E> converter) : base(converter, reverse: false) { }
+        private readonly CollectionConverter<T, E> converter;
 
-        public override R ToValue(in ReadOnlySpan<byte> span) => (R)(object)To(in span);
+        public IEnumerableConverter(Converter<E> converter) => this.converter = new CollectionConverter<T, E>(converter, reverse: false);
+
+        public override void ToBytes(ref Allocator allocator, T item) => converter.Of(ref allocator, item);
+
+        public override T ToValue(in ReadOnlySpan<byte> span) => (T)(object)converter.To(in span);
     }
 }

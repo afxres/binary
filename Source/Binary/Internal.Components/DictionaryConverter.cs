@@ -1,17 +1,24 @@
-﻿using Mikodev.Binary.Abstractions;
-using Mikodev.Binary.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Converters.Abstractions
+namespace Mikodev.Binary.Internal.Components
 {
-    internal abstract class DictionaryConverter<T, K, V> : VariableConverter<T> where T : IEnumerable<KeyValuePair<K, V>>
+    internal readonly struct DictionaryConverter<T, K, V> where T : IEnumerable<KeyValuePair<K, V>>
     {
         private readonly Converter<KeyValuePair<K, V>> converter;
 
-        protected DictionaryConverter(Converter<KeyValuePair<K, V>> converter) => this.converter = converter;
+        public DictionaryConverter(Converter<KeyValuePair<K, V>> converter) => this.converter = converter;
 
-        protected Dictionary<K, V> To(in ReadOnlySpan<byte> span)
+        public void Of(ref Allocator allocator, T item)
+        {
+            if (item == null)
+                return;
+            var converter = this.converter;
+            foreach (var i in item)
+                converter.ToBytesWithMark(ref allocator, i);
+        }
+
+        public Dictionary<K, V> To(in ReadOnlySpan<byte> span)
         {
             static void Add(Dictionary<K, V> data, KeyValuePair<K, V> item) => data.Add(item.Key, item.Value);
 
@@ -27,15 +34,6 @@ namespace Mikodev.Binary.Converters.Abstractions
             while (!temp.IsEmpty)
                 Add(data, converter.ToValueWithMark(ref temp));
             return data;
-        }
-
-        public override void ToBytes(ref Allocator allocator, T item)
-        {
-            if (item == null)
-                return;
-            var converter = this.converter;
-            foreach (var i in item)
-                converter.ToBytesWithMark(ref allocator, i);
         }
     }
 }

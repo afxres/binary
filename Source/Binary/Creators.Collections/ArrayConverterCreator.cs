@@ -11,8 +11,8 @@ namespace Mikodev.Binary.Creators.Collections
             if (type.GetArrayRank() != 1)
                 throw new NotSupportedException("Multidimensional arrays are not supported, use array of arrays instead.");
             var itemType = type.GetElementType();
-            var arguments = new object[] { context.GetConverter(itemType) };
-            var converter = Activator.CreateInstance(typeof(ArrayConverter<>).MakeGenericType(itemType), arguments);
+            var converterArguments = new object[] { context.GetConverter(itemType) };
+            var converter = Activator.CreateInstance(typeof(ArrayConverter<>).MakeGenericType(itemType), converterArguments);
             return (Converter)converter;
         }
     }

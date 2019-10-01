@@ -12,7 +12,7 @@ namespace Mikodev.Binary.Creators
             [typeof(KeyValuePair<,>)] = typeof(KeyValuePairConverter<,>),
         };
 
-        private static readonly GenericConverterCreatorContext creator = new GenericConverterCreatorContext(dictionary);
+        private static readonly GenericConverterCreator creator = new GenericConverterCreator(dictionary);
 
         public Converter GetConverter(IGeneratorContext context, Type type) => creator.GetConverter(context, type, x => new object[] { ContextMethods.GetConverterLength(type, x) });
     }

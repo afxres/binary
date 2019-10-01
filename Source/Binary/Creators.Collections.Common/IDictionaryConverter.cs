@@ -1,13 +1,18 @@
-﻿using Mikodev.Binary.Converters.Abstractions;
+﻿using Mikodev.Binary.Abstractions;
+using Mikodev.Binary.Internal.Components;
 using System;
 using System.Collections.Generic;
 
 namespace Mikodev.Binary.Creators.Collections.Common
 {
-    internal sealed class IDictionaryConverter<T, K, V> : DictionaryConverter<T, K, V> where T : IEnumerable<KeyValuePair<K, V>>
+    internal sealed class IDictionaryConverter<T, K, V> : VariableConverter<T> where T : IEnumerable<KeyValuePair<K, V>>
     {
-        public IDictionaryConverter(Converter<KeyValuePair<K, V>> converter) : base(converter) { }
+        private readonly DictionaryConverter<T, K, V> converter;
 
-        public override T ToValue(in ReadOnlySpan<byte> span) => (T)(object)To(in span);
+        public IDictionaryConverter(Converter<KeyValuePair<K, V>> converter) => this.converter = new DictionaryConverter<T, K, V>(converter);
+
+        public override void ToBytes(ref Allocator allocator, T item) => converter.Of(ref allocator, item);
+
+        public override T ToValue(in ReadOnlySpan<byte> span) => (T)(object)converter.To(in span);
     }
 }

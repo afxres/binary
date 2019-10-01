@@ -38,8 +38,8 @@ namespace Mikodev.Binary.Creators.External
             var toBytesWith = ToBytesExpression(context, declaring, cases, tagMember, withMark: true);
             var toValueWith = ToValueExpression(context, declaring, cases, withMark: true);
             var converterType = typeof(UnionConverter<>).MakeGenericType(declaring);
-            var arguments = new[] { toBytes, toValue, toBytesWith, toValueWith }.Select(x => x.Compile()).Cast<object>().Concat(new object[] { noNull }).ToArray();
-            var converter = Activator.CreateInstance(converterType, arguments);
+            var converterArguments = new[] { toBytes, toValue, toBytesWith, toValueWith }.Select(x => x.Compile()).Cast<object>().Concat(new object[] { noNull }).ToArray();
+            var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }
 

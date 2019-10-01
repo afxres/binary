@@ -1,6 +1,4 @@
-﻿using Mikodev.Binary.Abstractions;
-using Mikodev.Binary.Adapters;
-using Mikodev.Binary.Internal;
+﻿using Mikodev.Binary.Adapters;
 using Mikodev.Binary.Internal.Delegates;
 using System;
 using System.Collections.Generic;
@@ -8,46 +6,41 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Mikodev.Binary.Converters.Abstractions
+namespace Mikodev.Binary.Internal.Components
 {
-    internal abstract class CollectionConverter<R, E> : VariableConverter<R> where R : IEnumerable<E>
+    internal readonly struct CollectionConverter<T, E> where T : IEnumerable<E>
     {
         private readonly bool reverse;
 
         private readonly bool byArray;
 
-        private readonly ToArray<R, E> toArray;
+        private readonly Adapter<E> adapter;
+
+        private readonly ToArray<T, E> toArray;
 
         private readonly Converter<E> converter;
 
-        private readonly Adapter<E> adapter;
-
-        protected CollectionConverter(Converter<E> converter, bool reverse)
+        public CollectionConverter(Converter<E> converter, bool reverse)
         {
+            static ToArray<T, E> Compile(MethodInfo method)
+            {
+                var source = Expression.Parameter(typeof(T), "source");
+                var invoke = Expression.Call(source, method);
+                var lambda = Expression.Lambda<ToArray<T, E>>(invoke, source);
+                return lambda.Compile();
+            }
+
             this.reverse = reverse;
             this.converter = converter;
-            var method = typeof(R).GetMethods(BindingFlags.Instance | BindingFlags.Public)
+            var method = typeof(T).GetMethods(BindingFlags.Instance | BindingFlags.Public)
                 .Where(x => x.Name == "ToArray" && x.ReturnType == typeof(E[]) && x.GetParameters().Length == 0)
                 .FirstOrDefault();
             adapter = AdapterHelper.Create(converter);
-            byArray = converter.IsUnsafePrimitiveConverter() && (method != null || typeof(ICollection<E>).IsAssignableFrom(typeof(R)));
-            if (method == null)
-                return;
-            var source = Expression.Parameter(typeof(R), "source");
-            var invoke = Expression.Call(source, method);
-            var lambda = Expression.Lambda<ToArray<R, E>>(invoke, source);
-            toArray = lambda.Compile();
+            toArray = method == null ? null : Compile(method);
+            byArray = converter.IsUnsafePrimitiveConverter() && (method != null || typeof(ICollection<E>).IsAssignableFrom(typeof(T)));
         }
 
-        protected ArraySegment<E> To(in ReadOnlySpan<byte> span)
-        {
-            var result = adapter.To(in span);
-            if (reverse)
-                MemoryExtensions.Reverse((Span<E>)result);
-            return result;
-        }
-
-        public override void ToBytes(ref Allocator allocator, R item)
+        public void Of(ref Allocator allocator, T item)
         {
             if (item == null)
                 return;
@@ -65,6 +58,14 @@ namespace Mikodev.Binary.Converters.Abstractions
             else
                 foreach (var i in item)
                     converter.ToBytesWithMark(ref allocator, i);
+        }
+
+        public ArraySegment<E> To(in ReadOnlySpan<byte> span)
+        {
+            var result = adapter.To(in span);
+            if (reverse)
+                MemoryExtensions.Reverse((Span<E>)result);
+            return result;
         }
     }
 }

@@ -1,10 +1,16 @@
 ﻿using Mikodev.Binary.Internal.Components;
+using System;
 using System.Collections.Generic;
 
 namespace Mikodev.Binary.Creators.Collections.Common
 {
-    internal sealed class ISetConverterCreator : PatternConverterCreator
+    internal sealed class ISetConverterCreator : IConverterCreator
     {
-        public ISetConverterCreator() : base(new[] { typeof(ISet<>) }, typeof(HashSet<>), typeof(ISetConverter<,>)) { }
+        private static readonly PatternConverterCreator creator = new PatternConverterCreator(
+            new[] { typeof(ISet<>) },
+            typeof(HashSet<>),
+            typeof(ISetConverter<,>));
+
+        public Converter GetConverter(IGeneratorContext context, Type type) => creator.GetConverter(context, type);
     }
 }

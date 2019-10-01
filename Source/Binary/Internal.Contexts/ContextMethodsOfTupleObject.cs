@@ -19,7 +19,9 @@ namespace Mikodev.Binary.Internal.Contexts
             var toBytesWith = ToBytesAsTupleObject(type, metadata, withMark: true);
             var toValueWith = ToValueAsTupleObject(type, metadata, constructor, indexes, withMark: true);
             var converterLength = ContextMethods.GetConverterLength(type, metadata.Select(x => x.Converter).ToArray());
-            return (Converter)Activator.CreateInstance(typeof(TupleObjectConverter<>).MakeGenericType(type), toBytes, toValue, toBytesWith, toValueWith, converterLength);
+            var converterArguments = new object[] { toBytes, toValue, toBytesWith, toValueWith, converterLength };
+            var converter = Activator.CreateInstance(typeof(TupleObjectConverter<>).MakeGenericType(type), converterArguments);
+            return (Converter)converter;
         }
 
         private static Delegate ToBytesAsTupleObject(Type type, MetaList metadata, bool withMark)

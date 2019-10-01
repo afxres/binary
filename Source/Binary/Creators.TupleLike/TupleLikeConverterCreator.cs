@@ -29,7 +29,7 @@ namespace Mikodev.Binary.Creators.TupleLike
             [typeof(ValueTuple<,,,,,,,>)] = typeof(ValueTupleConverter<,,,,,,,>),
         };
 
-        private static readonly GenericConverterCreatorContext creator = new GenericConverterCreatorContext(dictionary);
+        private static readonly GenericConverterCreator creator = new GenericConverterCreator(dictionary);
 
         public Converter GetConverter(IGeneratorContext context, Type type)
         {

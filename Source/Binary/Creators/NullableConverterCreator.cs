@@ -4,13 +4,13 @@ using System.Collections.Generic;
 
 namespace Mikodev.Binary.Creators
 {
-    internal sealed class NullableConverterCreator : GenericConverterCreator
+    internal sealed class NullableConverterCreator : IConverterCreator
     {
-        private static readonly IReadOnlyDictionary<Type, Type> dictionary = new Dictionary<Type, Type>
+        private static readonly GenericConverterCreator creator = new GenericConverterCreator(new Dictionary<Type, Type>
         {
             [typeof(Nullable<>)] = typeof(NullableConverter<>),
-        };
+        });
 
-        public NullableConverterCreator() : base(dictionary) { }
+        public Converter GetConverter(IGeneratorContext context, Type type) => creator.GetConverter(context, type);
     }
 }
