@@ -9,7 +9,7 @@ namespace Mikodev.Binary.Creators.TupleLike
 {
     internal sealed class TupleLikeConverterCreator : IConverterCreator
     {
-        private static readonly IReadOnlyDictionary<Type, Type> dictionary = new Dictionary<Type, Type>
+        private static readonly GenericConverterCreator creator = new GenericConverterCreator(new Dictionary<Type, Type>
         {
             [typeof(Tuple<>)] = typeof(TupleConverter<>),
             [typeof(Tuple<,>)] = typeof(TupleConverter<,>),
@@ -27,9 +27,7 @@ namespace Mikodev.Binary.Creators.TupleLike
             [typeof(ValueTuple<,,,,,>)] = typeof(ValueTupleConverter<,,,,,>),
             [typeof(ValueTuple<,,,,,,>)] = typeof(ValueTupleConverter<,,,,,,>),
             [typeof(ValueTuple<,,,,,,,>)] = typeof(ValueTupleConverter<,,,,,,,>),
-        };
-
-        private static readonly GenericConverterCreator creator = new GenericConverterCreator(dictionary);
+        });
 
         public Converter GetConverter(IGeneratorContext context, Type type)
         {
