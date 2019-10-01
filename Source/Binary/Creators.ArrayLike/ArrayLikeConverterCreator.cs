@@ -8,6 +8,7 @@ namespace Mikodev.Binary.Creators.ArrayLike
     {
         private static readonly GenericConverterCreator creator = new GenericConverterCreator(new Dictionary<Type, Type>
         {
+            [typeof(ArraySegment<>)] = typeof(ArraySegmentConverter<>),
             [typeof(Memory<>)] = typeof(MemoryConverter<>),
             [typeof(ReadOnlyMemory<>)] = typeof(ReadOnlyMemoryConverter<>),
         });

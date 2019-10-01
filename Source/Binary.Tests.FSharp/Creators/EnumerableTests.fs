@@ -73,7 +73,6 @@ type EnumerableTests () =
 
     static member ``Data Alpha`` : (obj array) seq =
         seq {
-            yield [| typeof<int segment> |]
             yield [| typeof<IEnumerable<string>> |]
             yield [| typeof<IList<int>> |]
             yield [| typeof<IReadOnlyList<string>> |]

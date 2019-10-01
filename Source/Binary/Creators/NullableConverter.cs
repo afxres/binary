@@ -16,7 +16,7 @@ namespace Mikodev.Binary.Creators
             this.converter = converter;
         }
 
-        public sealed override void ToBytes(ref Allocator allocator, T? item)
+        public override void ToBytes(ref Allocator allocator, T? item)
         {
             var header = item == null ? None : Some;
             allocator.AllocateReference(sizeof(byte)) = header;
@@ -25,7 +25,7 @@ namespace Mikodev.Binary.Creators
             converter.ToBytes(ref allocator, result);
         }
 
-        public sealed override T? ToValue(in ReadOnlySpan<byte> span)
+        public override T? ToValue(in ReadOnlySpan<byte> span)
         {
             var head = span[0];
             var body = span.Slice(sizeof(byte));

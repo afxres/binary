@@ -15,7 +15,7 @@ namespace Mikodev.Binary.Internal.Components
 
         public PatternConverterCreator(IEnumerable<Type> interfaces, Type assignable, Type definition)
         {
-            Debug.Assert(interfaces.Any());
+            Debug.Assert(interfaces.Any() && interfaces.All(x => x.IsInterface));
             Debug.Assert(assignable != null);
             Debug.Assert(definition != null);
             this.interfaces = interfaces;
@@ -26,9 +26,7 @@ namespace Mikodev.Binary.Internal.Components
         public Converter GetConverter(IGeneratorContext context, Type type)
         {
             var arguments = default(Type[]);
-            if (!interfaces.Any(x => type.TryGetInterfaceArguments(x, out arguments)))
-                return null;
-            if (!type.IsAssignableFrom(assignable.MakeGenericType(arguments)))
+            if (type.IsValueType || !interfaces.Any(x => type.TryGetInterfaceArguments(x, out arguments)) || !type.IsAssignableFrom(assignable.MakeGenericType(arguments)))
                 return null;
             var typeArguments = new[] { type }.Concat(arguments).ToArray();
             var converterType = definition.MakeGenericType(typeArguments);

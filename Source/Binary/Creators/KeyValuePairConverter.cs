@@ -15,13 +15,13 @@ namespace Mikodev.Binary.Creators
             this.converterV = converterV;
         }
 
-        public sealed override void ToBytes(ref Allocator allocator, KeyValuePair<K, V> item)
+        public override void ToBytes(ref Allocator allocator, KeyValuePair<K, V> item)
         {
             converterK.ToBytesWithMark(ref allocator, item.Key);
             converterV.ToBytes(ref allocator, item.Value);
         }
 
-        public sealed override KeyValuePair<K, V> ToValue(in ReadOnlySpan<byte> span)
+        public override KeyValuePair<K, V> ToValue(in ReadOnlySpan<byte> span)
         {
             var temp = span;
             var head = converterK.ToValueWithMark(ref temp);
@@ -29,13 +29,13 @@ namespace Mikodev.Binary.Creators
             return new KeyValuePair<K, V>(head, last);
         }
 
-        public sealed override void ToBytesWithMark(ref Allocator allocator, KeyValuePair<K, V> item)
+        public override void ToBytesWithMark(ref Allocator allocator, KeyValuePair<K, V> item)
         {
             converterK.ToBytesWithMark(ref allocator, item.Key);
             converterV.ToBytesWithMark(ref allocator, item.Value);
         }
 
-        public sealed override KeyValuePair<K, V> ToValueWithMark(ref ReadOnlySpan<byte> span)
+        public override KeyValuePair<K, V> ToValueWithMark(ref ReadOnlySpan<byte> span)
         {
             var head = converterK.ToValueWithMark(ref span);
             var last = converterV.ToValueWithMark(ref span);

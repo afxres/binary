@@ -1,4 +1,4 @@
-﻿using Mikodev.Binary.Converters.Unsafe;
+﻿using Mikodev.Binary.Converters.Unsafe.Generic;
 using System;
 using System.Diagnostics;
 using System.Linq;

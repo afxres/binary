@@ -6,8 +6,8 @@ namespace Mikodev.Binary.Converters.Unsafe
 {
     internal sealed class UnsafeDateTimeConverter : UnsafeConverter<DateTime, Block08>
     {
-        public override void OfValue(ref byte location, DateTime item) => Endian<long>.Set(ref location, item.ToBinary());
+        protected override void Of(ref byte location, DateTime item) => Endian<long>.Set(ref location, item.ToBinary());
 
-        public override DateTime ToValue(ref byte location) => DateTime.FromBinary(Endian<long>.Get(ref location));
+        protected override DateTime To(ref byte location) => DateTime.FromBinary(Endian<long>.Get(ref location));
     }
 }

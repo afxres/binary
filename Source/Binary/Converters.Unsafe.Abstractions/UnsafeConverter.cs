@@ -5,45 +5,45 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Converters.Unsafe.Abstractions
 {
-    internal abstract class UnsafeConverter<TData, TSize> : ConstantConverter<TData> where TSize : unmanaged
+    internal abstract class UnsafeConverter<T, L> : ConstantConverter<T> where L : unmanaged
     {
-        protected UnsafeConverter() : base(Memory.SizeOf<TSize>()) { }
+        protected UnsafeConverter() : base(Memory.SizeOf<L>()) { }
 
-        public abstract void OfValue(ref byte location, TData item);
+        protected abstract void Of(ref byte location, T item);
 
-        public abstract TData ToValue(ref byte location);
+        protected abstract T To(ref byte location);
 
-        public sealed override void ToBytes(ref Allocator allocator, TData item)
+        public sealed override void ToBytes(ref Allocator allocator, T item)
         {
-            OfValue(ref allocator.AllocateReference(Memory.SizeOf<TSize>()), item);
+            Of(ref allocator.AllocateReference(Memory.SizeOf<L>()), item);
         }
 
-        public sealed override TData ToValue(in ReadOnlySpan<byte> span)
+        public sealed override T ToValue(in ReadOnlySpan<byte> span)
         {
-            if (span.Length < Memory.SizeOf<TSize>())
-                return ThrowHelper.ThrowNotEnoughBytes<TData>();
-            return ToValue(ref MemoryMarshal.GetReference(span));
+            if (span.Length < Memory.SizeOf<L>())
+                return ThrowHelper.ThrowNotEnoughBytes<T>();
+            return To(ref MemoryMarshal.GetReference(span));
         }
 
-        public sealed override byte[] ToBytes(TData item)
+        public sealed override byte[] ToBytes(T item)
         {
-            var buffer = new byte[Memory.SizeOf<TSize>()];
-            OfValue(ref buffer[0], item);
+            var buffer = new byte[Memory.SizeOf<L>()];
+            Of(ref buffer[0], item);
             return buffer;
         }
 
-        public sealed override TData ToValue(byte[] buffer)
+        public sealed override T ToValue(byte[] buffer)
         {
-            if (buffer == null || buffer.Length < Memory.SizeOf<TSize>())
-                return ThrowHelper.ThrowNotEnoughBytes<TData>();
-            return ToValue(ref buffer[0]);
+            if (buffer == null || buffer.Length < Memory.SizeOf<L>())
+                return ThrowHelper.ThrowNotEnoughBytes<T>();
+            return To(ref buffer[0]);
         }
 
-        public sealed override void ToBytesWithLengthPrefix(ref Allocator allocator, TData item)
+        public sealed override void ToBytesWithLengthPrefix(ref Allocator allocator, T item)
         {
-            ref var memory = ref allocator.AllocateReference(sizeof(int) + Memory.SizeOf<TSize>());
-            Endian<int>.Set(ref memory, Memory.SizeOf<TSize>());
-            OfValue(ref Memory.Add(ref memory, sizeof(int)), item);
+            ref var memory = ref allocator.AllocateReference(sizeof(int) + Memory.SizeOf<L>());
+            Endian<int>.Set(ref memory, Memory.SizeOf<L>());
+            Of(ref Memory.Add(ref memory, sizeof(int)), item);
         }
     }
 }
