@@ -52,7 +52,7 @@ namespace Mikodev.Binary
             };
 
             sharedConverters = converterTypes
-                .Concat(types.Select(x => typeof(UnsafePrimitiveConverter<>).MakeGenericType(x)))
+                .Concat(types.Select(x => typeof(UnsafeNativeConverter<>).MakeGenericType(x)))
                 .Select(x => (Converter)Activator.CreateInstance(x))
                 .OrderBy(x => x.Length)
                 .ThenBy(x => x.ItemType.Name)

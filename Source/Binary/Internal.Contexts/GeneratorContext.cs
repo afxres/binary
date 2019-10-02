@@ -70,7 +70,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 throw new ArgumentException($"Invalid type: {type}");
             // enum
             if (type.IsEnum)
-                return (Converter)Activator.CreateInstance(typeof(UnsafePrimitiveConverter<>).MakeGenericType(type));
+                return (Converter)Activator.CreateInstance(typeof(UnsafeNativeConverter<>).MakeGenericType(type));
             // collection
             if (type.TryGetInterfaceArguments(typeof(IEnumerable<>), out var arguments))
                 return GetConverterAsCollection(type, arguments.Single());

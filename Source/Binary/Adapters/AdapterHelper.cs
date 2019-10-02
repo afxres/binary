@@ -87,8 +87,8 @@ namespace Mikodev.Binary.Adapters
 
         public static Adapter<T> Create<T>(Converter<T> converter)
         {
-            var adapter = converter.IsUnsafePrimitiveConverter()
-                ? Activator.CreateInstance(typeof(UnsafePrimitiveAdapter<>).MakeGenericType(converter.ItemType))
+            var adapter = converter.IsUnsafeNativeConverter()
+                ? Activator.CreateInstance(typeof(UnsafeNativeAdapter<>).MakeGenericType(converter.ItemType))
                 : Activator.CreateInstance((converter.Length > 0 ? typeof(ConstantAdapter<>) : typeof(VariableAdapter<>)).MakeGenericType(converter.ItemType), converter);
             CreateDelegates<T>(out var get, out var set);
             return new Adapter<T>((AdapterMember<T>)adapter, get, set);

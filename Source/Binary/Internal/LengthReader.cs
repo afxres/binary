@@ -26,12 +26,16 @@ namespace Mikodev.Binary.Internal
         {
             Offset += Length;
             if ((uint)(Limits - Offset) < sizeof(int))
-                ThrowHelper.ThrowNotEnoughBytes();
+                goto fail;
             var length = Endian<int>.Get(ref Memory.Add(ref source, Offset));
             Offset += sizeof(int);
             if ((uint)(Limits - Offset) < (uint)length)
-                ThrowHelper.ThrowNotEnoughBytes();
+                goto fail;
             Length = length;
+            return;
+
+        fail:
+            ThrowHelper.ThrowNotEnoughBytes();
         }
     }
 }

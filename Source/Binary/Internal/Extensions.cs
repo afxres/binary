@@ -10,14 +10,12 @@ namespace Mikodev.Binary.Internal
     {
         internal static bool IsImplementationOf(this Type type, Type definition)
         {
-            Debug.Assert(definition.IsGenericTypeDefinition);
             return type.IsGenericType && type.GetGenericTypeDefinition() == definition;
         }
 
-        internal static bool IsUnsafePrimitiveConverter(this Converter converter)
+        internal static bool IsUnsafeNativeConverter(this Converter converter)
         {
-            var type = converter.GetType();
-            return type.IsImplementationOf(typeof(UnsafePrimitiveConverter<>));
+            return converter.GetType().IsImplementationOf(typeof(UnsafeNativeConverter<>));
         }
 
         internal static bool IsByRefLike(this Type type)

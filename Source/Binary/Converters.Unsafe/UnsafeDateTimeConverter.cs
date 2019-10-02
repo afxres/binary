@@ -4,7 +4,7 @@ using System;
 
 namespace Mikodev.Binary.Converters.Unsafe
 {
-    internal sealed class UnsafeDateTimeConverter : UnsafeConverter<DateTime, Block08>
+    internal sealed class UnsafeDateTimeConverter : UnsafeAbstractConverter<DateTime, Block08>
     {
         protected override void Of(ref byte location, DateTime item) => Endian<long>.Set(ref location, item.ToBinary());
 

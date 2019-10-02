@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Converters.Unsafe.Abstractions
 {
-    internal abstract class UnsafeConverter<T, L> : ConstantConverter<T> where L : unmanaged
+    internal abstract class UnsafeAbstractConverter<T, L> : ConstantConverter<T> where L : unmanaged
     {
-        protected UnsafeConverter() : base(Memory.SizeOf<L>()) { }
+        protected UnsafeAbstractConverter() : base(Memory.SizeOf<L>()) { }
 
         protected abstract void Of(ref byte location, T item);
 

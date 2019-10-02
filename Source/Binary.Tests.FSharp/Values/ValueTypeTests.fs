@@ -1,4 +1,4 @@
-module Primitives.ValueTypeTests
+module Values.ValueTypeTests
 
 open Mikodev.Binary
 open Mikodev.Binary.Abstractions
@@ -211,5 +211,5 @@ let ``Enum`` () =
 [<Fact>]
 let ``Enum Converter`` () =
     let value = generator.GetConverter typeof<DayOfWeek>
-    Assert.StartsWith("UnsafePrimitiveConverter", value.GetType().Name)
+    Assert.StartsWith("UnsafeNativeConverter", value.GetType().Name)
     ()

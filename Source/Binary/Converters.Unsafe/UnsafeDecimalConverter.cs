@@ -3,7 +3,7 @@ using Mikodev.Binary.Internal;
 
 namespace Mikodev.Binary.Converters.Unsafe
 {
-    internal sealed class UnsafeDecimalConverter : UnsafeConverter<decimal, Block16>
+    internal sealed class UnsafeDecimalConverter : UnsafeAbstractConverter<decimal, Block16>
     {
         protected override void Of(ref byte location, decimal item)
         {

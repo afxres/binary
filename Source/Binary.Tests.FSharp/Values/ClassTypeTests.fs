@@ -1,4 +1,4 @@
-﻿module Primitives.ClassTypeTests
+﻿module Values.ClassTypeTests
 
 open Mikodev.Binary
 open Mikodev.Binary.Abstractions

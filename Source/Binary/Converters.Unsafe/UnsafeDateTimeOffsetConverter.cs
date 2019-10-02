@@ -6,7 +6,7 @@ using int64 = System.Int64;
 
 namespace Mikodev.Binary.Converters.Unsafe
 {
-    internal sealed class UnsafeDateTimeOffsetConverter : UnsafeConverter<DateTimeOffset, Block10>
+    internal sealed class UnsafeDateTimeOffsetConverter : UnsafeAbstractConverter<DateTimeOffset, Block10>
     {
         protected override void Of(ref byte location, DateTimeOffset item)
         {

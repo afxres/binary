@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Adapters.Implementations.Unsafe
 {
-    internal sealed class UnsafePrimitiveAdapter<T> : AdapterMember<T> where T : unmanaged
+    internal sealed class UnsafeNativeAdapter<T> : AdapterMember<T> where T : unmanaged
     {
         public override void Of(ref Allocator allocator, in ReadOnlySpan<T> span)
         {

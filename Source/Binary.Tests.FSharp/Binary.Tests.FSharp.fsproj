@@ -29,8 +29,8 @@
     <Compile Include="Others\CollectionTests.fs" />
     <Compile Include="Others\RecordTests.fs" />
     <Compile Include="Others\UnionTests.fs" />
-    <Compile Include="Primitives\ClassTypeTests.fs" />
-    <Compile Include="Primitives\ValueTypeTests.fs" />
+    <Compile Include="Values\ClassTypeTests.fs" />
+    <Compile Include="Values\ValueTypeTests.fs" />
     <Compile Include="TupleLike\KeyValuePairTests.fs" />
     <Compile Include="TupleLike\TupleObjectTests.fs" />
     <Compile Include="TupleLike\TupleTests.fs" />

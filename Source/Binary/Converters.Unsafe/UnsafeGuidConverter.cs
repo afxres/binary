@@ -4,7 +4,7 @@ using System;
 
 namespace Mikodev.Binary.Converters.Unsafe
 {
-    internal sealed class UnsafeGuidConverter : UnsafeConverter<Guid, Block16>
+    internal sealed class UnsafeGuidConverter : UnsafeAbstractConverter<Guid, Block16>
     {
         protected override void Of(ref byte location, Guid item) => Endian.SetGuid(ref location, item);
 

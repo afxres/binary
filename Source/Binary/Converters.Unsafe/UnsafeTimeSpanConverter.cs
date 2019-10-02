@@ -4,7 +4,7 @@ using System;
 
 namespace Mikodev.Binary.Converters.Unsafe
 {
-    internal sealed class UnsafeTimeSpanConverter : UnsafeConverter<TimeSpan, Block08>
+    internal sealed class UnsafeTimeSpanConverter : UnsafeAbstractConverter<TimeSpan, Block08>
     {
         protected override void Of(ref byte location, TimeSpan item) => Endian<long>.Set(ref location, item.Ticks);
 
