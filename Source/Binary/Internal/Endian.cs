@@ -18,7 +18,7 @@ namespace Mikodev.Binary.Internal
             *(uint64*)((byte*)target + 8) = *(uint64*)((byte*)source + 8);
         }
 
-        public static Guid GetGuid(ref byte source)
+        internal static Guid GetGuid(ref byte source)
         {
             fixed (byte* srcptr = &source)
             {
@@ -30,7 +30,7 @@ namespace Mikodev.Binary.Internal
             }
         }
 
-        public static void SetGuid(ref byte target, Guid item)
+        internal static void SetGuid(ref byte target, Guid item)
         {
             fixed (byte* dstptr = &target)
             {

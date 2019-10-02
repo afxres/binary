@@ -52,7 +52,45 @@ namespace Mikodev.Binary.Internal.Contexts
             return constructor != null || type.IsValueType || type.GetConstructor(Type.EmptyTypes) != null;
         }
 
-        internal static Delegate ToValuePlanAlpha(Type delegateType, ItemInitializer initializer, MetaList metadata, Type type)
+        internal static (ConstructorInfo, ItemIndexes) GetConstructor(Type type, IReadOnlyList<PropertyInfo> properties)
+        {
+            static (ConstructorInfo Constructor, IReadOnlyList<PropertyInfo>) CanCreate(ConstructorInfo constructor, Dictionary<string, PropertyInfo> properties)
+            {
+                int parameterCount;
+                var parameters = constructor.GetParameters();
+                if (parameters == null || (parameterCount = parameters.Length) != properties.Count)
+                    return default;
+                var collection = new PropertyInfo[parameterCount];
+                for (var i = 0; i < parameterCount; i++)
+                {
+                    var parameter = parameters[i];
+                    var parameterName = parameter.Name.ToUpperInvariant();
+                    if (!properties.TryGetValue(parameterName, out var property) || property.PropertyType != parameter.ParameterType)
+                        return default;
+                    collection[i] = property;
+                }
+                Debug.Assert(collection.All(x => x != null));
+                return (constructor, collection);
+            }
+
+            // anonymous type or record
+            var constructors = type.GetConstructors();
+            if (constructors == null || constructors.Length == 0)
+                return default;
+            var names = properties.ToDictionary(x => x.Name.ToUpperInvariant());
+            var query = constructors.Select(x => CanCreate(x, names)).Where(x => x.Constructor != null).ToList();
+            if (query.Count == 0)
+                return default;
+            if (query.Count != 1)
+                throw new ArgumentException($"Multiple constructors found, type: {type}");
+            var (constructor, collection) = query.Single();
+            var value = properties.Select((x, i) => (Key: x, Value: i)).ToDictionary(x => x.Key, x => x.Value);
+            Debug.Assert(properties.Count == collection.Count);
+            var array = collection.Select(x => value[x]).ToArray();
+            return (constructor, array);
+        }
+
+        internal static Delegate GetToValueDelegatePlanAlpha(Type delegateType, ItemInitializer initializer, MetaList metadata, Type type)
         {
             var failed = metadata.Select(x => x.Property).FirstOrDefault(x => x.GetSetMethod() == null);
             if (failed != null)
@@ -68,7 +106,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        internal static Delegate ToValuePlanBravo(Type delegateType, ItemInitializer initializer, MetaList metadata, ItemIndexes indexes, ConstructorInfo constructor)
+        internal static Delegate GetToValueDelegatePlanBravo(Type delegateType, ItemInitializer initializer, MetaList metadata, ItemIndexes indexes, ConstructorInfo constructor)
         {
             var expressions = new List<Expression>();
             var variables = metadata.Select((x, i) => Expression.Variable(x.Property.PropertyType, $"{i}")).ToList();

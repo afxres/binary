@@ -9,39 +9,39 @@ using System.Linq.Expressions;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
-    internal sealed partial class GeneratorContext
+    internal static class ContextMethodsOfCollections
     {
-        private static readonly IReadOnlyList<Type> reverseCollectionTypeDefinitions = new[] { typeof(Stack<>), typeof(ConcurrentStack<>) };
+        private static readonly IReadOnlyList<Type> reverseTypes = new[] { typeof(Stack<>), typeof(ConcurrentStack<>) };
 
-        private Converter GetConverterAsCollection(Type type, Type itemType)
+        internal static Converter GetConverterAsCollection(IGeneratorContext context, Type type, Type itemType)
         {
             var typeArguments = new[] { type, itemType };
             var enumerableType = typeof(IEnumerable<>).MakeGenericType(itemType);
-            var constructor = ToValueAsEnumerable(type, enumerableType, typeof(ToCollection<,>).MakeGenericType(typeArguments));
+            var constructor = GetToValueDelegateAsEnumerable(type, enumerableType, typeof(ToCollection<,>).MakeGenericType(typeArguments));
             if (constructor == null && itemType.TryGetGenericArguments(typeof(KeyValuePair<,>), out var types))
-                return GetConverterAsDictionary(type, types);
-            var reverse = type.IsGenericType && reverseCollectionTypeDefinitions.Contains(type.GetGenericTypeDefinition());
+                return GetConverterAsDictionary(context, type, types);
+            var reverse = type.IsGenericType && reverseTypes.Contains(type.GetGenericTypeDefinition());
             var converterType = typeof(GenericCollectionConverter<,>).MakeGenericType(typeArguments);
-            var converterArguments = new object[] { constructor, GetConverter(itemType), reverse };
+            var converterArguments = new object[] { constructor, context.GetConverter(itemType), reverse };
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }
 
-        private Converter GetConverterAsDictionary(Type type, Type[] types)
+        private static Converter GetConverterAsDictionary(IGeneratorContext context, Type type, Type[] types)
         {
             Debug.Assert(types.Length == 2);
             var typeArguments = new[] { type, types[0], types[1] };
             var dictionaryType = typeof(IDictionary<,>).MakeGenericType(types);
-            var constructor = ToValueAsEnumerable(type, dictionaryType, typeof(ToDictionary<,,>).MakeGenericType(typeArguments));
+            var constructor = GetToValueDelegateAsEnumerable(type, dictionaryType, typeof(ToDictionary<,,>).MakeGenericType(typeArguments));
             var itemType = typeof(KeyValuePair<,>).MakeGenericType(types);
-            var itemConverter = GetConverter(itemType);
+            var itemConverter = context.GetConverter(itemType);
             var converterType = typeof(GenericDictionaryConverter<,,>).MakeGenericType(typeArguments);
             var converterArguments = new object[] { constructor, itemConverter, };
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }
 
-        private Delegate ToValueAsEnumerable(Type type, Type enumerableType, Type delegateType)
+        private static Delegate GetToValueDelegateAsEnumerable(Type type, Type enumerableType, Type delegateType)
         {
             if (type.IsAbstract != false || type.IsInterface != false)
                 return null;

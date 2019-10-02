@@ -14,17 +14,17 @@ namespace Mikodev.Binary.Internal.Contexts
     {
         internal static Converter GetConverterAsTupleObject(Type type, ConstructorInfo constructor, ItemIndexes indexes, MetaList metadata)
         {
-            var toBytes = ToBytesAsTupleObject(type, metadata, withMark: false);
-            var toValue = ToValueAsTupleObject(type, metadata, constructor, indexes, withMark: false);
-            var toBytesWith = ToBytesAsTupleObject(type, metadata, withMark: true);
-            var toValueWith = ToValueAsTupleObject(type, metadata, constructor, indexes, withMark: true);
+            var toBytes = GetToBytesDelegateAsTupleObject(type, metadata, withMark: false);
+            var toValue = GetToValueDelegateAsTupleObject(type, metadata, constructor, indexes, withMark: false);
+            var toBytesWith = GetToBytesDelegateAsTupleObject(type, metadata, withMark: true);
+            var toValueWith = GetToValueDelegateAsTupleObject(type, metadata, constructor, indexes, withMark: true);
             var converterLength = ContextMethods.GetConverterLength(type, metadata.Select(x => x.Converter).ToArray());
             var converterArguments = new object[] { toBytes, toValue, toBytesWith, toValueWith, converterLength };
             var converter = Activator.CreateInstance(typeof(TupleObjectConverter<>).MakeGenericType(type), converterArguments);
             return (Converter)converter;
         }
 
-        private static Delegate ToBytesAsTupleObject(Type type, MetaList metadata, bool withMark)
+        private static Delegate GetToBytesDelegateAsTupleObject(Type type, MetaList metadata, bool withMark)
         {
             var item = Expression.Parameter(type, "item");
             var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
@@ -42,29 +42,29 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        private static Delegate ToValueAsTupleObject(Type type, MetaList metadata, ConstructorInfo constructor, ItemIndexes indexes, bool withMark)
+        private static Delegate GetToValueDelegateAsTupleObject(Type type, MetaList metadata, ConstructorInfo constructor, ItemIndexes indexes, bool withMark)
         {
+            (ParameterExpression, Expression[]) Initialize()
+            {
+                var span = Expression.Parameter(typeof(ReadOnlySpan<byte>).MakeByRefType(), "span");
+                var values = new Expression[metadata.Count];
+
+                for (var i = 0; i < metadata.Count; i++)
+                {
+                    var (property, converter) = metadata[i];
+                    var method = ContextMethods.GetToValueMethodInfo(property.PropertyType, withMark || i != metadata.Count - 1);
+                    var invoke = Expression.Call(Expression.Constant(converter), method, span);
+                    values[i] = invoke;
+                }
+                return (span, values);
+            }
+
             if (!ContextMethods.CanCreateInstance(type, constructor))
                 return null;
             var delegateType = typeof(ToValueWith<>).MakeGenericType(type);
             return constructor == null
-                ? ContextMethods.ToValuePlanAlpha(delegateType, () => InitializeAsTupleObject(metadata, withMark), metadata, type)
-                : ContextMethods.ToValuePlanBravo(delegateType, () => InitializeAsTupleObject(metadata, withMark), metadata, indexes, constructor);
-        }
-
-        private static (ParameterExpression, Expression[]) InitializeAsTupleObject(MetaList metadata, bool withMark)
-        {
-            var span = Expression.Parameter(typeof(ReadOnlySpan<byte>).MakeByRefType(), "span");
-            var values = new Expression[metadata.Count];
-
-            for (var i = 0; i < metadata.Count; i++)
-            {
-                var (property, converter) = metadata[i];
-                var method = ContextMethods.GetToValueMethodInfo(property.PropertyType, withMark || i != metadata.Count - 1);
-                var invoke = Expression.Call(Expression.Constant(converter), method, span);
-                values[i] = invoke;
-            }
-            return (span, values);
+                ? ContextMethods.GetToValueDelegatePlanAlpha(delegateType, Initialize, metadata, type)
+                : ContextMethods.GetToValueDelegatePlanBravo(delegateType, Initialize, metadata, indexes, constructor);
         }
     }
 }

@@ -21,8 +21,8 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             if (dictionary == null)
                 dictionary = metadata.Select(x => x.Property).ToDictionary(x => x, x => x.Name);
-            var toBytes = ToBytesAsNamedObject(type, metadata, dictionary, cache);
-            var toValue = ToValueAsNamedObject(type, metadata, constructor, indexes);
+            var toBytes = GetToBytesDelegateAsNamedObject(type, metadata, dictionary, cache);
+            var toValue = GetToValueDelegateAsNamedObject(type, metadata, constructor, indexes);
             var buffers = metadata.Select(x => dictionary[x.Property]).Select(x => new KeyValuePair<string, byte[]>(x, cache.Invoke(x))).ToArray();
             var properties = metadata.Select(x => x.Property).ToArray();
             var converterArguments = new object[] { toBytes, toValue, properties, buffers };
@@ -30,7 +30,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return (Converter)converter;
         }
 
-        private static Delegate ToBytesAsNamedObject(Type type, MetaList metadata, NameDictionary dictionary, Func<string, byte[]> cache)
+        private static Delegate GetToBytesDelegateAsNamedObject(Type type, MetaList metadata, NameDictionary dictionary, Func<string, byte[]> cache)
         {
             var item = Expression.Parameter(type, "item");
             var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
@@ -51,29 +51,29 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        private static Delegate ToValueAsNamedObject(Type type, MetaList metadata, ConstructorInfo constructor, ItemIndexes indexes)
+        private static Delegate GetToValueDelegateAsNamedObject(Type type, MetaList metadata, ConstructorInfo constructor, ItemIndexes indexes)
         {
+            (ParameterExpression, Expression[]) Initialize()
+            {
+                var list = Expression.Parameter(typeof(LengthList).MakeByRefType(), "list");
+                var values = new Expression[metadata.Count];
+
+                for (var i = 0; i < metadata.Count; i++)
+                {
+                    var (_, converter) = metadata[i];
+                    var method = invokeMethodInfo.MakeGenericMethod(converter.ItemType);
+                    var invoke = Expression.Call(list, method, Expression.Constant(converter), Expression.Constant(i));
+                    values[i] = invoke;
+                }
+                return (list, values);
+            }
+
             if (!ContextMethods.CanCreateInstance(type, constructor))
                 return null;
             var delegateType = typeof(ToNamedObject<>).MakeGenericType(type);
             return constructor == null
-                ? ContextMethods.ToValuePlanAlpha(delegateType, () => InitializeAsNamedObject(metadata), metadata, type)
-                : ContextMethods.ToValuePlanBravo(delegateType, () => InitializeAsNamedObject(metadata), metadata, indexes, constructor);
-        }
-
-        private static (ParameterExpression, Expression[]) InitializeAsNamedObject(MetaList metadata)
-        {
-            var list = Expression.Parameter(typeof(LengthList).MakeByRefType(), "list");
-            var values = new Expression[metadata.Count];
-
-            for (var i = 0; i < metadata.Count; i++)
-            {
-                var (_, converter) = metadata[i];
-                var method = invokeMethodInfo.MakeGenericMethod(converter.ItemType);
-                var invoke = Expression.Call(list, method, Expression.Constant(converter), Expression.Constant(i));
-                values[i] = invoke;
-            }
-            return (list, values);
+                ? ContextMethods.GetToValueDelegatePlanAlpha(delegateType, Initialize, metadata, type)
+                : ContextMethods.GetToValueDelegatePlanBravo(delegateType, Initialize, metadata, indexes, constructor);
         }
     }
 }

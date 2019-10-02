@@ -73,7 +73,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 return (Converter)Activator.CreateInstance(typeof(UnsafeNativeConverter<>).MakeGenericType(type));
             // collection
             if (type.TryGetInterfaceArguments(typeof(IEnumerable<>), out var arguments))
-                return GetConverterAsCollection(type, arguments.Single());
+                return ContextMethodsOfCollections.GetConverterAsCollection(this, type, arguments.Single());
 
             var attribute = GetAttribute(type);
             if (attribute is ConverterAttribute converterAttribute)
@@ -101,7 +101,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
             Debug.Assert(collection.Any());
             Debug.Assert(properties.Any());
-            var (constructor, indexes) = GetConstructor(type, properties);
+            var (constructor, indexes) = ContextMethods.GetConstructor(type, properties);
             var metadata = GetPropertyConverters(properties.Select(x => (x, collection[x].Converter)));
 
             // converter as tuple object

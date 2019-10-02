@@ -85,7 +85,7 @@ namespace Mikodev.Binary.Adapters
             toList = to.Compile();
         }
 
-        public static Adapter<T> Create<T>(Converter<T> converter)
+        internal static Adapter<T> Create<T>(Converter<T> converter)
         {
             var adapter = converter.IsUnsafeNativeConverter()
                 ? Activator.CreateInstance(typeof(UnsafeNativeAdapter<>).MakeGenericType(converter.ItemType))

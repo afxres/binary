@@ -7,7 +7,7 @@ namespace Mikodev.Binary.Internal
         [ThreadStatic]
         private static byte[] buffer;
 
-        public static byte[] GetBuffer()
+        internal static byte[] GetBuffer()
         {
             const int Length = 1 << 16;
             var result = buffer;
