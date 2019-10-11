@@ -47,11 +47,8 @@ namespace Mikodev.Binary
             }
             else
             {
-#if DEBUG
-                var allocator = new Allocator();
-#else
-                var allocator = new Allocator(Internal.Buffer.GetBuffer());
-#endif
+                var buffer = BufferHelper.GetBuffer();
+                var allocator = new Allocator(buffer);
                 ToBytes(ref allocator, item);
                 return allocator.ToArray();
             }

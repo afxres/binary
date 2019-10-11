@@ -15,22 +15,22 @@ namespace Mikodev.Binary.Internal.Contexts
     {
         private static readonly MethodInfo invokeMethodInfo = typeof(LengthList).GetMethod(nameof(LengthList.Invoke), BindingFlags.Instance | BindingFlags.Public);
 
-        private static readonly MethodInfo appendWithLengthPrefixMethodInfo = typeof(Allocator).GetMethod(nameof(Allocator.AppendWithLengthPrefix), BindingFlags.Instance | BindingFlags.NonPublic);
+        private static readonly MethodInfo appendBufferMethodInfo = typeof(Allocator).GetMethod(nameof(Allocator.AppendBuffer), BindingFlags.Instance | BindingFlags.NonPublic);
 
-        internal static Converter GetConverterAsNamedObject(Type type, ConstructorInfo constructor, ItemIndexes indexes, MetaList metadata, NameDictionary dictionary, Func<string, byte[]> cache)
+        internal static Converter GetConverterAsNamedObject(Type type, ConstructorInfo constructor, ItemIndexes indexes, MetaList metadata, NameDictionary dictionary, ContextTextCache cache)
         {
             if (dictionary == null)
                 dictionary = metadata.Select(x => x.Property).ToDictionary(x => x, x => x.Name);
             var toBytes = GetToBytesDelegateAsNamedObject(type, metadata, dictionary, cache);
             var toValue = GetToValueDelegateAsNamedObject(type, metadata, constructor, indexes);
-            var buffers = metadata.Select(x => dictionary[x.Property]).Select(x => new KeyValuePair<string, byte[]>(x, cache.Invoke(x))).ToArray();
+            var buffers = metadata.Select(x => dictionary[x.Property]).Select(x => new KeyValuePair<string, byte[]>(x, cache.GetBuffer(x))).ToArray();
             var properties = metadata.Select(x => x.Property).ToArray();
             var converterArguments = new object[] { toBytes, toValue, properties, buffers };
             var converter = Activator.CreateInstance(typeof(NamedObjectConverter<>).MakeGenericType(type), converterArguments);
             return (Converter)converter;
         }
 
-        private static Delegate GetToBytesDelegateAsNamedObject(Type type, MetaList metadata, NameDictionary dictionary, Func<string, byte[]> cache)
+        private static Delegate GetToBytesDelegateAsNamedObject(Type type, MetaList metadata, NameDictionary dictionary, ContextTextCache cache)
         {
             var item = Expression.Parameter(type, "item");
             var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
@@ -39,11 +39,11 @@ namespace Mikodev.Binary.Internal.Contexts
             for (var i = 0; i < metadata.Count; i++)
             {
                 var (property, converter) = metadata[i];
-                var buffer = cache.Invoke(dictionary[property]);
+                var buffer = cache.GetBufferWithLengthPrefix(dictionary[property]);
                 var propertyType = property.PropertyType;
                 var propertyExpression = Expression.Property(item, property);
                 var methodInfo = typeof(Converter<>).MakeGenericType(propertyType).GetMethod(nameof(IConverter.ToBytesWithLengthPrefix));
-                expressions.Add(Expression.Call(allocator, appendWithLengthPrefixMethodInfo, Expression.Constant(buffer)));
+                expressions.Add(Expression.Call(allocator, appendBufferMethodInfo, Expression.Constant(buffer)));
                 expressions.Add(Expression.Call(Expression.Constant(converter), methodInfo, allocator, propertyExpression));
             }
             var delegateType = typeof(OfNamedObject<>).MakeGenericType(type);

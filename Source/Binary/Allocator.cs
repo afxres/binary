@@ -84,14 +84,13 @@ namespace Mikodev.Binary
             return ref target[offset];
         }
 
-        internal void AppendWithLengthPrefix(byte[] item)
+        internal void AppendBuffer(byte[] item)
         {
-            Debug.Assert(item != null && item.Length > 0);
+            Debug.Assert(item != null && item.Length > sizeof(int));
             var byteCount = item.Length;
-            ref var target = ref AllocateReference(byteCount + sizeof(int));
+            ref var target = ref AllocateReference(byteCount);
             ref var source = ref item[0];
-            Endian<int>.Set(ref target, byteCount);
-            Memory.Copy(ref Memory.Add(ref target, sizeof(int)), ref source, byteCount);
+            Memory.Copy(ref target, ref source, byteCount);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

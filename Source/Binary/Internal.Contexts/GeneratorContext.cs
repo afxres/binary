@@ -14,7 +14,7 @@ namespace Mikodev.Binary.Internal.Contexts
     {
         private readonly HashSet<Type> types = new HashSet<Type>();
 
-        private readonly Dictionary<string, byte[]> texts = new Dictionary<string, byte[]>();
+        private readonly ContextTextCache cache = new ContextTextCache();
 
         private readonly ConcurrentDictionary<Type, Converter> converters;
 
@@ -42,13 +42,6 @@ namespace Mikodev.Binary.Internal.Contexts
             Debug.Assert(converter != null);
             Debug.Assert(converter.ItemType == type);
             return converters.GetOrAdd(type, converter);
-        }
-
-        private byte[] GetOrCache(string key)
-        {
-            if (!texts.TryGetValue(key, out var bytes))
-                texts.Add(key, bytes = Converter.Encoding.GetBytes(key));
-            return bytes;
         }
 
         private Converter GetConverterByCreator(Type type)
@@ -108,7 +101,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (attribute is TupleObjectAttribute)
                 return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, indexes, metadata);
             // converter as named object (or default)
-            return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, indexes, metadata, dictionary, GetOrCache);
+            return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, indexes, metadata, dictionary, cache);
         }
     }
 }
