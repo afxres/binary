@@ -69,7 +69,7 @@ namespace Mikodev.Binary
             return (uint)expand > (uint)(higher - offset) ? Expand(offset, expand) : buffer;
         }
 
-        private unsafe void AppendText(in ReadOnlySpan<char> span, Encoding encoding, bool lengthPrefix)
+        private void AppendText(in ReadOnlySpan<char> span, Encoding encoding, bool lengthPrefix)
         {
             const int Threshold = 32;
             if (encoding == null)
@@ -182,8 +182,7 @@ namespace Mikodev.Binary
             if (byteCount == 0)
                 return;
             ref var target = ref AllocateReference(byteCount);
-            ref var source = ref MemoryMarshal.GetReference(span);
-            Memory.Copy(ref target, ref source, byteCount);
+            Memory.Copy(ref target, ref MemoryMarshal.GetReference(span), byteCount);
         }
 
         public void AppendWithLengthPrefix(in ReadOnlySpan<byte> span)
