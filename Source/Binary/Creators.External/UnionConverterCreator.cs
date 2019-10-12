@@ -4,6 +4,7 @@ using Microsoft.FSharp.Reflection;
 using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Contexts;
 using Mikodev.Binary.Internal.Delegates;
+using Mikodev.Binary.Internal.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;

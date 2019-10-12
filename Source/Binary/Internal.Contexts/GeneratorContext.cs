@@ -1,5 +1,6 @@
 ﻿using Mikodev.Binary.Attributes;
 using Mikodev.Binary.Converters.Unsafe.Generic;
+using Mikodev.Binary.Internal.Extensions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

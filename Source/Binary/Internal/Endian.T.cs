@@ -20,12 +20,15 @@ namespace Mikodev.Binary.Internal
                 case sizeof(uint16):
                     *(uint16*)target = BinaryPrimitives.ReverseEndianness(*(uint16*)source);
                     break;
+
                 case sizeof(uint32):
                     *(uint32*)target = BinaryPrimitives.ReverseEndianness(*(uint32*)source);
                     break;
+
                 case sizeof(uint64):
                     *(uint64*)target = BinaryPrimitives.ReverseEndianness(*(uint64*)source);
                     break;
+
                 default:
                     throw new NotSupportedException();
             }
@@ -41,14 +44,17 @@ namespace Mikodev.Binary.Internal
                     for (var i = 0; i < byteCount; i += sizeof(uint16))
                         *(uint16*)((byte*)target + i) = BinaryPrimitives.ReverseEndianness(*(uint16*)((byte*)source + i));
                     break;
+
                 case sizeof(uint32):
                     for (var i = 0; i < byteCount; i += sizeof(uint32))
                         *(uint32*)((byte*)target + i) = BinaryPrimitives.ReverseEndianness(*(uint32*)((byte*)source + i));
                     break;
+
                 case sizeof(uint64):
                     for (var i = 0; i < byteCount; i += sizeof(uint64))
                         *(uint64*)((byte*)target + i) = BinaryPrimitives.ReverseEndianness(*(uint64*)((byte*)source + i));
                     break;
+
                 default:
                     throw new NotSupportedException();
             }

@@ -4,9 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
-namespace Mikodev.Binary.Internal
+namespace Mikodev.Binary.Internal.Extensions
 {
-    internal static class Extensions
+    internal static class InternalExtensions
     {
         internal static bool IsImplementationOf(this Type type, Type definition)
         {

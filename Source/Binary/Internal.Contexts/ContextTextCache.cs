@@ -14,10 +14,9 @@ namespace Mikodev.Binary.Internal.Contexts
             Debug.Assert(!string.IsNullOrEmpty(text));
             var encoding = Converter.Encoding;
             var buffer = encoding.GetBytes(text);
-            var length = buffer.Length;
-            var target = new byte[length + sizeof(int)];
-            Endian<int>.Set(ref target[0], length);
-            Memory.Copy(ref target[sizeof(int)], ref buffer[0], length);
+            var allocator = new Allocator();
+            allocator.AppendWithLengthPrefix(buffer);
+            var target = allocator.ToArray();
             result = (buffer, target);
             dictionary.Add(text, result);
             return result;

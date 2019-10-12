@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mikodev.Binary.Internal.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace Mikodev.Binary.Internal
         {
             const int NotFound = -1;
             if (dictionary != null)
-                return dictionary.TryGetValue(Format.GetText(in span), out var index) ? index : NotFound;
+                return dictionary.TryGetValue(Converter.Encoding.GetString(in span), out var index) ? index : NotFound;
             var itemCount = collection.Length;
             for (var i = 0; i < itemCount; i++)
                 if (MemoryExtensions.SequenceEqual(collection[i], span))

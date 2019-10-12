@@ -34,16 +34,13 @@ namespace Mikodev.Binary.Internal
             return new DynamicMetaObject(constant, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
         }
 
-        public override IEnumerable<string> GetDynamicMemberNames()
-        {
-            return ((Token)Value).GetTokens().Keys;
-        }
-
         public override DynamicMetaObject BindGetMember(GetMemberBinder binder)
         {
             var value = ((Token)Value).GetTokens()[binder.Name];
             var constant = Expression.Constant(value);
             return new DynamicMetaObject(constant, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
         }
+
+        public override IEnumerable<string> GetDynamicMemberNames() => ((Token)Value).GetTokens().Keys;
     }
 }

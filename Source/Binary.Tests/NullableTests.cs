@@ -25,7 +25,6 @@ namespace Mikodev.Binary.Tests
             return allocator.ToArray();
         }
 
-        #region value
         [Theory(DisplayName = "Nullable (to bytes & to value)")]
         [InlineData((byte)254)]
         [InlineData(1920)]
@@ -81,9 +80,7 @@ namespace Mikodev.Binary.Tests
             Assert.False(rb.HasValue);
             Assert.Equal(value, ra.Value);
         }
-        #endregion
 
-        #region collection
         public static IEnumerable<object[]> CollectionData = new object[][]
         {
             new object[] { new byte?[] { 2, 4, null, 8, null } },
@@ -118,9 +115,7 @@ namespace Mikodev.Binary.Tests
                 .MakeGenericMethod(collectionType, elementType);
             var _ = method.Invoke(this, new object[] { collection });
         }
-        #endregion
 
-        #region dictionary
         public static IEnumerable<object[]> DictionaryData = new object[][]
         {
             new object[] { new Dictionary<int?, double?> { [0] = null, [1] = 1.1, [-2] = 2.2 } },
@@ -138,9 +133,7 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(dictionary, result);
             _ = Assert.IsType<Dictionary<TKey, TValue>>(result);
         }
-        #endregion
 
-        #region special
         [Fact(DisplayName = "Nullable Property")]
         public void Property()
         {
@@ -181,9 +174,7 @@ namespace Mikodev.Binary.Tests
             Assert.False(ReferenceEquals(result, source));
             Assert.Equal(source, result);
         }
-        #endregion
 
-        #region nullable & fsharp option
         public static readonly IEnumerable<object[]> OptionData = new object[][]
         {
             new object[] { 10 },
@@ -211,7 +202,6 @@ namespace Mikodev.Binary.Tests
             Assert.Equal<byte>(Bytes(converterItem, b), Bytes(converterOption, n));
             Assert.Equal<byte>(BytesWithMark(converterItem, b), BytesWithMark(converterOption, n));
         }
-        #endregion
 
         [Theory(DisplayName = "Invalid Nullable Tag (to value & to value with mark)")]
         [InlineData(2)]

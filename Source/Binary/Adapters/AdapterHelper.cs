@@ -1,8 +1,8 @@
 ﻿using Mikodev.Binary.Adapters.Abstractions;
 using Mikodev.Binary.Adapters.Implementations;
 using Mikodev.Binary.Adapters.Implementations.Unsafe;
-using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Delegates;
+using Mikodev.Binary.Internal.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

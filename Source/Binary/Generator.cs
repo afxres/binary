@@ -15,7 +15,6 @@ namespace Mikodev.Binary
 {
     public sealed class Generator : IGenerator
     {
-        #region private & static
         private static readonly IReadOnlyList<Converter> sharedConverters;
 
         private static readonly IReadOnlyList<IConverterCreator> sharedCreators;
@@ -94,13 +93,10 @@ namespace Mikodev.Binary
             result.AddRange(sharedCreators);
             return result;
         }
-        #endregion
 
-        #region private readonly fields
         private readonly ConcurrentDictionary<Type, Converter> converters;
 
         private readonly IReadOnlyList<IConverterCreator> creators;
-        #endregion
 
         public Generator() : this(null, null) { }
 
@@ -112,7 +108,6 @@ namespace Mikodev.Binary
             Debug.Assert(this.creators != null);
         }
 
-        #region get or generate converter
         public Converter GetConverter(Type type)
         {
             if (type == null)
@@ -128,15 +123,11 @@ namespace Mikodev.Binary
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Converter<T> GetConverter<T>(T anonymous) => GetConverter<T>();
-        #endregion
 
-        #region to bytes
         public byte[] ToBytes<T>(T item) => GetConverter<T>().ToBytes(item);
 
         public byte[] ToBytes(object item, Type type) => ((IConverter)GetConverter(type)).ToBytes(item);
-        #endregion
 
-        #region to value
         public object ToValue(in ReadOnlySpan<byte> span, Type type) => ((IConverter)GetConverter(type)).ToValue(in span);
 
         public T ToValue<T>(in ReadOnlySpan<byte> span) => GetConverter<T>().ToValue(in span);
@@ -145,9 +136,7 @@ namespace Mikodev.Binary
         public T ToValue<T>(in ReadOnlySpan<byte> span, T anonymous) => ToValue<T>(in span);
 
         public Token AsToken(in ReadOnlyMemory<byte> memory) => new Token(this, in memory);
-        #endregion
 
-        #region to value (bytes)
         public object ToValue(byte[] buffer, Type type) => ((IConverter)GetConverter(type)).ToValue(buffer);
 
         public T ToValue<T>(byte[] buffer) => GetConverter<T>().ToValue(buffer);
@@ -156,9 +145,7 @@ namespace Mikodev.Binary
         public T ToValue<T>(byte[] buffer, T anonymous) => ToValue<T>(buffer);
 
         public Token AsToken(byte[] buffer) => new Token(this, buffer);
-        #endregion
 
-        #region override
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         public sealed override bool Equals(object obj) => throw new NotSupportedException();
 
@@ -167,6 +154,5 @@ namespace Mikodev.Binary
 
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         public sealed override string ToString() => $"{nameof(Generator)}(Converters: {converters.Count}, Creators: {creators.Count})";
-        #endregion
     }
 }

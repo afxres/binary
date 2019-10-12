@@ -15,7 +15,7 @@ type Int32AsStringConverter() =
     override __.ToBytes(allocator, item) =
         let text = string item
         let span = text.AsSpan()
-        allocator.Append &span
+        allocator.Append(&span, Converter.Encoding)
 
     override __.ToValue (span : inref<ReadOnlySpan<byte>>) = 
         let text = Encoding.UTF8.GetString(span)
@@ -28,7 +28,7 @@ type Int64AsStringConverter() =
     override __.ToBytes(allocator, item) =
         let text = string item
         let span = text.AsSpan()
-        allocator.Append &span
+        allocator.Append(&span, Converter.Encoding)
 
     override __.ToValue (span : inref<ReadOnlySpan<byte>>) = 
         let text = Encoding.UTF8.GetString(span)

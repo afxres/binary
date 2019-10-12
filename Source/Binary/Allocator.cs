@@ -1,4 +1,5 @@
 ﻿using Mikodev.Binary.Internal;
+using Mikodev.Binary.Internal.Extensions;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -9,7 +10,6 @@ namespace Mikodev.Binary
 {
     public ref struct Allocator
     {
-        #region private fields
         private readonly int bounds;
 
         private int cursor;
@@ -17,17 +17,13 @@ namespace Mikodev.Binary
         private int higher;
 
         private byte[] buffer;
-        #endregion
 
-        #region properties
         public int Length => cursor;
 
         public int Capacity => higher;
 
         public int MaxCapacity => bounds == 0 ? int.MaxValue : ~bounds;
-        #endregion
 
-        #region private methods
         [MethodImpl(MethodImplOptions.NoInlining)]
         private byte[] Expand(int offset, int expand)
         {
@@ -72,9 +68,28 @@ namespace Mikodev.Binary
             Debug.Assert(higher == 0 || higher <= buffer.Length);
             return (uint)expand > (uint)(higher - offset) ? Expand(offset, expand) : buffer;
         }
-        #endregion
 
-        #region internal methods
+        private unsafe void AppendText(in ReadOnlySpan<char> span, Encoding encoding, bool lengthPrefix)
+        {
+            const int Threshold = 32;
+            if (encoding == null)
+                ThrowHelper.ThrowArgumentNull(nameof(encoding));
+            var charCount = span.Length;
+            ref var chars = ref MemoryMarshal.GetReference(span);
+            var maxByteCount = charCount == 0 ? 0 : charCount > Threshold
+                ? encoding.GetByteCount(ref chars, charCount)
+                : encoding.GetMaxByteCount(charCount);
+            if (!lengthPrefix && maxByteCount == 0)
+                return;
+            var prefixLength = lengthPrefix ? sizeof(int) : 0;
+            var offset = cursor;
+            var target = Ensure(offset, maxByteCount + prefixLength);
+            var length = maxByteCount == 0 ? 0 : encoding.GetBytes(ref target[offset + prefixLength], maxByteCount, ref chars, charCount);
+            if (lengthPrefix)
+                Endian<int>.Set(ref target[offset], length);
+            cursor = offset + length + prefixLength;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal ref byte AllocateReference(int length)
         {
@@ -113,9 +128,7 @@ namespace Mikodev.Binary
                 ThrowHelper.ThrowAllocatorModified();
             Endian<int>.Set(ref target[anchor - sizeof(int)], cursor - anchor);
         }
-        #endregion
 
-        #region constructors
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Allocator(byte[] buffer) : this(buffer, int.MaxValue) { }
 
@@ -129,7 +142,6 @@ namespace Mikodev.Binary
             higher = Math.Min(buffer == null ? 0 : buffer.Length, maxCapacity);
             bounds = ~maxCapacity;
         }
-        #endregion
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Span<byte> Allocate(int length)
@@ -140,7 +152,6 @@ namespace Mikodev.Binary
             return new Span<byte>(target, offset, length);
         }
 
-        #region as ...
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlyMemory<byte> AsMemory() => new ReadOnlyMemory<byte>(buffer, 0, cursor);
 
@@ -158,34 +169,12 @@ namespace Mikodev.Binary
             Memory.Copy(target, source, offset);
             return target;
         }
-        #endregion
-
-        #region append
-        public unsafe void Append(in ReadOnlySpan<char> span, Encoding encoding)
-        {
-            const int Threshold = 32;
-            if (encoding == null)
-                ThrowHelper.ThrowArgumentNull(nameof(encoding));
-            var charCount = span.Length;
-            if (charCount == 0)
-                return;
-            fixed (char* srcptr = &MemoryMarshal.GetReference(span))
-            {
-                var byteCount = charCount > Threshold
-                    ? encoding.GetByteCount(srcptr, charCount)
-                    : encoding.GetMaxByteCount(charCount);
-                if (byteCount == 0)
-                    return;
-                var offset = cursor;
-                var target = Ensure(offset, byteCount);
-                fixed (byte* dstptr = &target[offset])
-                    offset += encoding.GetBytes(srcptr, charCount, dstptr, byteCount);
-                cursor = offset;
-            }
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Append(in ReadOnlySpan<char> span) => Append(span, Converter.Encoding);
+        public void Append(in ReadOnlySpan<char> span, Encoding encoding) => AppendText(in span, encoding, lengthPrefix: false);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AppendWithLengthPrefix(in ReadOnlySpan<char> span, Encoding encoding) => AppendText(in span, encoding, lengthPrefix: true);
 
         public void Append(in ReadOnlySpan<byte> span)
         {
@@ -196,9 +185,16 @@ namespace Mikodev.Binary
             ref var source = ref MemoryMarshal.GetReference(span);
             Memory.Copy(ref target, ref source, byteCount);
         }
-        #endregion
 
-        #region override
+        public void AppendWithLengthPrefix(in ReadOnlySpan<byte> span)
+        {
+            var byteCount = span.Length;
+            ref var target = ref AllocateReference(byteCount + sizeof(int));
+            if (byteCount != 0)
+                Memory.Copy(ref Memory.Add(ref target, sizeof(int)), ref MemoryMarshal.GetReference(span), byteCount);
+            Endian<int>.Set(ref target, byteCount);
+        }
+
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         public override bool Equals(object obj) => throw new NotSupportedException();
 
@@ -207,6 +203,5 @@ namespace Mikodev.Binary
 
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         public override string ToString() => $"{nameof(Allocator)}({nameof(Length)}: {Length}, {nameof(Capacity)}: {Capacity}, {nameof(MaxCapacity)}: {MaxCapacity})";
-        #endregion
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Mikodev.Binary.Adapters;
 using Mikodev.Binary.Internal.Delegates;
+using Mikodev.Binary.Internal.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;

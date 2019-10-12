@@ -1,5 +1,6 @@
 ﻿using Mikodev.Binary.Converters.Runtime.Collections;
 using Mikodev.Binary.Internal.Delegates;
+using Mikodev.Binary.Internal.Extensions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

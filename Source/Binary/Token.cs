@@ -1,4 +1,5 @@
 ﻿using Mikodev.Binary.Internal;
+using Mikodev.Binary.Internal.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +13,6 @@ namespace Mikodev.Binary
     [DebuggerTypeProxy(typeof(TokenDebuggerTypeProxy))]
     public sealed partial class Token : IDynamicMetaObjectProvider
     {
-        #region private fields
         private static readonly Dictionary<string, Token> shared = new Dictionary<string, Token>();
 
         private readonly Generator generator;
@@ -20,9 +20,7 @@ namespace Mikodev.Binary
         private readonly ReadOnlyMemory<byte> memory;
 
         private Dictionary<string, Token> tokens;
-        #endregion
 
-        #region private & internal methods
         internal Token(Generator generator, in ReadOnlyMemory<byte> memory)
         {
             Debug.Assert(generator != null);
@@ -51,6 +49,7 @@ namespace Mikodev.Binary
             var span = memory.Span;
             var result = new Dictionary<string, Token>(8);
             var reader = new LengthReader(memory.Length);
+            var encoding = Converter.Encoding;
             ref var source = ref MemoryMarshal.GetReference(span);
 
             try
@@ -58,7 +57,7 @@ namespace Mikodev.Binary
                 while (reader.Any())
                 {
                     reader.Update(ref source);
-                    var key = Format.GetText(span.Slice(reader.Offset, reader.Length));
+                    var key = encoding.GetString(span.Slice(reader.Offset, reader.Length));
                     reader.Update(ref source);
                     var value = new Token(generator, memory.Slice(reader.Offset, reader.Length));
                     result.Add(key, value);
@@ -70,13 +69,11 @@ namespace Mikodev.Binary
                 return shared;
             }
         }
-        #endregion
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => new TokenDynamicMetaObject(parameter, this);
 
         public Token this[string key] => GetTokens()[key];
 
-        #region as
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object As(Type type) => generator.ToValue(memory.Span, type);
 
@@ -85,17 +82,13 @@ namespace Mikodev.Binary
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T As<T>(T anonymous) => As<T>();
-        #endregion
 
-        #region as memory & span
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlyMemory<byte> AsMemory() => memory;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlySpan<byte> AsSpan() => memory.Span;
-        #endregion
 
-        #region override
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         public sealed override bool Equals(object obj) => throw new NotSupportedException();
 
@@ -104,6 +97,5 @@ namespace Mikodev.Binary
 
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         public sealed override string ToString() => $"{nameof(Token)}(Items: {GetTokens().Count}, Bytes: {memory.Length})";
-        #endregion
     }
 }
