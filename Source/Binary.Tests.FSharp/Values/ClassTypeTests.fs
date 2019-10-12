@@ -104,6 +104,21 @@ let ``Uri (null)`` () =
     Assert.Equal(item, result)
     ()
 
+[<Fact>]
+let ``Uri (null, with length prefix)`` () =
+    let item : Uri = null
+    let converter = generator.GetConverter<Uri>()
+    let mutable allocator = Allocator()
+    converter.ToBytesWithLengthPrefix(&allocator, item)
+    let buffer = allocator.ToArray()
+    let mutable span = ReadOnlySpan buffer
+    let result = converter.ToValueWithLengthPrefix(&span)
+
+    Assert.Null(result)
+    Assert.Equal(sizeof<int>, buffer.Length)
+    Assert.True(span.IsEmpty)
+    ()
+
 [<Theory>]
 [<InlineData("192.168.16.32")>]
 [<InlineData("fe80::3c03:feef:ec25:e40d")>]
