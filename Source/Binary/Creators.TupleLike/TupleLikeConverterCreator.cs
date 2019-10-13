@@ -1,6 +1,4 @@
-﻿using Mikodev.Binary.Creators.TupleLike.Tuples;
-using Mikodev.Binary.Creators.TupleLike.ValueTuples;
-using Mikodev.Binary.Internal.Components;
+﻿using Mikodev.Binary.Internal.Components;
 using Mikodev.Binary.Internal.Contexts;
 using System;
 using System.Collections.Generic;
@@ -11,6 +9,7 @@ namespace Mikodev.Binary.Creators.TupleLike
     {
         private static readonly GenericConverterCreator creator = new GenericConverterCreator(new Dictionary<Type, Type>
         {
+            [typeof(KeyValuePair<,>)] = typeof(KeyValuePairConverter<,>),
             [typeof(Tuple<>)] = typeof(TupleConverter<>),
             [typeof(Tuple<,>)] = typeof(TupleConverter<,>),
             [typeof(Tuple<,,>)] = typeof(TupleConverter<,,>),

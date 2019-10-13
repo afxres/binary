@@ -1,0 +1,119 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+namespace Mikodev.Binary.Creators.TupleLike
+{
+    using Mikodev.Binary.Internal;
+    using System;
+    using System.Collections.Generic;
+<#
+static IEnumerable<T> Map<T>(int start, int count, Func<int, T> func) => Enumerable.Range(start, count).Select(func);
+var members = new List<string>(Map(1, 7, x => $"Item{x}")) { "Rest" }.ToArray();
+var jobs = new[]
+{
+    (2, 2, "KeyValuePair", new[] { "Key", "Value" }),
+    (1, 8, "Tuple", members),
+    (1, 8, "ValueTuple", members),
+};
+
+foreach (var (from, to, prefix, member) in jobs)
+{
+    for (var i = from; i <= to; i++)
+    {
+		string Join(string name) => string.Join(", ", Map(1, i, x => $"{name}{x}"));
+        var typeArguments = Join("T");
+        var typeName = $"{prefix}<{typeArguments}>";
+		var typeConstraints = prefix == "ValueTuple" && i == 8 ? " where T8 : struct" : "";
+#>
+
+    internal sealed class <#= prefix #>Converter<<#= typeArguments #>> : Converter<<#= typeName #>><#= typeConstraints #>
+    {
+<#
+        for (var k = 1; k <= i; k++)
+        {
+#>
+        private readonly Converter<T<#= k #>> converter<#= k #>;
+<#
+        }
+#>
+
+        public <#= prefix #>Converter(
+<#
+        for (var k = 1; k <= i; k++)
+        {
+#>
+            Converter<T<#= k #>> converter<#= k #>,
+<#
+        }
+#>
+            int length) : base(length)
+        {
+<#
+        for (var k = 1; k <= i; k++)
+        {
+#>
+            this.converter<#= k #> = converter<#= k #>;
+<#
+        }
+#>
+        }
+<#
+        foreach (var method in (new[] { "", "WithMark" }))
+        {
+#>
+
+        public override void ToBytes<#= method #>(ref Allocator allocator, <#= typeName #> item)
+        {
+<#
+            if (prefix == "Tuple")
+            {
+#>
+            if (item == null)
+                ThrowHelper.ThrowTupleNull(ItemType);
+<#
+            }
+            for (var k = 1; k <= i; k++)
+            {
+                var before = k != i || method != "";
+                var suffix = before ? "WithMark" : "";
+#>
+            converter<#= k #>.ToBytes<#= suffix #>(ref allocator, item.<#= member[k - 1] #>);
+<#
+            }
+#>
+        }
+
+        public override <#= typeName #> ToValue<#= method #>(<#= (method == "" ? "in" : "ref") #> ReadOnlySpan<byte> span)
+        {
+<#
+            var origin = method == "";
+            var source = origin ? "temp" : "span";
+            if (origin)
+            {
+#>
+            var temp = span;
+<#
+            }
+            for (var k = 1; k <= i; k++)
+            {
+                var before = k != i || method != "";
+                var suffix = before ? "WithMark" : "";
+#>
+            var val<#= k #> = converter<#= k #>.ToValue<#= suffix #>(<#= (before ? "ref" : "in") #> <#= source #>);
+<#
+            }
+#>
+            return new <#= typeName #>(<#= Join("val") #>);
+        }
+<#
+        }
+#>
+    }
+<#
+    }
+}
+#>
+}

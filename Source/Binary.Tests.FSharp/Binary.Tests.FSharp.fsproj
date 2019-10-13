@@ -32,6 +32,7 @@
     <Compile Include="Values\ClassTypeTests.fs" />
     <Compile Include="Values\ValueTypeTests.fs" />
     <Compile Include="TupleLike\KeyValuePairTests.fs" />
+    <Compile Include="TupleLike\TupleLikeTests.fs" />
     <Compile Include="TupleLike\TupleObjectTests.fs" />
     <Compile Include="TupleLike\TupleTests.fs" />
   </ItemGroup>

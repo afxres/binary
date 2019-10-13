@@ -11,7 +11,7 @@
     <Company>Mikodev</Company>
     <Copyright>Mikodev 2019</Copyright>
     <Product>Mikodev.Binary</Product>
-    <Version>4.0.6</Version>
+    <Version>4.0.7</Version>
     <PackageTags>binary dynamic serializer serialization</PackageTags>
     <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
   </PropertyGroup>
@@ -20,6 +20,25 @@
     <PackageReference Include="FSharp.Core" Version="4.5.2" />
     <PackageReference Include="System.Memory" Version="4.5.2" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Creators.TupleLike\TupleLikeConverter.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>TupleLikeConverter.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Creators.TupleLike\TupleLikeConverter.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>TupleLikeConverter.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
 </Project>
