@@ -8,28 +8,65 @@ open Xunit
 
 let generator = new Generator()
 
-type EmptyCollection<'T>() =
+type CollectionT<'T>(item : 'T list) =
     interface IEnumerable<'T> with
-        member __.GetEnumerator(): IEnumerator = raise (NotSupportedException())
-        member __.GetEnumerator(): IEnumerator<'T> = raise (NotSupportedException())
+        member __.GetEnumerator(): IEnumerator = (item :> seq<_>).GetEnumerator() :> IEnumerator
 
-type EmptyDictionary<'K, 'V>() =
+        member __.GetEnumerator(): IEnumerator<'T> = (item :> seq<_>).GetEnumerator()
+
+[<AbstractClass>]
+type CollectionA<'T>(item : 'T seq) =
+    interface IEnumerable<'T> with
+        member __.GetEnumerator(): IEnumerator = item.GetEnumerator() :> IEnumerator
+
+        member __.GetEnumerator(): IEnumerator<'T> = item.GetEnumerator()
+
+type CollectionI<'T>(item : 'T seq) =
+    inherit CollectionA<'T>(item)
+
+type DictionaryP<'K, 'V>(item : KeyValuePair<'K, 'V> list) =
     interface IEnumerable<KeyValuePair<'K, 'V>> with
-        member __.GetEnumerator(): IEnumerator = raise (NotSupportedException())
-        member __.GetEnumerator(): IEnumerator<KeyValuePair<'K, 'V>> = raise (NotSupportedException())
+        member __.GetEnumerator(): IEnumerator = (item :> seq<_>).GetEnumerator() :> IEnumerator
 
-[<Fact>]
-let ``Bytes To Enumerable (no suitable constructor)`` () =
-    let converter = generator.GetConverter<EmptyCollection<int>>()
-    Assert.StartsWith("GenericCollectionConverter`2", converter.GetType().Name)
+        member __.GetEnumerator(): IEnumerator<KeyValuePair<'K, 'V>> = (item :> seq<_>).GetEnumerator()
+
+[<AbstractClass>]
+type DictionaryA<'K, 'V>(item : IDictionary<'K, 'V>) =
+    interface IEnumerable<KeyValuePair<'K, 'V>> with
+        member __.GetEnumerator(): IEnumerator = item.GetEnumerator() :> IEnumerator
+
+        member __.GetEnumerator(): IEnumerator<KeyValuePair<'K, 'V>> = item.GetEnumerator()
+
+type DictionaryI<'K, 'V>(item : IDictionary<'K, 'V>) =
+    inherit DictionaryA<'K, 'V>(item)
+
+let test (converterName : string) (enumerable : 'a) (expected : 'b) =
+    let converter = generator.GetConverter<'a>()
+    Assert.StartsWith(converterName, converter.GetType().Name)
+    let buffer = converter.ToBytes enumerable
+    let target = generator.ToBytes expected
+    Assert.Equal<byte>(buffer, target)
     let error = Assert.Throws<InvalidOperationException>(fun () -> converter.ToValue(Array.empty) |> ignore)
-    Assert.Equal(sprintf "No suitable constructor found, type: %O" converter.ItemType, error.Message)
+    let message = sprintf "No suitable constructor found, type: %O" typeof<'a>
+    Assert.Equal(message, error.Message)
     ()
 
 [<Fact>]
-let ``Bytes To Enumerable (no suitable constructor, pair collection)`` () =
-    let converter = generator.GetConverter<EmptyDictionary<int, string>>()
-    Assert.StartsWith("GenericDictionaryConverter`3", converter.GetType().Name)
-    let error = Assert.Throws<InvalidOperationException>(fun () -> converter.ToValue(Array.empty) |> ignore)
-    Assert.Equal(sprintf "No suitable constructor found, type: %O" converter.ItemType, error.Message)
+let ``No suitable constructor (enumerable, constructor not match)`` () =
+    test "GenericCollectionConverter`2" (CollectionT [1; 2; 3]) [1; 2; 3]
+    ()
+
+[<Fact>]
+let ``No suitable constructor (enumerable, abstract)`` () =
+    test "GenericCollectionConverter`2" ((CollectionI [1; 2; 3]) :> CollectionA<_>) [1; 2; 3]
+    ()
+
+[<Fact>]
+let ``No suitable constructor (dictionary, constructor not match)`` () =
+    test "GenericDictionaryConverter`3" (DictionaryP ((dict [1, "one"; 0, "ZERO"]) |> Seq.toList)) [1, "one"; 0, "ZERO"]
+    ()
+
+[<Fact>]
+let ``No suitable constructor (dictionary, abstract)`` () =
+    test "GenericDictionaryConverter`3" ((DictionaryI(dict [1, "one"; 0, "ZERO"])) :> DictionaryA<_, _>) [1, "one"; 0, "ZERO"]
     ()

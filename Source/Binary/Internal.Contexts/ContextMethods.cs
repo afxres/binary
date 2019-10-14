@@ -55,7 +55,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return (type.IsValueType || type.GetConstructor(Type.EmptyTypes) != null) && metadata.All(x => x.Property.GetSetMethod() != null);
         }
 
-        internal static (ConstructorInfo, ItemIndexes) GetConstructor(Type type, IReadOnlyList<PropertyInfo> properties)
+        internal static (ConstructorInfo, ItemIndexes) GetConstructorWithProperties(Type type, IReadOnlyList<PropertyInfo> properties)
         {
             static (ConstructorInfo Constructor, IReadOnlyList<PropertyInfo>) CanCreate(ConstructorInfo constructor, Dictionary<string, PropertyInfo> properties)
             {

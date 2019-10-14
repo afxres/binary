@@ -40,7 +40,7 @@ namespace Mikodev.Binary.Adapters
             var value = typeof(List<int>).GetFields(FieldFlags);
             var array = value.Where(x => x.FieldType == typeof(int[])).ToList();
             var count = value.Where(x => x.FieldType == typeof(int) && Validate(x)).ToList();
-            available = array.Count == 1 && count.Count == 1;
+            available = array.Count == 1 && count.Count == 1 && typeof(List<>).GetConstructor(Type.EmptyTypes) != null;
             Debug.Assert(available);
             arrayName = available ? array.Single().Name : null;
             countName = available ? count.Single().Name : null;
@@ -72,7 +72,7 @@ namespace Mikodev.Binary.Adapters
                 var value = Expression.Variable(typeof(List<T>), "value");
                 var block = Expression.Block(
                     new[] { value },
-                    Expression.Assign(value, Expression.New(typeof(List<T>).GetConstructor(Type.EmptyTypes))),
+                    Expression.Assign(value, Expression.New(typeof(List<T>))),
                     Expression.Assign(Expression.Field(value, arrayField), array),
                     Expression.Assign(Expression.Field(value, countField), count),
                     value);
