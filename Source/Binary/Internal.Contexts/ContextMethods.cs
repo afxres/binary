@@ -46,7 +46,6 @@ namespace Mikodev.Binary.Internal.Contexts
         internal static bool CanCreateInstance(Type type, MetaList metadata, ConstructorInfo constructor)
         {
             Debug.Assert(metadata.Any());
-            Debug.Assert(constructor == null || constructor.DeclaringType == type);
             Debug.Assert(type.IsAbstract || type.IsInterface ? constructor == null : true);
             if (type.IsAbstract || type.IsInterface)
                 return false;

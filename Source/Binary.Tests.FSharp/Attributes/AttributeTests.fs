@@ -676,20 +676,20 @@ type AttributeTests() =
         ()
 
     [<Theory>]
-    [<InlineData(typeof<ClassWithDuplicateNamedKey01>, "bravo")>]
-    [<InlineData(typeof<ClassWithDuplicateNamedKey02>, "one")>]
-    member __.``Named Key Duplicated`` (t : Type, key : string) =
+    [<InlineData(typeof<ClassWithDuplicateNamedKey01>, "Charlie", "bravo")>]
+    [<InlineData(typeof<ClassWithDuplicateNamedKey02>, "One", "one")>]
+    member __.``Named Key Duplicated`` (t : Type, propertyName : string, key : string) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Named key '%s' already exists, type: %O" key t
+        let message = sprintf "Named key '%s' already exists, property name: %s, type: %O" key propertyName t
         Assert.Equal(message, error.Message)
         ()
 
     [<Theory>]
-    [<InlineData(typeof<ClassWithDuplicateTupleKey01>, 0)>]
-    [<InlineData(typeof<ClassWithDuplicateTupleKey02>, 2)>]
-    member __.``Tuple Key Duplicated`` (t : Type, key : int) =
+    [<InlineData(typeof<ClassWithDuplicateTupleKey01>, "Maybe", 0)>]
+    [<InlineData(typeof<ClassWithDuplicateTupleKey02>, "Panic", 2)>]
+    member __.``Tuple Key Duplicated`` (t : Type, propertyName : string, key : int) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Tuple key '%d' already exists, type: %O" key t
+        let message = sprintf "Tuple key '%d' already exists, property name: %s, type: %O" key propertyName t
         Assert.Equal(message, error.Message)
         ()
 

@@ -83,12 +83,20 @@ namespace Mikodev.Binary.Internal.Contexts
             if (!properties.Any())
                 throw new ArgumentException($"No available property found, type: {type}");
             var collection = properties
-                .Select(x => GetPropertyAttributes(x, attribute))
+                .Select(x => GetPropertyAttributes(type, x, attribute))
                 .Where(x => x.Property != null)
                 .ToDictionary(x => x.Property, x => (x.Key, x.Converter));
             var enumerable = collection.Select(x => (x.Key, x.Value.Key));
             var dictionary = default(NameDictionary);
+            var (origin, target) = collection.Any() ? default : attribute switch
+            {
+                NamedObjectAttribute _ => (nameof(NamedKeyAttribute), nameof(NamedObjectAttribute)),
+                TupleObjectAttribute _ => (nameof(TupleKeyAttribute), nameof(TupleObjectAttribute)),
+                _ => default,
+            };
 
+            if ((origin, target) != default)
+                throw new ArgumentException($"Require '{origin}' for '{target}', type: {type}");
             if (attribute is NamedObjectAttribute)
                 GetPropertiesByNamedKey(type, enumerable, out properties, out dictionary);
             else if (attribute is TupleObjectAttribute)

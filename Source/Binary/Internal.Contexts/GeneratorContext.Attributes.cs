@@ -82,20 +82,9 @@ namespace Mikodev.Binary.Internal.Contexts
             return list;
         }
 
-        private static void RequireAttribute(string origin, string target, Type type)
-        {
-            throw new ArgumentException($"Require '{origin}' for '{target}', type: {type}");
-        }
-
-        private static void RequireAttribute(string origin, string target, PropertyInfo property)
-        {
-            throw new ArgumentException($"Require '{origin}' for '{target}', property name: {property.Name}, type: {property.DeclaringType}");
-        }
-
         private void GetPropertiesByNamedKey(Type type, MetaAttributes collection, out IReadOnlyList<PropertyInfo> properties, out NameDictionary dictionary)
         {
-            if (!collection.Any())
-                RequireAttribute(nameof(NamedKeyAttribute), nameof(NamedObjectAttribute), type);
+            Debug.Assert(collection.Any());
             var map = new SortedDictionary<string, PropertyInfo>();
             foreach (var (property, attribute) in collection)
             {
@@ -103,7 +92,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 if (string.IsNullOrEmpty(key))
                     throw new ArgumentException($"Named key can not be null or empty, property name: {property.Name}, type: {type}");
                 if (map.ContainsKey(key))
-                    throw new ArgumentException($"Named key '{key}' already exists, type: {property.DeclaringType}");
+                    throw new ArgumentException($"Named key '{key}' already exists, property name: {property.Name}, type: {type}");
                 map.Add(key, property);
             }
             properties = map.Values.ToList();
@@ -112,14 +101,13 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private void GetPropertiesByTupleKey(Type type, MetaAttributes collection, out IReadOnlyList<PropertyInfo> properties)
         {
-            if (!collection.Any())
-                RequireAttribute(nameof(TupleKeyAttribute), nameof(TupleObjectAttribute), type);
+            Debug.Assert(collection.Any());
             var map = new SortedDictionary<int, PropertyInfo>();
             foreach (var (property, attribute) in collection)
             {
                 var key = ((TupleKeyAttribute)attribute).Key;
                 if (map.ContainsKey(key))
-                    throw new ArgumentException($"Tuple key '{key}' already exists, type: {property.DeclaringType}");
+                    throw new ArgumentException($"Tuple key '{key}' already exists, property name: {property.Name}, type: {type}");
                 map.Add(key, property);
             }
             var keys = map.Keys.ToList();
@@ -128,7 +116,7 @@ namespace Mikodev.Binary.Internal.Contexts
             properties = map.Values.ToList();
         }
 
-        private (PropertyInfo Property, Attribute Key, Attribute Converter) GetPropertyAttributes(PropertyInfo property, Attribute attribute)
+        private (PropertyInfo Property, Attribute Key, Attribute Converter) GetPropertyAttributes(Type type, PropertyInfo property, Attribute attribute)
         {
             Debug.Assert(attribute == null || attribute is NamedObjectAttribute || attribute is TupleObjectAttribute);
             var array = property.GetCustomAttributes(false).OfType<Attribute>();
@@ -136,21 +124,23 @@ namespace Mikodev.Binary.Internal.Contexts
             var converters = array.Where(x => converterAttributeTypes.Contains(x.GetType())).ToList();
 
             if (keys.Count > 1 || converters.Count > 1)
-                throw new ArgumentException($"Multiple attributes found, property name: {property.Name}, type: {property.DeclaringType}");
+                throw new ArgumentException($"Multiple attributes found, property name: {property.Name}, type: {type}");
             var key = keys.FirstOrDefault();
             var converter = converters.FirstOrDefault();
             if (key == null && converter != null)
-                throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' for '{converter.GetType().Name}', property name: {property.Name}, type: {property.DeclaringType}");
+                throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' for '{converter.GetType().Name}', property name: {property.Name}, type: {type}");
 
-            if (attribute == null && key is NamedKeyAttribute)
-                RequireAttribute(nameof(NamedObjectAttribute), nameof(NamedKeyAttribute), property);
-            if (attribute == null && key is TupleKeyAttribute)
-                RequireAttribute(nameof(TupleObjectAttribute), nameof(TupleKeyAttribute), property);
-            if (attribute is NamedObjectAttribute && key != null && !(key is NamedKeyAttribute))
-                RequireAttribute(nameof(NamedKeyAttribute), nameof(NamedObjectAttribute), property);
-            if (attribute is TupleObjectAttribute && key != null && !(key is TupleKeyAttribute))
-                RequireAttribute(nameof(TupleKeyAttribute), nameof(TupleObjectAttribute), property);
+            var (origin, target) = (attribute, key) switch
+            {
+                (null, NamedKeyAttribute _) => (nameof(NamedObjectAttribute), nameof(NamedKeyAttribute)),
+                (null, TupleKeyAttribute _) => (nameof(TupleObjectAttribute), nameof(TupleKeyAttribute)),
+                (NamedObjectAttribute _, _) when key != null && !(key is NamedKeyAttribute) => (nameof(NamedKeyAttribute), nameof(NamedObjectAttribute)),
+                (TupleObjectAttribute _, _) when key != null && !(key is TupleKeyAttribute) => (nameof(TupleKeyAttribute), nameof(TupleObjectAttribute)),
+                _ => default,
+            };
 
+            if ((origin, target) != default)
+                throw new ArgumentException($"Require '{origin}' for '{target}', property name: {property.Name}, type: {type}");
             return attribute == null || key != null
                 ? (property, key, converter)
                 : default;
