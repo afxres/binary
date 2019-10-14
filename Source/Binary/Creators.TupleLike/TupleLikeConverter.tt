@@ -1,7 +1,6 @@
-﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
 <#@ assembly name="System.Core" #>
 <#@ import namespace="System.Linq" #>
-<#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ output extension=".cs" #>
 namespace Mikodev.Binary.Creators.TupleLike
@@ -23,10 +22,10 @@ foreach (var (from, to, prefix, member) in jobs)
 {
     for (var i = from; i <= to; i++)
     {
-		string Join(string name) => string.Join(", ", Map(1, i, x => $"{name}{x}"));
+        string Join(string name) => string.Join(", ", Map(1, i, x => $"{name}{x}"));
         var typeArguments = Join("T");
         var typeName = $"{prefix}<{typeArguments}>";
-		var typeConstraints = prefix == "ValueTuple" && i == 8 ? " where T8 : struct" : "";
+        var typeConstraints = prefix == "ValueTuple" && i == 8 ? " where T8 : struct" : "";
 #>
 
     internal sealed class <#= prefix #>Converter<<#= typeArguments #>> : Converter<<#= typeName #>><#= typeConstraints #>
