@@ -43,13 +43,16 @@ namespace Mikodev.Binary.Internal.Contexts
             return method;
         }
 
-        internal static bool CanCreateInstance(Type type, ConstructorInfo constructor)
+        internal static bool CanCreateInstance(Type type, MetaList metadata, ConstructorInfo constructor)
         {
+            Debug.Assert(metadata.Any());
+            Debug.Assert(constructor == null || constructor.DeclaringType == type);
+            Debug.Assert(type.IsAbstract || type.IsInterface ? constructor == null : true);
             if (type.IsAbstract || type.IsInterface)
                 return false;
-            Debug.Assert(constructor == null || constructor.DeclaringType == type);
-            // create instance by constructor or default value (for value type)
-            return constructor != null || type.IsValueType || type.GetConstructor(Type.EmptyTypes) != null;
+            if (constructor != null)
+                return true;
+            return (type.IsValueType || type.GetConstructor(Type.EmptyTypes) != null) && metadata.All(x => x.Property.GetSetMethod() != null);
         }
 
         internal static (ConstructorInfo, ItemIndexes) GetConstructor(Type type, IReadOnlyList<PropertyInfo> properties)
@@ -73,7 +76,8 @@ namespace Mikodev.Binary.Internal.Contexts
                 return (constructor, collection);
             }
 
-            // anonymous type or record
+            if (type.IsAbstract || type.IsInterface)
+                return default;
             var constructors = type.GetConstructors();
             if (constructors == null || constructors.Length == 0)
                 return default;
@@ -90,11 +94,8 @@ namespace Mikodev.Binary.Internal.Contexts
             return (constructor, array);
         }
 
-        internal static Delegate GetToValueDelegatePlanAlpha(Type delegateType, ItemInitializer initializer, MetaList metadata, Type type)
+        internal static Delegate GetToValueDelegateUseProperties(Type delegateType, ItemInitializer initializer, MetaList metadata, Type type)
         {
-            var failed = metadata.Select(x => x.Property).FirstOrDefault(x => x.GetSetMethod() == null);
-            if (failed != null)
-                throw new ArgumentException($"Property '{failed.Name}' does not have a public setter, type: {type}");
             var item = Expression.Variable(type, "item");
             var expressions = new List<Expression> { Expression.Assign(item, Expression.New(type)) };
             var targets = metadata.Select(x => Expression.Property(item, x.Property)).ToList();
@@ -106,7 +107,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        internal static Delegate GetToValueDelegatePlanBravo(Type delegateType, ItemInitializer initializer, MetaList metadata, ItemIndexes indexes, ConstructorInfo constructor)
+        internal static Delegate GetToValueDelegateUseConstructor(Type delegateType, ItemInitializer initializer, MetaList metadata, ItemIndexes indexes, ConstructorInfo constructor)
         {
             var expressions = new List<Expression>();
             var variables = metadata.Select((x, i) => Expression.Variable(x.Property.PropertyType, $"{i}")).ToList();

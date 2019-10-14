@@ -677,7 +677,7 @@ type AttributeTests() =
 
     [<Theory>]
     [<InlineData(typeof<ClassWithDuplicateNamedKey01>, "bravo")>]
-    [<InlineData(typeof<ClassWithDuplicateNamedKey02>, "2.0")>]
+    [<InlineData(typeof<ClassWithDuplicateNamedKey02>, "one")>]
     member __.``Named Key Duplicated`` (t : Type, key : string) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
         let message = sprintf "Named key '%s' already exists, type: %O" key t

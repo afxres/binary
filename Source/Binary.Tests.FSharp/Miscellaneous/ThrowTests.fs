@@ -13,12 +13,6 @@ type BadConverter<'T>() =
     override __.ToValue (span : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 
 [<Class>]
-type BadType() =
-    member val Alpha = 0 with get, set
-
-    member __.Bravo = "Bravo"
-
-[<Class>]
 type BadClassTypeWithPrivateProperty() =
     member private __.Name with get () : string = String.Empty and set (_ : string) = ()
 
@@ -75,14 +69,6 @@ type ThrowTests() =
             let mutable allocator = new Allocator()
             converter.ToBytesWithLengthPrefix(&allocator, null))
         Assert.Equal("Allocator has been modified unexpectedly!", error.Message)
-        ()
-
-    [<Fact>]
-    member me.``Property Without Public Setter`` () =
-        let value = new BadType()
-        value.Alpha <- 1024
-        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(value) |> ignore)
-        Assert.Contains("Property 'Bravo' does not have a public setter", error.Message)
         ()
 
     static member ``Data Alpha`` = [|

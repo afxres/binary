@@ -59,12 +59,12 @@ namespace Mikodev.Binary.Internal.Contexts
                 return (span, values);
             }
 
-            if (!ContextMethods.CanCreateInstance(type, constructor))
+            if (!ContextMethods.CanCreateInstance(type, metadata, constructor))
                 return null;
             var delegateType = typeof(ToValueWith<>).MakeGenericType(type);
             return constructor == null
-                ? ContextMethods.GetToValueDelegatePlanAlpha(delegateType, Initialize, metadata, type)
-                : ContextMethods.GetToValueDelegatePlanBravo(delegateType, Initialize, metadata, indexes, constructor);
+                ? ContextMethods.GetToValueDelegateUseProperties(delegateType, Initialize, metadata, type)
+                : ContextMethods.GetToValueDelegateUseConstructor(delegateType, Initialize, metadata, indexes, constructor);
         }
     }
 }

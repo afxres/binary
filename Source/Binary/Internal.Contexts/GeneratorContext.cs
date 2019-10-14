@@ -78,6 +78,7 @@ namespace Mikodev.Binary.Internal.Contexts
             // find available properties
             var properties = (IReadOnlyList<PropertyInfo>)type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .Where(x => x.GetGetMethod()?.GetParameters().Length == 0)
+                .OrderBy(x => x.Name)
                 .ToList();
             if (!properties.Any())
                 throw new ArgumentException($"No available property found, type: {type}");
@@ -85,13 +86,13 @@ namespace Mikodev.Binary.Internal.Contexts
                 .Select(x => GetPropertyAttributes(x, attribute))
                 .Where(x => x.Property != null)
                 .ToDictionary(x => x.Property, x => (x.Key, x.Converter));
-            var collectionQuery = collection.Select(x => (x.Key, x.Value.Key));
+            var enumerable = collection.Select(x => (x.Key, x.Value.Key));
             var dictionary = default(NameDictionary);
 
             if (attribute is NamedObjectAttribute)
-                GetPropertiesByNamedKey(type, collectionQuery, out properties, out dictionary);
+                GetPropertiesByNamedKey(type, enumerable, out properties, out dictionary);
             else if (attribute is TupleObjectAttribute)
-                GetPropertiesByTupleKey(type, collectionQuery, out properties);
+                GetPropertiesByTupleKey(type, enumerable, out properties);
 
             Debug.Assert(collection.Any());
             Debug.Assert(properties.Any());

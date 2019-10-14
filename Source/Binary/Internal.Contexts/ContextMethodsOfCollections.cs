@@ -44,7 +44,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static Delegate GetToValueDelegateAsEnumerable(Type type, Type enumerableType, Type delegateType)
         {
-            if (type.IsAbstract != false || type.IsInterface != false)
+            if (type.IsAbstract || type.IsInterface)
                 return null;
             var constructor = type.GetConstructor(new[] { enumerableType });
             if (constructor == null)

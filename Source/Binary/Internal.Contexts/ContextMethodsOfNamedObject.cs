@@ -2,6 +2,7 @@
 using Mikodev.Binary.Internal.Delegates;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -21,6 +22,7 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             if (dictionary == null)
                 dictionary = metadata.Select(x => x.Property).ToDictionary(x => x, x => x.Name);
+            Debug.Assert(dictionary.OrderBy(x => x.Value).Select(x => x.Key).SequenceEqual(metadata.Select(x => x.Property)));
             var toBytes = GetToBytesDelegateAsNamedObject(type, metadata, dictionary, cache);
             var toValue = GetToValueDelegateAsNamedObject(type, metadata, constructor, indexes);
             var buffers = metadata.Select(x => dictionary[x.Property]).Select(x => new KeyValuePair<string, byte[]>(x, cache.GetBuffer(x))).ToArray();
@@ -68,12 +70,12 @@ namespace Mikodev.Binary.Internal.Contexts
                 return (list, values);
             }
 
-            if (!ContextMethods.CanCreateInstance(type, constructor))
+            if (!ContextMethods.CanCreateInstance(type, metadata, constructor))
                 return null;
             var delegateType = typeof(ToNamedObject<>).MakeGenericType(type);
             return constructor == null
-                ? ContextMethods.GetToValueDelegatePlanAlpha(delegateType, Initialize, metadata, type)
-                : ContextMethods.GetToValueDelegatePlanBravo(delegateType, Initialize, metadata, indexes, constructor);
+                ? ContextMethods.GetToValueDelegateUseProperties(delegateType, Initialize, metadata, type)
+                : ContextMethods.GetToValueDelegateUseConstructor(delegateType, Initialize, metadata, indexes, constructor);
         }
     }
 }

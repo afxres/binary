@@ -31,6 +31,8 @@ namespace Mikodev.Binary.Converters.Runtime
 
         public override T ToValue(in ReadOnlySpan<byte> span)
         {
+            if (toValue == null)
+                return ThrowHelper.ThrowNoSuitableConstructor<T>();
             var temp = span;
             return toValue.Invoke(ref temp);
         }
@@ -44,6 +46,8 @@ namespace Mikodev.Binary.Converters.Runtime
 
         public override T ToValueWithMark(ref ReadOnlySpan<byte> span)
         {
+            if (toValueWith == null)
+                return ThrowHelper.ThrowNoSuitableConstructor<T>();
             return toValueWith.Invoke(ref span);
         }
     }

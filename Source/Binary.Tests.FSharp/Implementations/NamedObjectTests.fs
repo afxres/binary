@@ -178,3 +178,54 @@ let ``Type With 48 Properties (via properties)`` () =
     Assert.Equal("0x1F", result.Item1F)
     Assert.Equal("0x2F", result.Item2F)
     ()
+
+[<Interface>]
+type IPerson =
+    abstract Name : string
+
+    abstract Age : int
+
+[<AbstractClass>]
+type BasicPerson (name : string, age : int) =
+    member val Name = name with get, set
+
+    member val Age = age with get, set
+
+[<AbstractClass>]
+type AbstractPerson (name : string, age : int) =
+    inherit BasicPerson(name, age)
+
+    new (age : int, name : string) = AbstractPerson(name, age)
+
+type Student (name : string, age : int) =
+    inherit AbstractPerson(name, age)
+
+    member __.View = sprintf "%s, %d" name age
+
+    interface IPerson with
+        member me.Name = me.Name
+
+        member me.Age = me.Age
+
+let test (instance : 'a) (anonymous : 'b) =
+    let converter = generator.GetConverter<'a>()
+    Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
+    let buffer = converter.ToBytes instance
+    let target = generator.ToBytes anonymous
+    Assert.Equal<byte>(target, buffer)
+    let error = Assert.Throws<InvalidOperationException>(fun () -> converter.ToValue buffer |> ignore)
+    let message = sprintf "No suitable constructor found, type: %O" typeof<'a>
+    Assert.Equal(message, error.Message)
+    ()
+
+[<Fact>]
+let ``No suitable constructor (interface)`` () = test (Student("Tom", 18) :> IPerson) ({| Name = "Tom"; Age = 18 |})
+
+[<Fact>]
+let ``No suitable constructor (abstract class with single pattern-constructors)`` () = test (Student("Bob", 24) :> BasicPerson) ({| Name = "Bob"; Age = 24 |})
+
+[<Fact>]
+let ``No suitable constructor (abstract class with multiple pattern-constructors)`` () = test (Student("Alice", 20) :> AbstractPerson) ({| Name = "Alice"; Age = 20 |})
+
+[<Fact>]
+let ``No suitable constructor (class with some get-only property)`` () = test (Student("Ann", 22)) ({| Name = "Ann"; Age = 22; View = "Ann, 22" |})

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using MetaAttributes = System.Collections.Generic.IEnumerable<(System.Reflection.PropertyInfo, System.Attribute)>;
+using MetaAttributes = System.Collections.Generic.IEnumerable<(System.Reflection.PropertyInfo Property, System.Attribute)>;
 using MetaList = System.Collections.Generic.IReadOnlyList<(System.Reflection.PropertyInfo Property, Mikodev.Binary.Converter Converter)>;
 using NameDictionary = System.Collections.Generic.IReadOnlyDictionary<System.Reflection.PropertyInfo, string>;
 
