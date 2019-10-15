@@ -8,18 +8,18 @@ open Xunit
 let generator = new Generator()
 
 [<Fact>]
-let ``Key Not Found`` () =
+let ``Key Does Not Exist`` () =
     let bytes = generator.ToBytes {| alpha = 2048; bravo = "Charlie" |}
     let error = Assert.Throws<ArgumentException>(fun () -> generator.ToValue(bytes, {| alpha = 0; bravo = String.Empty; delta = 0.0 |}) |> ignore)
-    Assert.StartsWith("Key 'delta' not found", error.Message)
+    Assert.StartsWith("Property 'delta' does not exist, type:", error.Message)
     ()
 
 [<Fact>]
-let ``Key Duplicated`` () =
+let ``Key Already Exists`` () =
     let items = [ ("a", box 1024); ("b", box 256); ("c", box 16); ("b", box 128) ] |> List.map (fun (x, y) -> KeyValuePair(x, y))
     let bytes = generator.ToBytes items
     let error = Assert.Throws<ArgumentException>(fun () -> generator.ToValue(bytes, {| a = 0; b = 0; c = 0 |}) |> ignore)
-    Assert.StartsWith("Key 'b' already exists", error.Message)
+    Assert.StartsWith("Property 'b' already exists, type:", error.Message)
     ()
 
 [<Fact>]

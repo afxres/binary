@@ -29,21 +29,11 @@ namespace Mikodev.Binary.Converters.Runtime
             indexes = new HybridList(buffers);
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private T ThrowKeyExists(int propertyIndex)
-        {
-            var property = properties[propertyIndex];
-            var message = $"Key '{property.Name}' already exists, property type: {property.PropertyType}, declaring type: {ItemType}";
-            throw new ArgumentException(message);
-        }
+        [DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+        private T ThrowKeyFound(int i) => throw new ArgumentException($"Property '{properties[i].Name}' already exists, type: {ItemType}");
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private T ThrowNotExists(int propertyIndex)
-        {
-            var property = properties[propertyIndex];
-            var message = $"Key '{property.Name}' not found, property type: {property.PropertyType}, declaring type: {ItemType}";
-            throw new ArgumentException(message);
-        }
+        [DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+        private T ThrowNotFound(int i) => throw new ArgumentException($"Property '{properties[i].Name}' does not exist, type: {ItemType}");
 
         public override void ToBytes(ref Allocator allocator, T item)
         {
@@ -74,13 +64,13 @@ namespace Mikodev.Binary.Converters.Runtime
                     continue;
                 Debug.Assert((uint)index < (uint)itemCount);
                 if (items[index].Offset != 0)
-                    return ThrowKeyExists(index);
+                    return ThrowKeyFound(index);
                 items[index] = new LengthItem(reader.Offset, reader.Length);
             }
 
             for (var i = 0; i < itemCount; i++)
                 if (items[i].Offset == 0)
-                    return ThrowNotExists(i);
+                    return ThrowNotFound(i);
             var list = new LengthList(items, in span);
             return toObject.Invoke(in list);
         }

@@ -24,31 +24,29 @@ namespace Mikodev.Binary.Creators.External
             var cases = FSharpType.GetUnionCases(type, flags);
             if (cases == null || cases.Length == 0)
                 throw new ArgumentException($"No available union case found, type: {type}");
-            var declaring = cases.Select(x => x.DeclaringType).Distinct().Single();
-            if (declaring != type)
-                throw new ArgumentException($"Invalid union type, you may have to use union type '{declaring}' instead of case type '{type}'");
+            var unionType = cases.Select(x => x.DeclaringType).Distinct().Single();
+            if (unionType != type)
+                throw new ArgumentException($"Invalid union type, you may have to use union type '{unionType}' instead of case type '{type}'");
             if (cases.Length > Limits)
                 throw new ArgumentException($"Union with more than {Limits} cases is not supported, type: {type}");
-            var info = FSharpValue.PreComputeUnionTagMemberInfo(declaring, flags);
 
-            var tagMember = FSharpValue.PreComputeUnionTagMemberInfo(declaring, flags);
-            var noNull = !declaring.IsValueType && !(tagMember is MethodInfo);
-
-            var toBytes = ToBytesExpression(context, declaring, cases, tagMember, withMark: false);
-            var toValue = ToValueExpression(context, declaring, cases, withMark: false);
-            var toBytesWith = ToBytesExpression(context, declaring, cases, tagMember, withMark: true);
-            var toValueWith = ToValueExpression(context, declaring, cases, withMark: true);
-            var converterType = typeof(UnionConverter<>).MakeGenericType(declaring);
+            var tagMember = FSharpValue.PreComputeUnionTagMemberInfo(type, flags);
+            var noNull = !type.IsValueType && !(tagMember is MethodInfo);
+            var toBytes = ToBytesExpression(context, type, cases, tagMember, withMark: false);
+            var toValue = ToValueExpression(context, type, cases, withMark: false);
+            var toBytesWith = ToBytesExpression(context, type, cases, tagMember, withMark: true);
+            var toValueWith = ToValueExpression(context, type, cases, withMark: true);
+            var converterType = typeof(UnionConverter<>).MakeGenericType(type);
             var converterArguments = new[] { toBytes, toValue, toBytesWith, toValueWith }.Select(x => x.Compile()).Cast<object>().Concat(new object[] { noNull }).ToArray();
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }
 
-        private static LambdaExpression ToBytesExpression(IGeneratorContext context, Type declaring, UnionCaseInfo[] caseInfos, MemberInfo tagMember, bool withMark)
+        private static LambdaExpression ToBytesExpression(IGeneratorContext context, Type type, UnionCaseInfo[] caseInfos, MemberInfo tagMember, bool withMark)
         {
             var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
             var mark = Expression.Parameter(typeof(int).MakeByRefType(), "mark");
-            var item = Expression.Parameter(declaring, "item");
+            var item = Expression.Parameter(type, "item");
             var flag = Expression.Variable(typeof(int), "flag");
 
             List<Expression> MakeBody(Expression instance, PropertyInfo[] properties)
@@ -72,7 +70,7 @@ namespace Mikodev.Binary.Creators.External
                 if (properties == null || properties.Length == 0)
                     return Expression.Empty();
                 var dataType = properties.Select(x => x.DeclaringType).Distinct().Single();
-                if (dataType == declaring)
+                if (dataType == type)
                     return Expression.Block(MakeBody(item, properties));
                 var data = Expression.Variable(dataType, "data");
                 var convert = Expression.Assign(data, Expression.Convert(item, dataType));
@@ -91,11 +89,11 @@ namespace Mikodev.Binary.Creators.External
                 Expression.Assign(flag, tagExpression),
                 Expression.Call(setMethod, allocator, Expression.Convert(flag, typeof(byte))),
                 Expression.Switch(flag, defaultBlock, switchCases));
-            var delegateType = typeof(OfUnion<>).MakeGenericType(declaring);
+            var delegateType = typeof(OfUnion<>).MakeGenericType(type);
             return Expression.Lambda(delegateType, block, allocator, item, mark);
         }
 
-        private static LambdaExpression ToValueExpression(IGeneratorContext context, Type declaring, UnionCaseInfo[] caseInfos, bool withMark)
+        private static LambdaExpression ToValueExpression(IGeneratorContext context, Type type, UnionCaseInfo[] caseInfos, bool withMark)
         {
             var span = Expression.Parameter(typeof(ReadOnlySpan<byte>).MakeByRefType(), "span");
             var mark = Expression.Parameter(typeof(int).MakeByRefType(), "mark");
@@ -125,11 +123,11 @@ namespace Mikodev.Binary.Creators.External
 
             var switchCases = caseInfos.Select(x => Expression.SwitchCase(MakeBody(x), Expression.Constant(x.Tag))).ToArray();
             var getMethod = new ToValueWith<byte>(Format.GetByte).Method;
-            var defaultBlock = Expression.Block(Expression.Assign(mark, flag), Expression.Default(declaring));
+            var defaultBlock = Expression.Block(Expression.Assign(mark, flag), Expression.Default(type));
             var block = Expression.Block(new[] { flag },
                 Expression.Assign(flag, Expression.Convert(Expression.Call(getMethod, span), typeof(int))),
                 Expression.Switch(flag, defaultBlock, switchCases));
-            var delegateType = typeof(ToUnion<>).MakeGenericType(declaring);
+            var delegateType = typeof(ToUnion<>).MakeGenericType(type);
             return Expression.Lambda(delegateType, block, span, mark);
         }
     }

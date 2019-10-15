@@ -1,5 +1,6 @@
 ﻿using Mikodev.Binary.Internal.Delegates;
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary.Creators.External
@@ -27,16 +28,16 @@ namespace Mikodev.Binary.Creators.External
             this.toUnionWith = toUnionWith;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
         private void ThrowNull() => throw new ArgumentNullException("item", $"Union can not be null, type: {ItemType}");
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
         private void ThrowInvalid(int mark) => throw new ArgumentException($"Invalid union tag '{mark}', type: {ItemType}");
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ThrowOnNull(T item) { if (noNull && item == null) ThrowNull(); }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ThrowOnInvalid(int mark) { if (mark != MarkNone) ThrowInvalid(mark); }
 
         public override void ToBytes(ref Allocator allocator, T item)

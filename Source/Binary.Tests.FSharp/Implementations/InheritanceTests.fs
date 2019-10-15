@@ -105,7 +105,8 @@ let ``Base Bytes To Sub Value`` () =
     let bytes = generator.ToBytes a
     Assert.NotEmpty bytes
     let error = Assert.Throws<ArgumentException>(fun () -> generator.ToValue<MiscBook> bytes |> ignore)
-    Assert.Contains("Key 'Count' not found", error.Message)
+    let message = sprintf "Property '%s' does not exist, type: %O" "Count" typeof<MiscBook>
+    Assert.Equal(message, error.Message)
     let dictionary = generator.AsToken bytes :> IReadOnlyDictionary<string, Token>
     Assert.Equal(3, dictionary.Count)
     ()
