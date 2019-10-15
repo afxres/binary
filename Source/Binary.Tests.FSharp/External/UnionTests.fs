@@ -1,7 +1,8 @@
-﻿module Others.UnionTests
+﻿module External.UnionTests
 
 open Mikodev.Binary
 open System
+open System.Reflection
 open Xunit
 
 let generator = new Generator()
@@ -83,6 +84,7 @@ let ``Choice 2`` () =
 
 [<Theory>]
 [<InlineData(2uy)>]
+[<InlineData(128uy)>]
 [<InlineData(255uy)>]
 let ``Invalid Tag (to value & to value with mark)`` (tag : byte) =
     let converter = generator.GetConverter<int option>()
@@ -91,6 +93,37 @@ let ``Invalid Tag (to value & to value with mark)`` (tag : byte) =
     let message = sprintf "Invalid union tag '%d', type: %O" (int tag) typeof<int option>
     let alpha = Assert.Throws<ArgumentException>(fun () -> value<int option> converter (Array.singleton tag) |> ignore)
     let bravo = Assert.Throws<ArgumentException>(fun () -> valueWithMark<int option> converter (Array.singleton tag) |> ignore)
+    Assert.Null(alpha.ParamName)
+    Assert.Null(bravo.ParamName)
+    Assert.StartsWith(message, alpha.Message)
+    Assert.StartsWith(message, bravo.Message)
+    ()
+
+[<Struct>]
+type Box =
+    | One of one : int
+    | Two of two : string
+
+[<Theory>]
+[<InlineData(-1048576)>]
+[<InlineData(-1)>]
+[<InlineData(2)>]
+[<InlineData(255)>]
+[<InlineData(65537)>]
+let ``Invalid Tag With Fake Union Type`` (tag : int) =
+    let converter = generator.GetConverter<Box>()
+    Assert.StartsWith("UnionConverter`1", converter.GetType().Name)
+
+    let boxed = box (One 10)
+    let field = boxed.GetType().GetField("_tag", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    Assert.NotNull(field)
+    // hack tag member!
+    field.SetValue(boxed, tag)
+
+    let value = unbox<Box> boxed
+    let message = sprintf "Invalid union tag '%d', type: %O" (int tag) typeof<Box>
+    let alpha = Assert.Throws<ArgumentException>(fun () -> bytes<Box> converter value |> ignore)
+    let bravo = Assert.Throws<ArgumentException>(fun () -> bytesWithMark<Box> converter value |> ignore)
     Assert.Null(alpha.ParamName)
     Assert.Null(bravo.ParamName)
     Assert.StartsWith(message, alpha.Message)

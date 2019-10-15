@@ -1,4 +1,4 @@
-﻿module Others.CollectionTests
+﻿module External.CollectionTests
 
 open Mikodev.Binary
 open System.Net

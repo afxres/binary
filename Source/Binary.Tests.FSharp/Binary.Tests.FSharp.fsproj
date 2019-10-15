@@ -20,6 +20,9 @@
     <Compile Include="Creators\EnumerableTests.fs" />
     <Compile Include="Creators\SetTests.fs" />
     <Compile Include="Creators\ListTests.fs" />
+    <Compile Include="External\CollectionTests.fs" />
+    <Compile Include="External\RecordTests.fs" />
+    <Compile Include="External\UnionTests.fs" />
     <Compile Include="Implementations\CompatibleCollectionTests.fs" />
     <Compile Include="Implementations\EnumerableTests.fs" />
     <Compile Include="Implementations\InheritanceTests.fs" />
@@ -28,9 +31,6 @@
     <Compile Include="Implementations\TupleObjectTests.fs" />
     <Compile Include="Miscellaneous\CrossTests.fs" />
     <Compile Include="Miscellaneous\ThrowTests.fs" />
-    <Compile Include="Others\CollectionTests.fs" />
-    <Compile Include="Others\RecordTests.fs" />
-    <Compile Include="Others\UnionTests.fs" />
     <Compile Include="Values\ClassTypeTests.fs" />
     <Compile Include="Values\ValueTypeTests.fs" />
     <Compile Include="TupleLike\KeyValuePairTests.fs" />

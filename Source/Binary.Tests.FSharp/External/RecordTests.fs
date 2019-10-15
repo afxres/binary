@@ -1,4 +1,4 @@
-﻿module Others.RecordTests
+﻿module External.RecordTests
 
 open Mikodev.Binary
 open System
