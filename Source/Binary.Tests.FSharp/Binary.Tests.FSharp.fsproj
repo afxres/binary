@@ -10,10 +10,11 @@
     <Compile Include="Attributes\AttributeTests.fs" />
     <Compile Include="Attributes\InheritanceTests.fs" />
     <Compile Include="Classes\AllocatorTests.fs" />
-    <Compile Include="Classes\ConverterTests.fs" />
     <Compile Include="Classes\ConverterExtensionsTests.fs" />
-    <Compile Include="Classes\GeneratorTests.fs" />
+    <Compile Include="Classes\ConverterTests.fs" />
     <Compile Include="Classes\GeneratorExtensionsTests.fs" />
+    <Compile Include="Classes\GeneratorTests.fs" />
+    <Compile Include="Classes\PrimitiveHelperTests.fs" />
     <Compile Include="Classes\TokenTests.fs" />
     <Compile Include="Creators\ArrayTests.fs" />
     <Compile Include="Creators\DictionaryTests.fs" />
