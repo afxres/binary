@@ -36,7 +36,7 @@ type CrossTests () =
             yield [| I1 127 |]
             yield [| I3 (0.3f, "let", 2.6) |]
         }
-        
+
     [<Theory>]
     [<MemberData("Data Bravo")>]
     member __.``Invalid Union Case Type`` (a : 'A) =

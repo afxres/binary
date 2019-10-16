@@ -13,7 +13,7 @@ type Alpha(a, b, c) =
     member __.C : string = c
 
 [<Struct>]
-type Bravo(b : string, c : byte, a : float) = 
+type Bravo(b : string, c : byte, a : float) =
     member __.B : string = b
 
     member __.C : byte = c
@@ -29,9 +29,9 @@ type Charlie () =
     let mutable c : float = 0.0
 
     member __.A with get () = a and set value = a <- value
-    
+
     member __.B with get () = b and set value = b <- value
-    
+
     member __.C with get () = c and set value = c <- value
 
 [<Struct>]
@@ -40,7 +40,7 @@ type Delta =
 
     val mutable private a : byte
 
-    val mutable private b : int 
+    val mutable private b : int
 
     member this.C with get () = this.c and set value = this.c <- value
 

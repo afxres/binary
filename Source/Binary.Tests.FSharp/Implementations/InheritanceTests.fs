@@ -10,7 +10,7 @@ type IPerson =
     abstract member Id : unit -> Guid with get
 
     abstract member Name : unit -> string with get
-    
+
 type Person(id, name) =
     interface IPerson with
         member __.Id = id
@@ -36,7 +36,7 @@ type MiscBook(count, name, pages, price) =
     inherit SomeBook(name, pages, price)
 
     member __.Count : int = count
-    
+
 let generator = new Generator()
 
 [<Fact>]

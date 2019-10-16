@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -27,12 +28,13 @@ namespace Mikodev.Binary.Tests
                 typeof(Allocator).Name,
             };
 
-            var types = typeof(Converter).Assembly.GetTypes().Where(x => x.Namespace != "Mikodev.Binary.Creators.ArrayLike");
+            var types = typeof(Converter).Assembly.GetTypes();
             var methods = types.SelectMany(x => x.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static)).ToList();
             var parameters = methods.SelectMany(x => x.GetParameters()).ToList();
             var source = parameters.Where(x => StartsWith(x.ParameterType.Name, names)).ToList();
-            foreach (var i in source)
-                Assert.True(i.ParameterType.IsByRef);
+            var failed = source.Where(x => !x.ParameterType.IsByRef).Select(x => x.Member).Cast<MethodInfo>().Select(x => x.ReflectedType).Distinct();
+            Assert.Equal(failed.Select(x => x.Name).ToHashSet(), new HashSet<string> { "IPAddressAdapter", "IPEndPointAdapter", "MemoryConverter`1", "ReadOnlyMemoryConverter`1" });
+            Assert.NotEmpty(failed);
             Assert.NotEmpty(source);
         }
 

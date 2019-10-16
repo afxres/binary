@@ -1,6 +1,5 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
-using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary
 {
@@ -23,17 +22,7 @@ namespace Mikodev.Binary
             allocator.LengthPrefixFinish(anchor);
         }
 
-        public virtual T ToValueWithLengthPrefix(ref ReadOnlySpan<byte> span)
-        {
-            var byteCount = span.Length;
-            if (byteCount < sizeof(int))
-                return ThrowHelper.ThrowNotEnoughBytes<T>();
-            var length = Endian<int>.Get(ref MemoryMarshal.GetReference(span));
-            var buffer = span.Slice(sizeof(int), length);
-            var result = ToValue(in buffer);
-            span = span.Slice(sizeof(int) + length);
-            return result;
-        }
+        public virtual T ToValueWithLengthPrefix(ref ReadOnlySpan<byte> span) => ToValue(PrimitiveHelper.DecodeWithLengthPrefix(ref span));
 
         public virtual byte[] ToBytes(T item)
         {

@@ -13,7 +13,7 @@ let ``Array Instance`` () =
     let bytesA = generator.ToBytes a
     let bytesB = generator.ToBytes b
     Assert.Equal(12, bytesA.Length)
-    Assert.Equal(4 * 3 + 16, bytesB.Length)
+    Assert.Equal(1 * 3 + 5 + 4 + 7, bytesB.Length)
     let valueA = generator.ToValue<int array> bytesA
     let valueB = generator.ToValue<string array> bytesB
     Assert.Equal<int>(a, valueA)

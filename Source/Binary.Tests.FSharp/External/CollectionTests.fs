@@ -22,7 +22,7 @@ let ``Array Instance`` () =
     ()
 
 [<Fact>]
-let ``Array (empty)`` () = 
+let ``Array (empty)`` () =
     let source : int array = [| |]
     let buffer = generator.ToBytes source
     let result : int array = generator.ToValue buffer
@@ -45,7 +45,7 @@ let ``List (empty)`` () =
     let source : string list = []
     let buffer = generator.ToBytes source
     let result : string list = generator.ToValue buffer
-    
+
     Assert.Empty(buffer)
     Assert.Equal<string seq>(source, result)
     ()
@@ -108,9 +108,9 @@ let ``Set (null)`` () =
     Assert.Empty(buffer)
     Assert.Empty(result)
     ()
-    
+
 [<Fact>]
-let ``Map`` () = 
+let ``Map`` () =
     let value = [ 1, "one"; 2, "two"; -1, "minus one" ] |> Map
     test value
     ()

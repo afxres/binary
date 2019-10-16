@@ -27,10 +27,10 @@ let valueWithMark<'a> (c : Converter<'a>) buffer =
     c.ToValueWithMark &span
 
 [<Theory>]
-[<InlineData(16uy, "short", 0, 6, 10)>]
-[<InlineData("", -2.4, 0, 12, 12)>]
+[<InlineData(16uy, "short", 0, 6, 7)>]
+[<InlineData("", -2.4, 0, 9, 9)>]
 [<InlineData(-4, 256L, 12, 12, 12)>]
-[<InlineData("key", "value", 0, 12, 16)>]
+[<InlineData("key", "value", 0, 9, 10)>]
 let ``Key-Value Pair`` (k : 'K) (v : 'V) define normal headed =
     let i = KeyValuePair(k, v)
     let t = k, v
@@ -48,7 +48,7 @@ let ``Key-Value Pair`` (k : 'K) (v : 'V) define normal headed =
 
     let btb = bytesWithMark tuple t
     let rtb = valueWithMark tuple btb
-   
+
     Assert.Equal(define, alpha.Length)
     Assert.Equal(define, tuple.Length)
 

@@ -32,7 +32,8 @@ let ``Anonymous Class Record To Bytes (from null value)`` () =
     Assert.Equal(0, allocator.Length)
     converter.ToBytesWithLengthPrefix(&allocator, null)
     Assert.Equal(4, allocator.Length)
-    Assert.Equal(0, BitConverter.ToInt32(allocator.ToArray(), 0))
+    let span = ReadOnlySpan (allocator.ToArray())
+    Assert.Equal(0, PrimitiveHelper.DecodeLengthPrefix(&span))
     ()
 
 [<Fact>]
@@ -53,99 +54,99 @@ let ``Bytes To Anonymous Value Record (from empty bytes, expect bytes not enough
 
 type ``Item 48`` () =
     member val Item00 = "0x00" with get, set
-    
+
     member val Item01 = "0x01" with get, set
-    
+
     member val Item02 = "0x02" with get, set
-    
+
     member val Item03 = "0x03" with get, set
-    
+
     member val Item04 = "0x04" with get, set
-    
+
     member val Item05 = "0x05" with get, set
-    
+
     member val Item06 = "0x06" with get, set
-    
+
     member val Item07 = "0x07" with get, set
-    
+
     member val Item08 = "0x08" with get, set
-    
+
     member val Item09 = "0x09" with get, set
-    
+
     member val Item0A = "0x0A" with get, set
-    
+
     member val Item0B = "0x0B" with get, set
-    
+
     member val Item0C = "0x0C" with get, set
-    
+
     member val Item0D = "0x0D" with get, set
-    
+
     member val Item0E = "0x0E" with get, set
-    
+
     member val Item0F = "0x0F" with get, set
-    
+
     member val Item10 = "0x10" with get, set
-    
+
     member val Item11 = "0x11" with get, set
-    
+
     member val Item12 = "0x12" with get, set
-    
+
     member val Item13 = "0x13" with get, set
-    
+
     member val Item14 = "0x14" with get, set
-    
+
     member val Item15 = "0x15" with get, set
-    
+
     member val Item16 = "0x16" with get, set
-    
+
     member val Item17 = "0x17" with get, set
-    
+
     member val Item18 = "0x18" with get, set
-    
+
     member val Item19 = "0x19" with get, set
-    
+
     member val Item1A = "0x1A" with get, set
-    
+
     member val Item1B = "0x1B" with get, set
-    
+
     member val Item1C = "0x1C" with get, set
-    
+
     member val Item1D = "0x1D" with get, set
-    
+
     member val Item1E = "0x1E" with get, set
-    
+
     member val Item1F = "0x1F" with get, set
-    
+
     member val Item20 = "0x20" with get, set
-    
+
     member val Item21 = "0x21" with get, set
-    
+
     member val Item22 = "0x22" with get, set
-    
+
     member val Item23 = "0x23" with get, set
-    
+
     member val Item24 = "0x24" with get, set
-    
+
     member val Item25 = "0x25" with get, set
-    
+
     member val Item26 = "0x26" with get, set
-    
+
     member val Item27 = "0x27" with get, set
-    
+
     member val Item28 = "0x28" with get, set
-    
+
     member val Item29 = "0x29" with get, set
-    
+
     member val Item2A = "0x2A" with get, set
-    
+
     member val Item2B = "0x2B" with get, set
-    
+
     member val Item2C = "0x2C" with get, set
-    
+
     member val Item2D = "0x2D" with get, set
-    
+
     member val Item2E = "0x2E" with get, set
-    
+
     member val Item2F = "0x2F" with get, set
 
 [<Fact>]

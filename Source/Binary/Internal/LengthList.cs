@@ -15,7 +15,7 @@ namespace Mikodev.Binary.Internal
         {
             Debug.Assert(bytes.Length > 0);
             Debug.Assert(items.Length > 0);
-            Debug.Assert(items.ToArray().All(x => x.Offset >= sizeof(int) && x.Length >= 0));
+            Debug.Assert(items.ToArray().All(x => x.Offset >= sizeof(byte) && x.Length >= 0));
             this.items = items;
             this.bytes = bytes;
         }

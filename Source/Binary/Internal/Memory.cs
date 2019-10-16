@@ -19,5 +19,11 @@ namespace Mikodev.Binary.Internal
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int SizeOf<T>() where T : unmanaged => Unsafe.SizeOf<T>();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static T Get<T>(ref byte source) => Unsafe.ReadUnaligned<T>(ref source);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void Set<T>(ref byte target, T item) => Unsafe.WriteUnaligned(ref target, item);
     }
 }

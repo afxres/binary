@@ -6,6 +6,7 @@ namespace Mikodev.Binary.Abstractions
     /// <summary>
     /// Fixed length type converter
     /// </summary>
+    [Obsolete]
     public abstract class ConstantConverter<T> : Converter<T>
     {
         protected ConstantConverter(int length) : base(length)

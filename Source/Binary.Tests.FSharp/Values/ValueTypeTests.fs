@@ -1,7 +1,6 @@
 module Values.ValueTypeTests
 
 open Mikodev.Binary
-open Mikodev.Binary.Abstractions
 open System
 open Xunit
 
@@ -45,16 +44,16 @@ let testWithBytes (value : 'a) (size : int) =
     ()
 
 let testWithLengthPrefix (value : 'a) (size : int) =
-    let bufferLength = generator.ToBytes size
     let bufferOrigin = generator.ToBytes value
     let converter = generator.GetConverter<'a>()
 
     let mutable allocator = new Allocator()
     converter.ToBytesWithLengthPrefix(&allocator, value)
     let buffer = allocator.ToArray()
-    Assert.Equal(size + sizeof<int>, buffer.Length)
-    Assert.Equal<byte>(bufferLength, buffer |> Array.take sizeof<int>)
-    Assert.Equal<byte>(bufferOrigin, buffer |> Array.skip sizeof<int>)
+
+    let prefixLength = PrimitiveHelper.DecodePrefixLength(buffer.[0])
+    Assert.Equal(size + prefixLength, buffer.Length)
+    Assert.Equal<byte>(bufferOrigin, buffer |> Array.skip prefixLength)
 
     let mutable span = ReadOnlySpan buffer
     let result = converter.ToValueWithLengthPrefix(&span)
@@ -69,8 +68,8 @@ let testExplicit (value : 'a) (size : int) =
 
     let result : 'a = generator.ToValue buffer
     Assert.Equal<'a>(value, result)
-    
-    let converter = generator.GetConverter<'a>() :?> ConstantConverter<'a>
+
+    let converter = generator.GetConverter<'a>()
     Assert.Equal(size, converter.Length)
 
     // convert via Converter
@@ -80,9 +79,9 @@ let testExplicit (value : 'a) (size : int) =
     // convert with length prefix
     testWithLengthPrefix value size
     ()
-    
+
 let test (value : 'a when 'a : unmanaged) = testExplicit value sizeof<'a>
-    
+
 [<Fact>]
 let ``Int & UInit 16, 32, 64`` () =
     for i = 1 to randomCount do
@@ -173,13 +172,13 @@ let ``DateTime Instance`` () =
 
 [<Fact>]
 let ``DateTimeOffset Instance`` () =
-    let check item = 
+    let check item =
         testExplicit item 10
 
         let buffer = generator.ToBytes item
         let result = generator.ToValue<DateTimeOffset> buffer
         let (origin, offset) = generator.ToValue<(int64 * int16)> buffer
-        
+
         Assert.Equal(item, result)
         Assert.Equal(item.Offset, result.Offset)
         Assert.Equal(item.DateTime, result.DateTime)
@@ -211,5 +210,5 @@ let ``Enum`` () =
 [<Fact>]
 let ``Enum Converter`` () =
     let value = generator.GetConverter typeof<DayOfWeek>
-    Assert.StartsWith("UnsafeNativeConverter", value.GetType().Name)
+    Assert.StartsWith("CurrentEndiannessConverter", value.GetType().Name)
     ()

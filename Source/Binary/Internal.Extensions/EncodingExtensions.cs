@@ -20,7 +20,8 @@ namespace Mikodev.Binary.Internal.Extensions
         internal static unsafe string GetString(this Encoding encoding, ref byte bytes, int byteCount)
         {
             Debug.Assert(encoding != null);
-            Debug.Assert(byteCount > 0);
+            if (byteCount == 0)
+                return string.Empty;
             fixed (byte* srcptr = &bytes)
                 return encoding.GetString(srcptr, byteCount);
         }
@@ -29,8 +30,6 @@ namespace Mikodev.Binary.Internal.Extensions
         {
             Debug.Assert(encoding != null);
             var byteCount = span.Length;
-            if (byteCount == 0)
-                return string.Empty;
             ref byte bytes = ref MemoryMarshal.GetReference(span);
             return GetString(encoding, ref bytes, byteCount);
         }

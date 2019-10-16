@@ -35,9 +35,9 @@ let ``As (via type, argument null)`` () =
     let error = Assert.Throws<ArgumentNullException>(fun () -> token.As null |> ignore)
     Assert.Equal("type", error.ParamName)
     ()
-    
+
 [<Fact>]
-let ``Index`` () = 
+let ``Index`` () =
     let source = { id = 5; data = { name = "echo"; age = 24 }}
     let buffer = generator.ToBytes source
     let token = generator.AsToken buffer
@@ -64,7 +64,7 @@ let ``As Memory`` () =
     let memory = source.AsMemory()
     Assert.Equal<byte>(origin.ToArray(), memory.ToArray())
     ()
-    
+
 [<Fact>]
 let ``As Span`` () =
     let buffer = [| 0uy..100uy |]

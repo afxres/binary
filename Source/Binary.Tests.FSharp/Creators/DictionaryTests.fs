@@ -18,7 +18,7 @@ let ``Dictionary`` () =
     let bytesA = generator.ToBytes a
     let bytesB = generator.ToBytes b
     Assert.Equal(24, bytesA |> Array.length)
-    Assert.Equal(4 * 2 + 3 + 4 + 16 * 2, bytesB |> Array.length)
+    Assert.Equal(1 * 2 + 3 + 4 + 16 * 2, bytesB |> Array.length)
 
     let valueA = generator.ToValue<Dictionary<int, double>> bytesA
     let valueB = generator.ToValue<Dictionary<string, Guid>> bytesB
@@ -33,12 +33,12 @@ let ``IDictionary`` () =
     a.Add("last", Guid.NewGuid())
     let a = a :> IDictionary<string, Guid>
     let bytes = generator.ToBytes a
-    Assert.Equal(4 * 2 + 4 * 2 + 16 * 2, bytes |> Array.length)
+    Assert.Equal(1 * 2 + 4 * 2 + 16 * 2, bytes |> Array.length)
     let value = generator.ToValue<IDictionary<string, Guid>> bytes
     Assert.Equal<IDictionary<string, Guid>>(a, value)
     Assert.IsType<Dictionary<string, Guid>> value |> ignore
     ()
-    
+
 [<Fact>]
 let ``IReadOnlyDictionary`` () =
     let a = new Dictionary<int, decimal>()

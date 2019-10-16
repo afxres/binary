@@ -145,7 +145,7 @@ namespace Mikodev.Binary.Tests
             };
 
             var buffer = generator.ToBytes(data);
-            Assert.Equal(((4 * 3) + (2 + 3 + 3)) + (((4 + 1) * 3) + (4 + 16 + 0)), buffer.Length);
+            Assert.Equal(((1 * 3) + (2 + 3 + 3)) + (((4 + 1) * 3) + (4 + 16 + 0)), buffer.Length);
             var result = generator.ToValue(buffer, data);
             Assert.False(ReferenceEquals(data, result));
             Assert.Equal(data, result);
@@ -169,7 +169,7 @@ namespace Mikodev.Binary.Tests
         {
             var source = new (float, string)?[] { (-1.1F, "quick"), null, (2.2F, "fox") };
             var buffer = generator.ToBytes(source);
-            Assert.Equal((1 + 4 + 4 + 5) + (1 + 0) + (1 + 4 + 4 + 3), buffer.Length);
+            Assert.Equal((1 + 4 + 1 + 5) + (1 + 0) + (1 + 4 + 1 + 3), buffer.Length);
             var result = generator.ToValue<(float, string)?[]>(buffer);
             Assert.False(ReferenceEquals(result, source));
             Assert.Equal(source, result);

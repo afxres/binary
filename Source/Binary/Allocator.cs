@@ -69,11 +69,11 @@ namespace Mikodev.Binary
             return (uint)expand > (uint)(higher - offset) ? Expand(offset, expand) : buffer;
         }
 
-        private void AppendText(in ReadOnlySpan<char> span, Encoding encoding, bool lengthPrefix)
+        internal void AppendText(in ReadOnlySpan<char> span, Encoding encoding, bool lengthPrefix)
         {
-            const int Threshold = 32;
             if (encoding == null)
                 ThrowHelper.ThrowArgumentNull(nameof(encoding));
+            const int Threshold = 64;
             var charCount = span.Length;
             ref var chars = ref MemoryMarshal.GetReference(span);
             var maxByteCount = charCount == 0 ? 0 : charCount > Threshold
@@ -81,27 +81,18 @@ namespace Mikodev.Binary
                 : encoding.GetMaxByteCount(charCount);
             if (!lengthPrefix && maxByteCount == 0)
                 return;
-            var prefixLength = lengthPrefix ? sizeof(int) : 0;
+            var prefixLength = lengthPrefix ? PrimitiveHelper.EncodePrefixLength((uint)maxByteCount) : 0;
             var offset = cursor;
             var target = Ensure(offset, maxByteCount + prefixLength);
             var length = maxByteCount == 0 ? 0 : encoding.GetBytes(ref target[offset + prefixLength], maxByteCount, ref chars, charCount);
             if (lengthPrefix)
-                Endian<int>.Set(ref target[offset], length);
+                PrimitiveHelper.EncodeLengthPrefix(ref target[offset], prefixLength, (uint)length);
             cursor = offset + length + prefixLength;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal ref byte AllocateReference(int length)
-        {
-            var offset = cursor;
-            var target = Ensure(offset, length);
-            cursor = offset + length;
-            return ref target[offset];
         }
 
         internal void AppendBuffer(byte[] item)
         {
-            Debug.Assert(item != null && item.Length > sizeof(int));
+            Debug.Assert(item != null && item.Length > sizeof(byte));
             var byteCount = item.Length;
             ref var target = ref AllocateReference(byteCount);
             ref var source = ref item[0];
@@ -126,7 +117,8 @@ namespace Mikodev.Binary
             // check array length only (for performance reason, ignore maximum capacity)
             if (target == null || target.Length < anchor)
                 ThrowHelper.ThrowAllocatorModified();
-            Endian<int>.Set(ref target[anchor - sizeof(int)], cursor - anchor);
+            // Endian<int>.Set(ref target[anchor - sizeof(int)], cursor - anchor);
+            PrimitiveHelper.EncodeFixed4(ref target[anchor - sizeof(int)], (uint)(cursor - anchor));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -153,6 +145,15 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ref byte AllocateReference(int length)
+        {
+            var offset = cursor;
+            var target = Ensure(offset, length);
+            cursor = offset + length;
+            return ref target[offset];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlyMemory<byte> AsMemory() => new ReadOnlyMemory<byte>(buffer, 0, cursor);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -170,12 +171,7 @@ namespace Mikodev.Binary
             return target;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Append(in ReadOnlySpan<char> span, Encoding encoding) => AppendText(in span, encoding, lengthPrefix: false);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendWithLengthPrefix(in ReadOnlySpan<char> span, Encoding encoding) => AppendText(in span, encoding, lengthPrefix: true);
-
+        [Obsolete]
         public void Append(in ReadOnlySpan<byte> span)
         {
             var byteCount = span.Length;
@@ -185,13 +181,15 @@ namespace Mikodev.Binary
             Memory.Copy(ref target, ref MemoryMarshal.GetReference(span), byteCount);
         }
 
+        [Obsolete]
         public void AppendWithLengthPrefix(in ReadOnlySpan<byte> span)
         {
             var byteCount = span.Length;
-            ref var target = ref AllocateReference(byteCount + sizeof(int));
-            if (byteCount != 0)
-                Memory.Copy(ref Memory.Add(ref target, sizeof(int)), ref MemoryMarshal.GetReference(span), byteCount);
-            Endian<int>.Set(ref target, byteCount);
+            PrimitiveHelper.EncodeLengthPrefix(ref this, (uint)byteCount);
+            if (byteCount == 0)
+                return;
+            ref var target = ref AllocateReference(byteCount);
+            Memory.Copy(ref target, ref MemoryMarshal.GetReference(span), byteCount);
         }
 
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]

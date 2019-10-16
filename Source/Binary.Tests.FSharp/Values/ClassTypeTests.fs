@@ -1,7 +1,6 @@
 ﻿module Values.ClassTypeTests
 
 open Mikodev.Binary
-open Mikodev.Binary.Abstractions
 open System
 open System.Net
 open Xunit
@@ -38,15 +37,12 @@ let test (value : 'a) =
     let result : 'a = generator.ToValue buffer
     Assert.Equal<'a>(value, result)
 
-    let converter = generator.GetConverter<'a>()
-    Assert.IsAssignableFrom<VariableConverter<'a>> converter |> ignore
-
     // convert via Converter
     testWithSpan value
     // converter via bytes methods
     testWithBytes value
     ()
-    
+
 [<Theory>]
 [<InlineData("sharp")>]
 [<InlineData("上山打老虎")>]
@@ -57,10 +53,10 @@ let ``String Instance`` (text : string) =
 [<Theory>]
 [<InlineData("")>]
 [<InlineData(null)>]
-let ``String (empty & null)`` (text : string) = 
+let ``String (empty & null)`` (text : string) =
     let buffer = generator.ToBytes text
     let result : string = generator.ToValue buffer
-    
+
     Assert.Empty(buffer)
     Assert.Equal(String.Empty, result)
     ()
@@ -115,7 +111,7 @@ let ``Uri (null, with length prefix)`` () =
     let result = converter.ToValueWithLengthPrefix(&span)
 
     Assert.Null(result)
-    Assert.Equal(sizeof<int>, buffer.Length)
+    Assert.Equal(1, buffer.Length)
     Assert.True(span.IsEmpty)
     ()
 
@@ -138,21 +134,6 @@ let ``IPAddress (null)`` () =
     Assert.Equal(address, result)
     ()
 
-[<Fact>]
-let ``IPAddress With Invalid Bytes`` () =
-    let converter = generator.GetConverter<IPAddress>()
-    let message = sprintf "Invalid bytes, type: %O" typeof<IPAddress>
-    let errors = [
-        for i in 1..128 do
-            if i <> 4 && i <> 16 then
-                let buffer = Array.zeroCreate<byte> i
-                let error = Assert.Throws<ArgumentException>(fun () -> converter.ToValue buffer |> ignore)
-                yield error.Message
-    ]
-    Assert.NotEmpty errors
-    Assert.Equal(message, errors |> Set |> Assert.Single)
-    ()
-
 [<Theory>]
 [<InlineData("127.0.0.1", 12345)>]
 [<InlineData("::1", 54321)>]
@@ -172,8 +153,8 @@ let ``IPEndPoint And Tuple`` (address : string, port : int) =
     let alpha = generator.ToBytes a
     let bravo = generator.ToBytes b
     let delta = generator.ToBytes d
-    Assert.Equal<byte>(alpha, bravo |> Array.skip 4)
-    Assert.Equal<byte>(alpha, delta |> Array.skip 4)
+    Assert.Equal<byte>(alpha, bravo)
+    Assert.Equal<byte>(alpha, delta)
     ()
 
 [<Fact>]
@@ -188,16 +169,10 @@ let ``IPEndPoint (null)`` () =
     ()
 
 [<Fact>]
-let ``IPEndPoint With Invalid Bytes`` () =
+let ``IPEndPoint (not enough bytes)`` () =
     let converter = generator.GetConverter<IPEndPoint>()
-    let message = sprintf "Invalid bytes, type: %O" typeof<IPEndPoint>
-    let errors = [
-        for i in 1..128 do
-            if i <> 6 && i <> 18 then
-                let buffer = Array.zeroCreate<byte> i
-                let error = Assert.Throws<ArgumentException>(fun () -> converter.ToValue buffer |> ignore)
-                yield error.Message
-    ]
-    Assert.NotEmpty errors
-    Assert.Equal(message, errors |> Set |> Assert.Single)
+    let message = sprintf "Not enough bytes, type: %O" typeof<IPEndPoint>
+    let buffer = generator.ToBytes(struct (Unchecked.defaultof<IPAddress>, uint16 65535))
+    let error = Assert.Throws<ArgumentException>(fun () -> converter.ToValue buffer |> ignore)
+    Assert.Equal(message, error.Message)
     ()

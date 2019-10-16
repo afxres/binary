@@ -3,9 +3,9 @@ using Mikodev.Binary.Internal;
 using System;
 using System.Runtime.InteropServices;
 
-namespace Mikodev.Binary.Adapters.Implementations.Unsafe
+namespace Mikodev.Binary.Adapters.Implementations.Endianness
 {
-    internal sealed class UnsafeNativeAdapter<T> : AdapterMember<T> where T : unmanaged
+    internal sealed class CurrentEndiannessAdapter<T> : AdapterMember<T> where T : unmanaged
     {
         public override void Of(ref Allocator allocator, in ReadOnlySpan<T> span)
         {
@@ -15,7 +15,7 @@ namespace Mikodev.Binary.Adapters.Implementations.Unsafe
             var byteCount = checked(itemCount * Memory.SizeOf<T>());
             ref var target = ref allocator.AllocateReference(byteCount);
             ref var source = ref MemoryMarshal.GetReference(span);
-            Endian<T>.Copy(ref target, ref Memory.AsByte(ref source), byteCount);
+            Memory.Copy(ref target, ref Memory.AsByte(ref source), byteCount);
         }
 
         public override ArraySegment<T> To(in ReadOnlySpan<byte> span)

@@ -38,7 +38,7 @@ namespace Mikodev.Binary.Internal.Components
                 .FirstOrDefault();
             adapter = AdapterHelper.Create(converter);
             toArray = method == null ? null : Compile(method);
-            byArray = converter.IsUnsafeNativeConverter() && (method != null || typeof(ICollection<E>).IsAssignableFrom(typeof(T)));
+            byArray = converter.IsCurrentEndiannessConverter() && (method != null || typeof(ICollection<E>).IsAssignableFrom(typeof(T)));
         }
 
         public void Of(ref Allocator allocator, T item)

@@ -55,7 +55,7 @@ let test<'a> ls ll (v : 'a) =
 [<Fact>]
 let ``Option`` () =
     Some 1 |> test 5 5
-    Some "empty" |> test 6 10
+    Some "empty" |> test 6 7
     None |> test<int option> 1 1
     None |> test<string option> 1 1
     ()
@@ -63,7 +63,7 @@ let ``Option`` () =
 [<Fact>]
 let ``ValueOption`` () =
     ValueSome 8uy |> test 2 2
-    ValueSome "nullptr" |> test 8 12
+    ValueSome "nullptr" |> test 8 9
     ValueNone |> test<int16 voption> 1 1
     ValueNone |> test<string voption> 1 1
     ()
@@ -71,15 +71,15 @@ let ``ValueOption`` () =
 [<Fact>]
 let ``Result`` () =
     Ok 1024 |> test 5 5
-    Ok "32" |> test 3 7
+    Ok "32" |> test 3 4
     Error 6 |> test 5 5
-    Error "error" |> test 6 10
+    Error "error" |> test 6 7
     ()
 
 [<Fact>]
 let ``Choice 2`` () =
     Choice1Of2 2L |> test 9 9
-    Choice2Of2 "test" |> test 5 9
+    Choice2Of2 "test" |> test 5 6
     ()
 
 [<Theory>]
@@ -130,7 +130,7 @@ let ``Invalid Tag With Fake Union Type`` (tag : int) =
     Assert.StartsWith(message, bravo.Message)
     ()
 
-type ABC = 
+type ABC =
     | A of int * string
     | B of int * int * string
     | C of string
@@ -149,7 +149,7 @@ let ``Invalid Null Value (to bytes & to bytes with mark)`` () =
     Assert.StartsWith(message, bravo.Message)
     ()
 
-type X256 = 
+type X256 =
     | X00 | X01 | X02 | X03 | X04 | X05 | X06 | X07 | X08 | X09 | X0A | X0B | X0C | X0D | X0E | X0F
     | X10 | X11 | X12 | X13 | X14 | X15 | X16 | X17 | X18 | X19 | X1A | X1B | X1C | X1D | X1E | X1F
     | X20 | X21 | X22 | X23 | X24 | X25 | X26 | X27 | X28 | X29 | X2A | X2B | X2C | X2D | X2E | X2F
@@ -175,7 +175,7 @@ let ``Union With 256 Cases`` () =
     test 1 1 X256.X80
     ()
 
-type X257 = 
+type X257 =
     | X00 | X01 | X02 | X03 | X04 | X05 | X06 | X07 | X08 | X09 | X0A | X0B | X0C | X0D | X0E | X0F
     | X10 | X11 | X12 | X13 | X14 | X15 | X16 | X17 | X18 | X19 | X1A | X1B | X1C | X1D | X1E | X1F
     | X20 | X21 | X22 | X23 | X24 | X25 | X26 | X27 | X28 | X29 | X2A | X2B | X2C | X2D | X2E | X2F

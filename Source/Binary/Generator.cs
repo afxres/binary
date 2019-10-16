@@ -1,7 +1,4 @@
 ﻿using Mikodev.Binary.Converters;
-using Mikodev.Binary.Converters.Default;
-using Mikodev.Binary.Converters.Unsafe;
-using Mikodev.Binary.Converters.Unsafe.Generic;
 using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Contexts;
 using System;
@@ -15,56 +12,16 @@ namespace Mikodev.Binary
 {
     public sealed class Generator : IGenerator
     {
-        private static readonly IReadOnlyList<Converter> sharedConverters;
-
         private static readonly IReadOnlyList<IConverterCreator> sharedCreators;
 
         static Generator()
         {
-            var converterTypes = new[]
-            {
-                typeof(UriConverter),
-                typeof(StringConverter),
-                typeof(IPAddressConverter),
-                typeof(IPEndPointConverter),
-                typeof(UnsafeDateTimeConverter),
-                typeof(UnsafeDateTimeOffsetConverter),
-                typeof(UnsafeTimeSpanConverter),
-                typeof(UnsafeGuidConverter),
-                typeof(UnsafeDecimalConverter),
-            };
-
-            var types = new[]
-            {
-                typeof(bool),
-                typeof(byte),
-                typeof(sbyte),
-                typeof(char),
-                typeof(short),
-                typeof(int),
-                typeof(long),
-                typeof(ushort),
-                typeof(uint),
-                typeof(ulong),
-                typeof(float),
-                typeof(double),
-            };
-
-            sharedConverters = converterTypes
-                .Concat(types.Select(x => typeof(UnsafeNativeConverter<>).MakeGenericType(x)))
-                .Select(x => (Converter)Activator.CreateInstance(x))
-                .OrderBy(x => x.Length)
-                .ThenBy(x => x.ItemType.Name)
-                .ToArray();
-
             sharedCreators = typeof(Converter).Assembly.GetTypes()
                 .Where(x => !x.IsAbstract && typeof(IConverterCreator).IsAssignableFrom(x))
                 .OrderBy(x => x.Namespace)
                 .ThenBy(x => x.Name)
                 .Select(x => (IConverterCreator)Activator.CreateInstance(x))
                 .ToArray();
-
-            Debug.Assert(sharedConverters.Any(x => x.ItemType == typeof(int)));
         }
 
         private ConcurrentDictionary<Type, Converter> CombineConverters(IEnumerable<Converter> values)
@@ -74,9 +31,6 @@ namespace Mikodev.Binary
             if (values != null)
                 foreach (var i in values.Where(x => x != null))
                     _ = result.TryAdd(i.ItemType, i);
-            // try add internal converters
-            foreach (var i in sharedConverters)
-                _ = result.TryAdd(i.ItemType, i);
             // set object converter
             result[typeof(object)] = new ObjectConverter(this);
             return result;

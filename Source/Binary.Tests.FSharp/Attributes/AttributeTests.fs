@@ -15,9 +15,9 @@ type Int32AsStringConverter() =
     override __.ToBytes(allocator, item) =
         let text = string item
         let span = text.AsSpan()
-        allocator.Append(&span, Converter.Encoding)
+        PrimitiveHelper.EncodeString(&allocator, &span, Converter.Encoding)
 
-    override __.ToValue (span : inref<ReadOnlySpan<byte>>) = 
+    override __.ToValue (span : inref<ReadOnlySpan<byte>>) =
         let text = Encoding.UTF8.GetString(span)
         let item = Int32.Parse(text)
         item
@@ -28,9 +28,9 @@ type Int64AsStringConverter() =
     override __.ToBytes(allocator, item) =
         let text = string item
         let span = text.AsSpan()
-        allocator.Append(&span, Converter.Encoding)
+        PrimitiveHelper.EncodeString(&allocator, &span, Converter.Encoding)
 
-    override __.ToValue (span : inref<ReadOnlySpan<byte>>) = 
+    override __.ToValue (span : inref<ReadOnlySpan<byte>>) =
         let text = Encoding.UTF8.GetString(span)
         let item = Int64.Parse(text)
         item
@@ -53,9 +53,9 @@ type BadConverter<'T>() =
 
 type BadConverterWithoutPublicConstructor<'T> private() =
     inherit VariableConverter<'T>()
-    
+
     override __.ToBytes(_, _) = raise (NotSupportedException())
-    
+
     override __.ToValue (span : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 
 type BadConverterCreatorWithoutPublicConstructor private() =
@@ -89,7 +89,7 @@ type ClassAsNamedObjectWithKey(head : double, next : string, tail : decimal) =
 
     override __.GetHashCode() = raise (NotSupportedException())
 
-    override __.Equals obj = 
+    override __.Equals obj =
         match obj with
         | :? ClassAsNamedObjectWithKey as other -> other.Head = head && other.Next = next && other.Tail = tail
         | _ -> false
@@ -110,8 +110,8 @@ type ClassAsNamedObjectWithPartiallyKey(first : string, second : float32, dayOfW
     member __.DayOfWeek = dayOfWeek
 
     override __.GetHashCode() = raise (NotSupportedException())
-    
-    override me.Equals obj = 
+
+    override me.Equals obj =
         match obj with
         | :? ClassAsNamedObjectWithPartiallyKey as other ->
             other.IgnoreA = me.IgnoreA && other.IgnoreBravo = me.IgnoreBravo &&
@@ -127,8 +127,8 @@ type ClassAsTupleObjectWithKey(beta : int64, release : Uri) =
     member __.Release = release
 
     override __.GetHashCode() = raise (NotSupportedException())
-    
-    override __.Equals obj = 
+
+    override __.Equals obj =
         match obj with
         | :? ClassAsTupleObjectWithKey as other -> other.Beta = beta && other.Release = release
         | _ -> false
@@ -147,8 +147,8 @@ type ClassAsTupleObjectWithPartiallyKey(preview : bool, debug : string, error : 
     member __.Debug = debug
 
     override __.GetHashCode() = raise (NotSupportedException())
-    
-    override __.Equals obj = 
+
+    override __.Equals obj =
         match obj with
         | :? ClassAsTupleObjectWithPartiallyKey as other -> other.Preview = preview && other.Debug = debug && other.Error = error
         | _ -> false
@@ -159,13 +159,13 @@ type ClassAsTupleObjectWithUnorderedKey() =
 
     [<TupleKey(1)>]
     member val Alpha = 0 with get, set
-    
+
     [<TupleKey(0)>]
     member val Candidate = String.Empty with get, set
 
     override __.GetHashCode() = raise (NotSupportedException())
-    
-    override me.Equals obj = 
+
+    override me.Equals obj =
         match obj with
         | :? ClassAsTupleObjectWithUnorderedKey as other -> other.Alpha = me.Alpha && other.Candidate = me.Candidate
         | _ -> false
@@ -180,8 +180,8 @@ type ClassAsTupleObjectWithCustomConverterOfProperty() =
     member val Y = 0 with get, set
 
     override __.GetHashCode() = raise (NotSupportedException())
-    
-    override me.Equals obj = 
+
+    override me.Equals obj =
         match obj with
         | :? ClassAsTupleObjectWithCustomConverterOfProperty as other -> other.X = me.X && other.Y = me.Y
         | _ -> false
@@ -197,7 +197,7 @@ type ValueAsTupleObject =
 
     [<TupleKey(0)>]
     member me.X with get () = me.x and set item = me.x <- item
-    
+
     [<TupleKey(1)>]
     member me.Y with get () = me.y and set item = me.y <- item
 
@@ -209,7 +209,7 @@ type ValueAsTupleObjectWithCustomConverterCreatorOfProperty(alpha : int64, beta 
     [<TupleKey(0)>]
     [<ConverterCreator(typeof<Int64AsStringConverterCreator>)>]
     member __.Alpha = alpha
-    
+
     [<TupleKey(1)>]
     member __.Beta = beta
 
@@ -321,7 +321,7 @@ type ClassWithDuplicateTupleKey02() =
 
     [<TupleKey(0)>]
     member val Overflow = -1 with get, set
-    
+
     [<TupleKey(2)>]
     member val Panic = Exception() with get, set
 

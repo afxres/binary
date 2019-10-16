@@ -2,7 +2,6 @@
 
 open Mikodev.Binary
 open System
-open System.Text
 open Xunit
 
 let random = Random();
@@ -65,7 +64,7 @@ let ``Allocate (normal)`` (required : int) =
 
 [<Fact>]
 let ``Allocate (overflow, default constructor)`` () =
-    let error = Assert.Throws<ArgumentException>(fun () -> 
+    let error = Assert.Throws<ArgumentException>(fun () ->
         let allocator = new Allocator()
         let _ = allocator.Allocate(Int32.MaxValue + 1)
         ())
@@ -77,7 +76,7 @@ let ``Allocate (overflow, default constructor)`` () =
 [<InlineData(256)>]
 [<InlineData(768)>]
 let ``Allocate (overflow, limited)`` (limitation : int) =
-    Assert.Throws<ArgumentException>(fun () -> 
+    Assert.Throws<ArgumentException>(fun () ->
         let allocator = new Allocator(Array.empty, limitation)
         let _ = allocator.Allocate (limitation + 1)
         ()) |> ignore
@@ -104,7 +103,7 @@ let ``Allocate (limited, zero)`` () =
     Assert.Equal(0, span.Length)
     Assert.Equal(0, allocator.Capacity)
     Assert.Equal(0, allocator.Length)
-    Assert.Throws<ArgumentException>(fun () -> 
+    Assert.Throws<ArgumentException>(fun () ->
         let allocator = new Allocator(Array.empty, 0)
         let _ = allocator.Allocate 1
         ()) |> ignore
@@ -172,132 +171,6 @@ let ``Constructor (limitation)`` (size : int, limitation : int) =
     Assert.Equal(0, allocator.Length)
     Assert.Equal(size, allocator.Capacity)
     Assert.Equal(limitation, allocator.MaxCapacity)
-    ()
-    
-[<Theory>]
-[<InlineData(0)>]
-[<InlineData(1)>]
-[<InlineData(255)>]
-[<InlineData(4097)>]
-let ``Append Bytes`` (length: int) =
-    let allocator = new Allocator()
-    let source = Array.zeroCreate<byte> length
-    random.NextBytes source
-    let span = new ReadOnlySpan<byte>(source)
-    allocator.Append &span
-    Assert.Equal(allocator.Length, length)
-
-    let result = allocator.ToArray()
-    Assert.Equal(result.Length, length)
-    Assert.Equal<byte>(source, result)
-    ()
-
-[<Theory>]
-[<InlineData(0)>]
-[<InlineData(1)>]
-[<InlineData(1023)>]
-[<InlineData(8193)>]
-let ``Append Bytes With Length Prefix`` (length: int) =
-    let allocator = new Allocator()
-    let source = Array.zeroCreate<byte> length
-    random.NextBytes source
-    let span = new ReadOnlySpan<byte>(source)
-    allocator.AppendWithLengthPrefix &span
-    Assert.Equal(allocator.Length, length + sizeof<int>)
-
-    let result = allocator.ToArray()
-    Assert.Equal(length, generator.ToValue<int> (Array.take sizeof<int> result))
-    Assert.Equal(result.Length, length + sizeof<int>)
-    Assert.Equal<byte>(source, result |> Array.skip sizeof<int>)
-    ()
-
-[<Theory>]
-[<InlineData("The quick brown fox ...")>]
-[<InlineData("今日はいい天気ですね")>]
-let ``Append Chars`` (text : string) =
-    let allocator = new Allocator()
-    let span = text.AsSpan()
-    allocator.Append(&span, Converter.Encoding)
-    let buffer = allocator.ToArray()
-    let result = Converter.Encoding.GetString buffer
-    Assert.Equal(text, result)
-    ()
-
-[<Theory>]
-[<InlineData("one two three four five")>]
-[<InlineData("今晚打老虎")>]
-let ``Append Chars (unicode)`` (text : string) =
-    let allocator = new Allocator()
-    let span = text.AsSpan()
-    allocator.Append(&span, Encoding.Unicode)
-    let buffer = allocator.ToArray()
-    let result = Encoding.Unicode.GetBytes text
-    Assert.Equal<byte>(buffer, result)
-    ()
-
-[<Fact>]
-let ``Append Chars (random)`` () =
-    let encoding = Converter.Encoding
-
-    for i = 1 to 4096 do
-        let data = [| for k = 0 to (i - 1) do yield char (random.Next(32, 127)) |]
-        let text = String data
-        Assert.Equal(i, text.Length)
-        
-        // MAKE ALLOCATOR MUTABLE!!!
-        let mutable allocator = new Allocator()
-        let span = text.AsSpan()
-        allocator.Append(&span, Converter.Encoding)
-        let buffer = allocator.ToArray()
-        let result = encoding.GetString buffer
-        Assert.Equal(text, result)
-#if DEBUG
-        let capacity = if i <= 32 then encoding.GetMaxByteCount(i) else i
-        Assert.Equal(capacity, allocator.Capacity)
-#endif
-    ()
-
-[<Fact>]
-let ``Append Chars With Length Prefix (random)`` () =
-    let encoding = Converter.Encoding
-
-    for i = 1 to 4096 do
-        let data = [| for k = 0 to (i - 1) do yield char (random.Next(32, 127)) |]
-        let text = String data
-        Assert.Equal(i, text.Length)
-        
-        // MAKE ALLOCATOR MUTABLE!!!
-        let mutable allocator = new Allocator()
-        let span = text.AsSpan()
-        allocator.AppendWithLengthPrefix(&span, Converter.Encoding)
-        let buffer = allocator.ToArray()
-        let result = encoding.GetString (Array.skip sizeof<int> buffer)
-        Assert.Equal(text, result)
-        Assert.Equal(i, generator.ToValue<int> (Array.take sizeof<int> buffer))
-#if DEBUG
-        let capacity = if i <= 32 then encoding.GetMaxByteCount(i) else i
-        Assert.Equal(capacity + sizeof<int>, allocator.Capacity)
-#endif
-    ()
-
-[<Fact>]
-let ``Append Chars (encoding null)`` () =
-    let error = Assert.Throws<ArgumentNullException>(fun () ->
-        let allocator = new Allocator()
-        let span = String.Empty.AsSpan()
-        allocator.Append(&span, null)
-        ())
-    Assert.Equal("encoding", error.ParamName)
-    ()
-
-[<Fact>]
-let ``Append Chars With Length Prefix (encoding null)`` () =
-    let error = Assert.Throws<ArgumentNullException>(fun () ->
-        let allocator = new Allocator()
-        let span = String.Empty.AsSpan()
-        allocator.AppendWithLengthPrefix(&span, null)
-        ())
-    Assert.Equal("encoding", error.ParamName)
     ()
 
 [<Theory>]

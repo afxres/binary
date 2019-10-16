@@ -36,7 +36,7 @@ type EnumerableTests () =
     member __.``IReadOnlyList`` () =
         let a = [ "some"; "times" ] |> vlist :> IReadOnlyList<string>
         let bytes = generator.ToBytes a
-        Assert.Equal(4 * 2 + 9, bytes |> Array.length)
+        Assert.Equal(1 * 2 + 9, bytes |> Array.length)
         let value = generator.ToValue<IReadOnlyList<string>> bytes
         Assert.Equal<string>(a, value)
         Assert.IsType<string segment> value |> ignore

@@ -1,4 +1,4 @@
-﻿using Mikodev.Binary.Converters.Unsafe.Generic;
+﻿using Mikodev.Binary.Creators.Endianness;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -13,9 +13,9 @@ namespace Mikodev.Binary.Internal.Extensions
             return type.IsGenericType && type.GetGenericTypeDefinition() == definition;
         }
 
-        internal static bool IsUnsafeNativeConverter(this Converter converter)
+        internal static bool IsCurrentEndiannessConverter(this Converter converter)
         {
-            return converter.GetType().IsImplementationOf(typeof(UnsafeNativeConverter<>));
+            return converter.GetType().IsImplementationOf(typeof(CurrentEndiannessConverter<>));
         }
 
         internal static bool IsByRefLike(this Type type)

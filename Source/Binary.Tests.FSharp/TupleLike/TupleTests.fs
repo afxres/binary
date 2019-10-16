@@ -81,13 +81,13 @@ let ``Tuple Null 8`` () =
 
 [<Fact>]
 let ``Value Tuple Empty Bytes`` () =
-    Assert.Throws<ArgumentException>(fun () -> generator.ToValue<struct (int * int)> Array.empty |> ignore) |> ignore
+    Assert.Throws<ArgumentOutOfRangeException>(fun () -> generator.ToValue<struct (int * int)> Array.empty |> ignore) |> ignore
     ()
 
 [<Fact>]
 let ``Tuple Array`` () =
-    [ 1, "one"; 2, "two"; 3, "three" ] |> test 35 39
-    [ struct (4, "four"); struct (5, "five") ] |> test 24 28
+    [ 1, "one"; 2, "two"; 3, "three" ] |> test 26 30
+    [ struct (4, "four"); struct (5, "five") ] |> test 18 22
     ()
 
 [<Fact>]
@@ -102,64 +102,64 @@ let ``Tuple 0`` () =
 let ``Tuple 1`` () =
     Tuple.Create<int> 1 |> test 4 4
     ValueTuple.Create 2.0 |> test 8 8
-    Tuple.Create<string> "three" |> test 5 9
-    ValueTuple.Create<string> "four" |> test 4 8
+    Tuple.Create<string> "three" |> test 5 6
+    ValueTuple.Create<string> "four" |> test 4 5
     ()
-    
+
 [<Fact>]
 let ``Tuple 2`` () =
     (5, 6) |> test 8 8
     (struct (7, 8)) |> test 8 8
-    (9, "zero") |> test 8 12
-    (struct ("ten", 11)) |> test 11 11
+    (9, "zero") |> test 8 9
+    (struct ("ten", 11)) |> test 8 8
     ()
 
 [<Fact>]
 let ``Tuple 3`` () =
     (1, 3, 5) |> test 12 12
     (struct (2.2, 4.8, 6.12)) |> test 24 24
-    ("a", 22, "ccc") |> test 12 16
-    (struct (4, "ee", 666)) |> test 14 14
+    ("a", 22, "ccc") |> test 9 10
+    (struct (4, "ee", 666)) |> test 11 11
     ()
-    
+
 [<Fact>]
 let ``Tuple 4`` () =
     (9, 8, 7, 6) |> test 16 16
     (struct (5, 4, 3, 2)) |> test 16 16
-    ("x", -1, "z", -2) |> test 18 18
-    (struct (-2, "y", 3, "w")) |> test 14 18
+    ("x", -1, "z", -2) |> test 12 12
+    (struct (-2, "y", 3, "w")) |> test 11 12
     ()
 
 [<Fact>]
 let ``Tuple 5`` () =
     (2, 4, 6, 8, 0) |> test 20 20
     (struct (9, 7, 5, 3, 1)) |> test 20 20
-    ("x", "y", "z", "w", -1) |> test 24 24
-    (struct (16, "i", "j", "m", "n")) |> test 20 24
+    ("x", "y", "z", "w", -1) |> test 12 12
+    (struct (16, "i", "j", "m", "n")) |> test 11 12
     ()
 
 [<Fact>]
 let ``Tuple 6`` () =
     (1, 2, 4, 8, 16, 32) |> test 24 24
     (struct (0, 1, 3, 7, 15, 31)) |> test 24 24
-    ("t", "U", "p", "L", "e", 6) |> test 29 29
-    (struct (8, "s", "h", "a", "r", "p")) |> test 25 29
+    ("t", "U", "p", "L", "e", 6) |> test 14 14
+    (struct (8, "s", "h", "a", "r", "p")) |> test 13 14
     ()
 
 [<Fact>]
 let ``Tuple 7`` () =
     (9, 11, 13, 15, 17, 19, 21) |> test 28 28
     (struct (-2, 3, -5, 7, -11, 13, -17)) |> test 28 28
-    ("alpha", 1024, "bravo", -65536, "charlie", 33, "delta") |> test 46 50
-    (struct (7, "echo", "foxtrot", "golf", "hotel", 17, 19)) |> test 48 48
+    ("alpha", 1024, "bravo", -65536, "charlie", 33, "delta") |> test 37 38
+    (struct (7, "echo", "foxtrot", "golf", "hotel", 17, 19)) |> test 36 36
     ()
 
 [<Fact>]
 let ``Tuple 8`` () =
     (3, 4, 5, 6, 7, 8, 9, 0) |> test 32 32
     (struct (8, 7, 6, 5, 4, 3, 2, 1)) |> test 32 32
-    ("v", 8, "a", 6, "l", 4, "u", "e") |> test 33 37
-    (struct (-3, 6, -9, 12, -15, "no", "yes", "fine")) |> test 37 41
+    ("v", 8, "a", 6, "l", 4, "u", "e") |> test 21 22
+    (struct (-3, 6, -9, 12, -15, "no", "yes", "fine")) |> test 31 32
     ()
 
 [<Fact>]
@@ -173,7 +173,7 @@ let ``Tuple N`` () =
     Assert.True(typeA.GetProperties() |> Seq.exists (fun x -> x.Name = "Rest"))
     Assert.True(typeB.GetFields() |> Seq.exists (fun x -> x.Name = "Rest"))
     test 48 48 a
-    test 57 57 b
+    test 39 39 b
     ()
 
 let testSize<'T> size =

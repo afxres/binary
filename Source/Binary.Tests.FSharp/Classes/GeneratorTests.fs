@@ -19,7 +19,7 @@ let ``Constructor (argument null or empty)`` () =
     test(new Generator(Seq.empty<Converter>))
     test(new Generator([ null ]))
     ()
-    
+
 [<Fact>]
 let ``Get Converter (via type)`` () =
     let alpha = generator.GetConverter(typeof<int * string>)
@@ -140,7 +140,7 @@ let ``To Value (via type, argument null)`` () =
     let error = Assert.Throws<ArgumentNullException>(fun () -> generator.ToValue(Array.empty<byte>, Unchecked.defaultof<Type>) |> ignore)
     Assert.Equal("type", error.ParamName)
     ()
-    
+
 [<Theory>]
 [<InlineData(6)>]
 [<InlineData("fox")>]
@@ -179,5 +179,5 @@ let ``Bad Creator`` () =
 [<Fact>]
 let ``To String (debug)`` () =
     let generator = new Generator()
-    Assert.Equal("Generator(Converters: 22, Creators: 10)", generator.ToString())
+    Assert.Matches(@"Generator\(Converters: 1, Creators: \d+\)", generator.ToString())
     ()

@@ -1,6 +1,6 @@
 ﻿using Mikodev.Binary.Adapters.Abstractions;
 using Mikodev.Binary.Adapters.Implementations;
-using Mikodev.Binary.Adapters.Implementations.Unsafe;
+using Mikodev.Binary.Adapters.Implementations.Endianness;
 using Mikodev.Binary.Internal.Delegates;
 using Mikodev.Binary.Internal.Extensions;
 using System;
@@ -87,8 +87,8 @@ namespace Mikodev.Binary.Adapters
 
         internal static Adapter<T> Create<T>(Converter<T> converter)
         {
-            var adapter = converter.IsUnsafeNativeConverter()
-                ? Activator.CreateInstance(typeof(UnsafeNativeAdapter<>).MakeGenericType(converter.ItemType))
+            var adapter = converter.IsCurrentEndiannessConverter()
+                ? Activator.CreateInstance(typeof(CurrentEndiannessAdapter<>).MakeGenericType(converter.ItemType))
                 : Activator.CreateInstance((converter.Length > 0 ? typeof(ConstantAdapter<>) : typeof(VariableAdapter<>)).MakeGenericType(converter.ItemType), converter);
             CreateDelegates<T>(out var get, out var set);
             return new Adapter<T>((AdapterMember<T>)adapter, get, set);

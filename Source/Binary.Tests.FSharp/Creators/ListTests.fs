@@ -14,7 +14,7 @@ type ListTests () =
         let bytesA = generator.ToBytes a
         let bytesB = generator.ToBytes b
         Assert.Equal(12, bytesA |> Array.length)
-        Assert.Equal(4 * 4 + 15, bytesB |> Array.length)
+        Assert.Equal(1 * 4 + 15, bytesB |> Array.length)
         let valueA = generator.ToValue<int vlist> bytesA
         let valueB = generator.ToValue<string vlist> bytesB
         Assert.Equal<int>(a, valueA)

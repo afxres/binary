@@ -205,18 +205,11 @@ let ``Invalid Constant Converter Allocation`` (length : int) =
     ()
 
 [<Fact>]
-let ``To Value With Length Prefix 'Not Enough Bytes'`` () =
-    let converter = generator.GetConverter<string>()
-    let message = sprintf "Not enough bytes, type: %O" typeof<string>
-    let errors = [
-        for i in 0..3 do 
-            let bytes = Array.zeroCreate<byte> i
-            let error = Assert.Throws<ArgumentException>(fun () ->
-                let mutable span = ReadOnlySpan bytes
-                converter.ToValueWithLengthPrefix(&span) |> ignore
-            )
-            yield error.Message
-    ]
-    Assert.NotEmpty errors
-    Assert.Equal(message, errors |> Set |> Assert.Single)
+let ``To Value With Length Prefix (length prefix bytes invalid)`` () =
+    let converter = generator.GetConverter<byte[]>()
+    let message = "Length prefix bytes invalid."
+    let bytes = Array.zeroCreate<byte> 0
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable span = ReadOnlySpan bytes in converter.ToValueWithLengthPrefix(&span) |> ignore)
+    Assert.Equal(message, error.Message)
     ()

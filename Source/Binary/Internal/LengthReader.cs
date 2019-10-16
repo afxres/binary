@@ -25,10 +25,12 @@ namespace Mikodev.Binary.Internal
         public void Update(ref byte source)
         {
             Offset += Length;
-            if ((uint)(Limits - Offset) < sizeof(int))
+            ref var location = ref Memory.Add(ref source, Offset);
+            var prefixLength = PrimitiveHelper.DecodePrefixLength(location);
+            if ((uint)(Limits - Offset) < (uint)prefixLength)
                 goto fail;
-            var length = Endian<int>.Get(ref Memory.Add(ref source, Offset));
-            Offset += sizeof(int);
+            var length = PrimitiveHelper.DecodeLengthPrefix(ref location, prefixLength);
+            Offset += prefixLength;
             if ((uint)(Limits - Offset) < (uint)length)
                 goto fail;
             Length = length;

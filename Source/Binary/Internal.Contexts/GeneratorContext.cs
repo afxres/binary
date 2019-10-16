@@ -1,5 +1,4 @@
 ﻿using Mikodev.Binary.Attributes;
-using Mikodev.Binary.Converters.Unsafe.Generic;
 using Mikodev.Binary.Internal.Extensions;
 using System;
 using System.Collections.Concurrent;
@@ -62,9 +61,7 @@ namespace Mikodev.Binary.Internal.Contexts
             // not supported
             if (type.Assembly == typeof(Converter).Assembly)
                 throw new ArgumentException($"Invalid type: {type}");
-            // enum
-            if (type.IsEnum)
-                return (Converter)Activator.CreateInstance(typeof(UnsafeNativeConverter<>).MakeGenericType(type));
+
             // collection
             if (type.TryGetInterfaceArguments(typeof(IEnumerable<>), out var arguments))
                 return ContextMethodsOfCollections.GetConverterAsCollectionOrDictionary(this, type, arguments.Single());
