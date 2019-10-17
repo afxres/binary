@@ -2,10 +2,10 @@
 
 namespace Mikodev.Binary.CollectionAdapters
 {
-    internal abstract class CollectionAdapter<T>
+    internal abstract class CollectionAdapter<U, E>
     {
-        public abstract void Of(ref Allocator allocator, in ReadOnlySpan<T> span);
+        public abstract void Of(ref Allocator allocator, U item);
 
-        public abstract ArraySegment<T> To(in ReadOnlySpan<byte> span);
+        public abstract ArraySegment<E> To(in ReadOnlySpan<byte> span);
     }
 }

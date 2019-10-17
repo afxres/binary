@@ -3,14 +3,15 @@ using System.Diagnostics;
 
 namespace Mikodev.Binary.CollectionAdapters.Implementations
 {
-    internal sealed class VariableCollectionAdapter<T> : CollectionAdapter<T>
+    internal sealed class VariableCollectionAdapter<T> : CollectionAdapter<ReadOnlyMemory<T>, T>
     {
         private readonly Converter<T> converter;
 
         public VariableCollectionAdapter(Converter<T> converter) => this.converter = converter;
 
-        public override void Of(ref Allocator allocator, in ReadOnlySpan<T> span)
+        public override void Of(ref Allocator allocator, ReadOnlyMemory<T> memory)
         {
+            var span = memory.Span;
             for (var i = 0; i < span.Length; i++)
                 converter.ToBytesWithMark(ref allocator, span[i]);
             Debug.Assert(converter.Length == 0);

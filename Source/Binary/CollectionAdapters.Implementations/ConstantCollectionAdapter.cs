@@ -4,14 +4,15 @@ using System.Diagnostics;
 
 namespace Mikodev.Binary.CollectionAdapters.Implementations
 {
-    internal sealed class ConstantCollectionAdapter<T> : CollectionAdapter<T>
+    internal sealed class ConstantCollectionAdapter<T> : CollectionAdapter<ReadOnlyMemory<T>, T>
     {
         private readonly Converter<T> converter;
 
         public ConstantCollectionAdapter(Converter<T> converter) => this.converter = converter;
 
-        public override void Of(ref Allocator allocator, in ReadOnlySpan<T> span)
+        public override void Of(ref Allocator allocator, ReadOnlyMemory<T> memory)
         {
+            var span = memory.Span;
             for (var i = 0; i < span.Length; i++)
                 converter.ToBytes(ref allocator, span[i]);
             Debug.Assert(converter.Length > 0);

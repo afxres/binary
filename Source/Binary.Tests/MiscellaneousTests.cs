@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -9,7 +8,7 @@ namespace Mikodev.Binary.Tests
 {
     public class MiscellaneousTests
     {
-        [Fact(DisplayName = "Methods With ByRef Type")]
+        [Fact(DisplayName = "Public Class Methods With ByRef Type")]
         public void Argument()
         {
             static bool StartsWith(string name, params string[] patterns)
@@ -30,21 +29,12 @@ namespace Mikodev.Binary.Tests
                 typeof(ReadOnlyMemory<>).Name,
             };
 
-            var types = typeof(Converter).Assembly.GetTypes();
+            var types = typeof(Converter).Assembly.GetTypes().Where(x => x.IsPublic);
             var methods = types.SelectMany(x => x.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static)).ToList();
             var parameters = methods.SelectMany(x => x.GetParameters()).ToList();
             var source = parameters.Where(x => StartsWith(x.ParameterType.Name, names)).ToList();
             var failed = source.Where(x => !x.ParameterType.IsByRef).Select(x => x.Member).Cast<MethodInfo>().Select(x => x.ReflectedType).Distinct();
-            var expected = new HashSet<string>
-            {
-                "IPAddressAdapter",
-                "IPEndPointAdapter",
-                "ArraySegmentCollectionConvert`1",
-                "MemoryCollectionConvert`1",
-                "ReadOnlyMemoryCollectionConvert`1"
-            };
-            Assert.Equal(failed.Select(x => x.Name).ToHashSet(), expected);
-            Assert.NotEmpty(failed);
+            Assert.Empty(failed);
             Assert.NotEmpty(source);
         }
 

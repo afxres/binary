@@ -1,11 +1,7 @@
-﻿using System;
-
-namespace Mikodev.Binary.CollectionAdapters
+﻿namespace Mikodev.Binary.CollectionAdapters
 {
-    internal abstract class CollectionConvert<T, E>
+    internal abstract class CollectionConvert
     {
-        public abstract ReadOnlySpan<E> Of(T item);
-
-        public abstract T To(in ArraySegment<E> item);
+        public const int NoActualLength = -1;
     }
 }

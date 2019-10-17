@@ -20,8 +20,9 @@ namespace Mikodev.Binary.Creators.ArrayLike
                 return null;
             var itemType = type.GetGenericArguments().Single();
             var itemConverter = context.GetConverter(itemType);
-            var converterType = typeof(CollectionAdaptedConverter<,>).MakeGenericType(type, itemType);
-            var converterArguments = new object[] { itemConverter, Activator.CreateInstance(definition.MakeGenericType(itemType)) };
+            var adapter = CollectionAdapterHelper.Create(itemConverter);
+            var converterType = typeof(CollectionAdaptedConverter<,,>).MakeGenericType(type, typeof(ReadOnlyMemory<>).MakeGenericType(itemType), itemType);
+            var converterArguments = new object[] { itemConverter, adapter, Activator.CreateInstance(definition.MakeGenericType(itemType)) };
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }

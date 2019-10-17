@@ -84,12 +84,15 @@ namespace Mikodev.Binary.Creators.ArrayLike
                 return null;
             var itemType = types.Single();
             var itemConverter = context.GetConverter(itemType);
-            var converterType = typeof(CollectionAdaptedConverter<,>).MakeGenericType(type, itemType);
+            var converterType = typeof(CollectionAdaptedConverter<,,>).MakeGenericType(type, typeof(ReadOnlyMemory<>).MakeGenericType(itemType), itemType);
             var tailDefinition = available
                 ? typeof(ListDelegateCollectionConvert<>)
                 : typeof(ListFallbackCollectionConvert<>);
             var tail = Activator.CreateInstance(tailDefinition.MakeGenericType(itemType), available ? CreateDelegates(itemType) : Array.Empty<object>());
-            return (Converter)Activator.CreateInstance(converterType, new object[] { itemConverter, tail });
+            var adapter = CollectionAdapterHelper.Create(itemConverter);
+            var converterArguments = new object[] { itemConverter, adapter, tail };
+            var converter = Activator.CreateInstance(converterType, converterArguments);
+            return (Converter)converter;
         }
     }
 }

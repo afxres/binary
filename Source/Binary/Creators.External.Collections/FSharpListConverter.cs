@@ -10,12 +10,12 @@ namespace Mikodev.Binary.Creators.External.Collections
     {
         private readonly Converter<T> converter;
 
-        private readonly CollectionAdapter<T> adapter;
+        private readonly CollectionAdapter<ReadOnlyMemory<T>, T> adapter;
 
         public FSharpListConverter(Converter<T> converter)
         {
             this.converter = converter;
-            adapter = (CollectionAdapter<T>)CollectionAdapterHelper.Create(converter);
+            adapter = (CollectionAdapter<ReadOnlyMemory<T>, T>)CollectionAdapterHelper.Create(converter);
             Debug.Assert(adapter != null);
             Debug.Assert(converter != null);
         }

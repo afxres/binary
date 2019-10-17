@@ -48,5 +48,5 @@ type ListTests () =
     member __.``Validate Converter Type`` (t : Type) =
         let converter = generator.GetConverter t
         let name = converter.GetType().Name
-        Assert.StartsWith("CollectionAdaptedConverter`2", name)
+        Assert.StartsWith("CollectionAdaptedConverter`3", name)
         ()

@@ -4,10 +4,11 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.CollectionAdapters.Implementations
 {
-    internal sealed class OriginalEndiannessCollectionAdapter<T> : CollectionAdapter<T> where T : unmanaged
+    internal sealed class OriginalEndiannessCollectionAdapter<T> : CollectionAdapter<ReadOnlyMemory<T>, T> where T : unmanaged
     {
-        public override void Of(ref Allocator allocator, in ReadOnlySpan<T> span)
+        public override void Of(ref Allocator allocator, ReadOnlyMemory<T> memory)
         {
+            var span = memory.Span;
             var spanLength = span.Length;
             var byteLength = checked(spanLength * Memory.SizeOf<T>());
             if (byteLength == 0)

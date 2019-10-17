@@ -55,9 +55,9 @@ type ArrayLikeTests () =
 
     static member ``Data Bravo`` : (obj array) seq =
         seq {
-            yield [| typeof<ArraySegment<int>>; "CollectionAdaptedConverter`2" |]
-            yield [| typeof<Memory<int>>; "CollectionAdaptedConverter`2" |]
-            yield [| typeof<ReadOnlyMemory<string>>; "CollectionAdaptedConverter`2" |]
+            yield [| typeof<ArraySegment<int>>; "CollectionAdaptedConverter`3" |]
+            yield [| typeof<Memory<int>>; "CollectionAdaptedConverter`3" |]
+            yield [| typeof<ReadOnlyMemory<string>>; "CollectionAdaptedConverter`3" |]
         }
 
     [<Theory(DisplayName = "Validate Converter Type")>]

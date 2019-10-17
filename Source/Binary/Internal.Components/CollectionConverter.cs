@@ -15,7 +15,7 @@ namespace Mikodev.Binary.Internal.Components
 
         private readonly bool byArray;
 
-        private readonly CollectionAdapter<E> adapter;
+        private readonly CollectionAdapter<ReadOnlyMemory<E>, E> adapter;
 
         private readonly ToArray<T, E> toArray;
 
@@ -36,7 +36,7 @@ namespace Mikodev.Binary.Internal.Components
             var method = typeof(T).GetMethods(BindingFlags.Instance | BindingFlags.Public)
                 .Where(x => x.Name == "ToArray" && x.ReturnType == typeof(E[]) && x.GetParameters().Length == 0)
                 .FirstOrDefault();
-            adapter = (CollectionAdapter<E>)CollectionAdapterHelper.Create(converter);
+            adapter = (CollectionAdapter<ReadOnlyMemory<E>, E>)CollectionAdapterHelper.Create(converter);
             toArray = method == null ? null : Compile(method);
             byArray = converter.IsOriginalEndiannessConverter() && (method != null || typeof(ICollection<E>).IsAssignableFrom(typeof(T)));
         }
