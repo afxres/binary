@@ -12,8 +12,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (dictionary.TryGetValue(text, out var result))
                 return result;
             Debug.Assert(!string.IsNullOrEmpty(text));
-            var encoding = Converter.Encoding;
-            var buffer = encoding.GetBytes(text);
+            var buffer = Converter.Encoding.GetBytes(text);
             var allocator = new Allocator();
             PrimitiveHelper.EncodeWithLengthPrefix(ref allocator, buffer);
             var target = allocator.ToArray();

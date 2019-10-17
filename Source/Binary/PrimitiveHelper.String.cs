@@ -20,7 +20,7 @@ namespace Mikodev.Binary
                 EncodeLengthPrefix(ref allocator, (uint)byteCount);
             if (byteCount == 0)
                 return;
-            var bytes = allocator.AllocateReference(byteCount);
+            ref var bytes = ref allocator.AllocateReference(byteCount);
             _ = encoding.GetBytes(ref bytes, byteCount, ref chars, charCount);
         }
 
