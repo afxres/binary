@@ -47,6 +47,17 @@ namespace Mikodev.Binary
         {
             if (encoding == null)
                 ThrowHelper.ThrowArgumentNull(nameof(encoding));
+            return encoding.GetString(DecodeWithLengthPrefix(ref span));
+        }
+
+        public static string DecodeString(in ReadOnlySpan<byte> span)
+        {
+            return StringHelper.Decode(Converter.Encoding, ref MemoryMarshal.GetReference(span), span.Length);
+        }
+
+        public static string DecodeStringWithLengthPrefix(ref ReadOnlySpan<byte> span)
+        {
+            var encoding = Converter.Encoding;
             var spanLength = span.Length;
             if (spanLength == 0)
                 goto fail;
@@ -55,20 +66,13 @@ namespace Mikodev.Binary
             if (spanLength < prefixLength)
                 goto fail;
             var length = DecodeLengthPrefix(ref location, prefixLength);
-            if ((uint)spanLength < (uint)(prefixLength + length))
-                goto fail;
-            var result = encoding.GetString(ref Memory.Add(ref location, prefixLength), length);
+            // check bounds via slice method
             span = span.Slice(prefixLength + length);
-            return result;
+            return StringHelper.Decode(encoding, ref Memory.Add(ref location, prefixLength), length);
 
         fail:
-            return ThrowHelper.ThrowLengthPrefixInvalidBytes<string>();
+            ThrowHelper.ThrowLengthPrefixInvalidBytes();
+            throw null;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string DecodeString(in ReadOnlySpan<byte> span) => DecodeString(in span, Converter.Encoding);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string DecodeStringWithLengthPrefix(ref ReadOnlySpan<byte> span) => DecodeStringWithLengthPrefix(ref span, Converter.Encoding);
     }
 }

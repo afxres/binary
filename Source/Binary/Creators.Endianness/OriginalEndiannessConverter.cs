@@ -58,14 +58,13 @@ namespace Mikodev.Binary.Creators.Endianness
             var length = PrimitiveHelper.DecodeLengthPrefix(ref location, prefixLength);
             if (length < Memory.SizeOf<T>())
                 return ThrowHelper.ThrowNotEnoughBytes<T>();
-            if ((uint)spanLength < (uint)(prefixLength + length))
-                goto fail;
-            var result = Memory.Get<T>(ref Memory.Add(ref location, prefixLength));
+            // check bounds via slice method
             span = span.Slice(prefixLength + length);
-            return result;
+            return Memory.Get<T>(ref Memory.Add(ref location, prefixLength));
 
         fail:
-            return ThrowHelper.ThrowLengthPrefixInvalidBytes<T>();
+            ThrowHelper.ThrowLengthPrefixInvalidBytes();
+            throw null;
         }
     }
 }

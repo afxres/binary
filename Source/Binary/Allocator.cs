@@ -2,7 +2,6 @@
 using Mikodev.Binary.Internal.Extensions;
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -10,10 +9,6 @@ namespace Mikodev.Binary
 {
     public ref struct Allocator
     {
-        private const int MaxByteCountThreshold = 64;
-
-        private static readonly int[] maxByteCounts = Enumerable.Range(0, MaxByteCountThreshold + 1).Select(Converter.Encoding.GetMaxByteCount).ToArray();
-
         private readonly int bounds;
 
         private int cursor;
@@ -78,9 +73,7 @@ namespace Mikodev.Binary
             var encoding = Converter.Encoding;
             var charCount = span.Length;
             ref var chars = ref MemoryMarshal.GetReference(span);
-            var maxByteCount = charCount == 0 ? 0 : charCount > MaxByteCountThreshold
-                ? encoding.GetByteCount(ref chars, charCount)
-                : maxByteCounts[charCount];
+            var maxByteCount = StringHelper.GetMaxByteCountByteCount(encoding, ref chars, charCount);
             if (!withLengthPrefix && maxByteCount == 0)
                 return;
             var prefixLength = withLengthPrefix ? PrimitiveHelper.EncodePrefixLength((uint)maxByteCount) : 0;

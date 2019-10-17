@@ -32,12 +32,12 @@ namespace Mikodev.Binary.Internal
         internal static void ThrowLengthPrefixOverflow() => throw new ArgumentException("Length prefix overflow.");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static void ThrowLengthPrefixInvalidBytes() => throw new ArgumentException("Length prefix bytes invalid.");
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static T ThrowNotEnoughBytes<T>() => throw new ArgumentException($"Not enough bytes, type: {typeof(T)}");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static T ThrowNoSuitableConstructor<T>() => throw new InvalidOperationException($"No suitable constructor found, type: {typeof(T)}");
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static T ThrowLengthPrefixInvalidBytes<T>() => throw new ArgumentException("Length prefix bytes invalid.");
     }
 }

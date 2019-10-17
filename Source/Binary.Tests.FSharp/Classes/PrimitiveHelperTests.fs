@@ -103,7 +103,7 @@ let ``Encode String (random)`` () =
 
         let mutable allocator = new Allocator()
         let span = text.AsSpan()
-        PrimitiveHelper.EncodeString(&allocator, &span, Converter.Encoding)
+        PrimitiveHelper.EncodeString(&allocator, &span)
         let buffer = allocator.ToArray()
         let result = encoding.GetString buffer
         Assert.Equal(text, result)
@@ -125,7 +125,7 @@ let ``Encode String With Length Prefix (random)`` () =
         // MAKE ALLOCATOR MUTABLE!!!
         let mutable allocator = new Allocator()
         let span = text.AsSpan()
-        PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, &span, Converter.Encoding)
+        PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, &span)
         let buffer = allocator.ToArray()
         let prefixLength = PrimitiveHelper.DecodePrefixLength(buffer.[0])
         let result = encoding.GetString (Array.skip prefixLength buffer)

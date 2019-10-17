@@ -18,12 +18,12 @@ namespace Mikodev.Binary
 
         public static ReadOnlySpan<byte> DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
-            var byteCount = span.Length;
-            if (byteCount == 0)
+            var spanLength = span.Length;
+            if (spanLength == 0)
                 goto fail;
             ref var location = ref MemoryMarshal.GetReference(span);
             var prefixLength = DecodePrefixLength(location);
-            if ((uint)byteCount < (uint)prefixLength)
+            if (spanLength < prefixLength)
                 goto fail;
             var length = DecodeLengthPrefix(ref location, prefixLength);
             // check bounds via slice method, then replace span with remaining part
@@ -32,8 +32,8 @@ namespace Mikodev.Binary
             return result;
 
         fail:
-            _ = ThrowHelper.ThrowLengthPrefixInvalidBytes<int>();
-            return default;
+            ThrowHelper.ThrowLengthPrefixInvalidBytes();
+            throw null;
         }
     }
 }

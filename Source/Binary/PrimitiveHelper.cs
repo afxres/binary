@@ -92,7 +92,8 @@ namespace Mikodev.Binary
             return DecodeLengthPrefix(ref location, prefixLength);
 
         fail:
-            return ThrowHelper.ThrowLengthPrefixInvalidBytes<int>();
+            ThrowHelper.ThrowLengthPrefixInvalidBytes();
+            throw null;
         }
     }
 }

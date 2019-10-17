@@ -102,7 +102,6 @@ type ThrowTests() =
         [| typeof<Converter Queue>; typeof<Converter> |];
         [| typeof<Generator list>; typeof<Generator> |];
         [| typeof<ValueTuple Set>; typeof<ValueTuple> |];
-        [| typeof<ValueTuple Set>; typeof<ValueTuple> |];
         [| typeof<ValueTuple ICollection>; typeof<ValueTuple> |];
         [| typeof<ValueTuple IEnumerable>; typeof<ValueTuple> |];
         [| typeof<Map<ValueTuple, int>>; typeof<ValueTuple> |];
