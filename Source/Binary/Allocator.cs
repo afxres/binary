@@ -2,14 +2,18 @@
 using Mikodev.Binary.Internal.Extensions;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Mikodev.Binary
 {
     public ref struct Allocator
     {
+        private const int MaxByteCountThreshold = 64;
+
+        private static readonly int[] maxByteCounts = Enumerable.Range(0, MaxByteCountThreshold + 1).Select(Converter.Encoding.GetMaxByteCount).ToArray();
+
         private readonly int bounds;
 
         private int cursor;
@@ -69,30 +73,28 @@ namespace Mikodev.Binary
             return (uint)expand > (uint)(higher - offset) ? Expand(offset, expand) : buffer;
         }
 
-        internal void AppendText(in ReadOnlySpan<char> span, Encoding encoding, bool lengthPrefix)
+        internal void Encode(in ReadOnlySpan<char> span, bool withLengthPrefix)
         {
-            if (encoding == null)
-                ThrowHelper.ThrowArgumentNull(nameof(encoding));
-            const int Threshold = 64;
+            var encoding = Converter.Encoding;
             var charCount = span.Length;
             ref var chars = ref MemoryMarshal.GetReference(span);
-            var maxByteCount = charCount == 0 ? 0 : charCount > Threshold
+            var maxByteCount = charCount == 0 ? 0 : charCount > MaxByteCountThreshold
                 ? encoding.GetByteCount(ref chars, charCount)
-                : encoding.GetMaxByteCount(charCount);
-            if (!lengthPrefix && maxByteCount == 0)
+                : maxByteCounts[charCount];
+            if (!withLengthPrefix && maxByteCount == 0)
                 return;
-            var prefixLength = lengthPrefix ? PrimitiveHelper.EncodePrefixLength((uint)maxByteCount) : 0;
+            var prefixLength = withLengthPrefix ? PrimitiveHelper.EncodePrefixLength((uint)maxByteCount) : 0;
             var offset = cursor;
             var target = Ensure(offset, maxByteCount + prefixLength);
             var length = maxByteCount == 0 ? 0 : encoding.GetBytes(ref target[offset + prefixLength], maxByteCount, ref chars, charCount);
-            if (lengthPrefix)
+            if (withLengthPrefix)
                 PrimitiveHelper.EncodeLengthPrefix(ref target[offset], prefixLength, (uint)length);
             cursor = offset + length + prefixLength;
         }
 
         internal void AppendBuffer(byte[] item)
         {
-            Debug.Assert(item != null && item.Length > sizeof(byte));
+            Debug.Assert(item != null && item.Length != 0);
             var byteCount = item.Length;
             ref var target = ref AllocateReference(byteCount);
             ref var source = ref item[0];
@@ -117,7 +119,6 @@ namespace Mikodev.Binary
             // check array length only (for performance reason, ignore maximum capacity)
             if (target == null || target.Length < anchor)
                 ThrowHelper.ThrowAllocatorModified();
-            // Endian<int>.Set(ref target[anchor - sizeof(int)], cursor - anchor);
             PrimitiveHelper.EncodeFixed4(ref target[anchor - sizeof(int)], (uint)(cursor - anchor));
         }
 

@@ -10,7 +10,7 @@ namespace Mikodev.Binary.Internal
 
         public LengthItem(int offset, int length)
         {
-            Debug.Assert(offset >= sizeof(byte));
+            Debug.Assert(offset >= 1);
             Debug.Assert(length >= 0);
             Offset = offset;
             Length = length;

@@ -1,6 +1,7 @@
 ﻿using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Extensions;
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -8,9 +9,32 @@ namespace Mikodev.Binary
 {
     public static partial class PrimitiveHelper
     {
-        public static void EncodeString(ref Allocator allocator, in ReadOnlySpan<char> span, Encoding encoding) => allocator.AppendText(in span, encoding, lengthPrefix: false);
+        private static void Encode(ref Allocator allocator, in ReadOnlySpan<char> span, Encoding encoding, bool withLengthPrefix)
+        {
+            if (encoding == null)
+                ThrowHelper.ThrowArgumentNull(nameof(encoding));
+            var charCount = span.Length;
+            ref var chars = ref MemoryMarshal.GetReference(span);
+            var byteCount = charCount == 0 ? 0 : encoding.GetByteCount(ref chars, charCount);
+            if (withLengthPrefix)
+                EncodeLengthPrefix(ref allocator, (uint)byteCount);
+            if (byteCount == 0)
+                return;
+            var bytes = allocator.AllocateReference(byteCount);
+            _ = encoding.GetBytes(ref bytes, byteCount, ref chars, charCount);
+        }
 
-        public static void EncodeStringWithLengthPrefix(ref Allocator allocator, in ReadOnlySpan<char> span, Encoding encoding) => allocator.AppendText(in span, encoding, lengthPrefix: true);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void EncodeString(ref Allocator allocator, in ReadOnlySpan<char> span, Encoding encoding) => Encode(ref allocator, in span, encoding, false);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void EncodeStringWithLengthPrefix(ref Allocator allocator, in ReadOnlySpan<char> span, Encoding encoding) => Encode(ref allocator, in span, encoding, true);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void EncodeString(ref Allocator allocator, in ReadOnlySpan<char> span) => allocator.Encode(in span, false);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void EncodeStringWithLengthPrefix(ref Allocator allocator, in ReadOnlySpan<char> span) => allocator.Encode(in span, true);
 
         public static string DecodeString(in ReadOnlySpan<byte> span, Encoding encoding)
         {
@@ -40,5 +64,11 @@ namespace Mikodev.Binary
         fail:
             return ThrowHelper.ThrowLengthPrefixInvalidBytes<string>();
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string DecodeString(in ReadOnlySpan<byte> span) => DecodeString(in span, Converter.Encoding);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string DecodeStringWithLengthPrefix(ref ReadOnlySpan<byte> span) => DecodeStringWithLengthPrefix(ref span, Converter.Encoding);
     }
 }
