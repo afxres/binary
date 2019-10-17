@@ -2,6 +2,7 @@
 
 open Mikodev.Binary
 open System
+open System.Collections.Generic
 open System.Net
 open Xunit
 
@@ -85,4 +86,34 @@ type ThrowTests() =
     member me.``No Available Property``(t : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
         Assert.Contains(sprintf "No available property found, type: %O" t, error.Message)
+        ()
+
+    static member ``Data Bravo`` = [|
+        [| typeof<Token>; typeof<Token> |];
+        [| typeof<Token array>; typeof<Token> |];
+        [| typeof<Token ResizeArray>; typeof<Token> |];
+        [| typeof<Token IList>; typeof<Token> |];
+        [| typeof<Token Memory>; typeof<Token> |];
+        [| typeof<Token ArraySegment>; typeof<Token> |];
+        [| typeof<Token * int>; typeof<Token> |];
+        [| typeof<struct (int * Token)>; typeof<Token> |];
+        [| typeof<Converter HashSet>; typeof<Converter> |];
+        [| typeof<Converter Stack>; typeof<Converter> |];
+        [| typeof<Converter Queue>; typeof<Converter> |];
+        [| typeof<Generator list>; typeof<Generator> |];
+        [| typeof<ValueTuple Set>; typeof<ValueTuple> |];
+        [| typeof<ValueTuple Set>; typeof<ValueTuple> |];
+        [| typeof<ValueTuple ICollection>; typeof<ValueTuple> |];
+        [| typeof<ValueTuple IEnumerable>; typeof<ValueTuple> |];
+        [| typeof<Map<ValueTuple, int>>; typeof<ValueTuple> |];
+        [| typeof<Dictionary<ValueTuple, int>>; typeof<ValueTuple> |];
+        [| typeof<IDictionary<ValueTuple, int>>; typeof<ValueTuple> |];
+    |]
+
+    [<Theory>]
+    [<MemberData("Data Bravo")>]
+    member me.``Simple Or Complex Type With Invalid Type`` (t : Type, by : Type) =
+        let message = sprintf "Invalid type: %O" by
+        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
+        Assert.Equal(message, error.Message)
         ()

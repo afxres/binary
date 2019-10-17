@@ -21,11 +21,13 @@ namespace Mikodev.Binary.Tests
             }
 
             var names = new[]
-            {   typeof(Span<>).Name,
+            {
+                typeof(Allocator).Name,
+                typeof(ArraySegment<>).Name,
+                typeof(Span<>).Name,
                 typeof(Memory<>).Name,
                 typeof(ReadOnlySpan<>).Name,
                 typeof(ReadOnlyMemory<>).Name,
-                typeof(Allocator).Name,
             };
 
             var types = typeof(Converter).Assembly.GetTypes();
@@ -33,7 +35,15 @@ namespace Mikodev.Binary.Tests
             var parameters = methods.SelectMany(x => x.GetParameters()).ToList();
             var source = parameters.Where(x => StartsWith(x.ParameterType.Name, names)).ToList();
             var failed = source.Where(x => !x.ParameterType.IsByRef).Select(x => x.Member).Cast<MethodInfo>().Select(x => x.ReflectedType).Distinct();
-            Assert.Equal(failed.Select(x => x.Name).ToHashSet(), new HashSet<string> { "IPAddressAdapter", "IPEndPointAdapter", "MemoryConverter`1", "ReadOnlyMemoryConverter`1" });
+            var expected = new HashSet<string>
+            {
+                "IPAddressAdapter",
+                "IPEndPointAdapter",
+                "ArraySegmentCollectionConvert`1",
+                "MemoryCollectionConvert`1",
+                "ReadOnlyMemoryCollectionConvert`1"
+            };
+            Assert.Equal(failed.Select(x => x.Name).ToHashSet(), expected);
             Assert.NotEmpty(failed);
             Assert.NotEmpty(source);
         }

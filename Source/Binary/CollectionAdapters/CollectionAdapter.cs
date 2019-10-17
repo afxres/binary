@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Mikodev.Binary.Adapters.Abstractions
+namespace Mikodev.Binary.CollectionAdapters
 {
-    internal abstract class AdapterMember<T>
+    internal abstract class CollectionAdapter<T>
     {
         public abstract void Of(ref Allocator allocator, in ReadOnlySpan<T> span);
 

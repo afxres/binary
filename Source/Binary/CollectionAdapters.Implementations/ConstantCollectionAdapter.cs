@@ -1,15 +1,14 @@
-﻿using Mikodev.Binary.Adapters.Abstractions;
-using Mikodev.Binary.Internal;
+﻿using Mikodev.Binary.Internal;
 using System;
 using System.Diagnostics;
 
-namespace Mikodev.Binary.Adapters.Implementations
+namespace Mikodev.Binary.CollectionAdapters.Implementations
 {
-    internal sealed class ConstantAdapter<T> : AdapterMember<T>
+    internal sealed class ConstantCollectionAdapter<T> : CollectionAdapter<T>
     {
         private readonly Converter<T> converter;
 
-        public ConstantAdapter(Converter<T> converter) => this.converter = converter;
+        public ConstantCollectionAdapter(Converter<T> converter) => this.converter = converter;
 
         public override void Of(ref Allocator allocator, in ReadOnlySpan<T> span)
         {

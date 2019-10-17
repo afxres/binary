@@ -32,7 +32,7 @@ let ``Array of Arrays`` () =
     let array = [| [| 1; 2|]; [| 5; 7; 9|] |]
     Assert.Equal(1, array.Rank)
     let bytes = generator.ToBytes array
-    Assert.Equal(4 * 2 + 4 * 5, bytes |> Array.length)
+    Assert.Equal(1 * 2 + 4 * 5, bytes |> Array.length)
     let value = generator.ToValue<int [] []> bytes
     Assert.Equal<int []>(array, value)
     ()

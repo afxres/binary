@@ -1,18 +1,29 @@
-﻿using Mikodev.Binary.Internal.Components;
+﻿using Mikodev.Binary.CollectionAdapters;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Mikodev.Binary.Creators.ArrayLike
 {
     internal sealed class ArrayLikeConverterCreator : IConverterCreator
     {
-        private static readonly GenericConverterCreator creator = new GenericConverterCreator(new Dictionary<Type, Type>
+        private static readonly IReadOnlyDictionary<Type, Type> dictionary = new Dictionary<Type, Type>
         {
-            [typeof(ArraySegment<>)] = typeof(ArraySegmentConverter<>),
-            [typeof(Memory<>)] = typeof(MemoryConverter<>),
-            [typeof(ReadOnlyMemory<>)] = typeof(ReadOnlyMemoryConverter<>),
-        });
+            [typeof(ArraySegment<>)] = typeof(ArraySegmentCollectionConvert<>),
+            [typeof(Memory<>)] = typeof(MemoryCollectionConvert<>),
+            [typeof(ReadOnlyMemory<>)] = typeof(ReadOnlyMemoryCollectionConvert<>),
+        };
 
-        public Converter GetConverter(IGeneratorContext context, Type type) => creator.GetConverter(context, type);
+        public Converter GetConverter(IGeneratorContext context, Type type)
+        {
+            if (!type.IsGenericType || !dictionary.TryGetValue(type.GetGenericTypeDefinition(), out var definition))
+                return null;
+            var itemType = type.GetGenericArguments().Single();
+            var itemConverter = context.GetConverter(itemType);
+            var converterType = typeof(CollectionAdaptedConverter<,>).MakeGenericType(type, itemType);
+            var converterArguments = new object[] { itemConverter, Activator.CreateInstance(definition.MakeGenericType(itemType)) };
+            var converter = Activator.CreateInstance(converterType, converterArguments);
+            return (Converter)converter;
+        }
     }
 }

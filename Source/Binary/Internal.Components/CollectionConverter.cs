@@ -1,4 +1,4 @@
-﻿using Mikodev.Binary.Adapters;
+﻿using Mikodev.Binary.CollectionAdapters;
 using Mikodev.Binary.Internal.Delegates;
 using Mikodev.Binary.Internal.Extensions;
 using System;
@@ -15,7 +15,7 @@ namespace Mikodev.Binary.Internal.Components
 
         private readonly bool byArray;
 
-        private readonly Adapter<E> adapter;
+        private readonly CollectionAdapter<E> adapter;
 
         private readonly ToArray<T, E> toArray;
 
@@ -36,9 +36,9 @@ namespace Mikodev.Binary.Internal.Components
             var method = typeof(T).GetMethods(BindingFlags.Instance | BindingFlags.Public)
                 .Where(x => x.Name == "ToArray" && x.ReturnType == typeof(E[]) && x.GetParameters().Length == 0)
                 .FirstOrDefault();
-            adapter = AdapterHelper.Create(converter);
+            adapter = (CollectionAdapter<E>)CollectionAdapterHelper.Create(converter);
             toArray = method == null ? null : Compile(method);
-            byArray = converter.IsCurrentEndiannessConverter() && (method != null || typeof(ICollection<E>).IsAssignableFrom(typeof(T)));
+            byArray = converter.IsOriginalEndiannessConverter() && (method != null || typeof(ICollection<E>).IsAssignableFrom(typeof(T)));
         }
 
         public void Of(ref Allocator allocator, T item)
@@ -47,8 +47,6 @@ namespace Mikodev.Binary.Internal.Components
                 return;
             else if (item is E[] array)
                 adapter.Of(ref allocator, array);
-            else if (item is List<E> value)
-                adapter.OfList(ref allocator, value);
             else if (item is ArraySegment<E> segment)
                 adapter.Of(ref allocator, segment);
             else if (item is IList<E> items)

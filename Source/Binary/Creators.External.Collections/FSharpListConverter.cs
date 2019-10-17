@@ -1,6 +1,6 @@
 ﻿using Microsoft.FSharp.Collections;
 using Mikodev.Binary.Abstractions;
-using Mikodev.Binary.Adapters;
+using Mikodev.Binary.CollectionAdapters;
 using System;
 using System.Diagnostics;
 
@@ -10,12 +10,12 @@ namespace Mikodev.Binary.Creators.External.Collections
     {
         private readonly Converter<T> converter;
 
-        private readonly Adapter<T> adapter;
+        private readonly CollectionAdapter<T> adapter;
 
         public FSharpListConverter(Converter<T> converter)
         {
             this.converter = converter;
-            adapter = AdapterHelper.Create(converter);
+            adapter = (CollectionAdapter<T>)CollectionAdapterHelper.Create(converter);
             Debug.Assert(adapter != null);
             Debug.Assert(converter != null);
         }
@@ -38,8 +38,9 @@ namespace Mikodev.Binary.Creators.External.Collections
         public override FSharpList<T> ToValue(in ReadOnlySpan<byte> span)
         {
             // recursive call may cause stackoverflow, so ...
-            var source = adapter.ToList(in span);
-            var length = source.Count;
+            var origin = adapter.To(in span);
+            var source = origin.Array;
+            var length = origin.Count;
             var result = ListModule.Empty<T>();
             for (var i = length - 1; i >= 0; i--)
                 result = FSharpList<T>.Cons(source[i], result);

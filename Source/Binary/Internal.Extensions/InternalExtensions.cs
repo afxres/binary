@@ -13,9 +13,9 @@ namespace Mikodev.Binary.Internal.Extensions
             return type.IsGenericType && type.GetGenericTypeDefinition() == definition;
         }
 
-        internal static bool IsCurrentEndiannessConverter(this Converter converter)
+        internal static bool IsOriginalEndiannessConverter(this Converter converter)
         {
-            return converter.GetType().IsImplementationOf(typeof(CurrentEndiannessConverter<>));
+            return converter.GetType().IsImplementationOf(typeof(OriginalEndiannessConverter<>));
         }
 
         internal static bool IsByRefLike(this Type type)

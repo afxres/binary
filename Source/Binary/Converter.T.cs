@@ -17,9 +17,19 @@ namespace Mikodev.Binary
 
         public virtual void ToBytesWithLengthPrefix(ref Allocator allocator, T item)
         {
-            allocator.LengthPrefixAnchor(out var anchor);
-            ToBytes(ref allocator, item);
-            allocator.LengthPrefixFinish(anchor);
+            var length = Length;
+            if (length > 0)
+            {
+                var prefix = (uint)length;
+                PrimitiveHelper.EncodeLengthPrefix(ref allocator, prefix);
+                ToBytes(ref allocator, item);
+            }
+            else
+            {
+                allocator.LengthPrefixAnchor(out var anchor);
+                ToBytes(ref allocator, item);
+                allocator.LengthPrefixFinish(anchor);
+            }
         }
 
         public virtual T ToValueWithLengthPrefix(ref ReadOnlySpan<byte> span) => ToValue(PrimitiveHelper.DecodeWithLengthPrefix(ref span));

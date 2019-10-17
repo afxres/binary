@@ -3,10 +3,7 @@
 open Mikodev.Binary
 open Mikodev.Binary.Abstractions
 open System
-open System.Collections.Generic
 open Xunit
-
-type vlist<'a> = System.Collections.Generic.List<'a>
 
 let generator = new Generator()
 
@@ -25,25 +22,6 @@ let ``Object Converter`` () =
 let ``Object Converter (to value)`` () =
     let converter = generator.GetConverter<obj>()
     let error = Assert.Throws<ArgumentException>(fun () -> converter.ToValue Array.empty<byte> |> ignore)
-    Assert.Contains("Invalid type", error.Message)
-    ()
-
-[<Fact>]
-let ``Collection Converter Constructor`` () =
-    Assert.Throws<ArgumentException>(fun () -> generator.ToValue<Token array> Array.empty<byte> |> ignore) |> ignore
-    Assert.Throws<ArgumentException>(fun () -> generator.ToValue<Token vlist> Array.empty<byte> |> ignore) |> ignore
-    Assert.Throws<ArgumentException>(fun () -> generator.ToValue<Token IList> Array.empty<byte> |> ignore) |> ignore
-    ()
-
-[<Fact>]
-let ``Enumerable Converter Constructor`` () =
-    let error = Assert.Throws<ArgumentException>(fun () -> generator.ToValue<ICollection<Token>> Array.empty<byte> |> ignore)
-    Assert.Contains("Invalid type", error.Message)
-    ()
-
-[<Fact>]
-let ``Dictionary Converter Constructor`` () =
-    let error = Assert.Throws<ArgumentException>(fun () -> generator.ToValue<IDictionary<string, Token>> Array.empty<byte> |> ignore)
     Assert.Contains("Invalid type", error.Message)
     ()
 

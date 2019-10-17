@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Creators.Endianness
 {
-    internal sealed class CurrentEndiannessConverter<T> : Converter<T> where T : unmanaged
+    internal sealed class OriginalEndiannessConverter<T> : Converter<T> where T : unmanaged
     {
-        public CurrentEndiannessConverter() : base(Memory.SizeOf<T>())
+        public OriginalEndiannessConverter() : base(Memory.SizeOf<T>())
         {
             Debug.Assert(typeof(T) == typeof(Guid) || new List<int> { 1, 2, 4, 8 }.Contains(Memory.SizeOf<T>()));
         }

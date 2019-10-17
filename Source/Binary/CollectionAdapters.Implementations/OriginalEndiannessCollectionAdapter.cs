@@ -1,21 +1,20 @@
-﻿using Mikodev.Binary.Adapters.Abstractions;
-using Mikodev.Binary.Internal;
+﻿using Mikodev.Binary.Internal;
 using System;
 using System.Runtime.InteropServices;
 
-namespace Mikodev.Binary.Adapters.Implementations.Endianness
+namespace Mikodev.Binary.CollectionAdapters.Implementations
 {
-    internal sealed class CurrentEndiannessAdapter<T> : AdapterMember<T> where T : unmanaged
+    internal sealed class OriginalEndiannessCollectionAdapter<T> : CollectionAdapter<T> where T : unmanaged
     {
         public override void Of(ref Allocator allocator, in ReadOnlySpan<T> span)
         {
-            var itemCount = span.Length;
-            if (itemCount == 0)
+            var spanLength = span.Length;
+            var byteLength = checked(spanLength * Memory.SizeOf<T>());
+            if (byteLength == 0)
                 return;
-            var byteCount = checked(itemCount * Memory.SizeOf<T>());
-            ref var target = ref allocator.AllocateReference(byteCount);
+            ref var target = ref allocator.AllocateReference(byteLength);
             ref var source = ref MemoryMarshal.GetReference(span);
-            Memory.Copy(ref target, ref Memory.AsByte(ref source), byteCount);
+            Memory.Copy(ref target, ref Memory.AsByte(ref source), byteLength);
         }
 
         public override ArraySegment<T> To(in ReadOnlySpan<byte> span)

@@ -1,6 +1,4 @@
-﻿using Mikodev.Binary.Adapters.Abstractions;
-using Mikodev.Binary.Adapters.Implementations;
-using Mikodev.Binary.Adapters.Implementations.Endianness;
+﻿using Mikodev.Binary.CollectionAdapters;
 using Mikodev.Binary.Internal.Delegates;
 using Mikodev.Binary.Internal.Extensions;
 using System;
@@ -10,9 +8,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Mikodev.Binary.Adapters
+namespace Mikodev.Binary.Creators.ArrayLike
 {
-    internal static class AdapterHelper
+    internal sealed class ListConverterCreator : IConverterCreator
     {
         private const BindingFlags FieldFlags = BindingFlags.Instance | BindingFlags.NonPublic;
 
@@ -22,7 +20,7 @@ namespace Mikodev.Binary.Adapters
 
         private static readonly string countName;
 
-        static AdapterHelper()
+        static ListConverterCreator()
         {
             static bool Validate(FieldInfo field)
             {
@@ -46,52 +44,52 @@ namespace Mikodev.Binary.Adapters
             countName = available ? count.Single().Name : null;
         }
 
-        private static void CreateDelegates<T>(out OfList<T> ofList, out ToList<T> toList)
+        private static object[] CreateDelegates(Type type)
         {
-            if (!available)
-            {
-                ofList = null;
-                toList = null;
-                return;
-            }
+            Debug.Assert(available);
 
-            var arrayField = typeof(List<T>).GetField(arrayName, FieldFlags);
-            var countField = typeof(List<T>).GetField(countName, FieldFlags);
+            var listType = typeof(List<>).MakeGenericType(type);
+            var arrayField = listType.GetField(arrayName, FieldFlags);
+            var countField = listType.GetField(countName, FieldFlags);
 
-            Expression<OfList<T>> Of()
+            LambdaExpression Of()
             {
-                var value = Expression.Parameter(typeof(List<T>), "value");
+                var value = Expression.Parameter(listType, "value");
                 var field = Expression.Field(value, arrayField);
-                return Expression.Lambda<OfList<T>>(field, value);
+                return Expression.Lambda(typeof(OfList<>).MakeGenericType(type), field, value);
             }
 
-            Expression<ToList<T>> To()
+            LambdaExpression To()
             {
-                var array = Expression.Parameter(typeof(T[]), "array");
+                var array = Expression.Parameter(type.MakeArrayType(), "array");
                 var count = Expression.Parameter(typeof(int), "count");
-                var value = Expression.Variable(typeof(List<T>), "value");
+                var value = Expression.Variable(listType, "value");
                 var block = Expression.Block(
                     new[] { value },
-                    Expression.Assign(value, Expression.New(typeof(List<T>))),
+                    Expression.Assign(value, Expression.New(listType)),
                     Expression.Assign(Expression.Field(value, arrayField), array),
                     Expression.Assign(Expression.Field(value, countField), count),
                     value);
-                return Expression.Lambda<ToList<T>>(block, array, count);
+                return Expression.Lambda(typeof(ToList<>).MakeGenericType(type), block, array, count);
             }
 
             var of = Of();
             var to = To();
-            ofList = of.Compile();
-            toList = to.Compile();
+            return new object[] { of.Compile(), to.Compile() };
         }
 
-        internal static Adapter<T> Create<T>(Converter<T> converter)
+        public Converter GetConverter(IGeneratorContext context, Type type)
         {
-            var adapter = converter.IsCurrentEndiannessConverter()
-                ? Activator.CreateInstance(typeof(CurrentEndiannessAdapter<>).MakeGenericType(converter.ItemType))
-                : Activator.CreateInstance((converter.Length > 0 ? typeof(ConstantAdapter<>) : typeof(VariableAdapter<>)).MakeGenericType(converter.ItemType), converter);
-            CreateDelegates<T>(out var get, out var set);
-            return new Adapter<T>((AdapterMember<T>)adapter, get, set);
+            if (!type.TryGetGenericArguments(typeof(List<>), out var types))
+                return null;
+            var itemType = types.Single();
+            var itemConverter = context.GetConverter(itemType);
+            var converterType = typeof(CollectionAdaptedConverter<,>).MakeGenericType(type, itemType);
+            var tailDefinition = available
+                ? typeof(ListDelegateCollectionConvert<>)
+                : typeof(ListFallbackCollectionConvert<>);
+            var tail = Activator.CreateInstance(tailDefinition.MakeGenericType(itemType), available ? CreateDelegates(itemType) : Array.Empty<object>());
+            return (Converter)Activator.CreateInstance(converterType, new object[] { itemConverter, tail });
         }
     }
 }
