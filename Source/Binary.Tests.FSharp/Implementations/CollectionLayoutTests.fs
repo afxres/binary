@@ -21,9 +21,9 @@ type x () =
 let test<'a> (name : string) (collection : 'a) =
     let converter = generator.GetConverter<'a>()
     Assert.Equal(name, converter.GetType().Name)
-    let alpha = converter.ToBytes(collection)
+    let alpha = converter.Encode(collection)
     let mutable allocator = Allocator()
-    converter.ToBytesWithLengthPrefix(&allocator, collection)
+    converter.EncodeWithLengthPrefix(&allocator, collection)
     let bravo = allocator.ToArray()
 
     Assert.Empty(alpha)
@@ -35,9 +35,9 @@ let testNull<'a when 'a : null> (name : string) (collection : 'a) =
     
     test name collection
 
-    let delta = converter.ToBytes(null)
+    let delta = converter.Encode(null)
     let mutable allocator = Allocator()
-    converter.ToBytesWithLengthPrefix(&allocator, null)
+    converter.EncodeWithLengthPrefix(&allocator, null)
     let hotel = allocator.ToArray()
 
     Assert.Empty(delta)

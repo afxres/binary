@@ -9,8 +9,8 @@ namespace Mikodev.Binary.Abstractions
     {
         protected VariableConverter() : base(0) { }
 
-        public override void ToBytesWithMark(ref Allocator allocator, T item) => ToBytesWithLengthPrefix(ref allocator, item);
+        public override void EncodeAuto(ref Allocator allocator, T item) => EncodeWithLengthPrefix(ref allocator, item);
 
-        public override T ToValueWithMark(ref ReadOnlySpan<byte> span) => ToValueWithLengthPrefix(ref span);
+        public override T DecodeAuto(ref ReadOnlySpan<byte> span) => DecodeWithLengthPrefix(ref span);
     }
 }

@@ -55,7 +55,7 @@ namespace Mikodev.Binary.Tests
             var error = Assert.Throws<NotSupportedException>(() =>
             {
                 var allocator = new Allocator();
-                converter.ToBytes(ref allocator, source);
+                converter.Encode(ref allocator, source);
             });
             Assert.Equal(expected, error.Message);
         }

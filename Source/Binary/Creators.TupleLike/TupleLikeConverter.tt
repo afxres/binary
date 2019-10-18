@@ -60,11 +60,11 @@ foreach (var (from, to, prefix, member) in jobs)
 #>
         }
 <#
-        foreach (var method in (new[] { "", "WithMark" }))
+        foreach (var method in (new[] { "", "Auto" }))
         {
 #>
 
-        public override void ToBytes<#= method #>(ref Allocator allocator, <#= typeName #> item)
+        public override void Encode<#= method #>(ref Allocator allocator, <#= typeName #> item)
         {
 <#
             if (prefix == "Tuple")
@@ -77,15 +77,15 @@ foreach (var (from, to, prefix, member) in jobs)
             for (var k = 1; k <= i; k++)
             {
                 var before = k != i || method != "";
-                var suffix = before ? "WithMark" : "";
+                var suffix = before ? "Auto" : "";
 #>
-            converter<#= k #>.ToBytes<#= suffix #>(ref allocator, item.<#= member[k - 1] #>);
+            converter<#= k #>.Encode<#= suffix #>(ref allocator, item.<#= member[k - 1] #>);
 <#
             }
 #>
         }
 
-        public override <#= typeName #> ToValue<#= method #>(<#= (method == "" ? "in" : "ref") #> ReadOnlySpan<byte> span)
+        public override <#= typeName #> Decode<#= method #>(<#= (method == "" ? "in" : "ref") #> ReadOnlySpan<byte> span)
         {
 <#
             var origin = method == "";
@@ -99,9 +99,9 @@ foreach (var (from, to, prefix, member) in jobs)
             for (var k = 1; k <= i; k++)
             {
                 var before = k != i || method != "";
-                var suffix = before ? "WithMark" : "";
+                var suffix = before ? "Auto" : "";
 #>
-            var val<#= k #> = converter<#= k #>.ToValue<#= suffix #>(<#= (before ? "ref" : "in") #> <#= source #>);
+            var val<#= k #> = converter<#= k #>.Decode<#= suffix #>(<#= (before ? "ref" : "in") #> <#= source #>);
 <#
             }
 #>

@@ -14,17 +14,17 @@ namespace Mikodev.Binary.Internal.Contexts
     {
         internal static Converter GetConverterAsTupleObject(Type type, ConstructorInfo constructor, ItemIndexes indexes, MetaList metadata)
         {
-            var toBytes = GetToBytesDelegateAsTupleObject(type, metadata, withMark: false);
-            var toValue = GetToValueDelegateAsTupleObject(type, metadata, constructor, indexes, withMark: false);
-            var toBytesWith = GetToBytesDelegateAsTupleObject(type, metadata, withMark: true);
-            var toValueWith = GetToValueDelegateAsTupleObject(type, metadata, constructor, indexes, withMark: true);
+            var toBytes = GetToBytesDelegateAsTupleObject(type, metadata, isAuto: false);
+            var toValue = GetToValueDelegateAsTupleObject(type, metadata, constructor, indexes, isAuto: false);
+            var toBytesWith = GetToBytesDelegateAsTupleObject(type, metadata, isAuto: true);
+            var toValueWith = GetToValueDelegateAsTupleObject(type, metadata, constructor, indexes, isAuto: true);
             var converterLength = ContextMethods.GetConverterLength(type, metadata.Select(x => x.Converter).ToArray());
             var converterArguments = new object[] { toBytes, toValue, toBytesWith, toValueWith, converterLength };
             var converter = Activator.CreateInstance(typeof(TupleObjectConverter<>).MakeGenericType(type), converterArguments);
             return (Converter)converter;
         }
 
-        private static Delegate GetToBytesDelegateAsTupleObject(Type type, MetaList metadata, bool withMark)
+        private static Delegate GetToBytesDelegateAsTupleObject(Type type, MetaList metadata, bool isAuto)
         {
             var item = Expression.Parameter(type, "item");
             var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
@@ -34,7 +34,7 @@ namespace Mikodev.Binary.Internal.Contexts
             {
                 var (property, converter) = metadata[i];
                 var propertyExpression = Expression.Property(item, property);
-                var method = ContextMethods.GetToBytesMethodInfo(property.PropertyType, withMark || i != metadata.Count - 1);
+                var method = ContextMethods.GetToBytesMethodInfo(property.PropertyType, isAuto || i != metadata.Count - 1);
                 expressions.Add(Expression.Call(Expression.Constant(converter), method, allocator, propertyExpression));
             }
             var delegateType = typeof(ToBytesWith<>).MakeGenericType(type);
@@ -42,7 +42,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        private static Delegate GetToValueDelegateAsTupleObject(Type type, MetaList metadata, ConstructorInfo constructor, ItemIndexes indexes, bool withMark)
+        private static Delegate GetToValueDelegateAsTupleObject(Type type, MetaList metadata, ConstructorInfo constructor, ItemIndexes indexes, bool isAuto)
         {
             (ParameterExpression, Expression[]) Initialize()
             {
@@ -52,7 +52,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 for (var i = 0; i < metadata.Count; i++)
                 {
                     var (property, converter) = metadata[i];
-                    var method = ContextMethods.GetToValueMethodInfo(property.PropertyType, withMark || i != metadata.Count - 1);
+                    var method = ContextMethods.GetToValueMethodInfo(property.PropertyType, isAuto || i != metadata.Count - 1);
                     var invoke = Expression.Call(Expression.Constant(converter), method, span);
                     values[i] = invoke;
                 }

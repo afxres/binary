@@ -12,12 +12,12 @@ open Xunit
 type Int32AsStringConverter() =
     inherit VariableConverter<int>()
 
-    override __.ToBytes(allocator, item) =
+    override __.Encode(allocator, item) =
         let text = string item
         let span = text.AsSpan()
         PrimitiveHelper.EncodeString(&allocator, &span, Converter.Encoding)
 
-    override __.ToValue (span : inref<ReadOnlySpan<byte>>) =
+    override __.Decode (span : inref<ReadOnlySpan<byte>>) =
         let text = Encoding.UTF8.GetString(span)
         let item = Int32.Parse(text)
         item
@@ -25,12 +25,12 @@ type Int32AsStringConverter() =
 type Int64AsStringConverter() =
     inherit VariableConverter<int64>()
 
-    override __.ToBytes(allocator, item) =
+    override __.Encode(allocator, item) =
         let text = string item
         let span = text.AsSpan()
         PrimitiveHelper.EncodeString(&allocator, &span, Converter.Encoding)
 
-    override __.ToValue (span : inref<ReadOnlySpan<byte>>) =
+    override __.Decode (span : inref<ReadOnlySpan<byte>>) =
         let text = Encoding.UTF8.GetString(span)
         let item = Int64.Parse(text)
         item
@@ -47,16 +47,16 @@ type Int64AsStringConverterCreator() =
 type BadConverter<'T>() =
     inherit VariableConverter<'T>()
 
-    override __.ToBytes(_, _) = raise (NotSupportedException())
+    override __.Encode(_, _) = raise (NotSupportedException())
 
-    override __.ToValue (span : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
+    override __.Decode (span : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 
 type BadConverterWithoutPublicConstructor<'T> private() =
     inherit VariableConverter<'T>()
 
-    override __.ToBytes(_, _) = raise (NotSupportedException())
+    override __.Encode(_, _) = raise (NotSupportedException())
 
-    override __.ToValue (span : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
+    override __.Decode (span : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 
 type BadConverterCreatorWithoutPublicConstructor private() =
     interface IConverterCreator with
@@ -544,7 +544,7 @@ type AttributeTests() =
         Assert.Equal(0, converter.Length)
 
         let mutable allocator = new Allocator()
-        converter.ToBytes(&allocator, source)
+        converter.Encode(&allocator, source)
         let buffer = allocator.ToArray()
 
         let token = generator.AsToken(buffer)
@@ -555,7 +555,7 @@ type AttributeTests() =
             let value = token.As(v.GetType())
             Assert.Equal(v, value)
 
-        let result = converter.ToValue(buffer)
+        let result = converter.Decode(buffer)
         Assert.Equal<'a>(source, result)
         Assert.Equal(source.ToString(), result.ToString())
         ()
@@ -568,7 +568,7 @@ type AttributeTests() =
         Assert.Equal(0, converter.Length)
 
         let mutable allocator = new Allocator()
-        converter.ToBytesWithMark(&allocator, source)
+        converter.EncodeAuto(&allocator, source)
         let buffer = allocator.ToArray()
 
         let token = generator.AsToken(buffer |> Array.skip sizeof<int>)
@@ -580,7 +580,7 @@ type AttributeTests() =
             Assert.Equal(v, value)
 
         let mutable span = new ReadOnlySpan<byte>(buffer);
-        let result = converter.ToValueWithMark &span
+        let result = converter.DecodeAuto &span
         Assert.True(span.IsEmpty)
         Assert.Equal<'a>(source, result)
         Assert.Equal(source.ToString(), result.ToString())
@@ -594,13 +594,13 @@ type AttributeTests() =
         Assert.Equal(size, converter.Length)
 
         let mutable allocator = new Allocator()
-        converter.ToBytes(&allocator, source)
+        converter.Encode(&allocator, source)
         let buffer = allocator.ToArray()
 
-        let middle = generator.ToValue<'b>(buffer)
+        let middle = generator.Decode<'b>(buffer)
         Assert.Equal<'b>(expected, middle)
 
-        let result = converter.ToValue(buffer)
+        let result = converter.Decode(buffer)
         Assert.Equal<'a>(source, result)
         Assert.Equal(source.ToString(), result.ToString())
         ()
@@ -613,17 +613,17 @@ type AttributeTests() =
         Assert.Equal(size, converter.Length)
 
         let mutable allocator = new Allocator()
-        converter.ToBytesWithMark(&allocator, source)
+        converter.EncodeAuto(&allocator, source)
         let buffer = allocator.ToArray()
 
         let middleConverter = generator.GetConverter<'b>()
         let mutable middleSpan = new ReadOnlySpan<byte>(buffer);
-        let middle = middleConverter.ToValueWithMark &middleSpan
+        let middle = middleConverter.DecodeAuto &middleSpan
         Assert.True(middleSpan.IsEmpty)
         Assert.Equal<'b>(expected, middle)
 
         let mutable span = new ReadOnlySpan<byte>(buffer);
-        let result = converter.ToValueWithMark &span
+        let result = converter.DecodeAuto &span
         Assert.True(span.IsEmpty)
         Assert.Equal<'a>(source, result)
         Assert.Equal(source.ToString(), result.ToString())
@@ -738,8 +738,8 @@ type AttributeTests() =
     [<InlineData(typeof<ClassAsTupleObjectWithPartiallyKey>)>]
     member __.``Tuple Object Null`` (t : Type) =
         let converter = generator.GetConverter t |> box :?> IConverter
-        let alpha = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = new Allocator() in converter.ToBytes(&allocator, null))
-        let bravo = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = new Allocator() in converter.ToBytesWithMark(&allocator, null))
+        let alpha = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = new Allocator() in converter.Encode(&allocator, null))
+        let bravo = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = new Allocator() in converter.EncodeAuto(&allocator, null))
         let message = sprintf "Tuple can not be null, type: %O" t
         Assert.Equal("item", alpha.ParamName)
         Assert.StartsWith(message, alpha.Message)

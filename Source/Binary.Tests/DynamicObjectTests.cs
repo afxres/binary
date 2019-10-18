@@ -20,7 +20,7 @@ namespace Mikodev.Binary.Tests
             a.head = head;
             a.middle = middle;
             a.last = last;
-            var bytes = (byte[])generator.ToBytes(a);
+            var bytes = (byte[])generator.Encode(a);
             Assert.NotEmpty(bytes);
             var token = generator.AsToken(bytes);
             var d = (dynamic)token;
@@ -46,7 +46,7 @@ namespace Mikodev.Binary.Tests
                 }
             };
 
-            var bytes = generator.ToBytes(value);
+            var bytes = generator.Encode(value);
             var token = generator.AsToken(bytes);
             var d = (dynamic)token;
             Assert.Equal(value.a, (int)d.a);
@@ -61,7 +61,7 @@ namespace Mikodev.Binary.Tests
             {
                 ip = (IPAddress)null,
             };
-            var bytes = generator.ToBytes(value);
+            var bytes = generator.Encode(value);
             var token = generator.AsToken(bytes);
             var d = (dynamic)token;
             var ip = d.ip;
@@ -76,7 +76,7 @@ namespace Mikodev.Binary.Tests
             {
                 some = 1,
             };
-            var bytes = generator.ToBytes(value);
+            var bytes = generator.Encode(value);
             var token = generator.AsToken(bytes);
             var d = (dynamic)token;
             Assert.Equal(1, (int)d.some);
@@ -90,7 +90,7 @@ namespace Mikodev.Binary.Tests
             {
                 some = 1,
             };
-            var bytes = generator.ToBytes(value);
+            var bytes = generator.Encode(value);
             var token = generator.AsToken(bytes);
             var d = (dynamic)token;
 
@@ -113,7 +113,7 @@ namespace Mikodev.Binary.Tests
                 }
             };
 
-            var bytes = generator.ToBytes(value);
+            var bytes = generator.Encode(value);
             var token = generator.AsToken(bytes);
             var d = (dynamic)token;
 

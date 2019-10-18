@@ -14,7 +14,7 @@ namespace Mikodev.Binary.CollectionAdapters.ArrayLike
         {
             var span = memory.Span;
             for (var i = 0; i < span.Length; i++)
-                converter.ToBytes(ref allocator, span[i]);
+                converter.Encode(ref allocator, span[i]);
             Debug.Assert(converter.Length > 0);
         }
 
@@ -28,7 +28,7 @@ namespace Mikodev.Binary.CollectionAdapters.ArrayLike
             var itemCount = CollectionHelper.GetItemCount(byteCount, definition);
             var items = new T[itemCount];
             for (var i = 0; i < itemCount; i++)
-                items[i] = converter.ToValue(span.Slice(i * definition));
+                items[i] = converter.Decode(span.Slice(i * definition));
             return new ArraySegment<T>(items);
         }
     }

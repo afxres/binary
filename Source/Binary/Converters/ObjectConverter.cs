@@ -11,7 +11,7 @@ namespace Mikodev.Binary.Converters
 
         public ObjectConverter(Generator generator) => this.generator = generator;
 
-        public override void ToBytes(ref Allocator allocator, object item)
+        public override void Encode(ref Allocator allocator, object item)
         {
             if (item == null)
                 throw new ArgumentException("Can not get type of null object.");
@@ -19,9 +19,9 @@ namespace Mikodev.Binary.Converters
             if (type == typeof(object))
                 throw new ArgumentException(message);
             var converter = (IConverter)generator.GetConverter(type);
-            converter.ToBytes(ref allocator, item);
+            converter.Encode(ref allocator, item);
         }
 
-        public override object ToValue(in ReadOnlySpan<byte> span) => throw new ArgumentException(message);
+        public override object Decode(in ReadOnlySpan<byte> span) => throw new ArgumentException(message);
     }
 }

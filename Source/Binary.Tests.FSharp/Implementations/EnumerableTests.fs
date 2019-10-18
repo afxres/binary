@@ -43,10 +43,10 @@ type DictionaryI<'K, 'V>(item : IDictionary<'K, 'V>) =
 let test (converterName : string) (enumerable : 'a) (expected : 'b) =
     let converter = generator.GetConverter<'a>()
     Assert.StartsWith(converterName, converter.GetType().Name)
-    let buffer = converter.ToBytes enumerable
-    let target = generator.ToBytes expected
+    let buffer = converter.Encode enumerable
+    let target = generator.Encode expected
     Assert.Equal<byte>(buffer, target)
-    let error = Assert.Throws<InvalidOperationException>(fun () -> converter.ToValue(Array.empty) |> ignore)
+    let error = Assert.Throws<InvalidOperationException>(fun () -> converter.Decode(Array.empty) |> ignore)
     let message = sprintf "No suitable constructor found, type: %O" typeof<'a>
     Assert.Equal(message, error.Message)
     ()

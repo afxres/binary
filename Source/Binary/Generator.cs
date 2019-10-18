@@ -78,25 +78,25 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Converter<T> GetConverter<T>(T anonymous) => GetConverter<T>();
 
-        public byte[] ToBytes<T>(T item) => GetConverter<T>().ToBytes(item);
+        public byte[] Encode<T>(T item) => GetConverter<T>().Encode(item);
 
-        public byte[] ToBytes(object item, Type type) => ((IConverter)GetConverter(type)).ToBytes(item);
+        public byte[] Encode(object item, Type type) => ((IConverter)GetConverter(type)).Encode(item);
 
-        public object ToValue(in ReadOnlySpan<byte> span, Type type) => ((IConverter)GetConverter(type)).ToValue(in span);
+        public object Decode(in ReadOnlySpan<byte> span, Type type) => ((IConverter)GetConverter(type)).Decode(in span);
 
-        public T ToValue<T>(in ReadOnlySpan<byte> span) => GetConverter<T>().ToValue(in span);
+        public T Decode<T>(in ReadOnlySpan<byte> span) => GetConverter<T>().Decode(in span);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T ToValue<T>(in ReadOnlySpan<byte> span, T anonymous) => ToValue<T>(in span);
+        public T Decode<T>(in ReadOnlySpan<byte> span, T anonymous) => Decode<T>(in span);
 
         public Token AsToken(in ReadOnlyMemory<byte> memory) => new Token(this, in memory);
 
-        public object ToValue(byte[] buffer, Type type) => ((IConverter)GetConverter(type)).ToValue(buffer);
+        public object Decode(byte[] buffer, Type type) => ((IConverter)GetConverter(type)).Decode(buffer);
 
-        public T ToValue<T>(byte[] buffer) => GetConverter<T>().ToValue(buffer);
+        public T Decode<T>(byte[] buffer) => GetConverter<T>().Decode(buffer);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T ToValue<T>(byte[] buffer, T anonymous) => ToValue<T>(buffer);
+        public T Decode<T>(byte[] buffer, T anonymous) => Decode<T>(buffer);
 
         public Token AsToken(byte[] buffer) => new Token(this, buffer);
 

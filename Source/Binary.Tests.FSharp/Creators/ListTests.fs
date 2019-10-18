@@ -11,12 +11,12 @@ type ListTests () =
     member __.``List`` () =
         let a = [ 1; 4; 7 ] |> vlist
         let b = [ "lazy"; "dog"; "quick"; "fox" ] |> vlist
-        let bytesA = generator.ToBytes a
-        let bytesB = generator.ToBytes b
+        let bytesA = generator.Encode a
+        let bytesB = generator.Encode b
         Assert.Equal(12, bytesA |> Array.length)
         Assert.Equal(1 * 4 + 15, bytesB |> Array.length)
-        let valueA = generator.ToValue<int vlist> bytesA
-        let valueB = generator.ToValue<string vlist> bytesB
+        let valueA = generator.Decode<int vlist> bytesA
+        let valueB = generator.Decode<string vlist> bytesB
         Assert.Equal<int>(a, valueA)
         Assert.Equal<string>(b, valueB)
         ()
@@ -25,14 +25,14 @@ type ListTests () =
     member __.``List (null and empty)`` () =
         let a = Array.empty<int> |> vlist
         let b = null : string vlist
-        let bytesA = generator.ToBytes a
-        let bytesB = generator.ToBytes b
+        let bytesA = generator.Encode a
+        let bytesB = generator.Encode b
         Assert.NotNull(bytesA)
         Assert.NotNull(bytesB)
         Assert.Empty(bytesA)
         Assert.Empty(bytesB)
-        let valueA = generator.ToValue<int vlist> bytesA
-        let valueB = generator.ToValue<string vlist> bytesB
+        let valueA = generator.Decode<int vlist> bytesA
+        let valueB = generator.Decode<string vlist> bytesB
         Assert.Empty(valueA)
         Assert.Empty(valueB)
         ()

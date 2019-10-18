@@ -26,8 +26,8 @@ type CrossTests () =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     member __.``Union And Tuple`` (a : Group, b : 'B) =
-        let alpha = generator.ToBytes a
-        let bravo = generator.ToBytes b
+        let alpha = generator.Encode a
+        let bravo = generator.Encode b
         Assert.Equal<byte>(alpha, bravo)
         ()
 
@@ -41,6 +41,6 @@ type CrossTests () =
     [<MemberData("Data Bravo")>]
     member __.``Invalid Union Case Type`` (a : 'A) =
         let message = sprintf "Invalid union type, you may have to use union type '%O' instead of case type '%O'" typeof<Group> typeof<'A>
-        let error = Assert.Throws<ArgumentException>(fun () -> generator.ToBytes a |> ignore)
+        let error = Assert.Throws<ArgumentException>(fun () -> generator.Encode a |> ignore)
         Assert.Equal(message, error.Message)
         ()

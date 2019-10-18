@@ -25,7 +25,7 @@ namespace Mikodev.Binary.Internal
         {
             var item = items[index];
             var source = bytes.Slice(item.Offset, item.Length);
-            return converter.ToValue(in source);
+            return converter.Decode(in source);
         }
     }
 }

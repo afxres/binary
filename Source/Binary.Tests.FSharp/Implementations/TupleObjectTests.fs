@@ -13,9 +13,9 @@ type Raw<'a> = { data : 'a }
 type RawConverter<'a>(length : int) =
     inherit ConstantConverter<Raw<'a>>(length)
 
-    override __.ToBytes(_, _) = raise (NotSupportedException())
+    override __.Encode(_, _) = raise (NotSupportedException())
 
-    override __.ToValue (_ : inref<ReadOnlySpan<byte>>) : Raw<'a> = raise (NotSupportedException())
+    override __.Decode (_ : inref<ReadOnlySpan<byte>>) : Raw<'a> = raise (NotSupportedException())
 
 [<TupleObject>]
 type Two<'a, 'b>(a : 'a, b : 'b) =
@@ -83,11 +83,11 @@ type Car(name : string, rank : int) =
 let test (instance : 'a) (anonymous : 'b) =
     let converter = generator.GetConverter<'a>()
     Assert.StartsWith("TupleObjectConverter`1", converter.GetType().Name)
-    let buffer = converter.ToBytes instance
-    let target = generator.ToBytes anonymous
+    let buffer = converter.Encode instance
+    let target = generator.Encode anonymous
     Assert.Equal<byte>(target, buffer)
-    let alpha = Assert.Throws<InvalidOperationException>(fun () -> converter.ToValue buffer |> ignore)
-    let bravo = Assert.Throws<InvalidOperationException>(fun () -> let mutable span = ReadOnlySpan buffer in converter.ToValueWithMark &span |> ignore)
+    let alpha = Assert.Throws<InvalidOperationException>(fun () -> converter.Decode buffer |> ignore)
+    let bravo = Assert.Throws<InvalidOperationException>(fun () -> let mutable span = ReadOnlySpan buffer in converter.DecodeAuto &span |> ignore)
     let message = sprintf "No suitable constructor found, type: %O" typeof<'a>
     Assert.Equal(message, alpha.Message)
     Assert.Equal(message, bravo.Message)

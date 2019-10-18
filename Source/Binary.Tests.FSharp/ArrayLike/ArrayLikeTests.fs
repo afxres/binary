@@ -23,8 +23,8 @@ type ArrayLikeTests () =
     [<MemberData("Data Alpha")>]
     member __.``Memory`` (item : 'a array, capacity : int) =
         let converter = generator.GetConverter<Memory<'a>>()
-        let buffer = converter.ToBytes(Memory item)
-        let result = converter.ToValue buffer
+        let buffer = converter.Encode(Memory item)
+        let result = converter.Decode buffer
         Assert.Equal<'a>(item, result.ToArray())
         let (flag, data) = MemoryMarshal.TryGetArray(Memory.op_Implicit result)
         Assert.True(flag)
@@ -35,8 +35,8 @@ type ArrayLikeTests () =
     [<MemberData("Data Alpha")>]
     member __.``ReadOnlyMemory`` (item : 'a array, capacity : int) =
         let converter = generator.GetConverter<ReadOnlyMemory<'a>>()
-        let buffer = converter.ToBytes(ReadOnlyMemory item)
-        let result = converter.ToValue buffer
+        let buffer = converter.Encode(ReadOnlyMemory item)
+        let result = converter.Decode buffer
         Assert.Equal<'a>(item, result.ToArray())
         let (flag, data) = MemoryMarshal.TryGetArray(result)
         Assert.True(flag)
@@ -47,8 +47,8 @@ type ArrayLikeTests () =
     [<MemberData("Data Alpha")>]
     member __.``ArraySegment`` (item : 'a array, capacity : int) =
         let converter = generator.GetConverter<ArraySegment<'a>>()
-        let buffer = converter.ToBytes(ArraySegment item)
-        let result = converter.ToValue buffer
+        let buffer = converter.Encode(ArraySegment item)
+        let result = converter.Decode buffer
         Assert.Equal<'a>(item, result)
         Assert.Equal(capacity, result.Array.Length)
         ()

@@ -19,9 +19,9 @@ type ConverterExtensionsTests() =
     [<MemberData("Data Alpha")>]
     member __.``To Bytes`` (value : 'A) =
         let converter = generator.GetConverter<'A>()
-        let bytes = generator.ToBytes(value)
+        let bytes = generator.Encode(value)
 
-        let alpha = converter.ToBytes(value)
+        let alpha = converter.Encode(value)
         Assert.Equal<byte>(bytes, alpha)
         ()
 
@@ -29,9 +29,9 @@ type ConverterExtensionsTests() =
     [<MemberData("Data Alpha")>]
     member __.``To Bytes No Generic`` (value : obj) =
         let converter = generator.GetConverter(value.GetType()) |> box :?> IConverter
-        let bytes = generator.ToBytes(value, value.GetType())
+        let bytes = generator.Encode(value, value.GetType())
 
-        let alpha = converter.ToBytes(value)
+        let alpha = converter.Encode(value)
         Assert.Equal<byte>(bytes, alpha)
         ()
 
@@ -39,9 +39,9 @@ type ConverterExtensionsTests() =
     [<MemberData("Data Alpha")>]
     member __.``To Value`` (value : 'A) =
         let converter = generator.GetConverter<'A>()
-        let bytes = generator.ToBytes(value)
+        let bytes = generator.Encode(value)
 
-        let alpha = converter.ToValue(bytes)
+        let alpha = converter.Decode(bytes)
         Assert.Equal<'A>(value, alpha)
         ()
 
@@ -49,8 +49,8 @@ type ConverterExtensionsTests() =
     [<MemberData("Data Alpha")>]
     member __.``To Value No Generic`` (value : obj) =
         let converter = generator.GetConverter(value.GetType()) |> box :?> IConverter
-        let bytes = generator.ToBytes(value, value.GetType())
+        let bytes = generator.Encode(value, value.GetType())
 
-        let alpha = converter.ToValue(bytes)
+        let alpha = converter.Decode(bytes)
         Assert.Equal(value, alpha)
         ()

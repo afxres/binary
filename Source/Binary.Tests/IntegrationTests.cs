@@ -65,8 +65,8 @@ namespace Mikodev.Binary.Tests
             Class.StaticB = b;
 
             var source = new Class() { E = 172, F = "internal" };
-            var buffer = generator.ToBytes(source);
-            var result = generator.ToValue<Class>(buffer);
+            var buffer = generator.Encode(source);
+            var result = generator.Decode<Class>(buffer);
             Assert.False(ReferenceEquals(source, result));
             Assert.Equal(source.E, result.E);
             Assert.Equal(source.F, result.F);
@@ -88,8 +88,8 @@ namespace Mikodev.Binary.Tests
             Value.StaticB = b;
 
             var source = new Value() { E = 256, F = "protected" };
-            var buffer = generator.ToBytes(source);
-            var result = generator.ToValue<Value>(buffer);
+            var buffer = generator.Encode(source);
+            var result = generator.Decode<Value>(buffer);
 
             Assert.Equal(source.E, result.E);
             Assert.Equal(source.F, result.F);

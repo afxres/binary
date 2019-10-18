@@ -61,8 +61,8 @@ namespace Mikodev.Binary.Tests
                 var model = Enumerable.Range(0, 256).Select(_ => Guid.NewGuid().ToString()).ToArray();
                 for (var i = 0; i < times; i++)
                 {
-                    var bytes = generator.ToBytes(model);
-                    var value = generator.ToValue(bytes, anonymous: model);
+                    var bytes = generator.Encode(model);
+                    var value = generator.Decode(bytes, anonymous: model);
                     Assert.Equal<string>(model, value);
                 }
             })).ToList();

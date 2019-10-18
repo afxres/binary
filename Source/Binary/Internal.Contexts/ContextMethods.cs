@@ -21,24 +21,24 @@ namespace Mikodev.Binary.Internal.Contexts
             return (int)length;
         }
 
-        internal static MethodInfo GetToBytesMethodInfo(Type type, bool withMark)
+        internal static MethodInfo GetToBytesMethodInfo(Type type, bool isAuto)
         {
             var converterType = typeof(Converter<>).MakeGenericType(type);
             var types = new[] { typeof(Allocator).MakeByRefType(), type };
-            var method = !withMark
-                ? converterType.GetMethod(nameof(IConverter.ToBytes), types)
-                : converterType.GetMethod(nameof(IConverter.ToBytesWithMark), types);
+            var method = !isAuto
+                ? converterType.GetMethod(nameof(IConverter.Encode), types)
+                : converterType.GetMethod(nameof(IConverter.EncodeAuto), types);
             Debug.Assert(method != null);
             return method;
         }
 
-        internal static MethodInfo GetToValueMethodInfo(Type type, bool withMark)
+        internal static MethodInfo GetToValueMethodInfo(Type type, bool isAuto)
         {
             var converterType = typeof(Converter<>).MakeGenericType(type);
             var types = new[] { typeof(ReadOnlySpan<byte>).MakeByRefType() };
-            var method = !withMark
-                ? converterType.GetMethod(nameof(IConverter.ToValue), types)
-                : converterType.GetMethod(nameof(IConverter.ToValueWithMark), types);
+            var method = !isAuto
+                ? converterType.GetMethod(nameof(IConverter.Decode), types)
+                : converterType.GetMethod(nameof(IConverter.DecodeAuto), types);
             Debug.Assert(method != null);
             return method;
         }

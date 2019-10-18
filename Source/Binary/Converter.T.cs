@@ -7,52 +7,52 @@ namespace Mikodev.Binary
     {
         protected Converter(int length) : base(typeof(T), length) { }
 
-        public abstract void ToBytes(ref Allocator allocator, T item);
+        public abstract void Encode(ref Allocator allocator, T item);
 
-        public abstract T ToValue(in ReadOnlySpan<byte> span);
+        public abstract T Decode(in ReadOnlySpan<byte> span);
 
-        public abstract void ToBytesWithMark(ref Allocator allocator, T item);
+        public abstract void EncodeAuto(ref Allocator allocator, T item);
 
-        public abstract T ToValueWithMark(ref ReadOnlySpan<byte> span);
+        public abstract T DecodeAuto(ref ReadOnlySpan<byte> span);
 
-        public virtual void ToBytesWithLengthPrefix(ref Allocator allocator, T item)
+        public virtual void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
             var length = Length;
             if (length > 0)
             {
                 var prefix = length;
                 PrimitiveHelper.EncodeNumber(ref allocator, prefix);
-                ToBytes(ref allocator, item);
+                Encode(ref allocator, item);
             }
             else
             {
                 allocator.LengthPrefixAnchor(out var anchor);
-                ToBytes(ref allocator, item);
+                Encode(ref allocator, item);
                 allocator.LengthPrefixFinish(anchor);
             }
         }
 
-        public virtual T ToValueWithLengthPrefix(ref ReadOnlySpan<byte> span) => ToValue(PrimitiveHelper.DecodeWithLengthPrefix(ref span));
+        public virtual T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => Decode(PrimitiveHelper.DecodeWithLengthPrefix(ref span));
 
-        public virtual byte[] ToBytes(T item)
+        public virtual byte[] Encode(T item)
         {
             var length = Length;
             if (length > 0)
             {
                 var buffer = new byte[length];
                 var allocator = new Allocator(buffer, maxCapacity: length);
-                ToBytes(ref allocator, item);
+                Encode(ref allocator, item);
                 return buffer;
             }
             else
             {
                 var buffer = BufferHelper.GetBuffer();
                 var allocator = new Allocator(buffer);
-                ToBytes(ref allocator, item);
+                Encode(ref allocator, item);
                 return allocator.ToArray();
             }
         }
 
-        public virtual T ToValue(byte[] buffer) => ToValue(new ReadOnlySpan<byte>(buffer));
+        public virtual T Decode(byte[] buffer) => Decode(new ReadOnlySpan<byte>(buffer));
     }
 }

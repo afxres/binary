@@ -14,14 +14,14 @@ namespace Mikodev.Binary.Tests
         private byte[] Bytes<T>(Converter<T> converter, T value)
         {
             var allocator = new Allocator();
-            converter.ToBytes(ref allocator, value);
+            converter.Encode(ref allocator, value);
             return allocator.ToArray();
         }
 
         private byte[] BytesWithMark<T>(Converter<T> converter, T value)
         {
             var allocator = new Allocator();
-            converter.ToBytesWithMark(ref allocator, value);
+            converter.EncodeAuto(ref allocator, value);
             return allocator.ToArray();
         }
 
@@ -44,8 +44,8 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(sizeof(T) + 1, ta.Length);
             _ = Assert.Single(tb);
 
-            var ra = converter.ToValue(ta);
-            var rb = converter.ToValue(tb);
+            var ra = converter.Decode(ta);
+            var rb = converter.Decode(tb);
 
             Assert.True(ra.HasValue);
             Assert.False(rb.HasValue);
@@ -73,8 +73,8 @@ namespace Mikodev.Binary.Tests
 
             var sa = new ReadOnlySpan<byte>(ta);
             var sb = new ReadOnlySpan<byte>(tb);
-            var ra = converter.ToValueWithMark(ref sa);
-            var rb = converter.ToValueWithMark(ref sb);
+            var ra = converter.DecodeAuto(ref sa);
+            var rb = converter.DecodeAuto(ref sb);
 
             Assert.True(ra.HasValue);
             Assert.False(rb.HasValue);
@@ -90,10 +90,10 @@ namespace Mikodev.Binary.Tests
 
         internal unsafe void CollectionFunction<TCollection, T>(TCollection collection) where T : unmanaged where TCollection : IEnumerable<T?>
         {
-            var buffer = generator.ToBytes(collection);
+            var buffer = generator.Encode(collection);
             var exceptLength = collection.Count() + collection.Count(x => x != null) * sizeof(T);
             Assert.Equal(exceptLength, buffer.Length);
-            var result = generator.ToValue<TCollection>(buffer);
+            var result = generator.Decode<TCollection>(buffer);
             Assert.False(ReferenceEquals(collection, result));
             Assert.Equal(collection, result);
             _ = Assert.IsType<TCollection>(result);
@@ -126,9 +126,9 @@ namespace Mikodev.Binary.Tests
         [MemberData(nameof(DictionaryData))]
         public void Dictionary<TKey, TValue>(IDictionary<TKey, TValue> dictionary)
         {
-            var buffer = generator.ToBytes(dictionary);
+            var buffer = generator.Encode(dictionary);
             Assert.Equal(((1 + 4) * 3) + (1 + ((1 + 8) * 2)), buffer.Length);
-            var result = generator.ToValue<IDictionary<TKey, TValue>>(buffer);
+            var result = generator.Decode<IDictionary<TKey, TValue>>(buffer);
             Assert.False(ReferenceEquals(dictionary, result));
             Assert.Equal(dictionary, result);
             _ = Assert.IsType<Dictionary<TKey, TValue>>(result);
@@ -144,9 +144,9 @@ namespace Mikodev.Binary.Tests
                 two = (decimal?)null
             };
 
-            var buffer = generator.ToBytes(data);
+            var buffer = generator.Encode(data);
             Assert.Equal(((1 * 3) + (2 + 3 + 3)) + (((4 + 1) * 3) + (4 + 16 + 0)), buffer.Length);
-            var result = generator.ToValue(buffer, data);
+            var result = generator.Decode(buffer, data);
             Assert.False(ReferenceEquals(data, result));
             Assert.Equal(data, result);
         }
@@ -157,9 +157,9 @@ namespace Mikodev.Binary.Tests
         public void Variable(string text)
         {
             var source = new (int, string)?((-1, text));
-            var buffer = generator.ToBytes(source);
+            var buffer = generator.Encode(source);
             Assert.Equal(1 + 4 + Converter.Encoding.GetByteCount(text), buffer.Length);
-            var result = generator.ToValue<(int, string)?>(buffer);
+            var result = generator.Decode<(int, string)?>(buffer);
             Assert.True(result.HasValue);
             Assert.Equal(source, result);
         }
@@ -168,9 +168,9 @@ namespace Mikodev.Binary.Tests
         public void VariableCollection()
         {
             var source = new (float, string)?[] { (-1.1F, "quick"), null, (2.2F, "fox") };
-            var buffer = generator.ToBytes(source);
+            var buffer = generator.Encode(source);
             Assert.Equal((1 + 4 + 1 + 5) + (1 + 0) + (1 + 4 + 1 + 3), buffer.Length);
-            var result = generator.ToValue<(float, string)?[]>(buffer);
+            var result = generator.Decode<(float, string)?[]>(buffer);
             Assert.False(ReferenceEquals(result, source));
             Assert.Equal(source, result);
         }
@@ -213,8 +213,8 @@ namespace Mikodev.Binary.Tests
             Assert.StartsWith("NullableConverter`1", converter.GetType().Name);
 
             var bytes = new byte[] { tag };
-            var alpha = Assert.Throws<ArgumentException>(() => converter.ToValue(bytes));
-            var bravo = Assert.Throws<ArgumentException>(() => { var span = new ReadOnlySpan<byte>(bytes); _ = converter.ToValueWithMark(ref span); });
+            var alpha = Assert.Throws<ArgumentException>(() => converter.Decode(bytes));
+            var bravo = Assert.Throws<ArgumentException>(() => { var span = new ReadOnlySpan<byte>(bytes); _ = converter.DecodeAuto(ref span); });
             var message = $"Invalid nullable tag: {tag}, type: System.Nullable`1[System.Int32]";
             Assert.Null(alpha.ParamName);
             Assert.Null(bravo.ParamName);

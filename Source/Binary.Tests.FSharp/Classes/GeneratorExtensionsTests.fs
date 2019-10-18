@@ -9,7 +9,7 @@ type GeneratorExtensionsTests() =
 
     [<Fact>]
     member __.``As Token`` () =
-        let buffer = generator.ToBytes ({| alpha = 1 |})
+        let buffer = generator.Encode ({| alpha = 1 |})
         let memory = ReadOnlyMemory buffer
 
         let token = generator.AsToken &memory
@@ -29,11 +29,11 @@ type GeneratorExtensionsTests() =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     member __.``To Value No Generic`` (value : obj) =
-        let buffer = generator.ToBytes(value, value.GetType())
+        let buffer = generator.Encode(value, value.GetType())
         let memory = ReadOnlySpan buffer
 
-        let alpha = generator.ToValue(&memory, value.GetType())
-        let bravo = generator.ToValue(buffer, value.GetType())
+        let alpha = generator.Decode(&memory, value.GetType())
+        let bravo = generator.Decode(buffer, value.GetType())
         Assert.Equal(value, alpha)
         Assert.Equal(value, bravo)
         ()
@@ -41,11 +41,11 @@ type GeneratorExtensionsTests() =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     member __.``To Value`` (value : 'A) =
-        let buffer = generator.ToBytes value
+        let buffer = generator.Encode value
         let memory = ReadOnlySpan buffer
 
-        let alpha = generator.ToValue<'A> &memory
-        let bravo = generator.ToValue<'A> buffer
+        let alpha = generator.Decode<'A> &memory
+        let bravo = generator.Decode<'A> buffer
         Assert.Equal<'A>(value, alpha)
         Assert.Equal<'A>(value, bravo)
         ()
@@ -53,11 +53,11 @@ type GeneratorExtensionsTests() =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     member __.``To Value With Anonymous`` (value : 'A) =
-        let buffer = generator.ToBytes value
+        let buffer = generator.Encode value
         let memory = ReadOnlySpan buffer
 
-        let alpha = generator.ToValue(&memory, anonymous = value)
-        let bravo = generator.ToValue(buffer, anonymous = value)
+        let alpha = generator.Decode(&memory, anonymous = value)
+        let bravo = generator.Decode(buffer, anonymous = value)
         Assert.Equal<'A>(value, alpha)
         Assert.Equal<'A>(value, bravo)
         ()

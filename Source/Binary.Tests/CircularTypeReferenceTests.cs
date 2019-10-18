@@ -49,7 +49,7 @@ namespace Mikodev.Binary.Tests
         public void CircularTypeReference()
         {
             var data = new A();
-            var error = Assert.Throws<ArgumentException>(() => generator.ToBytes(data));
+            var error = Assert.Throws<ArgumentException>(() => generator.Encode(data));
             Assert.Contains("Circular type reference", error.Message);
         }
     }

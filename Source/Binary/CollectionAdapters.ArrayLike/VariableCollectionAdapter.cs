@@ -13,7 +13,7 @@ namespace Mikodev.Binary.CollectionAdapters.ArrayLike
         {
             var span = memory.Span;
             for (var i = 0; i < span.Length; i++)
-                converter.ToBytesWithMark(ref allocator, span[i]);
+                converter.EncodeAuto(ref allocator, span[i]);
             Debug.Assert(converter.Length == 0);
         }
 
@@ -37,7 +37,7 @@ namespace Mikodev.Binary.CollectionAdapters.ArrayLike
                     MemoryExtensions.CopyTo(buffer, (Span<T>)target);
                     buffer = target;
                 }
-                buffer[cursor++] = converter.ToValueWithMark(ref temp);
+                buffer[cursor++] = converter.DecodeAuto(ref temp);
             }
             Debug.Assert(cursor <= buffer.Length);
             return new ArraySegment<T>(buffer, 0, (int)cursor);

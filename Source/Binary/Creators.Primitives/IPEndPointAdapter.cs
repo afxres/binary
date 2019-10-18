@@ -14,14 +14,14 @@ namespace Mikodev.Binary.Creators.Primitives
         {
             if (item == null)
                 return default;
-            return converter.ToBytes((item.Address, (ushort)item.Port));
+            return converter.Encode((item.Address, (ushort)item.Port));
         }
 
         public override IPEndPoint To(ReadOnlyMemory<byte> item)
         {
             if (item.IsEmpty)
                 return null;
-            var (address, port) = converter.ToValue(item.Span);
+            var (address, port) = converter.Decode(item.Span);
             if (address == null)
                 return ThrowHelper.ThrowNotEnoughBytes<IPEndPoint>();
             return new IPEndPoint(address, port);

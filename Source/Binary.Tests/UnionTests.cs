@@ -57,10 +57,10 @@ namespace Mikodev.Binary.Tests
             Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
 
             var allocator = new Allocator();
-            converter.ToBytes(ref allocator, source);
+            converter.Encode(ref allocator, source);
             var buffer = allocator.ToArray();
 
-            var result = converter.ToValue(buffer);
+            var result = converter.Decode(buffer);
             Assert.False(ReferenceEquals(source, result));
             Assert.Equal(source.Tag, result.Tag);
             Assert.Equal(source.Item, result.Item);
@@ -77,11 +77,11 @@ namespace Mikodev.Binary.Tests
             Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
 
             var allocator = new Allocator();
-            converter.ToBytesWithMark(ref allocator, source);
+            converter.EncodeAuto(ref allocator, source);
             var buffer = allocator.ToArray();
 
             var span = new ReadOnlySpan<byte>(buffer);
-            var result = converter.ToValueWithMark(ref span);
+            var result = converter.DecodeAuto(ref span);
             Assert.True(span.IsEmpty);
             Assert.False(ReferenceEquals(source, result));
             Assert.Equal(source.Tag, result.Tag);
@@ -102,12 +102,12 @@ namespace Mikodev.Binary.Tests
             var alpha = Assert.Throws<ArgumentException>(() =>
             {
                 var allocator = new Allocator();
-                converter.ToBytes(ref allocator, source);
+                converter.Encode(ref allocator, source);
             });
             var bravo = Assert.Throws<ArgumentException>(() =>
             {
                 var allocator = new Allocator();
-                converter.ToBytesWithLengthPrefix(ref allocator, source);
+                converter.EncodeWithLengthPrefix(ref allocator, source);
             });
 
             Assert.Null(alpha.ParamName);

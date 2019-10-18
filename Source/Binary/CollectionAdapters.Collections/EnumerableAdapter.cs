@@ -47,12 +47,12 @@ namespace Mikodev.Binary.CollectionAdapters.Collections
                 adapter.Of(ref allocator, segment);
             else if (item is IList<E> items)
                 for (int i = 0, itemCount = items.Count; i < itemCount; i++)
-                    converter.ToBytesWithMark(ref allocator, items[i]);
+                    converter.EncodeAuto(ref allocator, items[i]);
             else if (byArray)
                 adapter.Of(ref allocator, toArray == null ? Enumerable.ToArray(item) : toArray.Invoke(item));
             else
                 foreach (var i in item)
-                    converter.ToBytesWithMark(ref allocator, i);
+                    converter.EncodeAuto(ref allocator, i);
         }
 
         public override ArraySegment<E> To(in ReadOnlySpan<byte> span) => adapter.To(in span);

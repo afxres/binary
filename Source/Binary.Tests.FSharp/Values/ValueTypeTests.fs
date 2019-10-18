@@ -17,38 +17,38 @@ let randomNumber () : uint64 =
     number
 
 let testWithSpan (value : 'a) (size : int) =
-    let bufferOrigin = generator.ToBytes value
+    let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
     let mutable allocator = new Allocator()
-    converter.ToBytes(&allocator, value)
+    converter.Encode(&allocator, value)
     let buffer = allocator.ToArray()
     Assert.Equal<byte>(bufferOrigin, buffer)
     Assert.Equal(size, buffer.Length)
 
     let span = ReadOnlySpan buffer
-    let result = converter.ToValue &span
+    let result = converter.Decode &span
     Assert.Equal<'a>(value, result)
     ()
 
 let testWithBytes (value : 'a) (size : int) =
-    let bufferOrigin = generator.ToBytes value
+    let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
-    let buffer = converter.ToBytes value
+    let buffer = converter.Encode value
     Assert.Equal<byte>(bufferOrigin, buffer)
     Assert.Equal(size, buffer.Length)
 
-    let result = converter.ToValue buffer
+    let result = converter.Decode buffer
     Assert.Equal<'a>(value, result)
     ()
 
 let testWithLengthPrefix (value : 'a) (size : int) =
-    let bufferOrigin = generator.ToBytes value
+    let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
     let mutable allocator = new Allocator()
-    converter.ToBytesWithLengthPrefix(&allocator, value)
+    converter.EncodeWithLengthPrefix(&allocator, value)
     let buffer = allocator.ToArray()
 
     let prefixLength = PrimitiveHelper.DecodeNumberLength(buffer.[0])
@@ -56,17 +56,17 @@ let testWithLengthPrefix (value : 'a) (size : int) =
     Assert.Equal<byte>(bufferOrigin, buffer |> Array.skip prefixLength)
 
     let mutable span = ReadOnlySpan buffer
-    let result = converter.ToValueWithLengthPrefix(&span)
+    let result = converter.DecodeWithLengthPrefix(&span)
     Assert.True(span.IsEmpty)
     Assert.Equal<'a>(value, result)
     ()
 
 let testExplicit (value : 'a) (size : int) =
     // convert via Generator
-    let buffer = generator.ToBytes value
+    let buffer = generator.Encode value
     Assert.Equal(size, buffer.Length)
 
-    let result : 'a = generator.ToValue buffer
+    let result : 'a = generator.Decode buffer
     Assert.Equal<'a>(value, result)
 
     let converter = generator.GetConverter<'a>()
@@ -130,7 +130,7 @@ let ``Bool Char Byte SByte Decimal`` () =
 let ``Guid`` () =
     for i = 0 to randomCount do
         let guid : Guid = Guid.NewGuid()
-        let bytes = generator.ToBytes<Guid> guid
+        let bytes = generator.Encode<Guid> guid
 
         test guid
 
@@ -156,8 +156,8 @@ let ``TimeSpan Instance`` () =
 let ``DateTime Instance`` () =
     let check item =
         test item
-        let buffer = generator.ToBytes item
-        let result = generator.ToValue<DateTime> buffer
+        let buffer = generator.Encode item
+        let result = generator.Decode<DateTime> buffer
         Assert.Equal(item, result)
         Assert.Equal(item.Kind, result.Kind)
         ()
@@ -175,9 +175,9 @@ let ``DateTimeOffset Instance`` () =
     let check item =
         testExplicit item 10
 
-        let buffer = generator.ToBytes item
-        let result = generator.ToValue<DateTimeOffset> buffer
-        let (origin, offset) = generator.ToValue<(int64 * int16)> buffer
+        let buffer = generator.Encode item
+        let result = generator.Decode<DateTimeOffset> buffer
+        let (origin, offset) = generator.Decode<(int64 * int16)> buffer
 
         Assert.Equal(item, result)
         Assert.Equal(item.Offset, result.Offset)

@@ -10,8 +10,8 @@ let generator = new Generator()
 let ``Constructor (argument null or empty)`` () =
     let test (generator : Generator) =
         let source = struct (768, "data")
-        let buffer = generator.ToBytes source
-        let result = generator.ToValue<struct (int * string)> buffer
+        let buffer = generator.Encode source
+        let result = generator.Decode<struct (int * string)> buffer
         Assert.Equal(source, result)
 
     test(new Generator())
@@ -87,13 +87,13 @@ let ``Get Converter (IConverter interface)`` () =
 [<Fact>]
 let ``To Bytes (obj, instance)`` () =
     let source = new obj()
-    let error = Assert.Throws<ArgumentException>(fun () -> generator.ToBytes source |> ignore)
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.Encode source |> ignore)
     Assert.Contains("Invalid type", error.Message)
     ()
 
 [<Fact>]
 let ``To Bytes (obj, null)`` () =
-    let error = Assert.Throws<ArgumentException>(fun () -> generator.ToBytes<obj> null |> ignore)
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.Encode<obj> null |> ignore)
     Assert.Contains("Can not get type of null object.", error.Message)
     ()
 
@@ -101,13 +101,13 @@ let ``To Bytes (obj, null)`` () =
 [<InlineData(43, 4)>]
 [<InlineData("magic", 5)>]
 let ``To Bytes (via type)`` (item : obj, count : int) =
-    let buffer = generator.ToBytes(item, item.GetType())
+    let buffer = generator.Encode(item, item.GetType())
     Assert.Equal(count, buffer.Length)
     ()
 
 [<Fact>]
 let ``To Bytes (via type, null)`` () =
-    let buffer = generator.ToBytes(null, typeof<Uri>)
+    let buffer = generator.Encode(null, typeof<Uri>)
     Assert.Equal(0, buffer.Length)
     ()
 
@@ -116,13 +116,13 @@ let ``To Bytes (via type, null)`` () =
 [<InlineData("pi")>]
 let ``To Bytes ('a : obj)`` (value : obj) =
     let source = box value
-    let buffer = generator.ToBytes<obj> source
+    let buffer = generator.Encode<obj> source
     Assert.NotEmpty(buffer)
     ()
 
 [<Fact>]
 let ``To Value ('a : obj)`` () =
-    let error = Assert.Throws<ArgumentException>(fun () -> generator.ToValue<obj> Array.empty<byte>)
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode<obj> Array.empty<byte>)
     Assert.Contains("Invalid type", error.Message)
     ()
 
@@ -130,14 +130,14 @@ let ``To Value ('a : obj)`` () =
 [<InlineData(2.71)>]
 [<InlineData("e")>]
 let ``To Value (via type)`` (value : obj) =
-    let buffer = generator.ToBytes value
-    let result = generator.ToValue(buffer, value.GetType())
+    let buffer = generator.Encode value
+    let result = generator.Decode(buffer, value.GetType())
     Assert.Equal(value, result)
     ()
 
 [<Fact>]
 let ``To Value (via type, argument null)`` () =
-    let error = Assert.Throws<ArgumentNullException>(fun () -> generator.ToValue(Array.empty<byte>, Unchecked.defaultof<Type>) |> ignore)
+    let error = Assert.Throws<ArgumentNullException>(fun () -> generator.Decode(Array.empty<byte>, Unchecked.defaultof<Type>) |> ignore)
     Assert.Equal("type", error.ParamName)
     ()
 
@@ -145,16 +145,16 @@ let ``To Value (via type, argument null)`` () =
 [<InlineData(6)>]
 [<InlineData("fox")>]
 let ``To Bytes and To Value`` (data : 'a) =
-    let buffer = generator.ToBytes data
-    let result = generator.ToValue<'a> buffer
+    let buffer = generator.Encode data
+    let result = generator.Decode<'a> buffer
     Assert.Equal<'a>(data, result)
     ()
 
 [<Fact>]
 let ``Internal Types`` () =
-    let error = Assert.Throws<ArgumentException>(fun () -> generator.ToValue<Converter> Array.empty<byte> |> ignore)
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode<Converter> Array.empty<byte> |> ignore)
     Assert.Contains("Invalid type", error.Message)
-    let error = Assert.Throws<ArgumentException>(fun () -> generator.ToValue<Generator> Array.empty<byte> |> ignore)
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode<Generator> Array.empty<byte> |> ignore)
     Assert.Contains("Invalid type", error.Message)
     ()
 

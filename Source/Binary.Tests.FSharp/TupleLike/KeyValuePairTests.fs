@@ -10,21 +10,21 @@ let generator = new Generator()
 
 let bytes<'a> (c : Converter<'a>) v =
     let mutable allocator = new Allocator()
-    c.ToBytes(&allocator, v)
+    c.Encode(&allocator, v)
     allocator.ToArray()
 
 let bytesWithMark<'a> (c : Converter<'a>) v =
     let mutable allocator = new Allocator()
-    c.ToBytesWithMark(&allocator, v)
+    c.EncodeAuto(&allocator, v)
     allocator.ToArray()
 
 let value<'a> (c : Converter<'a>) buffer =
     let span = new ReadOnlySpan<byte>(buffer)
-    c.ToValue &span
+    c.Decode &span
 
 let valueWithMark<'a> (c : Converter<'a>) buffer =
     let mutable span = new ReadOnlySpan<byte>(buffer)
-    c.ToValueWithMark &span
+    c.DecodeAuto &span
 
 [<Theory>]
 [<InlineData(16uy, "short", 0, 6, 7)>]
@@ -67,10 +67,10 @@ let ``Key-Value Pair`` (k : 'K) (v : 'V) define normal headed =
 let ``Key-Value Pair List`` () =
     let a = [ new KeyValuePair<int, string>(1, "two"); new KeyValuePair<int, string>(3, "four") ]
     let b = [ new KeyValuePair<int16, int64>(int16 -1, int64 2); new KeyValuePair<int16, int64>(int16 3, int64 -4) ]
-    let bytesA = generator.ToBytes a
-    let bytesB = generator.ToBytes b
-    let seqA = generator.ToValue<seq<int * string>> bytesA
-    let seqB = generator.ToValue<seq<int16 * int64>> bytesB
+    let bytesA = generator.Encode a
+    let bytesB = generator.Encode b
+    let seqA = generator.Decode<seq<int * string>> bytesA
+    let seqB = generator.Decode<seq<int16 * int64>> bytesB
     Assert.Equal<int * string>(seqA, (a |> List.map (|KeyValue|)))
     Assert.Equal<int16 * int64>(seqB, (b |> List.map (|KeyValue|)))
     Assert.Equal(20, bytesB.Length)
@@ -79,8 +79,8 @@ let ``Key-Value Pair List`` () =
 [<Fact>]
 let ``Key-Value Pair Array`` () =
     let alpha = [| new KeyValuePair<byte, uint32>(byte 3, uint32 5); new KeyValuePair<byte, uint32>(byte 7, uint32 9) |]
-    let bytes = generator.ToBytes alpha
-    let array = generator.ToValue<array<byte * uint32>> bytes
+    let bytes = generator.Encode alpha
+    let array = generator.Decode<array<byte * uint32>> bytes
     Assert.Equal<byte * uint32>(array, (alpha |> Array.map (|KeyValue|)))
     ()
 
@@ -89,9 +89,9 @@ type Raw<'a> = { data : 'a }
 type RawConverter<'a>(length : int) =
     inherit ConstantConverter<Raw<'a>>(length)
 
-    override __.ToBytes(_, _) = raise (NotSupportedException())
+    override __.Encode(_, _) = raise (NotSupportedException())
 
-    override __.ToValue (_ : inref<ReadOnlySpan<byte>>) : Raw<'a> = raise (NotSupportedException())
+    override __.Decode (_ : inref<ReadOnlySpan<byte>>) : Raw<'a> = raise (NotSupportedException())
 
 [<Fact>]
 let ``Key-Value Pair Length`` () =

@@ -16,41 +16,41 @@ namespace Mikodev.Binary.Creators
             this.converter = converter;
         }
 
-        public override void ToBytes(ref Allocator allocator, T? item)
+        public override void Encode(ref Allocator allocator, T? item)
         {
             var header = item == null ? None : Some;
             allocator.AllocateReference(sizeof(byte)) = header;
             if (!(item is T result))
                 return;
-            converter.ToBytes(ref allocator, result);
+            converter.Encode(ref allocator, result);
         }
 
-        public override T? ToValue(in ReadOnlySpan<byte> span)
+        public override T? Decode(in ReadOnlySpan<byte> span)
         {
             var head = span[0];
             var body = span.Slice(sizeof(byte));
             if (head == Some)
-                return converter.ToValue(in body);
+                return converter.Decode(in body);
             if (head != None)
                 ThrowHelper.ThrowInvalidNullableTag(head, ItemType);
             return null;
         }
 
-        public override void ToBytesWithMark(ref Allocator allocator, T? item)
+        public override void EncodeAuto(ref Allocator allocator, T? item)
         {
             var header = item == null ? None : Some;
             allocator.AllocateReference(sizeof(byte)) = header;
             if (!(item is T result))
                 return;
-            converter.ToBytesWithMark(ref allocator, result);
+            converter.EncodeAuto(ref allocator, result);
         }
 
-        public override T? ToValueWithMark(ref ReadOnlySpan<byte> span)
+        public override T? DecodeAuto(ref ReadOnlySpan<byte> span)
         {
             var head = span[0];
             span = span.Slice(sizeof(byte));
             if (head == Some)
-                return converter.ToValueWithMark(ref span);
+                return converter.DecodeAuto(ref span);
             if (head != None)
                 ThrowHelper.ThrowInvalidNullableTag(head, ItemType);
             return null;

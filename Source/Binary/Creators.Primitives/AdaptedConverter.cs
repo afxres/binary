@@ -17,16 +17,16 @@ namespace Mikodev.Binary.Creators.Primitives
             this.converter = converter;
         }
 
-        public override void ToBytes(ref Allocator allocator, T item) => converter.ToBytes(ref allocator, adapter.Of(item));
+        public override void Encode(ref Allocator allocator, T item) => converter.Encode(ref allocator, adapter.Of(item));
 
-        public override T ToValue(in ReadOnlySpan<byte> span) => adapter.To(converter.ToValue(in span));
+        public override T Decode(in ReadOnlySpan<byte> span) => adapter.To(converter.Decode(in span));
 
-        public override void ToBytesWithMark(ref Allocator allocator, T item) => converter.ToBytesWithMark(ref allocator, adapter.Of(item));
+        public override void EncodeAuto(ref Allocator allocator, T item) => converter.EncodeAuto(ref allocator, adapter.Of(item));
 
-        public override T ToValueWithMark(ref ReadOnlySpan<byte> span) => adapter.To(converter.ToValueWithMark(ref span));
+        public override T DecodeAuto(ref ReadOnlySpan<byte> span) => adapter.To(converter.DecodeAuto(ref span));
 
-        public override void ToBytesWithLengthPrefix(ref Allocator allocator, T item) => converter.ToBytesWithLengthPrefix(ref allocator, adapter.Of(item));
+        public override void EncodeWithLengthPrefix(ref Allocator allocator, T item) => converter.EncodeWithLengthPrefix(ref allocator, adapter.Of(item));
 
-        public override T ToValueWithLengthPrefix(ref ReadOnlySpan<byte> span) => adapter.To(converter.ToValueWithLengthPrefix(ref span));
+        public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => adapter.To(converter.DecodeWithLengthPrefix(ref span));
     }
 }

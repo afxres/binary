@@ -13,12 +13,12 @@ namespace Mikodev.Binary.Creators.Endianness
             Debug.Assert(typeof(T) == typeof(Guid) || new List<int> { 1, 2, 4, 8 }.Contains(Memory.SizeOf<T>()));
         }
 
-        public override void ToBytes(ref Allocator allocator, T item)
+        public override void Encode(ref Allocator allocator, T item)
         {
             Memory.Set(ref allocator.AllocateReference(Memory.SizeOf<T>()), item);
         }
 
-        public override T ToValue(in ReadOnlySpan<byte> span)
+        public override T Decode(in ReadOnlySpan<byte> span)
         {
             if (span.Length < Memory.SizeOf<T>())
                 return ThrowHelper.ThrowNotEnoughBytes<T>();
@@ -26,12 +26,12 @@ namespace Mikodev.Binary.Creators.Endianness
             return Memory.Get<T>(ref source);
         }
 
-        public override void ToBytesWithMark(ref Allocator allocator, T item)
+        public override void EncodeAuto(ref Allocator allocator, T item)
         {
             Memory.Set(ref allocator.AllocateReference(Memory.SizeOf<T>()), item);
         }
 
-        public override T ToValueWithMark(ref ReadOnlySpan<byte> span)
+        public override T DecodeAuto(ref ReadOnlySpan<byte> span)
         {
             // take reference first, then check bounds via slice method
             ref var source = ref MemoryMarshal.GetReference(span);
@@ -39,14 +39,14 @@ namespace Mikodev.Binary.Creators.Endianness
             return Memory.Get<T>(ref source);
         }
 
-        public override void ToBytesWithLengthPrefix(ref Allocator allocator, T item)
+        public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
             ref var location = ref allocator.AllocateReference(Memory.SizeOf<T>() + 1);
             location = (byte)Memory.SizeOf<T>();
             Memory.Set(ref Memory.Add(ref location, 1), item);
         }
 
-        public override T ToValueWithLengthPrefix(ref ReadOnlySpan<byte> span)
+        public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
             var spanLength = span.Length;
             if (spanLength == 0)

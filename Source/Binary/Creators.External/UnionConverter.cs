@@ -40,7 +40,7 @@ namespace Mikodev.Binary.Creators.External
         [DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ThrowOnInvalid(int mark) { if (mark != MarkNone) ThrowInvalid(mark); }
 
-        public override void ToBytes(ref Allocator allocator, T item)
+        public override void Encode(ref Allocator allocator, T item)
         {
             ThrowOnNull(item);
             var mark = MarkNone;
@@ -48,7 +48,7 @@ namespace Mikodev.Binary.Creators.External
             ThrowOnInvalid(mark);
         }
 
-        public override T ToValue(in ReadOnlySpan<byte> span)
+        public override T Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
             var mark = MarkNone;
@@ -57,7 +57,7 @@ namespace Mikodev.Binary.Creators.External
             return item;
         }
 
-        public override void ToBytesWithMark(ref Allocator allocator, T item)
+        public override void EncodeAuto(ref Allocator allocator, T item)
         {
             ThrowOnNull(item);
             var mark = MarkNone;
@@ -65,7 +65,7 @@ namespace Mikodev.Binary.Creators.External
             ThrowOnInvalid(mark);
         }
 
-        public override T ToValueWithMark(ref ReadOnlySpan<byte> span)
+        public override T DecodeAuto(ref ReadOnlySpan<byte> span)
         {
             var mark = MarkNone;
             var item = toUnionWith.Invoke(ref span, ref mark);

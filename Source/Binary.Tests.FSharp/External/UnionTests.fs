@@ -14,21 +14,21 @@ let converter<'a> =
 
 let bytes<'a> (c : Converter<'a>) v =
     let mutable allocator = new Allocator()
-    c.ToBytes(&allocator, v)
+    c.Encode(&allocator, v)
     allocator.ToArray()
 
 let bytesWithMark<'a> (c : Converter<'a>) v =
     let mutable allocator = new Allocator()
-    c.ToBytesWithMark(&allocator, v)
+    c.EncodeAuto(&allocator, v)
     allocator.ToArray()
 
 let value<'a> (c : Converter<'a>) buffer =
     let span = new ReadOnlySpan<byte>(buffer)
-    c.ToValue &span
+    c.Decode &span
 
 let valueWithMark<'a> (c : Converter<'a>) buffer =
     let mutable span = new ReadOnlySpan<byte>(buffer)
-    c.ToValueWithMark &span
+    c.DecodeAuto &span
 
 let test<'a> ls ll (v : 'a) =
     // test to bytes, to value
@@ -39,10 +39,10 @@ let test<'a> ls ll (v : 'a) =
     Assert.Equal(v, ra)
 
     // test to bytes, to value (bytes)
-    let bc = c.ToBytes v
+    let bc = c.Encode v
     Assert.Equal(ls, Array.length bc)
     Assert.Equal<byte>(ba, bc)
-    let rc = c.ToValue bc
+    let rc = c.Decode bc
     Assert.Equal(v, rc)
 
     // test to bytes, to value (with mark)

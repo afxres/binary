@@ -16,7 +16,7 @@ namespace Mikodev.Binary.CollectionAdapters.Collections
                 return;
             var converter = this.converter;
             foreach (var i in item)
-                converter.ToBytesWithMark(ref allocator, i);
+                converter.EncodeAuto(ref allocator, i);
         }
 
         public override Dictionary<K, V> To(in ReadOnlySpan<byte> span)
@@ -33,7 +33,7 @@ namespace Mikodev.Binary.CollectionAdapters.Collections
             var data = new Dictionary<K, V>(itemCount);
             var temp = span;
             while (!temp.IsEmpty)
-                Add(data, converter.ToValueWithMark(ref temp));
+                Add(data, converter.DecodeAuto(ref temp));
             return data;
         }
     }

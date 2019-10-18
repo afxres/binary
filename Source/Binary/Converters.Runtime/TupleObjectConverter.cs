@@ -22,14 +22,14 @@ namespace Mikodev.Binary.Converters.Runtime
             this.toValueWith = toValueWith;
         }
 
-        public override void ToBytes(ref Allocator allocator, T item)
+        public override void Encode(ref Allocator allocator, T item)
         {
             if (item == null)
                 ThrowHelper.ThrowTupleNull(ItemType);
             toBytes.Invoke(ref allocator, item);
         }
 
-        public override T ToValue(in ReadOnlySpan<byte> span)
+        public override T Decode(in ReadOnlySpan<byte> span)
         {
             if (toValue == null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
@@ -37,14 +37,14 @@ namespace Mikodev.Binary.Converters.Runtime
             return toValue.Invoke(ref temp);
         }
 
-        public override void ToBytesWithMark(ref Allocator allocator, T item)
+        public override void EncodeAuto(ref Allocator allocator, T item)
         {
             if (item == null)
                 ThrowHelper.ThrowTupleNull(ItemType);
             toBytesWith.Invoke(ref allocator, item);
         }
 
-        public override T ToValueWithMark(ref ReadOnlySpan<byte> span)
+        public override T DecodeAuto(ref ReadOnlySpan<byte> span)
         {
             if (toValueWith == null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();

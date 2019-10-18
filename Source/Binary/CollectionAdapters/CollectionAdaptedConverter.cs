@@ -18,11 +18,11 @@ namespace Mikodev.Binary.CollectionAdapters
             this.builder = builder;
         }
 
-        public override void ToBytes(ref Allocator allocator, T item) => adapter.Of(ref allocator, builder.Of(item));
+        public override void Encode(ref Allocator allocator, T item) => adapter.Of(ref allocator, builder.Of(item));
 
-        public override T ToValue(in ReadOnlySpan<byte> span) => builder.To(adapter, in span);
+        public override T Decode(in ReadOnlySpan<byte> span) => builder.To(adapter, in span);
 
-        public override void ToBytesWithLengthPrefix(ref Allocator allocator, T item)
+        public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
             int dataLength;
             var data = builder.Of(item);
@@ -44,7 +44,7 @@ namespace Mikodev.Binary.CollectionAdapters
             }
         }
 
-        public override T ToValueWithLengthPrefix(ref ReadOnlySpan<byte> span)
+        public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
             return builder.To(adapter, PrimitiveHelper.DecodeWithLengthPrefix(ref span));
         }

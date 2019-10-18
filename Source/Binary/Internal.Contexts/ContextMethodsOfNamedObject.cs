@@ -43,7 +43,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 var buffer = cache.GetBufferWithLengthPrefix(dictionary[property]);
                 var propertyType = property.PropertyType;
                 var propertyExpression = Expression.Property(item, property);
-                var methodInfo = typeof(Converter<>).MakeGenericType(propertyType).GetMethod(nameof(IConverter.ToBytesWithLengthPrefix));
+                var methodInfo = typeof(Converter<>).MakeGenericType(propertyType).GetMethod(nameof(IConverter.EncodeWithLengthPrefix));
                 expressions.Add(Expression.Call(allocator, appendBufferMethodInfo, Expression.Constant(buffer)));
                 expressions.Add(Expression.Call(Expression.Constant(converter), methodInfo, allocator, propertyExpression));
             }

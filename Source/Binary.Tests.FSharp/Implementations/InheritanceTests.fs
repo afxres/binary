@@ -42,7 +42,7 @@ let generator = new Generator()
 [<Fact>]
 let ``Interface`` () =
     let a = new Person(Guid.NewGuid(), "Tom") :> IPerson
-    let bytes = generator.ToBytes a
+    let bytes = generator.Encode a
     Assert.NotEmpty bytes
     let token = generator.AsToken bytes
     let dictionary = token :> IReadOnlyDictionary<string, Token>
@@ -56,15 +56,15 @@ let ``Interface`` () =
 [<Fact>]
 let ``Interface To Value`` () =
     let a = new Person(Guid.NewGuid(), "Bob") :> IPerson
-    let bytes = generator.ToBytes a
-    let error = Assert.Throws<InvalidOperationException>(fun () -> generator.ToValue<IPerson> bytes |> ignore)
+    let bytes = generator.Encode a
+    let error = Assert.Throws<InvalidOperationException>(fun () -> generator.Decode<IPerson> bytes |> ignore)
     Assert.Equal(sprintf "No suitable constructor found, type: %O" typeof<IPerson>, error.Message)
     ()
 
 [<Fact>]
 let ``Abstract Class`` () =
     let a = new SomeBook("C# To F# ...", 1024, decimal 54.3) :> Book
-    let bytes = generator.ToBytes a
+    let bytes = generator.Encode a
     Assert.NotEmpty bytes
     let token = generator.AsToken bytes
     let dictionary = token :> IReadOnlyDictionary<string, Token>
@@ -79,17 +79,17 @@ let ``Abstract Class`` () =
 [<Fact>]
 let ``Abstract Class To Value`` () =
     let a = new SomeBook("C# To F# ...", 1024, decimal 54.3) :> Book
-    let bytes = generator.ToBytes a
-    let error = Assert.Throws<InvalidOperationException>(fun () -> generator.ToValue<Book> bytes |> ignore)
+    let bytes = generator.Encode a
+    let error = Assert.Throws<InvalidOperationException>(fun () -> generator.Decode<Book> bytes |> ignore)
     Assert.Equal(sprintf "No suitable constructor found, type: %O" typeof<Book>, error.Message)
     ()
 
 [<Fact>]
 let ``Sub Bytes To Base Value`` () =
     let a = new MiscBook(321, "ABC ...", 987, decimal 6.54)
-    let bytes = generator.ToBytes a
+    let bytes = generator.Encode a
     Assert.NotEmpty bytes
-    let value = generator.ToValue<SomeBook> bytes
+    let value = generator.Decode<SomeBook> bytes
     Assert.Equal(a.Name, value.Name)
     Assert.Equal(a.Pages, value.Pages)
     Assert.Equal(a.Price, value.Price)
@@ -102,9 +102,9 @@ let ``Sub Bytes To Base Value`` () =
 [<Fact>]
 let ``Base Bytes To Sub Value`` () =
     let a = new SomeBook("Overflow", 357, decimal 26.8)
-    let bytes = generator.ToBytes a
+    let bytes = generator.Encode a
     Assert.NotEmpty bytes
-    let error = Assert.Throws<ArgumentException>(fun () -> generator.ToValue<MiscBook> bytes |> ignore)
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode<MiscBook> bytes |> ignore)
     let message = sprintf "Property '%s' does not exist, type: %O" "Count" typeof<MiscBook>
     Assert.Equal(message, error.Message)
     let dictionary = generator.AsToken bytes :> IReadOnlyDictionary<string, Token>

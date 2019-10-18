@@ -75,10 +75,10 @@ namespace Mikodev.Binary
         public Token this[string key] => GetTokens()[key];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object As(Type type) => generator.ToValue(memory.Span, type);
+        public object As(Type type) => generator.Decode(memory.Span, type);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T As<T>() => generator.ToValue<T>(memory.Span);
+        public T As<T>() => generator.Decode<T>(memory.Span);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T As<T>(T anonymous) => As<T>();

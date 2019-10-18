@@ -11,16 +11,16 @@ namespace Mikodev.Binary.Creators.External.Collections
 
         public FSharpMapConverter(Converter<KeyValuePair<K, V>> converter) => this.converter = converter;
 
-        public override void ToBytes(ref Allocator allocator, FSharpMap<K, V> item)
+        public override void Encode(ref Allocator allocator, FSharpMap<K, V> item)
         {
             if (item == null)
                 return;
             var converter = this.converter;
             foreach (var i in item)
-                converter.ToBytesWithMark(ref allocator, i);
+                converter.EncodeAuto(ref allocator, i);
         }
 
-        public override FSharpMap<K, V> ToValue(in ReadOnlySpan<byte> span)
+        public override FSharpMap<K, V> Decode(in ReadOnlySpan<byte> span)
         {
             static FSharpMap<K, V> Add(FSharpMap<K, V> data, KeyValuePair<K, V> item) => data.Add(item.Key, item.Value);
 
@@ -28,7 +28,7 @@ namespace Mikodev.Binary.Creators.External.Collections
             var data = MapModule.Empty<K, V>();
             var converter = this.converter;
             while (!temp.IsEmpty)
-                data = Add(data, converter.ToValueWithMark(ref temp));
+                data = Add(data, converter.DecodeAuto(ref temp));
             return data;
         }
     }

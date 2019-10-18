@@ -7,8 +7,8 @@ open Xunit
 let generator = new Generator()
 
 let test (value : 'a when 'a :> 'e seq) =
-    let buffer = generator.ToBytes value
-    let result : 'a = generator.ToValue buffer
+    let buffer = generator.Encode value
+    let result : 'a = generator.Decode buffer
     Assert.Equal<'e seq>(value, result)
     ()
 
@@ -24,8 +24,8 @@ let ``Array Instance`` () =
 [<Fact>]
 let ``Array (empty)`` () =
     let source : int array = [| |]
-    let buffer = generator.ToBytes source
-    let result : int array = generator.ToValue buffer
+    let buffer = generator.Encode source
+    let result : int array = generator.Decode buffer
 
     Assert.Empty(buffer)
     Assert.Equal<int seq>(source, result)
@@ -43,8 +43,8 @@ let ``List Instance`` () =
 [<Fact>]
 let ``List (empty)`` () =
     let source : string list = []
-    let buffer = generator.ToBytes source
-    let result : string list = generator.ToValue buffer
+    let buffer = generator.Encode source
+    let result : string list = generator.Decode buffer
 
     Assert.Empty(buffer)
     Assert.Equal<string seq>(source, result)
@@ -53,8 +53,8 @@ let ``List (empty)`` () =
 [<Fact>]
 let ``List (null)`` () =
     let source = Unchecked.defaultof<int list>
-    let buffer = generator.ToBytes source
-    let result : int list = generator.ToValue buffer
+    let buffer = generator.Encode source
+    let result : int list = generator.Decode buffer
 
     Assert.Empty(buffer)
     Assert.Empty(result)
@@ -66,8 +66,8 @@ let ``List (null)`` () =
 [<InlineData(32768)>]
 let ``List (value type, stack overflow)`` (count : int) =
     let source = Array.zeroCreate<byte> count |> Array.toList
-    let buffer = generator.ToBytes source
-    let result = generator.ToValue<byte list> buffer
+    let buffer = generator.Encode source
+    let result = generator.Decode<byte list> buffer
     Assert.Equal<byte>(source, result)
     ()
 
@@ -77,8 +77,8 @@ let ``List (value type, stack overflow)`` (count : int) =
 [<InlineData(32768)>]
 let ``List (class type, stack overflow)`` (count : int) =
     let source = seq { for i in 0..(count - 1) do yield sprintf "%d" i } |> Seq.toList
-    let buffer = generator.ToBytes source
-    let result = generator.ToValue<string list> buffer
+    let buffer = generator.Encode source
+    let result = generator.Decode<string list> buffer
     Assert.Equal<string>(source, result)
     ()
 
@@ -102,8 +102,8 @@ let ``Set`` () =
 [<Fact>]
 let ``Set (null)`` () =
     let source = Unchecked.defaultof<Set<string>>
-    let buffer = generator.ToBytes source
-    let result : Set<string> = generator.ToValue buffer
+    let buffer = generator.Encode source
+    let result : Set<string> = generator.Decode buffer
 
     Assert.Empty(buffer)
     Assert.Empty(result)
@@ -118,8 +118,8 @@ let ``Map`` () =
 [<Fact>]
 let ``Map (null)`` () =
     let source = Unchecked.defaultof<Map<string, int>>
-    let buffer = generator.ToBytes source
-    let result : Map<string, int> = generator.ToValue buffer
+    let buffer = generator.Encode source
+    let result : Map<string, int> = generator.Decode buffer
 
     Assert.Empty(buffer)
     Assert.Empty(result)

@@ -53,8 +53,8 @@ let generator = new Generator()
 [<Fact>]
 let ``Class Via Constructor`` () =
     let a = new Alpha(3, Guid.NewGuid(), "three")
-    let bytes = generator.ToBytes a
-    let value = generator.ToValue<Alpha> bytes
+    let bytes = generator.Encode a
+    let value = generator.Decode<Alpha> bytes
     Assert.Equal(a.A, value.A)
     Assert.Equal(a.B, value.B)
     Assert.Equal(a.C, value.C)
@@ -63,8 +63,8 @@ let ``Class Via Constructor`` () =
 [<Fact>]
 let ``Struct Via Constructor`` () =
     let a = new Bravo("four", byte 4, 4.4)
-    let bytes = generator.ToBytes a
-    let value = generator.ToValue<Bravo> bytes
+    let bytes = generator.Encode a
+    let value = generator.Decode<Bravo> bytes
     Assert.Equal(a.A, value.A)
     Assert.Equal(a.B, value.B)
     Assert.Equal(a.C, value.C)
@@ -74,9 +74,9 @@ let ``Struct Via Constructor`` () =
 let ``Class Via Properties`` () =
     let a = new Charlie()
     a.A <- "charlie"; a.B <- -3; a.C <- -2.2
-    let bytes = generator.ToBytes a
+    let bytes = generator.Encode a
     Assert.NotEmpty bytes
-    let value = generator.ToValue<Charlie> bytes
+    let value = generator.Decode<Charlie> bytes
     Assert.False(obj.ReferenceEquals(a, value))
     Assert.Equal(a.A, value.A)
     Assert.Equal(a.B, value.B)
@@ -87,9 +87,9 @@ let ``Class Via Properties`` () =
 let ``Struct Via Properties`` () =
     let mutable a = new Delta()
     a.A <- byte -2; a.B <- -3; a.C <- "zero"
-    let bytes = generator.ToBytes a
+    let bytes = generator.Encode a
     Assert.NotEmpty bytes
-    let value = generator.ToValue<Delta> bytes
+    let value = generator.Decode<Delta> bytes
     Assert.False(obj.ReferenceEquals(a, value))
     Assert.Equal(a.A, value.A)
     Assert.Equal(a.B, value.B)
@@ -122,8 +122,8 @@ let ``Class Via Constructor Ordered`` () =
     Assert.NotEqual<string>(parameterNames, propertyNames)
     Assert.Equal<string>(parameterNames |> Set.ofArray, propertyNames |> Set.ofArray)
     let source = new AlphaUnordered(100, "data source", 2.718)
-    let buffer = generator.ToBytes source
-    let result = generator.ToValue<AlphaUnordered> buffer
+    let buffer = generator.Encode source
+    let result = generator.Decode<AlphaUnordered> buffer
     Assert.False(obj.ReferenceEquals(source, result))
     Assert.Equal(source.First, result.First)
     Assert.Equal(source.Second, result.Second)

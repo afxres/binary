@@ -15,9 +15,9 @@ type EnumerableTests () =
     [<Fact>]
     member __.``IList (Array)`` () =
         let a = [| 1.2; 3.4; 5.6 |] :> IList<float>
-        let bytes = generator.ToBytes a
+        let bytes = generator.Encode a
         Assert.Equal(24, bytes |> Array.length)
-        let value = generator.ToValue<IList<float>> bytes
+        let value = generator.Decode<IList<float>> bytes
         Assert.Equal<float>(a, value)
         Assert.IsType<float segment> value |> ignore
         ()
@@ -25,9 +25,9 @@ type EnumerableTests () =
     [<Fact>]
     member __.``IList (Array Segment)`` () =
         let a = [| 9; 6; 3; |] |> segment
-        let bytes = generator.ToBytes a
+        let bytes = generator.Encode a
         Assert.Equal(12, bytes |> Array.length)
-        let value = generator.ToValue<IList<int>> bytes
+        let value = generator.Decode<IList<int>> bytes
         Assert.Equal<int>(a, value)
         Assert.IsType<int segment> value |> ignore
         ()
@@ -35,9 +35,9 @@ type EnumerableTests () =
     [<Fact>]
     member __.``IReadOnlyList`` () =
         let a = [ "some"; "times" ] |> vlist :> IReadOnlyList<string>
-        let bytes = generator.ToBytes a
+        let bytes = generator.Encode a
         Assert.Equal(1 * 2 + 9, bytes |> Array.length)
-        let value = generator.ToValue<IReadOnlyList<string>> bytes
+        let value = generator.Decode<IReadOnlyList<string>> bytes
         Assert.Equal<string>(a, value)
         Assert.IsType<string segment> value |> ignore
         ()
@@ -45,9 +45,9 @@ type EnumerableTests () =
     [<Fact>]
     member __.``ICollection`` () =
         let a = [ 2.2; -4.5; 7.9 ] |> vlist :> ICollection<float>
-        let bytes = generator.ToBytes a
+        let bytes = generator.Encode a
         Assert.Equal(24, bytes |> Array.length)
-        let value = generator.ToValue<ICollection<float>> bytes
+        let value = generator.Decode<ICollection<float>> bytes
         Assert.Equal<float>(a, value)
         Assert.IsType<float segment> value |> ignore
         ()
@@ -55,9 +55,9 @@ type EnumerableTests () =
     [<Fact>]
     member __.``IReadOnlyCollection`` () =
         let a = [| 13; 31; 131; 1313 |] :> IReadOnlyCollection<int>
-        let bytes = generator.ToBytes a
+        let bytes = generator.Encode a
         Assert.Equal(16, bytes |> Array.length)
-        let value = generator.ToValue<IReadOnlyCollection<int>> bytes
+        let value = generator.Decode<IReadOnlyCollection<int>> bytes
         Assert.Equal<int>(a, value)
         Assert.IsType<int segment> value |> ignore
         ()
@@ -65,8 +65,8 @@ type EnumerableTests () =
     [<Fact>]
     member __.``IEnumerable`` () =
         let a = seq { for i in 1..16 do yield sprintf "%x" i }
-        let bytes = generator.ToBytes a
-        let value = generator.ToValue<string seq> bytes
+        let bytes = generator.Encode a
+        let value = generator.Decode<string seq> bytes
         Assert.Equal<string>(a, value)
         Assert.IsType<string segment> value |> ignore
         ()

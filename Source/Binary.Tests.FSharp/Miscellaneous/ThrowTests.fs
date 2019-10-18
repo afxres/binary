@@ -9,9 +9,9 @@ open Xunit
 type BadConverter<'T>() =
     inherit Abstractions.VariableConverter<'T>()
 
-    override __.ToBytes(allocator, item) = allocator <- new Allocator()
+    override __.Encode(allocator, item) = allocator <- new Allocator()
 
-    override __.ToValue (span : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
+    override __.Decode (span : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 
 [<Class>]
 type BadClassTypeWithPrivateProperty() =
@@ -43,7 +43,7 @@ type ThrowTests() =
     member private __.Test<'a> () =
         let error = Assert.Throws<ArgumentException>(fun () ->
             let span = ReadOnlySpan<byte>()
-            generator.ToValue<'a> &span |> ignore)
+            generator.Decode<'a> &span |> ignore)
         let message = sprintf "Not Enough Bytes, type: %O" (typeof<'a>)
         Assert.Equal(message, error.Message)
         ()
@@ -68,7 +68,7 @@ type ThrowTests() =
         let converter = new BadConverter<string>()
         let error = Assert.Throws<InvalidOperationException>(fun () ->
             let mutable allocator = new Allocator()
-            converter.ToBytesWithLengthPrefix(&allocator, null))
+            converter.EncodeWithLengthPrefix(&allocator, null))
         Assert.Equal("Allocator has been modified unexpectedly!", error.Message)
         ()
 

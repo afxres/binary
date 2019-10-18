@@ -14,7 +14,7 @@ let generator = new Generator()
 [<Fact>]
 let ``As`` () =
     let source = { id = 1; data = { name = "alice"; age = 20 }}
-    let buffer = generator.ToBytes source
+    let buffer = generator.Encode source
     let token = generator.AsToken buffer
     Assert.Equal(source.id, token.["id"].As<int>())
     Assert.Equal(source.data.name, token.["data"].["name"].As<string>())
@@ -23,7 +23,7 @@ let ``As`` () =
 [<Fact>]
 let ``As (via type)`` () =
     let source = { id = 2; data = { name = "bob"; age = 22 }}
-    let buffer = generator.ToBytes source
+    let buffer = generator.Encode source
     let token = generator.AsToken buffer
     Assert.Equal(box source.data.name, token.["data"].["name"].As(typeof<string>))
     Assert.Equal(box source.data.age, token.["data"].["age"].As<int>())
@@ -39,7 +39,7 @@ let ``As (via type, argument null)`` () =
 [<Fact>]
 let ``Index`` () =
     let source = { id = 5; data = { name = "echo"; age = 24 }}
-    let buffer = generator.ToBytes source
+    let buffer = generator.Encode source
     let token = generator.AsToken buffer
     let id = token.["id"]
     let name = token.["data"].["name"]
@@ -50,7 +50,7 @@ let ``Index`` () =
 [<Fact>]
 let ``Index (mismatch)`` () =
     let source = { id = 6; data = { name = "golf"; age = 18 }}
-    let buffer = generator.ToBytes source
+    let buffer = generator.Encode source
     let token = generator.AsToken buffer
     Assert.Equal(source.data, token.["data"].As<Person>())
     Assert.Throws<KeyNotFoundException>(fun () -> token.["item"] |> ignore) |> ignore
@@ -76,7 +76,7 @@ let ``As Span`` () =
 
 [<Fact>]
 let ``Empty Key Only`` () =
-    let buffer = generator.ToBytes (dict [ "", box 1.41 ])
+    let buffer = generator.Encode (dict [ "", box 1.41 ])
     let token = generator.AsToken buffer
     let dictionary = token :> IReadOnlyDictionary<string, Token>
     Assert.Equal(1, dictionary.Count)
@@ -85,7 +85,7 @@ let ``Empty Key Only`` () =
 
 [<Fact>]
 let ``Empty Key`` () =
-    let buffer = generator.ToBytes (dict [ "a", box 'a'; "", box 2048; "data", box "value" ])
+    let buffer = generator.Encode (dict [ "a", box 'a'; "", box 2048; "data", box "value" ])
     let token = generator.AsToken buffer
     let dictionary = token :> IReadOnlyDictionary<string, Token>
     Assert.Equal(3, dictionary.Count)

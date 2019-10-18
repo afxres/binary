@@ -8,33 +8,33 @@ open Xunit
 let generator = new Generator()
 
 let testWithSpan (value : 'a) =
-    let bufferOrigin = generator.ToBytes value
+    let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
     let mutable allocator = new Allocator()
-    converter.ToBytes(&allocator, value)
+    converter.Encode(&allocator, value)
     let buffer = allocator.ToArray()
     Assert.Equal<byte>(bufferOrigin, buffer)
 
     let span = ReadOnlySpan buffer
-    let result = converter.ToValue &span
+    let result = converter.Decode &span
     Assert.Equal<'a>(value, result)
     ()
 
 let testWithBytes (value : 'a) =
-    let bufferOrigin = generator.ToBytes value
+    let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
-    let buffer = converter.ToBytes value
+    let buffer = converter.Encode value
     Assert.Equal<byte>(bufferOrigin, buffer)
 
-    let result = converter.ToValue buffer
+    let result = converter.Decode buffer
     Assert.Equal<'a>(value, result)
     ()
 
 let test (value : 'a) =
-    let buffer = generator.ToBytes value
-    let result : 'a = generator.ToValue buffer
+    let buffer = generator.Encode value
+    let result : 'a = generator.Decode buffer
     Assert.Equal<'a>(value, result)
 
     // convert via Converter
@@ -54,8 +54,8 @@ let ``String Instance`` (text : string) =
 [<InlineData("")>]
 [<InlineData(null)>]
 let ``String (empty & null)`` (text : string) =
-    let buffer = generator.ToBytes text
-    let result : string = generator.ToValue buffer
+    let buffer = generator.Encode text
+    let result : string = generator.Decode buffer
 
     Assert.Empty(buffer)
     Assert.Equal(String.Empty, result)
@@ -65,7 +65,7 @@ let ``String (empty & null)`` (text : string) =
 let ``String From Default Value Of Span`` () =
     let converter = generator.GetConverter<string>()
     let span = new ReadOnlySpan<byte>()
-    let result = converter.ToValue(&span)
+    let result = converter.Decode(&span)
     Assert.Equal(String.Empty, result)
     ()
 
@@ -79,9 +79,9 @@ let ``Uri Instance`` (data : string) =
 
     test item
 
-    let bufferAlpha = generator.ToBytes item
-    let bufferBravo = generator.ToBytes data
-    let result = generator.ToValue<Uri> bufferAlpha
+    let bufferAlpha = generator.Encode item
+    let bufferBravo = generator.Encode data
+    let result = generator.Decode<Uri> bufferAlpha
     Assert.Equal<byte>(bufferAlpha, bufferBravo)
     Assert.Equal(item, result)
     Assert.Equal(data, result.OriginalString)
@@ -91,8 +91,8 @@ let ``Uri Instance`` (data : string) =
 [<Fact>]
 let ``Uri (null)`` () =
     let item : Uri = null
-    let buffer = generator.ToBytes item
-    let result = generator.ToValue<Uri> buffer
+    let buffer = generator.Encode item
+    let result = generator.Decode<Uri> buffer
 
     let _ = Assert.Throws<UriFormatException> (fun () -> new Uri(String.Empty) |> ignore)
     Assert.Null(result)
@@ -105,10 +105,10 @@ let ``Uri (null, with length prefix)`` () =
     let item : Uri = null
     let converter = generator.GetConverter<Uri>()
     let mutable allocator = Allocator()
-    converter.ToBytesWithLengthPrefix(&allocator, item)
+    converter.EncodeWithLengthPrefix(&allocator, item)
     let buffer = allocator.ToArray()
     let mutable span = ReadOnlySpan buffer
-    let result = converter.ToValueWithLengthPrefix(&span)
+    let result = converter.DecodeWithLengthPrefix(&span)
 
     Assert.Null(result)
     Assert.Equal(1, buffer.Length)
@@ -126,8 +126,8 @@ let ``IPAddress Instance`` (address : string) =
 [<Fact>]
 let ``IPAddress (null)`` () =
     let address : IPAddress = null
-    let buffer = generator.ToBytes address
-    let result : IPAddress = generator.ToValue buffer
+    let buffer = generator.Encode address
+    let result : IPAddress = generator.Decode buffer
 
     Assert.Null(result)
     Assert.Empty(buffer)
@@ -150,9 +150,9 @@ let ``IPEndPoint And Tuple`` (address : string, port : int) =
     let a = new IPEndPoint(address, port)
     let b = (address, uint16 port)
     let d = struct (address, uint16 port)
-    let alpha = generator.ToBytes a
-    let bravo = generator.ToBytes b
-    let delta = generator.ToBytes d
+    let alpha = generator.Encode a
+    let bravo = generator.Encode b
+    let delta = generator.Encode d
     Assert.Equal<byte>(alpha, bravo)
     Assert.Equal<byte>(alpha, delta)
     ()
@@ -160,8 +160,8 @@ let ``IPEndPoint And Tuple`` (address : string, port : int) =
 [<Fact>]
 let ``IPEndPoint (null)`` () =
     let endpoint : IPEndPoint = null
-    let buffer = generator.ToBytes endpoint
-    let result : IPEndPoint = generator.ToValue buffer
+    let buffer = generator.Encode endpoint
+    let result : IPEndPoint = generator.Decode buffer
 
     Assert.Null(result)
     Assert.Empty(buffer)
@@ -172,7 +172,7 @@ let ``IPEndPoint (null)`` () =
 let ``IPEndPoint (not enough bytes)`` () =
     let converter = generator.GetConverter<IPEndPoint>()
     let message = sprintf "Not enough bytes, type: %O" typeof<IPEndPoint>
-    let buffer = generator.ToBytes(struct (Unchecked.defaultof<IPAddress>, uint16 65535))
-    let error = Assert.Throws<ArgumentException>(fun () -> converter.ToValue buffer |> ignore)
+    let buffer = generator.Encode(struct (Unchecked.defaultof<IPAddress>, uint16 65535))
+    let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode buffer |> ignore)
     Assert.Equal(message, error.Message)
     ()

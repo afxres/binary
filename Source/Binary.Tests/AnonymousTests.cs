@@ -28,9 +28,9 @@ namespace Mikodev.Binary.Tests
         public void Convert()
         {
             var a = new { id = "some", data = new { name = "Bob" } };
-            var bytes = generator.ToBytes(a);
+            var bytes = generator.Encode(a);
             Assert.NotEmpty(bytes);
-            var value = generator.ToValue(bytes, a);
+            var value = generator.Decode(bytes, a);
             Assert.False(ReferenceEquals(a, value));
             Assert.Equal(a, value);
         }
@@ -39,7 +39,7 @@ namespace Mikodev.Binary.Tests
         public void ValueFromEmptyBytes()
         {
             var bytes = Array.Empty<byte>();
-            var value = generator.ToValue(bytes, new { key = default(string) });
+            var value = generator.Decode(bytes, new { key = default(string) });
             Assert.Null(value);
         }
 
@@ -50,7 +50,7 @@ namespace Mikodev.Binary.Tests
 
             var a = DefaultOf(new { key = default(string), value = default(int) });
             Assert.Null(a);
-            var bytes = generator.ToBytes(a);
+            var bytes = generator.Encode(a);
             Assert.Empty(bytes);
         }
 
@@ -58,7 +58,7 @@ namespace Mikodev.Binary.Tests
         public void TokenAs()
         {
             var a = new { guid = Guid.NewGuid(), inner = new { name = "Pro C# ...", price = 51.2 } };
-            var bytes = generator.ToBytes(a);
+            var bytes = generator.Encode(a);
             var token = generator.AsToken(bytes);
             var value = token.As(a);
             Assert.False(ReferenceEquals(a, value));

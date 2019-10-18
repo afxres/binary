@@ -20,7 +20,7 @@ namespace Mikodev.Binary.Creators.External.Collections
             Debug.Assert(converter != null);
         }
 
-        public override void ToBytes(ref Allocator allocator, FSharpList<T> item)
+        public override void Encode(ref Allocator allocator, FSharpList<T> item)
         {
             if (item == null)
                 return;
@@ -29,13 +29,13 @@ namespace Mikodev.Binary.Creators.External.Collections
             while (tail != null)
             {
                 var head = list.HeadOrDefault;
-                converter.ToBytesWithMark(ref allocator, head);
+                converter.EncodeAuto(ref allocator, head);
                 list = tail;
                 tail = list.TailOrNull;
             }
         }
 
-        public override FSharpList<T> ToValue(in ReadOnlySpan<byte> span)
+        public override FSharpList<T> Decode(in ReadOnlySpan<byte> span)
         {
             // recursive call may cause stackoverflow, so ...
             var origin = adapter.To(in span);

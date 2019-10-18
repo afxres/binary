@@ -11,15 +11,15 @@ let generator = new Generator()
 let test (ls : int) (ll : int) (value : 'T) =
     let c = generator.GetConverter<'T> ()
     let mutable allocator = new Allocator()
-    c.ToBytes(&allocator, value)
+    c.Encode(&allocator, value)
     let ba = allocator.ToArray()
-    let ra = c.ToValue ba
+    let ra = c.Decode ba
 
     let mutable allocator = new Allocator()
-    c.ToBytesWithMark(&allocator, value)
+    c.EncodeAuto(&allocator, value)
     let bb = allocator.ToArray()
     let mutable span = new ReadOnlySpan<byte>(bb)
-    let rb = c.ToValueWithMark(&span)
+    let rb = c.DecodeAuto(&span)
 
     Assert.Equal<'T>(value, ra)
     Assert.Equal<'T>(value, rb)
@@ -31,10 +31,10 @@ let testNull<'T> () =
     let value = Unchecked.defaultof<'T>
     let converter = generator.GetConverter<'T> ()
     let message = sprintf "Tuple can not be null, type: %O" typeof<'T>
-    let alpha = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = new Allocator() in converter.ToBytes(&allocator, value))
+    let alpha = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = new Allocator() in converter.Encode(&allocator, value))
     Assert.Equal("item", alpha.ParamName)
     Assert.StartsWith(message, alpha.Message)
-    let bravo = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = new Allocator() in converter.ToBytesWithMark(&allocator, value))
+    let bravo = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = new Allocator() in converter.EncodeAuto(&allocator, value))
     Assert.Equal("item", bravo.ParamName)
     Assert.StartsWith(message, bravo.Message)
     ()
@@ -81,7 +81,7 @@ let ``Tuple Null 8`` () =
 
 [<Fact>]
 let ``Value Tuple Empty Bytes`` () =
-    Assert.Throws<ArgumentOutOfRangeException>(fun () -> generator.ToValue<struct (int * int)> Array.empty |> ignore) |> ignore
+    Assert.Throws<ArgumentOutOfRangeException>(fun () -> generator.Decode<struct (int * int)> Array.empty |> ignore) |> ignore
     ()
 
 [<Fact>]
@@ -198,9 +198,9 @@ type Fix = { some : obj }
 type FixConverter(length : int) =
     inherit ConstantConverter<Fix>(length)
 
-    override __.ToBytes(_, _) = raise (NotSupportedException())
+    override __.Encode(_, _) = raise (NotSupportedException())
 
-    override __.ToValue (_ : inref<ReadOnlySpan<byte>>) : Fix = raise (NotSupportedException())
+    override __.Decode (_ : inref<ReadOnlySpan<byte>>) : Fix = raise (NotSupportedException())
 
 [<Fact>]
 let ``Tuple Length (overflow)`` () =

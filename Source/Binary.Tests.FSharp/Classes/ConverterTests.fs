@@ -12,16 +12,16 @@ let ``Object Converter`` () =
     let converter = generator.GetConverter<obj>()
     let source : obj = box (struct (3, 2.1))
     let mutable allocator = new Allocator()
-    converter.ToBytes(&allocator, source)
+    converter.Encode(&allocator, source)
     let buffer = allocator.ToArray()
-    let result = generator.ToValue<struct (int * double)> buffer
+    let result = generator.Decode<struct (int * double)> buffer
     Assert.Equal(source, box result)
     ()
 
 [<Fact>]
 let ``Object Converter (to value)`` () =
     let converter = generator.GetConverter<obj>()
-    let error = Assert.Throws<ArgumentException>(fun () -> converter.ToValue Array.empty<byte> |> ignore)
+    let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode Array.empty<byte> |> ignore)
     Assert.Contains("Invalid type", error.Message)
     ()
 
@@ -36,15 +36,15 @@ let test<'T> (item : 'T) =
     let mutable ab = new Allocator()
     let ca = generator.GetConverter<'T>()
     let cb = ca :> IConverter
-    ca.ToBytes(&aa, item)
-    cb.ToBytes(&ab, box item)
+    ca.Encode(&aa, item)
+    cb.Encode(&ab, box item)
     Assert.Equal(aa.Length, ab.Length)
     Assert.Equal<byte>(aa.ToArray(), ab.ToArray())
 
     let ba = aa.AsSpan()
     let bb = ab.AsSpan()
-    let ra = ca.ToValue &ba
-    let rb = cb.ToValue &bb |> Unchecked.unbox<'T>
+    let ra = ca.Decode &ba
+    let rb = cb.Decode &bb |> Unchecked.unbox<'T>
     Assert.Equal(ra, rb)
     ()
 
@@ -53,15 +53,15 @@ let testWithMark<'T> (item : 'T) =
     let mutable ab = new Allocator()
     let ca = generator.GetConverter<'T>()
     let cb = ca :> IConverter
-    ca.ToBytesWithMark(&aa, item)
-    cb.ToBytesWithMark(&ab, box item)
+    ca.EncodeAuto(&aa, item)
+    cb.EncodeAuto(&ab, box item)
     Assert.Equal(aa.Length, ab.Length)
     Assert.Equal<byte>(aa.ToArray(), ab.ToArray())
 
     let mutable ba = aa.AsSpan()
     let mutable bb = ab.AsSpan()
-    let ra = ca.ToValueWithMark &ba
-    let rb = cb.ToValueWithMark &bb |> Unchecked.unbox<'T>
+    let ra = ca.DecodeAuto &ba
+    let rb = cb.DecodeAuto &bb |> Unchecked.unbox<'T>
     Assert.Equal(ra, rb)
     Assert.Equal(0, ba.Length)
     Assert.Equal(0, bb.Length)
@@ -72,22 +72,22 @@ let testWithLengthPrefix<'T> (item : 'T) =
     let mutable ab = new Allocator()
     let ca = generator.GetConverter<'T>()
     let cb = ca :> IConverter
-    ca.ToBytesWithLengthPrefix(&aa, item)
-    cb.ToBytesWithLengthPrefix(&ab, box item)
+    ca.EncodeWithLengthPrefix(&aa, item)
+    cb.EncodeWithLengthPrefix(&ab, box item)
     Assert.Equal(aa.Length, ab.Length)
     Assert.Equal<byte>(aa.ToArray(), ab.ToArray())
 
     let mutable ba = aa.AsSpan()
     let mutable bb = ab.AsSpan()
-    let ra = ca.ToValueWithLengthPrefix &ba
-    let rb = cb.ToValueWithLengthPrefix &bb |> Unchecked.unbox<'T>
+    let ra = ca.DecodeWithLengthPrefix &ba
+    let rb = cb.DecodeWithLengthPrefix &bb |> Unchecked.unbox<'T>
     Assert.Equal(ra, rb)
     Assert.Equal(0, ba.Length)
     Assert.Equal(0, bb.Length)
     ()
 
 [<Fact>]
-let ``Interface Method 'ToBytes' And 'ToValue'`` () =
+let ``Interface Method 'Encode' And 'Decode'`` () =
     test<int> 2048
     test<string> null
     test<string> "1024"
@@ -95,7 +95,7 @@ let ``Interface Method 'ToBytes' And 'ToValue'`` () =
     ()
 
 [<Fact>]
-let ``Interface Method 'ToBytesWithMark' And 'ToValueWithMark'`` () =
+let ``Interface Method 'EncodeAuto' And 'DecodeAuto'`` () =
     testWithMark<int> 4096
     testWithMark<string> null
     testWithMark<string> "8192"
@@ -103,7 +103,7 @@ let ``Interface Method 'ToBytesWithMark' And 'ToValueWithMark'`` () =
     ()
 
 [<Fact>]
-let ``Interface Method 'ToBytesWithLengthPrefix' And 'ToValueWithLengthPrefix'`` () =
+let ``Interface Method 'EncodeWithLengthPrefix' And 'DecodeWithLengthPrefix'`` () =
     testWithLengthPrefix<int> 16
     testWithLengthPrefix<string> null
     testWithLengthPrefix<string> "32"
@@ -113,24 +113,24 @@ let ``Interface Method 'ToBytesWithLengthPrefix' And 'ToValueWithLengthPrefix'``
 type CustomConverter<'T>(length : int) =
     inherit Converter<'T>(length)
 
-    override __.ToBytes(_, _) = raise (NotSupportedException())
+    override __.Encode(_, _) = raise (NotSupportedException())
 
-    override __.ToValue (_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
+    override __.Decode (_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 
-    override __.ToBytesWithMark(_, _) = raise (NotSupportedException())
+    override __.EncodeAuto(_, _) = raise (NotSupportedException())
 
-    override __.ToValueWithMark _ = raise (NotSupportedException())
+    override __.DecodeAuto _ = raise (NotSupportedException())
 
 type CustomConstantConverter<'T>(length : int) =
     inherit ConstantConverter<'T>(length)
 
-    override __.ToBytes(_, _) = raise (NotSupportedException())
+    override __.Encode(_, _) = raise (NotSupportedException())
 
-    override __.ToValue (_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
+    override __.Decode (_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 
-    override __.ToBytesWithMark(_, _) = raise (NotSupportedException())
+    override __.EncodeAuto(_, _) = raise (NotSupportedException())
 
-    override __.ToValueWithMark _ = raise (NotSupportedException())
+    override __.DecodeAuto _ = raise (NotSupportedException())
 
 [<Theory>]
 [<InlineData(0)>]
@@ -169,16 +169,16 @@ let ``Invalid Constant Converter Length`` (length : int) =
 type CustomConstantConverterWithInvalidAllocation<'T>(length : int) =
     inherit ConstantConverter<'T>(length)
 
-    override __.ToBytes(allocator, _) = let _ = AllocatorHelper.Allocate(&allocator, length + 1) in ()
+    override __.Encode(allocator, _) = let _ = AllocatorHelper.Allocate(&allocator, length + 1) in ()
 
-    override __.ToValue (_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
+    override __.Decode (_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 
 [<Theory>]
 [<InlineData(1)>]
 [<InlineData(127)>]
 let ``Invalid Constant Converter Allocation`` (length : int) =
     let converter = new CustomConstantConverterWithInvalidAllocation<int>(length)
-    let error = Assert.Throws<ArgumentException>(fun () -> converter.ToBytes(Unchecked.defaultof<int>) |> ignore)
+    let error = Assert.Throws<ArgumentException>(fun () -> converter.Encode(Unchecked.defaultof<int>) |> ignore)
     Assert.Equal("Maximum allocator capacity has been reached.", error.Message)
     ()
 
@@ -188,6 +188,6 @@ let ``To Value With Length Prefix (length prefix bytes invalid)`` () =
     let message = "Length prefix bytes invalid."
     let bytes = Array.zeroCreate<byte> 0
     let error = Assert.Throws<ArgumentException>(fun () ->
-        let mutable span = ReadOnlySpan bytes in converter.ToValueWithLengthPrefix(&span) |> ignore)
+        let mutable span = ReadOnlySpan bytes in converter.DecodeWithLengthPrefix(&span) |> ignore)
     Assert.Equal(message, error.Message)
     ()

@@ -35,14 +35,14 @@ namespace Mikodev.Binary.Converters.Runtime
         [DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
         private T ThrowNotFound(int i) => throw new ArgumentException($"Property '{names[i]}' does not exist, type: {ItemType}");
 
-        public override void ToBytes(ref Allocator allocator, T item)
+        public override void Encode(ref Allocator allocator, T item)
         {
             if (item == null)
                 return;
             ofObject.Invoke(ref allocator, item);
         }
 
-        public override T ToValue(in ReadOnlySpan<byte> span)
+        public override T Decode(in ReadOnlySpan<byte> span)
         {
             if (toObject == null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();

@@ -9,8 +9,8 @@ open Xunit
 let generator = new Generator()
 
 let test (value : 'a when 'a :> 'e seq) =
-    let buffer = generator.ToBytes value
-    let result : 'a = generator.ToValue buffer
+    let buffer = generator.Encode value
+    let result : 'a = generator.Decode buffer
     Assert.Equal<'e seq>(value, result)
     ()
 
