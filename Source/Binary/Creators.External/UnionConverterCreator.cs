@@ -1,7 +1,6 @@
 ﻿using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Core;
 using Microsoft.FSharp.Reflection;
-using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Contexts;
 using Mikodev.Binary.Internal.Delegates;
 using Mikodev.Binary.Internal.Extensions;
@@ -15,9 +14,12 @@ namespace Mikodev.Binary.Creators.External
 {
     internal sealed class UnionConverterCreator : IConverterCreator
     {
+        private delegate int DecodeUnionTag(ref ReadOnlySpan<byte> span);
+
+        private delegate void EncodeUnionTag(ref Allocator allocator, uint item);
+
         public Converter GetConverter(IGeneratorContext context, Type type)
         {
-            const int Limits = 256;
             var flags = FSharpOption<BindingFlags>.None;
             if (!FSharpType.IsUnion(type, flags) || type.IsImplementationOf(typeof(FSharpList<>)))
                 return null;
@@ -27,8 +29,6 @@ namespace Mikodev.Binary.Creators.External
             var unionType = cases.Select(x => x.DeclaringType).Distinct().Single();
             if (unionType != type)
                 throw new ArgumentException($"Invalid union type, you may have to use union type '{unionType}' instead of case type '{type}'");
-            if (cases.Length > Limits)
-                throw new ArgumentException($"Union with more than {Limits} cases is not supported, type: {type}");
 
             var tagMember = FSharpValue.PreComputeUnionTagMemberInfo(type, flags);
             var noNull = !type.IsValueType && !(tagMember is MethodInfo);
@@ -83,11 +83,11 @@ namespace Mikodev.Binary.Creators.External
             var tagExpression = tagMember is PropertyInfo member
                 ? Expression.Property(item, member)
                 : (Expression)Expression.Call((MethodInfo)tagMember, item);
-            var setMethod = new ToBytesWith<byte>(Format.SetByte).Method;
+            var setMethod = new EncodeUnionTag(PrimitiveHelper.EncodeLengthPrefix).Method;
             var defaultBlock = Expression.Block(Expression.Assign(mark, flag), Expression.Empty());
             var block = Expression.Block(new[] { flag },
                 Expression.Assign(flag, tagExpression),
-                Expression.Call(setMethod, allocator, Expression.Convert(flag, typeof(byte))),
+                Expression.Call(setMethod, allocator, Expression.Convert(flag, typeof(uint))),
                 Expression.Switch(flag, defaultBlock, switchCases));
             var delegateType = typeof(OfUnion<>).MakeGenericType(type);
             return Expression.Lambda(delegateType, block, allocator, item, mark);
@@ -122,10 +122,10 @@ namespace Mikodev.Binary.Creators.External
             }
 
             var switchCases = caseInfos.Select(x => Expression.SwitchCase(MakeBody(x), Expression.Constant(x.Tag))).ToArray();
-            var getMethod = new ToValueWith<byte>(Format.GetByte).Method;
+            var getMethod = new DecodeUnionTag(PrimitiveHelper.DecodeLengthPrefix).Method;
             var defaultBlock = Expression.Block(Expression.Assign(mark, flag), Expression.Default(type));
             var block = Expression.Block(new[] { flag },
-                Expression.Assign(flag, Expression.Convert(Expression.Call(getMethod, span), typeof(int))),
+                Expression.Assign(flag, Expression.Call(getMethod, span)),
                 Expression.Switch(flag, defaultBlock, switchCases));
             var delegateType = typeof(ToUnion<>).MakeGenericType(type);
             return Expression.Lambda(delegateType, block, span, mark);

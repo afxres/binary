@@ -12,14 +12,6 @@ namespace Mikodev.Binary
          * 0b01xx_xxxx variable length 2 bytes
          * 0b00xx_xxxx variable length 1 bytes */
 
-        internal static void EncodeFixed4(ref byte bytes, uint item)
-        {
-            Memory.Add(ref bytes, 0) = (byte)((item >> 24) | 0x80);
-            Memory.Add(ref bytes, 1) = (byte)(item >> 16);
-            Memory.Add(ref bytes, 2) = (byte)(item >> 8);
-            Memory.Add(ref bytes, 3) = (byte)item;
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void EncodeLengthPrefix(ref byte location, int prefixLength, uint item)
         {
@@ -34,7 +26,10 @@ namespace Mikodev.Binary
             }
             else
             {
-                EncodeFixed4(ref location, item);
+                Memory.Add(ref location, 0) = (byte)((item >> 24) | 0x80);
+                Memory.Add(ref location, 1) = (byte)(item >> 16);
+                Memory.Add(ref location, 2) = (byte)(item >> 8);
+                Memory.Add(ref location, 3) = (byte)item;
             }
         }
 
@@ -49,6 +44,7 @@ namespace Mikodev.Binary
                 return 4;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EncodeLengthPrefix(ref Allocator allocator, uint item)
         {
             if ((item & 0x8000_0000) != 0)
@@ -80,15 +76,15 @@ namespace Mikodev.Binary
                 return 1;
         }
 
-        public static int DecodeLengthPrefix(in ReadOnlySpan<byte> span)
+        public static int DecodeLengthPrefix(ref ReadOnlySpan<byte> span)
         {
-            var byteCount = span.Length;
-            if (byteCount == 0)
+            var spanLength = span.Length;
+            if (spanLength == 0)
                 goto fail;
             ref var location = ref MemoryMarshal.GetReference(span);
             var prefixLength = DecodePrefixLength(location);
-            if ((uint)byteCount < (uint)prefixLength)
-                goto fail;
+            // check bounds via slice method
+            span = span.Slice(prefixLength);
             return DecodeLengthPrefix(ref location, prefixLength);
 
         fail:

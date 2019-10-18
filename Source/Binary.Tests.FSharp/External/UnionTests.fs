@@ -83,16 +83,20 @@ let ``Choice 2`` () =
     ()
 
 [<Theory>]
-[<InlineData(2uy)>]
-[<InlineData(128uy)>]
-[<InlineData(255uy)>]
-let ``Invalid Tag (to value & to value with mark)`` (tag : byte) =
+[<InlineData(2)>]
+[<InlineData(128)>]
+[<InlineData(4096)>]
+let ``Invalid Tag (to value & to value with mark)`` (tag : int) =
     let converter = generator.GetConverter<int option>()
     Assert.StartsWith("UnionConverter`1", converter.GetType().Name)
 
+    let mutable allocator = Allocator()
+    PrimitiveHelper.EncodeLengthPrefix(&allocator, uint32 tag)
+    let bytes = allocator.ToArray()
+
     let message = sprintf "Invalid union tag '%d', type: %O" (int tag) typeof<int option>
-    let alpha = Assert.Throws<ArgumentException>(fun () -> value<int option> converter (Array.singleton tag) |> ignore)
-    let bravo = Assert.Throws<ArgumentException>(fun () -> valueWithMark<int option> converter (Array.singleton tag) |> ignore)
+    let alpha = Assert.Throws<ArgumentException>(fun () -> value<int option> converter bytes |> ignore)
+    let bravo = Assert.Throws<ArgumentException>(fun () -> valueWithMark<int option> converter bytes |> ignore)
     Assert.Null(alpha.ParamName)
     Assert.Null(bravo.ParamName)
     Assert.StartsWith(message, alpha.Message)
@@ -105,8 +109,6 @@ type Box =
     | Two of two : string
 
 [<Theory>]
-[<InlineData(-1048576)>]
-[<InlineData(-1)>]
 [<InlineData(2)>]
 [<InlineData(255)>]
 [<InlineData(65537)>]
@@ -170,9 +172,9 @@ type X256 =
 [<Fact>]
 let ``Union With 256 Cases`` () =
     test 1 1 X256.X00
-    test 1 1 X256.XFF
-    test 1 1 X256.X7F
-    test 1 1 X256.X80
+    test 2 2 X256.XFF
+    test 2 2 X256.X80
+    test 1 1 X256.X3F
     ()
 
 type X257 =
@@ -196,9 +198,9 @@ type X257 =
 
 [<Fact>]
 let ``Union With 257 Cases`` () =
-    let alpha = Assert.Throws<ArgumentException>(fun x -> generator.ToBytes X257.XWhat |> ignore)
-    let message = sprintf "Union with more than 256 cases is not supported, type: %O" typeof<X257>
-    Assert.Equal(message, alpha.Message)
-    let bravo = Assert.Throws<ArgumentException>(fun _ -> generator.ToValue<X257> Array.empty |> ignore)
-    Assert.Equal(message, bravo.Message)
+    test 1 1 X257.X00
+    test 2 2 X257.XFF
+    test 2 2 X257.XWhat
+    test 2 2 X257.X80
+    test 1 1 X257.X3F
     ()

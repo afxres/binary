@@ -90,7 +90,7 @@ namespace Mikodev.Binary.Tests
 
         [Theory(DisplayName = "Invalid Tag (to bytes & to bytes with mark)")]
         [InlineData("some", 1)]
-        [InlineData("fake", -1)]
+        [InlineData("fake", 2)]
         [InlineData("overflow", 257)]
         public void InvalidUnionTag(string item, int tag)
         {

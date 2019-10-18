@@ -112,7 +112,7 @@ namespace Mikodev.Binary
             // check array length only (for performance reason, ignore maximum capacity)
             if (target == null || target.Length < anchor)
                 ThrowHelper.ThrowAllocatorModified();
-            PrimitiveHelper.EncodeFixed4(ref target[anchor - sizeof(int)], (uint)(cursor - anchor));
+            PrimitiveHelper.EncodeLengthPrefix(ref target[anchor - sizeof(int)], sizeof(int), (uint)(cursor - anchor));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
