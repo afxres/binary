@@ -169,7 +169,7 @@ let ``Invalid Constant Converter Length`` (length : int) =
 type CustomConstantConverterWithInvalidAllocation<'T>(length : int) =
     inherit ConstantConverter<'T>(length)
 
-    override __.ToBytes(allocator, _) = let _ = allocator.Allocate(length + 1) in ()
+    override __.ToBytes(allocator, _) = let _ = AllocatorHelper.Allocate(&allocator, length + 1) in ()
 
     override __.ToValue (_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 

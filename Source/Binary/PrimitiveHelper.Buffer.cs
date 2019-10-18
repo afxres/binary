@@ -8,12 +8,13 @@ namespace Mikodev.Binary
     {
         public static void EncodeWithLengthPrefix(ref Allocator allocator, in ReadOnlySpan<byte> span)
         {
-            var byteCount = span.Length;
-            EncodeNumber(ref allocator, byteCount);
-            if (byteCount == 0)
+            var spanLength = span.Length;
+            EncodeNumber(ref allocator, spanLength);
+            if (spanLength == 0)
                 return;
-            ref var target = ref allocator.AllocateReference(byteCount);
-            Memory.Copy(ref target, ref MemoryMarshal.GetReference(span), byteCount);
+            ref var target = ref allocator.AllocateReference(spanLength);
+            ref var source = ref MemoryMarshal.GetReference(span);
+            Memory.Copy(ref target, ref source, spanLength);
         }
 
         public static ReadOnlySpan<byte> DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)

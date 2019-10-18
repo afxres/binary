@@ -6,16 +6,16 @@ namespace Mikodev.Binary.Internal
     internal static class Memory
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static ref byte Add(ref byte source, int byteCount) => ref Unsafe.AddByteOffset(ref source, (IntPtr)byteCount);
+        internal static ref byte Add(ref byte source, int byteLength) => ref Unsafe.AddByteOffset(ref source, (IntPtr)byteLength);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ref byte AsByte<T>(ref T source) where T : unmanaged => ref Unsafe.As<T, byte>(ref source);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Copy(byte[] target, byte[] source, int byteCount) => Unsafe.CopyBlock(ref target[0], ref source[0], (uint)byteCount);
+        internal static void Copy(byte[] target, byte[] source, int byteLength) => Unsafe.CopyBlock(ref target[0], ref source[0], (uint)byteLength);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Copy(ref byte target, ref byte source, int byteCount) => Unsafe.CopyBlockUnaligned(ref target, ref source, (uint)byteCount);
+        internal static void Copy(ref byte target, ref byte source, int byteLength) => Unsafe.CopyBlockUnaligned(ref target, ref source, (uint)byteLength);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int SizeOf<T>() where T : unmanaged => Unsafe.SizeOf<T>();

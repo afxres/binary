@@ -88,10 +88,10 @@ namespace Mikodev.Binary
         internal void AppendBuffer(byte[] item)
         {
             Debug.Assert(item != null && item.Length != 0);
-            var byteCount = item.Length;
-            ref var target = ref AllocateReference(byteCount);
+            var length = item.Length;
+            ref var target = ref AllocateReference(length);
             ref var source = ref item[0];
-            Memory.Copy(ref target, ref source, byteCount);
+            Memory.Copy(ref target, ref source, length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -116,6 +116,24 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal Span<byte> Allocate(int length)
+        {
+            var offset = cursor;
+            var target = Ensure(offset, length);
+            cursor = offset + length;
+            return new Span<byte>(target, offset, length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal ref byte AllocateReference(int length)
+        {
+            var offset = cursor;
+            var target = Ensure(offset, length);
+            cursor = offset + length;
+            return ref target[offset];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Allocator(byte[] buffer) : this(buffer, int.MaxValue) { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -127,24 +145,6 @@ namespace Mikodev.Binary
             cursor = 0;
             higher = Math.Min(buffer == null ? 0 : buffer.Length, maxCapacity);
             bounds = ~maxCapacity;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Span<byte> Allocate(int length)
-        {
-            var offset = cursor;
-            var target = Ensure(offset, length);
-            cursor = offset + length;
-            return new Span<byte>(target, offset, length);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ref byte AllocateReference(int length)
-        {
-            var offset = cursor;
-            var target = Ensure(offset, length);
-            cursor = offset + length;
-            return ref target[offset];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -163,27 +163,6 @@ namespace Mikodev.Binary
             var target = new byte[offset];
             Memory.Copy(target, source, offset);
             return target;
-        }
-
-        [Obsolete]
-        public void Append(in ReadOnlySpan<byte> span)
-        {
-            var byteCount = span.Length;
-            if (byteCount == 0)
-                return;
-            ref var target = ref AllocateReference(byteCount);
-            Memory.Copy(ref target, ref MemoryMarshal.GetReference(span), byteCount);
-        }
-
-        [Obsolete]
-        public void AppendWithLengthPrefix(in ReadOnlySpan<byte> span)
-        {
-            var byteCount = span.Length;
-            PrimitiveHelper.EncodeNumber(ref this, byteCount);
-            if (byteCount == 0)
-                return;
-            ref var target = ref AllocateReference(byteCount);
-            Memory.Copy(ref target, ref MemoryMarshal.GetReference(span), byteCount);
         }
 
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
