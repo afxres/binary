@@ -26,8 +26,7 @@ namespace Mikodev.Binary.Internal.Contexts
             var toBytes = GetToBytesDelegateAsNamedObject(type, metadata, dictionary, cache);
             var toValue = GetToValueDelegateAsNamedObject(type, metadata, constructor, indexes);
             var buffers = metadata.Select(x => dictionary[x.Property]).Select(x => new KeyValuePair<string, byte[]>(x, cache.GetBuffer(x))).ToArray();
-            var properties = metadata.Select(x => x.Property).ToArray();
-            var converterArguments = new object[] { toBytes, toValue, properties, buffers };
+            var converterArguments = new object[] { toBytes, toValue, buffers };
             var converter = Activator.CreateInstance(typeof(NamedObjectConverter<>).MakeGenericType(type), converterArguments);
             return (Converter)converter;
         }

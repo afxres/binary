@@ -9,20 +9,20 @@ namespace Mikodev.Binary.Internal
 {
     internal static class StringHelper
     {
-        private const int MaxByteCountThreshold = 64;
+        private const int MaxByteCountLimits = 64;
 
-        private const int MaxCharCountThreshold = 128;
+        private const int MaxCharCountLimits = 128;
 
-        private static readonly int[] maxByteCounts = Enumerable.Range(0, MaxByteCountThreshold + 1).Select(Converter.Encoding.GetMaxByteCount).ToArray();
+        private static readonly int[] maxByteCounts = Enumerable.Range(0, MaxByteCountLimits + 1).Select(Converter.Encoding.GetMaxByteCount).ToArray();
 
-        private static readonly int[] maxCharCounts = Enumerable.Range(0, MaxCharCountThreshold + 1).Select(Converter.Encoding.GetMaxCharCount).ToArray();
+        private static readonly int[] maxCharCounts = Enumerable.Range(0, MaxCharCountLimits + 1).Select(Converter.Encoding.GetMaxCharCount).ToArray();
 
         internal static unsafe string Decode(Encoding encoding, ref byte bytes, int byteCount)
         {
             Debug.Assert(encoding == Converter.Encoding);
             if (byteCount == 0)
                 return string.Empty;
-            if (byteCount > MaxCharCountThreshold)
+            if (byteCount > MaxCharCountLimits)
                 return encoding.GetString(ref bytes, byteCount);
             var maxCharCount = maxCharCounts[byteCount];
             var chars = stackalloc char[maxCharCount];
@@ -37,7 +37,7 @@ namespace Mikodev.Binary.Internal
         {
             Debug.Assert(encoding == Converter.Encoding);
             Debug.Assert(charCount >= 0);
-            return charCount == 0 ? 0 : charCount > MaxByteCountThreshold
+            return charCount == 0 ? 0 : charCount > MaxByteCountLimits
                 ? encoding.GetByteCount(ref chars, charCount)
                 : maxByteCounts[charCount];
         }

@@ -4,7 +4,7 @@ using Mikodev.Binary.Internal.Delegates;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -16,24 +16,24 @@ namespace Mikodev.Binary.Converters.Runtime
 
         private readonly ToNamedObject<T> toObject;
 
-        private readonly PropertyInfo[] properties;
+        private readonly string[] names;
 
-        private readonly HybridList indexes;
+        private readonly HybridList query;
 
-        public NamedObjectConverter(OfNamedObject<T> ofObject, ToNamedObject<T> toObject, PropertyInfo[] properties, KeyValuePair<string, byte[]>[] buffers)
+        public NamedObjectConverter(OfNamedObject<T> ofObject, ToNamedObject<T> toObject, KeyValuePair<string, byte[]>[] buffers)
         {
-            Debug.Assert(properties.Length == buffers.Length);
+            Debug.Assert(buffers.Any());
             this.ofObject = ofObject;
             this.toObject = toObject;
-            this.properties = properties;
-            indexes = new HybridList(buffers);
+            names = buffers.Select(x => x.Key).ToArray();
+            query = new HybridList(buffers);
         }
 
         [DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
-        private T ThrowKeyFound(int i) => throw new ArgumentException($"Property '{properties[i].Name}' already exists, type: {ItemType}");
+        private T ThrowKeyFound(int i) => throw new ArgumentException($"Property '{names[i]}' already exists, type: {ItemType}");
 
         [DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
-        private T ThrowNotFound(int i) => throw new ArgumentException($"Property '{properties[i].Name}' does not exist, type: {ItemType}");
+        private T ThrowNotFound(int i) => throw new ArgumentException($"Property '{names[i]}' does not exist, type: {ItemType}");
 
         public override void ToBytes(ref Allocator allocator, T item)
         {
@@ -50,15 +50,16 @@ namespace Mikodev.Binary.Converters.Runtime
             if (byteCount == 0)
                 return default(T) == null ? default : ThrowHelper.ThrowNotEnoughBytes<T>();
 
-            var itemCount = properties.Length;
-            var items = new LengthItem[itemCount];
+            const int ItemLimits = 16;
+            var itemCount = names.Length;
+            var items = itemCount > ItemLimits ? new LengthItem[itemCount] : stackalloc LengthItem[itemCount];
             var reader = new LengthReader(byteCount);
             ref var source = ref MemoryMarshal.GetReference(span);
 
             while (reader.Any())
             {
                 reader.Update(ref source);
-                var index = indexes.Get(span.Slice(reader.Offset, reader.Length));
+                var index = query.Get(span.Slice(reader.Offset, reader.Length));
                 reader.Update(ref source);
                 if (index < 0)
                     continue;

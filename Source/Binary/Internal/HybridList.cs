@@ -4,36 +4,84 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Internal
 {
     internal readonly struct HybridList
     {
-        private readonly byte[][] collection;
+        private readonly struct Buck
+        {
+            public readonly int Index;
 
-        private readonly Dictionary<string, int> dictionary;
+            public readonly byte[] Bytes;
+
+            public Buck(int index, byte[] bytes)
+            {
+                Index = index;
+                Bytes = bytes;
+            }
+        }
+
+        private const int ItemLimits = 16;
+
+        private const int BuckSize = 17;
+
+        private readonly Buck[][] bucks;
+
+        private readonly Dictionary<string, int> pairs;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int GetHashCode(in ReadOnlySpan<byte> span)
+        {
+            var spanLength = span.Length;
+            if (spanLength == 0)
+                return spanLength;
+            ref var location = ref MemoryMarshal.GetReference(span);
+            if (spanLength == 1)
+                return spanLength ^ location;
+            return (spanLength ^ location) | (Unsafe.Add(ref location, spanLength - 1) << 8);
+        }
+
+        private static Buck[][] GetBucks(IReadOnlyList<byte[]> items)
+        {
+            var bucks = new List<Buck>[BuckSize];
+            for (var i = 0; i < items.Count; i++)
+            {
+                var item = items[i];
+                var hash = GetHashCode(item);
+                var buck = new Buck(i, item);
+                ref var list = ref bucks[(uint)hash % BuckSize];
+                if (list == null)
+                    list = new List<Buck>();
+                list.Add(buck);
+            }
+            Debug.Assert(bucks.Any(x => x == null));
+            Debug.Assert(bucks.Any(x => x != null));
+            return bucks.Select(x => x?.ToArray()).ToArray();
+        }
 
         public HybridList(KeyValuePair<string, byte[]>[] keys)
         {
-            const int Limits = 12;
             Debug.Assert(keys != null && keys.Length > 0);
             Debug.Assert(keys.All(x => x.Key != null && x.Value != null));
-            var condition = keys.Length > Limits;
-            collection = condition ? null : keys.Select(x => x.Value).ToArray();
-            dictionary = condition ? keys.Select((x, i) => new KeyValuePair<string, int>(x.Key, i)).ToDictionary(x => x.Key, x => x.Value) : null;
-            Debug.Assert((dictionary != null && dictionary.Count > Limits) ^ (collection != null && collection.Length <= Limits));
+            var condition = keys.Length > ItemLimits;
+            pairs = condition ? keys.Select((x, i) => new KeyValuePair<string, int>(x.Key, i)).ToDictionary(x => x.Key, x => x.Value) : null;
+            bucks = condition ? null : GetBucks(keys.Select(x => x.Value).ToList());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int Get(in ReadOnlySpan<byte> span)
         {
             const int NotFound = -1;
-            if (dictionary != null)
-                return dictionary.TryGetValue(Converter.Encoding.GetString(in span), out var index) ? index : NotFound;
-            var itemCount = collection.Length;
-            for (var i = 0; i < itemCount; i++)
-                if (MemoryExtensions.SequenceEqual(collection[i], span))
-                    return i;
+            if (pairs != null)
+                return pairs.TryGetValue(Converter.Encoding.GetString(in span), out var index) ? index : NotFound;
+            var hash = GetHashCode(in span);
+            var data = bucks[(uint)hash % BuckSize];
+            if (data != null)
+                for (var i = 0; i < data.Length; i++)
+                    if (MemoryExtensions.SequenceEqual(span, data[i].Bytes))
+                        return data[i].Index;
             return NotFound;
         }
     }

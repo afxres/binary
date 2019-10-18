@@ -7,11 +7,11 @@ namespace Mikodev.Binary.Internal
 {
     internal readonly ref struct LengthList
     {
-        private readonly LengthItem[] items;
+        private readonly ReadOnlySpan<LengthItem> items;
 
         private readonly ReadOnlySpan<byte> bytes;
 
-        public LengthList(LengthItem[] items, in ReadOnlySpan<byte> bytes)
+        public LengthList(in ReadOnlySpan<LengthItem> items, in ReadOnlySpan<byte> bytes)
         {
             Debug.Assert(bytes.Length > 0);
             Debug.Assert(items.Length > 0);
