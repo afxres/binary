@@ -1,9 +1,8 @@
-﻿using Mikodev.Binary.Abstractions;
-using System;
+﻿using System;
 
 namespace Mikodev.Binary.CollectionAdapters
 {
-    internal abstract class CollectionAdaptedConverter<T, U, R, E> : VariableConverter<T>
+    internal abstract class CollectionAdaptedConverter<T, U, R, E> : Converter<T>
     {
         private readonly int itemLength;
 

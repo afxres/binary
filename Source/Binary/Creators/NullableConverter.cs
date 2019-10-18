@@ -11,7 +11,7 @@ namespace Mikodev.Binary.Creators
 
         private readonly Converter<T> converter;
 
-        public NullableConverter(Converter<T> converter) : base(0)
+        public NullableConverter(Converter<T> converter)
         {
             this.converter = converter;
         }

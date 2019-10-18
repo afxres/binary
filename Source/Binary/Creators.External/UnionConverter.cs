@@ -19,7 +19,7 @@ namespace Mikodev.Binary.Creators.External
 
         private readonly ToUnion<T> toUnionWith;
 
-        public UnionConverter(OfUnion<T> ofUnion, ToUnion<T> toUnion, OfUnion<T> ofUnionWith, ToUnion<T> toUnionWith, bool noNull) : base(0)
+        public UnionConverter(OfUnion<T> ofUnion, ToUnion<T> toUnion, OfUnion<T> ofUnionWith, ToUnion<T> toUnionWith, bool noNull)
         {
             this.noNull = noNull;
             this.ofUnion = ofUnion;

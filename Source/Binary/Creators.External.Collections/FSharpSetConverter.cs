@@ -1,10 +1,9 @@
 ﻿using Microsoft.FSharp.Collections;
-using Mikodev.Binary.Abstractions;
 using System;
 
 namespace Mikodev.Binary.Creators.External.Collections
 {
-    internal sealed class FSharpSetConverter<T> : VariableConverter<FSharpSet<T>>
+    internal sealed class FSharpSetConverter<T> : Converter<FSharpSet<T>>
     {
         private readonly Converter<T> converter;
 

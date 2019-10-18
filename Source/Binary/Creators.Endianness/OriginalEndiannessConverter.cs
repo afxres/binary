@@ -21,7 +21,7 @@ namespace Mikodev.Binary.Creators.Endianness
         public override T Decode(in ReadOnlySpan<byte> span)
         {
             if (span.Length < Memory.SizeOf<T>())
-                return ThrowHelper.ThrowNotEnoughBytes<T>();
+                ThrowHelper.ThrowNotEnoughBytes();
             ref var source = ref MemoryMarshal.GetReference(span);
             return Memory.Get<T>(ref source);
         }
@@ -34,9 +34,9 @@ namespace Mikodev.Binary.Creators.Endianness
         public override T DecodeAuto(ref ReadOnlySpan<byte> span)
         {
             // take reference first, then check bounds via slice method
-            ref var source = ref MemoryMarshal.GetReference(span);
+            ref var location = ref MemoryMarshal.GetReference(span);
             span = span.Slice(Memory.SizeOf<T>());
-            return Memory.Get<T>(ref source);
+            return Memory.Get<T>(ref location);
         }
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
@@ -57,14 +57,28 @@ namespace Mikodev.Binary.Creators.Endianness
                 goto fail;
             var length = PrimitiveHelper.DecodeNumber(ref location, prefixLength);
             if (length < Memory.SizeOf<T>())
-                return ThrowHelper.ThrowNotEnoughBytes<T>();
+                ThrowHelper.ThrowNotEnoughBytes();
             // check bounds via slice method
             span = span.Slice(prefixLength + length);
             return Memory.Get<T>(ref Memory.Add(ref location, prefixLength));
 
         fail:
-            ThrowHelper.ThrowLengthPrefixInvalidBytes();
+            ThrowHelper.ThrowNumberInvalidBytes();
             throw null;
+        }
+
+        public override byte[] Encode(T item)
+        {
+            var buffer = new byte[Memory.SizeOf<T>()];
+            Memory.Set(ref buffer[0], item);
+            return buffer;
+        }
+
+        public override T Decode(byte[] buffer)
+        {
+            if (buffer == null || buffer.Length < Memory.SizeOf<T>())
+                ThrowHelper.ThrowNotEnoughBytes();
+            return Memory.Get<T>(ref buffer[0]);
         }
     }
 }

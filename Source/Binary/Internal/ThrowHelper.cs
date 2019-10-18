@@ -29,10 +29,10 @@ namespace Mikodev.Binary.Internal
         internal static void ThrowNotEnoughBytes() => throw new ArgumentException("Not enough bytes.");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static void ThrowLengthPrefixOverflow() => throw new ArgumentException("Length prefix overflow.");
+        internal static void ThrowNumberOverflow() => throw new ArgumentException("Encode number overflow.");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static void ThrowLengthPrefixInvalidBytes() => throw new ArgumentException("Length prefix bytes invalid.");
+        internal static void ThrowNumberInvalidBytes() => throw new ArgumentException("Decode number bytes invalid.");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static T ThrowNotEnoughBytes<T>() => throw new ArgumentException($"Not enough bytes, type: {typeof(T)}");

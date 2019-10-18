@@ -5,6 +5,7 @@ namespace Mikodev.Binary.Abstractions
     /// <summary>
     /// Variable length type converter
     /// </summary>
+    [Obsolete]
     public abstract class VariableConverter<T> : Converter<T>
     {
         protected VariableConverter() : base(0) { }

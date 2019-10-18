@@ -49,7 +49,7 @@ namespace Mikodev.Binary
         public static void EncodeNumber(ref Allocator allocator, int item)
         {
             if (((uint)item & 0x8000_0000U) != 0)
-                ThrowHelper.ThrowLengthPrefixOverflow();
+                ThrowHelper.ThrowNumberOverflow();
             var prefixLength = EncodeNumberLength(item);
             ref var location = ref allocator.AllocateReference(prefixLength);
             EncodeNumber(ref location, prefixLength, item);
@@ -89,7 +89,7 @@ namespace Mikodev.Binary
             return DecodeNumber(ref location, prefixLength);
 
         fail:
-            ThrowHelper.ThrowLengthPrefixInvalidBytes();
+            ThrowHelper.ThrowNumberInvalidBytes();
             throw null;
         }
     }

@@ -185,7 +185,7 @@ let ``Invalid Constant Converter Allocation`` (length : int) =
 [<Fact>]
 let ``To Value With Length Prefix (length prefix bytes invalid)`` () =
     let converter = generator.GetConverter<byte[]>()
-    let message = "Length prefix bytes invalid."
+    let message = "Decode number bytes invalid."
     let bytes = Array.zeroCreate<byte> 0
     let error = Assert.Throws<ArgumentException>(fun () ->
         let mutable span = ReadOnlySpan bytes in converter.DecodeWithLengthPrefix(&span) |> ignore)

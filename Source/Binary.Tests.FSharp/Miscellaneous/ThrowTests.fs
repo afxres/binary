@@ -3,7 +3,6 @@
 open Mikodev.Binary
 open System
 open System.Collections.Generic
-open System.Net
 open Xunit
 
 type BadConverter<'T>() =
@@ -41,27 +40,35 @@ type ThrowTests() =
     let generator = new Generator()
 
     member private __.Test<'a> () =
-        let error = Assert.Throws<ArgumentException>(fun () ->
-            let span = ReadOnlySpan<byte>()
+        let converter = generator.GetConverter<'a>()
+        let buffer = Array.zeroCreate<byte> (converter.Length - 1)
+        let alpha = Assert.ThrowsAny<ArgumentException>(fun () ->
+            let span = ReadOnlySpan buffer
             generator.Decode<'a> &span |> ignore)
-        let message = sprintf "Not Enough Bytes, type: %O" (typeof<'a>)
-        Assert.Equal(message, error.Message)
+        let bravo = Assert.ThrowsAny<ArgumentException>(fun () -> generator.Decode<'a> buffer |> ignore)
+        let delta = Assert.ThrowsAny<ArgumentException>(fun () -> generator.Decode<'a> null |> ignore)
+        let message = "Not enough bytes."
+        Assert.True(alpha :? ArgumentOutOfRangeException || alpha.Message = message)
+        Assert.True(bravo :? ArgumentOutOfRangeException || bravo.Message = message)
+        Assert.True(delta :? ArgumentOutOfRangeException || delta.Message = message)
         ()
 
     [<Fact>]
-    member me.``Bytes Not Enough Int32`` () = me.Test<Int32>
+    member me.``Bytes Not Enough Or Null Int32 Int64...`` () =
+        me.Test<Int32>()
+        me.Test<Int64>()
+        me.Test<UInt32>()
+        me.Test<UInt64>()
+        ()
 
     [<Fact>]
-    member me.``Bytes Not Enough DateTimeOffset`` () = me.Test<DateTimeOffset>
+    member me.``Bytes Not Enough Or Null DateTimeOffset`` () = me.Test<DateTimeOffset>()
 
     [<Fact>]
-    member me.``Bytes Not Enough Decimal`` () = me.Test<Decimal>
+    member me.``Bytes Not Enough Or Null Decimal`` () = me.Test<Decimal>()
 
     [<Fact>]
-    member me.``Bytes Not Enough Guid`` () = me.Test<Guid>
-
-    [<Fact>]
-    member me.``Bytes Not Enough IPEndPoint`` () = me.Test<IPEndPoint>
+    member me.``Bytes Not Enough Or Null Guid`` () = me.Test<Guid>()
 
     [<Fact>]
     member me.``Allocator Modified`` () =

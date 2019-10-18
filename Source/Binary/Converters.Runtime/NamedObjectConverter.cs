@@ -1,5 +1,4 @@
-﻿using Mikodev.Binary.Abstractions;
-using Mikodev.Binary.Internal;
+﻿using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Delegates;
 using System;
 using System.Collections.Generic;
@@ -10,7 +9,7 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Converters.Runtime
 {
-    internal sealed class NamedObjectConverter<T> : VariableConverter<T>
+    internal sealed class NamedObjectConverter<T> : Converter<T>
     {
         private readonly OfNamedObject<T> ofObject;
 

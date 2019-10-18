@@ -1,12 +1,11 @@
 ﻿using Microsoft.FSharp.Collections;
-using Mikodev.Binary.Abstractions;
 using Mikodev.Binary.CollectionAdapters;
 using System;
 using System.Diagnostics;
 
 namespace Mikodev.Binary.Creators.External.Collections
 {
-    internal sealed class FSharpListConverter<T> : VariableConverter<FSharpList<T>>
+    internal sealed class FSharpListConverter<T> : Converter<FSharpList<T>>
     {
         private readonly Converter<T> converter;
 

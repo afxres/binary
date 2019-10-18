@@ -5,15 +5,41 @@ namespace Mikodev.Binary
 {
     public abstract partial class Converter<T> : Converter
     {
+        protected Converter() : this(0) { }
+
         protected Converter(int length) : base(typeof(T), length) { }
 
         public abstract void Encode(ref Allocator allocator, T item);
 
         public abstract T Decode(in ReadOnlySpan<byte> span);
 
-        public abstract void EncodeAuto(ref Allocator allocator, T item);
+        public virtual void EncodeAuto(ref Allocator allocator, T item)
+        {
+            var length = Length;
+            if (length > 0)
+            {
+                Encode(ref allocator, item);
+            }
+            else
+            {
+                EncodeWithLengthPrefix(ref allocator, item);
+            }
+        }
 
-        public abstract T DecodeAuto(ref ReadOnlySpan<byte> span);
+        public virtual T DecodeAuto(ref ReadOnlySpan<byte> span)
+        {
+            var length = Length;
+            if (length > 0)
+            {
+                var item = Decode(in span);
+                span = span.Slice(length);
+                return item;
+            }
+            else
+            {
+                return DecodeWithLengthPrefix(ref span);
+            }
+        }
 
         public virtual void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
@@ -32,7 +58,10 @@ namespace Mikodev.Binary
             }
         }
 
-        public virtual T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => Decode(PrimitiveHelper.DecodeWithLengthPrefix(ref span));
+        public virtual T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
+        {
+            return Decode(PrimitiveHelper.DecodeWithLengthPrefix(ref span));
+        }
 
         public virtual byte[] Encode(T item)
         {
@@ -53,6 +82,9 @@ namespace Mikodev.Binary
             }
         }
 
-        public virtual T Decode(byte[] buffer) => Decode(new ReadOnlySpan<byte>(buffer));
+        public virtual T Decode(byte[] buffer)
+        {
+            return Decode(new ReadOnlySpan<byte>(buffer));
+        }
     }
 }

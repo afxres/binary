@@ -1,9 +1,8 @@
-﻿using Mikodev.Binary.Abstractions;
-using System;
+﻿using System;
 
 namespace Mikodev.Binary.Converters
 {
-    internal sealed class ObjectConverter : VariableConverter<object>
+    internal sealed class ObjectConverter : Converter<object>
     {
         private static readonly string message = $"Invalid type: {typeof(object)}";
 

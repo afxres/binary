@@ -71,7 +71,7 @@ namespace Mikodev.Binary
             return StringHelper.Decode(encoding, ref Memory.Add(ref location, prefixLength), length);
 
         fail:
-            ThrowHelper.ThrowLengthPrefixInvalidBytes();
+            ThrowHelper.ThrowNumberInvalidBytes();
             throw null;
         }
     }
