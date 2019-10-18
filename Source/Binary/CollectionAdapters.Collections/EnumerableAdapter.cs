@@ -8,11 +8,11 @@ using System.Reflection;
 
 namespace Mikodev.Binary.CollectionAdapters.Collections
 {
-    internal sealed class EnumerableAdapter<T, E> : CollectionAdapter<T, E> where T : IEnumerable<E>
+    internal sealed class EnumerableAdapter<T, E> : CollectionAdapter<T, ArraySegment<E>, E> where T : IEnumerable<E>
     {
         private readonly bool byArray;
 
-        private readonly CollectionAdapter<ReadOnlyMemory<E>, E> adapter;
+        private readonly CollectionAdapter<ReadOnlyMemory<E>, ArraySegment<E>, E> adapter;
 
         private readonly ToArray<T, E> toArray;
 

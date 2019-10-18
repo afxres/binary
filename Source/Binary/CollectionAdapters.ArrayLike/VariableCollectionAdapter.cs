@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace Mikodev.Binary.CollectionAdapters.ArrayLike
 {
-    internal sealed class VariableCollectionAdapter<T> : CollectionAdapter<ReadOnlyMemory<T>, T>
+    internal sealed class VariableCollectionAdapter<T> : CollectionAdapter<ReadOnlyMemory<T>, ArraySegment<T>, T>
     {
         private readonly Converter<T> converter;
 

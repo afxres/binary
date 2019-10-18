@@ -1,7 +1,9 @@
-﻿namespace Mikodev.Binary.CollectionAdapters
+﻿using System;
+
+namespace Mikodev.Binary.CollectionAdapters
 {
-    internal abstract class CollectionAdapter<U, E> : CollectionAdapter<E>
+    internal abstract class CollectionAdapter<R, E>
     {
-        public abstract void Of(ref Allocator allocator, U item);
+        public abstract R To(in ReadOnlySpan<byte> span);
     }
 }

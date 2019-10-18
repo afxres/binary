@@ -1,18 +1,23 @@
-﻿using Mikodev.Binary.Abstractions;
-using Mikodev.Binary.Internal.Components;
+﻿using Mikodev.Binary.CollectionAdapters;
+using Mikodev.Binary.CollectionAdapters.Collections;
 using System;
 using System.Collections.Generic;
 
 namespace Mikodev.Binary.Creators.Collections
 {
-    internal sealed class IDictionaryConverter<T, K, V> : VariableConverter<T> where T : IEnumerable<KeyValuePair<K, V>>
+    internal sealed class IDictionaryBuilder<T, K, V> : CollectionBuilder<T, T, Dictionary<K, V>, KeyValuePair<K, V>> where T : IEnumerable<KeyValuePair<K, V>>
     {
-        private readonly DictionaryConverter<T, K, V> converter;
+        public override int Length(T item) => item is ICollection<KeyValuePair<K, V>> collection ? collection.Count : NoActualLength;
 
-        public IDictionaryConverter(Converter<KeyValuePair<K, V>> converter) => this.converter = new DictionaryConverter<T, K, V>(converter);
+        public override T Of(T item) => item;
 
-        public override void ToBytes(ref Allocator allocator, T item) => converter.Of(ref allocator, item);
+        public override T To(CollectionAdapter<Dictionary<K, V>, KeyValuePair<K, V>> adapter, in ReadOnlySpan<byte> span) => (T)(object)adapter.To(in span);
+    }
 
-        public override T ToValue(in ReadOnlySpan<byte> span) => (T)(object)converter.To(in span);
+    internal sealed class IDictionaryConverter<T, K, V> : CollectionAdaptedConverter<T, T, Dictionary<K, V>, KeyValuePair<K, V>> where T : IEnumerable<KeyValuePair<K, V>>
+    {
+        public IDictionaryConverter(Converter<KeyValuePair<K, V>> converter)
+            : base(converter, new DictionaryAdapter<T, K, V>(converter), new IDictionaryBuilder<T, K, V>())
+        { }
     }
 }

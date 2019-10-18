@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.CollectionAdapters.ArrayLike
 {
-    internal sealed class OriginalEndiannessCollectionAdapter<T> : CollectionAdapter<ReadOnlyMemory<T>, T> where T : unmanaged
+    internal sealed class OriginalEndiannessCollectionAdapter<T> : CollectionAdapter<ReadOnlyMemory<T>, ArraySegment<T>, T> where T : unmanaged
     {
         public override void Of(ref Allocator allocator, ReadOnlyMemory<T> memory)
         {

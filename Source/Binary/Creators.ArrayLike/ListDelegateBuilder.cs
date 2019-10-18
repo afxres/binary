@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Mikodev.Binary.Creators.ArrayLike
 {
-    internal sealed class ListDelegateBuilder<T> : CollectionBuilder<List<T>, ReadOnlyMemory<T>, T>
+    internal sealed class ListDelegateBuilder<T> : CollectionBuilder<List<T>, ReadOnlyMemory<T>, ArraySegment<T>, T>
     {
         private readonly OfList<T> ofList;
 
@@ -22,7 +22,7 @@ namespace Mikodev.Binary.Creators.ArrayLike
 
         public override ReadOnlyMemory<T> Of(List<T> item) => item is { Count: var count } && count > 0 ? new ReadOnlyMemory<T>(ofList.Invoke(item), 0, count) : default;
 
-        public override List<T> To(CollectionAdapter<T> adapter, in ReadOnlySpan<byte> span)
+        public override List<T> To(CollectionAdapter<ArraySegment<T>, T> adapter, in ReadOnlySpan<byte> span)
         {
             var item = adapter.To(in span);
             Debug.Assert(item.Array != null);

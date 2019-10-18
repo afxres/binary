@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Mikodev.Binary.Converters.Runtime.Collections
 {
-    internal sealed class GenericCollectionBuilder<T, E> : CollectionBuilder<T, T, E> where T : IEnumerable<E>
+    internal sealed class GenericCollectionBuilder<T, E> : CollectionBuilder<T, T, ArraySegment<E>, E> where T : IEnumerable<E>
     {
         private readonly ToCollection<T, E> constructor;
 
@@ -22,7 +22,7 @@ namespace Mikodev.Binary.Converters.Runtime.Collections
 
         public override T Of(T item) => item;
 
-        public override T To(CollectionAdapter<E> adapter, in ReadOnlySpan<byte> span)
+        public override T To(CollectionAdapter<ArraySegment<E>, E> adapter, in ReadOnlySpan<byte> span)
         {
             if (constructor == null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();

@@ -1,15 +1,16 @@
-﻿using System;
+﻿using Mikodev.Binary.Internal;
+using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Internal.Components
+namespace Mikodev.Binary.CollectionAdapters.Collections
 {
-    internal readonly struct DictionaryConverter<T, K, V> where T : IEnumerable<KeyValuePair<K, V>>
+    internal sealed class DictionaryAdapter<T, K, V> : CollectionAdapter<T, Dictionary<K, V>, KeyValuePair<K, V>> where T : IEnumerable<KeyValuePair<K, V>>
     {
         private readonly Converter<KeyValuePair<K, V>> converter;
 
-        public DictionaryConverter(Converter<KeyValuePair<K, V>> converter) => this.converter = converter;
+        public DictionaryAdapter(Converter<KeyValuePair<K, V>> converter) => this.converter = converter;
 
-        public void Of(ref Allocator allocator, T item)
+        public override void Of(ref Allocator allocator, T item)
         {
             if (item == null)
                 return;
@@ -18,7 +19,7 @@ namespace Mikodev.Binary.Internal.Components
                 converter.ToBytesWithMark(ref allocator, i);
         }
 
-        public Dictionary<K, V> To(in ReadOnlySpan<byte> span)
+        public override Dictionary<K, V> To(in ReadOnlySpan<byte> span)
         {
             static void Add(Dictionary<K, V> data, KeyValuePair<K, V> item) => data.Add(item.Key, item.Value);
 

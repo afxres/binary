@@ -3,15 +3,15 @@ using System;
 
 namespace Mikodev.Binary.CollectionAdapters
 {
-    internal abstract class CollectionAdaptedConverter<T, U, E> : VariableConverter<T>
+    internal abstract class CollectionAdaptedConverter<T, U, R, E> : VariableConverter<T>
     {
         private readonly int itemLength;
 
-        private readonly CollectionAdapter<U, E> adapter;
+        private readonly CollectionAdapter<U, R, E> adapter;
 
-        private readonly CollectionBuilder<T, U, E> builder;
+        private readonly CollectionBuilder<T, U, R, E> builder;
 
-        public CollectionAdaptedConverter(Converter<E> converter, CollectionAdapter<U, E> adapter, CollectionBuilder<T, U, E> builder)
+        public CollectionAdaptedConverter(Converter<E> converter, CollectionAdapter<U, R, E> adapter, CollectionBuilder<T, U, R, E> builder)
         {
             itemLength = converter.Length;
             this.adapter = adapter;
@@ -26,11 +26,11 @@ namespace Mikodev.Binary.CollectionAdapters
         {
             int dataLength;
             var data = builder.Of(item);
-            if (data == null)
+            if (data == null || (dataLength = builder.Length(data)) == 0)
             {
                 PrimitiveHelper.EncodeLengthPrefix(ref allocator, 0);
             }
-            else if (itemLength > 0 && (dataLength = builder.Length(data)) != CollectionBuilder.NoActualLength)
+            else if (itemLength > 0 && dataLength != CollectionBuilder.NoActualLength)
             {
                 var byteLength = checked(itemLength * dataLength);
                 PrimitiveHelper.EncodeLengthPrefix(ref allocator, (uint)byteLength);
