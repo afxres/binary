@@ -1,6 +1,6 @@
 ﻿namespace Mikodev.Binary.CollectionAdapters
 {
-    internal abstract class CollectionConvert
+    internal abstract class CollectionBuilder
     {
         public const int NoActualLength = -1;
     }

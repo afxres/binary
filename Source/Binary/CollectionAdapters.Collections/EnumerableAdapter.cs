@@ -1,5 +1,4 @@
-﻿using Mikodev.Binary.CollectionAdapters;
-using Mikodev.Binary.Internal.Delegates;
+﻿using Mikodev.Binary.Internal.Delegates;
 using Mikodev.Binary.Internal.Extensions;
 using System;
 using System.Collections.Generic;
@@ -7,12 +6,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Mikodev.Binary.Internal.Components
+namespace Mikodev.Binary.CollectionAdapters.Collections
 {
-    internal readonly struct CollectionConverter<T, E> where T : IEnumerable<E>
+    internal sealed class EnumerableAdapter<T, E> : CollectionAdapter<T, E> where T : IEnumerable<E>
     {
-        private readonly bool reverse;
-
         private readonly bool byArray;
 
         private readonly CollectionAdapter<ReadOnlyMemory<E>, E> adapter;
@@ -21,7 +18,7 @@ namespace Mikodev.Binary.Internal.Components
 
         private readonly Converter<E> converter;
 
-        public CollectionConverter(Converter<E> converter, bool reverse)
+        public EnumerableAdapter(Converter<E> converter)
         {
             static ToArray<T, E> Compile(MethodInfo method)
             {
@@ -31,7 +28,6 @@ namespace Mikodev.Binary.Internal.Components
                 return lambda.Compile();
             }
 
-            this.reverse = reverse;
             this.converter = converter;
             var method = typeof(T).GetMethods(BindingFlags.Instance | BindingFlags.Public)
                 .Where(x => x.Name == "ToArray" && x.ReturnType == typeof(E[]) && x.GetParameters().Length == 0)
@@ -41,7 +37,7 @@ namespace Mikodev.Binary.Internal.Components
             byArray = converter.IsOriginalEndiannessConverter() && (method != null || typeof(ICollection<E>).IsAssignableFrom(typeof(T)));
         }
 
-        public void Of(ref Allocator allocator, T item)
+        public override void Of(ref Allocator allocator, T item)
         {
             if (item == null)
                 return;
@@ -59,12 +55,6 @@ namespace Mikodev.Binary.Internal.Components
                     converter.ToBytesWithMark(ref allocator, i);
         }
 
-        public ArraySegment<E> To(in ReadOnlySpan<byte> span)
-        {
-            var result = adapter.To(in span);
-            if (reverse)
-                MemoryExtensions.Reverse((Span<E>)result);
-            return result;
-        }
+        public override ArraySegment<E> To(in ReadOnlySpan<byte> span) => adapter.To(in span);
     }
 }

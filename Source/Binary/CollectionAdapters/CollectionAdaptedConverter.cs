@@ -3,31 +3,34 @@ using System;
 
 namespace Mikodev.Binary.CollectionAdapters
 {
-    internal sealed class CollectionAdaptedConverter<T, U, E> : VariableConverter<T>
+    internal abstract class CollectionAdaptedConverter<T, U, E> : VariableConverter<T>
     {
         private readonly int itemLength;
 
         private readonly CollectionAdapter<U, E> adapter;
 
-        private readonly CollectionConvert<T, U, E> convert;
+        private readonly CollectionBuilder<T, U, E> builder;
 
-        public CollectionAdaptedConverter(Converter<E> converter, CollectionAdapter<U, E> adapter, CollectionConvert<T, U, E> convert)
+        public CollectionAdaptedConverter(Converter<E> converter, CollectionAdapter<U, E> adapter, CollectionBuilder<T, U, E> builder)
         {
             itemLength = converter.Length;
             this.adapter = adapter;
-            this.convert = convert;
+            this.builder = builder;
         }
 
-        public override void ToBytes(ref Allocator allocator, T item) => adapter.Of(ref allocator, convert.Of(item));
+        public override void ToBytes(ref Allocator allocator, T item) => adapter.Of(ref allocator, builder.Of(item));
 
-        public override T ToValue(in ReadOnlySpan<byte> span) => convert.To(adapter.To(in span));
+        public override T ToValue(in ReadOnlySpan<byte> span) => builder.To(adapter, in span);
 
         public override void ToBytesWithLengthPrefix(ref Allocator allocator, T item)
         {
-            var data = convert.Of(item);
             int dataLength;
-            var itemLength = this.itemLength;
-            if (itemLength > 0 && (dataLength = convert.Length(data)) != CollectionConvert.NoActualLength)
+            var data = builder.Of(item);
+            if (data == null)
+            {
+                PrimitiveHelper.EncodeLengthPrefix(ref allocator, 0);
+            }
+            else if (itemLength > 0 && (dataLength = builder.Length(data)) != CollectionBuilder.NoActualLength)
             {
                 var byteLength = checked(itemLength * dataLength);
                 PrimitiveHelper.EncodeLengthPrefix(ref allocator, (uint)byteLength);
@@ -43,9 +46,7 @@ namespace Mikodev.Binary.CollectionAdapters
 
         public override T ToValueWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
-            var data = PrimitiveHelper.DecodeWithLengthPrefix(ref span);
-            var item = adapter.To(in data);
-            return convert.To(in item);
+            return builder.To(adapter, PrimitiveHelper.DecodeWithLengthPrefix(ref span));
         }
     }
 }

@@ -3,7 +3,7 @@ using Mikodev.Binary.Internal.Components;
 using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Creators.Collections.Common
+namespace Mikodev.Binary.Creators.Collections
 {
     internal sealed class IDictionaryConverter<T, K, V> : VariableConverter<T> where T : IEnumerable<KeyValuePair<K, V>>
     {

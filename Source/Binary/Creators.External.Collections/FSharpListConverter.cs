@@ -15,7 +15,7 @@ namespace Mikodev.Binary.Creators.External.Collections
         public FSharpListConverter(Converter<T> converter)
         {
             this.converter = converter;
-            adapter = (CollectionAdapter<ReadOnlyMemory<T>, T>)CollectionAdapterHelper.Create(converter);
+            adapter = CollectionAdapterHelper.Create(converter);
             Debug.Assert(adapter != null);
             Debug.Assert(converter != null);
         }

@@ -10,14 +10,14 @@ namespace Mikodev.Binary.Creators.Primitives
 
         public IPEndPointAdapter(Converter<(IPAddress, ushort)> converter) => this.converter = converter;
 
-        public override ReadOnlyMemory<byte> OfValue(IPEndPoint item)
+        public override ReadOnlyMemory<byte> Of(IPEndPoint item)
         {
             if (item == null)
                 return default;
             return converter.ToBytes((item.Address, (ushort)item.Port));
         }
 
-        public override IPEndPoint ToValue(ReadOnlyMemory<byte> item)
+        public override IPEndPoint To(ReadOnlyMemory<byte> item)
         {
             if (item.IsEmpty)
                 return null;

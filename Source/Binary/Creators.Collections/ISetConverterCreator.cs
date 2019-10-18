@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Creators.Collections.Common
+namespace Mikodev.Binary.Creators.Collections
 {
     internal sealed class ISetConverterCreator : IConverterCreator
     {

@@ -1,5 +1,4 @@
-﻿using Mikodev.Binary.CollectionAdapters;
-using Mikodev.Binary.Internal.Delegates;
+﻿using Mikodev.Binary.Internal.Delegates;
 using Mikodev.Binary.Internal.Extensions;
 using System;
 using System.Collections.Generic;
@@ -84,13 +83,12 @@ namespace Mikodev.Binary.Creators.ArrayLike
                 return null;
             var itemType = types.Single();
             var itemConverter = context.GetConverter(itemType);
-            var converterType = typeof(CollectionAdaptedConverter<,,>).MakeGenericType(type, typeof(ReadOnlyMemory<>).MakeGenericType(itemType), itemType);
             var tailDefinition = available
-                ? typeof(ListDelegateCollectionConvert<>)
-                : typeof(ListFallbackCollectionConvert<>);
+                ? typeof(ListDelegateBuilder<>)
+                : typeof(ListFallbackBuilder<>);
             var tail = Activator.CreateInstance(tailDefinition.MakeGenericType(itemType), available ? CreateDelegates(itemType) : Array.Empty<object>());
-            var adapter = CollectionAdapterHelper.Create(itemConverter);
-            var converterArguments = new object[] { itemConverter, adapter, tail };
+            var converterArguments = new object[] { itemConverter, tail };
+            var converterType = typeof(ListConverter<>).MakeGenericType(itemType);
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }

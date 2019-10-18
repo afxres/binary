@@ -2,16 +2,17 @@
 using Mikodev.Binary.Internal.Delegates;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Mikodev.Binary.Creators.ArrayLike
 {
-    internal sealed class ListDelegateCollectionConvert<T> : CollectionConvert<List<T>, ReadOnlyMemory<T>, T>
+    internal sealed class ListDelegateBuilder<T> : CollectionBuilder<List<T>, ReadOnlyMemory<T>, T>
     {
         private readonly OfList<T> ofList;
 
         private readonly ToList<T> toList;
 
-        public ListDelegateCollectionConvert(OfList<T> ofList, ToList<T> toList)
+        public ListDelegateBuilder(OfList<T> ofList, ToList<T> toList)
         {
             this.ofList = ofList;
             this.toList = toList;
@@ -21,6 +22,11 @@ namespace Mikodev.Binary.Creators.ArrayLike
 
         public override ReadOnlyMemory<T> Of(List<T> item) => item is { Count: var count } && count > 0 ? new ReadOnlyMemory<T>(ofList.Invoke(item), 0, count) : default;
 
-        public override List<T> To(in ArraySegment<T> item) => toList.Invoke(item.Array, item.Count);
+        public override List<T> To(CollectionAdapter<T> adapter, in ReadOnlySpan<byte> span)
+        {
+            var item = adapter.To(in span);
+            Debug.Assert(item.Array != null);
+            return toList.Invoke(item.Array, item.Count);
+        }
     }
 }
