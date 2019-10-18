@@ -17,7 +17,7 @@ namespace Mikodev.Binary
             ref var chars = ref MemoryMarshal.GetReference(span);
             var byteCount = charCount == 0 ? 0 : encoding.GetByteCount(ref chars, charCount);
             if (withLengthPrefix)
-                EncodeLengthPrefix(ref allocator, (uint)byteCount);
+                EncodeNumber(ref allocator, byteCount);
             if (byteCount == 0)
                 return;
             ref var bytes = ref allocator.AllocateReference(byteCount);
@@ -62,10 +62,10 @@ namespace Mikodev.Binary
             if (spanLength == 0)
                 goto fail;
             ref var location = ref MemoryMarshal.GetReference(span);
-            var prefixLength = DecodePrefixLength(location);
+            var prefixLength = DecodeNumberLength(location);
             if (spanLength < prefixLength)
                 goto fail;
-            var length = DecodeLengthPrefix(ref location, prefixLength);
+            var length = DecodeNumber(ref location, prefixLength);
             // check bounds via slice method
             span = span.Slice(prefixLength + length);
             return StringHelper.Decode(encoding, ref Memory.Add(ref location, prefixLength), length);

@@ -91,7 +91,7 @@ let ``Invalid Tag (to value & to value with mark)`` (tag : int) =
     Assert.StartsWith("UnionConverter`1", converter.GetType().Name)
 
     let mutable allocator = Allocator()
-    PrimitiveHelper.EncodeLengthPrefix(&allocator, uint32 tag)
+    PrimitiveHelper.EncodeNumber(&allocator, tag)
     let bytes = allocator.ToArray()
 
     let message = sprintf "Invalid union tag '%d', type: %O" (int tag) typeof<int option>

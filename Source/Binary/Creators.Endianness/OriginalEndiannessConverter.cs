@@ -52,10 +52,10 @@ namespace Mikodev.Binary.Creators.Endianness
             if (spanLength == 0)
                 goto fail;
             ref var location = ref MemoryMarshal.GetReference(span);
-            var prefixLength = PrimitiveHelper.DecodePrefixLength(location);
+            var prefixLength = PrimitiveHelper.DecodeNumberLength(location);
             if (spanLength < prefixLength)
                 goto fail;
-            var length = PrimitiveHelper.DecodeLengthPrefix(ref location, prefixLength);
+            var length = PrimitiveHelper.DecodeNumber(ref location, prefixLength);
             if (length < Memory.SizeOf<T>())
                 return ThrowHelper.ThrowNotEnoughBytes<T>();
             // check bounds via slice method

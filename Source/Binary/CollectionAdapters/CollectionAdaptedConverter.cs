@@ -28,12 +28,12 @@ namespace Mikodev.Binary.CollectionAdapters
             var data = builder.Of(item);
             if (data == null || (dataLength = builder.Length(data)) == 0)
             {
-                PrimitiveHelper.EncodeLengthPrefix(ref allocator, 0);
+                PrimitiveHelper.EncodeNumber(ref allocator, 0);
             }
             else if (itemLength > 0 && dataLength != CollectionBuilder.NoActualLength)
             {
                 var byteLength = checked(itemLength * dataLength);
-                PrimitiveHelper.EncodeLengthPrefix(ref allocator, (uint)byteLength);
+                PrimitiveHelper.EncodeNumber(ref allocator, byteLength);
                 adapter.Of(ref allocator, data);
             }
             else

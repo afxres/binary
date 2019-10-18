@@ -16,7 +16,7 @@ namespace Mikodev.Binary.Creators.External
     {
         private delegate int DecodeUnionTag(ref ReadOnlySpan<byte> span);
 
-        private delegate void EncodeUnionTag(ref Allocator allocator, uint item);
+        private delegate void EncodeUnionTag(ref Allocator allocator, int item);
 
         public Converter GetConverter(IGeneratorContext context, Type type)
         {
@@ -83,11 +83,11 @@ namespace Mikodev.Binary.Creators.External
             var tagExpression = tagMember is PropertyInfo member
                 ? Expression.Property(item, member)
                 : (Expression)Expression.Call((MethodInfo)tagMember, item);
-            var setMethod = new EncodeUnionTag(PrimitiveHelper.EncodeLengthPrefix).Method;
+            var setMethod = new EncodeUnionTag(PrimitiveHelper.EncodeNumber).Method;
             var defaultBlock = Expression.Block(Expression.Assign(mark, flag), Expression.Empty());
             var block = Expression.Block(new[] { flag },
                 Expression.Assign(flag, tagExpression),
-                Expression.Call(setMethod, allocator, Expression.Convert(flag, typeof(uint))),
+                Expression.Call(setMethod, allocator, flag),
                 Expression.Switch(flag, defaultBlock, switchCases));
             var delegateType = typeof(OfUnion<>).MakeGenericType(type);
             return Expression.Lambda(delegateType, block, allocator, item, mark);
@@ -122,7 +122,7 @@ namespace Mikodev.Binary.Creators.External
             }
 
             var switchCases = caseInfos.Select(x => Expression.SwitchCase(MakeBody(x), Expression.Constant(x.Tag))).ToArray();
-            var getMethod = new DecodeUnionTag(PrimitiveHelper.DecodeLengthPrefix).Method;
+            var getMethod = new DecodeUnionTag(PrimitiveHelper.DecodeNumber).Method;
             var defaultBlock = Expression.Block(Expression.Assign(mark, flag), Expression.Default(type));
             var block = Expression.Block(new[] { flag },
                 Expression.Assign(flag, Expression.Call(getMethod, span)),

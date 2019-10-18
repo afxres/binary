@@ -33,7 +33,7 @@ let ``Anonymous Class Record To Bytes (from null value)`` () =
     converter.ToBytesWithLengthPrefix(&allocator, null)
     Assert.Equal(4, allocator.Length)
     let mutable span = ReadOnlySpan (allocator.ToArray())
-    Assert.Equal(0, PrimitiveHelper.DecodeLengthPrefix(&span))
+    Assert.Equal(0, PrimitiveHelper.DecodeNumber(&span))
     ()
 
 [<Fact>]

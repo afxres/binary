@@ -76,12 +76,12 @@ namespace Mikodev.Binary
             var maxByteCount = StringHelper.GetMaxByteCountByteCount(encoding, ref chars, charCount);
             if (!withLengthPrefix && maxByteCount == 0)
                 return;
-            var prefixLength = withLengthPrefix ? PrimitiveHelper.EncodePrefixLength((uint)maxByteCount) : 0;
+            var prefixLength = withLengthPrefix ? PrimitiveHelper.EncodeNumberLength(maxByteCount) : 0;
             var offset = cursor;
             var target = Ensure(offset, maxByteCount + prefixLength);
             var length = maxByteCount == 0 ? 0 : encoding.GetBytes(ref target[offset + prefixLength], maxByteCount, ref chars, charCount);
             if (withLengthPrefix)
-                PrimitiveHelper.EncodeLengthPrefix(ref target[offset], prefixLength, (uint)length);
+                PrimitiveHelper.EncodeNumber(ref target[offset], prefixLength, length);
             cursor = offset + length + prefixLength;
         }
 
@@ -112,7 +112,7 @@ namespace Mikodev.Binary
             // check array length only (for performance reason, ignore maximum capacity)
             if (target == null || target.Length < anchor)
                 ThrowHelper.ThrowAllocatorModified();
-            PrimitiveHelper.EncodeLengthPrefix(ref target[anchor - sizeof(int)], sizeof(int), (uint)(cursor - anchor));
+            PrimitiveHelper.EncodeNumber(ref target[anchor - sizeof(int)], sizeof(int), cursor - anchor);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -179,7 +179,7 @@ namespace Mikodev.Binary
         public void AppendWithLengthPrefix(in ReadOnlySpan<byte> span)
         {
             var byteCount = span.Length;
-            PrimitiveHelper.EncodeLengthPrefix(ref this, (uint)byteCount);
+            PrimitiveHelper.EncodeNumber(ref this, byteCount);
             if (byteCount == 0)
                 return;
             ref var target = ref AllocateReference(byteCount);

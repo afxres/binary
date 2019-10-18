@@ -14,7 +14,7 @@ let ``Encode From 0 To 63`` () =
     let buffer = Array.zeroCreate<byte> 1
     for i = 0 to 63 do
         let mutable allocator = Allocator(buffer)
-        PrimitiveHelper.EncodeLengthPrefix(&allocator, uint32 i)
+        PrimitiveHelper.EncodeNumber(&allocator, i)
         let span = allocator.AsSpan()
         Assert.Equal(1, span.Length)
         Assert.Equal(i, int span.[0])
@@ -25,7 +25,7 @@ let ``Encode From 64 To 16383`` () =
     let buffer = Array.zeroCreate<byte> 2
     for i = 64 to 16383 do
         let mutable allocator = Allocator(buffer)
-        PrimitiveHelper.EncodeLengthPrefix(&allocator, uint32 i)
+        PrimitiveHelper.EncodeNumber(&allocator, i)
         let span = allocator.AsSpan()
         Assert.Equal(2, span.Length)
         Assert.Equal((i >>> 8) ||| 0x40, int span.[0])
@@ -40,7 +40,7 @@ let ``Encode From 64 To 16383`` () =
 let ``Encode From 16384`` (i : int) =
     let buffer = Array.zeroCreate<byte> 4
     let mutable allocator = Allocator(buffer)
-    PrimitiveHelper.EncodeLengthPrefix(&allocator, uint32 i)
+    PrimitiveHelper.EncodeNumber(&allocator, i)
     let span = allocator.AsSpan()
     Assert.Equal(4, span.Length)
     Assert.Equal((i >>> 24) ||| 0x80, int span.[0])
@@ -54,7 +54,7 @@ let ``Encode Then Decode From 0 To 65536`` () =
     let buffer = Array.zeroCreate<byte> 4
     for i = 0 to 65536 do
         let mutable allocator = Allocator(buffer)
-        PrimitiveHelper.EncodeLengthPrefix(&allocator, uint32 i)
+        PrimitiveHelper.EncodeNumber(&allocator, i)
         let mutable span = allocator.AsSpan()
         if i <= 0x3F then
             Assert.Equal(1, span.Length)
@@ -62,7 +62,7 @@ let ``Encode Then Decode From 0 To 65536`` () =
             Assert.Equal(2, span.Length)
         else
             Assert.Equal(4, span.Length)
-        let result = PrimitiveHelper.DecodeLengthPrefix(&span)
+        let result = PrimitiveHelper.DecodeNumber(&span)
         Assert.Equal(i, result)
     ()
 
@@ -127,11 +127,11 @@ let ``Encode String With Length Prefix (random)`` () =
         let span = text.AsSpan()
         PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, &span)
         let buffer = allocator.ToArray()
-        let prefixLength = PrimitiveHelper.DecodePrefixLength(buffer.[0])
+        let prefixLength = PrimitiveHelper.DecodeNumberLength(buffer.[0])
         let result = encoding.GetString (Array.skip prefixLength buffer)
         let mutable span = ReadOnlySpan buffer
         Assert.Equal(text, result)
-        Assert.Equal(i, PrimitiveHelper.DecodeLengthPrefix(&span))
+        Assert.Equal(i, PrimitiveHelper.DecodeNumber(&span))
 #if DEBUG
         let capacity = if i <= 64 then encoding.GetMaxByteCount(i) else i
         Assert.Equal(capacity + prefixLength, allocator.Capacity)

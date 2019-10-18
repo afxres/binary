@@ -26,10 +26,10 @@ namespace Mikodev.Binary.Internal
         {
             Offset += Length;
             ref var location = ref Memory.Add(ref source, Offset);
-            var prefixLength = PrimitiveHelper.DecodePrefixLength(location);
+            var prefixLength = PrimitiveHelper.DecodeNumberLength(location);
             if ((uint)(Limits - Offset) < (uint)prefixLength)
                 goto fail;
-            var length = PrimitiveHelper.DecodeLengthPrefix(ref location, prefixLength);
+            var length = PrimitiveHelper.DecodeNumber(ref location, prefixLength);
             Offset += prefixLength;
             if ((uint)(Limits - Offset) < (uint)length)
                 goto fail;

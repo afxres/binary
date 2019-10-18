@@ -51,7 +51,7 @@ let testWithLengthPrefix (value : 'a) (size : int) =
     converter.ToBytesWithLengthPrefix(&allocator, value)
     let buffer = allocator.ToArray()
 
-    let prefixLength = PrimitiveHelper.DecodePrefixLength(buffer.[0])
+    let prefixLength = PrimitiveHelper.DecodeNumberLength(buffer.[0])
     Assert.Equal(size + prefixLength, buffer.Length)
     Assert.Equal<byte>(bufferOrigin, buffer |> Array.skip prefixLength)
 

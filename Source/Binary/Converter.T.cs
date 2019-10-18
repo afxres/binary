@@ -20,8 +20,8 @@ namespace Mikodev.Binary
             var length = Length;
             if (length > 0)
             {
-                var prefix = (uint)length;
-                PrimitiveHelper.EncodeLengthPrefix(ref allocator, prefix);
+                var prefix = length;
+                PrimitiveHelper.EncodeNumber(ref allocator, prefix);
                 ToBytes(ref allocator, item);
             }
             else

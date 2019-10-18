@@ -13,60 +13,50 @@ namespace Mikodev.Binary
          * 0b00xx_xxxx variable length 1 bytes */
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void EncodeLengthPrefix(ref byte location, int prefixLength, uint item)
+        public static int EncodeNumberLength(int item)
         {
-            if (prefixLength == 1)
-            {
-                Memory.Add(ref location, 0) = (byte)item;
-            }
-            else if (prefixLength == 2)
-            {
-                Memory.Add(ref location, 0) = (byte)((item >> 8) | 0x40);
-                Memory.Add(ref location, 1) = (byte)item;
-            }
-            else
-            {
-                Memory.Add(ref location, 0) = (byte)((item >> 24) | 0x80);
-                Memory.Add(ref location, 1) = (byte)(item >> 16);
-                Memory.Add(ref location, 2) = (byte)(item >> 8);
-                Memory.Add(ref location, 3) = (byte)item;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int EncodePrefixLength(uint length)
-        {
-            if ((length & 0xFFFF_FFC0) == 0)
+            if (((uint)item & 0xFFFF_FFC0U) == 0)
                 return 1;
-            else if ((length & 0xFFFF_C000) == 0)
+            else if (((uint)item & 0xFFFF_C000U) == 0)
                 return 2;
             else
                 return 4;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EncodeLengthPrefix(ref Allocator allocator, uint item)
+        public static void EncodeNumber(ref byte location, int numberLength, int item)
         {
-            if ((item & 0x8000_0000) != 0)
+            var data = (uint)item;
+            if (numberLength == 1)
+            {
+                Memory.Add(ref location, 0) = (byte)data;
+            }
+            else if (numberLength == 2)
+            {
+                Memory.Add(ref location, 0) = (byte)((data >> 8) | 0x40);
+                Memory.Add(ref location, 1) = (byte)data;
+            }
+            else
+            {
+                Memory.Add(ref location, 0) = (byte)((data >> 24) | 0x80);
+                Memory.Add(ref location, 1) = (byte)(data >> 16);
+                Memory.Add(ref location, 2) = (byte)(data >> 8);
+                Memory.Add(ref location, 3) = (byte)data;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void EncodeNumber(ref Allocator allocator, int item)
+        {
+            if (((uint)item & 0x8000_0000U) != 0)
                 ThrowHelper.ThrowLengthPrefixOverflow();
-            var prefixLength = EncodePrefixLength(item);
+            var prefixLength = EncodeNumberLength(item);
             ref var location = ref allocator.AllocateReference(prefixLength);
-            EncodeLengthPrefix(ref location, prefixLength, item);
+            EncodeNumber(ref location, prefixLength, item);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int DecodeLengthPrefix(ref byte location, int prefixLength)
-        {
-            if (prefixLength == 4)
-                return ((location & 0x7F) << 24) | (Memory.Add(ref location, 1) << 16) | (Memory.Add(ref location, 2) << 8) | Memory.Add(ref location, 3);
-            var head = location & 0x3F;
-            if (prefixLength == 2)
-                return (head << 8) | Memory.Add(ref location, 1);
-            return head;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int DecodePrefixLength(byte head)
+        public static int DecodeNumberLength(byte head)
         {
             if ((head & 0x80) != 0)
                 return 4;
@@ -76,16 +66,27 @@ namespace Mikodev.Binary
                 return 1;
         }
 
-        public static int DecodeLengthPrefix(ref ReadOnlySpan<byte> span)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static int DecodeNumber(ref byte location, int prefixLength)
+        {
+            if (prefixLength == 4)
+                return ((location & 0x7F) << 24) | (Memory.Add(ref location, 1) << 16) | (Memory.Add(ref location, 2) << 8) | Memory.Add(ref location, 3);
+            var head = location & 0x3F;
+            if (prefixLength == 2)
+                return (head << 8) | Memory.Add(ref location, 1);
+            return head;
+        }
+
+        public static int DecodeNumber(ref ReadOnlySpan<byte> span)
         {
             var spanLength = span.Length;
             if (spanLength == 0)
                 goto fail;
             ref var location = ref MemoryMarshal.GetReference(span);
-            var prefixLength = DecodePrefixLength(location);
+            var prefixLength = DecodeNumberLength(location);
             // check bounds via slice method
             span = span.Slice(prefixLength);
-            return DecodeLengthPrefix(ref location, prefixLength);
+            return DecodeNumber(ref location, prefixLength);
 
         fail:
             ThrowHelper.ThrowLengthPrefixInvalidBytes();
