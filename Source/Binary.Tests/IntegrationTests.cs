@@ -71,7 +71,7 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(source.E, result.E);
             Assert.Equal(source.F, result.F);
 
-            var token = generator.AsToken(buffer);
+            var token = new Token(generator, buffer);
             var dictionary = (IReadOnlyDictionary<string, Token>)token;
             Assert.Equal(2, dictionary.Count);
 
@@ -94,7 +94,7 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(source.E, result.E);
             Assert.Equal(source.F, result.F);
 
-            var token = generator.AsToken(buffer);
+            var token = new Token(generator, buffer);
             var dictionary = (IReadOnlyDictionary<string, Token>)token;
             Assert.Equal(2, dictionary.Count);
 

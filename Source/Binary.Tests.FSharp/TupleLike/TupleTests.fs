@@ -1,7 +1,6 @@
 ﻿module TupleLike.TupleTests
 
 open Mikodev.Binary
-open Mikodev.Binary.Abstractions
 open System
 open System.Net
 open Xunit
@@ -196,7 +195,7 @@ let ``Tuple Length`` () =
 type Fix = { some : obj }
 
 type FixConverter(length : int) =
-    inherit ConstantConverter<Fix>(length)
+    inherit Converter<Fix>(length)
 
     override __.Encode(_, _) = raise (NotSupportedException())
 

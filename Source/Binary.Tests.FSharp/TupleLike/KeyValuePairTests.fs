@@ -1,7 +1,6 @@
 ﻿module TupleLike.KeyValuePairTests
 
 open Mikodev.Binary
-open Mikodev.Binary.Abstractions
 open System
 open System.Collections.Generic
 open Xunit
@@ -87,7 +86,7 @@ let ``Key-Value Pair Array`` () =
 type Raw<'a> = { data : 'a }
 
 type RawConverter<'a>(length : int) =
-    inherit ConstantConverter<Raw<'a>>(length)
+    inherit Converter<Raw<'a>>(length)
 
     override __.Encode(_, _) = raise (NotSupportedException())
 

@@ -12,8 +12,8 @@ type GeneratorExtensionsTests() =
         let buffer = generator.Encode ({| alpha = 1 |})
         let memory = ReadOnlyMemory buffer
 
-        let token = generator.AsToken &memory
-        let alpha = generator.AsToken buffer
+        let token = Token(generator, &memory)
+        let alpha = Token(generator, buffer)
         Assert.Equal<byte>(buffer, token.AsMemory().ToArray())
         Assert.Equal<byte>(buffer, alpha.AsMemory().ToArray())
         ()

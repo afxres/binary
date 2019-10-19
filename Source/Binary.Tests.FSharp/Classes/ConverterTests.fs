@@ -1,7 +1,6 @@
 ﻿module Classes.ConverterTests
 
 open Mikodev.Binary
-open Mikodev.Binary.Abstractions
 open System
 open Xunit
 
@@ -121,31 +120,13 @@ type CustomConverter<'T>(length : int) =
 
     override __.DecodeAuto _ = raise (NotSupportedException())
 
-type CustomConstantConverter<'T>(length : int) =
-    inherit ConstantConverter<'T>(length)
-
-    override __.Encode(_, _) = raise (NotSupportedException())
-
-    override __.Decode (_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
-
-    override __.EncodeAuto(_, _) = raise (NotSupportedException())
-
-    override __.DecodeAuto _ = raise (NotSupportedException())
-
 [<Theory>]
 [<InlineData(0)>]
 [<InlineData(1)>]
 [<InlineData(127)>]
+[<InlineData(1024)>]
 let ``Valid Converter Length`` (length : int) =
     let converter = new CustomConverter<obj>(length)
-    Assert.Equal(length, converter.Length)
-    ()
-
-[<Theory>]
-[<InlineData(1)>]
-[<InlineData(33)>]
-let ``Valid Constant Converter Length`` (length : int) =
-    let converter = new CustomConstantConverter<obj>(length)
     Assert.Equal(length, converter.Length)
     ()
 
@@ -157,17 +138,8 @@ let ``Invalid Converter Length`` (length : int) =
     Assert.Equal("length", error.ParamName)
     ()
 
-[<Theory>]
-[<InlineData(0)>]
-[<InlineData(-1)>]
-[<InlineData(-255)>]
-let ``Invalid Constant Converter Length`` (length : int) =
-    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () -> new CustomConstantConverter<obj>(length) |> ignore)
-    Assert.Equal("length", error.ParamName)
-    ()
-
-type CustomConstantConverterWithInvalidAllocation<'T>(length : int) =
-    inherit ConstantConverter<'T>(length)
+type CustomConverterWithInvalidAllocation<'T>(length : int) =
+    inherit Converter<'T>(length)
 
     override __.Encode(allocator, _) = let _ = AllocatorHelper.Allocate(&allocator, length + 1) in ()
 
@@ -176,8 +148,8 @@ type CustomConstantConverterWithInvalidAllocation<'T>(length : int) =
 [<Theory>]
 [<InlineData(1)>]
 [<InlineData(127)>]
-let ``Invalid Constant Converter Allocation`` (length : int) =
-    let converter = new CustomConstantConverterWithInvalidAllocation<int>(length)
+let ``Invalid Converter Allocation`` (length : int) =
+    let converter = new CustomConverterWithInvalidAllocation<int>(length)
     let error = Assert.Throws<ArgumentException>(fun () -> converter.Encode(Unchecked.defaultof<int>) |> ignore)
     Assert.Equal("Maximum allocator capacity has been reached.", error.Message)
     ()

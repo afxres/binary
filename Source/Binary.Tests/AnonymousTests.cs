@@ -59,7 +59,7 @@ namespace Mikodev.Binary.Tests
         {
             var a = new { guid = Guid.NewGuid(), inner = new { name = "Pro C# ...", price = 51.2 } };
             var bytes = generator.Encode(a);
-            var token = generator.AsToken(bytes);
+            var token = new Token(generator, bytes);
             var value = token.As(a);
             Assert.False(ReferenceEquals(a, value));
             Assert.Equal(a, value);

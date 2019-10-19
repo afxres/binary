@@ -16,10 +16,10 @@ let test (value : 'a when 'a :> 'e seq) =
 
 [<Fact>]
 let ``Queue`` () =
-    let alpha = [12..20] |> Queue
-    let bravo = [32..40] |> List.map (sprintf "%d") |> Queue
-    let delta = ['a'..'z'] |> List.map (fun x -> struct (x, int x)) |> Queue
-    let hotel = ['h'..'n'] |> List.map (fun x -> (int64 x, x)) |> Queue
+    let alpha = [ 12..20 ] |> Queue
+    let bravo = [ 32..40 ] |> List.map (sprintf "%d") |> Queue
+    let delta = [ 'a'..'z' ] |> List.map (fun x -> struct (x, int x)) |> Queue
+    let hotel = [ 'h'..'n' ] |> List.map (fun x -> (int64 x, x)) |> Queue
 
     test alpha
     test bravo
@@ -29,8 +29,8 @@ let ``Queue`` () =
 
 [<Fact>]
 let ``Stack`` () =
-    let alpha = ['a'..'z'] |> Stack
-    let bravo = [32..48] |> List.map (sprintf "%d") |> Stack
+    let alpha = [ 'a'..'z' ] |> Stack
+    let bravo = [ 32..48 ] |> List.map (sprintf "%d") |> Stack
 
     test alpha
     test bravo
@@ -38,8 +38,8 @@ let ``Stack`` () =
 
 [<Fact>]
 let ``ConcurrentStack`` () =
-    let alpha = ['h'..'n'] |> ConcurrentStack
-    let bravo = ['o'..'z'] |> Seq.map string |> ConcurrentStack
+    let alpha = [ 'h'..'n' ] |> ConcurrentStack
+    let bravo = [ 'o'..'z' ] |> Seq.map string |> ConcurrentStack
 
     test alpha
     test bravo
@@ -65,8 +65,8 @@ let ``SortedList`` () =
 
 [<Fact>]
 let ``LinkedList`` () =
-    let alpha = [16..32] |> LinkedList
-    let bravo = ['a'..'z'] |> List.map (fun x -> struct (x, int x)) |> LinkedList
+    let alpha = [ 16..32 ] |> LinkedList
+    let bravo = [ 'a'..'z' ] |> List.map (fun x -> struct (x, int x)) |> LinkedList
     let delta = [ "alpha", "delta" ] |> LinkedList
 
     test alpha

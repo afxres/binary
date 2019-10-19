@@ -89,16 +89,12 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Decode<T>(in ReadOnlySpan<byte> span, T anonymous) => Decode<T>(in span);
 
-        public Token AsToken(in ReadOnlyMemory<byte> memory) => new Token(this, in memory);
-
         public object Decode(byte[] buffer, Type type) => ((IConverter)GetConverter(type)).Decode(buffer);
 
         public T Decode<T>(byte[] buffer) => GetConverter<T>().Decode(buffer);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Decode<T>(byte[] buffer, T anonymous) => Decode<T>(buffer);
-
-        public Token AsToken(byte[] buffer) => new Token(this, buffer);
 
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         public sealed override bool Equals(object obj) => throw new NotSupportedException();

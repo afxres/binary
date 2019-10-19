@@ -135,7 +135,7 @@ let ``Guid`` () =
         test guid
 
         let hex = guid.ToString("N")
-        let items = [0..2..(hex.Length - 1)] |> Seq.map (fun x -> Convert.ToByte(hex.Substring(x, 2), 16))
+        let items = [ 0..2..(hex.Length - 1) ] |> Seq.map (fun x -> Convert.ToByte(hex.Substring(x, 2), 16))
         Assert.Equal(16, items |> Seq.length)
         if BitConverter.IsLittleEndian = Converter.UseLittleEndian then
             let array = guid.ToByteArray()

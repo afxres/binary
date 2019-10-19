@@ -53,20 +53,20 @@ let test (converterName : string) (enumerable : 'a) (expected : 'b) =
 
 [<Fact>]
 let ``No suitable constructor (enumerable, constructor not match)`` () =
-    test "GenericCollectionConverter`2" (CollectionT [1; 2; 3]) [1; 2; 3]
+    test "GenericCollectionConverter`2" (CollectionT [ 1; 2; 3 ]) [ 1; 2; 3 ]
     ()
 
 [<Fact>]
 let ``No suitable constructor (enumerable, abstract)`` () =
-    test "GenericCollectionConverter`2" ((CollectionI [1; 2; 3]) :> CollectionA<_>) [1; 2; 3]
+    test "GenericCollectionConverter`2" ((CollectionI [ 1; 2; 3 ]) :> CollectionA<_>) [ 1; 2; 3 ]
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary, constructor not match)`` () =
-    test "GenericDictionaryConverter`3" (DictionaryP ((dict [1, "one"; 0, "ZERO"]) |> Seq.toList)) [1, "one"; 0, "ZERO"]
+    test "GenericDictionaryConverter`3" (DictionaryP ((dict [ 1, "one"; 0, "ZERO" ]) |> Seq.toList)) [ 1, "one"; 0, "ZERO" ]
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary, abstract)`` () =
-    test "GenericDictionaryConverter`3" ((DictionaryI(dict [1, "one"; 0, "ZERO"])) :> DictionaryA<_, _>) [1, "one"; 0, "ZERO"]
+    test "GenericDictionaryConverter`3" ((DictionaryI(dict [ 1, "one"; 0, "ZERO" ])) :> DictionaryA<_, _>) [ 1, "one"; 0, "ZERO" ]
     ()

@@ -5,49 +5,41 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace Mikodev.Binary
 {
     [DebuggerTypeProxy(typeof(TokenDebuggerTypeProxy))]
     public sealed partial class Token : IDynamicMetaObjectProvider
     {
-        private static readonly Dictionary<string, Token> shared = new Dictionary<string, Token>();
+        private static readonly IReadOnlyDictionary<string, Token> empty = new Dictionary<string, Token>();
 
-        private readonly Generator generator;
+        private readonly IGenerator generator;
 
         private readonly ReadOnlyMemory<byte> memory;
 
-        private Dictionary<string, Token> tokens;
+        private readonly Lazy<IReadOnlyDictionary<string, Token>> tokens;
 
-        internal Token(Generator generator, in ReadOnlyMemory<byte> memory)
+        public Token(IGenerator generator, in ReadOnlyMemory<byte> memory)
         {
-            Debug.Assert(generator != null);
-            Debug.Assert(shared.Count == 0);
-            if (memory.IsEmpty)
-                tokens = shared;
-            else
-                this.memory = memory;
+            if (generator == null)
+                ThrowHelper.ThrowArgumentNull(nameof(generator));
+            this.memory = memory;
             this.generator = generator;
+            tokens = new Lazy<IReadOnlyDictionary<string, Token>>(() => GetDictionary(this), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        internal Dictionary<string, Token> GetTokens()
-        {
-            var result = tokens;
-            if (result == null)
-                tokens = result = GetDictionary(generator, in memory);
-            Debug.Assert(tokens != null);
-            Debug.Assert(result != null);
-            return result;
-        }
+        public Token(IGenerator generator, byte[] buffer) : this(generator, new ReadOnlyMemory<byte>(buffer)) { }
 
-        private static Dictionary<string, Token> GetDictionary(Generator generator, in ReadOnlyMemory<byte> memory)
+        private static IReadOnlyDictionary<string, Token> GetDictionary(Token token)
         {
-            Debug.Assert(memory.Length > 0);
-            Debug.Assert(shared.Count == 0);
+            var memory = token.memory;
+            if (memory.IsEmpty)
+                return empty;
+            var generator = token.generator;
             var span = memory.Span;
-            var result = new Dictionary<string, Token>(8);
+            var result = new Dictionary<string, Token>();
             var reader = new LengthReader(memory.Length);
             var encoding = Converter.Encoding;
             ref var source = ref MemoryMarshal.GetReference(span);
@@ -66,27 +58,22 @@ namespace Mikodev.Binary
             }
             catch (ArgumentException)
             {
-                return shared;
+                return empty;
             }
         }
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => new TokenDynamicMetaObject(parameter, this);
 
-        public Token this[string key] => GetTokens()[key];
+        public Token this[string key] => tokens.Value[key];
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public object As(Type type) => generator.Decode(memory.Span, type);
+        public object As(Type type) => ((IConverter)generator.GetConverter(type)).Decode(memory.Span);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T As<T>() => generator.Decode<T>(memory.Span);
+        public T As<T>() => ((Converter<T>)generator.GetConverter(typeof(T))).Decode(memory.Span);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T As<T>(T anonymous) => As<T>();
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlyMemory<byte> AsMemory() => memory;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlySpan<byte> AsSpan() => memory.Span;
 
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
@@ -96,6 +83,6 @@ namespace Mikodev.Binary
         public sealed override int GetHashCode() => throw new NotSupportedException();
 
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        public sealed override string ToString() => $"{nameof(Token)}(Items: {GetTokens().Count}, Bytes: {memory.Length})";
+        public sealed override string ToString() => $"{nameof(Token)}(Items: {tokens.Value.Count}, Bytes: {memory.Length})";
     }
 }

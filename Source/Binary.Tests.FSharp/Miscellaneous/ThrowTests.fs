@@ -6,7 +6,7 @@ open System.Collections.Generic
 open Xunit
 
 type BadConverter<'T>() =
-    inherit Abstractions.VariableConverter<'T>()
+    inherit Converter<'T>()
 
     override __.Encode(allocator, item) = allocator <- new Allocator()
 

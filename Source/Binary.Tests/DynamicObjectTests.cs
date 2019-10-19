@@ -22,7 +22,7 @@ namespace Mikodev.Binary.Tests
             a.last = last;
             var bytes = (byte[])generator.Encode(a);
             Assert.NotEmpty(bytes);
-            var token = generator.AsToken(bytes);
+            var token = new Token(generator, bytes);
             var d = (dynamic)token;
             Assert.Equal(head, (double)d.head);
             Assert.Equal(middle, (string)d.middle);
@@ -47,7 +47,7 @@ namespace Mikodev.Binary.Tests
             };
 
             var bytes = generator.Encode(value);
-            var token = generator.AsToken(bytes);
+            var token = new Token(generator, bytes);
             var d = (dynamic)token;
             Assert.Equal(value.a, (int)d.a);
             Assert.Equal(value.b, (string)d.b);
@@ -62,7 +62,7 @@ namespace Mikodev.Binary.Tests
                 ip = (IPAddress)null,
             };
             var bytes = generator.Encode(value);
-            var token = generator.AsToken(bytes);
+            var token = new Token(generator, bytes);
             var d = (dynamic)token;
             var ip = d.ip;
             Assert.NotNull((object)ip);
@@ -77,7 +77,7 @@ namespace Mikodev.Binary.Tests
                 some = 1,
             };
             var bytes = generator.Encode(value);
-            var token = generator.AsToken(bytes);
+            var token = new Token(generator, bytes);
             var d = (dynamic)token;
             Assert.Equal(1, (int)d.some);
             _ = Assert.Throws<KeyNotFoundException>(() => (string)d.none);
@@ -91,7 +91,7 @@ namespace Mikodev.Binary.Tests
                 some = 1,
             };
             var bytes = generator.Encode(value);
-            var token = generator.AsToken(bytes);
+            var token = new Token(generator, bytes);
             var d = (dynamic)token;
 
             Assert.True(ReferenceEquals(token, (object)d));
@@ -114,7 +114,7 @@ namespace Mikodev.Binary.Tests
             };
 
             var bytes = generator.Encode(value);
-            var token = generator.AsToken(bytes);
+            var token = new Token(generator, bytes);
             var d = (dynamic)token;
 
             Assert.True(ReferenceEquals(token["a"], (object)d.a));

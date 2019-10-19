@@ -36,11 +36,11 @@ namespace Mikodev.Binary.Internal
 
         public override DynamicMetaObject BindGetMember(GetMemberBinder binder)
         {
-            var value = ((Token)Value).GetTokens()[binder.Name];
+            var value = ((IReadOnlyDictionary<string, Token>)Value)[binder.Name];
             var constant = Expression.Constant(value);
             return new DynamicMetaObject(constant, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
         }
 
-        public override IEnumerable<string> GetDynamicMemberNames() => ((Token)Value).GetTokens().Keys;
+        public override IEnumerable<string> GetDynamicMemberNames() => ((IReadOnlyDictionary<string, Token>)Value).Keys;
     }
 }

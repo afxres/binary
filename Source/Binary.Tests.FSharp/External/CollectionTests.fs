@@ -93,7 +93,7 @@ let ``Sequence`` () =
 
 [<Fact>]
 let ``Set`` () =
-    let alpha = [2..6] |> List.map ((*) 2) |> List.map (sprintf "%d") |> Set
+    let alpha = [ 2..6 ] |> List.map ((*) 2) |> List.map (sprintf "%d") |> Set
     let bravo = Set.empty<double>
 
     test alpha

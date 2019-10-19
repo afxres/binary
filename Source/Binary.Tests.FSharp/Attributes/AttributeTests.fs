@@ -1,7 +1,6 @@
 ﻿namespace Attributes
 
 open Mikodev.Binary
-open Mikodev.Binary.Abstractions
 open Mikodev.Binary.Attributes
 open System
 open System.Collections.Generic
@@ -10,7 +9,7 @@ open System.Text
 open Xunit
 
 type Int32AsStringConverter() =
-    inherit VariableConverter<int>()
+    inherit Converter<int>()
 
     override __.Encode(allocator, item) =
         let text = string item
@@ -23,7 +22,7 @@ type Int32AsStringConverter() =
         item
 
 type Int64AsStringConverter() =
-    inherit VariableConverter<int64>()
+    inherit Converter<int64>()
 
     override __.Encode(allocator, item) =
         let text = string item
@@ -45,14 +44,14 @@ type Int64AsStringConverterCreator() =
             new Int64AsStringConverter() :> Converter
 
 type BadConverter<'T>() =
-    inherit VariableConverter<'T>()
+    inherit Converter<'T>()
 
     override __.Encode(_, _) = raise (NotSupportedException())
 
     override __.Decode (span : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 
 type BadConverterWithoutPublicConstructor<'T> private() =
-    inherit VariableConverter<'T>()
+    inherit Converter<'T>()
 
     override __.Encode(_, _) = raise (NotSupportedException())
 
@@ -547,7 +546,7 @@ type AttributeTests() =
         converter.Encode(&allocator, source)
         let buffer = allocator.ToArray()
 
-        let token = generator.AsToken(buffer)
+        let token = Token(generator, buffer)
         let dictionary = token :> IReadOnlyDictionary<string, Token>
         Assert.Equal(expected.Length, dictionary.Count)
         for (k, v) in expected do
@@ -571,7 +570,7 @@ type AttributeTests() =
         converter.EncodeAuto(&allocator, source)
         let buffer = allocator.ToArray()
 
-        let token = generator.AsToken(buffer |> Array.skip sizeof<int>)
+        let token = Token(generator, buffer |> Array.skip sizeof<int>)
         let dictionary = token :> IReadOnlyDictionary<string, Token>
         Assert.Equal(expected.Length, dictionary.Count)
         for (k, v) in expected do

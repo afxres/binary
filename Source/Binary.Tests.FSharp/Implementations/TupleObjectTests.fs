@@ -1,7 +1,6 @@
 ﻿module Implementations.TupleObjectTests
 
 open Mikodev.Binary
-open Mikodev.Binary.Abstractions
 open Mikodev.Binary.Attributes
 open System
 open Xunit
@@ -11,7 +10,7 @@ let generator = new Generator()
 type Raw<'a> = { data : 'a }
 
 type RawConverter<'a>(length : int) =
-    inherit ConstantConverter<Raw<'a>>(length)
+    inherit Converter<Raw<'a>>(length)
 
     override __.Encode(_, _) = raise (NotSupportedException())
 
