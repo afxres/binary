@@ -1,7 +1,6 @@
 ﻿namespace Creators
 
 open Mikodev.Binary
-open System
 open Xunit
 
 type ListTests () =
@@ -42,11 +41,3 @@ type ListTests () =
             yield [| typeof<int vlist> |]
             yield [| typeof<string vlist> |]
         }
-
-    [<Theory(DisplayName = "Validate Converter Type")>]
-    [<MemberData("Data Alpha")>]
-    member __.``Validate Converter Type`` (t : Type) =
-        let converter = generator.GetConverter t
-        let name = converter.GetType().Name
-        Assert.StartsWith("ListConverter`1", name)
-        ()

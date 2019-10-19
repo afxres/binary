@@ -4,7 +4,12 @@
     using System;
     using System.Collections.Generic;
 
-    internal sealed class KeyValuePairConverter<T1, T2> : Converter<KeyValuePair<T1, T2>>
+    internal abstract class TupleLikeConverter<T> : Converter<T>
+    {
+        protected TupleLikeConverter(int length) : base(length) { }
+    }
+
+    internal sealed class KeyValuePairConverter<T1, T2> : TupleLikeConverter<KeyValuePair<T1, T2>>
     {
         private readonly Converter<T1> converter1;
         private readonly Converter<T2> converter2;
@@ -46,7 +51,7 @@
         }
     }
 
-    internal sealed class TupleConverter<T1> : Converter<Tuple<T1>>
+    internal sealed class TupleConverter<T1> : TupleLikeConverter<Tuple<T1>>
     {
         private readonly Converter<T1> converter1;
 
@@ -85,7 +90,7 @@
         }
     }
 
-    internal sealed class TupleConverter<T1, T2> : Converter<Tuple<T1, T2>>
+    internal sealed class TupleConverter<T1, T2> : TupleLikeConverter<Tuple<T1, T2>>
     {
         private readonly Converter<T1> converter1;
         private readonly Converter<T2> converter2;
@@ -131,7 +136,7 @@
         }
     }
 
-    internal sealed class TupleConverter<T1, T2, T3> : Converter<Tuple<T1, T2, T3>>
+    internal sealed class TupleConverter<T1, T2, T3> : TupleLikeConverter<Tuple<T1, T2, T3>>
     {
         private readonly Converter<T1> converter1;
         private readonly Converter<T2> converter2;
@@ -184,7 +189,7 @@
         }
     }
 
-    internal sealed class TupleConverter<T1, T2, T3, T4> : Converter<Tuple<T1, T2, T3, T4>>
+    internal sealed class TupleConverter<T1, T2, T3, T4> : TupleLikeConverter<Tuple<T1, T2, T3, T4>>
     {
         private readonly Converter<T1> converter1;
         private readonly Converter<T2> converter2;
@@ -244,7 +249,7 @@
         }
     }
 
-    internal sealed class TupleConverter<T1, T2, T3, T4, T5> : Converter<Tuple<T1, T2, T3, T4, T5>>
+    internal sealed class TupleConverter<T1, T2, T3, T4, T5> : TupleLikeConverter<Tuple<T1, T2, T3, T4, T5>>
     {
         private readonly Converter<T1> converter1;
         private readonly Converter<T2> converter2;
@@ -311,7 +316,7 @@
         }
     }
 
-    internal sealed class TupleConverter<T1, T2, T3, T4, T5, T6> : Converter<Tuple<T1, T2, T3, T4, T5, T6>>
+    internal sealed class TupleConverter<T1, T2, T3, T4, T5, T6> : TupleLikeConverter<Tuple<T1, T2, T3, T4, T5, T6>>
     {
         private readonly Converter<T1> converter1;
         private readonly Converter<T2> converter2;
@@ -385,7 +390,7 @@
         }
     }
 
-    internal sealed class TupleConverter<T1, T2, T3, T4, T5, T6, T7> : Converter<Tuple<T1, T2, T3, T4, T5, T6, T7>>
+    internal sealed class TupleConverter<T1, T2, T3, T4, T5, T6, T7> : TupleLikeConverter<Tuple<T1, T2, T3, T4, T5, T6, T7>>
     {
         private readonly Converter<T1> converter1;
         private readonly Converter<T2> converter2;
@@ -466,7 +471,7 @@
         }
     }
 
-    internal sealed class TupleConverter<T1, T2, T3, T4, T5, T6, T7, T8> : Converter<Tuple<T1, T2, T3, T4, T5, T6, T7, T8>>
+    internal sealed class TupleConverter<T1, T2, T3, T4, T5, T6, T7, T8> : TupleLikeConverter<Tuple<T1, T2, T3, T4, T5, T6, T7, T8>>
     {
         private readonly Converter<T1> converter1;
         private readonly Converter<T2> converter2;
@@ -554,7 +559,7 @@
         }
     }
 
-    internal sealed class ValueTupleConverter<T1> : Converter<ValueTuple<T1>>
+    internal sealed class ValueTupleConverter<T1> : TupleLikeConverter<ValueTuple<T1>>
     {
         private readonly Converter<T1> converter1;
 
@@ -589,7 +594,7 @@
         }
     }
 
-    internal sealed class ValueTupleConverter<T1, T2> : Converter<ValueTuple<T1, T2>>
+    internal sealed class ValueTupleConverter<T1, T2> : TupleLikeConverter<ValueTuple<T1, T2>>
     {
         private readonly Converter<T1> converter1;
         private readonly Converter<T2> converter2;
@@ -631,7 +636,7 @@
         }
     }
 
-    internal sealed class ValueTupleConverter<T1, T2, T3> : Converter<ValueTuple<T1, T2, T3>>
+    internal sealed class ValueTupleConverter<T1, T2, T3> : TupleLikeConverter<ValueTuple<T1, T2, T3>>
     {
         private readonly Converter<T1> converter1;
         private readonly Converter<T2> converter2;
@@ -680,7 +685,7 @@
         }
     }
 
-    internal sealed class ValueTupleConverter<T1, T2, T3, T4> : Converter<ValueTuple<T1, T2, T3, T4>>
+    internal sealed class ValueTupleConverter<T1, T2, T3, T4> : TupleLikeConverter<ValueTuple<T1, T2, T3, T4>>
     {
         private readonly Converter<T1> converter1;
         private readonly Converter<T2> converter2;
@@ -736,7 +741,7 @@
         }
     }
 
-    internal sealed class ValueTupleConverter<T1, T2, T3, T4, T5> : Converter<ValueTuple<T1, T2, T3, T4, T5>>
+    internal sealed class ValueTupleConverter<T1, T2, T3, T4, T5> : TupleLikeConverter<ValueTuple<T1, T2, T3, T4, T5>>
     {
         private readonly Converter<T1> converter1;
         private readonly Converter<T2> converter2;
@@ -799,7 +804,7 @@
         }
     }
 
-    internal sealed class ValueTupleConverter<T1, T2, T3, T4, T5, T6> : Converter<ValueTuple<T1, T2, T3, T4, T5, T6>>
+    internal sealed class ValueTupleConverter<T1, T2, T3, T4, T5, T6> : TupleLikeConverter<ValueTuple<T1, T2, T3, T4, T5, T6>>
     {
         private readonly Converter<T1> converter1;
         private readonly Converter<T2> converter2;
@@ -869,7 +874,7 @@
         }
     }
 
-    internal sealed class ValueTupleConverter<T1, T2, T3, T4, T5, T6, T7> : Converter<ValueTuple<T1, T2, T3, T4, T5, T6, T7>>
+    internal sealed class ValueTupleConverter<T1, T2, T3, T4, T5, T6, T7> : TupleLikeConverter<ValueTuple<T1, T2, T3, T4, T5, T6, T7>>
     {
         private readonly Converter<T1> converter1;
         private readonly Converter<T2> converter2;
@@ -946,7 +951,7 @@
         }
     }
 
-    internal sealed class ValueTupleConverter<T1, T2, T3, T4, T5, T6, T7, T8> : Converter<ValueTuple<T1, T2, T3, T4, T5, T6, T7, T8>> where T8 : struct
+    internal sealed class ValueTupleConverter<T1, T2, T3, T4, T5, T6, T7, T8> : TupleLikeConverter<ValueTuple<T1, T2, T3, T4, T5, T6, T7, T8>> where T8 : struct
     {
         private readonly Converter<T1> converter1;
         private readonly Converter<T2> converter2;

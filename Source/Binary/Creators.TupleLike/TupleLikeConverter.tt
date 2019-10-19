@@ -8,6 +8,11 @@ namespace Mikodev.Binary.Creators.TupleLike
     using Mikodev.Binary.Internal;
     using System;
     using System.Collections.Generic;
+
+    internal abstract class TupleLikeConverter<T> : Converter<T>
+    {
+        protected TupleLikeConverter(int length) : base(length) { }
+    }
 <#
 static IEnumerable<T> Map<T>(int start, int count, Func<int, T> func) => Enumerable.Range(start, count).Select(func);
 var members = new List<string>(Map(1, 7, x => $"Item{x}")) { "Rest" }.ToArray();
@@ -28,7 +33,7 @@ foreach (var (from, to, prefix, member) in jobs)
         var typeConstraints = prefix == "ValueTuple" && i == 8 ? " where T8 : struct" : "";
 #>
 
-    internal sealed class <#= prefix #>Converter<<#= typeArguments #>> : Converter<<#= typeName #>><#= typeConstraints #>
+    internal sealed class <#= prefix #>Converter<<#= typeArguments #>> : TupleLikeConverter<<#= typeName #>><#= typeConstraints #>
     {
 <#
         for (var k = 1; k <= i; k++)

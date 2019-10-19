@@ -47,7 +47,7 @@ let test<'T> (item : 'T) =
     Assert.Equal(ra, rb)
     ()
 
-let testWithMark<'T> (item : 'T) =
+let testAuto<'T> (item : 'T) =
     let mutable aa = new Allocator()
     let mutable ab = new Allocator()
     let ca = generator.GetConverter<'T>()
@@ -95,10 +95,10 @@ let ``Interface Method 'Encode' And 'Decode'`` () =
 
 [<Fact>]
 let ``Interface Method 'EncodeAuto' And 'DecodeAuto'`` () =
-    testWithMark<int> 4096
-    testWithMark<string> null
-    testWithMark<string> "8192"
-    testWithMark<Uri> null
+    testAuto<int> 4096
+    testAuto<string> null
+    testAuto<string> "8192"
+    testAuto<Uri> null
     ()
 
 [<Fact>]
@@ -162,4 +162,35 @@ let ``To Value With Length Prefix (length prefix bytes invalid)`` () =
     let error = Assert.Throws<ArgumentException>(fun () ->
         let mutable span = ReadOnlySpan bytes in converter.DecodeWithLengthPrefix(&span) |> ignore)
     Assert.Equal(message, error.Message)
+    ()
+
+type CustomConverterWithLength<'T>(length : int) =
+    inherit Converter<'T>(length)
+
+    override __.Encode(_, _) = raise (NotSupportedException("Text a"))
+
+    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException("Text b"))
+
+    override __.EncodeWithLengthPrefix(_, _) = raise (NotSupportedException("Text c"))
+
+    override __.DecodeWithLengthPrefix _ = raise (NotSupportedException("Text d"))
+
+[<Theory>]
+[<InlineData(1)>]
+[<InlineData(2)>]
+let ``Auto Method For Constant Length Converter`` (length : int) =
+    let converter = CustomConverterWithLength<int> length
+    let alpha = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = Allocator() in converter.EncodeAuto(&allocator, 0))
+    let bravo = Assert.Throws<NotSupportedException>(fun () -> let mutable span = ReadOnlySpan (Array.empty<byte>) in converter.DecodeAuto &span |> ignore)
+    Assert.Equal("Text a", alpha.Message)
+    Assert.Equal("Text b", bravo.Message)
+    ()
+
+[<Fact>]
+let ``Auto Method For Variable Length Converter`` () =
+    let converter = CustomConverterWithLength<int> 0
+    let alpha = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = Allocator() in converter.EncodeAuto(&allocator, 0))
+    let bravo = Assert.Throws<NotSupportedException>(fun () -> let mutable span = ReadOnlySpan (Array.empty<byte>) in converter.DecodeAuto &span |> ignore)
+    Assert.Equal("Text c", alpha.Message)
+    Assert.Equal("Text d", bravo.Message)
     ()

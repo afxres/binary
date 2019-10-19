@@ -76,7 +76,6 @@ namespace Mikodev.Binary.Tests
             var array = new[]
             {
                 "Mikodev.Binary",
-                "Mikodev.Binary.Abstractions",
                 "Mikodev.Binary.Attributes",
             };
             var types = typeof(Converter).Assembly.GetTypes().ToHashSet();
