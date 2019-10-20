@@ -1,7 +1,7 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Creators.Endianness
@@ -10,7 +10,7 @@ namespace Mikodev.Binary.Creators.Endianness
     {
         public OriginalEndiannessConverter() : base(Memory.SizeOf<T>())
         {
-            Debug.Assert(typeof(T) == typeof(Guid) || new List<int> { 1, 2, 4, 8 }.Contains(Memory.SizeOf<T>()));
+            Debug.Assert(typeof(T) == typeof(Guid) || new[] { 1, 2, 4, 8 }.Contains(Memory.SizeOf<T>()));
         }
 
         public override void Encode(ref Allocator allocator, T item)
@@ -57,13 +57,13 @@ namespace Mikodev.Binary.Creators.Endianness
                 goto fail;
             var length = PrimitiveHelper.DecodeNumber(ref location, prefixLength);
             if (length < Memory.SizeOf<T>())
-                ThrowHelper.ThrowNotEnoughBytes();
+                goto fail;
             // check bounds via slice method
             span = span.Slice(prefixLength + length);
             return Memory.Get<T>(ref Memory.Add(ref location, prefixLength));
 
         fail:
-            ThrowHelper.ThrowNumberInvalidBytes();
+            ThrowHelper.ThrowNotEnoughBytes();
             throw null;
         }
 

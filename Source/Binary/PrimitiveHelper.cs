@@ -1,5 +1,6 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -13,83 +14,90 @@ namespace Mikodev.Binary
          * 0b00xx_xxxx variable length 1 bytes */
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int EncodeNumberLength(int number)
+        internal static int EncodeNumberLength(uint number)
         {
-            if (((uint)number & 0xFFFF_FFC0U) == 0)
+            Debug.Assert(number >= 0 && number <= int.MaxValue);
+            if (number < 0x40)
                 return 1;
-            else if (((uint)number & 0xFFFF_C000U) == 0)
+            if (number < 0x4000)
                 return 2;
             else
                 return 4;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EncodeNumber(ref byte location, int numberLength, int number)
+        internal static int DecodeNumberLength(byte header)
         {
-            var data = (uint)number;
-            if (numberLength == 1)
+            if ((header & 0x80) != 0)
+                return 4;
+            if ((header & 0x40) != 0)
+                return 2;
+            else
+                return 1;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void EncodeNumberFixed4(ref byte location, uint number)
+        {
+            Debug.Assert(number >= 0 && number <= int.MaxValue);
+            Memory.Add(ref location, 0) = (byte)((number >> 24) | 0x80);
+            Memory.Add(ref location, 1) = (byte)(number >> 16);
+            Memory.Add(ref location, 2) = (byte)(number >> 8);
+            Memory.Add(ref location, 3) = (byte)number;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void EncodeNumber(ref byte location, int length, uint number)
+        {
+            Debug.Assert(number >= 0 && number <= int.MaxValue);
+            Debug.Assert(length == 1 || length == 2 || length == 4);
+            if (length == 1)
             {
-                Memory.Add(ref location, 0) = (byte)data;
+                Memory.Add(ref location, 0) = (byte)number;
             }
-            else if (numberLength == 2)
+            else if (length == 2)
             {
-                Memory.Add(ref location, 0) = (byte)((data >> 8) | 0x40);
-                Memory.Add(ref location, 1) = (byte)data;
+                Memory.Add(ref location, 0) = (byte)((number >> 8) | 0x40);
+                Memory.Add(ref location, 1) = (byte)number;
             }
             else
             {
-                Memory.Add(ref location, 0) = (byte)((data >> 24) | 0x80);
-                Memory.Add(ref location, 1) = (byte)(data >> 16);
-                Memory.Add(ref location, 2) = (byte)(data >> 8);
-                Memory.Add(ref location, 3) = (byte)data;
+                EncodeNumberFixed4(ref location, number);
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static int DecodeNumber(ref byte location, int length)
+        {
+            Debug.Assert(length == 1 || length == 2 || length == 4);
+            if (length == 1)
+                return location & 0x3F;
+            if (length == 2)
+                return ((location & 0x3F) << 8) | Memory.Add(ref location, 1);
+            else
+                return ((location & 0x7F) << 24) | (Memory.Add(ref location, 1) << 16) | (Memory.Add(ref location, 2) << 8) | Memory.Add(ref location, 3);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EncodeNumber(ref Allocator allocator, int number)
         {
-            if (((uint)number & 0x8000_0000U) != 0)
-                ThrowHelper.ThrowNumberOverflow();
-            var numberLength = EncodeNumberLength(number);
-            ref var location = ref allocator.AllocateReference(numberLength);
-            EncodeNumber(ref location, numberLength, number);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int DecodeNumberLength(byte header)
-        {
-            if ((header & 0x80) != 0)
-                return 4;
-            else if ((header & 0x40) != 0)
-                return 2;
-            else
-                return 1;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int DecodeNumber(ref byte location, int numberLength)
-        {
-            if (numberLength == 4)
-                return ((location & 0x7F) << 24) | (Memory.Add(ref location, 1) << 16) | (Memory.Add(ref location, 2) << 8) | Memory.Add(ref location, 3);
-            if (numberLength == 2)
-                return ((location & 0x3F) << 8) | Memory.Add(ref location, 1);
-            return location & 0x3F;
+            if (number < 0)
+                ThrowHelper.ThrowNumberNegative();
+            var length = EncodeNumberLength((uint)number);
+            ref var location = ref allocator.AllocateReference(length);
+            EncodeNumber(ref location, length, (uint)number);
         }
 
         public static int DecodeNumber(ref ReadOnlySpan<byte> span)
         {
             var spanLength = span.Length;
             if (spanLength == 0)
-                goto fail;
+                ThrowHelper.ThrowNotEnoughBytes();
             ref var location = ref MemoryMarshal.GetReference(span);
-            var numberLength = DecodeNumberLength(location);
+            var length = DecodeNumberLength(location);
             // check bounds via slice method
-            span = span.Slice(numberLength);
-            return DecodeNumber(ref location, numberLength);
-
-        fail:
-            ThrowHelper.ThrowNumberInvalidBytes();
-            throw null;
+            span = span.Slice(length);
+            return DecodeNumber(ref location, length);
         }
     }
 }

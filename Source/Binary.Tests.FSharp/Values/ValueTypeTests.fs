@@ -51,9 +51,11 @@ let testWithLengthPrefix (value : 'a) (size : int) =
     converter.EncodeWithLengthPrefix(&allocator, value)
     let buffer = allocator.ToArray()
 
-    let prefixLength = PrimitiveHelper.DecodeNumberLength(buffer.[0])
-    Assert.Equal(size + prefixLength, buffer.Length)
-    Assert.Equal<byte>(bufferOrigin, buffer |> Array.skip prefixLength)
+    let mutable span = ReadOnlySpan buffer
+    let length = PrimitiveHelper.DecodeNumber &span
+    Assert.Equal(size, length)
+    Assert.Equal(size, span.Length)
+    Assert.Equal<byte>(bufferOrigin, span.ToArray())
 
     let mutable span = ReadOnlySpan buffer
     let result = converter.DecodeWithLengthPrefix(&span)

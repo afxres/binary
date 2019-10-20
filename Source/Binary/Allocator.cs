@@ -73,18 +73,19 @@ namespace Mikodev.Binary
             var encoding = Converter.Encoding;
             var charCount = span.Length;
             ref var chars = ref MemoryMarshal.GetReference(span);
-            var maxByteCount = StringHelper.GetMaxByteCountByteCount(encoding, ref chars, charCount);
+            var maxByteCount = StringHelper.GetMaxByteCountOrByteCount(encoding, ref chars, charCount);
             if (!withLengthPrefix && maxByteCount == 0)
                 return;
-            var prefixLength = withLengthPrefix ? PrimitiveHelper.EncodeNumberLength(maxByteCount) : 0;
+            var prefixLength = withLengthPrefix ? PrimitiveHelper.EncodeNumberLength((uint)maxByteCount) : 0;
             var offset = cursor;
             var target = Ensure(offset, maxByteCount + prefixLength);
             var length = maxByteCount == 0 ? 0 : encoding.GetBytes(ref target[offset + prefixLength], maxByteCount, ref chars, charCount);
             if (withLengthPrefix)
-                PrimitiveHelper.EncodeNumber(ref target[offset], prefixLength, length);
+                PrimitiveHelper.EncodeNumber(ref target[offset], prefixLength, (uint)length);
             cursor = offset + length + prefixLength;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void AppendBuffer(byte[] item)
         {
             Debug.Assert(item != null && item.Length != 0);
@@ -98,7 +99,7 @@ namespace Mikodev.Binary
         internal void LengthPrefixAnchor(out int anchor)
         {
             var offset = cursor;
-            var _ = Ensure(offset, sizeof(int));
+            _ = Ensure(offset, sizeof(int));
             var before = offset + sizeof(int);
             cursor = before;
             anchor = before;
@@ -109,10 +110,11 @@ namespace Mikodev.Binary
         {
             Debug.Assert(anchor >= sizeof(int));
             var target = buffer;
-            // check array length only (for performance reason, ignore maximum capacity)
+            // check upper bounds (for performance reason, ignore maximum capacity)
             if (target == null || target.Length < anchor)
                 ThrowHelper.ThrowAllocatorModified();
-            PrimitiveHelper.EncodeNumber(ref target[anchor - sizeof(int)], sizeof(int), cursor - anchor);
+            // check lower bounds via clr
+            PrimitiveHelper.EncodeNumberFixed4(ref target[anchor - sizeof(int)], (uint)(cursor - anchor));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -140,7 +142,7 @@ namespace Mikodev.Binary
         public Allocator(byte[] buffer, int maxCapacity)
         {
             if (maxCapacity < 0)
-                ThrowHelper.ThrowArgumentOutOfRange(nameof(maxCapacity));
+                ThrowHelper.ThrowAllocatorMaxCapacityInvalid();
             this.buffer = buffer;
             cursor = 0;
             higher = Math.Min(buffer == null ? 0 : buffer.Length, maxCapacity);

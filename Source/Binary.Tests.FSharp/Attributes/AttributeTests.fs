@@ -14,7 +14,7 @@ type Int32AsStringConverter() =
     override __.Encode(allocator, item) =
         let text = string item
         let span = text.AsSpan()
-        PrimitiveHelper.EncodeString(&allocator, &span, Converter.Encoding)
+        PrimitiveHelper.EncodeString(&allocator, &span)
 
     override __.Decode (span : inref<ReadOnlySpan<byte>>) =
         let text = Encoding.UTF8.GetString(span)
@@ -27,7 +27,7 @@ type Int64AsStringConverter() =
     override __.Encode(allocator, item) =
         let text = string item
         let span = text.AsSpan()
-        PrimitiveHelper.EncodeString(&allocator, &span, Converter.Encoding)
+        PrimitiveHelper.EncodeString(&allocator, &span)
 
     override __.Decode (span : inref<ReadOnlySpan<byte>>) =
         let text = Encoding.UTF8.GetString(span)

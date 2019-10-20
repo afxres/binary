@@ -134,8 +134,9 @@ let ``Valid Converter Length`` (length : int) =
 [<InlineData(-1)>]
 [<InlineData(-65)>]
 let ``Invalid Converter Length`` (length : int) =
-    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () -> new CustomConverter<obj>(length) |> ignore)
-    Assert.Equal("length", error.ParamName)
+    let error = Assert.Throws<ArgumentException>(fun () -> new CustomConverter<obj>(length) |> ignore)
+    Assert.Null(error.ParamName)
+    Assert.Equal("Converter length must be greater than or equal to zero!", error.Message)
     ()
 
 type CustomConverterWithInvalidAllocation<'T>(length : int) =
@@ -157,7 +158,7 @@ let ``Invalid Converter Allocation`` (length : int) =
 [<Fact>]
 let ``To Value With Length Prefix (length prefix bytes invalid)`` () =
     let converter = generator.GetConverter<byte[]>()
-    let message = "Decode number bytes invalid."
+    let message = "Not enough bytes."
     let bytes = Array.zeroCreate<byte> 0
     let error = Assert.Throws<ArgumentException>(fun () ->
         let mutable span = ReadOnlySpan bytes in converter.DecodeWithLengthPrefix(&span) |> ignore)

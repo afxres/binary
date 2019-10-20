@@ -125,10 +125,11 @@ let ``Constructor (argument null)`` () =
 [<InlineData(-1)>]
 [<InlineData(-255)>]
 let ``Constructor (argument out of range)`` (limits : int) =
-    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
+    let error = Assert.Throws<ArgumentException>(fun () ->
         let _ = new Allocator(Array.empty, limits)
         ())
-    Assert.Equal("maxCapacity", error.ParamName)
+    Assert.Null(error.ParamName)
+    Assert.Equal("Allocator max capacity must be greater than or equal to zero!", error.Message)
     ()
 
 [<Theory>]

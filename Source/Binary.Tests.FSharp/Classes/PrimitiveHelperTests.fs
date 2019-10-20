@@ -10,7 +10,7 @@ let random = Random()
 let generator = Generator()
 
 [<Fact>]
-let ``Encode From 0 To 63`` () =
+let ``Encode Number From 0 To 63`` () =
     let buffer = Array.zeroCreate<byte> 1
     for i = 0 to 63 do
         let mutable allocator = Allocator(buffer)
@@ -21,7 +21,7 @@ let ``Encode From 0 To 63`` () =
     ()
 
 [<Fact>]
-let ``Encode From 64 To 16383`` () =
+let ``Encode Number From 64 To 16383`` () =
     let buffer = Array.zeroCreate<byte> 2
     for i = 64 to 16383 do
         let mutable allocator = Allocator(buffer)
@@ -37,7 +37,7 @@ let ``Encode From 64 To 16383`` () =
 [<InlineData(0x0000_8642)>]
 [<InlineData(0x00AB_CDEF)>]
 [<InlineData(0x7FFF_FFFF)>]
-let ``Encode From 16384`` (i : int) =
+let ``Encode Number From 16384`` (i : int) =
     let buffer = Array.zeroCreate<byte> 4
     let mutable allocator = Allocator(buffer)
     PrimitiveHelper.EncodeNumber(&allocator, i)
@@ -49,21 +49,51 @@ let ``Encode From 16384`` (i : int) =
     Assert.Equal((i >>> 0) |> byte, span.[3])
     ()
 
+[<Theory>]
+[<InlineData(0, 1)>]
+[<InlineData(63, 1)>]
+[<InlineData(64, 2)>]
+[<InlineData(16383, 2)>]
+[<InlineData(16384, 4)>]
+[<InlineData(Int32.MaxValue, 4)>]
+let ``Encode Number Then Decode`` (number : int, length : int) =
+    let mutable allocator = Allocator()
+    PrimitiveHelper.EncodeNumber(&allocator, number)
+    let mutable span = allocator.AsSpan()
+    Assert.Equal(length, span.Length)
+
+    let result = PrimitiveHelper.DecodeNumber(&span)
+    Assert.Equal(number, result)
+    Assert.True(span.IsEmpty)
+    ()
+
+[<Theory>]
+[<InlineData(-1)>]
+[<InlineData(Int32.MinValue)>]
+let ``Encode Number (overflow)`` (number : int) =
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable allocator = Allocator()
+        PrimitiveHelper.EncodeNumber(&allocator, number))
+    Assert.Null(error.ParamName)
+    Assert.Equal("Encode number can not be negative!", error.Message)
+    ()
+
 [<Fact>]
-let ``Encode Then Decode From 0 To 65536`` () =
-    let buffer = Array.zeroCreate<byte> 4
-    for i = 0 to 65536 do
-        let mutable allocator = Allocator(buffer)
-        PrimitiveHelper.EncodeNumber(&allocator, i)
-        let mutable span = allocator.AsSpan()
-        if i <= 0x3F then
-            Assert.Equal(1, span.Length)
-        elif i <= 0x3FFF then
-            Assert.Equal(2, span.Length)
-        else
-            Assert.Equal(4, span.Length)
-        let result = PrimitiveHelper.DecodeNumber(&span)
-        Assert.Equal(i, result)
+let ``Decode Number (empty bytes)`` () =
+    let error = Assert.Throws<ArgumentException>(fun () -> let mutable span = ReadOnlySpan<byte>() in PrimitiveHelper.DecodeNumber(&span) |> ignore)
+    Assert.Equal("Not enough bytes.", error.Message)
+    ()
+
+[<Fact>]
+let ``Decode Number (not enough bytes)`` () =
+    let test (bytes : byte array) =
+        let error = Assert.Throws<ArgumentOutOfRangeException>(fun () -> let mutable span = ReadOnlySpan<byte> bytes in PrimitiveHelper.DecodeNumber(&span) |> ignore)
+        Assert.Contains("ReadOnlySpan`1.Slice", error.StackTrace)
+        ()
+    
+    test [| 64uy |]
+    test [| 128uy; 0uy |]
+    test [| 128uy; 0uy; 0uy |]
     ()
 
 // string methods ↓↓↓
@@ -71,25 +101,73 @@ let ``Encode Then Decode From 0 To 65536`` () =
 [<Theory>]
 [<InlineData("The quick brown fox ...")>]
 [<InlineData("今日はいい天気ですね")>]
-let ``Encode String`` (text : string) =
+let ``Encode String Then Decode`` (text : string) =
     let mutable allocator = new Allocator()
     let span = text.AsSpan()
-    PrimitiveHelper.EncodeString(&allocator, &span, Converter.Encoding)
+    PrimitiveHelper.EncodeString(&allocator, &span)
     let buffer = allocator.ToArray()
-    let result = Converter.Encoding.GetString buffer
+    let target = Converter.Encoding.GetBytes text
+    Assert.Equal<byte>(buffer, target)
+
+    let span = allocator.AsSpan()
+    let result = PrimitiveHelper.DecodeString &span
     Assert.Equal(text, result)
     ()
 
 [<Theory>]
 [<InlineData("one two three four five")>]
 [<InlineData("今晚打老虎")>]
-let ``Encode String (unicode)`` (text : string) =
+let ``Encode String Then Decode (unicode)`` (text : string) =
     let mutable allocator = new Allocator()
     let span = text.AsSpan()
     PrimitiveHelper.EncodeString(&allocator, &span, Encoding.Unicode)
     let buffer = allocator.ToArray()
-    let result = Encoding.Unicode.GetBytes text
-    Assert.Equal<byte>(buffer, result)
+    let target = Encoding.Unicode.GetBytes text
+    Assert.Equal<byte>(buffer, target)
+
+    let span = allocator.AsSpan()
+    let result = PrimitiveHelper.DecodeString(&span, Encoding.Unicode)
+    Assert.Equal(text, result)
+    ()
+
+[<Theory>]
+[<InlineData("Hello, world!")>]
+[<InlineData("你好, 世界!")>]
+let ``Encode String Then Decode (with length prefix)`` (text : string) =
+    let mutable allocator = Allocator()
+    let span = text.AsSpan()
+    PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, &span)
+    let mutable span = allocator.AsSpan()
+    let target = Converter.Encoding.GetBytes text
+    let length = PrimitiveHelper.DecodeNumber(&span)
+    Assert.Equal(target.Length, length)
+    Assert.Equal(target.Length, span.Length)
+    Assert.Equal<byte>(target, span.ToArray())
+
+    let mutable span = allocator.AsSpan()
+    let result = PrimitiveHelper.DecodeStringWithLengthPrefix(&span)
+    Assert.True(span.IsEmpty)
+    Assert.Equal(text, result)
+    ()
+
+[<Theory>]
+[<InlineData("Hello, world!")>]
+[<InlineData("你好, 世界!")>]
+let ``Encode String Then Decode (with length prefix, unicode)`` (text : string) =
+    let mutable allocator = Allocator()
+    let span = text.AsSpan()
+    PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, &span, Encoding.Unicode)
+    let mutable span = allocator.AsSpan()
+    let target = Encoding.Unicode.GetBytes text
+    let length = PrimitiveHelper.DecodeNumber(&span)
+    Assert.Equal(target.Length, length)
+    Assert.Equal(target.Length, span.Length)
+    Assert.Equal<byte>(target, span.ToArray())
+
+    let mutable span = allocator.AsSpan()
+    let result = PrimitiveHelper.DecodeStringWithLengthPrefix(&span, Encoding.Unicode)
+    Assert.True(span.IsEmpty)
+    Assert.Equal(text, result)
     ()
 
 [<Fact>]
@@ -127,11 +205,14 @@ let ``Encode String With Length Prefix (random)`` () =
         let span = text.AsSpan()
         PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, &span)
         let buffer = allocator.ToArray()
-        let prefixLength = PrimitiveHelper.DecodeNumberLength(buffer.[0])
-        let result = encoding.GetString (Array.skip prefixLength buffer)
         let mutable span = ReadOnlySpan buffer
+        let length = PrimitiveHelper.DecodeNumber(&span)
+        let result = encoding.GetString (span.ToArray())
+        let prefixLength = buffer.Length - length
+        Assert.True(prefixLength > 0)
+        Assert.Equal(i, span.Length)
+        Assert.Equal(i, length)
         Assert.Equal(text, result)
-        Assert.Equal(i, PrimitiveHelper.DecodeNumber(&span))
 #if DEBUG
         let capacity = if i <= 64 then encoding.GetMaxByteCount(i) else i
         Assert.Equal(capacity + prefixLength, allocator.Capacity)
@@ -149,11 +230,29 @@ let ``Encode String (encoding null)`` () =
     ()
 
 [<Fact>]
-let ``Encode String With Length Prefix (encoding null)`` () =
+let ``Encode String (with length prefix, encoding null)`` () =
     let error = Assert.Throws<ArgumentNullException>(fun () ->
         let mutable allocator = new Allocator()
         let span = String.Empty.AsSpan()
         PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, &span, null)
+        ())
+    Assert.Equal("encoding", error.ParamName)
+    ()
+
+[<Fact>]
+let ``Decode String (encoding null)`` () =
+    let error = Assert.Throws<ArgumentNullException>(fun () ->
+        let span = ReadOnlySpan Array.empty<byte>
+        PrimitiveHelper.DecodeString(&span, null) |> ignore
+        ())
+    Assert.Equal("encoding", error.ParamName)
+    ()
+
+[<Fact>]
+let ``Decode String (with length prefix, encoding null)`` () =
+    let error = Assert.Throws<ArgumentNullException>(fun () ->
+        let mutable span = ReadOnlySpan Array.empty<byte>
+        PrimitiveHelper.DecodeStringWithLengthPrefix(&span, null) |> ignore
         ())
     Assert.Equal("encoding", error.ParamName)
     ()

@@ -33,7 +33,7 @@ namespace Mikodev.Binary.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int GetMaxByteCountByteCount(Encoding encoding, ref char chars, int charCount)
+        internal static int GetMaxByteCountOrByteCount(Encoding encoding, ref char chars, int charCount)
         {
             Debug.Assert(encoding == Converter.Encoding);
             Debug.Assert(charCount >= 0);

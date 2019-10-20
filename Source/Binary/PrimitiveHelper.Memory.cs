@@ -33,7 +33,7 @@ namespace Mikodev.Binary
             return result;
 
         fail:
-            ThrowHelper.ThrowNumberInvalidBytes();
+            ThrowHelper.ThrowNotEnoughBytes();
             throw null;
         }
     }
