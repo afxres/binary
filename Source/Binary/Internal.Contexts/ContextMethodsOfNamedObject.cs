@@ -23,15 +23,15 @@ namespace Mikodev.Binary.Internal.Contexts
             if (dictionary == null)
                 dictionary = metadata.Select(x => x.Property).ToDictionary(x => x, x => x.Name);
             Debug.Assert(dictionary.OrderBy(x => x.Value).Select(x => x.Key).SequenceEqual(metadata.Select(x => x.Property)));
-            var toBytes = GetToBytesDelegateAsNamedObject(type, metadata, dictionary, cache);
-            var toValue = GetToValueDelegateAsNamedObject(type, metadata, constructor, indexes);
+            var encode = GetEncodeDelegateAsNamedObject(type, metadata, dictionary, cache);
+            var decode = GetDecodeDelegateAsNamedObject(type, metadata, constructor, indexes);
             var buffers = metadata.Select(x => dictionary[x.Property]).Select(x => new KeyValuePair<string, byte[]>(x, cache.GetBuffer(x))).ToArray();
-            var converterArguments = new object[] { toBytes, toValue, buffers };
+            var converterArguments = new object[] { encode, decode, buffers };
             var converter = Activator.CreateInstance(typeof(NamedObjectConverter<>).MakeGenericType(type), converterArguments);
             return (Converter)converter;
         }
 
-        private static Delegate GetToBytesDelegateAsNamedObject(Type type, MetaList metadata, NameDictionary dictionary, ContextTextCache cache)
+        private static Delegate GetEncodeDelegateAsNamedObject(Type type, MetaList metadata, NameDictionary dictionary, ContextTextCache cache)
         {
             var item = Expression.Parameter(type, "item");
             var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
@@ -52,7 +52,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        private static Delegate GetToValueDelegateAsNamedObject(Type type, MetaList metadata, ConstructorInfo constructor, ItemIndexes indexes)
+        private static Delegate GetDecodeDelegateAsNamedObject(Type type, MetaList metadata, ConstructorInfo constructor, ItemIndexes indexes)
         {
             (ParameterExpression, Expression[]) Initialize()
             {
@@ -73,8 +73,8 @@ namespace Mikodev.Binary.Internal.Contexts
                 return null;
             var delegateType = typeof(ToNamedObject<>).MakeGenericType(type);
             return constructor == null
-                ? ContextMethods.GetToValueDelegateUseProperties(delegateType, Initialize, metadata, type)
-                : ContextMethods.GetToValueDelegateUseConstructor(delegateType, Initialize, metadata, indexes, constructor);
+                ? ContextMethods.GetDecodeDelegateUseProperties(delegateType, Initialize, metadata, type)
+                : ContextMethods.GetDecodeDelegateUseConstructor(delegateType, Initialize, metadata, indexes, constructor);
         }
     }
 }

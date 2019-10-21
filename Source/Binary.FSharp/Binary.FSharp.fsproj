@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <AssemblyName>Mikodev.Binary.FSharp</AssemblyName>
+    <RootNamespace>Mikodev.Binary</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Mikodev</Authors>
+    <Company>Mikodev</Company>
+    <Copyright>Mikodev 2019</Copyright>
+    <Product>Mikodev.Binary</Product>
+    <Version>5.0.0-alpha01</Version>
+    <PackageTags>binary dynamic serializer serialization fsharp</PackageTags>
+    <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Creators.Collections\SetConverter.fs" />
+    <Compile Include="Creators.Collections\MapConverter.fs" />
+    <Compile Include="Creators.Collections\ListConverter.fs" />
+    <Compile Include="Creators.Collections\CollectionConverterCreator.fs" />
+    <Compile Include="GeneratorBuilderExtensions.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Binary\Binary.csproj" />
+  </ItemGroup>
+
+</Project>

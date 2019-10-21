@@ -24,7 +24,7 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             var typeArguments = new[] { type, itemType };
             var enumerableType = typeof(IEnumerable<>).MakeGenericType(itemType);
-            var constructor = GetToValueDelegateAsEnumerable(type, enumerableType, typeof(ToCollection<,>).MakeGenericType(typeArguments));
+            var constructor = GetDecodeDelegateAsEnumerable(type, enumerableType, typeof(ToCollection<,>).MakeGenericType(typeArguments));
             var reverse = type.IsGenericType && reverseTypes.Contains(type.GetGenericTypeDefinition());
             var converterType = typeof(GenericCollectionConverter<,>).MakeGenericType(typeArguments);
             var converterArguments = new object[] { constructor, context.GetConverter(itemType), reverse };
@@ -36,7 +36,7 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             var typeArguments = new[] { type, types[0], types[1] };
             var dictionaryType = typeof(IDictionary<,>).MakeGenericType(types);
-            var constructor = GetToValueDelegateAsEnumerable(type, dictionaryType, typeof(ToDictionary<,,>).MakeGenericType(typeArguments));
+            var constructor = GetDecodeDelegateAsEnumerable(type, dictionaryType, typeof(ToDictionary<,,>).MakeGenericType(typeArguments));
             var itemConverter = context.GetConverter(itemType);
             var converterType = typeof(GenericDictionaryConverter<,,>).MakeGenericType(typeArguments);
             var converterArguments = new object[] { constructor, itemConverter, };
@@ -44,7 +44,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return (Converter)converter;
         }
 
-        private static Delegate GetToValueDelegateAsEnumerable(Type type, Type enumerableType, Type delegateType)
+        private static Delegate GetDecodeDelegateAsEnumerable(Type type, Type enumerableType, Type delegateType)
         {
             if (type.IsAbstract || type.IsInterface)
                 return null;

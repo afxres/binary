@@ -20,7 +20,6 @@ namespace Mikodev.Binary.Internal.Extensions
 
         internal static bool IsByRefLike(this Type type)
         {
-            Debug.Assert(type != null);
             if (!type.IsValueType)
                 return false;
             var attributes = type.GetCustomAttributes();

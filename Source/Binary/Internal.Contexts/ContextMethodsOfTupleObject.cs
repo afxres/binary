@@ -14,17 +14,17 @@ namespace Mikodev.Binary.Internal.Contexts
     {
         internal static Converter GetConverterAsTupleObject(Type type, ConstructorInfo constructor, ItemIndexes indexes, MetaList metadata)
         {
-            var toBytes = GetToBytesDelegateAsTupleObject(type, metadata, isAuto: false);
-            var toValue = GetToValueDelegateAsTupleObject(type, metadata, constructor, indexes, isAuto: false);
-            var toBytesWith = GetToBytesDelegateAsTupleObject(type, metadata, isAuto: true);
-            var toValueWith = GetToValueDelegateAsTupleObject(type, metadata, constructor, indexes, isAuto: true);
+            var encode = GetEncodeDelegateAsTupleObject(type, metadata, isAuto: false);
+            var decode = GetDecodeDelegateAsTupleObject(type, metadata, constructor, indexes, isAuto: false);
+            var encodeWith = GetEncodeDelegateAsTupleObject(type, metadata, isAuto: true);
+            var decodeWith = GetDecodeDelegateAsTupleObject(type, metadata, constructor, indexes, isAuto: true);
             var converterLength = ContextMethods.GetConverterLength(type, metadata.Select(x => x.Converter).ToArray());
-            var converterArguments = new object[] { toBytes, toValue, toBytesWith, toValueWith, converterLength };
+            var converterArguments = new object[] { encode, decode, encodeWith, decodeWith, converterLength };
             var converter = Activator.CreateInstance(typeof(TupleObjectConverter<>).MakeGenericType(type), converterArguments);
             return (Converter)converter;
         }
 
-        private static Delegate GetToBytesDelegateAsTupleObject(Type type, MetaList metadata, bool isAuto)
+        private static Delegate GetEncodeDelegateAsTupleObject(Type type, MetaList metadata, bool isAuto)
         {
             var item = Expression.Parameter(type, "item");
             var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
@@ -34,7 +34,7 @@ namespace Mikodev.Binary.Internal.Contexts
             {
                 var (property, converter) = metadata[i];
                 var propertyExpression = Expression.Property(item, property);
-                var method = ContextMethods.GetToBytesMethodInfo(property.PropertyType, isAuto || i != metadata.Count - 1);
+                var method = ContextMethods.GetEncodeMethodInfo(property.PropertyType, isAuto || i != metadata.Count - 1);
                 expressions.Add(Expression.Call(Expression.Constant(converter), method, allocator, propertyExpression));
             }
             var delegateType = typeof(EncodeWith<>).MakeGenericType(type);
@@ -42,7 +42,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        private static Delegate GetToValueDelegateAsTupleObject(Type type, MetaList metadata, ConstructorInfo constructor, ItemIndexes indexes, bool isAuto)
+        private static Delegate GetDecodeDelegateAsTupleObject(Type type, MetaList metadata, ConstructorInfo constructor, ItemIndexes indexes, bool isAuto)
         {
             (ParameterExpression, Expression[]) Initialize()
             {
@@ -52,7 +52,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 for (var i = 0; i < metadata.Count; i++)
                 {
                     var (property, converter) = metadata[i];
-                    var method = ContextMethods.GetToValueMethodInfo(property.PropertyType, isAuto || i != metadata.Count - 1);
+                    var method = ContextMethods.GetDecodeMethodInfo(property.PropertyType, isAuto || i != metadata.Count - 1);
                     var invoke = Expression.Call(Expression.Constant(converter), method, span);
                     values[i] = invoke;
                 }
@@ -63,8 +63,8 @@ namespace Mikodev.Binary.Internal.Contexts
                 return null;
             var delegateType = typeof(DecodeWith<>).MakeGenericType(type);
             return constructor == null
-                ? ContextMethods.GetToValueDelegateUseProperties(delegateType, Initialize, metadata, type)
-                : ContextMethods.GetToValueDelegateUseConstructor(delegateType, Initialize, metadata, indexes, constructor);
+                ? ContextMethods.GetDecodeDelegateUseProperties(delegateType, Initialize, metadata, type)
+                : ContextMethods.GetDecodeDelegateUseConstructor(delegateType, Initialize, metadata, indexes, constructor);
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return (int)length;
         }
 
-        internal static MethodInfo GetToBytesMethodInfo(Type type, bool isAuto)
+        internal static MethodInfo GetEncodeMethodInfo(Type type, bool isAuto)
         {
             var converterType = typeof(Converter<>).MakeGenericType(type);
             var types = new[] { typeof(Allocator).MakeByRefType(), type };
@@ -32,7 +32,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return method;
         }
 
-        internal static MethodInfo GetToValueMethodInfo(Type type, bool isAuto)
+        internal static MethodInfo GetDecodeMethodInfo(Type type, bool isAuto)
         {
             var converterType = typeof(Converter<>).MakeGenericType(type);
             var types = new[] { typeof(ReadOnlySpan<byte>).MakeByRefType() };
@@ -93,7 +93,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return (constructor, array);
         }
 
-        internal static Delegate GetToValueDelegateUseProperties(Type delegateType, ItemInitializer initializer, MetaList metadata, Type type)
+        internal static Delegate GetDecodeDelegateUseProperties(Type delegateType, ItemInitializer initializer, MetaList metadata, Type type)
         {
             var item = Expression.Variable(type, "item");
             var expressions = new List<Expression> { Expression.Assign(item, Expression.New(type)) };
@@ -106,7 +106,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        internal static Delegate GetToValueDelegateUseConstructor(Type delegateType, ItemInitializer initializer, MetaList metadata, ItemIndexes indexes, ConstructorInfo constructor)
+        internal static Delegate GetDecodeDelegateUseConstructor(Type delegateType, ItemInitializer initializer, MetaList metadata, ItemIndexes indexes, ConstructorInfo constructor)
         {
             var expressions = new List<Expression>();
             var variables = metadata.Select((x, i) => Expression.Variable(x.Property.PropertyType, $"{i}")).ToList();
