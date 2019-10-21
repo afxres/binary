@@ -7,7 +7,7 @@ open Xunit
 
 let random = Random()
 
-let generator = GeneratorBuilder().AddDefaultConverterCreators().Build()
+let generator = Generator.CreateDefault()
 
 [<Fact>]
 let ``Encode Number From 0 To 63`` () =
@@ -88,9 +88,11 @@ let ``Decode Number (empty bytes)`` () =
 let ``Decode Number (not enough bytes)`` () =
     let test (bytes : byte array) =
         let error = Assert.Throws<ArgumentOutOfRangeException>(fun () -> let mutable span = ReadOnlySpan<byte> bytes in PrimitiveHelper.DecodeNumber(&span) |> ignore)
+#if DEBUG
         Assert.Contains("ReadOnlySpan`1.Slice", error.StackTrace)
+#endif
         ()
-    
+
     test [| 64uy |]
     test [| 128uy; 0uy |]
     test [| 128uy; 0uy; 0uy |]

@@ -48,7 +48,7 @@ type Delta =
 
     member this.B with get () = this.b and set value = this.b <- value
 
-let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
+let generator = Generator.CreateDefault()
 
 [<Fact>]
 let ``Class Via Constructor`` () =

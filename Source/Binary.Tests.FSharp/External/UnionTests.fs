@@ -5,8 +5,7 @@ open System
 open System.Reflection
 open Xunit
 
-let generator = GeneratorBuilder()
-                    .AddDefaultConverterCreators()
+let generator = Generator.CreateDefaultBuilder()
                     .AddFSharpConverterCreators()
                     .Build();
 

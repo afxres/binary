@@ -53,7 +53,7 @@ namespace Mikodev.Binary.Tests
         [Fact(DisplayName = "Multi Threads (Thread Static)")]
         public async Task MultiThreadsTestAsync()
         {
-            var generator = new GeneratorBuilder().AddDefaultConverterCreators().Build();
+            var generator = Generator.CreateDefault();
             const int count = 16;
             const int times = 1 << 10;
             var funcs = Enumerable.Range(0, count).Select(x => new Action(() =>

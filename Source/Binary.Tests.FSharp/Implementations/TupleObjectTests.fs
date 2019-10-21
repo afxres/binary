@@ -5,7 +5,7 @@ open Mikodev.Binary.Attributes
 open System
 open Xunit
 
-let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
+let generator = Generator.CreateDefault()
 
 type Raw<'a> = { data : 'a }
 
@@ -29,8 +29,7 @@ let ``Tuple Object Length (max value)`` () =
     let singleConverter = RawConverter<single>(0x3000_0000)
     let doubleConverter = RawConverter<double>(0x4FFF_FFFF)
     //let generator = new Generator(converters = [| singleConverter; doubleConverter |])
-    let generator = GeneratorBuilder()
-                        .AddDefaultConverterCreators()
+    let generator = Generator.CreateDefaultBuilder()
                         .AddConverter(singleConverter)
                         .AddConverter(doubleConverter)
                         .Build();
@@ -42,8 +41,7 @@ let ``Tuple Object Length (max value)`` () =
 let ``Tuple Object Length (overflow)`` () =
     let singleConverter = RawConverter<single>(0x2000_0000)
     let doubleConverter = RawConverter<double>(0x6000_0000)
-    let generator = GeneratorBuilder()
-                        .AddDefaultConverterCreators()
+    let generator = Generator.CreateDefaultBuilder()
                         .AddConverter(singleConverter)
                         .AddConverter(doubleConverter)
                         .Build();

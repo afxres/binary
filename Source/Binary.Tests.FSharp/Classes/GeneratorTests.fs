@@ -4,7 +4,7 @@ open Mikodev.Binary
 open System
 open Xunit
 
-let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
+let generator = Generator.CreateDefault()
 
 [<Fact>]
 let ``Get Converter (via type)`` () =
@@ -147,7 +147,7 @@ type BadConverterCreator () =
 
 [<Fact>]
 let ``Bad Creator`` () =
-    let generator = GeneratorBuilder().AddDefaultConverterCreators().AddConverterCreator(new BadConverterCreator()).Build()
+    let generator = Generator.CreateDefaultBuilder().AddConverterCreator(new BadConverterCreator()).Build()
     let error = Assert.Throws<InvalidOperationException>(fun () -> generator.GetConverter(typeof<BadType>) |> ignore)
     let message = sprintf "Invalid converter '%O', creator type: %O, expected converter item type: %O" (generator.GetConverter<int>().GetType()) typeof<BadConverterCreator> typeof<BadType>
     Assert.Equal(message, error.Message)
@@ -155,6 +155,6 @@ let ``Bad Creator`` () =
 
 [<Fact>]
 let ``To String (debug)`` () =
-    let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
+    let generator = Generator.CreateDefault()
     Assert.Matches(@"Generator\(Converters: 1, Creators: \d+\)", generator.ToString())
     ()

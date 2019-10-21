@@ -6,7 +6,7 @@ open Xunit
 
 let random = Random();
 
-let generator = GeneratorBuilder().AddDefaultConverterCreators().Build()
+let generator = Generator.CreateDefault()
 
 [<Fact>]
 let ``Allocate (zero)`` () =

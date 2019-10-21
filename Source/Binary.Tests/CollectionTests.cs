@@ -43,7 +43,7 @@ namespace Mikodev.Binary.Tests
             new object[] { new CollectionDelta<string>(), "via Enumerator" },
         };
 
-        private readonly IGenerator generator = new GeneratorBuilder().AddDefaultConverterCreators().Build();
+        private readonly IGenerator generator = Generator.CreateDefault();
 
         [Theory(DisplayName = "To Bytes Via 'ToArray()' Or Enumerator")]
         [MemberData(nameof(MemberData))]

@@ -4,8 +4,7 @@ open Mikodev.Binary
 open System.Net
 open Xunit
 
-let generator = GeneratorBuilder()
-                    .AddDefaultConverterCreators()
+let generator = Generator.CreateDefaultBuilder()
                     .AddFSharpConverterCreators()
                     .Build();
 

@@ -6,7 +6,7 @@ open System.Collections
 open System.Collections.Generic
 open Xunit
 
-let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
+let generator = Generator.CreateDefault()
 
 type CollectionT<'T>(item : 'T list) =
     interface IEnumerable<'T> with

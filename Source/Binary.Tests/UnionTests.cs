@@ -30,8 +30,7 @@ namespace Mikodev.Binary.Tests
             public int Tag => tag;
         }
 
-        private readonly IGenerator generator = new GeneratorBuilder()
-            .AddDefaultConverterCreators()
+        private readonly IGenerator generator = Generator.CreateDefaultBuilder()
             .AddFSharpConverterCreators()
             .Build();
 

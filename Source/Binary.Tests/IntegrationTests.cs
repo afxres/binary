@@ -6,7 +6,7 @@ namespace Mikodev.Binary.Tests
 {
     public class IntegrationTests
     {
-        private readonly IGenerator generator = new GeneratorBuilder().AddDefaultConverterCreators().Build();
+        private readonly IGenerator generator = Generator.CreateDefault();
 
         private readonly Random random = new Random();
 

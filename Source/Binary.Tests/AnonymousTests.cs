@@ -5,7 +5,7 @@ namespace Mikodev.Binary.Tests
 {
     public class AnonymousTests
     {
-        private readonly IGenerator generator = new GeneratorBuilder().AddDefaultConverterCreators().Build();
+        private readonly IGenerator generator = Generator.CreateDefault();
 
         [Fact(DisplayName = "Get Converter For Anonymous Type")]
         public void GetConverter()

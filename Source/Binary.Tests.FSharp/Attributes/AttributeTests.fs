@@ -488,7 +488,7 @@ type Tuple03<'T1, 'T2, 'T3>(item01 : 'T1, item02 : 'T2, item03 : 'T3) =
     member __.Item03 = item03
 
 type AttributeTests() =
-    let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
+    let generator = Generator.CreateDefault()
 
     [<Fact>]
     member __.``Attributes All Public & Sealed & Not Allow Multiple & Not Inherited`` () =

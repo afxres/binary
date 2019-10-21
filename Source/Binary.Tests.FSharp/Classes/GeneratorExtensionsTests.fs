@@ -5,7 +5,7 @@ open System
 open Xunit
 
 type GeneratorExtensionsTests() =
-    let generator = GeneratorBuilder().AddDefaultConverterCreators().Build()
+    let generator = Generator.CreateDefault()
 
     [<Fact>]
     member __.``As Token`` () =

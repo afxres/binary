@@ -5,8 +5,7 @@ open System
 open System.Net
 open Xunit
 
-let generator = GeneratorBuilder()
-                    .AddDefaultConverterCreators()
+let generator = Generator.CreateDefaultBuilder()
                     .AddFSharpConverterCreators()
                     .Build();
 
@@ -207,7 +206,7 @@ type FixConverter(length : int) =
 [<Fact>]
 let ``Tuple Length (overflow)`` () =
     let fixConverter = FixConverter(0x2000_0000) :> Converter
-    let fixGenerator = GeneratorBuilder().AddDefaultConverterCreators().AddConverter(fixConverter).Build()
+    let fixGenerator = Generator.CreateDefaultBuilder().AddConverter(fixConverter).Build()
     let alpha = fixGenerator.GetConverter<Fix * Fix>()
     let bravo = fixGenerator.GetConverter<struct (Fix * Fix * Fix)>()
     let errorAlpha = Assert.Throws<ArgumentException>(fun () -> fixGenerator.GetConverter<Fix * Fix * Fix * Fix>() |> ignore)

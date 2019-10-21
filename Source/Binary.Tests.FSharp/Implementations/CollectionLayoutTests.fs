@@ -5,7 +5,7 @@ open System
 open System.Collections.Generic
 open Xunit
 
-let generator = GeneratorBuilder().AddDefaultConverterCreators().Build()
+let generator = Generator.CreateDefault()
 
 type x () =
 
@@ -32,7 +32,7 @@ let test<'a> (name : string) (collection : 'a) =
 
 let testNull<'a when 'a : null> (name : string) (collection : 'a) =
     let converter = generator.GetConverter<'a>()
-    
+
     test name collection
 
     let delta = converter.Encode(null)

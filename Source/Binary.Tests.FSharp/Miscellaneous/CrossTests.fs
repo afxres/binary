@@ -12,8 +12,7 @@ type Group =
     | I4 of string * int16 * string * int64
 
 type CrossTests () =
-    let generator = GeneratorBuilder()
-                        .AddDefaultConverterCreators()
+    let generator = Generator.CreateDefaultBuilder()
                         .AddFSharpConverterCreators()
                         .Build();
 

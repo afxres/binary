@@ -4,7 +4,7 @@ open Mikodev.Binary
 open System
 open Xunit
 
-let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
+let generator = Generator.CreateDefault()
 
 type Person = { name : string; age : int }
 

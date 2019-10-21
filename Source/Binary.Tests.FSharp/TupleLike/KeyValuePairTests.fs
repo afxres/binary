@@ -5,7 +5,7 @@ open System
 open System.Collections.Generic
 open Xunit
 
-let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
+let generator = Generator.CreateDefault()
 
 let bytes<'a> (c : Converter<'a>) v =
     let mutable allocator = new Allocator()
@@ -96,8 +96,7 @@ type RawConverter<'a>(length : int) =
 let ``Key-Value Pair Length`` () =
     let singleConverter = RawConverter<single>(0x2000_0000) :> Converter
     let doubleConverter = RawConverter<double>(0x4000_0000) :> Converter
-    let generator = GeneratorBuilder()
-                        .AddDefaultConverterCreators()
+    let generator = Generator.CreateDefaultBuilder()
                         .AddConverter(singleConverter)
                         .AddConverter(doubleConverter)
                         .Build();
@@ -111,8 +110,7 @@ let ``Key-Value Pair Length`` () =
 let ``Key-Value Pair Length (max value)`` () =
     let doubleConverter = RawConverter<double>(0x4000_0000) :> Converter
     let stringConverter = RawConverter<string>(0x3FFF_FFFF) :> Converter
-    let generator = GeneratorBuilder()
-                        .AddDefaultConverterCreators()
+    let generator = Generator.CreateDefaultBuilder()
                         .AddConverter(doubleConverter)
                         .AddConverter(stringConverter)
                         .Build();
@@ -123,8 +121,7 @@ let ``Key-Value Pair Length (max value)`` () =
 [<Fact>]
 let ``Key-Value Pair Length (overflow)`` () =
     let doubleConverter = RawConverter<double>(0x4000_0000) :> Converter
-    let generator = GeneratorBuilder()
-                        .AddDefaultConverterCreators()
+    let generator = Generator.CreateDefaultBuilder()
                         .AddConverter(doubleConverter)
                         .Build();
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter<KeyValuePair<Raw<double>, Raw<double>>>() |> ignore)

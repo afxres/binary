@@ -1,5 +1,4 @@
-﻿using Mikodev.Binary.Internal.Contexts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Mikodev.Binary
@@ -29,6 +28,6 @@ namespace Mikodev.Binary
             return this;
         }
 
-        public IGenerator Build() => new Generator(converters.Values, creators);
+        public IGenerator Build() => new Internal.Contexts.Generator(converters.Values, creators);
     }
 }

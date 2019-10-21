@@ -37,7 +37,7 @@ type BadValueTypeWithOnlyIndexer =
     member __.Item with get (i : int) : string = String.Empty and set (i : int) (item : string) = ()
 
 type ThrowTests() =
-    let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
+    let generator = Generator.CreateDefault()
 
     member private __.Test<'a> () =
         let converter = generator.GetConverter<'a>()

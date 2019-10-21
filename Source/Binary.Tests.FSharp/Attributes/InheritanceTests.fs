@@ -5,7 +5,7 @@ open Mikodev.Binary.Attributes
 open System
 open Xunit
 
-let generator = GeneratorBuilder().AddDefaultConverterCreators().Build()
+let generator = Generator.CreateDefault()
 
 type Alpha () =
     [<TupleKey(0)>]

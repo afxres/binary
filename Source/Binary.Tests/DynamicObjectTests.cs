@@ -8,7 +8,7 @@ namespace Mikodev.Binary.Tests
 {
     public class DynamicObjectTests
     {
-        private readonly IGenerator generator = new GeneratorBuilder().AddDefaultConverterCreators().Build();
+        private readonly IGenerator generator = Generator.CreateDefault();
 
         [Fact(DisplayName = "Expando Object")]
         public void ExpandoObject()

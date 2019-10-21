@@ -35,7 +35,7 @@ namespace Mikodev.Binary.Tests
             public A Data { get; set; }
         }
 
-        private readonly IGenerator generator = new GeneratorBuilder().AddDefaultConverterCreators().Build();
+        private readonly IGenerator generator = Generator.CreateDefault();
 
         [Fact(DisplayName = "Linked List")]
         public void GetConverterForLinkedList()

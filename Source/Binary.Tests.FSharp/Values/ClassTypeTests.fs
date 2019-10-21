@@ -5,7 +5,7 @@ open System
 open System.Net
 open Xunit
 
-let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
+let generator = Generator.CreateDefault()
 
 let testWithSpan (value : 'a) =
     let bufferOrigin = generator.Encode value
