@@ -45,7 +45,7 @@ namespace Mikodev.Binary.CollectionAdapters
 
         public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
-            return builder.To(adapter, PrimitiveHelper.DecodeWithLengthPrefix(ref span));
+            return builder.To(adapter, PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
         }
     }
 }

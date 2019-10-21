@@ -4,21 +4,7 @@ open Mikodev.Binary
 open System
 open Xunit
 
-let generator = new Generator()
-
-[<Fact>]
-let ``Constructor (argument null or empty)`` () =
-    let test (generator : Generator) =
-        let source = struct (768, "data")
-        let buffer = generator.Encode source
-        let result = generator.Decode<struct (int * string)> buffer
-        Assert.Equal(source, result)
-
-    test(new Generator())
-    test(new Generator(null))
-    test(new Generator(Seq.empty<Converter>))
-    test(new Generator([ null ]))
-    ()
+let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
 
 [<Fact>]
 let ``Get Converter (via type)`` () =
@@ -73,15 +59,6 @@ let ``Get Converter (generic type parameter)`` () =
     let definition = typedefof<_ list>
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter definition |> ignore)
     Assert.Contains("Invalid generic type definition", error.Message)
-    ()
-
-[<Fact>]
-let ``Get Converter (IConverter interface)`` () =
-    let source = generator :> IGenerator
-    let a = source.GetConverter(typeof<int>)
-    let b = source.GetConverter(typeof<string>)
-    Assert.Equal(typeof<int>, a.ItemType)
-    Assert.Equal(typeof<string>, b.ItemType)
     ()
 
 [<Fact>]
@@ -154,7 +131,7 @@ let ``To Bytes and To Value`` (data : 'a) =
 let ``Internal Types`` () =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode<Converter> Array.empty<byte> |> ignore)
     Assert.Contains("Invalid type", error.Message)
-    let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode<Generator> Array.empty<byte> |> ignore)
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode<Token> Array.empty<byte> |> ignore)
     Assert.Contains("Invalid type", error.Message)
     ()
 
@@ -170,7 +147,7 @@ type BadConverterCreator () =
 
 [<Fact>]
 let ``Bad Creator`` () =
-    let generator = new Generator(creators = Seq.singleton(new BadConverterCreator() :> IConverterCreator))
+    let generator = GeneratorBuilder().AddDefaultConverterCreators().AddConverterCreator(new BadConverterCreator()).Build()
     let error = Assert.Throws<InvalidOperationException>(fun () -> generator.GetConverter(typeof<BadType>) |> ignore)
     let message = sprintf "Invalid converter '%O', creator type: %O, expected converter item type: %O" (generator.GetConverter<int>().GetType()) typeof<BadConverterCreator> typeof<BadType>
     Assert.Equal(message, error.Message)
@@ -178,6 +155,6 @@ let ``Bad Creator`` () =
 
 [<Fact>]
 let ``To String (debug)`` () =
-    let generator = new Generator()
+    let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
     Assert.Matches(@"Generator\(Converters: 1, Creators: \d+\)", generator.ToString())
     ()

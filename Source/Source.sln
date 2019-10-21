@@ -9,6 +9,8 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Binary.Tests.FSharp", "Bina
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binary.Tests", "Binary.Tests\Binary.Tests.csproj", "{565D302E-46D6-4A18-9C78-401254E0A54F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Binary.FSharp.CSharp", "Binary.FSharp.CSharp\Binary.FSharp.CSharp.csproj", "{B3CC37D1-4672-408A-BC02-26FA686F46C3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{565D302E-46D6-4A18-9C78-401254E0A54F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{565D302E-46D6-4A18-9C78-401254E0A54F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{565D302E-46D6-4A18-9C78-401254E0A54F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3CC37D1-4672-408A-BC02-26FA686F46C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3CC37D1-4672-408A-BC02-26FA686F46C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3CC37D1-4672-408A-BC02-26FA686F46C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3CC37D1-4672-408A-BC02-26FA686F46C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

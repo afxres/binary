@@ -8,7 +8,7 @@ namespace Mikodev.Binary.Tests
 {
     public class DynamicObjectTests
     {
-        private readonly Generator generator = new Generator();
+        private readonly IGenerator generator = new GeneratorBuilder().AddDefaultConverterCreators().Build();
 
         [Fact(DisplayName = "Expando Object")]
         public void ExpandoObject()
@@ -20,7 +20,7 @@ namespace Mikodev.Binary.Tests
             a.head = head;
             a.middle = middle;
             a.last = last;
-            var bytes = (byte[])generator.Encode(a);
+            var bytes = generator.Encode((object)a);
             Assert.NotEmpty(bytes);
             var token = new Token(generator, bytes);
             var d = (dynamic)token;

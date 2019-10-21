@@ -50,6 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Binary.FSharp.CSharp\Binary.FSharp.CSharp.csproj" />
     <ProjectReference Include="..\Binary\Binary.csproj" />
   </ItemGroup>
 

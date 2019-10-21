@@ -23,8 +23,8 @@ namespace Mikodev.Binary
 
         public Token(IGenerator generator, in ReadOnlyMemory<byte> memory)
         {
-            if (generator == null)
-                ThrowHelper.ThrowArgumentNull(nameof(generator));
+            if (generator is null)
+                throw new ArgumentNullException(nameof(generator));
             this.memory = memory;
             this.generator = generator;
             tokens = new Lazy<IReadOnlyDictionary<string, Token>>(() => GetDictionary(this), LazyThreadSafetyMode.ExecutionAndPublication);

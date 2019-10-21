@@ -9,7 +9,10 @@ namespace Mikodev.Binary.Tests
 {
     public class NullableTests
     {
-        private readonly Generator generator = new Generator();
+        private readonly IGenerator generator = new GeneratorBuilder()
+            .AddDefaultConverterCreators()
+            .AddFSharpConverterCreators()
+            .Build();
 
         private byte[] Bytes<T>(Converter<T> converter, T value)
         {

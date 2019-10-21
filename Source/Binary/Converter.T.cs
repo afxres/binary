@@ -60,7 +60,7 @@ namespace Mikodev.Binary
 
         public virtual T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
-            return Decode(PrimitiveHelper.DecodeWithLengthPrefix(ref span));
+            return Decode(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
         }
 
         public virtual byte[] Encode(T item)

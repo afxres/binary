@@ -4,7 +4,7 @@ open Mikodev.Binary
 open Xunit
 
 type ConverterExtensionsTests() =
-    let generator = Generator()
+    let generator = GeneratorBuilder().AddDefaultConverterCreators().Build()
 
     static member ``Data Alpha`` : (obj array) seq =
         seq {

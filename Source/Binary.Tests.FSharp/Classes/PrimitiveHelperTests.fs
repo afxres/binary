@@ -7,7 +7,7 @@ open Xunit
 
 let random = Random()
 
-let generator = Generator()
+let generator = GeneratorBuilder().AddDefaultConverterCreators().Build()
 
 [<Fact>]
 let ``Encode Number From 0 To 63`` () =

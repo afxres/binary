@@ -30,7 +30,10 @@ namespace Mikodev.Binary.Tests
             public int Tag => tag;
         }
 
-        private readonly Generator generator = new Generator();
+        private readonly IGenerator generator = new GeneratorBuilder()
+            .AddDefaultConverterCreators()
+            .AddFSharpConverterCreators()
+            .Build();
 
         [Fact(DisplayName = "No Case")]
         public void NoCase()

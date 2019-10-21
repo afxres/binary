@@ -1,22 +1,18 @@
 ﻿using Microsoft.FSharp.Collections;
-using Mikodev.Binary.CollectionAdapters;
 using System;
-using System.Diagnostics;
 
-namespace Mikodev.Binary.Creators.External.Collections
+namespace Mikodev.Binary.Collections
 {
     internal sealed class FSharpListConverter<T> : Converter<FSharpList<T>>
     {
         private readonly Converter<T> converter;
 
-        private readonly CollectionAdapter<ReadOnlyMemory<T>, ArraySegment<T>, T> adapter;
+        private readonly Converter<ArraySegment<T>> arraySegmentConverter;
 
-        public FSharpListConverter(Converter<T> converter)
+        public FSharpListConverter(Converter<T> converter, Converter<ArraySegment<T>> arraySegmentConverter)
         {
             this.converter = converter;
-            adapter = CollectionAdapterHelper.Create(converter);
-            Debug.Assert(adapter != null);
-            Debug.Assert(converter != null);
+            this.arraySegmentConverter = arraySegmentConverter;
         }
 
         public override void Encode(ref Allocator allocator, FSharpList<T> item)
@@ -37,7 +33,7 @@ namespace Mikodev.Binary.Creators.External.Collections
         public override FSharpList<T> Decode(in ReadOnlySpan<byte> span)
         {
             // recursive call may cause stackoverflow, so ...
-            var origin = adapter.To(in span);
+            var origin = arraySegmentConverter.Decode(in span);
             var source = origin.Array;
             var length = origin.Count;
             var result = ListModule.Empty<T>();

@@ -6,9 +6,9 @@ namespace Mikodev.Binary.Converters
     {
         private static readonly string message = $"Invalid type: {typeof(object)}";
 
-        private readonly Generator generator;
+        private readonly IGenerator generator;
 
-        public ObjectConverter(Generator generator) => this.generator = generator;
+        public ObjectConverter(IGenerator generator) => this.generator = generator;
 
         public override void Encode(ref Allocator allocator, object item)
         {

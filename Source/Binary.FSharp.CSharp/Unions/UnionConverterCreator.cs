@@ -1,16 +1,14 @@
 ﻿using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Core;
 using Microsoft.FSharp.Reflection;
-using Mikodev.Binary.Internal.Contexts;
-using Mikodev.Binary.Internal.Delegates;
-using Mikodev.Binary.Internal.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Mikodev.Binary.Creators.External
+namespace Mikodev.Binary.Unions
 {
     internal sealed class UnionConverterCreator : IConverterCreator
     {
@@ -21,7 +19,7 @@ namespace Mikodev.Binary.Creators.External
         public Converter GetConverter(IGeneratorContext context, Type type)
         {
             var flags = FSharpOption<BindingFlags>.None;
-            if (!FSharpType.IsUnion(type, flags) || type.IsImplementationOf(typeof(FSharpList<>)))
+            if (!FSharpType.IsUnion(type, flags) || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(FSharpList<>)))
                 return null;
             var cases = FSharpType.GetUnionCases(type, flags);
             if (cases == null || cases.Length == 0)
@@ -42,6 +40,28 @@ namespace Mikodev.Binary.Creators.External
             return (Converter)converter;
         }
 
+        private static MethodInfo GetToBytesMethodInfo(Type type, bool isAuto)
+        {
+            var converterType = typeof(Converter<>).MakeGenericType(type);
+            var types = new[] { typeof(Allocator).MakeByRefType(), type };
+            var method = !isAuto
+                ? converterType.GetMethod(nameof(IConverter.Encode), types)
+                : converterType.GetMethod(nameof(IConverter.EncodeAuto), types);
+            Debug.Assert(method != null);
+            return method;
+        }
+
+        private static MethodInfo GetToValueMethodInfo(Type type, bool isAuto)
+        {
+            var converterType = typeof(Converter<>).MakeGenericType(type);
+            var types = new[] { typeof(ReadOnlySpan<byte>).MakeByRefType() };
+            var method = !isAuto
+                ? converterType.GetMethod(nameof(IConverter.Decode), types)
+                : converterType.GetMethod(nameof(IConverter.DecodeAuto), types);
+            Debug.Assert(method != null);
+            return method;
+        }
+
         private static LambdaExpression ToBytesExpression(IGeneratorContext context, Type type, UnionCaseInfo[] caseInfos, MemberInfo tagMember, bool isAuto)
         {
             var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
@@ -57,7 +77,7 @@ namespace Mikodev.Binary.Creators.External
                     var property = properties[i];
                     var propertyType = property.PropertyType;
                     var converter = context.GetConverter(propertyType);
-                    var method = ContextMethods.GetToBytesMethodInfo(propertyType, isAuto || i != properties.Length - 1);
+                    var method = GetToBytesMethodInfo(propertyType, isAuto || i != properties.Length - 1);
                     var invoke = Expression.Call(Expression.Constant(converter), method, allocator, Expression.Property(instance, property));
                     result.Add(invoke);
                 }
@@ -111,7 +131,7 @@ namespace Mikodev.Binary.Creators.External
                 {
                     var parameterType = parameters[i].ParameterType;
                     var converter = context.GetConverter(parameterType);
-                    var method = ContextMethods.GetToValueMethodInfo(parameterType, isAuto || i != parameters.Length - 1);
+                    var method = GetToValueMethodInfo(parameterType, isAuto || i != parameters.Length - 1);
                     var variable = Expression.Variable(parameterType, $"{i}");
                     variables[i] = variable;
                     var invoke = Expression.Call(Expression.Constant(converter), method, span);

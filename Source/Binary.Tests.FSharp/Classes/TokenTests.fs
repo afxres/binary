@@ -9,7 +9,7 @@ type Packet<'a> = { id : int; data : 'a }
 
 type Person = { name : string; age : int }
 
-let generator = new Generator()
+let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
 
 [<Fact>]
 let ``Constructor With Null Generator`` () =

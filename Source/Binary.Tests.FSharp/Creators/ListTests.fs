@@ -4,7 +4,7 @@ open Mikodev.Binary
 open Xunit
 
 type ListTests () =
-    let generator = new Generator()
+    let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
 
     [<Fact(DisplayName = "List")>]
     member __.``List`` () =

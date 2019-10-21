@@ -8,9 +8,6 @@ namespace Mikodev.Binary.Internal
     internal static class ThrowHelper
     {
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static void ThrowArgumentNull(string paramName) => throw new ArgumentNullException(paramName);
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static void ThrowConverterLengthInvalid() => throw new ArgumentException("Converter length must be greater than or equal to zero!");
 
         [MethodImpl(MethodImplOptions.NoInlining)]

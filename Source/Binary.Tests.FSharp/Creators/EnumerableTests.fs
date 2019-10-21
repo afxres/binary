@@ -10,7 +10,7 @@ type segment<'a> = System.ArraySegment<'a>
 type vlist<'a> = System.Collections.Generic.List<'a>
 
 type EnumerableTests () =
-    let generator = new Generator()
+    let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
 
     [<Fact>]
     member __.``IList (Array)`` () =

@@ -37,7 +37,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 var method = ContextMethods.GetToBytesMethodInfo(property.PropertyType, isAuto || i != metadata.Count - 1);
                 expressions.Add(Expression.Call(Expression.Constant(converter), method, allocator, propertyExpression));
             }
-            var delegateType = typeof(ToBytesWith<>).MakeGenericType(type);
+            var delegateType = typeof(EncodeWith<>).MakeGenericType(type);
             var lambda = Expression.Lambda(delegateType, Expression.Block(expressions), allocator, item);
             return lambda.Compile();
         }
@@ -61,7 +61,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
             if (!ContextMethods.CanCreateInstance(type, metadata, constructor))
                 return null;
-            var delegateType = typeof(ToValueWith<>).MakeGenericType(type);
+            var delegateType = typeof(DecodeWith<>).MakeGenericType(type);
             return constructor == null
                 ? ContextMethods.GetToValueDelegateUseProperties(delegateType, Initialize, metadata, type)
                 : ContextMethods.GetToValueDelegateUseConstructor(delegateType, Initialize, metadata, indexes, constructor);

@@ -5,7 +5,7 @@ open System
 open System.Collections.Generic
 open Xunit
 
-let generator = Generator()
+let generator = GeneratorBuilder().AddDefaultConverterCreators().Build()
 
 type x () =
 

@@ -5,7 +5,10 @@ open System
 open System.Reflection
 open Xunit
 
-let generator = new Generator()
+let generator = GeneratorBuilder()
+                    .AddDefaultConverterCreators()
+                    .AddFSharpConverterCreators()
+                    .Build();
 
 let converter<'a> =
     let value = generator.GetConverter(typeof<'a>)

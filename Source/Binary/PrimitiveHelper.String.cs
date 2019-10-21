@@ -11,8 +11,8 @@ namespace Mikodev.Binary
     {
         private static void Encode(ref Allocator allocator, in ReadOnlySpan<char> span, Encoding encoding, bool withLengthPrefix)
         {
-            if (encoding == null)
-                ThrowHelper.ThrowArgumentNull(nameof(encoding));
+            if (encoding is null)
+                throw new ArgumentNullException(nameof(encoding));
             var charCount = span.Length;
             ref var chars = ref MemoryMarshal.GetReference(span);
             var byteCount = charCount == 0 ? 0 : encoding.GetByteCount(ref chars, charCount);
@@ -38,16 +38,16 @@ namespace Mikodev.Binary
 
         public static string DecodeString(in ReadOnlySpan<byte> span, Encoding encoding)
         {
-            if (encoding == null)
-                ThrowHelper.ThrowArgumentNull(nameof(encoding));
+            if (encoding is null)
+                throw new ArgumentNullException(nameof(encoding));
             return encoding.GetString(in span);
         }
 
         public static string DecodeStringWithLengthPrefix(ref ReadOnlySpan<byte> span, Encoding encoding)
         {
-            if (encoding == null)
-                ThrowHelper.ThrowArgumentNull(nameof(encoding));
-            return encoding.GetString(DecodeWithLengthPrefix(ref span));
+            if (encoding is null)
+                throw new ArgumentNullException(nameof(encoding));
+            return encoding.GetString(DecodeBufferWithLengthPrefix(ref span));
         }
 
         public static string DecodeString(in ReadOnlySpan<byte> span)

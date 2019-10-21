@@ -6,7 +6,7 @@ open Xunit
 
 let random = new Random()
 
-let generator = new Generator()
+let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
 
 let randomCount = 64
 

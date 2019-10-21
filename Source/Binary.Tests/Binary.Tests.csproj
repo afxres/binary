@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FSharp.Core" Version="4.7.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
@@ -19,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Binary.FSharp.CSharp\Binary.FSharp.CSharp.csproj" />
     <ProjectReference Include="..\Binary\Binary.csproj" />
   </ItemGroup>
 

@@ -24,6 +24,7 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             this.converters = converters;
             this.creators = creators;
+            Debug.Assert(creators is IConverterCreator[]);
         }
 
         public Converter GetConverter(Type type)

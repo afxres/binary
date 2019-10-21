@@ -5,7 +5,7 @@ open System
 open System.Collections.Generic
 open Xunit
 
-let generator = new Generator()
+let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
 
 [<Fact>]
 let ``Key Does Not Exist`` () =

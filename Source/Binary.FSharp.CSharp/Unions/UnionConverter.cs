@@ -1,10 +1,13 @@
-﻿using Mikodev.Binary.Internal.Delegates;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Mikodev.Binary.Creators.External
+namespace Mikodev.Binary.Unions
 {
+    internal delegate void OfUnion<in T>(ref Allocator allocator, T item, ref int mark);
+
+    internal delegate T ToUnion<out T>(ref ReadOnlySpan<byte> span, ref int mark);
+
     internal sealed class UnionConverter<T> : Converter<T>
     {
         private const int MarkNone = 0;

@@ -37,7 +37,7 @@ type MiscBook(count, name, pages, price) =
 
     member __.Count : int = count
 
-let generator = new Generator()
+let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
 
 [<Fact>]
 let ``Interface`` () =

@@ -7,7 +7,7 @@ open System.Runtime.InteropServices
 open Xunit
 
 type ArrayLikeTests () =
-    let generator = new Generator()
+    let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
 
     static member ``Data Alpha`` : (obj array) seq =
         seq {

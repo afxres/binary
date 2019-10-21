@@ -6,7 +6,7 @@ open System.Collections.Concurrent
 open System.Collections.Generic
 open Xunit
 
-let generator = new Generator()
+let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
 
 let test (value : 'a when 'a :> 'e seq) =
     let buffer = generator.Encode value

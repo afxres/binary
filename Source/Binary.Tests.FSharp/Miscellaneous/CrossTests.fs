@@ -12,7 +12,10 @@ type Group =
     | I4 of string * int16 * string * int64
 
 type CrossTests () =
-    let generator = new Generator()
+    let generator = GeneratorBuilder()
+                        .AddDefaultConverterCreators()
+                        .AddFSharpConverterCreators()
+                        .Build();
 
     static member ``Data Alpha`` : (obj array) seq =
         seq {

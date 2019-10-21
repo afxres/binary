@@ -37,7 +37,7 @@ type BadValueTypeWithOnlyIndexer =
     member __.Item with get (i : int) : string = String.Empty and set (i : int) (item : string) = ()
 
 type ThrowTests() =
-    let generator = new Generator()
+    let generator = GeneratorBuilder().AddDefaultConverterCreators().Build();
 
     member private __.Test<'a> () =
         let converter = generator.GetConverter<'a>()
@@ -107,7 +107,7 @@ type ThrowTests() =
         [| typeof<Converter HashSet>; typeof<Converter> |];
         [| typeof<Converter Stack>; typeof<Converter> |];
         [| typeof<Converter Queue>; typeof<Converter> |];
-        [| typeof<Generator list>; typeof<Generator> |];
+        [| typeof<Converter list>; typeof<Converter> |];
         [| typeof<ValueTuple Set>; typeof<ValueTuple> |];
         [| typeof<ValueTuple ICollection>; typeof<ValueTuple> |];
         [| typeof<ValueTuple IEnumerable>; typeof<ValueTuple> |];
