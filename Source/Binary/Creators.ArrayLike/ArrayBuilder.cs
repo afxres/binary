@@ -1,16 +1,16 @@
-﻿using Mikodev.Binary.CollectionAdapters;
+﻿using Mikodev.Binary.CollectionModels;
 using System;
 using System.Diagnostics;
 
 namespace Mikodev.Binary.Creators.ArrayLike
 {
-    internal sealed class ArrayBuilder<T> : CollectionBuilder<T[], ReadOnlyMemory<T>, ArraySegment<T>, T>
+    internal sealed class ArrayBuilder<T> : ArrayLikeBuilder<T[], T>
     {
         public override int Length(ReadOnlyMemory<T> item) => item.Length;
 
         public override ReadOnlyMemory<T> Of(T[] item) => item;
 
-        public override T[] To(CollectionAdapter<ArraySegment<T>, T> adapter, in ReadOnlySpan<byte> span)
+        public override T[] To(CollectionAdapter<ArraySegment<T>> adapter, in ReadOnlySpan<byte> span)
         {
             var item = adapter.To(in span);
             Debug.Assert(item.Array != null);

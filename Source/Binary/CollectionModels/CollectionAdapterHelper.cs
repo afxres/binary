@@ -1,8 +1,8 @@
-﻿using Mikodev.Binary.CollectionAdapters.ArrayLike;
+﻿using Mikodev.Binary.CollectionModels.ArrayLikeAdapters;
 using Mikodev.Binary.Internal.Extensions;
 using System;
 
-namespace Mikodev.Binary.CollectionAdapters
+namespace Mikodev.Binary.CollectionModels
 {
     internal static class CollectionAdapterHelper
     {

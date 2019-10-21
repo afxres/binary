@@ -2,7 +2,7 @@
 using System;
 using System.Diagnostics;
 
-namespace Mikodev.Binary.CollectionAdapters.ArrayLike
+namespace Mikodev.Binary.CollectionModels.ArrayLikeAdapters
 {
     internal sealed class ConstantCollectionAdapter<T> : CollectionAdapter<ReadOnlyMemory<T>, ArraySegment<T>, T>
     {

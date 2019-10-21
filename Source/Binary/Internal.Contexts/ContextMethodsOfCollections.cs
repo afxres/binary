@@ -1,4 +1,5 @@
-﻿using Mikodev.Binary.Converters.Runtime.Collections;
+﻿using Mikodev.Binary.CollectionModels.Implementations;
+using Mikodev.Binary.Converters.Runtime.Collections;
 using Mikodev.Binary.Internal.Delegates;
 using Mikodev.Binary.Internal.Extensions;
 using System;
@@ -22,12 +23,22 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static Converter GetConverterAsCollection(IGeneratorContext context, Type type, Type itemType)
         {
+            var itemConverter = context.GetConverter(itemType);
             var typeArguments = new[] { type, itemType };
-            var enumerableType = typeof(IEnumerable<>).MakeGenericType(itemType);
-            var constructor = GetDecodeDelegateAsEnumerable(type, enumerableType, typeof(ToCollection<,>).MakeGenericType(typeArguments));
-            var reverse = type.IsGenericType && reverseTypes.Contains(type.GetGenericTypeDefinition());
-            var converterType = typeof(GenericCollectionConverter<,>).MakeGenericType(typeArguments);
-            var converterArguments = new object[] { constructor, context.GetConverter(itemType), reverse };
+
+            object MakeBuilder()
+            {
+                var enumerableType = typeof(IEnumerable<>).MakeGenericType(itemType);
+                var constructor = GetDecodeDelegateAsEnumerable(type, enumerableType, typeof(ToCollection<,>).MakeGenericType(typeArguments));
+                var reverse = type.IsGenericType && reverseTypes.Contains(type.GetGenericTypeDefinition());
+                var builderType = typeof(DelegateCollectionBuilder<,>).MakeGenericType(typeArguments);
+                var builderArguments = new object[] { constructor, reverse };
+                return Activator.CreateInstance(builderType, builderArguments);
+            }
+
+            var builder = MakeBuilder();
+            var converterType = typeof(EnumerableAdaptedConverter<,>).MakeGenericType(typeArguments);
+            var converterArguments = new object[] { itemConverter, builder };
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }
@@ -35,11 +46,20 @@ namespace Mikodev.Binary.Internal.Contexts
         private static Converter GetConverterAsDictionary(IGeneratorContext context, Type type, Type itemType, Type[] types)
         {
             var typeArguments = new[] { type, types[0], types[1] };
-            var dictionaryType = typeof(IDictionary<,>).MakeGenericType(types);
-            var constructor = GetDecodeDelegateAsEnumerable(type, dictionaryType, typeof(ToDictionary<,,>).MakeGenericType(typeArguments));
             var itemConverter = context.GetConverter(itemType);
-            var converterType = typeof(GenericDictionaryConverter<,,>).MakeGenericType(typeArguments);
-            var converterArguments = new object[] { constructor, itemConverter, };
+
+            object MakeBuilder()
+            {
+                var dictionaryType = typeof(IDictionary<,>).MakeGenericType(types);
+                var constructor = GetDecodeDelegateAsEnumerable(type, dictionaryType, typeof(ToDictionary<,,>).MakeGenericType(typeArguments));
+                var builderType = typeof(DelegateDictionaryBuilder<,,>).MakeGenericType(typeArguments);
+                var builderArguments = new object[] { constructor };
+                return Activator.CreateInstance(builderType, builderArguments);
+            }
+
+            var builder = MakeBuilder();
+            var converterType = typeof(DictionaryAdaptedConverter<,,>).MakeGenericType(typeArguments);
+            var converterArguments = new object[] { itemConverter, builder };
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }

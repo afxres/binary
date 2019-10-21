@@ -51,7 +51,7 @@ namespace Mikodev.Binary.Tests
         {
             var source = collection;
             var converter = generator.GetConverter<T>();
-            Assert.StartsWith("GenericCollectionConverter`2", converter.GetType().Name);
+            Assert.StartsWith("EnumerableAdaptedConverter`2", converter.GetType().Name);
             var error = Assert.Throws<NotSupportedException>(() =>
             {
                 var allocator = new Allocator();

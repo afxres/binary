@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Mikodev.Binary.CollectionAdapters
+namespace Mikodev.Binary.CollectionModels
 {
     internal abstract class CollectionAdaptedConverter<T, U, R, E> : Converter<T>
     {

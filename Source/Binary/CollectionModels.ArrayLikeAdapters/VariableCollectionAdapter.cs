@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Mikodev.Binary.CollectionAdapters.ArrayLike
+namespace Mikodev.Binary.CollectionModels.ArrayLikeAdapters
 {
     internal sealed class VariableCollectionAdapter<T> : CollectionAdapter<ReadOnlyMemory<T>, ArraySegment<T>, T>
     {

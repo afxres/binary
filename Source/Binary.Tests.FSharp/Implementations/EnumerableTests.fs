@@ -4,6 +4,7 @@ open Mikodev.Binary
 open System
 open System.Collections
 open System.Collections.Generic
+open System.Reflection
 open Xunit
 
 let generator = Generator.CreateDefault()
@@ -40,9 +41,15 @@ type DictionaryA<'K, 'V>(item : IDictionary<'K, 'V>) =
 type DictionaryI<'K, 'V>(item : IDictionary<'K, 'V>) =
     inherit DictionaryA<'K, 'V>(item)
 
-let test (converterName : string) (enumerable : 'a) (expected : 'b) =
+let test (converterName : string) (builderName : string) (enumerable : 'a) (expected : 'b) =
     let converter = generator.GetConverter<'a>()
     Assert.StartsWith(converterName, converter.GetType().Name)
+
+    // test internal builder name
+    let builderField = converter.GetType().BaseType.GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    let builder = builderField.GetValue(converter)
+    Assert.Equal(builderName, builder.GetType().Name)
+
     let buffer = converter.Encode enumerable
     let target = generator.Encode expected
     Assert.Equal<byte>(buffer, target)
@@ -53,20 +60,20 @@ let test (converterName : string) (enumerable : 'a) (expected : 'b) =
 
 [<Fact>]
 let ``No suitable constructor (enumerable, constructor not match)`` () =
-    test "GenericCollectionConverter`2" (CollectionT [ 1; 2; 3 ]) [ 1; 2; 3 ]
+    test "EnumerableAdaptedConverter`2" "DelegateCollectionBuilder`2" (CollectionT [ 1; 2; 3 ]) [ 1; 2; 3 ]
     ()
 
 [<Fact>]
 let ``No suitable constructor (enumerable, abstract)`` () =
-    test "GenericCollectionConverter`2" ((CollectionI [ 1; 2; 3 ]) :> CollectionA<_>) [ 1; 2; 3 ]
+    test "EnumerableAdaptedConverter`2" "DelegateCollectionBuilder`2" ((CollectionI [ 1; 2; 3 ]) :> CollectionA<_>) [ 1; 2; 3 ]
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary, constructor not match)`` () =
-    test "GenericDictionaryConverter`3" (DictionaryP ((dict [ 1, "one"; 0, "ZERO" ]) |> Seq.toList)) [ 1, "one"; 0, "ZERO" ]
+    test "DictionaryAdaptedConverter`3" "DelegateDictionaryBuilder`3" (DictionaryP ((dict [ 1, "one"; 0, "ZERO" ]) |> Seq.toList)) [ 1, "one"; 0, "ZERO" ]
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary, abstract)`` () =
-    test "GenericDictionaryConverter`3" ((DictionaryI(dict [ 1, "one"; 0, "ZERO" ])) :> DictionaryA<_, _>) [ 1, "one"; 0, "ZERO" ]
+    test "DictionaryAdaptedConverter`3" "DelegateDictionaryBuilder`3" ((DictionaryI(dict [ 1, "one"; 0, "ZERO" ])) :> DictionaryA<_, _>) [ 1, "one"; 0, "ZERO" ]
     ()

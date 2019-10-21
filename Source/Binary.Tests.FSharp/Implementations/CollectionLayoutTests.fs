@@ -3,24 +3,21 @@
 open Mikodev.Binary
 open System
 open System.Collections.Generic
+open System.Reflection
 open Xunit
 
 let generator = Generator.CreateDefault()
 
-type x () =
-
-    static member ``Data Alpha`` : obj array array = [|
-        [| "ArrayConverter`1"; Array.zeroCreate<int> 0; |];
-        [| "ListConverter`1"; ResizeArray<string>(); |];
-        [| "ArrayLikeConverter`1"; Memory<TimeSpan>(); |];
-        [| "ArrayLikeConverter`1"; ReadOnlyMemory<int>(); |];
-        [| "ArrayLikeConverter`1"; ArraySegment<string>(); |];
-        [| "ISetConverter`1"; ArraySegment<string>(); |];
-    |]
-
-let test<'a> (name : string) (collection : 'a) =
+let test<'a> (name : string) (builderName : string) (collection : 'a) =
     let converter = generator.GetConverter<'a>()
     Assert.Equal(name, converter.GetType().Name)
+
+    // test internal builder name
+    let builderField = converter.GetType().BaseType.GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    let builder = builderField.GetValue(converter)
+    Assert.Equal(builderName, builder.GetType().Name)
+
+    // test empty
     let alpha = converter.Encode(collection)
     let mutable allocator = Allocator()
     converter.EncodeWithLengthPrefix(&allocator, collection)
@@ -30,11 +27,12 @@ let test<'a> (name : string) (collection : 'a) =
     Assert.Equal(0uy, Assert.Single(bravo))
     ()
 
-let testNull<'a when 'a : null> (name : string) (collection : 'a) =
+let testNull<'a when 'a : null> (name : string) (builderName : string) (collection : 'a) =
     let converter = generator.GetConverter<'a>()
 
-    test name collection
+    test name builderName collection
 
+    // test null
     let delta = converter.Encode(null)
     let mutable allocator = Allocator()
     converter.EncodeWithLengthPrefix(&allocator, null)
@@ -45,14 +43,23 @@ let testNull<'a when 'a : null> (name : string) (collection : 'a) =
     ()
 
 [<Fact>]
-let ``Empty Or Null Collection Binary Layout`` () =
-    test "ArrayLikeConverter`2" (ReadOnlyMemory<int>())
-    test "ArrayLikeConverter`2" (ArraySegment<string>())
-    test "ArrayLikeConverter`2" (Memory<TimeSpan>())
-    testNull "ArrayLikeConverter`2" (Array.zeroCreate<int> 0)
-    testNull "ArrayLikeConverter`2" (ResizeArray<string>())
-    testNull "ISetConverter`2" (HashSet<TimeSpan>())
-    testNull<ICollection<_>> "IEnumerableConverter`2" (Array.zeroCreate<int> 0)
-    testNull<IEnumerable<_>> "IEnumerableConverter`2" (ResizeArray<string>())
-    testNull<ISet<_>> "ISetConverter`2" (HashSet<TimeSpan>())
+let ``Integration Test For Converter Implementations And Null Or Empty Collection Binary Layout`` () =
+    test "ArrayLikeConverter`2" "ArraySegmentBuilder`1" (ArraySegment<string>())
+    test "ArrayLikeConverter`2" "MemoryBuilder`1" (Memory<TimeSpan>())
+    test "ArrayLikeConverter`2" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<int>())
+    testNull "ArrayLikeConverter`2" "ArrayBuilder`1" (Array.zeroCreate<int> 0)
+    testNull "ArrayLikeConverter`2" "ListDelegateBuilder`1" (ResizeArray<string>())
+
+    testNull<IEnumerable<_>> "EnumerableAdaptedConverter`2" "IEnumerableBuilder`2" (ResizeArray<string>())
+    testNull<IList<_>> "EnumerableAdaptedConverter`2" "IEnumerableBuilder`2" (Array.zeroCreate<int> 0)
+    testNull<IReadOnlyList<_>> "EnumerableAdaptedConverter`2" "IEnumerableBuilder`2" (ResizeArray<string>())
+    testNull<ICollection<_>> "EnumerableAdaptedConverter`2" "IEnumerableBuilder`2" (Array.zeroCreate<int> 0)
+    testNull<IReadOnlyCollection<_>> "EnumerableAdaptedConverter`2" "IEnumerableBuilder`2" (Array.zeroCreate<int> 0)
+
+    testNull<ISet<_>> "EnumerableAdaptedConverter`2" "ISetBuilder`2" (HashSet<TimeSpan>())
+    testNull<HashSet<_>> "EnumerableAdaptedConverter`2" "ISetBuilder`2" (HashSet<TimeSpan>())
+
+    testNull<Dictionary<_, _>> "DictionaryAdaptedConverter`3" "IDictionaryBuilder`3" (Dictionary<string, int>())
+    testNull<IDictionary<_, _>> "DictionaryAdaptedConverter`3" "IDictionaryBuilder`3" (Dictionary<int, string>())
+    testNull<IReadOnlyDictionary<_, _>> "DictionaryAdaptedConverter`3" "IDictionaryBuilder`3" (Dictionary<string, int>())
     ()

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Mikodev.Binary.CollectionAdapters.Collections
+namespace Mikodev.Binary.CollectionModels.Implementations
 {
     internal sealed class EnumerableAdapter<T, E> : CollectionAdapter<T, ArraySegment<E>, E> where T : IEnumerable<E>
     {

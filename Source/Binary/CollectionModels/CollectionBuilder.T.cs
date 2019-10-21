@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Mikodev.Binary.CollectionAdapters
+namespace Mikodev.Binary.CollectionModels
 {
     internal abstract class CollectionBuilder<T, U, R, E> : CollectionBuilder
     {
@@ -8,6 +8,6 @@ namespace Mikodev.Binary.CollectionAdapters
 
         public abstract U Of(T item);
 
-        public abstract T To(CollectionAdapter<R, E> adapter, in ReadOnlySpan<byte> span);
+        public abstract T To(CollectionAdapter<R> adapter, in ReadOnlySpan<byte> span);
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.CollectionAdapters
+﻿namespace Mikodev.Binary.CollectionModels
 {
     internal abstract class CollectionBuilder
     {

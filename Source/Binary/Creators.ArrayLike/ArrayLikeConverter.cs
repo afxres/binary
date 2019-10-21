@@ -1,4 +1,4 @@
-﻿using Mikodev.Binary.CollectionAdapters;
+﻿using Mikodev.Binary.CollectionModels;
 using System;
 
 namespace Mikodev.Binary.Creators.ArrayLike

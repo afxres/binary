@@ -1,7 +1,6 @@
 ﻿namespace Creators
 
 open Mikodev.Binary
-open System
 open System.Collections.Generic
 open Xunit
 
@@ -69,21 +68,4 @@ type EnumerableTests () =
         let value = generator.Decode<string seq> bytes
         Assert.Equal<string>(a, value)
         Assert.IsType<string segment> value |> ignore
-        ()
-
-    static member ``Data Alpha`` : (obj array) seq =
-        seq {
-            yield [| typeof<IEnumerable<string>> |]
-            yield [| typeof<IList<int>> |]
-            yield [| typeof<IReadOnlyList<string>> |]
-            yield [| typeof<ICollection<int>> |]
-            yield [| typeof<IReadOnlyCollection<string>> |]
-        }
-
-    [<Theory(DisplayName = "Validate Converter Type")>]
-    [<MemberData("Data Alpha")>]
-    member __.``Validate Converter Type`` (t : Type) =
-        let converter = generator.GetConverter t
-        let name = converter.GetType().Name
-        Assert.StartsWith("IEnumerableConverter`2", name)
         ()
