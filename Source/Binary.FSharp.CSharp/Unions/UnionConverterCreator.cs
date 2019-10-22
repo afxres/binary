@@ -30,17 +30,18 @@ namespace Mikodev.Binary.Unions
 
             var tagMember = FSharpValue.PreComputeUnionTagMemberInfo(type, flags);
             var noNull = !type.IsValueType && !(tagMember is MethodInfo);
-            var toBytes = ToBytesExpression(context, type, cases, tagMember, isAuto: false);
-            var toValue = ToValueExpression(context, type, cases, isAuto: false);
-            var toBytesWith = ToBytesExpression(context, type, cases, tagMember, isAuto: true);
-            var toValueWith = ToValueExpression(context, type, cases, isAuto: true);
+            var encode = GetEncodeExpression(context, type, cases, tagMember, isAuto: false);
+            var decode = GetDecodeExpression(context, type, cases, isAuto: false);
+            var encodeAuto = GetEncodeExpression(context, type, cases, tagMember, isAuto: true);
+            var decodeAuto = GetDecodeExpression(context, type, cases, isAuto: true);
+            var delegates = new[] { encode, decode, encodeAuto, decodeAuto }.Select(x => x.Compile());
             var converterType = typeof(UnionConverter<>).MakeGenericType(type);
-            var converterArguments = new[] { toBytes, toValue, toBytesWith, toValueWith }.Select(x => x.Compile()).Cast<object>().Concat(new object[] { noNull }).ToArray();
+            var converterArguments = delegates.Cast<object>().Concat(new object[] { noNull }).ToArray();
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }
 
-        private static MethodInfo GetToBytesMethodInfo(Type type, bool isAuto)
+        private static MethodInfo GetEncodeMethodInfo(Type type, bool isAuto)
         {
             var converterType = typeof(Converter<>).MakeGenericType(type);
             var types = new[] { typeof(Allocator).MakeByRefType(), type };
@@ -51,7 +52,7 @@ namespace Mikodev.Binary.Unions
             return method;
         }
 
-        private static MethodInfo GetToValueMethodInfo(Type type, bool isAuto)
+        private static MethodInfo GetDecodeMethodInfo(Type type, bool isAuto)
         {
             var converterType = typeof(Converter<>).MakeGenericType(type);
             var types = new[] { typeof(ReadOnlySpan<byte>).MakeByRefType() };
@@ -62,7 +63,7 @@ namespace Mikodev.Binary.Unions
             return method;
         }
 
-        private static LambdaExpression ToBytesExpression(IGeneratorContext context, Type type, UnionCaseInfo[] caseInfos, MemberInfo tagMember, bool isAuto)
+        private static LambdaExpression GetEncodeExpression(IGeneratorContext context, Type type, UnionCaseInfo[] caseInfos, MemberInfo tagMember, bool isAuto)
         {
             var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
             var mark = Expression.Parameter(typeof(int).MakeByRefType(), "mark");
@@ -77,7 +78,7 @@ namespace Mikodev.Binary.Unions
                     var property = properties[i];
                     var propertyType = property.PropertyType;
                     var converter = context.GetConverter(propertyType);
-                    var method = GetToBytesMethodInfo(propertyType, isAuto || i != properties.Length - 1);
+                    var method = GetEncodeMethodInfo(propertyType, isAuto || i != properties.Length - 1);
                     var invoke = Expression.Call(Expression.Constant(converter), method, allocator, Expression.Property(instance, property));
                     result.Add(invoke);
                 }
@@ -113,7 +114,7 @@ namespace Mikodev.Binary.Unions
             return Expression.Lambda(delegateType, block, allocator, item, mark);
         }
 
-        private static LambdaExpression ToValueExpression(IGeneratorContext context, Type type, UnionCaseInfo[] caseInfos, bool isAuto)
+        private static LambdaExpression GetDecodeExpression(IGeneratorContext context, Type type, UnionCaseInfo[] caseInfos, bool isAuto)
         {
             var span = Expression.Parameter(typeof(ReadOnlySpan<byte>).MakeByRefType(), "span");
             var mark = Expression.Parameter(typeof(int).MakeByRefType(), "mark");
@@ -131,7 +132,7 @@ namespace Mikodev.Binary.Unions
                 {
                     var parameterType = parameters[i].ParameterType;
                     var converter = context.GetConverter(parameterType);
-                    var method = GetToValueMethodInfo(parameterType, isAuto || i != parameters.Length - 1);
+                    var method = GetDecodeMethodInfo(parameterType, isAuto || i != parameters.Length - 1);
                     var variable = Expression.Variable(parameterType, $"{i}");
                     variables[i] = variable;
                     var invoke = Expression.Call(Expression.Constant(converter), method, span);

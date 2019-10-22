@@ -86,7 +86,9 @@ namespace Mikodev.Binary.Creators.ArrayLike
             var builderDefinition = available
                 ? typeof(ListDelegateBuilder<>)
                 : typeof(ListFallbackBuilder<>);
-            var builder = Activator.CreateInstance(builderDefinition.MakeGenericType(itemType), available ? CreateDelegates(itemType) : Array.Empty<object>());
+            var builderArguments = available ? CreateDelegates(itemType) : Array.Empty<object>();
+            var builderType = builderDefinition.MakeGenericType(itemType);
+            var builder = Activator.CreateInstance(builderType, builderArguments);
             var converterArguments = new object[] { itemConverter, builder };
             var converterType = typeof(ArrayLikeConverter<,>).MakeGenericType(type, itemType);
             var converter = Activator.CreateInstance(converterType, converterArguments);

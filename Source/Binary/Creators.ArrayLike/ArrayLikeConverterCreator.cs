@@ -19,8 +19,10 @@ namespace Mikodev.Binary.Creators.ArrayLike
                 return null;
             var itemType = type.GetGenericArguments().Single();
             var itemConverter = context.GetConverter(itemType);
+            var builderType = definition.MakeGenericType(itemType);
+            var builder = Activator.CreateInstance(builderType);
+            var converterArguments = new object[] { itemConverter, builder };
             var converterType = typeof(ArrayLikeConverter<,>).MakeGenericType(type, itemType);
-            var converterArguments = new object[] { itemConverter, Activator.CreateInstance(definition.MakeGenericType(itemType)) };
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }

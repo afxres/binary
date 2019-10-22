@@ -9,10 +9,10 @@ namespace Mikodev.Binary.Creators.Primitives
     {
         private static readonly IReadOnlyDictionary<Type, Type> dictionary = new Dictionary<Type, Type>
         {
+            [typeof(decimal)] = typeof(DecimalAdapter),
             [typeof(DateTime)] = typeof(DateTimeAdapter),
             [typeof(DateTimeOffset)] = typeof(DateTimeOffsetAdapter),
             [typeof(TimeSpan)] = typeof(TimeSpanAdapter),
-            [typeof(decimal)] = typeof(DecimalAdapter),
             [typeof(IPAddress)] = typeof(IPAddressAdapter),
             [typeof(IPEndPoint)] = typeof(IPEndPointAdapter),
             [typeof(Uri)] = typeof(UriAdapter),
@@ -24,8 +24,8 @@ namespace Mikodev.Binary.Creators.Primitives
                 return null;
             var adapterConverters = adapterType.GetConstructors()
                 .Single().GetParameters()
-                .Select(x => x.ParameterType.GetGenericArguments()
-                .Single()).Select(context.GetConverter)
+                .Select(x => x.ParameterType.GetGenericArguments().Single())
+                .Select(context.GetConverter)
                 .ToList();
             var adapterArguments = adapterConverters.Cast<object>().ToArray();
             var adapter = Activator.CreateInstance(adapterType, adapterArguments);

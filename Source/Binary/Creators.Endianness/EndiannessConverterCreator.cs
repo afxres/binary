@@ -29,7 +29,8 @@ namespace Mikodev.Binary.Creators.Endianness
                 throw new NotSupportedException("Endianness not supported!");
             if (!types.Contains(type) && !type.IsEnum)
                 return null;
-            var converter = Activator.CreateInstance(typeof(OriginalEndiannessConverter<>).MakeGenericType(type));
+            var converterType = typeof(OriginalEndiannessConverter<>).MakeGenericType(type);
+            var converter = Activator.CreateInstance(converterType);
             return (Converter)converter;
         }
     }

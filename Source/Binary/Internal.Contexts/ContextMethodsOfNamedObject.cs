@@ -27,7 +27,8 @@ namespace Mikodev.Binary.Internal.Contexts
             var decode = GetDecodeDelegateAsNamedObject(type, metadata, constructor, indexes);
             var buffers = metadata.Select(x => dictionary[x.Property]).Select(x => new KeyValuePair<string, byte[]>(x, cache.GetBuffer(x))).ToArray();
             var converterArguments = new object[] { encode, decode, buffers };
-            var converter = Activator.CreateInstance(typeof(NamedObjectConverter<>).MakeGenericType(type), converterArguments);
+            var converterType = typeof(NamedObjectConverter<>).MakeGenericType(type);
+            var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }
 

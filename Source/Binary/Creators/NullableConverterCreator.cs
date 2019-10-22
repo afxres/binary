@@ -1,16 +1,21 @@
-﻿using Mikodev.Binary.Internal.Components;
+﻿using Mikodev.Binary.Internal.Extensions;
 using System;
-using System.Collections.Generic;
+using System.Linq;
 
 namespace Mikodev.Binary.Creators
 {
     internal sealed class NullableConverterCreator : IConverterCreator
     {
-        private static readonly GenericConverterCreator creator = new GenericConverterCreator(new Dictionary<Type, Type>
+        public Converter GetConverter(IGeneratorContext context, Type type)
         {
-            [typeof(Nullable<>)] = typeof(NullableConverter<>),
-        });
-
-        public Converter GetConverter(IGeneratorContext context, Type type) => creator.GetConverter(context, type);
+            if (!type.TryGetGenericArguments(typeof(Nullable<>), out var arguments))
+                return null;
+            var itemType = arguments.Single();
+            var itemConverter = context.GetConverter(itemType);
+            var converterType = typeof(NullableConverter<>).MakeGenericType(itemType);
+            var converterArguments = new object[] { itemConverter };
+            var converter = Activator.CreateInstance(converterType, converterArguments);
+            return (Converter)converter;
+        }
     }
 }

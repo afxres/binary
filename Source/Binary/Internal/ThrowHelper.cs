@@ -20,9 +20,6 @@ namespace Mikodev.Binary.Internal
         internal static void ThrowAllocatorModified() => throw new InvalidOperationException("Allocator has been modified unexpectedly!");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static void ThrowInvalidNullableTag(int tag, Type type) => throw new ArgumentException($"Invalid nullable tag: {tag}, type: {type}");
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static void ThrowTupleNull(Type type) => throw new ArgumentNullException("item", $"Tuple can not be null, type: {type}");
 
         [MethodImpl(MethodImplOptions.NoInlining)]

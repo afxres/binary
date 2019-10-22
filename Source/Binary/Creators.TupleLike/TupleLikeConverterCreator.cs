@@ -1,13 +1,13 @@
-﻿using Mikodev.Binary.Internal.Components;
-using Mikodev.Binary.Internal.Contexts;
+﻿using Mikodev.Binary.Internal.Contexts;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Mikodev.Binary.Creators.TupleLike
 {
     internal sealed class TupleLikeConverterCreator : IConverterCreator
     {
-        private static readonly GenericConverterCreator creator = new GenericConverterCreator(new Dictionary<Type, Type>
+        private static readonly IReadOnlyDictionary<Type, Type> dictionary = new Dictionary<Type, Type>
         {
             [typeof(KeyValuePair<,>)] = typeof(KeyValuePairConverter<,>),
             [typeof(Tuple<>)] = typeof(TupleConverter<>),
@@ -26,13 +26,21 @@ namespace Mikodev.Binary.Creators.TupleLike
             [typeof(ValueTuple<,,,,,>)] = typeof(ValueTupleConverter<,,,,,>),
             [typeof(ValueTuple<,,,,,,>)] = typeof(ValueTupleConverter<,,,,,,>),
             [typeof(ValueTuple<,,,,,,,>)] = typeof(ValueTupleConverter<,,,,,,,>),
-        });
+        };
 
         public Converter GetConverter(IGeneratorContext context, Type type)
         {
             if (type == typeof(ValueTuple))
                 throw new ArgumentException($"Invalid type: {typeof(ValueTuple)}");
-            return creator.GetConverter(context, type, x => new object[] { ContextMethods.GetConverterLength(type, x) });
+            if (!type.IsGenericType || !dictionary.TryGetValue(type.GetGenericTypeDefinition(), out var definition))
+                return null;
+            var typeArguments = type.GetGenericArguments();
+            var converterType = definition.MakeGenericType(typeArguments);
+            var converters = typeArguments.Select(context.GetConverter).ToList();
+            var converterLength = ContextMethods.GetConverterLength(type, converters);
+            var converterArguments = new List<object>(converters) { converterLength }.ToArray();
+            var converter = Activator.CreateInstance(converterType, converterArguments);
+            return (Converter)converter;
         }
     }
 }

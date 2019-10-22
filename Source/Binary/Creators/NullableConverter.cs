@@ -1,5 +1,6 @@
-﻿using Mikodev.Binary.Internal;
-using System;
+﻿using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary.Creators
 {
@@ -11,10 +12,13 @@ namespace Mikodev.Binary.Creators
 
         private readonly Converter<T> converter;
 
-        public NullableConverter(Converter<T> converter)
-        {
-            this.converter = converter;
-        }
+        public NullableConverter(Converter<T> converter) => this.converter = converter;
+
+        [DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+        private T? ThrowInvalid(int tag) => throw new ArgumentException($"Invalid nullable tag: {tag}, type: {ItemType}");
+
+        [DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private T? ThrowInvalidOrNull(int tag) => tag == None ? null : ThrowInvalid(tag);
 
         public override void Encode(ref Allocator allocator, T? item)
         {
@@ -31,9 +35,7 @@ namespace Mikodev.Binary.Creators
             var body = span.Slice(sizeof(byte));
             if (head == Some)
                 return converter.Decode(in body);
-            if (head != None)
-                ThrowHelper.ThrowInvalidNullableTag(head, ItemType);
-            return null;
+            return ThrowInvalidOrNull(head);
         }
 
         public override void EncodeAuto(ref Allocator allocator, T? item)
@@ -51,9 +53,7 @@ namespace Mikodev.Binary.Creators
             span = span.Slice(sizeof(byte));
             if (head == Some)
                 return converter.DecodeAuto(ref span);
-            if (head != None)
-                ThrowHelper.ThrowInvalidNullableTag(head, ItemType);
-            return null;
+            return ThrowInvalidOrNull(head);
         }
     }
 }

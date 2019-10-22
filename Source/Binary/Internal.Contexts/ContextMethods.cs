@@ -12,7 +12,7 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class ContextMethods
     {
-        internal static int GetConverterLength(Type type, IEnumerable<Converter> values)
+        internal static int GetConverterLength(Type type, IReadOnlyCollection<Converter> values)
         {
             Debug.Assert(values.Any() && values.All(x => x != null && x.Length >= 0));
             var length = values.All(x => x.Length > 0) ? values.Sum(x => (long)x.Length) : 0;

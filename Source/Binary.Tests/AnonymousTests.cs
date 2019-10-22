@@ -44,7 +44,7 @@ namespace Mikodev.Binary.Tests
         }
 
         [Fact(DisplayName = "Null Value To Bytes")]
-        public void NullValueToBytes()
+        public void NullValue()
         {
             static T DefaultOf<T>(T _) => default;
 

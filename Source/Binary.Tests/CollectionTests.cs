@@ -47,7 +47,7 @@ namespace Mikodev.Binary.Tests
 
         [Theory(DisplayName = "To Bytes Via 'ToArray()' Or Enumerator")]
         [MemberData(nameof(MemberData))]
-        public void ToBytesViaToArray<T>(T collection, string expected)
+        public void ViaToArray<T>(T collection, string expected)
         {
             var source = collection;
             var converter = generator.GetConverter<T>();

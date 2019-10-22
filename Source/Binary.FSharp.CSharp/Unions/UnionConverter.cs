@@ -14,21 +14,21 @@ namespace Mikodev.Binary.Unions
 
         private readonly bool noNull;
 
-        private readonly OfUnion<T> ofUnion;
+        private readonly OfUnion<T> encode;
 
-        private readonly ToUnion<T> toUnion;
+        private readonly ToUnion<T> decode;
 
-        private readonly OfUnion<T> ofUnionWith;
+        private readonly OfUnion<T> encodeAuto;
 
-        private readonly ToUnion<T> toUnionWith;
+        private readonly ToUnion<T> decodeAuto;
 
-        public UnionConverter(OfUnion<T> ofUnion, ToUnion<T> toUnion, OfUnion<T> ofUnionWith, ToUnion<T> toUnionWith, bool noNull)
+        public UnionConverter(OfUnion<T> encode, ToUnion<T> decode, OfUnion<T> encodeAuto, ToUnion<T> decodeAuto, bool noNull)
         {
             this.noNull = noNull;
-            this.ofUnion = ofUnion;
-            this.toUnion = toUnion;
-            this.ofUnionWith = ofUnionWith;
-            this.toUnionWith = toUnionWith;
+            this.encode = encode;
+            this.decode = decode;
+            this.encodeAuto = encodeAuto;
+            this.decodeAuto = decodeAuto;
         }
 
         [DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
@@ -47,7 +47,7 @@ namespace Mikodev.Binary.Unions
         {
             ThrowOnNull(item);
             var mark = MarkNone;
-            ofUnion.Invoke(ref allocator, item, ref mark);
+            encode.Invoke(ref allocator, item, ref mark);
             ThrowOnInvalid(mark);
         }
 
@@ -55,7 +55,7 @@ namespace Mikodev.Binary.Unions
         {
             var temp = span;
             var mark = MarkNone;
-            var item = toUnion.Invoke(ref temp, ref mark);
+            var item = decode.Invoke(ref temp, ref mark);
             ThrowOnInvalid(mark);
             return item;
         }
@@ -64,14 +64,14 @@ namespace Mikodev.Binary.Unions
         {
             ThrowOnNull(item);
             var mark = MarkNone;
-            ofUnionWith.Invoke(ref allocator, item, ref mark);
+            encodeAuto.Invoke(ref allocator, item, ref mark);
             ThrowOnInvalid(mark);
         }
 
         public override T DecodeAuto(ref ReadOnlySpan<byte> span)
         {
             var mark = MarkNone;
-            var item = toUnionWith.Invoke(ref span, ref mark);
+            var item = decodeAuto.Invoke(ref span, ref mark);
             ThrowOnInvalid(mark);
             return item;
         }
