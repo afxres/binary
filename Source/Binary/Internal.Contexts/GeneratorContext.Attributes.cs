@@ -30,22 +30,26 @@ namespace Mikodev.Binary.Internal.Contexts
             return attributes.Single();
         }
 
-        private (T, Exception) GetConverterOrCreator<T>(Type type) where T : class
+        private bool TryCreateInstance<T>(Type type, out T value, out Exception error) where T : class
         {
             try
             {
-                return ((T)Activator.CreateInstance(type), null);
+                var instance = Activator.CreateInstance(type);
+                value = (T)instance;
+                error = null;
+                return true;
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                return (null, ex);
+                value = null;
+                error = exception;
+                return false;
             }
         }
 
         private Converter GetConverterByAttribute(ConverterAttribute attribute, Type type)
         {
-            var (converter, error) = GetConverterOrCreator<Converter>(attribute.Type);
-            if (error != null)
+            if (!TryCreateInstance<Converter>(attribute.Type, out var converter, out var error))
                 throw new ArgumentException($"Can not get custom converter by attribute, expected converter item type: {type}", error);
             if (converter.ItemType != type)
                 throw new InvalidOperationException($"Invalid custom converter '{converter.GetType()}', expected converter item type: {type}");
@@ -55,8 +59,7 @@ namespace Mikodev.Binary.Internal.Contexts
         private Converter GetConverterByAttribute(ConverterCreatorAttribute attribute, Type type)
         {
             var creatorType = attribute.Type;
-            var (creator, error) = GetConverterOrCreator<IConverterCreator>(creatorType);
-            if (error != null)
+            if (!TryCreateInstance<IConverterCreator>(creatorType, out var creator, out var error))
                 throw new ArgumentException($"Can not get custom converter creator by attribute, expected converter item type: {type}", error);
             var converter = creator.GetConverter(this, type);
             if (converter == null)
@@ -69,7 +72,6 @@ namespace Mikodev.Binary.Internal.Contexts
         private MetaList GetPropertyConverters(IEnumerable<(PropertyInfo, Attribute)> collection)
         {
             var list = new List<(PropertyInfo, Converter)>();
-
             foreach (var (property, attribute) in collection)
             {
                 var propertyType = property.PropertyType;
