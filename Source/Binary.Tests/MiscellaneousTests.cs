@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -86,6 +87,24 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(types, alpha.Union(bravo).Union(delta).ToHashSet());
             Assert.True(alpha.All(x => x.IsPublic));
             Assert.True(delta.All(x => !x.IsPublic));
+        }
+
+        [Fact(DisplayName = "Public Class Object Methods All Invisible")]
+        public void PublicObjectMethods()
+        {
+            var types = typeof(Converter).Assembly.GetTypes()
+                .Where(x => x.IsPublic && !(x.IsAbstract && x.IsSealed) && !x.IsInterface && x.Namespace == "Mikodev.Binary")
+                .ToList();
+            Assert.Equal(5, types.Count);
+            foreach (var t in types)
+            {
+                var equalMethod = t.GetMethod("Equals", new[] { typeof(object) });
+                var hashMethod = t.GetMethod("GetHashCode", Type.EmptyTypes);
+                var stringMethod = t.GetMethod("ToString", Type.EmptyTypes);
+                var attributes = new[] { equalMethod, hashMethod, stringMethod }.Select(x => x.GetCustomAttribute<EditorBrowsableAttribute>()).ToList();
+                Assert.Equal(3, attributes.Count);
+                Assert.True(attributes.All(x => x.State == EditorBrowsableState.Never));
+            }
         }
     }
 }

@@ -12,6 +12,7 @@
     <Compile Include="Classes\AllocatorTests.fs" />
     <Compile Include="Classes\ConverterExtensionsTests.fs" />
     <Compile Include="Classes\ConverterTests.fs" />
+    <Compile Include="Classes\GeneratorBuilderTests.fs" />
     <Compile Include="Classes\GeneratorExtensionsTests.fs" />
     <Compile Include="Classes\GeneratorTests.fs" />
     <Compile Include="Classes\PrimitiveHelperTests.fs" />

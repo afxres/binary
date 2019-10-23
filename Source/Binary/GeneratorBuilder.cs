@@ -7,7 +7,7 @@ namespace Mikodev.Binary
     {
         private readonly Dictionary<Type, Converter> converters = new Dictionary<Type, Converter>();
 
-        private readonly List<IConverterCreator> creators = new List<IConverterCreator>();
+        private readonly LinkedList<IConverterCreator> creators = new LinkedList<IConverterCreator>();
 
         public IGeneratorBuilder AddConverter(Converter converter)
         {
@@ -24,10 +24,19 @@ namespace Mikodev.Binary
         {
             if (creator is null)
                 throw new ArgumentNullException(nameof(creator));
-            creators.Add(creator);
+            _ = creators.AddFirst(creator);
             return this;
         }
 
         public IGenerator Build() => new Internal.Contexts.Generator(converters.Values, creators);
+
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        public override bool Equals(object obj) => throw new NotSupportedException();
+
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        public override int GetHashCode() => throw new NotSupportedException();
+
+        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        public override string ToString() => $"{nameof(GeneratorBuilder)}(Converters: {converters.Count}, Creators: {creators.Count})";
     }
 }

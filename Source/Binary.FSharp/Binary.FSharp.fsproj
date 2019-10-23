@@ -9,7 +9,7 @@
     <Company>Mikodev</Company>
     <Copyright>Mikodev 2019</Copyright>
     <Product>Mikodev.Binary</Product>
-    <Version>5.0.0-alpha01</Version>
+    <Version>5.0.0</Version>
     <PackageTags>binary dynamic serializer serialization fsharp</PackageTags>
     <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
   </PropertyGroup>
