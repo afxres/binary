@@ -1,5 +1,5 @@
 ﻿using Mikodev.Binary.CollectionModels;
-using Mikodev.Binary.CollectionModels.ArrayLikeAdapters;
+using Mikodev.Binary.CollectionModels.ArrayLike;
 using System;
 
 namespace Mikodev.Binary.Creators.ArrayLike

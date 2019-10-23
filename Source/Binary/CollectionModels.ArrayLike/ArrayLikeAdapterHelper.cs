@@ -1,7 +1,7 @@
 ﻿using Mikodev.Binary.Internal.Extensions;
 using System;
 
-namespace Mikodev.Binary.CollectionModels.ArrayLikeAdapters
+namespace Mikodev.Binary.CollectionModels.ArrayLike
 {
     internal static class ArrayLikeAdapterHelper
     {

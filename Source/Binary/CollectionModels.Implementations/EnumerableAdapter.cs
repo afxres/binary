@@ -1,4 +1,4 @@
-﻿using Mikodev.Binary.CollectionModels.ArrayLikeAdapters;
+﻿using Mikodev.Binary.CollectionModels.ArrayLike;
 using Mikodev.Binary.Internal.Delegates;
 using Mikodev.Binary.Internal.Extensions;
 using System;

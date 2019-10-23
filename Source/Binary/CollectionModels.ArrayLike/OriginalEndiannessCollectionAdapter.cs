@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Mikodev.Binary.CollectionModels.ArrayLikeAdapters
+namespace Mikodev.Binary.CollectionModels.ArrayLike
 {
     internal sealed class OriginalEndiannessCollectionAdapter<T> : CollectionAdapter<ReadOnlyMemory<T>, ArraySegment<T>, T> where T : unmanaged
     {
