@@ -6,7 +6,7 @@ namespace Mikodev.Binary
 {
     public static class GeneratorBuilderExtensions
     {
-        internal static readonly List<IConverterCreator> creators = typeof(Converter).Assembly.GetTypes()
+        private static readonly IReadOnlyCollection<IConverterCreator> creators = typeof(Converter).Assembly.GetTypes()
             .Where(x => !x.IsAbstract && typeof(IConverterCreator).IsAssignableFrom(x))
             .OrderBy(x => x.Namespace)
             .ThenBy(x => x.Name)

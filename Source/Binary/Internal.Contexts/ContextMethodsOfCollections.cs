@@ -12,7 +12,7 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class ContextMethodsOfCollections
     {
-        private static readonly IReadOnlyList<Type> reverseTypes = new[] { typeof(Stack<>), typeof(ConcurrentStack<>) };
+        private static readonly IReadOnlyCollection<Type> reverseTypes = new[] { typeof(Stack<>), typeof(ConcurrentStack<>) };
 
         internal static Converter GetConverterAsCollectionOrDictionary(IGeneratorContext context, Type type, Type itemType)
         {

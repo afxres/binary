@@ -12,9 +12,9 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal sealed partial class GeneratorContext
     {
-        private static readonly IReadOnlyList<Type> keyAttributeTypes = new[] { typeof(NamedKeyAttribute), typeof(TupleKeyAttribute) };
+        private static readonly IReadOnlyCollection<Type> keyAttributeTypes = new[] { typeof(NamedKeyAttribute), typeof(TupleKeyAttribute) };
 
-        private static readonly IReadOnlyList<Type> converterAttributeTypes = new[] { typeof(ConverterAttribute), typeof(ConverterCreatorAttribute) };
+        private static readonly IReadOnlyCollection<Type> converterAttributeTypes = new[] { typeof(ConverterAttribute), typeof(ConverterCreatorAttribute) };
 
         private Attribute GetAttribute(Type type)
         {

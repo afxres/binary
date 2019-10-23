@@ -9,7 +9,7 @@ open Xunit
 
 [<Fact>]
 let ``Public Class And Method`` () =
-    let expression = <@ Func<_, _>(GeneratorBuilderExtensions.AddFSharpConverterCreators) @>
+    let expression = <@ Func<_, _>(GeneratorBuilderFSharpExtensions.AddFSharpConverterCreators) @>
     let x = expression |> LeafExpressionConverter.QuotationToExpression
     let method = ((x :?> LambdaExpression).Body :?> MethodCallExpression).Method
     let types = method.DeclaringType.Assembly.GetTypes()

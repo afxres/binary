@@ -21,7 +21,7 @@
     <Compile Include="Creators.Collections\MapConverter.fs" />
     <Compile Include="Creators.Collections\ListConverter.fs" />
     <Compile Include="Creators.Collections\CollectionConverterCreator.fs" />
-    <Compile Include="GeneratorBuilderExtensions.fs" />
+    <Compile Include="GeneratorBuilderFSharpExtensions.fs" />
   </ItemGroup>
 
   <ItemGroup>

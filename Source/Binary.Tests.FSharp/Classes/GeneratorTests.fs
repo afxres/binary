@@ -19,6 +19,13 @@ let ``Get Converter (generic)`` () =
     ()
 
 [<Fact>]
+let ``Get Converter (anonymous)`` () =
+    let anonymous = {| id = 0; data = "1024" |}
+    let alpha = generator.GetConverter(anonymous)
+    Assert.Equal(anonymous.GetType(), alpha.ItemType)
+    ()
+
+[<Fact>]
 let ``Get Converter (via type, argument null)`` () =
     let error = Assert.Throws<ArgumentNullException>(fun () -> generator.GetConverter(null) |> ignore)
     Assert.Equal("type", error.ParamName)
@@ -62,14 +69,14 @@ let ``Get Converter (generic type parameter)`` () =
     ()
 
 [<Fact>]
-let ``To Bytes (obj, instance)`` () =
+let ``Encode (obj, instance)`` () =
     let source = new obj()
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Encode source |> ignore)
     Assert.Contains("Invalid type", error.Message)
     ()
 
 [<Fact>]
-let ``To Bytes (obj, null)`` () =
+let ``Encode (obj, null)`` () =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Encode<obj> null |> ignore)
     Assert.Contains("Can not get type of null object.", error.Message)
     ()
@@ -77,13 +84,13 @@ let ``To Bytes (obj, null)`` () =
 [<Theory>]
 [<InlineData(43, 4)>]
 [<InlineData("magic", 5)>]
-let ``To Bytes (via type)`` (item : obj, count : int) =
+let ``Encode (via type)`` (item : obj, count : int) =
     let buffer = generator.Encode(item, item.GetType())
     Assert.Equal(count, buffer.Length)
     ()
 
 [<Fact>]
-let ``To Bytes (via type, null)`` () =
+let ``Encode (via type, null)`` () =
     let buffer = generator.Encode(null, typeof<Uri>)
     Assert.Equal(0, buffer.Length)
     ()
@@ -91,14 +98,14 @@ let ``To Bytes (via type, null)`` () =
 [<Theory>]
 [<InlineData(3.14)>]
 [<InlineData("pi")>]
-let ``To Bytes ('a : obj)`` (value : obj) =
+let ``Encode ('a : obj)`` (value : obj) =
     let source = box value
     let buffer = generator.Encode<obj> source
     Assert.NotEmpty(buffer)
     ()
 
 [<Fact>]
-let ``To Value ('a : obj)`` () =
+let ``Decode ('a : obj)`` () =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode<obj> Array.empty<byte>)
     Assert.Contains("Invalid type", error.Message)
     ()
@@ -106,14 +113,14 @@ let ``To Value ('a : obj)`` () =
 [<Theory>]
 [<InlineData(2.71)>]
 [<InlineData("e")>]
-let ``To Value (via type)`` (value : obj) =
+let ``Decode (via type)`` (value : obj) =
     let buffer = generator.Encode value
     let result = generator.Decode(buffer, value.GetType())
     Assert.Equal(value, result)
     ()
 
 [<Fact>]
-let ``To Value (via type, argument null)`` () =
+let ``Decode (via type, argument null)`` () =
     let error = Assert.Throws<ArgumentNullException>(fun () -> generator.Decode(Array.empty<byte>, Unchecked.defaultof<Type>) |> ignore)
     Assert.Equal("type", error.ParamName)
     ()
@@ -121,7 +128,7 @@ let ``To Value (via type, argument null)`` () =
 [<Theory>]
 [<InlineData(6)>]
 [<InlineData("fox")>]
-let ``To Bytes and To Value`` (data : 'a) =
+let ``Encode and Decode`` (data : 'a) =
     let buffer = generator.Encode data
     let result = generator.Decode<'a> buffer
     Assert.Equal<'a>(data, result)

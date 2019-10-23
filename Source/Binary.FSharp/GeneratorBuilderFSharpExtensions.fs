@@ -5,7 +5,7 @@ open Mikodev.Binary.Creators.Collections
 open System.Runtime.CompilerServices
 
 [<Extension>]
-type GeneratorBuilderExtensions =
+type GeneratorBuilderFSharpExtensions =
     [<Extension>]
     static member AddFSharpConverterCreators(builder : IGeneratorBuilder) =
         builder

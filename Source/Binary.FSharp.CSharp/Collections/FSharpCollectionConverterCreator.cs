@@ -7,7 +7,7 @@ namespace Mikodev.Binary.Collections
 {
     internal sealed class FSharpCollectionConverterCreator : IConverterCreator
     {
-        private static readonly Dictionary<Type, Type> dictionary = new Dictionary<Type, Type>
+        private static readonly IReadOnlyDictionary<Type, Type> dictionary = new Dictionary<Type, Type>
         {
             [typeof(FSharpList<>)] = typeof(FSharpListConverter<>),
             [typeof(FSharpSet<>)] = typeof(FSharpSetConverter<>),

@@ -4,7 +4,7 @@ using System;
 
 namespace Mikodev.Binary
 {
-    public static class GeneratorBuilderExtensions
+    public static class GeneratorBuilderFSharpExtensions
     {
         public static IGeneratorBuilder AddFSharpConverterCreators(this IGeneratorBuilder builder)
         {

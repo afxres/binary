@@ -6,7 +6,7 @@ namespace Mikodev.Binary.Creators.Endianness
 {
     internal sealed class EndiannessConverterCreator : IConverterCreator
     {
-        private static readonly IReadOnlyList<Type> types = new[]
+        private static readonly IReadOnlyCollection<Type> types = new[]
         {
             typeof(bool),
             typeof(byte),
