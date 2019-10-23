@@ -34,13 +34,13 @@ namespace Mikodev.Binary.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetHashCode(in ReadOnlySpan<byte> span)
         {
-            var spanLength = span.Length;
-            if (spanLength == 0)
-                return spanLength;
+            var byteCount = span.Length;
+            if (byteCount == 0)
+                return byteCount;
             ref var location = ref MemoryMarshal.GetReference(span);
-            if (spanLength == 1)
-                return spanLength ^ location;
-            return (spanLength ^ location) | (Unsafe.Add(ref location, spanLength - 1) << 8);
+            if (byteCount == 1)
+                return byteCount ^ location;
+            return (byteCount ^ location) | (Unsafe.Add(ref location, byteCount - 1) << 8);
         }
 
         private static Buck[][] GetBucks(IReadOnlyList<byte[]> items)

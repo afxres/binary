@@ -9,13 +9,13 @@ namespace Mikodev.Binary.CollectionModels.ArrayLikeAdapters
         public override void Of(ref Allocator allocator, ReadOnlyMemory<T> memory)
         {
             var span = memory.Span;
-            var spanLength = span.Length;
-            var byteLength = checked(spanLength * Memory.SizeOf<T>());
-            if (byteLength == 0)
+            var itemCount = span.Length;
+            var byteCount = checked(itemCount * Memory.SizeOf<T>());
+            if (byteCount == 0)
                 return;
-            ref var target = ref allocator.AllocateReference(byteLength);
+            ref var target = ref allocator.AllocateReference(byteCount);
             ref var source = ref MemoryMarshal.GetReference(span);
-            Memory.Copy(ref target, ref Memory.AsByte(ref source), byteLength);
+            Memory.Copy(ref target, ref Memory.AsByte(ref source), byteCount);
         }
 
         public override ArraySegment<T> To(in ReadOnlySpan<byte> span)

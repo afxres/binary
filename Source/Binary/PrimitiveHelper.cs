@@ -90,8 +90,7 @@ namespace Mikodev.Binary
 
         public static int DecodeNumber(ref ReadOnlySpan<byte> span)
         {
-            var spanLength = span.Length;
-            if (spanLength == 0)
+            if (span.IsEmpty)
                 ThrowHelper.ThrowNotEnoughBytes();
             ref var location = ref MemoryMarshal.GetReference(span);
             var length = DecodeNumberLength(location);

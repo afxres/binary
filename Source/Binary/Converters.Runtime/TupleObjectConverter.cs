@@ -6,15 +6,15 @@ namespace Mikodev.Binary.Converters.Runtime
 {
     internal sealed class TupleObjectConverter<T> : Converter<T>
     {
-        private readonly EncodeWith<T> encode;
+        private readonly OfTupleObject<T> encode;
 
-        private readonly DecodeWith<T> decode;
+        private readonly ToTupleObject<T> decode;
 
-        private readonly EncodeWith<T> encodeWith;
+        private readonly OfTupleObject<T> encodeWith;
 
-        private readonly DecodeWith<T> decodeWith;
+        private readonly ToTupleObject<T> decodeWith;
 
-        public TupleObjectConverter(EncodeWith<T> encode, DecodeWith<T> decode, EncodeWith<T> encodeWith, DecodeWith<T> decodeWith, int length) : base(length)
+        public TupleObjectConverter(OfTupleObject<T> encode, ToTupleObject<T> decode, OfTupleObject<T> encodeWith, ToTupleObject<T> decodeWith, int length) : base(length)
         {
             this.encode = encode;
             this.decode = decode;

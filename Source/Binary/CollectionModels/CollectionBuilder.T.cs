@@ -4,7 +4,7 @@ namespace Mikodev.Binary.CollectionModels
 {
     internal abstract class CollectionBuilder<T, U, R, E> : CollectionBuilder
     {
-        public abstract int Length(U item);
+        public abstract int Count(U item);
 
         public abstract U Of(T item);
 

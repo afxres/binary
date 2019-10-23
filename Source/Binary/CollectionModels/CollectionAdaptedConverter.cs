@@ -17,22 +17,28 @@ namespace Mikodev.Binary.CollectionModels
             this.builder = builder;
         }
 
-        public override void Encode(ref Allocator allocator, T item) => adapter.Of(ref allocator, builder.Of(item));
+        public override void Encode(ref Allocator allocator, T item)
+        {
+            adapter.Of(ref allocator, builder.Of(item));
+        }
 
-        public override T Decode(in ReadOnlySpan<byte> span) => builder.To(adapter, in span);
+        public override T Decode(in ReadOnlySpan<byte> span)
+        {
+            return builder.To(adapter, in span);
+        }
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
-            int dataLength;
+            int dataCount;
             var data = builder.Of(item);
-            if (data == null || (dataLength = builder.Length(data)) == 0)
+            if (data == null || (dataCount = builder.Count(data)) == 0)
             {
                 PrimitiveHelper.EncodeNumber(ref allocator, 0);
             }
-            else if (itemLength > 0 && dataLength != CollectionBuilder.NoActualLength)
+            else if (itemLength > 0 && dataCount != CollectionBuilder.NoActualLength)
             {
-                var byteLength = checked(itemLength * dataLength);
-                PrimitiveHelper.EncodeNumber(ref allocator, byteLength);
+                var byteCount = checked(itemLength * dataCount);
+                PrimitiveHelper.EncodeNumber(ref allocator, byteCount);
                 adapter.Of(ref allocator, data);
             }
             else

@@ -16,12 +16,12 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Append(ref Allocator allocator, in ReadOnlySpan<byte> span)
         {
-            var spanLength = span.Length;
-            if (spanLength == 0)
+            var byteCount = span.Length;
+            if (byteCount == 0)
                 return;
-            ref var target = ref AllocateReference(ref allocator, spanLength);
+            ref var target = ref AllocateReference(ref allocator, byteCount);
             ref var source = ref MemoryMarshal.GetReference(span);
-            Memory.Copy(ref target, ref source, spanLength);
+            Memory.Copy(ref target, ref source, byteCount);
         }
     }
 }

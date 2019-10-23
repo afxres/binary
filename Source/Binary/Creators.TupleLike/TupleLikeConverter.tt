@@ -106,11 +106,11 @@ foreach (var (from, to, prefix, member) in jobs)
                 var before = k != i || method != "";
                 var suffix = before ? "Auto" : "";
 #>
-            var val<#= k #> = converter<#= k #>.Decode<#= suffix #>(<#= (before ? "ref" : "in") #> <#= source #>);
+            var any<#= k #> = converter<#= k #>.Decode<#= suffix #>(<#= (before ? "ref" : "in") #> <#= source #>);
 <#
             }
 #>
-            return new <#= typeName #>(<#= Join("val") #>);
+            return new <#= typeName #>(<#= Join("any") #>);
         }
 <#
         }

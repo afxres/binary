@@ -5,7 +5,7 @@ namespace Mikodev.Binary.Creators.ArrayLike
 {
     internal sealed class MemoryBuilder<T> : ArrayLikeBuilder<Memory<T>, T>
     {
-        public override int Length(ReadOnlyMemory<T> item) => item.Length;
+        public override int Count(ReadOnlyMemory<T> item) => item.Length;
 
         public override ReadOnlyMemory<T> Of(Memory<T> item) => item;
 

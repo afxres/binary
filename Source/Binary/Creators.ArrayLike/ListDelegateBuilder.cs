@@ -18,7 +18,7 @@ namespace Mikodev.Binary.Creators.ArrayLike
             this.toList = toList;
         }
 
-        public override int Length(ReadOnlyMemory<T> item) => item.Length;
+        public override int Count(ReadOnlyMemory<T> item) => item.Length;
 
         public override ReadOnlyMemory<T> Of(List<T> item) => item is { Count: var count } && count > 0 ? new ReadOnlyMemory<T>(ofList.Invoke(item), 0, count) : default;
 

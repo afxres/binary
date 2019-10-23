@@ -1,4 +1,5 @@
-﻿using Mikodev.Binary.Internal.Delegates;
+﻿using Mikodev.Binary.CollectionModels.ArrayLikeAdapters;
+using Mikodev.Binary.Internal.Delegates;
 using Mikodev.Binary.Internal.Extensions;
 using System;
 using System.Collections.Generic;
@@ -32,7 +33,7 @@ namespace Mikodev.Binary.CollectionModels.Implementations
             var method = typeof(T).GetMethods(BindingFlags.Instance | BindingFlags.Public)
                 .Where(x => x.Name == "ToArray" && x.ReturnType == typeof(E[]) && x.GetParameters().Length == 0)
                 .FirstOrDefault();
-            adapter = CollectionAdapterHelper.Create(converter);
+            adapter = ArrayLikeAdapterHelper.Create(converter);
             toArray = method == null ? null : Compile(method);
             byArray = converter.IsOriginalEndiannessConverter() && (method != null || typeof(ICollection<E>).IsAssignableFrom(typeof(T)));
         }

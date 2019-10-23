@@ -18,7 +18,7 @@ namespace Mikodev.Binary.Converters.Runtime.Collections
             this.reverse = reverse;
         }
 
-        public override int Length(T item) => item is ICollection<E> collection ? collection.Count : NoActualLength;
+        public override int Count(T item) => item is ICollection<E> collection ? collection.Count : NoActualLength;
 
         public override T Of(T item) => item;
 

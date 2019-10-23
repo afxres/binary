@@ -8,23 +8,23 @@ namespace Mikodev.Binary
     {
         public static void EncodeBufferWithLengthPrefix(ref Allocator allocator, in ReadOnlySpan<byte> span)
         {
-            var spanLength = span.Length;
-            EncodeNumber(ref allocator, spanLength);
-            if (spanLength == 0)
+            var byteCount = span.Length;
+            EncodeNumber(ref allocator, byteCount);
+            if (byteCount == 0)
                 return;
-            ref var target = ref allocator.AllocateReference(spanLength);
+            ref var target = ref allocator.AllocateReference(byteCount);
             ref var source = ref MemoryMarshal.GetReference(span);
-            Memory.Copy(ref target, ref source, spanLength);
+            Memory.Copy(ref target, ref source, byteCount);
         }
 
         public static ReadOnlySpan<byte> DecodeBufferWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
-            var spanLength = span.Length;
-            if (spanLength == 0)
+            var limits = span.Length;
+            if (limits == 0)
                 goto fail;
             ref var location = ref MemoryMarshal.GetReference(span);
             var prefixLength = DecodeNumberLength(location);
-            if (spanLength < prefixLength)
+            if (limits < prefixLength)
                 goto fail;
             var length = DecodeNumber(ref location, prefixLength);
             // check bounds via slice method, then replace span with remaining part

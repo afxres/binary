@@ -58,12 +58,12 @@ namespace Mikodev.Binary
         public static string DecodeStringWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
             var encoding = Converter.Encoding;
-            var spanLength = span.Length;
-            if (spanLength == 0)
+            var limits = span.Length;
+            if (limits == 0)
                 goto fail;
             ref var location = ref MemoryMarshal.GetReference(span);
             var prefixLength = DecodeNumberLength(location);
-            if (spanLength < prefixLength)
+            if (limits < prefixLength)
                 goto fail;
             var length = DecodeNumber(ref location, prefixLength);
             // check bounds via slice method

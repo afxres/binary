@@ -12,7 +12,7 @@ namespace Mikodev.Binary.Converters.Runtime.Collections
 
         public DelegateDictionaryBuilder(ToDictionary<T, K, V> constructor) => this.constructor = constructor;
 
-        public override int Length(T item) => item is ICollection<KeyValuePair<K, V>> collection ? collection.Count : NoActualLength;
+        public override int Count(T item) => item is ICollection<KeyValuePair<K, V>> collection ? collection.Count : NoActualLength;
 
         public override T Of(T item) => item;
 

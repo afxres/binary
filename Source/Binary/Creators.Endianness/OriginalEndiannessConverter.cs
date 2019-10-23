@@ -48,12 +48,12 @@ namespace Mikodev.Binary.Creators.Endianness
 
         public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
-            var spanLength = span.Length;
-            if (spanLength == 0)
+            var limits = span.Length;
+            if (limits == 0)
                 goto fail;
             ref var location = ref MemoryMarshal.GetReference(span);
             var prefixLength = PrimitiveHelper.DecodeNumberLength(location);
-            if (spanLength < prefixLength)
+            if (limits < prefixLength)
                 goto fail;
             var length = PrimitiveHelper.DecodeNumber(ref location, prefixLength);
             if (length < Memory.SizeOf<T>())

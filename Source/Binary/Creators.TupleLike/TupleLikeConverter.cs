@@ -32,9 +32,9 @@
         public override KeyValuePair<T1, T2> Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var val1 = converter1.DecodeAuto(ref temp);
-            var val2 = converter2.Decode(in temp);
-            return new KeyValuePair<T1, T2>(val1, val2);
+            var any1 = converter1.DecodeAuto(ref temp);
+            var any2 = converter2.Decode(in temp);
+            return new KeyValuePair<T1, T2>(any1, any2);
         }
 
         public override void EncodeAuto(ref Allocator allocator, KeyValuePair<T1, T2> item)
@@ -45,9 +45,9 @@
 
         public override KeyValuePair<T1, T2> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var val1 = converter1.DecodeAuto(ref span);
-            var val2 = converter2.DecodeAuto(ref span);
-            return new KeyValuePair<T1, T2>(val1, val2);
+            var any1 = converter1.DecodeAuto(ref span);
+            var any2 = converter2.DecodeAuto(ref span);
+            return new KeyValuePair<T1, T2>(any1, any2);
         }
     }
 
@@ -72,8 +72,8 @@
         public override Tuple<T1> Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var val1 = converter1.Decode(in temp);
-            return new Tuple<T1>(val1);
+            var any1 = converter1.Decode(in temp);
+            return new Tuple<T1>(any1);
         }
 
         public override void EncodeAuto(ref Allocator allocator, Tuple<T1> item)
@@ -85,8 +85,8 @@
 
         public override Tuple<T1> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var val1 = converter1.DecodeAuto(ref span);
-            return new Tuple<T1>(val1);
+            var any1 = converter1.DecodeAuto(ref span);
+            return new Tuple<T1>(any1);
         }
     }
 
@@ -115,9 +115,9 @@
         public override Tuple<T1, T2> Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var val1 = converter1.DecodeAuto(ref temp);
-            var val2 = converter2.Decode(in temp);
-            return new Tuple<T1, T2>(val1, val2);
+            var any1 = converter1.DecodeAuto(ref temp);
+            var any2 = converter2.Decode(in temp);
+            return new Tuple<T1, T2>(any1, any2);
         }
 
         public override void EncodeAuto(ref Allocator allocator, Tuple<T1, T2> item)
@@ -130,9 +130,9 @@
 
         public override Tuple<T1, T2> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var val1 = converter1.DecodeAuto(ref span);
-            var val2 = converter2.DecodeAuto(ref span);
-            return new Tuple<T1, T2>(val1, val2);
+            var any1 = converter1.DecodeAuto(ref span);
+            var any2 = converter2.DecodeAuto(ref span);
+            return new Tuple<T1, T2>(any1, any2);
         }
     }
 
@@ -165,10 +165,10 @@
         public override Tuple<T1, T2, T3> Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var val1 = converter1.DecodeAuto(ref temp);
-            var val2 = converter2.DecodeAuto(ref temp);
-            var val3 = converter3.Decode(in temp);
-            return new Tuple<T1, T2, T3>(val1, val2, val3);
+            var any1 = converter1.DecodeAuto(ref temp);
+            var any2 = converter2.DecodeAuto(ref temp);
+            var any3 = converter3.Decode(in temp);
+            return new Tuple<T1, T2, T3>(any1, any2, any3);
         }
 
         public override void EncodeAuto(ref Allocator allocator, Tuple<T1, T2, T3> item)
@@ -182,10 +182,10 @@
 
         public override Tuple<T1, T2, T3> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var val1 = converter1.DecodeAuto(ref span);
-            var val2 = converter2.DecodeAuto(ref span);
-            var val3 = converter3.DecodeAuto(ref span);
-            return new Tuple<T1, T2, T3>(val1, val2, val3);
+            var any1 = converter1.DecodeAuto(ref span);
+            var any2 = converter2.DecodeAuto(ref span);
+            var any3 = converter3.DecodeAuto(ref span);
+            return new Tuple<T1, T2, T3>(any1, any2, any3);
         }
     }
 
@@ -222,11 +222,11 @@
         public override Tuple<T1, T2, T3, T4> Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var val1 = converter1.DecodeAuto(ref temp);
-            var val2 = converter2.DecodeAuto(ref temp);
-            var val3 = converter3.DecodeAuto(ref temp);
-            var val4 = converter4.Decode(in temp);
-            return new Tuple<T1, T2, T3, T4>(val1, val2, val3, val4);
+            var any1 = converter1.DecodeAuto(ref temp);
+            var any2 = converter2.DecodeAuto(ref temp);
+            var any3 = converter3.DecodeAuto(ref temp);
+            var any4 = converter4.Decode(in temp);
+            return new Tuple<T1, T2, T3, T4>(any1, any2, any3, any4);
         }
 
         public override void EncodeAuto(ref Allocator allocator, Tuple<T1, T2, T3, T4> item)
@@ -241,11 +241,11 @@
 
         public override Tuple<T1, T2, T3, T4> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var val1 = converter1.DecodeAuto(ref span);
-            var val2 = converter2.DecodeAuto(ref span);
-            var val3 = converter3.DecodeAuto(ref span);
-            var val4 = converter4.DecodeAuto(ref span);
-            return new Tuple<T1, T2, T3, T4>(val1, val2, val3, val4);
+            var any1 = converter1.DecodeAuto(ref span);
+            var any2 = converter2.DecodeAuto(ref span);
+            var any3 = converter3.DecodeAuto(ref span);
+            var any4 = converter4.DecodeAuto(ref span);
+            return new Tuple<T1, T2, T3, T4>(any1, any2, any3, any4);
         }
     }
 
@@ -286,12 +286,12 @@
         public override Tuple<T1, T2, T3, T4, T5> Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var val1 = converter1.DecodeAuto(ref temp);
-            var val2 = converter2.DecodeAuto(ref temp);
-            var val3 = converter3.DecodeAuto(ref temp);
-            var val4 = converter4.DecodeAuto(ref temp);
-            var val5 = converter5.Decode(in temp);
-            return new Tuple<T1, T2, T3, T4, T5>(val1, val2, val3, val4, val5);
+            var any1 = converter1.DecodeAuto(ref temp);
+            var any2 = converter2.DecodeAuto(ref temp);
+            var any3 = converter3.DecodeAuto(ref temp);
+            var any4 = converter4.DecodeAuto(ref temp);
+            var any5 = converter5.Decode(in temp);
+            return new Tuple<T1, T2, T3, T4, T5>(any1, any2, any3, any4, any5);
         }
 
         public override void EncodeAuto(ref Allocator allocator, Tuple<T1, T2, T3, T4, T5> item)
@@ -307,12 +307,12 @@
 
         public override Tuple<T1, T2, T3, T4, T5> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var val1 = converter1.DecodeAuto(ref span);
-            var val2 = converter2.DecodeAuto(ref span);
-            var val3 = converter3.DecodeAuto(ref span);
-            var val4 = converter4.DecodeAuto(ref span);
-            var val5 = converter5.DecodeAuto(ref span);
-            return new Tuple<T1, T2, T3, T4, T5>(val1, val2, val3, val4, val5);
+            var any1 = converter1.DecodeAuto(ref span);
+            var any2 = converter2.DecodeAuto(ref span);
+            var any3 = converter3.DecodeAuto(ref span);
+            var any4 = converter4.DecodeAuto(ref span);
+            var any5 = converter5.DecodeAuto(ref span);
+            return new Tuple<T1, T2, T3, T4, T5>(any1, any2, any3, any4, any5);
         }
     }
 
@@ -357,13 +357,13 @@
         public override Tuple<T1, T2, T3, T4, T5, T6> Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var val1 = converter1.DecodeAuto(ref temp);
-            var val2 = converter2.DecodeAuto(ref temp);
-            var val3 = converter3.DecodeAuto(ref temp);
-            var val4 = converter4.DecodeAuto(ref temp);
-            var val5 = converter5.DecodeAuto(ref temp);
-            var val6 = converter6.Decode(in temp);
-            return new Tuple<T1, T2, T3, T4, T5, T6>(val1, val2, val3, val4, val5, val6);
+            var any1 = converter1.DecodeAuto(ref temp);
+            var any2 = converter2.DecodeAuto(ref temp);
+            var any3 = converter3.DecodeAuto(ref temp);
+            var any4 = converter4.DecodeAuto(ref temp);
+            var any5 = converter5.DecodeAuto(ref temp);
+            var any6 = converter6.Decode(in temp);
+            return new Tuple<T1, T2, T3, T4, T5, T6>(any1, any2, any3, any4, any5, any6);
         }
 
         public override void EncodeAuto(ref Allocator allocator, Tuple<T1, T2, T3, T4, T5, T6> item)
@@ -380,13 +380,13 @@
 
         public override Tuple<T1, T2, T3, T4, T5, T6> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var val1 = converter1.DecodeAuto(ref span);
-            var val2 = converter2.DecodeAuto(ref span);
-            var val3 = converter3.DecodeAuto(ref span);
-            var val4 = converter4.DecodeAuto(ref span);
-            var val5 = converter5.DecodeAuto(ref span);
-            var val6 = converter6.DecodeAuto(ref span);
-            return new Tuple<T1, T2, T3, T4, T5, T6>(val1, val2, val3, val4, val5, val6);
+            var any1 = converter1.DecodeAuto(ref span);
+            var any2 = converter2.DecodeAuto(ref span);
+            var any3 = converter3.DecodeAuto(ref span);
+            var any4 = converter4.DecodeAuto(ref span);
+            var any5 = converter5.DecodeAuto(ref span);
+            var any6 = converter6.DecodeAuto(ref span);
+            return new Tuple<T1, T2, T3, T4, T5, T6>(any1, any2, any3, any4, any5, any6);
         }
     }
 
@@ -435,14 +435,14 @@
         public override Tuple<T1, T2, T3, T4, T5, T6, T7> Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var val1 = converter1.DecodeAuto(ref temp);
-            var val2 = converter2.DecodeAuto(ref temp);
-            var val3 = converter3.DecodeAuto(ref temp);
-            var val4 = converter4.DecodeAuto(ref temp);
-            var val5 = converter5.DecodeAuto(ref temp);
-            var val6 = converter6.DecodeAuto(ref temp);
-            var val7 = converter7.Decode(in temp);
-            return new Tuple<T1, T2, T3, T4, T5, T6, T7>(val1, val2, val3, val4, val5, val6, val7);
+            var any1 = converter1.DecodeAuto(ref temp);
+            var any2 = converter2.DecodeAuto(ref temp);
+            var any3 = converter3.DecodeAuto(ref temp);
+            var any4 = converter4.DecodeAuto(ref temp);
+            var any5 = converter5.DecodeAuto(ref temp);
+            var any6 = converter6.DecodeAuto(ref temp);
+            var any7 = converter7.Decode(in temp);
+            return new Tuple<T1, T2, T3, T4, T5, T6, T7>(any1, any2, any3, any4, any5, any6, any7);
         }
 
         public override void EncodeAuto(ref Allocator allocator, Tuple<T1, T2, T3, T4, T5, T6, T7> item)
@@ -460,14 +460,14 @@
 
         public override Tuple<T1, T2, T3, T4, T5, T6, T7> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var val1 = converter1.DecodeAuto(ref span);
-            var val2 = converter2.DecodeAuto(ref span);
-            var val3 = converter3.DecodeAuto(ref span);
-            var val4 = converter4.DecodeAuto(ref span);
-            var val5 = converter5.DecodeAuto(ref span);
-            var val6 = converter6.DecodeAuto(ref span);
-            var val7 = converter7.DecodeAuto(ref span);
-            return new Tuple<T1, T2, T3, T4, T5, T6, T7>(val1, val2, val3, val4, val5, val6, val7);
+            var any1 = converter1.DecodeAuto(ref span);
+            var any2 = converter2.DecodeAuto(ref span);
+            var any3 = converter3.DecodeAuto(ref span);
+            var any4 = converter4.DecodeAuto(ref span);
+            var any5 = converter5.DecodeAuto(ref span);
+            var any6 = converter6.DecodeAuto(ref span);
+            var any7 = converter7.DecodeAuto(ref span);
+            return new Tuple<T1, T2, T3, T4, T5, T6, T7>(any1, any2, any3, any4, any5, any6, any7);
         }
     }
 
@@ -520,15 +520,15 @@
         public override Tuple<T1, T2, T3, T4, T5, T6, T7, T8> Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var val1 = converter1.DecodeAuto(ref temp);
-            var val2 = converter2.DecodeAuto(ref temp);
-            var val3 = converter3.DecodeAuto(ref temp);
-            var val4 = converter4.DecodeAuto(ref temp);
-            var val5 = converter5.DecodeAuto(ref temp);
-            var val6 = converter6.DecodeAuto(ref temp);
-            var val7 = converter7.DecodeAuto(ref temp);
-            var val8 = converter8.Decode(in temp);
-            return new Tuple<T1, T2, T3, T4, T5, T6, T7, T8>(val1, val2, val3, val4, val5, val6, val7, val8);
+            var any1 = converter1.DecodeAuto(ref temp);
+            var any2 = converter2.DecodeAuto(ref temp);
+            var any3 = converter3.DecodeAuto(ref temp);
+            var any4 = converter4.DecodeAuto(ref temp);
+            var any5 = converter5.DecodeAuto(ref temp);
+            var any6 = converter6.DecodeAuto(ref temp);
+            var any7 = converter7.DecodeAuto(ref temp);
+            var any8 = converter8.Decode(in temp);
+            return new Tuple<T1, T2, T3, T4, T5, T6, T7, T8>(any1, any2, any3, any4, any5, any6, any7, any8);
         }
 
         public override void EncodeAuto(ref Allocator allocator, Tuple<T1, T2, T3, T4, T5, T6, T7, T8> item)
@@ -547,15 +547,15 @@
 
         public override Tuple<T1, T2, T3, T4, T5, T6, T7, T8> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var val1 = converter1.DecodeAuto(ref span);
-            var val2 = converter2.DecodeAuto(ref span);
-            var val3 = converter3.DecodeAuto(ref span);
-            var val4 = converter4.DecodeAuto(ref span);
-            var val5 = converter5.DecodeAuto(ref span);
-            var val6 = converter6.DecodeAuto(ref span);
-            var val7 = converter7.DecodeAuto(ref span);
-            var val8 = converter8.DecodeAuto(ref span);
-            return new Tuple<T1, T2, T3, T4, T5, T6, T7, T8>(val1, val2, val3, val4, val5, val6, val7, val8);
+            var any1 = converter1.DecodeAuto(ref span);
+            var any2 = converter2.DecodeAuto(ref span);
+            var any3 = converter3.DecodeAuto(ref span);
+            var any4 = converter4.DecodeAuto(ref span);
+            var any5 = converter5.DecodeAuto(ref span);
+            var any6 = converter6.DecodeAuto(ref span);
+            var any7 = converter7.DecodeAuto(ref span);
+            var any8 = converter8.DecodeAuto(ref span);
+            return new Tuple<T1, T2, T3, T4, T5, T6, T7, T8>(any1, any2, any3, any4, any5, any6, any7, any8);
         }
     }
 
@@ -578,8 +578,8 @@
         public override ValueTuple<T1> Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var val1 = converter1.Decode(in temp);
-            return new ValueTuple<T1>(val1);
+            var any1 = converter1.Decode(in temp);
+            return new ValueTuple<T1>(any1);
         }
 
         public override void EncodeAuto(ref Allocator allocator, ValueTuple<T1> item)
@@ -589,8 +589,8 @@
 
         public override ValueTuple<T1> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var val1 = converter1.DecodeAuto(ref span);
-            return new ValueTuple<T1>(val1);
+            var any1 = converter1.DecodeAuto(ref span);
+            return new ValueTuple<T1>(any1);
         }
     }
 
@@ -617,9 +617,9 @@
         public override ValueTuple<T1, T2> Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var val1 = converter1.DecodeAuto(ref temp);
-            var val2 = converter2.Decode(in temp);
-            return new ValueTuple<T1, T2>(val1, val2);
+            var any1 = converter1.DecodeAuto(ref temp);
+            var any2 = converter2.Decode(in temp);
+            return new ValueTuple<T1, T2>(any1, any2);
         }
 
         public override void EncodeAuto(ref Allocator allocator, ValueTuple<T1, T2> item)
@@ -630,9 +630,9 @@
 
         public override ValueTuple<T1, T2> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var val1 = converter1.DecodeAuto(ref span);
-            var val2 = converter2.DecodeAuto(ref span);
-            return new ValueTuple<T1, T2>(val1, val2);
+            var any1 = converter1.DecodeAuto(ref span);
+            var any2 = converter2.DecodeAuto(ref span);
+            return new ValueTuple<T1, T2>(any1, any2);
         }
     }
 
@@ -663,10 +663,10 @@
         public override ValueTuple<T1, T2, T3> Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var val1 = converter1.DecodeAuto(ref temp);
-            var val2 = converter2.DecodeAuto(ref temp);
-            var val3 = converter3.Decode(in temp);
-            return new ValueTuple<T1, T2, T3>(val1, val2, val3);
+            var any1 = converter1.DecodeAuto(ref temp);
+            var any2 = converter2.DecodeAuto(ref temp);
+            var any3 = converter3.Decode(in temp);
+            return new ValueTuple<T1, T2, T3>(any1, any2, any3);
         }
 
         public override void EncodeAuto(ref Allocator allocator, ValueTuple<T1, T2, T3> item)
@@ -678,10 +678,10 @@
 
         public override ValueTuple<T1, T2, T3> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var val1 = converter1.DecodeAuto(ref span);
-            var val2 = converter2.DecodeAuto(ref span);
-            var val3 = converter3.DecodeAuto(ref span);
-            return new ValueTuple<T1, T2, T3>(val1, val2, val3);
+            var any1 = converter1.DecodeAuto(ref span);
+            var any2 = converter2.DecodeAuto(ref span);
+            var any3 = converter3.DecodeAuto(ref span);
+            return new ValueTuple<T1, T2, T3>(any1, any2, any3);
         }
     }
 
@@ -716,11 +716,11 @@
         public override ValueTuple<T1, T2, T3, T4> Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var val1 = converter1.DecodeAuto(ref temp);
-            var val2 = converter2.DecodeAuto(ref temp);
-            var val3 = converter3.DecodeAuto(ref temp);
-            var val4 = converter4.Decode(in temp);
-            return new ValueTuple<T1, T2, T3, T4>(val1, val2, val3, val4);
+            var any1 = converter1.DecodeAuto(ref temp);
+            var any2 = converter2.DecodeAuto(ref temp);
+            var any3 = converter3.DecodeAuto(ref temp);
+            var any4 = converter4.Decode(in temp);
+            return new ValueTuple<T1, T2, T3, T4>(any1, any2, any3, any4);
         }
 
         public override void EncodeAuto(ref Allocator allocator, ValueTuple<T1, T2, T3, T4> item)
@@ -733,11 +733,11 @@
 
         public override ValueTuple<T1, T2, T3, T4> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var val1 = converter1.DecodeAuto(ref span);
-            var val2 = converter2.DecodeAuto(ref span);
-            var val3 = converter3.DecodeAuto(ref span);
-            var val4 = converter4.DecodeAuto(ref span);
-            return new ValueTuple<T1, T2, T3, T4>(val1, val2, val3, val4);
+            var any1 = converter1.DecodeAuto(ref span);
+            var any2 = converter2.DecodeAuto(ref span);
+            var any3 = converter3.DecodeAuto(ref span);
+            var any4 = converter4.DecodeAuto(ref span);
+            return new ValueTuple<T1, T2, T3, T4>(any1, any2, any3, any4);
         }
     }
 
@@ -776,12 +776,12 @@
         public override ValueTuple<T1, T2, T3, T4, T5> Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var val1 = converter1.DecodeAuto(ref temp);
-            var val2 = converter2.DecodeAuto(ref temp);
-            var val3 = converter3.DecodeAuto(ref temp);
-            var val4 = converter4.DecodeAuto(ref temp);
-            var val5 = converter5.Decode(in temp);
-            return new ValueTuple<T1, T2, T3, T4, T5>(val1, val2, val3, val4, val5);
+            var any1 = converter1.DecodeAuto(ref temp);
+            var any2 = converter2.DecodeAuto(ref temp);
+            var any3 = converter3.DecodeAuto(ref temp);
+            var any4 = converter4.DecodeAuto(ref temp);
+            var any5 = converter5.Decode(in temp);
+            return new ValueTuple<T1, T2, T3, T4, T5>(any1, any2, any3, any4, any5);
         }
 
         public override void EncodeAuto(ref Allocator allocator, ValueTuple<T1, T2, T3, T4, T5> item)
@@ -795,12 +795,12 @@
 
         public override ValueTuple<T1, T2, T3, T4, T5> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var val1 = converter1.DecodeAuto(ref span);
-            var val2 = converter2.DecodeAuto(ref span);
-            var val3 = converter3.DecodeAuto(ref span);
-            var val4 = converter4.DecodeAuto(ref span);
-            var val5 = converter5.DecodeAuto(ref span);
-            return new ValueTuple<T1, T2, T3, T4, T5>(val1, val2, val3, val4, val5);
+            var any1 = converter1.DecodeAuto(ref span);
+            var any2 = converter2.DecodeAuto(ref span);
+            var any3 = converter3.DecodeAuto(ref span);
+            var any4 = converter4.DecodeAuto(ref span);
+            var any5 = converter5.DecodeAuto(ref span);
+            return new ValueTuple<T1, T2, T3, T4, T5>(any1, any2, any3, any4, any5);
         }
     }
 
@@ -843,13 +843,13 @@
         public override ValueTuple<T1, T2, T3, T4, T5, T6> Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var val1 = converter1.DecodeAuto(ref temp);
-            var val2 = converter2.DecodeAuto(ref temp);
-            var val3 = converter3.DecodeAuto(ref temp);
-            var val4 = converter4.DecodeAuto(ref temp);
-            var val5 = converter5.DecodeAuto(ref temp);
-            var val6 = converter6.Decode(in temp);
-            return new ValueTuple<T1, T2, T3, T4, T5, T6>(val1, val2, val3, val4, val5, val6);
+            var any1 = converter1.DecodeAuto(ref temp);
+            var any2 = converter2.DecodeAuto(ref temp);
+            var any3 = converter3.DecodeAuto(ref temp);
+            var any4 = converter4.DecodeAuto(ref temp);
+            var any5 = converter5.DecodeAuto(ref temp);
+            var any6 = converter6.Decode(in temp);
+            return new ValueTuple<T1, T2, T3, T4, T5, T6>(any1, any2, any3, any4, any5, any6);
         }
 
         public override void EncodeAuto(ref Allocator allocator, ValueTuple<T1, T2, T3, T4, T5, T6> item)
@@ -864,13 +864,13 @@
 
         public override ValueTuple<T1, T2, T3, T4, T5, T6> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var val1 = converter1.DecodeAuto(ref span);
-            var val2 = converter2.DecodeAuto(ref span);
-            var val3 = converter3.DecodeAuto(ref span);
-            var val4 = converter4.DecodeAuto(ref span);
-            var val5 = converter5.DecodeAuto(ref span);
-            var val6 = converter6.DecodeAuto(ref span);
-            return new ValueTuple<T1, T2, T3, T4, T5, T6>(val1, val2, val3, val4, val5, val6);
+            var any1 = converter1.DecodeAuto(ref span);
+            var any2 = converter2.DecodeAuto(ref span);
+            var any3 = converter3.DecodeAuto(ref span);
+            var any4 = converter4.DecodeAuto(ref span);
+            var any5 = converter5.DecodeAuto(ref span);
+            var any6 = converter6.DecodeAuto(ref span);
+            return new ValueTuple<T1, T2, T3, T4, T5, T6>(any1, any2, any3, any4, any5, any6);
         }
     }
 
@@ -917,14 +917,14 @@
         public override ValueTuple<T1, T2, T3, T4, T5, T6, T7> Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var val1 = converter1.DecodeAuto(ref temp);
-            var val2 = converter2.DecodeAuto(ref temp);
-            var val3 = converter3.DecodeAuto(ref temp);
-            var val4 = converter4.DecodeAuto(ref temp);
-            var val5 = converter5.DecodeAuto(ref temp);
-            var val6 = converter6.DecodeAuto(ref temp);
-            var val7 = converter7.Decode(in temp);
-            return new ValueTuple<T1, T2, T3, T4, T5, T6, T7>(val1, val2, val3, val4, val5, val6, val7);
+            var any1 = converter1.DecodeAuto(ref temp);
+            var any2 = converter2.DecodeAuto(ref temp);
+            var any3 = converter3.DecodeAuto(ref temp);
+            var any4 = converter4.DecodeAuto(ref temp);
+            var any5 = converter5.DecodeAuto(ref temp);
+            var any6 = converter6.DecodeAuto(ref temp);
+            var any7 = converter7.Decode(in temp);
+            return new ValueTuple<T1, T2, T3, T4, T5, T6, T7>(any1, any2, any3, any4, any5, any6, any7);
         }
 
         public override void EncodeAuto(ref Allocator allocator, ValueTuple<T1, T2, T3, T4, T5, T6, T7> item)
@@ -940,14 +940,14 @@
 
         public override ValueTuple<T1, T2, T3, T4, T5, T6, T7> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var val1 = converter1.DecodeAuto(ref span);
-            var val2 = converter2.DecodeAuto(ref span);
-            var val3 = converter3.DecodeAuto(ref span);
-            var val4 = converter4.DecodeAuto(ref span);
-            var val5 = converter5.DecodeAuto(ref span);
-            var val6 = converter6.DecodeAuto(ref span);
-            var val7 = converter7.DecodeAuto(ref span);
-            return new ValueTuple<T1, T2, T3, T4, T5, T6, T7>(val1, val2, val3, val4, val5, val6, val7);
+            var any1 = converter1.DecodeAuto(ref span);
+            var any2 = converter2.DecodeAuto(ref span);
+            var any3 = converter3.DecodeAuto(ref span);
+            var any4 = converter4.DecodeAuto(ref span);
+            var any5 = converter5.DecodeAuto(ref span);
+            var any6 = converter6.DecodeAuto(ref span);
+            var any7 = converter7.DecodeAuto(ref span);
+            return new ValueTuple<T1, T2, T3, T4, T5, T6, T7>(any1, any2, any3, any4, any5, any6, any7);
         }
     }
 
@@ -998,15 +998,15 @@
         public override ValueTuple<T1, T2, T3, T4, T5, T6, T7, T8> Decode(in ReadOnlySpan<byte> span)
         {
             var temp = span;
-            var val1 = converter1.DecodeAuto(ref temp);
-            var val2 = converter2.DecodeAuto(ref temp);
-            var val3 = converter3.DecodeAuto(ref temp);
-            var val4 = converter4.DecodeAuto(ref temp);
-            var val5 = converter5.DecodeAuto(ref temp);
-            var val6 = converter6.DecodeAuto(ref temp);
-            var val7 = converter7.DecodeAuto(ref temp);
-            var val8 = converter8.Decode(in temp);
-            return new ValueTuple<T1, T2, T3, T4, T5, T6, T7, T8>(val1, val2, val3, val4, val5, val6, val7, val8);
+            var any1 = converter1.DecodeAuto(ref temp);
+            var any2 = converter2.DecodeAuto(ref temp);
+            var any3 = converter3.DecodeAuto(ref temp);
+            var any4 = converter4.DecodeAuto(ref temp);
+            var any5 = converter5.DecodeAuto(ref temp);
+            var any6 = converter6.DecodeAuto(ref temp);
+            var any7 = converter7.DecodeAuto(ref temp);
+            var any8 = converter8.Decode(in temp);
+            return new ValueTuple<T1, T2, T3, T4, T5, T6, T7, T8>(any1, any2, any3, any4, any5, any6, any7, any8);
         }
 
         public override void EncodeAuto(ref Allocator allocator, ValueTuple<T1, T2, T3, T4, T5, T6, T7, T8> item)
@@ -1023,15 +1023,15 @@
 
         public override ValueTuple<T1, T2, T3, T4, T5, T6, T7, T8> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var val1 = converter1.DecodeAuto(ref span);
-            var val2 = converter2.DecodeAuto(ref span);
-            var val3 = converter3.DecodeAuto(ref span);
-            var val4 = converter4.DecodeAuto(ref span);
-            var val5 = converter5.DecodeAuto(ref span);
-            var val6 = converter6.DecodeAuto(ref span);
-            var val7 = converter7.DecodeAuto(ref span);
-            var val8 = converter8.DecodeAuto(ref span);
-            return new ValueTuple<T1, T2, T3, T4, T5, T6, T7, T8>(val1, val2, val3, val4, val5, val6, val7, val8);
+            var any1 = converter1.DecodeAuto(ref span);
+            var any2 = converter2.DecodeAuto(ref span);
+            var any3 = converter3.DecodeAuto(ref span);
+            var any4 = converter4.DecodeAuto(ref span);
+            var any5 = converter5.DecodeAuto(ref span);
+            var any6 = converter6.DecodeAuto(ref span);
+            var any7 = converter7.DecodeAuto(ref span);
+            var any8 = converter8.DecodeAuto(ref span);
+            return new ValueTuple<T1, T2, T3, T4, T5, T6, T7, T8>(any1, any2, any3, any4, any5, any6, any7, any8);
         }
     }
 }

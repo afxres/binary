@@ -6,7 +6,7 @@ namespace Mikodev.Binary.Creators.ArrayLike
 {
     internal sealed class ArrayBuilder<T> : ArrayLikeBuilder<T[], T>
     {
-        public override int Length(ReadOnlyMemory<T> item) => item.Length;
+        public override int Count(ReadOnlyMemory<T> item) => item.Length;
 
         public override ReadOnlyMemory<T> Of(T[] item) => item;
 
