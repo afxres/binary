@@ -1,10 +1,9 @@
 ﻿using Mikodev.Binary.CollectionModels;
-using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Delegates;
 using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Converters.Runtime.Collections
+namespace Mikodev.Binary.Internal.Contexts.Implementations
 {
     internal sealed class DelegateDictionaryBuilder<T, K, V> : CollectionBuilder<T, T, Dictionary<K, V>, KeyValuePair<K, V>>
     {

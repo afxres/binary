@@ -1,8 +1,7 @@
-﻿using Mikodev.Binary.Internal;
-using Mikodev.Binary.Internal.Delegates;
+﻿using Mikodev.Binary.Internal.Delegates;
 using System;
 
-namespace Mikodev.Binary.Converters.Runtime
+namespace Mikodev.Binary.Internal.Contexts.Implementations
 {
     internal sealed class TupleObjectConverter<T> : Converter<T>
     {

@@ -1,5 +1,5 @@
 ﻿using Mikodev.Binary.CollectionModels.Implementations;
-using Mikodev.Binary.Converters.Runtime.Collections;
+using Mikodev.Binary.Internal.Contexts.Implementations;
 using Mikodev.Binary.Internal.Delegates;
 using Mikodev.Binary.Internal.Extensions;
 using System;
@@ -10,11 +10,11 @@ using System.Linq.Expressions;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
-    internal static class ContextMethodsOfCollections
+    internal static class FallbackCollectionMethods
     {
         private static readonly IReadOnlyCollection<Type> reverseTypes = new[] { typeof(Stack<>), typeof(ConcurrentStack<>) };
 
-        internal static Converter GetConverterAsCollectionOrDictionary(IGeneratorContext context, Type type, Type itemType)
+        internal static Converter GetConverter(IGeneratorContext context, Type type, Type itemType)
         {
             return itemType.TryGetGenericArguments(typeof(KeyValuePair<,>), out var types)
                 ? GetConverterAsDictionary(context, type, itemType, types)

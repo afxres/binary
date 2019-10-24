@@ -1,10 +1,9 @@
 ﻿using Mikodev.Binary.CollectionModels;
-using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Delegates;
 using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Converters.Runtime.Collections
+namespace Mikodev.Binary.Internal.Contexts.Implementations
 {
     internal sealed class DelegateCollectionBuilder<T, E> : CollectionBuilder<T, T, ArraySegment<E>, E>
     {

@@ -1,5 +1,4 @@
-﻿using Mikodev.Binary.Converters;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,7 +6,7 @@ using System.Linq;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
-    internal sealed class Generator : IGenerator
+    internal sealed partial class Generator : IGenerator
     {
         private readonly ConcurrentDictionary<Type, Converter> converters;
 
