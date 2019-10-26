@@ -1,9 +1,9 @@
-﻿namespace Mikodev.Binary.Creators.TupleLike
-{
-    using Mikodev.Binary.Internal;
-    using System;
-    using System.Collections.Generic;
+﻿using Mikodev.Binary.Internal;
+using System;
+using System.Collections.Generic;
 
+namespace Mikodev.Binary.Creators.TupleLike
+{
     internal abstract class TupleLikeConverter<T> : Converter<T>
     {
         protected TupleLikeConverter(int length) : base(length) { }
@@ -12,12 +12,10 @@
     internal sealed class KeyValuePairConverter<T1, T2> : TupleLikeConverter<KeyValuePair<T1, T2>>
     {
         private readonly Converter<T1> converter1;
+
         private readonly Converter<T2> converter2;
 
-        public KeyValuePairConverter(
-            Converter<T1> converter1,
-            Converter<T2> converter2,
-            int length) : base(length)
+        public KeyValuePairConverter(Converter<T1> converter1, Converter<T2> converter2, int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;
@@ -55,9 +53,7 @@
     {
         private readonly Converter<T1> converter1;
 
-        public TupleConverter(
-            Converter<T1> converter1,
-            int length) : base(length)
+        public TupleConverter(Converter<T1> converter1, int length) : base(length)
         {
             this.converter1 = converter1;
         }
@@ -93,12 +89,10 @@
     internal sealed class TupleConverter<T1, T2> : TupleLikeConverter<Tuple<T1, T2>>
     {
         private readonly Converter<T1> converter1;
+
         private readonly Converter<T2> converter2;
 
-        public TupleConverter(
-            Converter<T1> converter1,
-            Converter<T2> converter2,
-            int length) : base(length)
+        public TupleConverter(Converter<T1> converter1, Converter<T2> converter2, int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;
@@ -139,14 +133,12 @@
     internal sealed class TupleConverter<T1, T2, T3> : TupleLikeConverter<Tuple<T1, T2, T3>>
     {
         private readonly Converter<T1> converter1;
+
         private readonly Converter<T2> converter2;
+
         private readonly Converter<T3> converter3;
 
-        public TupleConverter(
-            Converter<T1> converter1,
-            Converter<T2> converter2,
-            Converter<T3> converter3,
-            int length) : base(length)
+        public TupleConverter(Converter<T1> converter1, Converter<T2> converter2, Converter<T3> converter3, int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;
@@ -192,16 +184,14 @@
     internal sealed class TupleConverter<T1, T2, T3, T4> : TupleLikeConverter<Tuple<T1, T2, T3, T4>>
     {
         private readonly Converter<T1> converter1;
+
         private readonly Converter<T2> converter2;
+
         private readonly Converter<T3> converter3;
+
         private readonly Converter<T4> converter4;
 
-        public TupleConverter(
-            Converter<T1> converter1,
-            Converter<T2> converter2,
-            Converter<T3> converter3,
-            Converter<T4> converter4,
-            int length) : base(length)
+        public TupleConverter(Converter<T1> converter1, Converter<T2> converter2, Converter<T3> converter3, Converter<T4> converter4, int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;
@@ -252,18 +242,16 @@
     internal sealed class TupleConverter<T1, T2, T3, T4, T5> : TupleLikeConverter<Tuple<T1, T2, T3, T4, T5>>
     {
         private readonly Converter<T1> converter1;
+
         private readonly Converter<T2> converter2;
+
         private readonly Converter<T3> converter3;
+
         private readonly Converter<T4> converter4;
+
         private readonly Converter<T5> converter5;
 
-        public TupleConverter(
-            Converter<T1> converter1,
-            Converter<T2> converter2,
-            Converter<T3> converter3,
-            Converter<T4> converter4,
-            Converter<T5> converter5,
-            int length) : base(length)
+        public TupleConverter(Converter<T1> converter1, Converter<T2> converter2, Converter<T3> converter3, Converter<T4> converter4, Converter<T5> converter5, int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;
@@ -319,20 +307,18 @@
     internal sealed class TupleConverter<T1, T2, T3, T4, T5, T6> : TupleLikeConverter<Tuple<T1, T2, T3, T4, T5, T6>>
     {
         private readonly Converter<T1> converter1;
+
         private readonly Converter<T2> converter2;
+
         private readonly Converter<T3> converter3;
+
         private readonly Converter<T4> converter4;
+
         private readonly Converter<T5> converter5;
+
         private readonly Converter<T6> converter6;
 
-        public TupleConverter(
-            Converter<T1> converter1,
-            Converter<T2> converter2,
-            Converter<T3> converter3,
-            Converter<T4> converter4,
-            Converter<T5> converter5,
-            Converter<T6> converter6,
-            int length) : base(length)
+        public TupleConverter(Converter<T1> converter1, Converter<T2> converter2, Converter<T3> converter3, Converter<T4> converter4, Converter<T5> converter5, Converter<T6> converter6, int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;
@@ -393,22 +379,20 @@
     internal sealed class TupleConverter<T1, T2, T3, T4, T5, T6, T7> : TupleLikeConverter<Tuple<T1, T2, T3, T4, T5, T6, T7>>
     {
         private readonly Converter<T1> converter1;
+
         private readonly Converter<T2> converter2;
+
         private readonly Converter<T3> converter3;
+
         private readonly Converter<T4> converter4;
+
         private readonly Converter<T5> converter5;
+
         private readonly Converter<T6> converter6;
+
         private readonly Converter<T7> converter7;
 
-        public TupleConverter(
-            Converter<T1> converter1,
-            Converter<T2> converter2,
-            Converter<T3> converter3,
-            Converter<T4> converter4,
-            Converter<T5> converter5,
-            Converter<T6> converter6,
-            Converter<T7> converter7,
-            int length) : base(length)
+        public TupleConverter(Converter<T1> converter1, Converter<T2> converter2, Converter<T3> converter3, Converter<T4> converter4, Converter<T5> converter5, Converter<T6> converter6, Converter<T7> converter7, int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;
@@ -474,24 +458,22 @@
     internal sealed class TupleConverter<T1, T2, T3, T4, T5, T6, T7, T8> : TupleLikeConverter<Tuple<T1, T2, T3, T4, T5, T6, T7, T8>>
     {
         private readonly Converter<T1> converter1;
+
         private readonly Converter<T2> converter2;
+
         private readonly Converter<T3> converter3;
+
         private readonly Converter<T4> converter4;
+
         private readonly Converter<T5> converter5;
+
         private readonly Converter<T6> converter6;
+
         private readonly Converter<T7> converter7;
+
         private readonly Converter<T8> converter8;
 
-        public TupleConverter(
-            Converter<T1> converter1,
-            Converter<T2> converter2,
-            Converter<T3> converter3,
-            Converter<T4> converter4,
-            Converter<T5> converter5,
-            Converter<T6> converter6,
-            Converter<T7> converter7,
-            Converter<T8> converter8,
-            int length) : base(length)
+        public TupleConverter(Converter<T1> converter1, Converter<T2> converter2, Converter<T3> converter3, Converter<T4> converter4, Converter<T5> converter5, Converter<T6> converter6, Converter<T7> converter7, Converter<T8> converter8, int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;
@@ -563,9 +545,7 @@
     {
         private readonly Converter<T1> converter1;
 
-        public ValueTupleConverter(
-            Converter<T1> converter1,
-            int length) : base(length)
+        public ValueTupleConverter(Converter<T1> converter1, int length) : base(length)
         {
             this.converter1 = converter1;
         }
@@ -597,12 +577,10 @@
     internal sealed class ValueTupleConverter<T1, T2> : TupleLikeConverter<ValueTuple<T1, T2>>
     {
         private readonly Converter<T1> converter1;
+
         private readonly Converter<T2> converter2;
 
-        public ValueTupleConverter(
-            Converter<T1> converter1,
-            Converter<T2> converter2,
-            int length) : base(length)
+        public ValueTupleConverter(Converter<T1> converter1, Converter<T2> converter2, int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;
@@ -639,14 +617,12 @@
     internal sealed class ValueTupleConverter<T1, T2, T3> : TupleLikeConverter<ValueTuple<T1, T2, T3>>
     {
         private readonly Converter<T1> converter1;
+
         private readonly Converter<T2> converter2;
+
         private readonly Converter<T3> converter3;
 
-        public ValueTupleConverter(
-            Converter<T1> converter1,
-            Converter<T2> converter2,
-            Converter<T3> converter3,
-            int length) : base(length)
+        public ValueTupleConverter(Converter<T1> converter1, Converter<T2> converter2, Converter<T3> converter3, int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;
@@ -688,16 +664,14 @@
     internal sealed class ValueTupleConverter<T1, T2, T3, T4> : TupleLikeConverter<ValueTuple<T1, T2, T3, T4>>
     {
         private readonly Converter<T1> converter1;
+
         private readonly Converter<T2> converter2;
+
         private readonly Converter<T3> converter3;
+
         private readonly Converter<T4> converter4;
 
-        public ValueTupleConverter(
-            Converter<T1> converter1,
-            Converter<T2> converter2,
-            Converter<T3> converter3,
-            Converter<T4> converter4,
-            int length) : base(length)
+        public ValueTupleConverter(Converter<T1> converter1, Converter<T2> converter2, Converter<T3> converter3, Converter<T4> converter4, int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;
@@ -744,18 +718,16 @@
     internal sealed class ValueTupleConverter<T1, T2, T3, T4, T5> : TupleLikeConverter<ValueTuple<T1, T2, T3, T4, T5>>
     {
         private readonly Converter<T1> converter1;
+
         private readonly Converter<T2> converter2;
+
         private readonly Converter<T3> converter3;
+
         private readonly Converter<T4> converter4;
+
         private readonly Converter<T5> converter5;
 
-        public ValueTupleConverter(
-            Converter<T1> converter1,
-            Converter<T2> converter2,
-            Converter<T3> converter3,
-            Converter<T4> converter4,
-            Converter<T5> converter5,
-            int length) : base(length)
+        public ValueTupleConverter(Converter<T1> converter1, Converter<T2> converter2, Converter<T3> converter3, Converter<T4> converter4, Converter<T5> converter5, int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;
@@ -807,20 +779,18 @@
     internal sealed class ValueTupleConverter<T1, T2, T3, T4, T5, T6> : TupleLikeConverter<ValueTuple<T1, T2, T3, T4, T5, T6>>
     {
         private readonly Converter<T1> converter1;
+
         private readonly Converter<T2> converter2;
+
         private readonly Converter<T3> converter3;
+
         private readonly Converter<T4> converter4;
+
         private readonly Converter<T5> converter5;
+
         private readonly Converter<T6> converter6;
 
-        public ValueTupleConverter(
-            Converter<T1> converter1,
-            Converter<T2> converter2,
-            Converter<T3> converter3,
-            Converter<T4> converter4,
-            Converter<T5> converter5,
-            Converter<T6> converter6,
-            int length) : base(length)
+        public ValueTupleConverter(Converter<T1> converter1, Converter<T2> converter2, Converter<T3> converter3, Converter<T4> converter4, Converter<T5> converter5, Converter<T6> converter6, int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;
@@ -877,22 +847,20 @@
     internal sealed class ValueTupleConverter<T1, T2, T3, T4, T5, T6, T7> : TupleLikeConverter<ValueTuple<T1, T2, T3, T4, T5, T6, T7>>
     {
         private readonly Converter<T1> converter1;
+
         private readonly Converter<T2> converter2;
+
         private readonly Converter<T3> converter3;
+
         private readonly Converter<T4> converter4;
+
         private readonly Converter<T5> converter5;
+
         private readonly Converter<T6> converter6;
+
         private readonly Converter<T7> converter7;
 
-        public ValueTupleConverter(
-            Converter<T1> converter1,
-            Converter<T2> converter2,
-            Converter<T3> converter3,
-            Converter<T4> converter4,
-            Converter<T5> converter5,
-            Converter<T6> converter6,
-            Converter<T7> converter7,
-            int length) : base(length)
+        public ValueTupleConverter(Converter<T1> converter1, Converter<T2> converter2, Converter<T3> converter3, Converter<T4> converter4, Converter<T5> converter5, Converter<T6> converter6, Converter<T7> converter7, int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;
@@ -954,24 +922,22 @@
     internal sealed class ValueTupleConverter<T1, T2, T3, T4, T5, T6, T7, T8> : TupleLikeConverter<ValueTuple<T1, T2, T3, T4, T5, T6, T7, T8>> where T8 : struct
     {
         private readonly Converter<T1> converter1;
+
         private readonly Converter<T2> converter2;
+
         private readonly Converter<T3> converter3;
+
         private readonly Converter<T4> converter4;
+
         private readonly Converter<T5> converter5;
+
         private readonly Converter<T6> converter6;
+
         private readonly Converter<T7> converter7;
+
         private readonly Converter<T8> converter8;
 
-        public ValueTupleConverter(
-            Converter<T1> converter1,
-            Converter<T2> converter2,
-            Converter<T3> converter3,
-            Converter<T4> converter4,
-            Converter<T5> converter5,
-            Converter<T6> converter6,
-            Converter<T7> converter7,
-            Converter<T8> converter8,
-            int length) : base(length)
+        public ValueTupleConverter(Converter<T1> converter1, Converter<T2> converter2, Converter<T3> converter3, Converter<T4> converter4, Converter<T5> converter5, Converter<T6> converter6, Converter<T7> converter7, Converter<T8> converter8, int length) : base(length)
         {
             this.converter1 = converter1;
             this.converter2 = converter2;
