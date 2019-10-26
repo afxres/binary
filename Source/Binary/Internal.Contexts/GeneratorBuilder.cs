@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary
+namespace Mikodev.Binary.Internal.Contexts
 {
-    public sealed class GeneratorBuilder : IGeneratorBuilder
+    internal sealed class GeneratorBuilder : IGeneratorBuilder
     {
         private readonly Dictionary<Type, Converter> converters = new Dictionary<Type, Converter>();
 
@@ -28,15 +28,8 @@ namespace Mikodev.Binary
             return this;
         }
 
-        public IGenerator Build() => new Internal.Contexts.Generator(converters.Values, creators);
+        public IGenerator Build() => new Generator(converters.Values, creators);
 
-        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        public override bool Equals(object obj) => throw new NotSupportedException();
-
-        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        public override int GetHashCode() => throw new NotSupportedException();
-
-        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         public override string ToString() => $"{nameof(GeneratorBuilder)}(Converters: {converters.Count}, Creators: {creators.Count})";
     }
 }

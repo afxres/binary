@@ -1,9 +1,30 @@
-﻿namespace Mikodev.Binary
+﻿using Mikodev.Binary.Internal.Contexts;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Mikodev.Binary
 {
     public static class Generator
     {
-        public static IGenerator CreateDefault() => CreateDefaultBuilder().Build();
+        private static readonly IReadOnlyCollection<IConverterCreator> creators = typeof(Converter).Assembly.GetTypes()
+            .Where(x => !x.IsAbstract && typeof(IConverterCreator).IsAssignableFrom(x))
+            .OrderBy(x => x.Namespace)
+            .ThenBy(x => x.Name)
+            .Select(x => (IConverterCreator)Activator.CreateInstance(x))
+            .ToList();
 
-        public static IGeneratorBuilder CreateDefaultBuilder() => new GeneratorBuilder().AddDefaultConverterCreators();
+        public static IGenerator CreateDefault()
+        {
+            return CreateDefaultBuilder().Build();
+        }
+
+        public static IGeneratorBuilder CreateDefaultBuilder()
+        {
+            var builder = new GeneratorBuilder();
+            foreach (var creator in creators)
+                _ = builder.AddConverterCreator(creator);
+            return builder;
+        }
     }
 }

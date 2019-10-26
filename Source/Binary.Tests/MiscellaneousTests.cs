@@ -95,7 +95,7 @@ namespace Mikodev.Binary.Tests
             var types = typeof(Converter).Assembly.GetTypes()
                 .Where(x => x.IsPublic && !(x.IsAbstract && x.IsSealed) && !x.IsInterface && x.Namespace == "Mikodev.Binary")
                 .ToList();
-            Assert.Equal(5, types.Count);
+            Assert.Equal(4, types.Count);
             foreach (var t in types)
             {
                 var equalMethod = t.GetMethod("Equals", new[] { typeof(object) });

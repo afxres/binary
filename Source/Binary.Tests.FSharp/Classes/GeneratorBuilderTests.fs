@@ -4,6 +4,11 @@ open Mikodev.Binary
 open System
 open Xunit
 
+let GeneratorBuilder() =
+    let t = typeof<Converter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "GeneratorBuilder") |> Array.exactlyOne
+    let builder = Activator.CreateInstance(t)
+    builder :?> IGeneratorBuilder
+
 type FakeConverterA<'T>() =
     inherit Converter<'T>()
 
