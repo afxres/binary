@@ -3,7 +3,7 @@
 open Mikodev.Binary
 open System
 
-type internal ListConverter<'a>(converter : Converter<'a> , arraySegmentConverter : Converter<ArraySegment<'a>>) =
+type internal ListConverter<'a>(converter : Converter<'a> , memoryConverter : Converter<Memory<'a>>) =
     inherit Converter<List<'a>>(0)
 
     override __.Encode(allocator, item) =
@@ -13,11 +13,9 @@ type internal ListConverter<'a>(converter : Converter<'a> , arraySegmentConverte
         ()
 
     override __.Decode(span : inref<ReadOnlySpan<byte>>) : List<'a> =
-        let source = arraySegmentConverter.Decode &span
-        let buffer = source.Array
-        let length = source.Count
-        let offset = source.Offset
+        let memory = memoryConverter.Decode &span
+        let span = memory.Span
         let mutable list = []
-        for i = (offset + length - 1) downto offset do
-            list <- buffer.[i] :: list
+        for i = span.Length - 1 downto 0 do
+            list <- span.[i] :: list
         list

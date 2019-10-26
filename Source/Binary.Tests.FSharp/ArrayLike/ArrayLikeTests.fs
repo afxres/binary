@@ -67,3 +67,39 @@ type ArrayLikeTests () =
         let name = converter.GetType().Name
         Assert.StartsWith(starts, name)
         ()
+
+    static member ``Data Slice`` : (obj array) seq =
+        seq {
+            yield [| [| 1; 2; 3; 4; 5 |]; 1; 2 |]
+            yield [| [| "a"; "bb"; "ccc"; "0"; "1"; "-1" |]; 2; 3 |]
+        }
+
+    [<Theory>]
+    [<MemberData("Data Slice")>]
+    member __.``Memory Slice`` (item : 'a array, offset : int, length : int) =
+        let converter = generator.GetConverter<Memory<'a>>()
+        let source = Memory<'a>(item, offset, length)
+        let buffer = converter.Encode source
+        let result = converter.Decode buffer
+        Assert.Equal<'a>(source.ToArray(), result.ToArray())
+        ()
+
+    [<Theory>]
+    [<MemberData("Data Slice")>]
+    member __.``ReadOnlyMemory Slice`` (item : 'a array, offset : int, length : int) =
+        let converter = generator.GetConverter<ReadOnlyMemory<'a>>()
+        let source = ReadOnlyMemory<'a>(item, offset, length)
+        let buffer = converter.Encode source
+        let result = converter.Decode buffer
+        Assert.Equal<'a>(source.ToArray(), result.ToArray())
+        ()
+
+    [<Theory>]
+    [<MemberData("Data Slice")>]
+    member __.``ArraySegment Slice`` (item : 'a array, offset : int, length : int) =
+        let converter = generator.GetConverter<ArraySegment<'a>>()
+        let source = ArraySegment<'a>(item, offset, length)
+        let buffer = converter.Encode source
+        let result = converter.Decode buffer
+        Assert.Equal<'a>(source.ToArray(), result.ToArray())
+        ()

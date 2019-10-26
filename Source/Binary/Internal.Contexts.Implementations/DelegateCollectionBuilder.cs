@@ -2,6 +2,7 @@
 using Mikodev.Binary.Internal.Delegates;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Mikodev.Binary.Internal.Contexts.Implementations
 {
@@ -26,6 +27,7 @@ namespace Mikodev.Binary.Internal.Contexts.Implementations
             if (constructor == null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
             var item = adapter.To(in span);
+            Debug.Assert(item.Array != null && item.Offset == 0);
             if (reverse)
                 MemoryExtensions.Reverse((Span<E>)item);
             return constructor.Invoke(item);
