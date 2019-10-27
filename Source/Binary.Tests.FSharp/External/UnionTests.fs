@@ -114,7 +114,7 @@ type Box =
 [<InlineData(2)>]
 [<InlineData(255)>]
 [<InlineData(65537)>]
-let ``Invalid Tag With Fake Union Type`` (tag : int) =
+let ``Invalid Tag With Fake Union Type (hack)`` (tag : int) =
     let converter = generator.GetConverter<Box>()
     Assert.StartsWith("UnionConverter`1", converter.GetType().Name)
 
