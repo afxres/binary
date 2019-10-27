@@ -52,9 +52,9 @@ namespace Mikodev.Binary
             }
             else
             {
-                allocator.LengthPrefixAnchor(out var anchor);
+                var anchor = allocator.AnchorLengthPrefix();
                 Encode(ref allocator, item);
-                allocator.LengthPrefixFinish(anchor);
+                allocator.AppendLengthPrefix(anchor);
             }
         }
 

@@ -7,21 +7,21 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary
 {
-    public ref struct Allocator
+    public ref partial struct Allocator
     {
-        private readonly int bounds;
+        private readonly int limits;
 
         private int cursor;
 
-        private int higher;
+        private int bounds;
 
         private byte[] buffer;
 
         public int Length => cursor;
 
-        public int Capacity => higher;
+        public int Capacity => bounds;
 
-        public int MaxCapacity => bounds == 0 ? int.MaxValue : ~bounds;
+        public int MaxCapacity => limits == 0 ? int.MaxValue : ~limits;
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private byte[] Expand(int offset, int expand)
@@ -55,17 +55,17 @@ namespace Mikodev.Binary
             if (offset != 0)
                 Memory.Copy(target, source, offset);
             buffer = target;
-            higher = target.Length;
-            Debug.Assert(higher <= MaxCapacity);
+            bounds = target.Length;
+            Debug.Assert(bounds <= MaxCapacity);
             return target;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private byte[] Ensure(int offset, int expand)
         {
-            Debug.Assert(higher >= 0 && higher <= MaxCapacity);
-            Debug.Assert(higher == 0 || higher <= buffer.Length);
-            return (uint)expand > (uint)(higher - offset) ? Expand(offset, expand) : buffer;
+            Debug.Assert(bounds >= 0 && bounds <= MaxCapacity);
+            Debug.Assert(bounds == 0 || bounds <= buffer.Length);
+            return (uint)expand > (uint)(bounds - offset) ? Expand(offset, expand) : buffer;
         }
 
         internal void Encode(in ReadOnlySpan<char> span, bool withLengthPrefix)
@@ -86,7 +86,7 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void AppendBuffer(byte[] item)
+        internal void Append(byte[] item)
         {
             Debug.Assert(item != null && item.Length != 0);
             var length = item.Length;
@@ -96,24 +96,22 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void LengthPrefixAnchor(out int anchor)
+        internal int AnchorLengthPrefix()
         {
             var offset = cursor;
             _ = Ensure(offset, sizeof(int));
             var before = offset + sizeof(int);
             cursor = before;
-            anchor = before;
+            return before;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void LengthPrefixFinish(int anchor)
+        internal void AppendLengthPrefix(int anchor)
         {
-            Debug.Assert(anchor >= sizeof(int));
             var target = buffer;
-            // check upper bounds (for performance reason, ignore maximum capacity)
-            if (target == null || target.Length < anchor)
+            // check bounds (for performance reason, ignore maximum capacity)
+            if (anchor < sizeof(int) || target == null || target.Length < anchor)
                 ThrowHelper.ThrowAllocatorModified();
-            // check lower bounds via clr
             PrimitiveHelper.EncodeNumberFixed4(ref target[anchor - sizeof(int)], (uint)(cursor - anchor));
         }
 
@@ -145,8 +143,8 @@ namespace Mikodev.Binary
                 ThrowHelper.ThrowAllocatorMaxCapacityInvalid();
             this.buffer = buffer;
             cursor = 0;
-            higher = Math.Min(buffer == null ? 0 : buffer.Length, maxCapacity);
-            bounds = ~maxCapacity;
+            bounds = Math.Min(buffer == null ? 0 : buffer.Length, maxCapacity);
+            limits = ~maxCapacity;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -43,9 +43,9 @@ namespace Mikodev.Binary.CollectionModels
             }
             else
             {
-                allocator.LengthPrefixAnchor(out var anchor);
+                var anchor = allocator.AnchorLengthPrefix();
                 adapter.Of(ref allocator, data);
-                allocator.LengthPrefixFinish(anchor);
+                allocator.AppendLengthPrefix(anchor);
             }
         }
 

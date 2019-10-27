@@ -93,9 +93,9 @@ namespace Mikodev.Binary.Tests
         public void PublicObjectMethods()
         {
             var types = typeof(Converter).Assembly.GetTypes()
-                .Where(x => x.IsPublic && !(x.IsAbstract && x.IsSealed) && !x.IsInterface && x.Namespace == "Mikodev.Binary")
+                .Where(x => (x.IsPublic || x.IsNestedPublic) && !(x.IsAbstract && x.IsSealed) && !x.IsInterface && x.Namespace == "Mikodev.Binary")
                 .ToList();
-            Assert.Equal(4, types.Count);
+            Assert.Equal(5, types.Count);
             foreach (var t in types)
             {
                 var equalMethod = t.GetMethod("Equals", new[] { typeof(object) });
@@ -103,6 +103,7 @@ namespace Mikodev.Binary.Tests
                 var stringMethod = t.GetMethod("ToString", Type.EmptyTypes);
                 var attributes = new[] { equalMethod, hashMethod, stringMethod }.Select(x => x.GetCustomAttribute<EditorBrowsableAttribute>()).ToList();
                 Assert.Equal(3, attributes.Count);
+                Assert.All(attributes, Assert.NotNull);
                 Assert.True(attributes.All(x => x.State == EditorBrowsableState.Never));
             }
         }

@@ -23,5 +23,11 @@ namespace Mikodev.Binary
             ref var source = ref MemoryMarshal.GetReference(span);
             Memory.Copy(ref target, ref source, byteCount);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Allocator.LengthPrefixAnchor AnchorLengthPrefix(ref Allocator allocator) => new Allocator.LengthPrefixAnchor(allocator.AnchorLengthPrefix());
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void AppendLengthPrefix(ref Allocator allocator, Allocator.LengthPrefixAnchor anchor) => allocator.AppendLengthPrefix(anchor.Offset);
     }
 }
