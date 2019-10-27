@@ -13,9 +13,8 @@ type internal ListConverter<'a>(converter : Converter<'a> , memoryConverter : Co
         ()
 
     override __.Decode(span : inref<ReadOnlySpan<byte>>) : List<'a> =
-        let memory = memoryConverter.Decode &span
-        let span = memory.Span
+        let data = (memoryConverter.Decode &span).Span
         let mutable list = []
-        for i = span.Length - 1 downto 0 do
-            list <- span.[i] :: list
+        for i = data.Length - 1 downto 0 do
+            list <- data.[i] :: list
         list

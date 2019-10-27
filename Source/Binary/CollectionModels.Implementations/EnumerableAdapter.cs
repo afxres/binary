@@ -44,8 +44,6 @@ namespace Mikodev.Binary.CollectionModels.Implementations
                 return;
             else if (item is E[] array)
                 adapter.Of(ref allocator, array);
-            else if (item is ArraySegment<E> segment)
-                adapter.Of(ref allocator, segment);
             else if (item is IList<E> items)
                 for (int i = 0, itemCount = items.Count; i < itemCount; i++)
                     converter.EncodeAuto(ref allocator, items[i]);

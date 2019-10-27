@@ -24,9 +24,9 @@ namespace Mikodev.Binary.Creators.ArrayLike
 
         public override List<T> To(CollectionAdapter<ArraySegment<T>> adapter, in ReadOnlySpan<byte> span)
         {
-            var item = adapter.To(in span);
-            Debug.Assert(item.Array != null && item.Offset == 0);
-            return toList.Invoke(item.Array, item.Count);
+            var data = adapter.To(in span);
+            Debug.Assert(data.Array != null && data.Offset == 0);
+            return toList.Invoke(data.Array, data.Count);
         }
     }
 }

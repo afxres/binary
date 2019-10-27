@@ -12,12 +12,12 @@ namespace Mikodev.Binary.Creators.ArrayLike
 
         public override T[] To(CollectionAdapter<ArraySegment<T>> adapter, in ReadOnlySpan<byte> span)
         {
-            var item = adapter.To(in span);
-            Debug.Assert(item.Array != null && item.Offset == 0);
-            var data = item.Array;
-            if (data.Length == item.Count)
-                return data;
-            return item.AsSpan().ToArray();
+            var data = adapter.To(in span);
+            Debug.Assert(data.Array != null && data.Offset == 0);
+            var item = data.Array;
+            if (item.Length == data.Count)
+                return item;
+            return data.AsSpan().ToArray();
         }
     }
 }

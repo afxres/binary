@@ -7,12 +7,12 @@ namespace Mikodev.Binary.Collections
     {
         private readonly Converter<T> converter;
 
-        private readonly Converter<ArraySegment<T>> arraySegmentConverter;
+        private readonly Converter<Memory<T>> memoryConverter;
 
-        public FSharpListConverter(Converter<T> converter, Converter<ArraySegment<T>> arraySegmentConverter)
+        public FSharpListConverter(Converter<T> converter, Converter<Memory<T>> memoryConverter)
         {
             this.converter = converter;
-            this.arraySegmentConverter = arraySegmentConverter;
+            this.memoryConverter = memoryConverter;
         }
 
         public override void Encode(ref Allocator allocator, FSharpList<T> item)
@@ -33,13 +33,11 @@ namespace Mikodev.Binary.Collections
         public override FSharpList<T> Decode(in ReadOnlySpan<byte> span)
         {
             // recursive call may cause stackoverflow, so ...
-            var origin = arraySegmentConverter.Decode(in span);
-            var source = origin.Array;
-            var length = origin.Count;
-            var result = ListModule.Empty<T>();
-            for (var i = length - 1; i >= 0; i--)
-                result = FSharpList<T>.Cons(source[i], result);
-            return result;
+            var data = memoryConverter.Decode(in span).Span;
+            var list = ListModule.Empty<T>();
+            for (var i = data.Length - 1; i >= 0; i--)
+                list = FSharpList<T>.Cons(data[i], list);
+            return list;
         }
     }
 }
