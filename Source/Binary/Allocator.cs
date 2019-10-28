@@ -17,11 +17,11 @@ namespace Mikodev.Binary
 
         private byte[] buffer;
 
-        public int Length => cursor;
+        public readonly int Length => cursor;
 
-        public int Capacity => bounds;
+        public readonly int Capacity => bounds;
 
-        public int MaxCapacity => limits == 0 ? int.MaxValue : ~limits;
+        public readonly int MaxCapacity => limits == 0 ? int.MaxValue : ~limits;
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private byte[] Expand(int offset, int expand)
@@ -151,13 +151,13 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlyMemory<byte> AsMemory() => new ReadOnlyMemory<byte>(buffer, 0, cursor);
+        public readonly ReadOnlyMemory<byte> AsMemory() => new ReadOnlyMemory<byte>(buffer, 0, cursor);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlySpan<byte> AsSpan() => new ReadOnlySpan<byte>(buffer, 0, cursor);
+        public readonly ReadOnlySpan<byte> AsSpan() => new ReadOnlySpan<byte>(buffer, 0, cursor);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public byte[] ToArray()
+        public readonly byte[] ToArray()
         {
             var offset = cursor;
             if (offset == 0)
@@ -169,12 +169,12 @@ namespace Mikodev.Binary
         }
 
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        public override bool Equals(object obj) => throw new NotSupportedException();
+        public readonly override bool Equals(object obj) => throw new NotSupportedException();
 
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        public override int GetHashCode() => throw new NotSupportedException();
+        public readonly override int GetHashCode() => throw new NotSupportedException();
 
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
-        public override string ToString() => $"{nameof(Allocator)}({nameof(Length)}: {Length}, {nameof(Capacity)}: {Capacity}, {nameof(MaxCapacity)}: {MaxCapacity})";
+        public readonly override string ToString() => $"{nameof(Allocator)}({nameof(Length)}: {Length}, {nameof(Capacity)}: {Capacity}, {nameof(MaxCapacity)}: {MaxCapacity})";
     }
 }

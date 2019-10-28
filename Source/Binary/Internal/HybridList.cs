@@ -10,24 +10,11 @@ namespace Mikodev.Binary.Internal
 {
     internal readonly struct HybridList
     {
-        private readonly struct Buck
-        {
-            public readonly int Index;
-
-            public readonly byte[] Bytes;
-
-            public Buck(int index, byte[] bytes)
-            {
-                Index = index;
-                Bytes = bytes;
-            }
-        }
-
         private const int ItemLimits = 16;
 
         private const int BuckSize = 17;
 
-        private readonly Buck[][] bucks;
+        private readonly HybridBuck[][] bucks;
 
         private readonly Dictionary<string, int> pairs;
 
@@ -43,17 +30,17 @@ namespace Mikodev.Binary.Internal
             return (byteCount ^ location) | (Unsafe.Add(ref location, byteCount - 1) << 8);
         }
 
-        private static Buck[][] GetBucks(IReadOnlyList<byte[]> items)
+        private static HybridBuck[][] GetBucks(IReadOnlyList<byte[]> items)
         {
-            var bucks = new List<Buck>[BuckSize];
+            var bucks = new List<HybridBuck>[BuckSize];
             for (var i = 0; i < items.Count; i++)
             {
                 var item = items[i];
                 var hash = GetHashCode(item);
-                var buck = new Buck(i, item);
+                var buck = new HybridBuck(i, item);
                 ref var list = ref bucks[(uint)hash % BuckSize];
                 if (list == null)
-                    list = new List<Buck>();
+                    list = new List<HybridBuck>();
                 list.Add(buck);
             }
             Debug.Assert(bucks.Any(x => x == null));

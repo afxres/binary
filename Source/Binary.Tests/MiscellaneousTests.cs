@@ -110,5 +110,24 @@ namespace Mikodev.Binary.Tests
                 Assert.True(attributes.All(x => x.State == EditorBrowsableState.Never));
             }
         }
+
+        [Fact(DisplayName = "Public Struct Members All Read Only")]
+        public void StructMethods()
+        {
+            static bool HasReadOnlyAttribute(MemberInfo info) => info.GetCustomAttributes().SingleOrDefault(x => x.GetType().Name == "IsReadOnlyAttribute") != null;
+
+            var types = typeof(Converter).Assembly.GetTypes().Where(x => (x.IsPublic || x.IsNestedPublic) && x.IsValueType).ToList();
+            var readonlyTypes = types.Where(HasReadOnlyAttribute).ToList();
+            var otherTypes = types.Except(readonlyTypes).ToList();
+            var methods = otherTypes.SelectMany(x => x.GetMethods()).ToList();
+            var ignoreMembers = methods.Where(x => x.DeclaringType == typeof(object)).ToList();
+            var remainMembers = methods.Except(ignoreMembers).ToList();
+            var attributes = remainMembers.Select(x => (x, Flag: HasReadOnlyAttribute(x))).ToList();
+
+            _ = Assert.Single(readonlyTypes);
+            _ = Assert.Single(otherTypes);
+            Assert.Equal("GetType", Assert.Single(ignoreMembers).Name);
+            Assert.All(attributes, x => Assert.True(x.Flag));
+        }
     }
 }
