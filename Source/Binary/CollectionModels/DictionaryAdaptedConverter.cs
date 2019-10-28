@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Mikodev.Binary.CollectionModels.Implementations
+namespace Mikodev.Binary.CollectionModels
 {
     internal sealed class DictionaryAdaptedConverter<T, K, V> : CollectionAdaptedConverter<T, T, Dictionary<K, V>, KeyValuePair<K, V>> where T : IEnumerable<KeyValuePair<K, V>>
     {

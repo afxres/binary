@@ -1,5 +1,4 @@
-﻿using Mikodev.Binary.CollectionModels.ArrayLike;
-using Mikodev.Binary.Internal;
+﻿using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Delegates;
 using Mikodev.Binary.Internal.Extensions;
 using System;
@@ -8,7 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Mikodev.Binary.CollectionModels.Implementations
+namespace Mikodev.Binary.CollectionModels
 {
     internal sealed class EnumerableAdapter<T, E> : CollectionAdapter<T, MemoryItem<E>, E> where T : IEnumerable<E>
     {

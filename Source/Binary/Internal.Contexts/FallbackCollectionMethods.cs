@@ -1,4 +1,4 @@
-﻿using Mikodev.Binary.CollectionModels.Implementations;
+﻿using Mikodev.Binary.CollectionModels;
 using Mikodev.Binary.Internal.Contexts.Implementations;
 using Mikodev.Binary.Internal.Delegates;
 using Mikodev.Binary.Internal.Extensions;

@@ -1,7 +1,7 @@
 ﻿using Mikodev.Binary.Internal;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.CollectionModels.Implementations
+namespace Mikodev.Binary.CollectionModels
 {
     internal sealed class EnumerableAdaptedConverter<T, E> : CollectionAdaptedConverter<T, T, MemoryItem<E>, E> where T : IEnumerable<E>
     {

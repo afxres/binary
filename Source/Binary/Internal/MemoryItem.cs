@@ -13,6 +13,7 @@ namespace Mikodev.Binary.Internal
         {
             Debug.Assert(buffer != null);
             Debug.Assert(length >= 0 && length <= buffer.Length);
+            Debug.Assert(length != 0 || ReferenceEquals(buffer, Array.Empty<T>()));
             Buffer = buffer;
             Length = length;
         }

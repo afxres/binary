@@ -2,9 +2,9 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Mikodev.Binary.CollectionModels.ArrayLike
+namespace Mikodev.Binary.CollectionModels
 {
-    internal sealed class OriginalEndiannessCollectionAdapter<T> : ArrayLikeAdapter<T> where T : unmanaged
+    internal sealed class ArrayLikeOriginalEndiannessAdapter<T> : ArrayLikeAdapter<T> where T : unmanaged
     {
         public override void Of(ref Allocator allocator, ReadOnlyMemory<T> memory)
         {

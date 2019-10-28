@@ -1,7 +1,7 @@
 ﻿using Mikodev.Binary.Internal.Extensions;
 using System;
 
-namespace Mikodev.Binary.CollectionModels.ArrayLike
+namespace Mikodev.Binary.CollectionModels
 {
     internal static class ArrayLikeAdapterHelper
     {
@@ -9,8 +9,8 @@ namespace Mikodev.Binary.CollectionModels.ArrayLike
         {
             var flag = converter.IsOriginalEndiannessConverter();
             var adapterDefinition = flag
-                ? typeof(OriginalEndiannessCollectionAdapter<>)
-                : converter.Length > 0 ? typeof(ConstantCollectionAdapter<>) : typeof(VariableCollectionAdapter<>);
+                ? typeof(ArrayLikeOriginalEndiannessAdapter<>)
+                : converter.Length > 0 ? typeof(ArrayLikeConstantAdapter<>) : typeof(ArrayLikeVariableAdapter<>);
             var adapterType = adapterDefinition.MakeGenericType(converter.ItemType);
             var adapterArguments = flag ? Array.Empty<object>() : new object[] { converter };
             var adapter = Activator.CreateInstance(adapterType, adapterArguments);

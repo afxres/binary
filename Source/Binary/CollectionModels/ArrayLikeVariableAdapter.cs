@@ -2,13 +2,13 @@
 using System;
 using System.Diagnostics;
 
-namespace Mikodev.Binary.CollectionModels.ArrayLike
+namespace Mikodev.Binary.CollectionModels
 {
-    internal sealed class VariableCollectionAdapter<T> : ArrayLikeAdapter<T>
+    internal sealed class ArrayLikeVariableAdapter<T> : ArrayLikeAdapter<T>
     {
         private readonly Converter<T> converter;
 
-        public VariableCollectionAdapter(Converter<T> converter) => this.converter = converter;
+        public ArrayLikeVariableAdapter(Converter<T> converter) => this.converter = converter;
 
         public override void Of(ref Allocator allocator, ReadOnlyMemory<T> memory)
         {
