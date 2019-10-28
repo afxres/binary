@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.CollectionModels.ArrayLike
 {
-    internal sealed class OriginalEndiannessCollectionAdapter<T> : CollectionAdapter<ReadOnlyMemory<T>, ArraySegment<T>, T> where T : unmanaged
+    internal sealed class OriginalEndiannessCollectionAdapter<T> : ArrayLikeAdapter<T> where T : unmanaged
     {
         public override void Of(ref Allocator allocator, ReadOnlyMemory<T> memory)
         {
@@ -18,17 +18,17 @@ namespace Mikodev.Binary.CollectionModels.ArrayLike
             Memory.Copy(ref target, ref Memory.AsByte(ref source), byteCount);
         }
 
-        public override ArraySegment<T> To(in ReadOnlySpan<byte> span)
+        public override MemoryItem<T> To(in ReadOnlySpan<byte> span)
         {
             var byteCount = span.Length;
             if (byteCount == 0)
-                return new ArraySegment<T>(Array.Empty<T>());
+                return new MemoryItem<T>(Array.Empty<T>(), 0);
             var itemCount = CollectionHelper.GetItemCount(byteCount, Memory.SizeOf<T>());
             var items = new T[itemCount];
             ref var source = ref MemoryMarshal.GetReference(span);
             ref var target = ref items[0];
             Memory.Copy(ref Memory.AsByte(ref target), ref source, byteCount);
-            return new ArraySegment<T>(items);
+            return new MemoryItem<T>(items, itemCount);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Mikodev.Binary.CollectionModels;
+using Mikodev.Binary.Internal;
 using System;
 using System.Collections.Generic;
 
@@ -10,6 +11,6 @@ namespace Mikodev.Binary.Creators.ArrayLike
 
         public override ReadOnlyMemory<T> Of(List<T> item) => item?.ToArray();
 
-        public override List<T> To(CollectionAdapter<ArraySegment<T>> adapter, in ReadOnlySpan<byte> span) => new List<T>(adapter.To(in span));
+        public override List<T> To(CollectionAdapter<MemoryItem<T>> adapter, in ReadOnlySpan<byte> span) => new List<T>(adapter.To(in span).AsArraySegment());
     }
 }

@@ -1,10 +1,11 @@
 ﻿using Mikodev.Binary.CollectionModels;
+using Mikodev.Binary.CollectionModels.Implementations;
 using System;
 using System.Collections.Generic;
 
 namespace Mikodev.Binary.Creators.Collections
 {
-    internal sealed class IDictionaryBuilder<T, K, V> : CollectionBuilder<T, T, Dictionary<K, V>, KeyValuePair<K, V>> where T : IEnumerable<KeyValuePair<K, V>>
+    internal sealed class IDictionaryBuilder<T, K, V> : DictionaryBuilder<T, K, V> where T : IEnumerable<KeyValuePair<K, V>>
     {
         public override int Count(T item) => item is ICollection<KeyValuePair<K, V>> collection ? collection.Count : NoActualLength;
 

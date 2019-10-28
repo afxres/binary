@@ -1,4 +1,5 @@
 ﻿using Mikodev.Binary.CollectionModels;
+using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Delegates;
 using System;
 using System.Collections.Generic;
@@ -22,11 +23,11 @@ namespace Mikodev.Binary.Creators.ArrayLike
 
         public override ReadOnlyMemory<T> Of(List<T> item) => item is { Count: var count } && count > 0 ? new ReadOnlyMemory<T>(ofList.Invoke(item), 0, count) : default;
 
-        public override List<T> To(CollectionAdapter<ArraySegment<T>> adapter, in ReadOnlySpan<byte> span)
+        public override List<T> To(CollectionAdapter<MemoryItem<T>> adapter, in ReadOnlySpan<byte> span)
         {
             var data = adapter.To(in span);
-            Debug.Assert(data.Array != null && data.Offset == 0);
-            return toList.Invoke(data.Array, data.Count);
+            Debug.Assert(data.Buffer != null && data.Length >= 0 && data.Length <= data.Buffer.Length);
+            return toList.Invoke(data.Buffer, data.Length);
         }
     }
 }

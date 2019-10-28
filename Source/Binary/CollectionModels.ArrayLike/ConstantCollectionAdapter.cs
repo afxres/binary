@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace Mikodev.Binary.CollectionModels.ArrayLike
 {
-    internal sealed class ConstantCollectionAdapter<T> : CollectionAdapter<ReadOnlyMemory<T>, ArraySegment<T>, T>
+    internal sealed class ConstantCollectionAdapter<T> : ArrayLikeAdapter<T>
     {
         private readonly Converter<T> converter;
 
@@ -18,18 +18,18 @@ namespace Mikodev.Binary.CollectionModels.ArrayLike
             Debug.Assert(converter.Length > 0);
         }
 
-        public override ArraySegment<T> To(in ReadOnlySpan<byte> span)
+        public override MemoryItem<T> To(in ReadOnlySpan<byte> span)
         {
             Debug.Assert(converter.Length > 0);
             var byteCount = span.Length;
             if (byteCount == 0)
-                return new ArraySegment<T>(Array.Empty<T>());
+                return new MemoryItem<T>(Array.Empty<T>(), 0);
             var definition = converter.Length;
             var itemCount = CollectionHelper.GetItemCount(byteCount, definition);
             var items = new T[itemCount];
             for (var i = 0; i < itemCount; i++)
                 items[i] = converter.Decode(span.Slice(i * definition));
-            return new ArraySegment<T>(items);
+            return new MemoryItem<T>(items, itemCount);
         }
     }
 }

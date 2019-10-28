@@ -13,14 +13,14 @@ namespace Mikodev.Binary.Creators.Collections
             if (type.IsValueType || !type.TryGetInterfaceArguments(typeof(IEnumerable<>), out var arguments))
                 return null;
             var interfaceArguments = default(Type[]);
-            Type Test(Type builderDefinition, Type assignable, params Type[] interfaces) =>
+            Type Detect(Type builderDefinition, Type assignable, params Type[] interfaces) =>
                 interfaces.Any(x => type.TryGetInterfaceArguments(x, out interfaceArguments)) && type.IsAssignableFrom(assignable.MakeGenericType(interfaceArguments))
                     ? builderDefinition
                     : null;
             var builderDefinition =
-                Test(typeof(IDictionaryBuilder<,,>), typeof(Dictionary<,>), typeof(IDictionary<,>), typeof(IReadOnlyDictionary<,>)) ??
-                Test(typeof(ISetBuilder<,>), typeof(HashSet<>), typeof(ISet<>)) ??
-                Test(typeof(IEnumerableBuilder<,>), typeof(ArraySegment<>), typeof(IEnumerable<>));
+                Detect(typeof(IDictionaryBuilder<,,>), typeof(Dictionary<,>), typeof(IDictionary<,>), typeof(IReadOnlyDictionary<,>)) ??
+                Detect(typeof(ISetBuilder<,>), typeof(HashSet<>), typeof(ISet<>)) ??
+                Detect(typeof(IEnumerableBuilder<,>), typeof(ArraySegment<>), typeof(IEnumerable<>));
             if (builderDefinition == null)
                 return null;
 

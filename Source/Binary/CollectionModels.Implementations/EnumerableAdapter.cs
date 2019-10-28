@@ -1,4 +1,5 @@
 ﻿using Mikodev.Binary.CollectionModels.ArrayLike;
+using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Delegates;
 using Mikodev.Binary.Internal.Extensions;
 using System;
@@ -9,11 +10,11 @@ using System.Reflection;
 
 namespace Mikodev.Binary.CollectionModels.Implementations
 {
-    internal sealed class EnumerableAdapter<T, E> : CollectionAdapter<T, ArraySegment<E>, E> where T : IEnumerable<E>
+    internal sealed class EnumerableAdapter<T, E> : CollectionAdapter<T, MemoryItem<E>, E> where T : IEnumerable<E>
     {
         private readonly bool byArray;
 
-        private readonly CollectionAdapter<ReadOnlyMemory<E>, ArraySegment<E>, E> adapter;
+        private readonly ArrayLikeAdapter<E> adapter;
 
         private readonly ToArray<T, E> toArray;
 
@@ -54,6 +55,6 @@ namespace Mikodev.Binary.CollectionModels.Implementations
                     converter.EncodeAuto(ref allocator, i);
         }
 
-        public override ArraySegment<E> To(in ReadOnlySpan<byte> span) => adapter.To(in span);
+        public override MemoryItem<E> To(in ReadOnlySpan<byte> span) => adapter.To(in span);
     }
 }

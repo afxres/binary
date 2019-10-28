@@ -1,12 +1,12 @@
 ﻿using Mikodev.Binary.CollectionModels;
+using Mikodev.Binary.CollectionModels.Implementations;
 using Mikodev.Binary.Internal.Delegates;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Mikodev.Binary.Internal.Contexts.Implementations
 {
-    internal sealed class DelegateCollectionBuilder<T, E> : CollectionBuilder<T, T, ArraySegment<E>, E>
+    internal sealed class DelegateCollectionBuilder<T, E> : EnumerableBuilder<T, E>
     {
         private readonly ToCollection<T, E> constructor;
 
@@ -22,12 +22,11 @@ namespace Mikodev.Binary.Internal.Contexts.Implementations
 
         public override T Of(T item) => item;
 
-        public override T To(CollectionAdapter<ArraySegment<E>> adapter, in ReadOnlySpan<byte> span)
+        public override T To(CollectionAdapter<MemoryItem<E>> adapter, in ReadOnlySpan<byte> span)
         {
             if (constructor == null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
-            var data = adapter.To(in span);
-            Debug.Assert(data.Array != null && data.Offset == 0);
+            var data = adapter.To(in span).AsArraySegment();
             if (reverse)
                 MemoryExtensions.Reverse((Span<E>)data);
             return constructor.Invoke(data);

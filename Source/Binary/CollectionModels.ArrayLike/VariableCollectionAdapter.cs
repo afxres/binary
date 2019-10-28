@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Mikodev.Binary.Internal;
+using System;
 using System.Diagnostics;
 
 namespace Mikodev.Binary.CollectionModels.ArrayLike
 {
-    internal sealed class VariableCollectionAdapter<T> : CollectionAdapter<ReadOnlyMemory<T>, ArraySegment<T>, T>
+    internal sealed class VariableCollectionAdapter<T> : ArrayLikeAdapter<T>
     {
         private readonly Converter<T> converter;
 
@@ -17,12 +18,12 @@ namespace Mikodev.Binary.CollectionModels.ArrayLike
             Debug.Assert(converter.Length == 0);
         }
 
-        public override ArraySegment<T> To(in ReadOnlySpan<byte> span)
+        public override MemoryItem<T> To(in ReadOnlySpan<byte> span)
         {
             Debug.Assert(converter.Length == 0);
             var byteCount = span.Length;
             if (byteCount == 0)
-                return new ArraySegment<T>(Array.Empty<T>());
+                return new MemoryItem<T>(Array.Empty<T>(), 0);
             const int InitialCapacity = 8;
             var buffer = new T[InitialCapacity];
             var limits = (long)InitialCapacity;
@@ -40,7 +41,7 @@ namespace Mikodev.Binary.CollectionModels.ArrayLike
                 buffer[cursor++] = converter.DecodeAuto(ref temp);
             }
             Debug.Assert(cursor <= buffer.Length);
-            return new ArraySegment<T>(buffer, 0, (int)cursor);
+            return new MemoryItem<T>(buffer, (int)cursor);
         }
     }
 }
