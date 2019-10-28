@@ -12,10 +12,10 @@ namespace Mikodev.Binary.Tests
         [Fact(DisplayName = "Public Class Methods With ByRef Type")]
         public void Argument()
         {
-            static bool StartsWith(string name, params string[] patterns)
+            static bool Equals(string name, params string[] patterns)
             {
                 foreach (var i in patterns)
-                    if (name.StartsWith(i))
+                    if (name == i || name == (i + "&"))
                         return true;
                 return false;
             }
@@ -23,7 +23,6 @@ namespace Mikodev.Binary.Tests
             var names = new[]
             {
                 typeof(Allocator).Name,
-                typeof(ArraySegment<>).Name,
                 typeof(Span<>).Name,
                 typeof(Memory<>).Name,
                 typeof(ReadOnlySpan<>).Name,
@@ -31,11 +30,15 @@ namespace Mikodev.Binary.Tests
             };
 
             var types = typeof(Converter).Assembly.GetTypes().Where(x => x.IsPublic);
-            var methods = types.SelectMany(x => x.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static)).ToList();
+            var methods = types.SelectMany(x => x.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)).ToList();
             var parameters = methods.SelectMany(x => x.GetParameters()).ToList();
-            var source = parameters.Where(x => StartsWith(x.ParameterType.Name, names)).ToList();
-            var failed = source.Where(x => !x.ParameterType.IsByRef).Select(x => x.Member).Cast<MethodInfo>().Select(x => x.ReflectedType).Distinct();
+            var source = parameters.Where(x => Equals(x.ParameterType.Name, names)).ToList();
+            var failedMembers = source.Where(x => !x.ParameterType.IsByRef).Select(x => x.Member).Cast<MethodInfo>().ToList();
+            var failed = failedMembers.Select(x => x.ReflectedType).Distinct().ToList();
+            var remain = parameters.Except(source).ToList();
+            var except = remain.Where(x => x.ParameterType.IsByRef).ToList();
             Assert.Empty(failed);
+            Assert.Empty(except);
             Assert.NotEmpty(source);
         }
 

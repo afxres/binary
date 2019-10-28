@@ -25,9 +25,9 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Allocator.LengthPrefixAnchor AnchorLengthPrefix(ref Allocator allocator) => new Allocator.LengthPrefixAnchor(allocator.AnchorLengthPrefix());
+        public static AllocatorAnchor AnchorLengthPrefix(ref Allocator allocator) => new AllocatorAnchor(allocator.AnchorLengthPrefix());
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void AppendLengthPrefix(ref Allocator allocator, Allocator.LengthPrefixAnchor anchor) => allocator.AppendLengthPrefix(anchor.Offset);
+        public static void AppendLengthPrefix(ref Allocator allocator, AllocatorAnchor anchor) => allocator.AppendLengthPrefix(anchor.Offset);
     }
 }

@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary
 {
-    public ref partial struct Allocator
+    public ref struct Allocator
     {
         private readonly int limits;
 

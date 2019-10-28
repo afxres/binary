@@ -1,7 +1,8 @@
-﻿module Classes.AllocatorLengthPrefixTests
+﻿module Classes.AllocatorAnchorTests
 
 open Mikodev.Binary
 open System
+open System.Collections.Generic
 open Xunit
 
 [<Fact>]
@@ -25,8 +26,8 @@ let ``Length Prefix Buffer With Length From 0 To 4096`` () =
 [<Fact>]
 let ``Allocator With Default Length Prefix Anchor`` () =
     let error = Assert.Throws<ArgumentException>(fun () ->
-        let anchor = Allocator.LengthPrefixAnchor()
-        Assert.Equal("LengthPrefixAnchor(Offset: 0)", anchor.ToString())
+        let anchor = AllocatorAnchor()
+        Assert.Equal("AllocatorAnchor(Offset: 0)", anchor.ToString())
         let mutable allocator = Allocator()
         AllocatorHelper.AppendLengthPrefix(&allocator, anchor))
     Assert.Equal("Invalid length prefix anchor or allocator modified.", error.Message)
@@ -38,8 +39,19 @@ let ``Allocator With Another Length Prefix Anchor`` () =
         let error = Assert.Throws<ArgumentException>(fun () ->
             let mutable allocatorOld = Allocator()
             let anchor = AllocatorHelper.AnchorLengthPrefix &allocatorOld
-            Assert.Equal("LengthPrefixAnchor(Offset: 4)", anchor.ToString())
+            Assert.Equal("AllocatorAnchor(Offset: 4)", anchor.ToString())
             let mutable allocator = Allocator (Array.zeroCreate<byte> i)
             AllocatorHelper.AppendLengthPrefix(&allocator, anchor))
         Assert.Equal("Invalid length prefix anchor or allocator modified.", error.Message)
+    ()
+
+[<Fact>]
+let ``Public Members`` () =
+    let t = typeof<Converter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "AllocatorAnchor") |> Array.exactlyOne
+    let constructors = t.GetConstructors()
+    let properties = t.GetProperties()
+    let members = t.GetMembers()
+    Assert.Empty(constructors)
+    Assert.Empty(properties)
+    Assert.Equal<string>(members |> Seq.map (fun x -> x.Name) |> HashSet, [| "Equals"; "GetHashCode"; "ToString"; "GetType" |] |> HashSet)
     ()
