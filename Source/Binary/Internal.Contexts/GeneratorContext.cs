@@ -61,6 +61,8 @@ namespace Mikodev.Binary.Internal.Contexts
             // not supported
             if (type.Assembly == typeof(Converter).Assembly)
                 throw new ArgumentException($"Invalid type: {type}");
+            if (type.Assembly == typeof(object).Assembly)
+                throw new ArgumentException($"Invalid system type: {type}");
 
             return type.TryGetInterfaceArguments(typeof(IEnumerable<>), out var arguments)
                 ? FallbackCollectionMethods.GetConverter(this, type, arguments.Single())
