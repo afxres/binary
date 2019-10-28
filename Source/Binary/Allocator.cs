@@ -109,10 +109,13 @@ namespace Mikodev.Binary
         internal void AppendLengthPrefix(int anchor)
         {
             var target = buffer;
+            var offset = cursor;
+            var length = offset - anchor;
+            var origin = anchor - sizeof(int);
             // check bounds (for performance reason, ignore maximum capacity)
-            if (anchor < sizeof(int) || target == null || target.Length < anchor)
+            if (length < 0 || origin < 0 || target == null || target.Length < anchor)
                 ThrowHelper.ThrowAllocatorModified();
-            PrimitiveHelper.EncodeNumberFixed4(ref target[anchor - sizeof(int)], (uint)(cursor - anchor));
+            PrimitiveHelper.EncodeNumberFixed4(ref target[origin], (uint)length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

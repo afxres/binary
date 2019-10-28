@@ -73,10 +73,10 @@ type ThrowTests() =
     [<Fact>]
     member me.``Allocator Modified`` () =
         let converter = new BadConverter<string>()
-        let error = Assert.Throws<InvalidOperationException>(fun () ->
+        let error = Assert.Throws<ArgumentException>(fun () ->
             let mutable allocator = new Allocator()
             converter.EncodeWithLengthPrefix(&allocator, null))
-        Assert.Equal("Allocator has been modified unexpectedly!", error.Message)
+        Assert.Equal("Invalid length prefix anchor or allocator modified.", error.Message)
         ()
 
     static member ``Data Alpha`` = [|
