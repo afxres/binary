@@ -7,7 +7,7 @@ open Xunit
 
 let generator = Generator.CreateDefault()
 
-let testWithSpan (value : 'a) =
+let testWithSpan (value : 'a) (expected : 'a) =
     let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
@@ -18,10 +18,10 @@ let testWithSpan (value : 'a) =
 
     let span = ReadOnlySpan buffer
     let result = converter.Decode &span
-    Assert.Equal<'a>(value, result)
+    Assert.Equal<'a>(expected, result)
     ()
 
-let testWithBytes (value : 'a) =
+let testWithBytes (value : 'a) (expected : 'a) =
     let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
@@ -29,36 +29,74 @@ let testWithBytes (value : 'a) =
     Assert.Equal<byte>(bufferOrigin, buffer)
 
     let result = converter.Decode buffer
-    Assert.Equal<'a>(value, result)
+    Assert.Equal<'a>(expected, result)
     ()
 
-let test (value : 'a) =
+let testAuto (value : 'a) (expected : 'a) =
+    let bufferOrigin = generator.Encode value
+    let converter = generator.GetConverter<'a>()
+
+    let mutable allocator = Allocator()
+    converter.EncodeAuto(&allocator, value)
+    let buffer = allocator.ToArray()
+
+    let mutable span = ReadOnlySpan buffer
+    let result = converter.DecodeAuto &span
+    Assert.True(span.IsEmpty)
+    Assert.Equal<'a>(expected, result)
+
+    let mutable anotherSpan = ReadOnlySpan buffer
+    let length = PrimitiveHelper.DecodeNumber &anotherSpan
+    Assert.Equal(bufferOrigin.Length, length)
+    Assert.Equal<byte>(bufferOrigin, anotherSpan.ToArray())
+    ()
+
+let testWithLengthPrefix (value : 'a) (expected : 'a) =
+    let bufferOrigin = generator.Encode value
+    let converter = generator.GetConverter<'a>()
+
+    let mutable allocator = Allocator()
+    converter.EncodeWithLengthPrefix(&allocator, value)
+    let buffer = allocator.ToArray()
+
+    let mutable span = ReadOnlySpan buffer
+    let result = converter.DecodeWithLengthPrefix &span
+    Assert.True(span.IsEmpty)
+    Assert.Equal<'a>(expected, result)
+
+    let mutable anotherSpan = ReadOnlySpan buffer
+    let length = PrimitiveHelper.DecodeNumber &anotherSpan
+    Assert.Equal(bufferOrigin.Length, length)
+    Assert.Equal<byte>(bufferOrigin, anotherSpan.ToArray())
+    ()
+
+let test (value : 'a) (expected : 'a) =
     let buffer = generator.Encode value
     let result : 'a = generator.Decode buffer
-    Assert.Equal<'a>(value, result)
+    Assert.Equal<'a>(expected, result)
 
     // convert via Converter
-    testWithSpan value
+    testWithSpan value expected
     // converter via bytes methods
-    testWithBytes value
+    testWithBytes value expected
+    // convert via 'auto' methods
+    testAuto value expected
+    // convert with length prefix
+    testWithLengthPrefix value expected
     ()
 
 [<Theory>]
 [<InlineData("sharp")>]
 [<InlineData("上山打老虎")>]
 let ``String Instance`` (text : string) =
-    test text
+    test text text
     ()
 
 [<Theory>]
 [<InlineData("")>]
 [<InlineData(null)>]
-let ``String (empty & null)`` (text : string) =
-    let buffer = generator.Encode text
-    let result : string = generator.Decode buffer
-
-    Assert.Empty(buffer)
-    Assert.Equal(String.Empty, result)
+let ``String Empty Or Null`` (text : string) =
+    test text String.Empty
     ()
 
 [<Fact>]
@@ -77,7 +115,7 @@ let ``String From Default Value Of Span`` () =
 let ``Uri Instance`` (data : string) =
     let item = new Uri(data)
 
-    test item
+    test item item
 
     let bufferAlpha = generator.Encode item
     let bufferBravo = generator.Encode data
@@ -85,12 +123,14 @@ let ``Uri Instance`` (data : string) =
     Assert.Equal<byte>(bufferAlpha, bufferBravo)
     Assert.Equal(item, result)
     Assert.Equal(data, result.OriginalString)
-
     ()
 
 [<Fact>]
-let ``Uri (null)`` () =
+let ``Uri Null`` () =
     let item : Uri = null
+
+    test item item
+
     let buffer = generator.Encode item
     let result = generator.Decode<Uri> buffer
 
@@ -101,7 +141,7 @@ let ``Uri (null)`` () =
     ()
 
 [<Fact>]
-let ``Uri (null, with length prefix)`` () =
+let ``Uri Null With Length Prefix`` () =
     let item : Uri = null
     let converter = generator.GetConverter<Uri>()
     let mutable allocator = Allocator()
@@ -120,12 +160,15 @@ let ``Uri (null, with length prefix)`` () =
 [<InlineData("fe80::3c03:feef:ec25:e40d")>]
 let ``IPAddress Instance`` (address : string) =
     let value = IPAddress.Parse address
-    test value
+    test value value
     ()
 
 [<Fact>]
-let ``IPAddress (null)`` () =
+let ``IPAddress Null`` () =
     let address : IPAddress = null
+
+    test address address
+
     let buffer = generator.Encode address
     let result : IPAddress = generator.Decode buffer
 
@@ -139,7 +182,7 @@ let ``IPAddress (null)`` () =
 [<InlineData("::1", 54321)>]
 let ``IPEndPoint Instance`` (address : string, port : int) =
     let value = new IPEndPoint(IPAddress.Parse(address), port)
-    test value
+    test value value
     ()
 
 [<Theory>]
@@ -158,8 +201,11 @@ let ``IPEndPoint And Tuple`` (address : string, port : int) =
     ()
 
 [<Fact>]
-let ``IPEndPoint (null)`` () =
+let ``IPEndPoint Null`` () =
     let endpoint : IPEndPoint = null
+
+    test endpoint endpoint
+
     let buffer = generator.Encode endpoint
     let result : IPEndPoint = generator.Decode buffer
 
@@ -169,7 +215,7 @@ let ``IPEndPoint (null)`` () =
     ()
 
 [<Fact>]
-let ``IPEndPoint (not enough bytes)`` () =
+let ``IPEndPoint Not Enough Bytes`` () =
     let converter = generator.GetConverter<IPEndPoint>()
     let message = sprintf "Not enough bytes, type: %O" typeof<IPEndPoint>
     let buffer = generator.Encode(struct (Unchecked.defaultof<IPAddress>, uint16 65535))
