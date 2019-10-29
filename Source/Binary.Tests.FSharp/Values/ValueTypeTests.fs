@@ -43,6 +43,22 @@ let testWithBytes (value : 'a) (size : int) =
     Assert.Equal<'a>(value, result)
     ()
 
+let testAuto (value : 'a) (size : int) =
+    let bufferOrigin = generator.Encode value
+    let converter = generator.GetConverter<'a>()
+
+    let mutable allocator = Allocator()
+    converter.EncodeAuto(&allocator, value)
+    let buffer = allocator.ToArray()
+    Assert.Equal(size, buffer.Length)
+    Assert.Equal<byte>(bufferOrigin, buffer)
+
+    let mutable span = ReadOnlySpan buffer
+    let result = converter.DecodeAuto &span
+    Assert.True(span.IsEmpty)
+    Assert.Equal<'a>(value, result)
+    ()
+
 let testWithLengthPrefix (value : 'a) (size : int) =
     let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
@@ -78,6 +94,8 @@ let testExplicit (value : 'a) (size : int) =
     testWithSpan value size
     // convert via bytes methods
     testWithBytes value size
+    // convert via 'auto' methods
+    testAuto value size
     // convert with length prefix
     testWithLengthPrefix value size
     ()

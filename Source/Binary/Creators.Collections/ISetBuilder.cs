@@ -1,5 +1,5 @@
-﻿using Mikodev.Binary.CollectionModels;
-using Mikodev.Binary.Internal;
+﻿using Mikodev.Binary.Internal;
+using Mikodev.Binary.Internal.Adapters;
 using System;
 using System.Collections.Generic;
 

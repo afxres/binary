@@ -1,4 +1,4 @@
-﻿using Mikodev.Binary.Creators.Endianness;
+﻿using Mikodev.Binary.Creators;
 using System;
 using System.Diagnostics;
 using System.Linq;

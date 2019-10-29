@@ -1,4 +1,4 @@
-﻿using Mikodev.Binary.CollectionModels;
+﻿using Mikodev.Binary.Internal.Adapters;
 using Mikodev.Binary.Internal.Delegates;
 using System;
 using System.Collections.Generic;
