@@ -24,7 +24,7 @@ namespace Mikodev.Binary.Internal.Adapters
             if (byteCount == 0)
                 return new MemoryItem<T>(Array.Empty<T>(), 0);
             var definition = converter.Length;
-            var itemCount = CollectionHelper.GetItemCount(byteCount, definition);
+            var itemCount = CollectionAdapterHelper.GetItemCount(byteCount, definition);
             var items = new T[itemCount];
             for (var i = 0; i < itemCount; i++)
                 items[i] = converter.Decode(span.Slice(i * definition));

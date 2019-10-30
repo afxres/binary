@@ -28,7 +28,7 @@ namespace Mikodev.Binary.Internal.Adapters
             const int InitialCapacity = 8;
             var converter = this.converter;
             var converterLength = converter.Length;
-            var itemCount = converterLength > 0 ? CollectionHelper.GetItemCount(byteCount, converterLength) : InitialCapacity;
+            var itemCount = converterLength > 0 ? CollectionAdapterHelper.GetItemCount(byteCount, converterLength) : InitialCapacity;
             var data = new Dictionary<K, V>(itemCount);
             var temp = span;
             while (!temp.IsEmpty)

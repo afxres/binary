@@ -1,4 +1,4 @@
-﻿using Mikodev.Binary.Internal.Extensions;
+﻿using Mikodev.Binary.Internal;
 using System;
 using System.Linq;
 

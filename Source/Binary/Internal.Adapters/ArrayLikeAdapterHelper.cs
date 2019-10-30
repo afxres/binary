@@ -1,5 +1,4 @@
-﻿using Mikodev.Binary.Internal.Extensions;
-using System;
+﻿using System;
 
 namespace Mikodev.Binary.Internal.Adapters
 {

@@ -11,7 +11,7 @@
     <Company>Mikodev</Company>
     <Copyright>Mikodev 2019</Copyright>
     <Product>Mikodev.Binary</Product>
-    <Version>5.0.0</Version>
+    <Version>5.0.0-preview01</Version>
     <PackageTags>binary dynamic serializer serialization</PackageTags>
     <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
   </PropertyGroup>
@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Creators.TupleLike\TupleLikeConverter.cs">
+    <Compile Update="Creators.Tuples\TupleLikeConverter.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>TupleLikeConverter.tt</DependentUpon>
@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Creators.TupleLike\TupleLikeConverter.tt">
+    <None Update="Creators.Tuples\TupleLikeConverter.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>TupleLikeConverter.cs</LastGenOutput>
     </None>

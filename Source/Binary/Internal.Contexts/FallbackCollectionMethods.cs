@@ -1,7 +1,5 @@
 ﻿using Mikodev.Binary.Internal.Adapters;
-using Mikodev.Binary.Internal.Contexts.Implementations;
-using Mikodev.Binary.Internal.Delegates;
-using Mikodev.Binary.Internal.Extensions;
+using Mikodev.Binary.Internal.Contexts.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

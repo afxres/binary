@@ -22,7 +22,7 @@ namespace Mikodev.Binary.Internal.Adapters
             var byteCount = span.Length;
             if (byteCount == 0)
                 return new MemoryItem<T>(Array.Empty<T>(), 0);
-            var itemCount = CollectionHelper.GetItemCount(byteCount, Memory.SizeOf<T>());
+            var itemCount = CollectionAdapterHelper.GetItemCount(byteCount, Memory.SizeOf<T>());
             var items = new T[itemCount];
             ref var source = ref MemoryMarshal.GetReference(span);
             ref var target = ref items[0];

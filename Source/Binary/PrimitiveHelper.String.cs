@@ -1,5 +1,4 @@
 ﻿using Mikodev.Binary.Internal;
-using Mikodev.Binary.Internal.Extensions;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;

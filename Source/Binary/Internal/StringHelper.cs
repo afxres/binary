@@ -1,5 +1,4 @@
-﻿using Mikodev.Binary.Internal.Extensions;
-using System.Buffers;
+﻿using System.Buffers;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
