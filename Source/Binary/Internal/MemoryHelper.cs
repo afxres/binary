@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary.Internal
 {
-    internal static class Memory
+    internal static class MemoryHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ref byte Add(ref byte source, int byteLength) => ref Unsafe.AddByteOffset(ref source, (IntPtr)byteLength);

@@ -8,42 +8,42 @@ namespace Mikodev.Binary.Creators
 {
     internal sealed class OriginalEndiannessConverter<T> : Converter<T> where T : unmanaged
     {
-        public OriginalEndiannessConverter() : base(Memory.SizeOf<T>())
+        public OriginalEndiannessConverter() : base(MemoryHelper.SizeOf<T>())
         {
-            Debug.Assert(typeof(T) == typeof(Guid) || new[] { 1, 2, 4, 8 }.Contains(Memory.SizeOf<T>()));
+            Debug.Assert(typeof(T) == typeof(Guid) || new[] { 1, 2, 4, 8 }.Contains(MemoryHelper.SizeOf<T>()));
         }
 
         public override void Encode(ref Allocator allocator, T item)
         {
-            Memory.Set(ref allocator.AllocateReference(Memory.SizeOf<T>()), item);
+            MemoryHelper.Set(ref allocator.AllocateReference(MemoryHelper.SizeOf<T>()), item);
         }
 
         public override T Decode(in ReadOnlySpan<byte> span)
         {
-            if (span.Length < Memory.SizeOf<T>())
+            if (span.Length < MemoryHelper.SizeOf<T>())
                 ThrowHelper.ThrowNotEnoughBytes();
             ref var source = ref MemoryMarshal.GetReference(span);
-            return Memory.Get<T>(ref source);
+            return MemoryHelper.Get<T>(ref source);
         }
 
         public override void EncodeAuto(ref Allocator allocator, T item)
         {
-            Memory.Set(ref allocator.AllocateReference(Memory.SizeOf<T>()), item);
+            MemoryHelper.Set(ref allocator.AllocateReference(MemoryHelper.SizeOf<T>()), item);
         }
 
         public override T DecodeAuto(ref ReadOnlySpan<byte> span)
         {
             // take reference first, then check bounds via slice method
             ref var location = ref MemoryMarshal.GetReference(span);
-            span = span.Slice(Memory.SizeOf<T>());
-            return Memory.Get<T>(ref location);
+            span = span.Slice(MemoryHelper.SizeOf<T>());
+            return MemoryHelper.Get<T>(ref location);
         }
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
-            ref var location = ref allocator.AllocateReference(Memory.SizeOf<T>() + 1);
-            location = (byte)Memory.SizeOf<T>();
-            Memory.Set(ref Memory.Add(ref location, 1), item);
+            ref var location = ref allocator.AllocateReference(MemoryHelper.SizeOf<T>() + 1);
+            location = (byte)MemoryHelper.SizeOf<T>();
+            MemoryHelper.Set(ref MemoryHelper.Add(ref location, 1), item);
         }
 
         public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
@@ -56,11 +56,11 @@ namespace Mikodev.Binary.Creators
             if (limits < prefixLength)
                 goto fail;
             var length = PrimitiveHelper.DecodeNumber(ref location, prefixLength);
-            if (length < Memory.SizeOf<T>())
+            if (length < MemoryHelper.SizeOf<T>())
                 goto fail;
             // check bounds via slice method
             span = span.Slice(prefixLength + length);
-            return Memory.Get<T>(ref Memory.Add(ref location, prefixLength));
+            return MemoryHelper.Get<T>(ref MemoryHelper.Add(ref location, prefixLength));
 
         fail:
             ThrowHelper.ThrowNotEnoughBytes();
@@ -69,16 +69,16 @@ namespace Mikodev.Binary.Creators
 
         public override byte[] Encode(T item)
         {
-            var buffer = new byte[Memory.SizeOf<T>()];
-            Memory.Set(ref buffer[0], item);
+            var buffer = new byte[MemoryHelper.SizeOf<T>()];
+            MemoryHelper.Set(ref buffer[0], item);
             return buffer;
         }
 
         public override T Decode(byte[] buffer)
         {
-            if (buffer == null || buffer.Length < Memory.SizeOf<T>())
+            if (buffer == null || buffer.Length < MemoryHelper.SizeOf<T>())
                 ThrowHelper.ThrowNotEnoughBytes();
-            return Memory.Get<T>(ref buffer[0]);
+            return MemoryHelper.Get<T>(ref buffer[0]);
         }
     }
 }

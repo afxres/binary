@@ -52,7 +52,7 @@ namespace Mikodev.Binary
 
             var target = new byte[(int)length];
             if (offset != 0)
-                Memory.Copy(target, source, offset);
+                MemoryHelper.Copy(target, source, offset);
             buffer = target;
             bounds = target.Length;
             Debug.Assert(bounds <= MaxCapacity);
@@ -91,7 +91,7 @@ namespace Mikodev.Binary
             var length = item.Length;
             ref var target = ref AllocateReference(length);
             ref var source = ref item[0];
-            Memory.Copy(ref target, ref source, length);
+            MemoryHelper.Copy(ref target, ref source, length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -163,7 +163,7 @@ namespace Mikodev.Binary
                 return Array.Empty<byte>();
             var source = buffer;
             var target = new byte[offset];
-            Memory.Copy(target, source, offset);
+            MemoryHelper.Copy(target, source, offset);
             return target;
         }
 

@@ -21,7 +21,7 @@ namespace Mikodev.Binary
                 return;
             ref var target = ref AllocateReference(ref allocator, byteCount);
             ref var source = ref MemoryMarshal.GetReference(span);
-            Memory.Copy(ref target, ref source, byteCount);
+            MemoryHelper.Copy(ref target, ref source, byteCount);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

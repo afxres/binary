@@ -9,12 +9,12 @@ namespace Mikodev.Binary.Internal.Adapters
         {
             var span = memory.Span;
             var itemCount = span.Length;
-            var byteCount = checked(itemCount * Memory.SizeOf<T>());
+            var byteCount = checked(itemCount * MemoryHelper.SizeOf<T>());
             if (byteCount == 0)
                 return;
             ref var target = ref allocator.AllocateReference(byteCount);
             ref var source = ref MemoryMarshal.GetReference(span);
-            Memory.Copy(ref target, ref Memory.AsByte(ref source), byteCount);
+            MemoryHelper.Copy(ref target, ref MemoryHelper.AsByte(ref source), byteCount);
         }
 
         public override MemoryItem<T> To(in ReadOnlySpan<byte> span)
@@ -22,11 +22,11 @@ namespace Mikodev.Binary.Internal.Adapters
             var byteCount = span.Length;
             if (byteCount == 0)
                 return new MemoryItem<T>(Array.Empty<T>(), 0);
-            var itemCount = CollectionAdapterHelper.GetItemCount(byteCount, Memory.SizeOf<T>());
+            var itemCount = CollectionAdapterHelper.GetItemCount(byteCount, MemoryHelper.SizeOf<T>());
             var items = new T[itemCount];
             ref var source = ref MemoryMarshal.GetReference(span);
             ref var target = ref items[0];
-            Memory.Copy(ref Memory.AsByte(ref target), ref source, byteCount);
+            MemoryHelper.Copy(ref MemoryHelper.AsByte(ref target), ref source, byteCount);
             return new MemoryItem<T>(items, itemCount);
         }
     }

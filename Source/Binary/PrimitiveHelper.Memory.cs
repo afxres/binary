@@ -14,7 +14,7 @@ namespace Mikodev.Binary
                 return;
             ref var target = ref allocator.AllocateReference(byteCount);
             ref var source = ref MemoryMarshal.GetReference(span);
-            Memory.Copy(ref target, ref source, byteCount);
+            MemoryHelper.Copy(ref target, ref source, byteCount);
         }
 
         public static ReadOnlySpan<byte> DecodeBufferWithLengthPrefix(ref ReadOnlySpan<byte> span)
