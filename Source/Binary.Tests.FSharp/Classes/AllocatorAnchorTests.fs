@@ -16,7 +16,7 @@ let ``Length Prefix Buffer With Length From 0 To 4096`` () =
         let anchor = AllocatorHelper.AnchorLengthPrefix &allocator
         AllocatorHelper.Append(&allocator, &span)
         AllocatorHelper.AppendLengthPrefix(&allocator, anchor)
-        let buffer = allocator.ToArray()
+        let buffer = allocator.AsSpan().ToArray()
         let mutable span = ReadOnlySpan buffer
         let length = PrimitiveHelper.DecodeNumber &span
         Assert.Equal(i, length)

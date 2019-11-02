@@ -60,7 +60,7 @@ namespace Mikodev.Binary.Tests
 
             var allocator = new Allocator();
             converter.Encode(ref allocator, source);
-            var buffer = allocator.ToArray();
+            var buffer = allocator.AsSpan().ToArray();
 
             var result = converter.Decode(buffer);
             Assert.False(ReferenceEquals(source, result));
@@ -80,7 +80,7 @@ namespace Mikodev.Binary.Tests
 
             var allocator = new Allocator();
             converter.EncodeAuto(ref allocator, source);
-            var buffer = allocator.ToArray();
+            var buffer = allocator.AsSpan().ToArray();
 
             var span = new ReadOnlySpan<byte>(buffer);
             var result = converter.DecodeAuto(ref span);

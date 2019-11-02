@@ -15,7 +15,7 @@ namespace Mikodev.Binary.Internal.Contexts
             var buffer = Converter.Encoding.GetBytes(text);
             var allocator = new Allocator();
             PrimitiveHelper.EncodeBufferWithLengthPrefix(ref allocator, buffer);
-            var target = allocator.ToArray();
+            var target = allocator.AsSpan().ToArray();
             result = (buffer, target);
             dictionary.Add(text, result);
             return result;

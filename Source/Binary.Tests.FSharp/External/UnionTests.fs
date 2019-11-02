@@ -17,12 +17,12 @@ let converter<'a> =
 let bytes<'a> (c : Converter<'a>) v =
     let mutable allocator = new Allocator()
     c.Encode(&allocator, v)
-    allocator.ToArray()
+    allocator.AsSpan().ToArray()
 
 let bytesWithMark<'a> (c : Converter<'a>) v =
     let mutable allocator = new Allocator()
     c.EncodeAuto(&allocator, v)
-    allocator.ToArray()
+    allocator.AsSpan().ToArray()
 
 let value<'a> (c : Converter<'a>) buffer =
     let span = new ReadOnlySpan<byte>(buffer)
@@ -94,7 +94,7 @@ let ``Invalid Tag (to value & to value with mark)`` (tag : int) =
 
     let mutable allocator = Allocator()
     PrimitiveHelper.EncodeNumber(&allocator, tag)
-    let bytes = allocator.ToArray()
+    let bytes = allocator.AsSpan().ToArray()
 
     let message = sprintf "Invalid union tag '%d', type: %O" (int tag) typeof<int option>
     let alpha = Assert.Throws<ArgumentException>(fun () -> value<int option> converter bytes |> ignore)

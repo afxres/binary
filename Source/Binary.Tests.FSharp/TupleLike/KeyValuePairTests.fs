@@ -10,12 +10,12 @@ let generator = Generator.CreateDefault()
 let bytes<'a> (c : Converter<'a>) v =
     let mutable allocator = new Allocator()
     c.Encode(&allocator, v)
-    allocator.ToArray()
+    allocator.AsSpan().ToArray()
 
 let bytesWithMark<'a> (c : Converter<'a>) v =
     let mutable allocator = new Allocator()
     c.EncodeAuto(&allocator, v)
-    allocator.ToArray()
+    allocator.AsSpan().ToArray()
 
 let value<'a> (c : Converter<'a>) buffer =
     let span = new ReadOnlySpan<byte>(buffer)

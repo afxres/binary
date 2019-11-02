@@ -32,7 +32,7 @@ let ``Anonymous Class Record To Bytes (from null value)`` () =
     Assert.Equal(0, allocator.Length)
     converter.EncodeWithLengthPrefix(&allocator, null)
     Assert.Equal(4, allocator.Length)
-    let mutable span = ReadOnlySpan (allocator.ToArray())
+    let mutable span = ReadOnlySpan (allocator.AsSpan().ToArray())
     Assert.Equal(0, PrimitiveHelper.DecodeNumber(&span))
     ()
 
@@ -160,7 +160,7 @@ let ``Type With 32 Properties (via constructor)`` () =
     Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
     let mutable allocator = new Allocator()
     converter.Encode(&allocator, source)
-    let buffer = allocator.ToArray()
+    let buffer = allocator.AsSpan().ToArray()
     let result = converter.Decode buffer
     Assert.False(obj.ReferenceEquals(source, result))
     Assert.Equal(string source, string result)
@@ -173,7 +173,7 @@ let ``Type With 48 Properties (via properties)`` () =
     Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
     let mutable allocator = new Allocator()
     converter.Encode(&allocator, source)
-    let buffer = allocator.ToArray()
+    let buffer = allocator.AsSpan().ToArray()
     let result = converter.Decode buffer
     Assert.False(obj.ReferenceEquals(source, result))
     Assert.Equal("0x1F", result.Item1F)

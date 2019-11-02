@@ -9,16 +9,93 @@ let random = Random();
 let generator = Generator.CreateDefault()
 
 [<Fact>]
-let ``Allocate (zero)`` () =
-    let mutable allocator = new Allocator()
-    let span = AllocatorHelper.Allocate(&allocator, 0)
-    Assert.Equal(0, span.Length)
-    Assert.Equal(0, allocator.Length)
-    Assert.Equal(0, allocator.Capacity);
+let ``Allocate (default constructor, zero)`` () =
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable allocator = new Allocator() in
+        let _ = AllocatorHelper.Allocate(&allocator, 0)
+        ())
+    Assert.StartsWith("Argument length must be greater than zero!" + Environment.NewLine, error.Message)
+    Assert.Equal("length", error.ParamName)
+    let methodInfo = typeof<AllocatorHelper>.GetMethod("Allocate")
+    let parameterName = methodInfo.GetParameters() |> Array.last |> (fun x -> x.Name)
+    Assert.Equal(parameterName, error.ParamName)
     ()
 
 [<Fact>]
-let ``Allocate (for i++)`` () =
+let ``Allocate Reference (default constructor, zero)`` () =
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable allocator = new Allocator() in
+        let _ = AllocatorHelper.AllocateReference(&allocator, 0)
+        ())
+    Assert.StartsWith("Argument length must be greater than zero!" + Environment.NewLine, error.Message)
+    Assert.Equal("length", error.ParamName)
+    let methodInfo = typeof<AllocatorHelper>.GetMethod("Allocate")
+    let parameterName = methodInfo.GetParameters() |> Array.last |> (fun x -> x.Name)
+    Assert.Equal(parameterName, error.ParamName)
+    ()
+
+[<Fact>]
+let ``Allocate (default constructor, overflow)`` () =
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable allocator = new Allocator() in
+        let _ = AllocatorHelper.Allocate(&allocator, Int32.MaxValue + 1)
+        ())
+    Assert.StartsWith("Argument length must be greater than zero!" + Environment.NewLine, error.Message)
+    Assert.Equal("length", error.ParamName)
+    let methodInfo = typeof<AllocatorHelper>.GetMethod("Allocate")
+    let parameterName = methodInfo.GetParameters() |> Array.last |> (fun x -> x.Name)
+    Assert.Equal(parameterName, error.ParamName)
+    ()
+
+[<Fact>]
+let ``Allocate (limited to zero, zero)`` () =
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable allocator = new Allocator(Array.empty, 0) in
+        let _ = AllocatorHelper.Allocate(&allocator, 0)
+        ())
+    Assert.StartsWith("Argument length must be greater than zero!" + Environment.NewLine, error.Message)
+    Assert.Equal("length", error.ParamName)
+    let methodInfo = typeof<AllocatorHelper>.GetMethod("Allocate")
+    let parameterName = methodInfo.GetParameters() |> Array.last |> (fun x -> x.Name)
+    Assert.Equal(parameterName, error.ParamName)
+    ()
+
+[<Fact>]
+let ``Allocate Some Then Allocate Zero`` () =
+    let mutable flag = 0
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable allocator = Allocator()
+        let _ = AllocatorHelper.Allocate(&allocator, 32)
+        flag <- 1
+        let _ = AllocatorHelper.Allocate(&allocator, 0)
+        ())
+    Assert.Equal(1, flag)
+    Assert.StartsWith("Argument length must be greater than zero!" + Environment.NewLine, error.Message)
+    Assert.Equal("length", error.ParamName)
+    let methodInfo = typeof<AllocatorHelper>.GetMethod("Allocate")
+    let parameterName = methodInfo.GetParameters() |> Array.last |> (fun x -> x.Name)
+    Assert.Equal(parameterName, error.ParamName)
+    ()
+
+[<Fact>]
+let ``Allocate Some Then Allocate Reference Zero`` () =
+    let mutable flag = 0
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable allocator = Allocator()
+        let _ = AllocatorHelper.Allocate(&allocator, 32)
+        flag <- 1
+        let _ = AllocatorHelper.AllocateReference(&allocator, 0)
+        ())
+    Assert.Equal(1, flag)
+    Assert.StartsWith("Argument length must be greater than zero!" + Environment.NewLine, error.Message)
+    Assert.Equal("length", error.ParamName)
+    let methodInfo = typeof<AllocatorHelper>.GetMethod("Allocate")
+    let parameterName = methodInfo.GetParameters() |> Array.last |> (fun x -> x.Name)
+    Assert.Equal(parameterName, error.ParamName)
+    ()
+
+[<Fact>]
+let ``Allocate (for 1 to 512)`` () =
     let mutable allocator = new Allocator()
     for item in 1..512 do
         let span = AllocatorHelper.Allocate(&allocator, 1)
@@ -62,15 +139,6 @@ let ``Allocate (normal)`` (required : int) =
 #endif
     ()
 
-[<Fact>]
-let ``Allocate (overflow, default constructor)`` () =
-    let error = Assert.Throws<ArgumentException>(fun () ->
-        let mutable allocator = new Allocator()
-        let _ = AllocatorHelper.Allocate(&allocator, Int32.MaxValue + 1)
-        ())
-    Assert.Equal("Maximum allocator capacity has been reached.", error.Message)
-    ()
-
 [<Theory>]
 [<InlineData(32)>]
 [<InlineData(256)>]
@@ -94,19 +162,6 @@ let ``Allocate (limited)`` () =
     let _ = AllocatorHelper.Allocate(&allocator, 448)
     Assert.Equal(640, allocator.Length)
     Assert.Equal(640, allocator.Capacity)
-    ()
-
-[<Fact>]
-let ``Allocate (limited, zero)`` () =
-    let mutable allocator = new Allocator(Array.empty, 0)
-    let span = AllocatorHelper.Allocate(&allocator, 0)
-    Assert.Equal(0, span.Length)
-    Assert.Equal(0, allocator.Capacity)
-    Assert.Equal(0, allocator.Length)
-    Assert.Throws<ArgumentException>(fun () ->
-        let mutable allocator = new Allocator(Array.empty, 0)
-        let _ = AllocatorHelper.Allocate(&allocator, 1)
-        ()) |> ignore
     ()
 
 [<Fact>]
@@ -207,7 +262,7 @@ let ``As Span`` (length : int) =
 [<Fact>]
 let ``To Array (default value)`` () =
     let allocator = new Allocator()
-    let result = allocator.ToArray()
+    let result = allocator.AsSpan().ToArray()
     Assert.True(obj.ReferenceEquals(Array.Empty<byte>(), result))
     ()
 
@@ -218,19 +273,18 @@ let ``To Array (default value)`` () =
 let ``To Array (buffer, empty)`` (size : int) =
     let buffer = Array.zeroCreate<byte> size
     let allocator = new Allocator(buffer)
-    let result = allocator.ToArray()
+    let result = allocator.AsSpan().ToArray()
     Assert.True(obj.ReferenceEquals(Array.Empty<byte>(), result))
     ()
 
 [<Theory>]
-[<InlineData(0)>]
 [<InlineData(1)>]
 [<InlineData(384)>]
 let ``To Array (buffer)`` (size : int) =
     let buffer = [0..(size - 1)] |> List.map byte |> List.toArray
     let mutable allocator = new Allocator(buffer)
     MemoryExtensions.CopyTo(buffer, AllocatorHelper.Allocate(&allocator, size))
-    let result = allocator.ToArray()
+    let result = allocator.AsSpan().ToArray()
     Assert.Equal<byte>(buffer, result)
     ()
 

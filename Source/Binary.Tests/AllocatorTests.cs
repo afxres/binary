@@ -19,7 +19,7 @@ namespace Mikodev.Binary.Tests
                 _ = AllocatorHelper.Allocate(ref allocator, Limits);
                 Assert.Equal(Limits, allocator.Length);
                 AllocatorHelper.AppendLengthPrefix(ref allocator, anchor);
-                return allocator.ToArray();
+                return allocator.AsSpan().ToArray();
             }
 
             for (var i = 0; i < 4; i++)

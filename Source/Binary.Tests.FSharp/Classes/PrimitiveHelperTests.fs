@@ -107,7 +107,7 @@ let ``Encode String Then Decode`` (text : string) =
     let mutable allocator = new Allocator()
     let span = text.AsSpan()
     PrimitiveHelper.EncodeString(&allocator, &span)
-    let buffer = allocator.ToArray()
+    let buffer = allocator.AsSpan().ToArray()
     let target = Converter.Encoding.GetBytes text
     Assert.Equal<byte>(buffer, target)
 
@@ -123,7 +123,7 @@ let ``Encode String Then Decode (unicode)`` (text : string) =
     let mutable allocator = new Allocator()
     let span = text.AsSpan()
     PrimitiveHelper.EncodeString(&allocator, &span, Encoding.Unicode)
-    let buffer = allocator.ToArray()
+    let buffer = allocator.AsSpan().ToArray()
     let target = Encoding.Unicode.GetBytes text
     Assert.Equal<byte>(buffer, target)
 
@@ -184,7 +184,7 @@ let ``Encode String (random)`` () =
         let mutable allocator = new Allocator()
         let span = text.AsSpan()
         PrimitiveHelper.EncodeString(&allocator, &span)
-        let buffer = allocator.ToArray()
+        let buffer = allocator.AsSpan().ToArray()
         let result = encoding.GetString buffer
         Assert.Equal(text, result)
 #if DEBUG
@@ -206,7 +206,7 @@ let ``Encode String With Length Prefix (random)`` () =
         let mutable allocator = new Allocator()
         let span = text.AsSpan()
         PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, &span)
-        let buffer = allocator.ToArray()
+        let buffer = allocator.AsSpan().ToArray()
         let mutable span = ReadOnlySpan buffer
         let length = PrimitiveHelper.DecodeNumber(&span)
         let result = encoding.GetString (span.ToArray())

@@ -13,7 +13,7 @@ let testWithSpan (value : 'a) (expected : 'a) =
 
     let mutable allocator = new Allocator()
     converter.Encode(&allocator, value)
-    let buffer = allocator.ToArray()
+    let buffer = allocator.AsSpan().ToArray()
     Assert.Equal<byte>(bufferOrigin, buffer)
 
     let span = ReadOnlySpan buffer
@@ -38,7 +38,7 @@ let testAuto (value : 'a) (expected : 'a) =
 
     let mutable allocator = Allocator()
     converter.EncodeAuto(&allocator, value)
-    let buffer = allocator.ToArray()
+    let buffer = allocator.AsSpan().ToArray()
 
     let mutable span = ReadOnlySpan buffer
     let result = converter.DecodeAuto &span
@@ -57,7 +57,7 @@ let testWithLengthPrefix (value : 'a) (expected : 'a) =
 
     let mutable allocator = Allocator()
     converter.EncodeWithLengthPrefix(&allocator, value)
-    let buffer = allocator.ToArray()
+    let buffer = allocator.AsSpan().ToArray()
 
     let mutable span = ReadOnlySpan buffer
     let result = converter.DecodeWithLengthPrefix &span
@@ -146,7 +146,7 @@ let ``Uri Null With Length Prefix`` () =
     let converter = generator.GetConverter<Uri>()
     let mutable allocator = Allocator()
     converter.EncodeWithLengthPrefix(&allocator, item)
-    let buffer = allocator.ToArray()
+    let buffer = allocator.AsSpan().ToArray()
     let mutable span = ReadOnlySpan buffer
     let result = converter.DecodeWithLengthPrefix(&span)
 

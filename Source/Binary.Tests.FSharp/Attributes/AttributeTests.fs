@@ -545,7 +545,7 @@ type AttributeTests() =
 
         let mutable allocator = new Allocator()
         converter.Encode(&allocator, source)
-        let buffer = allocator.ToArray()
+        let buffer = allocator.AsSpan().ToArray()
 
         let token = Token(generator, buffer)
         let dictionary = token :> IReadOnlyDictionary<string, Token>
@@ -569,7 +569,7 @@ type AttributeTests() =
 
         let mutable allocator = new Allocator()
         converter.EncodeAuto(&allocator, source)
-        let buffer = allocator.ToArray()
+        let buffer = allocator.AsSpan().ToArray()
 
         let token = Token(generator, buffer |> Array.skip sizeof<int>)
         let dictionary = token :> IReadOnlyDictionary<string, Token>
@@ -595,7 +595,7 @@ type AttributeTests() =
 
         let mutable allocator = new Allocator()
         converter.Encode(&allocator, source)
-        let buffer = allocator.ToArray()
+        let buffer = allocator.AsSpan().ToArray()
 
         let middle = generator.Decode<'b>(buffer)
         Assert.Equal<'b>(expected, middle)
@@ -614,7 +614,7 @@ type AttributeTests() =
 
         let mutable allocator = new Allocator()
         converter.EncodeAuto(&allocator, source)
-        let buffer = allocator.ToArray()
+        let buffer = allocator.AsSpan().ToArray()
 
         let middleConverter = generator.GetConverter<'b>()
         let mutable middleSpan = new ReadOnlySpan<byte>(buffer);

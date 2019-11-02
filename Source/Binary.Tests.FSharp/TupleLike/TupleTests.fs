@@ -13,12 +13,12 @@ let test (ls : int) (ll : int) (value : 'T) =
     let c = generator.GetConverter<'T> ()
     let mutable allocator = new Allocator()
     c.Encode(&allocator, value)
-    let ba = allocator.ToArray()
+    let ba = allocator.AsSpan().ToArray()
     let ra = c.Decode ba
 
     let mutable allocator = new Allocator()
     c.EncodeAuto(&allocator, value)
-    let bb = allocator.ToArray()
+    let bb = allocator.AsSpan().ToArray()
     let mutable span = new ReadOnlySpan<byte>(bb)
     let rb = c.DecodeAuto(&span)
 

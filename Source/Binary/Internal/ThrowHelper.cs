@@ -17,7 +17,10 @@ namespace Mikodev.Binary.Internal
         internal static void ThrowAllocatorOverflow() => throw new ArgumentException("Maximum allocator capacity has been reached.");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static void ThrowAllocatorModified() => throw new ArgumentException("Invalid length prefix anchor or allocator modified.");
+        internal static void ThrowArgumentLengthInvalid() => throw new ArgumentException("Argument length must be greater than zero!", "length");
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static void ThrowAllocatorOrAnchorInvalid() => throw new ArgumentException("Invalid length prefix anchor or allocator modified.");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static void ThrowTupleNull(Type type) => throw new ArgumentNullException("item", $"Tuple can not be null, type: {type}");

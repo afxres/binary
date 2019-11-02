@@ -22,7 +22,7 @@ let testWithSpan (value : 'a) (size : int) =
 
     let mutable allocator = new Allocator()
     converter.Encode(&allocator, value)
-    let buffer = allocator.ToArray()
+    let buffer = allocator.AsSpan().ToArray()
     Assert.Equal<byte>(bufferOrigin, buffer)
     Assert.Equal(size, buffer.Length)
 
@@ -49,7 +49,7 @@ let testAuto (value : 'a) (size : int) =
 
     let mutable allocator = Allocator()
     converter.EncodeAuto(&allocator, value)
-    let buffer = allocator.ToArray()
+    let buffer = allocator.AsSpan().ToArray()
     Assert.Equal(size, buffer.Length)
     Assert.Equal<byte>(bufferOrigin, buffer)
 
@@ -65,7 +65,7 @@ let testWithLengthPrefix (value : 'a) (size : int) =
 
     let mutable allocator = new Allocator()
     converter.EncodeWithLengthPrefix(&allocator, value)
-    let buffer = allocator.ToArray()
+    let buffer = allocator.AsSpan().ToArray()
 
     let mutable span = ReadOnlySpan buffer
     let length = PrimitiveHelper.DecodeNumber &span

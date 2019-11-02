@@ -12,9 +12,6 @@ namespace Mikodev.Binary.Internal
         internal static ref byte AsByte<T>(ref T source) where T : unmanaged => ref Unsafe.As<T, byte>(ref source);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Copy(byte[] target, byte[] source, int byteLength) => Unsafe.CopyBlock(ref target[0], ref source[0], (uint)byteLength);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void Copy(ref byte target, ref byte source, int byteLength) => Unsafe.CopyBlockUnaligned(ref target, ref source, (uint)byteLength);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

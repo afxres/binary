@@ -21,7 +21,7 @@ let test<'a> (name : string) (builderName : string) (collection : 'a) =
     let alpha = converter.Encode(collection)
     let mutable allocator = Allocator()
     converter.EncodeWithLengthPrefix(&allocator, collection)
-    let bravo = allocator.ToArray()
+    let bravo = allocator.AsSpan().ToArray()
 
     Assert.Empty(alpha)
     Assert.Equal(0uy, Assert.Single(bravo))
@@ -36,7 +36,7 @@ let testNull<'a when 'a : null> (name : string) (builderName : string) (collecti
     let delta = converter.Encode(null)
     let mutable allocator = Allocator()
     converter.EncodeWithLengthPrefix(&allocator, null)
-    let hotel = allocator.ToArray()
+    let hotel = allocator.AsSpan().ToArray()
 
     Assert.Empty(delta)
     Assert.Equal(0uy, Assert.Single(hotel))

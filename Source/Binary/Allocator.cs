@@ -25,6 +25,8 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.NoInlining)]
         private byte[] Expand(int offset, int expand)
         {
+            if (expand <= 0)
+                ThrowHelper.ThrowArgumentLengthInvalid();
             Debug.Assert(offset >= 0);
             var limits = MaxCapacity;
             var amount = ((long)(uint)offset) + ((uint)expand);
@@ -52,7 +54,7 @@ namespace Mikodev.Binary
 
             var target = new byte[(int)length];
             if (offset != 0)
-                MemoryHelper.Copy(target, source, offset);
+                MemoryHelper.Copy(ref target[0], ref source[0], offset);
             buffer = target;
             bounds = target.Length;
             Debug.Assert(bounds <= MaxCapacity);
@@ -64,7 +66,7 @@ namespace Mikodev.Binary
         {
             Debug.Assert(bounds >= 0 && bounds <= MaxCapacity);
             Debug.Assert(bounds == 0 || bounds <= buffer.Length);
-            return (uint)expand > (uint)(bounds - offset) ? Expand(offset, expand) : buffer;
+            return expand <= 0 || (uint)expand > (uint)(bounds - offset) ? Expand(offset, expand) : buffer;
         }
 
         internal void Encode(in ReadOnlySpan<char> span, bool withLengthPrefix)
@@ -112,8 +114,8 @@ namespace Mikodev.Binary
             var length = offset - anchor;
             var origin = anchor - sizeof(int);
             // check bounds (for performance reason, ignore maximum capacity)
-            if (length < 0 || origin < 0 || target == null || target.Length < anchor)
-                ThrowHelper.ThrowAllocatorModified();
+            if (length < 0 || origin < 0)
+                ThrowHelper.ThrowAllocatorOrAnchorInvalid();
             PrimitiveHelper.EncodeNumberFixed4(ref target[origin], (uint)length);
         }
 
@@ -154,18 +156,6 @@ namespace Mikodev.Binary
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly ReadOnlySpan<byte> AsSpan() => new ReadOnlySpan<byte>(buffer, 0, cursor);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly byte[] ToArray()
-        {
-            var offset = cursor;
-            if (offset == 0)
-                return Array.Empty<byte>();
-            var source = buffer;
-            var target = new byte[offset];
-            MemoryHelper.Copy(target, source, offset);
-            return target;
-        }
 
         [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
         public readonly override bool Equals(object obj) => throw new NotSupportedException();

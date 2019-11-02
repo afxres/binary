@@ -12,7 +12,7 @@ let ``Object Converter`` () =
     let source : obj = box (struct (3, 2.1))
     let mutable allocator = new Allocator()
     converter.Encode(&allocator, source)
-    let buffer = allocator.ToArray()
+    let buffer = allocator.AsSpan().ToArray()
     let result = generator.Decode<struct (int * double)> buffer
     Assert.Equal(source, box result)
     ()
@@ -38,7 +38,7 @@ let test<'T> (item : 'T) =
     ca.Encode(&aa, item)
     cb.Encode(&ab, box item)
     Assert.Equal(aa.Length, ab.Length)
-    Assert.Equal<byte>(aa.ToArray(), ab.ToArray())
+    Assert.Equal<byte>(aa.AsSpan().ToArray(), ab.AsSpan().ToArray())
 
     let ba = aa.AsSpan()
     let bb = ab.AsSpan()
@@ -55,7 +55,7 @@ let testAuto<'T> (item : 'T) =
     ca.EncodeAuto(&aa, item)
     cb.EncodeAuto(&ab, box item)
     Assert.Equal(aa.Length, ab.Length)
-    Assert.Equal<byte>(aa.ToArray(), ab.ToArray())
+    Assert.Equal<byte>(aa.AsSpan().ToArray(), ab.AsSpan().ToArray())
 
     let mutable ba = aa.AsSpan()
     let mutable bb = ab.AsSpan()
@@ -74,7 +74,7 @@ let testWithLengthPrefix<'T> (item : 'T) =
     ca.EncodeWithLengthPrefix(&aa, item)
     cb.EncodeWithLengthPrefix(&ab, box item)
     Assert.Equal(aa.Length, ab.Length)
-    Assert.Equal<byte>(aa.ToArray(), ab.ToArray())
+    Assert.Equal<byte>(aa.AsSpan().ToArray(), ab.AsSpan().ToArray())
 
     let mutable ba = aa.AsSpan()
     let mutable bb = ab.AsSpan()

@@ -17,14 +17,14 @@ namespace Mikodev.Binary.Tests
         {
             var allocator = new Allocator();
             converter.Encode(ref allocator, value);
-            return allocator.ToArray();
+            return allocator.AsSpan().ToArray();
         }
 
         private byte[] BytesWithMark<T>(Converter<T> converter, T value)
         {
             var allocator = new Allocator();
             converter.EncodeAuto(ref allocator, value);
-            return allocator.ToArray();
+            return allocator.AsSpan().ToArray();
         }
 
         [Theory(DisplayName = "Nullable (to bytes & to value)")]
