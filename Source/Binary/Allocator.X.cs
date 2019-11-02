@@ -72,11 +72,9 @@ namespace Mikodev.Binary
             var offset = allocator.offset;
             Debug.Assert(offset >= 0);
             Debug.Assert(offset <= (target?.Length ?? 0));
-            var length = offset - anchor;
-            var origin = anchor - sizeof(int);
-            if (length < 0 || origin < 0)
+            if (anchor < sizeof(int) || offset < anchor)
                 ThrowHelper.ThrowAllocatorOrAnchorInvalid();
-            PrimitiveHelper.EncodeNumberFixed4(ref target[origin], (uint)length);
+            PrimitiveHelper.EncodeNumberFixed4(ref target[anchor - sizeof(int)], (uint)(offset - anchor));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

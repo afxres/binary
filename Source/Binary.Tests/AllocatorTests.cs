@@ -5,7 +5,7 @@ namespace Mikodev.Binary.Tests
 {
     public class AllocatorTests
     {
-        [Theory(DisplayName = "Fake Length Prefix Anchor (hack)")]
+        [Theory(DisplayName = "Fake Anchor (hack)")]
         [InlineData(4)]
         [InlineData(5)]
         [InlineData(8)]
@@ -33,27 +33,25 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(Limits - offset, number);
         }
 
-        [Theory(DisplayName = "Fake Length Prefix Anchor (hack)")]
-        [InlineData(int.MinValue)]
-        [InlineData(-4)]
+        [Theory(DisplayName = "Fake Anchor (hack, invalid)")]
+        [InlineData(int.MinValue + 0)]
+        [InlineData(int.MinValue + 1)]
+        [InlineData(int.MinValue + 2)]
+        [InlineData(int.MinValue + 3)]
         [InlineData(0)]
         [InlineData(1)]
         [InlineData(2)]
         [InlineData(3)]
         public unsafe void FakeAnchorRange(int offset)
         {
-            const int Limits = 100;
-
-            static byte[] Test(int i)
+            void Test(int i)
             {
                 var anchor = new AllocatorAnchor();
                 *(int*)&anchor = i;
                 Assert.Equal($"AllocatorAnchor(Offset: {i})", anchor.ToString());
                 var allocator = new Allocator();
-                _ = AllocatorHelper.Allocate(ref allocator, Limits);
-                Assert.Equal(Limits, allocator.Length);
+                Assert.Equal(0, allocator.Length);
                 AllocatorHelper.AppendLengthPrefix(ref allocator, anchor);
-                return allocator.AsSpan().ToArray();
             }
 
             var error = Assert.Throws<ArgumentException>(() => Test(offset));
