@@ -260,35 +260,6 @@ let ``As Span`` (length : int) =
     ()
 
 [<Fact>]
-let ``To Array (default value)`` () =
-    let allocator = new Allocator()
-    let result = allocator.AsSpan().ToArray()
-    Assert.True(obj.ReferenceEquals(Array.Empty<byte>(), result))
-    ()
-
-[<Theory>]
-[<InlineData(0)>]
-[<InlineData(1)>]
-[<InlineData(6144)>]
-let ``To Array (buffer, empty)`` (size : int) =
-    let buffer = Array.zeroCreate<byte> size
-    let allocator = new Allocator(buffer)
-    let result = allocator.AsSpan().ToArray()
-    Assert.True(obj.ReferenceEquals(Array.Empty<byte>(), result))
-    ()
-
-[<Theory>]
-[<InlineData(1)>]
-[<InlineData(384)>]
-let ``To Array (buffer)`` (size : int) =
-    let buffer = [0..(size - 1)] |> List.map byte |> List.toArray
-    let mutable allocator = new Allocator(buffer)
-    MemoryExtensions.CopyTo(buffer, AllocatorHelper.Allocate(&allocator, size))
-    let result = allocator.AsSpan().ToArray()
-    Assert.Equal<byte>(buffer, result)
-    ()
-
-[<Fact>]
 let ``To String (debug)`` () =
     let mutable allocator = new Allocator(Array.zeroCreate 64, 32)
     let _ = AllocatorHelper.Allocate(&allocator, 4)
