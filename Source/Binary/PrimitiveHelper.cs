@@ -84,7 +84,7 @@ namespace Mikodev.Binary
             if (number < 0)
                 ThrowHelper.ThrowNumberNegative();
             var length = EncodeNumberLength((uint)number);
-            ref var location = ref allocator.AllocateReference(length);
+            ref var location = ref Allocator.AllocateReference(ref allocator, length);
             EncodeNumber(ref location, length, (uint)number);
         }
 

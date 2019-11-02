@@ -12,7 +12,7 @@ namespace Mikodev.Binary
             EncodeNumber(ref allocator, byteCount);
             if (byteCount == 0)
                 return;
-            ref var target = ref allocator.AllocateReference(byteCount);
+            ref var target = ref Allocator.AllocateReference(ref allocator, byteCount);
             ref var source = ref MemoryMarshal.GetReference(span);
             MemoryHelper.Copy(ref target, ref source, byteCount);
         }

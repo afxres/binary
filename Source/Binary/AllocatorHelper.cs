@@ -8,10 +8,10 @@ namespace Mikodev.Binary
     public static class AllocatorHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Span<byte> Allocate(ref Allocator allocator, int length) => allocator.Allocate(length);
+        public static Span<byte> Allocate(ref Allocator allocator, int length) => Allocator.Allocate(ref allocator, length);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ref byte AllocateReference(ref Allocator allocator, int length) => ref allocator.AllocateReference(length);
+        public static ref byte AllocateReference(ref Allocator allocator, int length) => ref Allocator.AllocateReference(ref allocator, length);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Append(ref Allocator allocator, in ReadOnlySpan<byte> span)
@@ -25,9 +25,9 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static AllocatorAnchor AnchorLengthPrefix(ref Allocator allocator) => new AllocatorAnchor(allocator.AnchorLengthPrefix());
+        public static AllocatorAnchor AnchorLengthPrefix(ref Allocator allocator) => new AllocatorAnchor(Allocator.AnchorLengthPrefix(ref allocator));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void AppendLengthPrefix(ref Allocator allocator, AllocatorAnchor anchor) => allocator.AppendLengthPrefix(anchor.Offset);
+        public static void AppendLengthPrefix(ref Allocator allocator, AllocatorAnchor anchor) => Allocator.AppendLengthPrefix(ref allocator, anchor.Offset);
     }
 }
