@@ -39,6 +39,8 @@ namespace Mikodev.Binary
             Debug.Assert(length <= limits);
 
             var target = new byte[(int)length];
+            Debug.Assert(offset <= (source?.Length ?? 0));
+            Debug.Assert(offset <= target.Length);
             if (offset != 0)
                 MemoryHelper.Copy(ref target[0], ref source[0], offset);
             allocator.buffer = target;
@@ -53,6 +55,24 @@ namespace Mikodev.Binary
             Debug.Assert(allocator.bounds >= 0 && allocator.bounds <= allocator.MaxCapacity);
             Debug.Assert(allocator.bounds == 0 || allocator.bounds <= allocator.buffer.Length);
             return expand <= 0 || (uint)expand > (uint)(allocator.bounds - offset) ? Expand(ref allocator, offset, expand) : allocator.buffer;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Span<byte> Allocate(ref Allocator allocator, int length)
+        {
+            var offset = allocator.offset;
+            var target = Ensure(ref allocator, offset, length);
+            allocator.offset = offset + length;
+            return new Span<byte>(target, offset, length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ref byte AllocateReference(ref Allocator allocator, int length)
+        {
+            var offset = allocator.offset;
+            var target = Ensure(ref allocator, offset, length);
+            allocator.offset = offset + length;
+            return ref target[offset];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -87,25 +107,7 @@ namespace Mikodev.Binary
             MemoryHelper.Copy(ref target, ref source, length);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Span<byte> Allocate(ref Allocator allocator, int length)
-        {
-            var offset = allocator.offset;
-            var target = Ensure(ref allocator, offset, length);
-            allocator.offset = offset + length;
-            return new Span<byte>(target, offset, length);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static ref byte AllocateReference(ref Allocator allocator, int length)
-        {
-            var offset = allocator.offset;
-            var target = Ensure(ref allocator, offset, length);
-            allocator.offset = offset + length;
-            return ref target[offset];
-        }
-
-        internal static void Encode(ref Allocator allocator, in ReadOnlySpan<char> span, bool withLengthPrefix)
+        internal static void AppendText(ref Allocator allocator, in ReadOnlySpan<char> span, bool withLengthPrefix)
         {
             var encoding = Converter.Encoding;
             var charCount = span.Length;

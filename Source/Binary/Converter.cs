@@ -1,5 +1,6 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
+using System.ComponentModel;
 using System.Text;
 
 namespace Mikodev.Binary
@@ -22,13 +23,13 @@ namespace Mikodev.Binary
             ItemType = type;
         }
 
-        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public override bool Equals(object obj) => throw new NotSupportedException();
 
-        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public override int GetHashCode() => throw new NotSupportedException();
 
-        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public override string ToString() => $"{nameof(Converter)}({nameof(Length)}: {Length}, {nameof(ItemType)}: {ItemType})";
     }
 }

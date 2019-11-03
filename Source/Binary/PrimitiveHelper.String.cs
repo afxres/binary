@@ -30,10 +30,10 @@ namespace Mikodev.Binary
         public static void EncodeStringWithLengthPrefix(ref Allocator allocator, in ReadOnlySpan<char> span, Encoding encoding) => Encode(ref allocator, in span, encoding, true);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EncodeString(ref Allocator allocator, in ReadOnlySpan<char> span) => Allocator.Encode(ref allocator, in span, false);
+        public static void EncodeString(ref Allocator allocator, in ReadOnlySpan<char> span) => Allocator.AppendText(ref allocator, in span, false);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EncodeStringWithLengthPrefix(ref Allocator allocator, in ReadOnlySpan<char> span) => Allocator.Encode(ref allocator, in span, true);
+        public static void EncodeStringWithLengthPrefix(ref Allocator allocator, in ReadOnlySpan<char> span) => Allocator.AppendText(ref allocator, in span, true);
 
         public static string DecodeString(in ReadOnlySpan<byte> span, Encoding encoding)
         {

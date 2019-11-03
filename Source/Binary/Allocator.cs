@@ -1,5 +1,6 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary
@@ -40,13 +41,13 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly ReadOnlySpan<byte> AsSpan() => new ReadOnlySpan<byte>(buffer, 0, offset);
 
-        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public readonly override bool Equals(object obj) => throw new NotSupportedException();
 
-        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public readonly override int GetHashCode() => throw new NotSupportedException();
 
-        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public readonly override string ToString() => $"{nameof(Allocator)}({nameof(Length)}: {Length}, {nameof(Capacity)}: {Capacity}, {nameof(MaxCapacity)}: {MaxCapacity})";
     }
 }

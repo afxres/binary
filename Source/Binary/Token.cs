@@ -1,6 +1,7 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq.Expressions;
@@ -75,13 +76,13 @@ namespace Mikodev.Binary
 
         public ReadOnlySpan<byte> AsSpan() => memory.Span;
 
-        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public sealed override bool Equals(object obj) => throw new NotSupportedException();
 
-        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public sealed override int GetHashCode() => throw new NotSupportedException();
 
-        [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public sealed override string ToString() => $"{nameof(Token)}(Items: {tokens.Value.Count}, Bytes: {memory.Length})";
     }
 }
