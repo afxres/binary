@@ -27,12 +27,12 @@ namespace Mikodev.Binary
                 throw new ArgumentNullException(nameof(generator));
             this.memory = memory;
             this.generator = generator;
-            tokens = new Lazy<IReadOnlyDictionary<string, Token>>(() => GetDictionary(this), LazyThreadSafetyMode.ExecutionAndPublication);
+            tokens = new Lazy<IReadOnlyDictionary<string, Token>>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
         public Token(IGenerator generator, byte[] buffer) : this(generator, new ReadOnlyMemory<byte>(buffer)) { }
 
-        private static IReadOnlyDictionary<string, Token> GetDictionary(Token token)
+        private static IReadOnlyDictionary<string, Token> GetTokens(Token token)
         {
             var memory = token.memory;
             if (memory.IsEmpty)
@@ -62,9 +62,22 @@ namespace Mikodev.Binary
             }
         }
 
+        private Token GetToken(string key, bool nothrow)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+            if (tokens.Value.TryGetValue(key, out var value))
+                return value;
+            if (nothrow)
+                return null;
+            throw new KeyNotFoundException($"Key '{key}' not found.");
+        }
+
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => new TokenDynamicMetaObject(parameter, this);
 
-        public Token this[string key] => tokens.Value[key];
+        public Token this[string key] => GetToken(key, nothrow: false);
+
+        public Token this[string key, bool nothrow] => GetToken(key, nothrow: true);
 
         public object As(Type type) => ((IConverter)generator.GetConverter(type)).Decode(memory.Span);
 

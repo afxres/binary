@@ -2,6 +2,7 @@
 
 open Mikodev.Binary
 open System
+open System.Collections
 open System.Collections.Generic
 open Xunit
 
@@ -64,12 +65,54 @@ let ``Index`` () =
     ()
 
 [<Fact>]
+let ``Index (nothrow)`` () =
+    let source = { id = 5; data = { name = "echo"; age = 24 }}
+    let buffer = generator.Encode source
+    let token = Token(generator, buffer)
+    let id = token.["id", nothrow = true]
+    let name = token.["data"].["name", nothrow = true]
+    Assert.Equal(source.id, id.As<int>())
+    Assert.Equal(source.data.name, name.As<string>())
+    ()
+
+[<Fact>]
 let ``Index (mismatch)`` () =
     let source = { id = 6; data = { name = "golf"; age = 18 }}
     let buffer = generator.Encode source
     let token = Token(generator, buffer)
     Assert.Equal(source.data, token.["data"].As<Person>())
-    Assert.Throws<KeyNotFoundException>(fun () -> token.["item"] |> ignore) |> ignore
+    let error = Assert.Throws<KeyNotFoundException>(fun () -> token.["item"] |> ignore)
+    Assert.Equal("Key 'item' not found.", error.Message)
+    ()
+
+[<Fact>]
+let ``Index (nothrow, mismatch)`` () =
+    let source = { id = 6; data = { name = "golf"; age = 18 }}
+    let buffer = generator.Encode source
+    let token = Token(generator, buffer)
+    Assert.Equal(source.data, token.["data"].As<Person>())
+    let item = token.["item", nothrow = true]
+    Assert.Null(item)
+    ()
+
+[<Fact>]
+let ``Index (null)`` () =
+    let token = Token(generator, Array.empty)
+    let error = Assert.Throws<ArgumentNullException>(fun () -> token.[null] |> ignore)
+    let property = typeof<Token>.GetProperties() |> Array.filter (fun x -> x.GetIndexParameters().Length = 1) |> Array.exactlyOne
+    let parameter = property.GetIndexParameters() |> Array.exactlyOne
+    Assert.Equal(parameter.Name, error.ParamName)
+    ()
+
+[<Fact>]
+let ``Index (nothrow, null)`` () =
+    let token = Token(generator, Array.empty)
+    let error = Assert.Throws<ArgumentNullException>(fun () -> token.[null, nothrow = true] |> ignore)
+    let property = typeof<Token>.GetProperties() |> Array.filter (fun x -> x.GetIndexParameters().Length = 2) |> Array.exactlyOne
+    let parameter = property.GetIndexParameters() |> Array.head
+    let last = property.GetIndexParameters() |> Array.last
+    Assert.Equal(parameter.Name, error.ParamName)
+    Assert.Equal("nothrow", last.Name)
     ()
 
 [<Fact>]
@@ -112,4 +155,76 @@ let ``Empty Key`` () =
 let ``To String (debug)`` () =
     let token = Token(generator, Array.empty)
     Assert.Equal("Token(Items: 0, Bytes: 0)", token.ToString())
+    ()
+
+[<Fact>]
+let ``Interface Index (mismatch)`` () =
+    let token = Token(generator, Array.empty)
+    let d = token :> IReadOnlyDictionary<string, Token>
+    let error = Assert.Throws<KeyNotFoundException>(fun () -> d.[""] |> ignore)
+    Assert.Equal("Key '' not found.", error.Message)
+    ()
+
+[<Fact>]
+let ``Interface (integration, empty)`` () =
+    let token = Token(generator, Array.empty)
+    let d = token :> IReadOnlyDictionary<string, Token>
+
+    Assert.Equal(0, d.Count)
+    Assert.False(d.ContainsKey(""))
+    let (flag, data) = d.TryGetValue("")
+    Assert.False flag
+    Assert.Null data
+    Assert.NotNull d.Keys
+    Assert.Empty d.Keys
+    Assert.NotNull d.Values
+    Assert.Empty d.Values
+
+    let a = (token :> IEnumerable).GetEnumerator()
+    Assert.NotNull a
+    Assert.False(a.MoveNext())
+    let b = d.GetEnumerator()
+    Assert.NotNull b
+    Assert.False(b.MoveNext())
+    ()
+
+[<Fact>]
+let ``Interface (integration, with data)`` () =
+    let source = {| id = 1024; data = "sharp" |}
+    let buffer = generator.Encode source
+    let token = Token(generator, buffer)
+    let d = token :> IReadOnlyDictionary<string, Token>
+
+    Assert.Equal(2, d.Count)
+    Assert.True(d.ContainsKey("id"))
+    Assert.True(d.ContainsKey("data"))
+    Assert.False(d.ContainsKey(""))
+
+    let (flag, data) = d.TryGetValue("")
+    Assert.False flag
+    Assert.Null data
+
+    let (flag, data) = d.TryGetValue("id")
+    Assert.True flag
+    Assert.NotNull data
+
+    let (flag, data) = d.TryGetValue("data")
+    Assert.True flag
+    Assert.NotNull data
+
+    Assert.NotNull d.Keys
+    Assert.Equal(2, d.Keys |> Seq.length)
+    Assert.NotNull d.Values
+    Assert.Equal(2, d.Values |> Seq.length)
+
+    let a = (token :> IEnumerable).GetEnumerator()
+    Assert.NotNull a
+    Assert.True(a.MoveNext())
+    Assert.True(a.MoveNext())
+    Assert.False(a.MoveNext())
+    let b = d.GetEnumerator()
+    Assert.NotNull b
+    Assert.True(b.MoveNext())
+    Assert.True(b.MoveNext())
+    Assert.False(b.MoveNext())
     ()

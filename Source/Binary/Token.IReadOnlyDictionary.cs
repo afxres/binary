@@ -13,8 +13,6 @@ namespace Mikodev.Binary
 
         bool IReadOnlyDictionary<TKey, TValue>.TryGetValue(TKey key, out TValue value) => tokens.Value.TryGetValue(key, out value);
 
-        TValue IReadOnlyDictionary<TKey, TValue>.this[TKey key] => tokens.Value[key];
-
         IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => tokens.Value.Keys;
 
         IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => tokens.Value.Values;
