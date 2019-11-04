@@ -17,7 +17,7 @@ namespace Mikodev.Binary.Internal.Adapters
             MemoryHelper.Copy(ref target, ref MemoryHelper.AsByte(ref source), byteCount);
         }
 
-        public override MemoryItem<T> To(in ReadOnlySpan<byte> span)
+        public override MemoryItem<T> To(ReadOnlySpan<byte> span)
         {
             var byteCount = span.Length;
             if (byteCount == 0)

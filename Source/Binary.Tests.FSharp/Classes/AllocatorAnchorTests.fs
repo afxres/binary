@@ -14,7 +14,7 @@ let ``Length Prefix Buffer With Length From 0 To 4096`` () =
         let mutable allocator = Allocator()
         let span = ReadOnlySpan source
         let anchor = AllocatorHelper.AnchorLengthPrefix &allocator
-        AllocatorHelper.Append(&allocator, &span)
+        AllocatorHelper.Append(&allocator, span)
         AllocatorHelper.AppendLengthPrefix(&allocator, anchor)
         let buffer = allocator.AsSpan().ToArray()
         let mutable span = ReadOnlySpan buffer

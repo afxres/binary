@@ -24,7 +24,7 @@ namespace Mikodev.Binary.Internal.Adapters
 
         public override T Decode(in ReadOnlySpan<byte> span)
         {
-            return builder.To(adapter, in span);
+            return builder.To(adapter, span);
         }
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)

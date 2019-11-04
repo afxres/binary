@@ -18,7 +18,7 @@ namespace Mikodev.Binary.Internal.Adapters
                 converter.EncodeAuto(ref allocator, i);
         }
 
-        public override Dictionary<K, V> To(in ReadOnlySpan<byte> span)
+        public override Dictionary<K, V> To(ReadOnlySpan<byte> span)
         {
             static void Add(Dictionary<K, V> data, KeyValuePair<K, V> item) => data.Add(item.Key, item.Value);
 

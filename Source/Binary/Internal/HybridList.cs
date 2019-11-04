@@ -18,7 +18,7 @@ namespace Mikodev.Binary.Internal
         private readonly Dictionary<string, int> pairs;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetHashCode(in ReadOnlySpan<byte> span)
+        private static int GetHashCode(ReadOnlySpan<byte> span)
         {
             var byteCount = span.Length;
             if (byteCount == 0)
@@ -57,12 +57,12 @@ namespace Mikodev.Binary.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int Get(in ReadOnlySpan<byte> span)
+        public int Get(ReadOnlySpan<byte> span)
         {
             const int NotFound = -1;
             if (pairs != null)
-                return pairs.TryGetValue(Converter.Encoding.GetString(in span), out var index) ? index : NotFound;
-            var hash = GetHashCode(in span);
+                return pairs.TryGetValue(Converter.Encoding.GetString(span), out var index) ? index : NotFound;
+            var hash = GetHashCode(span);
             var data = bucks[(uint)hash % BuckSize];
             if (data != null)
                 for (var i = 0; i < data.Length; i++)

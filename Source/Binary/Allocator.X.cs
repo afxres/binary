@@ -23,16 +23,12 @@ namespace Mikodev.Binary
             var length = (long)(source == null ? 0 : source.Length);
             Debug.Assert(length < amount);
             Debug.Assert(length <= limits);
-#if DEBUG
-            length = amount;
-#else
             const int Initial = 64;
             if (length == 0)
                 length = Initial;
             do
                 length <<= 2;
             while (length < amount);
-#endif
             if (length > limits)
                 length = limits;
             Debug.Assert(amount <= length);
@@ -109,7 +105,7 @@ namespace Mikodev.Binary
             MemoryHelper.Copy(ref target, ref source, length);
         }
 
-        internal static void AppendText(ref Allocator allocator, in ReadOnlySpan<char> span, bool withLengthPrefix)
+        internal static void AppendText(ref Allocator allocator, ReadOnlySpan<char> span, bool withLengthPrefix)
         {
             var encoding = Converter.Encoding;
             var charCount = span.Length;

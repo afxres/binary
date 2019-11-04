@@ -44,7 +44,7 @@ type ThrowTests() =
         let buffer = Array.zeroCreate<byte> (converter.Length - 1)
         let alpha = Assert.ThrowsAny<ArgumentException>(fun () ->
             let span = ReadOnlySpan buffer
-            generator.Decode<'a> &span |> ignore)
+            generator.Decode<'a> span |> ignore)
         let bravo = Assert.ThrowsAny<ArgumentException>(fun () -> generator.Decode<'a> buffer |> ignore)
         let delta = Assert.ThrowsAny<ArgumentException>(fun () -> generator.Decode<'a> null |> ignore)
         let message = "Not enough bytes."

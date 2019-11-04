@@ -11,6 +11,6 @@ namespace Mikodev.Binary.Creators.Collections
 
         public override T Of(T item) => item;
 
-        public override T To(CollectionAdapter<MemoryItem<E>> adapter, in ReadOnlySpan<byte> span) => (T)(object)new HashSet<E>(adapter.To(in span).AsArraySegment());
+        public override T To(CollectionAdapter<MemoryItem<E>> adapter, ReadOnlySpan<byte> span) => (T)(object)new HashSet<E>(adapter.To(span).AsArraySegment());
     }
 }

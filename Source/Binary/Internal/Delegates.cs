@@ -9,7 +9,7 @@ namespace Mikodev.Binary.Internal
 
     internal delegate void OfNamedObject<in T>(ref Allocator allocator, T item);
 
-    internal delegate T ToNamedObject<out T>(in LengthList list);
+    internal delegate T ToNamedObject<out T>(LengthList list);
 
     internal delegate T[] OfList<T>(List<T> list);
 

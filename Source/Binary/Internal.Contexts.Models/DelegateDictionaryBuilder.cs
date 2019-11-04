@@ -14,11 +14,11 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
         public override T Of(T item) => item;
 
-        public override T To(CollectionAdapter<Dictionary<K, V>> adapter, in ReadOnlySpan<byte> span)
+        public override T To(CollectionAdapter<Dictionary<K, V>> adapter, ReadOnlySpan<byte> span)
         {
             if (constructor == null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
-            var item = adapter.To(in span);
+            var item = adapter.To(span);
             return constructor.Invoke(item);
         }
     }

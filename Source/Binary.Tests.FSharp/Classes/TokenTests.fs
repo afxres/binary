@@ -15,7 +15,7 @@ let generator = Generator.CreateDefault()
 [<Fact>]
 let ``Constructor With Null Generator`` () =
     let bytes = Array.zeroCreate<byte> 0
-    let alpha = Assert.Throws<ArgumentNullException>(fun () -> let memory = ReadOnlyMemory bytes in Token(null, &memory) |> ignore)
+    let alpha = Assert.Throws<ArgumentNullException>(fun () -> let memory = ReadOnlyMemory bytes in Token(null, memory) |> ignore)
     let bravo = Assert.Throws<ArgumentNullException>(fun () -> Token(null, bytes) |> ignore)
     Assert.Equal("generator", alpha.ParamName)
     Assert.Equal("generator", bravo.ParamName)
@@ -119,7 +119,7 @@ let ``Index (nothrow, null)`` () =
 let ``As Memory`` () =
     let buffer = [| 32uy..128uy |]
     let origin = new ReadOnlyMemory<byte>(buffer, 8, 48)
-    let source = Token(generator, &origin)
+    let source = Token(generator, origin)
     let memory = source.AsMemory()
     Assert.Equal<byte>(origin.ToArray(), memory.ToArray())
     ()
@@ -128,7 +128,7 @@ let ``As Memory`` () =
 let ``As Span`` () =
     let buffer = [| 0uy..100uy |]
     let origin = new ReadOnlyMemory<byte>(buffer, 16, 32)
-    let source = Token(generator, &origin)
+    let source = Token(generator, origin)
     let span = source.AsSpan()
     Assert.Equal<byte>(origin.ToArray(), span.ToArray())
     ()

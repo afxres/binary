@@ -21,7 +21,7 @@ namespace Mikodev.Binary
 
         private readonly Lazy<IReadOnlyDictionary<string, Token>> tokens;
 
-        public Token(IGenerator generator, in ReadOnlyMemory<byte> memory)
+        public Token(IGenerator generator, ReadOnlyMemory<byte> memory)
         {
             if (generator is null)
                 throw new ArgumentNullException(nameof(generator));

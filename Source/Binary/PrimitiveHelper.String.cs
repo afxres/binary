@@ -8,7 +8,7 @@ namespace Mikodev.Binary
 {
     public static partial class PrimitiveHelper
     {
-        private static void Encode(ref Allocator allocator, in ReadOnlySpan<char> span, Encoding encoding, bool withLengthPrefix)
+        private static void Encode(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding, bool withLengthPrefix)
         {
             if (encoding is null)
                 throw new ArgumentNullException(nameof(encoding));
@@ -24,22 +24,22 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EncodeString(ref Allocator allocator, in ReadOnlySpan<char> span, Encoding encoding) => Encode(ref allocator, in span, encoding, false);
+        public static void EncodeString(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding) => Encode(ref allocator, span, encoding, false);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EncodeStringWithLengthPrefix(ref Allocator allocator, in ReadOnlySpan<char> span, Encoding encoding) => Encode(ref allocator, in span, encoding, true);
+        public static void EncodeStringWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding) => Encode(ref allocator, span, encoding, true);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EncodeString(ref Allocator allocator, in ReadOnlySpan<char> span) => Allocator.AppendText(ref allocator, in span, false);
+        public static void EncodeString(ref Allocator allocator, ReadOnlySpan<char> span) => Allocator.AppendText(ref allocator, span, false);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EncodeStringWithLengthPrefix(ref Allocator allocator, in ReadOnlySpan<char> span) => Allocator.AppendText(ref allocator, in span, true);
+        public static void EncodeStringWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<char> span) => Allocator.AppendText(ref allocator, span, true);
 
-        public static string DecodeString(in ReadOnlySpan<byte> span, Encoding encoding)
+        public static string DecodeString(ReadOnlySpan<byte> span, Encoding encoding)
         {
             if (encoding is null)
                 throw new ArgumentNullException(nameof(encoding));
-            return encoding.GetString(in span);
+            return encoding.GetString(span);
         }
 
         public static string DecodeStringWithLengthPrefix(ref ReadOnlySpan<byte> span, Encoding encoding)
@@ -49,7 +49,7 @@ namespace Mikodev.Binary
             return encoding.GetString(DecodeBufferWithLengthPrefix(ref span));
         }
 
-        public static string DecodeString(in ReadOnlySpan<byte> span)
+        public static string DecodeString(ReadOnlySpan<byte> span)
         {
             return StringHelper.Decode(Converter.Encoding, ref MemoryMarshal.GetReference(span), span.Length);
         }

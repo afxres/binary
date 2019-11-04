@@ -11,7 +11,7 @@ namespace Mikodev.Binary.Internal
 
         private readonly ReadOnlySpan<byte> bytes;
 
-        public LengthList(in ReadOnlySpan<LengthItem> items, in ReadOnlySpan<byte> bytes)
+        public LengthList(ReadOnlySpan<LengthItem> items, ReadOnlySpan<byte> bytes)
         {
             Debug.Assert(bytes.Length > 0);
             Debug.Assert(items.Length > 0);

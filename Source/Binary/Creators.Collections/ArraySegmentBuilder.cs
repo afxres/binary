@@ -10,6 +10,6 @@ namespace Mikodev.Binary.Creators.Collections
 
         public override ReadOnlyMemory<T> Of(ArraySegment<T> item) => item;
 
-        public override ArraySegment<T> To(CollectionAdapter<MemoryItem<T>> adapter, in ReadOnlySpan<byte> span) => adapter.To(in span).AsArraySegment();
+        public override ArraySegment<T> To(CollectionAdapter<MemoryItem<T>> adapter, ReadOnlySpan<byte> span) => adapter.To(span).AsArraySegment();
     }
 }

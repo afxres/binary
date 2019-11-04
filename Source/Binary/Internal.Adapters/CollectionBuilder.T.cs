@@ -8,6 +8,6 @@ namespace Mikodev.Binary.Internal.Adapters
 
         public abstract U Of(T item);
 
-        public abstract T To(CollectionAdapter<R> adapter, in ReadOnlySpan<byte> span);
+        public abstract T To(CollectionAdapter<R> adapter, ReadOnlySpan<byte> span);
     }
 }

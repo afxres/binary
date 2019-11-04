@@ -4,12 +4,6 @@ namespace Mikodev.Binary.Internal
 {
     internal static class BufferHelper
     {
-#if DEBUG
-
-        internal static byte[] GetBuffer() => Array.Empty<byte>();
-
-#else
-
         [ThreadStatic]
         private static byte[] buffer;
 
@@ -21,7 +15,5 @@ namespace Mikodev.Binary.Internal
                 buffer = result = new byte[Length];
             return result;
         }
-
-#endif
     }
 }

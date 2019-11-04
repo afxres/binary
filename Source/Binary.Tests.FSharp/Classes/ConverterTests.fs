@@ -142,7 +142,7 @@ let ``Invalid Converter Length`` (length : int) =
 type CustomConverterWithInvalidAllocation<'T>(length : int) =
     inherit Converter<'T>(length)
 
-    override __.Encode(allocator, _) = let _ = AllocatorHelper.Allocate(&allocator, length + 1) in ()
+    override __.Encode(allocator, _) = let _ = AllocatorHelper.Append(&allocator, length + 1, null :> obj, fun a b -> ()) in ()
 
     override __.Decode (_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 

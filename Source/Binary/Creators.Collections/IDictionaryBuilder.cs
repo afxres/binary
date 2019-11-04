@@ -10,6 +10,6 @@ namespace Mikodev.Binary.Creators.Collections
 
         public override T Of(T item) => item;
 
-        public override T To(CollectionAdapter<Dictionary<K, V>> adapter, in ReadOnlySpan<byte> span) => (T)(object)adapter.To(in span);
+        public override T To(CollectionAdapter<Dictionary<K, V>> adapter, ReadOnlySpan<byte> span) => (T)(object)adapter.To(span);
     }
 }

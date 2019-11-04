@@ -37,7 +37,7 @@ type GeneratorExtensionsTests() =
         let buffer = generator.Encode(value, value.GetType())
         let memory = ReadOnlySpan buffer
 
-        let alpha = generator.Decode(&memory, value.GetType())
+        let alpha = generator.Decode(memory, value.GetType())
         let bravo = generator.Decode(buffer, value.GetType())
         Assert.Equal(value, alpha)
         Assert.Equal(value, bravo)
@@ -49,7 +49,7 @@ type GeneratorExtensionsTests() =
         let buffer = generator.Encode value
         let memory = ReadOnlySpan buffer
 
-        let alpha = generator.Decode<'A> &memory
+        let alpha = generator.Decode<'A> memory
         let bravo = generator.Decode<'A> buffer
         Assert.Equal<'A>(value, alpha)
         Assert.Equal<'A>(value, bravo)
@@ -61,7 +61,7 @@ type GeneratorExtensionsTests() =
         let buffer = generator.Encode value
         let memory = ReadOnlySpan buffer
 
-        let alpha = generator.Decode(&memory, anonymous = value)
+        let alpha = generator.Decode(memory, anonymous = value)
         let bravo = generator.Decode(buffer, anonymous = value)
         Assert.Equal<'A>(value, alpha)
         Assert.Equal<'A>(value, bravo)
@@ -84,9 +84,9 @@ type GeneratorExtensionsTests() =
     [<Fact>]
     member __.``Route Decode Span`` () =
         let generator = GeneratorBuilder().AddConverter(FakeConverter<string>()).Build()
-        let a = Assert.Throws<NotSupportedException>(fun () -> let span = ReadOnlySpan<byte>() in generator.Decode(&span, typeof<string>) |> ignore)
-        let b = Assert.Throws<NotSupportedException>(fun () -> let span = ReadOnlySpan<byte>() in generator.Decode<string>(&span) |> ignore)
-        let c = Assert.Throws<NotSupportedException>(fun () -> let span = ReadOnlySpan<byte>() in generator.Decode(&span, "anonymous") |> ignore)
+        let a = Assert.Throws<NotSupportedException>(fun () -> let span = ReadOnlySpan<byte>() in generator.Decode(span, typeof<string>) |> ignore)
+        let b = Assert.Throws<NotSupportedException>(fun () -> let span = ReadOnlySpan<byte>() in generator.Decode<string> span |> ignore)
+        let c = Assert.Throws<NotSupportedException>(fun () -> let span = ReadOnlySpan<byte>() in generator.Decode(span, "anonymous") |> ignore)
         let message = "Text bravo"
         Assert.Equal(message, a.Message)
         Assert.Equal(message, b.Message)

@@ -25,7 +25,7 @@ namespace Mikodev.Binary.Internal
                 return encoding.GetString(srcptr, byteCount);
         }
 
-        internal static string GetString(this Encoding encoding, in ReadOnlySpan<byte> span)
+        internal static string GetString(this Encoding encoding, ReadOnlySpan<byte> span)
         {
             Debug.Assert(encoding != null);
             var byteCount = span.Length;

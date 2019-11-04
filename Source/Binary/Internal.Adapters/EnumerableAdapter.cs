@@ -51,6 +51,6 @@ namespace Mikodev.Binary.Internal.Adapters
                     converter.EncodeAuto(ref allocator, i);
         }
 
-        public override MemoryItem<E> To(in ReadOnlySpan<byte> span) => adapter.To(in span);
+        public override MemoryItem<E> To(ReadOnlySpan<byte> span) => adapter.To(span);
     }
 }

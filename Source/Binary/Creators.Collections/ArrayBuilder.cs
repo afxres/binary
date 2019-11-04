@@ -11,9 +11,9 @@ namespace Mikodev.Binary.Creators.Collections
 
         public override ReadOnlyMemory<T> Of(T[] item) => item;
 
-        public override T[] To(CollectionAdapter<MemoryItem<T>> adapter, in ReadOnlySpan<byte> span)
+        public override T[] To(CollectionAdapter<MemoryItem<T>> adapter, ReadOnlySpan<byte> span)
         {
-            var data = adapter.To(in span);
+            var data = adapter.To(span);
             Debug.Assert(data.Buffer != null && data.Length >= 0 && data.Length <= data.Buffer.Length);
             var buffer = data.Buffer;
             var length = data.Length;

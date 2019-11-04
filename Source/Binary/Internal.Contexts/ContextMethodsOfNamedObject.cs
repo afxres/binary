@@ -56,7 +56,7 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             (ParameterExpression, Expression[]) Initialize()
             {
-                var list = Expression.Parameter(typeof(LengthList).MakeByRefType(), "list");
+                var list = Expression.Parameter(typeof(LengthList), "list");
                 var values = new Expression[metadata.Count];
 
                 for (var i = 0; i < metadata.Count; i++)

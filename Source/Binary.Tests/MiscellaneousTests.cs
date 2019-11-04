@@ -29,17 +29,26 @@ namespace Mikodev.Binary.Tests
                 typeof(ReadOnlyMemory<>).Name,
             };
 
-            var types = typeof(Converter).Assembly.GetTypes().Where(x => x.IsPublic);
-            var methods = types.SelectMany(x => x.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)).ToList();
-            var parameters = methods.SelectMany(x => x.GetParameters()).ToList();
-            var source = parameters.Where(x => Equals(x.ParameterType.Name, names)).ToList();
-            var failedMembers = source.Where(x => !x.ParameterType.IsByRef).Select(x => x.Member).Cast<MethodInfo>().ToList();
-            var failed = failedMembers.Select(x => x.ReflectedType).Distinct().ToList();
-            var remain = parameters.Except(source).ToList();
-            var except = remain.Where(x => x.ParameterType.IsByRef).ToList();
-            Assert.Empty(failed);
-            Assert.Empty(except);
-            Assert.NotEmpty(source);
+            var types = typeof(Converter).Assembly.GetTypes();
+            var members = types.SelectMany(x => x.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)).ToList();
+            var methodBases = members.OfType<MethodBase>().ToList();
+            var otherMembers = members.Except(methodBases).ToList();
+            var parameters = methodBases.SelectMany(x => x.GetParameters()).ToList();
+
+            var AttributeName = "System.Runtime.CompilerServices.IsReadOnlyAttribute";
+            var inRefParameters = parameters.Where(x => x.GetCustomAttributes().Where(x => x.GetType().FullName == AttributeName).Any()).ToList();
+            var isRefParameters = parameters.Where(x => x.ParameterType.IsByRef).ToList();
+            var byRefParameters = isRefParameters.Except(inRefParameters).ToList();
+            var inRefExpected = inRefParameters.Where(x => typeof(IConverter).IsAssignableFrom(x.Member.DeclaringType)).ToList();
+            var inRefUnexpected = inRefParameters.Except(inRefExpected).Select(x => x.Member).ToList();
+
+            Assert.NotEmpty(inRefExpected);
+            Assert.All(inRefExpected, x => Assert.Equal(nameof(IConverter.Decode), x.Member.Name));
+            Assert.Empty(inRefUnexpected);
+
+            var converterParameters = parameters.Where(x => x.Member is MethodInfo && typeof(IConverter).IsAssignableFrom(x.Member.DeclaringType)).ToList();
+            var converterExpectedParameters = converterParameters.Where(x => Equals(x.ParameterType.Name, names)).ToList();
+            Assert.All(converterExpectedParameters, x => Assert.True(x.ParameterType.IsByRef));
         }
 
         [Fact(DisplayName = "Types With Sealed Modifier")]
@@ -96,7 +105,7 @@ namespace Mikodev.Binary.Tests
         public void PublicObjectMethods()
         {
             var types = typeof(Converter).Assembly.GetTypes()
-                .Where(x => (x.IsPublic || x.IsNestedPublic) && !(x.IsAbstract && x.IsSealed) && !x.IsInterface && x.Namespace == "Mikodev.Binary")
+                .Where(x => (x.IsPublic || x.IsNestedPublic) && !(x.IsAbstract && x.IsSealed) && !typeof(Delegate).IsAssignableFrom(x) && !x.IsInterface && x.Namespace == "Mikodev.Binary")
                 .ToList();
             Assert.Equal(5, types.Count);
             foreach (var t in types)

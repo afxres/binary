@@ -17,7 +17,7 @@ namespace Mikodev.Binary.Internal.Adapters
             Debug.Assert(converter.Length == 0);
         }
 
-        public override MemoryItem<T> To(in ReadOnlySpan<byte> span)
+        public override MemoryItem<T> To(ReadOnlySpan<byte> span)
         {
             Debug.Assert(converter.Length == 0);
             var byteCount = span.Length;

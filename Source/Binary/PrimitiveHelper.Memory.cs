@@ -6,7 +6,7 @@ namespace Mikodev.Binary
 {
     public static partial class PrimitiveHelper
     {
-        public static void EncodeBufferWithLengthPrefix(ref Allocator allocator, in ReadOnlySpan<byte> span)
+        public static void EncodeBufferWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<byte> span)
         {
             var byteCount = span.Length;
             EncodeNumber(ref allocator, byteCount);

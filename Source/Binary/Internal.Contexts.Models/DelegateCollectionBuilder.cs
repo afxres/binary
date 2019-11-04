@@ -20,11 +20,11 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
         public override T Of(T item) => item;
 
-        public override T To(CollectionAdapter<MemoryItem<E>> adapter, in ReadOnlySpan<byte> span)
+        public override T To(CollectionAdapter<MemoryItem<E>> adapter, ReadOnlySpan<byte> span)
         {
             if (constructor == null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
-            var data = adapter.To(in span).AsArraySegment();
+            var data = adapter.To(span).AsArraySegment();
             if (reverse)
                 MemoryExtensions.Reverse((Span<E>)data);
             return constructor.Invoke(data);

@@ -20,7 +20,7 @@ namespace Mikodev.Binary.Tests
                 *(int*)&anchor = i;
                 Assert.Equal($"AllocatorAnchor(Offset: {i})", anchor.ToString());
                 var allocator = new Allocator();
-                _ = AllocatorHelper.Allocate(ref allocator, Limits);
+                AllocatorHelper.Append(ref allocator, Limits, 0, (a, b) => { });
                 Assert.Equal(Limits, allocator.Length);
                 AllocatorHelper.AppendLengthPrefix(ref allocator, anchor);
                 return allocator.AsSpan().ToArray();

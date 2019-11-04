@@ -69,8 +69,8 @@ namespace Mikodev.Binary.Internal.Contexts.Models
             for (var i = 0; i < itemCount; i++)
                 if (items[i].Offset == 0)
                     return ThrowNotFound(i);
-            var list = new LengthList(items, in span);
-            return toObject.Invoke(in list);
+            var list = new LengthList(items, span);
+            return toObject.Invoke(list);
         }
     }
 }

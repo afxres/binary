@@ -32,7 +32,7 @@ let ``Anonymous Record`` () =
     let source = {| key = "sharp"; data = Guid.NewGuid() |}
     let buffer = generator.Encode source
     let span = new ReadOnlySpan<byte>(buffer)
-    let result = generator.Decode(&span, source)
+    let result = generator.Decode(span, source)
     Assert.False(obj.ReferenceEquals(source, result))
     Assert.Equal(source, result)
     ()
@@ -42,7 +42,7 @@ let ``Anonymous Value Record`` () =
     let source = struct {| key = 2048; data = "delta" |}
     let buffer = generator.Encode source
     let span = new ReadOnlySpan<byte>(buffer)
-    let result = generator.Decode(&span, source)
+    let result = generator.Decode(span, source)
     Assert.False(obj.ReferenceEquals(source, result))
     Assert.Equal(source, result)
     ()
