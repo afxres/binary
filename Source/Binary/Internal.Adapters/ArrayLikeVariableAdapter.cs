@@ -23,9 +23,9 @@ namespace Mikodev.Binary.Internal.Adapters
             var byteCount = span.Length;
             if (byteCount == 0)
                 return new MemoryItem<T>(Array.Empty<T>(), 0);
-            const int InitialCapacity = 8;
-            var buffer = new T[InitialCapacity];
-            var limits = (long)InitialCapacity;
+            const int Initial = 8;
+            var buffer = new T[Initial];
+            var limits = (long)Initial;
             var cursor = 0L;
             var temp = span;
             while (!temp.IsEmpty)

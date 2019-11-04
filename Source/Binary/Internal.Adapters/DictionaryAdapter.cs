@@ -25,10 +25,10 @@ namespace Mikodev.Binary.Internal.Adapters
             var byteCount = span.Length;
             if (byteCount == 0)
                 return new Dictionary<K, V>();
-            const int InitialCapacity = 8;
+            const int Initial = 8;
             var converter = this.converter;
             var converterLength = converter.Length;
-            var itemCount = converterLength > 0 ? CollectionAdapterHelper.GetItemCount(byteCount, converterLength) : InitialCapacity;
+            var itemCount = converterLength > 0 ? CollectionAdapterHelper.GetItemCount(byteCount, converterLength) : Initial;
             var data = new Dictionary<K, V>(itemCount);
             var temp = span;
             while (!temp.IsEmpty)

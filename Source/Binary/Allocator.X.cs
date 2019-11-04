@@ -9,7 +9,7 @@ namespace Mikodev.Binary
     public ref partial struct Allocator
     {
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static byte[] Expand(ref Allocator allocator, int offset, int expand)
+        private static void Expand(ref Allocator allocator, int offset, int expand)
         {
             if (expand <= 0)
                 ThrowHelper.ThrowArgumentLengthInvalid();
@@ -26,9 +26,9 @@ namespace Mikodev.Binary
 #if DEBUG
             length = amount;
 #else
-            const int Origin = 64;
+            const int Initial = 64;
             if (length == 0)
-                length = Origin;
+                length = Initial;
             do
                 length <<= 2;
             while (length < amount);
@@ -46,7 +46,6 @@ namespace Mikodev.Binary
             allocator.buffer = target;
             allocator.bounds = target.Length;
             Debug.Assert(allocator.bounds <= limits);
-            return target;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -54,7 +53,10 @@ namespace Mikodev.Binary
         {
             Debug.Assert(allocator.bounds >= 0 && allocator.bounds <= allocator.MaxCapacity);
             Debug.Assert(allocator.bounds == 0 || allocator.bounds <= allocator.buffer.Length);
-            return expand <= 0 || (uint)expand > (uint)(allocator.bounds - offset) ? Expand(ref allocator, offset, expand) : allocator.buffer;
+            if (expand <= 0 || (uint)expand > (uint)(allocator.bounds - offset))
+                Expand(ref allocator, offset, expand);
+            Debug.Assert(allocator.buffer.Length >= offset + expand);
+            return allocator.buffer;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -80,9 +82,9 @@ namespace Mikodev.Binary
         {
             var offset = allocator.offset;
             _ = Ensure(ref allocator, offset, sizeof(int));
-            var before = offset + sizeof(int);
-            allocator.offset = before;
-            return before;
+            var anchor = offset + sizeof(int);
+            allocator.offset = anchor;
+            return anchor;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
