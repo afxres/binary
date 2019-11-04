@@ -165,6 +165,16 @@ let ``Append (exception)`` () =
     Assert.Equal(16, allocator.Length)
     ()
 
+[<Theory>]
+[<InlineData(1)>]
+[<InlineData("data")>]
+let ``Append (with data)`` (data : 'a) =
+    let mutable flag : 'a option = None
+    let mutable allocator = Allocator()
+    AllocatorHelper.Append(&allocator, 1, data, fun a b -> flag <- Some b)
+    Assert.Equal<'a>(data, flag |> Option.get)
+    ()
+
 [<Fact>]
 let ``Append Buffer (empty)`` () =
     let mutable allocator = Allocator()
