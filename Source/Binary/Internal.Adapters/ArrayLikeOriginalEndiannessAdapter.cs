@@ -12,7 +12,7 @@ namespace Mikodev.Binary.Internal.Adapters
             var byteCount = checked(itemCount * MemoryHelper.SizeOf<T>());
             if (byteCount == 0)
                 return;
-            ref var target = ref Allocator.AllocateReference(ref allocator, byteCount);
+            ref var target = ref Allocator.Allocate(ref allocator, byteCount);
             ref var source = ref MemoryMarshal.GetReference(span);
             MemoryHelper.Copy(ref target, ref MemoryHelper.AsByte(ref source), byteCount);
         }

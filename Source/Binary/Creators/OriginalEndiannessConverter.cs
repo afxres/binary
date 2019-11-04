@@ -15,7 +15,7 @@ namespace Mikodev.Binary.Creators
 
         public override void Encode(ref Allocator allocator, T item)
         {
-            MemoryHelper.Set(ref Allocator.AllocateReference(ref allocator, MemoryHelper.SizeOf<T>()), item);
+            MemoryHelper.Set(ref Allocator.Allocate(ref allocator, MemoryHelper.SizeOf<T>()), item);
         }
 
         public override T Decode(in ReadOnlySpan<byte> span)
@@ -28,7 +28,7 @@ namespace Mikodev.Binary.Creators
 
         public override void EncodeAuto(ref Allocator allocator, T item)
         {
-            MemoryHelper.Set(ref Allocator.AllocateReference(ref allocator, MemoryHelper.SizeOf<T>()), item);
+            MemoryHelper.Set(ref Allocator.Allocate(ref allocator, MemoryHelper.SizeOf<T>()), item);
         }
 
         public override T DecodeAuto(ref ReadOnlySpan<byte> span)
@@ -41,7 +41,7 @@ namespace Mikodev.Binary.Creators
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
-            ref var location = ref Allocator.AllocateReference(ref allocator, MemoryHelper.SizeOf<T>() + 1);
+            ref var location = ref Allocator.Allocate(ref allocator, MemoryHelper.SizeOf<T>() + 1);
             location = (byte)MemoryHelper.SizeOf<T>();
             MemoryHelper.Set(ref MemoryHelper.Add(ref location, 1), item);
         }

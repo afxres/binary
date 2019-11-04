@@ -2,6 +2,7 @@
 
 open Mikodev.Binary
 open System
+open System.Reflection
 open Xunit
 
 let generator = Generator.CreateDefault()
@@ -134,9 +135,12 @@ let ``Valid Converter Length`` (length : int) =
 [<InlineData(-1)>]
 [<InlineData(-65)>]
 let ``Invalid Converter Length`` (length : int) =
-    let error = Assert.Throws<ArgumentException>(fun () -> new CustomConverter<obj>(length) |> ignore)
-    Assert.Null(error.ParamName)
-    Assert.Equal("Converter length must be greater than or equal to zero!", error.Message)
+    let constructorInfo = typeof<Converter<int>>.GetConstructor(BindingFlags.Instance ||| BindingFlags.NonPublic, null, [| typeof<int> |], null)
+    let parameter = constructorInfo.GetParameters() |> Array.exactlyOne
+    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () -> new CustomConverter<obj>(length) |> ignore)
+    Assert.Equal("length", parameter.Name)
+    Assert.Equal("length", error.ParamName)
+    Assert.StartsWith("Argument length must be greater than or equal to zero!" + Environment.NewLine, error.Message)
     ()
 
 type CustomConverterWithInvalidAllocation<'T>(length : int) =

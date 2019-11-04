@@ -18,7 +18,7 @@ namespace Mikodev.Binary
         internal Converter(Type type, int length)
         {
             if (length < 0)
-                ThrowHelper.ThrowConverterLengthInvalid();
+                ThrowHelper.ThrowArgumentLengthInvalid();
             Length = length;
             ItemType = type;
         }

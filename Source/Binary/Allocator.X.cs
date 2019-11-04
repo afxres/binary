@@ -56,16 +56,7 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Span<byte> Allocate(ref Allocator allocator, int length)
-        {
-            var offset = allocator.offset;
-            var target = Ensure(ref allocator, offset, length);
-            allocator.offset = offset + length;
-            return new Span<byte>(target, offset, length);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static ref byte AllocateReference(ref Allocator allocator, int length)
+        internal static ref byte Allocate(ref Allocator allocator, int length)
         {
             var offset = allocator.offset;
             var target = Ensure(ref allocator, offset, length);
@@ -96,16 +87,30 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Append(ref Allocator allocator, byte[] item)
+        internal static void AppendBuffer(ref Allocator allocator, ReadOnlySpan<byte> span)
         {
-            Debug.Assert(item != null && item.Length != 0);
-            var length = item.Length;
-            ref var target = ref AllocateReference(ref allocator, length);
-            ref var source = ref item[0];
-            MemoryHelper.Copy(ref target, ref source, length);
+            var byteCount = span.Length;
+            if (byteCount == 0)
+                return;
+            ref var target = ref Allocate(ref allocator, byteCount);
+            ref var source = ref MemoryMarshal.GetReference(span);
+            MemoryHelper.Copy(ref target, ref source, byteCount);
         }
 
-        internal static void AppendText(ref Allocator allocator, ReadOnlySpan<char> span, bool withLengthPrefix)
+        internal static void AppendAction<T>(ref Allocator allocator, int length, T data, AllocatorAction<T> action)
+        {
+            if (action == null)
+                ThrowHelper.ThrowAllocatorActionInvalid();
+            if (length == 0)
+                return;
+            var offset = allocator.offset;
+            var target = Ensure(ref allocator, offset, length);
+            var span = new Span<byte>(target, offset, length);
+            action.Invoke(span, data);
+            allocator.offset = offset + length;
+        }
+
+        internal static void AppendString(ref Allocator allocator, ReadOnlySpan<char> span, bool withLengthPrefix)
         {
             var encoding = Converter.Encoding;
             var charCount = span.Length;

@@ -19,7 +19,7 @@ namespace Mikodev.Binary
                 EncodeNumber(ref allocator, byteCount);
             if (byteCount == 0)
                 return;
-            ref var bytes = ref Allocator.AllocateReference(ref allocator, byteCount);
+            ref var bytes = ref Allocator.Allocate(ref allocator, byteCount);
             _ = encoding.GetBytes(ref bytes, byteCount, ref chars, charCount);
         }
 
@@ -30,10 +30,10 @@ namespace Mikodev.Binary
         public static void EncodeStringWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding) => Encode(ref allocator, span, encoding, true);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EncodeString(ref Allocator allocator, ReadOnlySpan<char> span) => Allocator.AppendText(ref allocator, span, false);
+        public static void EncodeString(ref Allocator allocator, ReadOnlySpan<char> span) => Allocator.AppendString(ref allocator, span, false);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void EncodeStringWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<char> span) => Allocator.AppendText(ref allocator, span, true);
+        public static void EncodeStringWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<char> span) => Allocator.AppendString(ref allocator, span, true);
 
         public static string DecodeString(ReadOnlySpan<byte> span, Encoding encoding)
         {

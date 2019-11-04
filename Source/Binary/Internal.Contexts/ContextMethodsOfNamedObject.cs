@@ -15,7 +15,9 @@ namespace Mikodev.Binary.Internal.Contexts
     {
         private static readonly MethodInfo invokeMethodInfo = typeof(LengthList).GetMethod(nameof(LengthList.Invoke), BindingFlags.Instance | BindingFlags.Public);
 
-        private static readonly MethodInfo appendMethodInfo = typeof(Allocator).GetMethod(nameof(Allocator.Append), BindingFlags.Static | BindingFlags.NonPublic);
+        private static readonly MethodInfo appendMethodInfo = typeof(Allocator).GetMethod(nameof(Allocator.AppendBuffer), BindingFlags.Static | BindingFlags.NonPublic);
+
+        private static readonly ConstructorInfo bufferConstructorInfo = typeof(ReadOnlySpan<byte>).GetConstructor(new[] { typeof(byte[]) });
 
         internal static Converter GetConverterAsNamedObject(Type type, ConstructorInfo constructor, ItemIndexes indexes, MetaList metadata, NameDictionary dictionary, ContextTextCache cache)
         {
@@ -44,7 +46,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 var propertyType = property.PropertyType;
                 var propertyExpression = Expression.Property(item, property);
                 var methodInfo = typeof(Converter<>).MakeGenericType(propertyType).GetMethod(nameof(IConverter.EncodeWithLengthPrefix));
-                expressions.Add(Expression.Call(appendMethodInfo, allocator, Expression.Constant(buffer)));
+                expressions.Add(Expression.Call(appendMethodInfo, allocator, Expression.New(bufferConstructorInfo, Expression.Constant(buffer))));
                 expressions.Add(Expression.Call(Expression.Constant(converter), methodInfo, allocator, propertyExpression));
             }
             var delegateType = typeof(OfNamedObject<>).MakeGenericType(type);
