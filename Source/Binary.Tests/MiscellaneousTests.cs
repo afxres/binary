@@ -30,7 +30,7 @@ namespace Mikodev.Binary.Tests
             };
 
             var types = typeof(Converter).Assembly.GetTypes();
-            var members = types.SelectMany(x => x.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)).ToList();
+            var members = types.SelectMany(x => x.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static)).ToList();
             var methodBases = members.OfType<MethodBase>().ToList();
             var otherMembers = members.Except(methodBases).ToList();
             var parameters = methodBases.SelectMany(x => x.GetParameters()).ToList();
@@ -43,7 +43,7 @@ namespace Mikodev.Binary.Tests
             var inRefUnexpected = inRefParameters.Except(inRefExpected).Select(x => x.Member).ToList();
 
             Assert.NotEmpty(inRefExpected);
-            Assert.All(inRefExpected, x => Assert.Equal(nameof(IConverter.Decode), x.Member.Name));
+            Assert.All(inRefExpected, x => Assert.EndsWith(nameof(IConverter.Decode), x.Member.Name));
             Assert.Empty(inRefUnexpected);
 
             var converterParameters = parameters.Where(x => x.Member is MethodInfo && typeof(IConverter).IsAssignableFrom(x.Member.DeclaringType)).ToList();
@@ -128,14 +128,14 @@ namespace Mikodev.Binary.Tests
             var types = typeof(Converter).Assembly.GetTypes().Where(x => (x.IsPublic || x.IsNestedPublic) && x.IsValueType).ToList();
             var readonlyTypes = types.Where(HasReadOnlyAttribute).ToList();
             var otherTypes = types.Except(readonlyTypes).ToList();
-            var methods = otherTypes.SelectMany(x => x.GetMethods()).ToList();
+            var methods = otherTypes.SelectMany(x => x.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)).ToList();
             var ignoreMembers = methods.Where(x => x.DeclaringType == typeof(object)).ToList();
             var remainMembers = methods.Except(ignoreMembers).ToList();
             var attributes = remainMembers.Select(x => (x, Flag: HasReadOnlyAttribute(x))).ToList();
 
             _ = Assert.Single(readonlyTypes);
             _ = Assert.Single(otherTypes);
-            Assert.Equal("GetType", Assert.Single(ignoreMembers).Name);
+            Assert.Equal(3, ignoreMembers.Count);
             Assert.All(attributes, x => Assert.True(x.Flag));
         }
     }

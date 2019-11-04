@@ -44,7 +44,7 @@ namespace Mikodev.Binary.Tests
         [InlineData(3)]
         public unsafe void FakeAnchorRange(int offset)
         {
-            void Test(int i)
+            static void Test(int i)
             {
                 var anchor = new AllocatorAnchor();
                 *(int*)&anchor = i;
