@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -137,6 +138,22 @@ namespace Mikodev.Binary.Tests
             _ = Assert.Single(otherTypes);
             Assert.Equal(3, ignoreMembers.Count);
             Assert.All(attributes, x => Assert.True(x.Flag));
+        }
+
+        [Fact(DisplayName = "Debugger Display")]
+        public void DebuggerDisplay()
+        {
+            var types = typeof(Converter).Assembly.GetTypes();
+            var viewQuery = from t in types
+                            let methodInfo = t.GetMethod(nameof(object.ToString), BindingFlags.Instance | BindingFlags.Public, null, Type.EmptyTypes, null)
+                            where methodInfo != null
+                            where methodInfo.DeclaringType == t
+                            select t;
+            var viewTypes = viewQuery.ToList();
+            Assert.Equal(6, viewTypes.Count);
+            var attributes = viewTypes.Select(x => x.GetCustomAttribute<DebuggerDisplayAttribute>()).ToList();
+            Assert.All(attributes, Assert.NotNull);
+            Assert.All(attributes, x => Assert.Equal("{ToString(),nq}", x.Value));
         }
     }
 }

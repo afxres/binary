@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
+    [DebuggerDisplay(Literals.DebuggerDisplay)]
     internal sealed partial class Generator : IGenerator
     {
         private readonly ConcurrentDictionary<Type, Converter> converters;

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
+    [DebuggerDisplay(Literals.DebuggerDisplay)]
     internal sealed class GeneratorBuilder : IGeneratorBuilder
     {
         private readonly Dictionary<Type, Converter> converters = new Dictionary<Type, Converter>();

@@ -10,6 +10,7 @@ using System.Threading;
 
 namespace Mikodev.Binary
 {
+    [DebuggerDisplay(Literals.DebuggerDisplay)]
     [DebuggerTypeProxy(typeof(TokenDebuggerTypeProxy))]
     public sealed partial class Token : IDynamicMetaObjectProvider
     {
