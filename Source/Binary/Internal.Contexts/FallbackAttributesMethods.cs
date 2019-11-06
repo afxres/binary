@@ -17,7 +17,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static readonly IReadOnlyCollection<Type> converterAttributeTypes = new[] { typeof(ConverterAttribute), typeof(ConverterCreatorAttribute) };
 
-        internal static Converter GetConverter(IGeneratorContext context, Type type, ContextTextCache cache)
+        internal static Converter GetConverter(IGeneratorContext context, Type type)
         {
             var attribute = GetAttribute(type);
             if (attribute is ConverterAttribute converterAttribute)
@@ -61,7 +61,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (attribute is TupleObjectAttribute)
                 return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, indexes, metadata);
             // converter as named object (or default)
-            return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, indexes, metadata, dictionary, cache);
+            return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, indexes, metadata, dictionary);
         }
 
         private static Attribute GetAttribute(Type type)

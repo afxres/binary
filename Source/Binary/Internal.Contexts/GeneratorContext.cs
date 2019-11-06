@@ -10,8 +10,6 @@ namespace Mikodev.Binary.Internal.Contexts
     {
         private readonly HashSet<Type> types = new HashSet<Type>();
 
-        private readonly ContextTextCache cache = new ContextTextCache();
-
         private readonly ConcurrentDictionary<Type, Converter> converters;
 
         private readonly IEnumerable<IConverterCreator> creators;
@@ -65,7 +63,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
             return type.TryGetInterfaceArguments(typeof(IEnumerable<>), out var arguments)
                 ? FallbackCollectionMethods.GetConverter(this, type, arguments.Single())
-                : FallbackAttributesMethods.GetConverter(this, type, cache);
+                : FallbackAttributesMethods.GetConverter(this, type);
         }
     }
 }

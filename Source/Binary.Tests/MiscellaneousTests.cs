@@ -48,7 +48,7 @@ namespace Mikodev.Binary.Tests
             Assert.Empty(inRefUnexpected);
 
             var converterParameters = parameters.Where(x => x.Member is MethodInfo && typeof(IConverter).IsAssignableFrom(x.Member.DeclaringType)).ToList();
-            var converterExpectedParameters = converterParameters.Where(x => Equals(x.ParameterType.Name, names)).ToList();
+            var converterExpectedParameters = converterParameters.Where(x => !x.Member.Name.StartsWith("Throw") && Equals(x.ParameterType.Name, names)).ToList();
             Assert.All(converterExpectedParameters, x => Assert.True(x.ParameterType.IsByRef));
         }
 
@@ -96,10 +96,12 @@ namespace Mikodev.Binary.Tests
             var alpha = types.Where(x => array.Contains(x.Namespace) && !x.IsNested).ToHashSet();
             var bravo = types.Where(x => x.Name.Any(c => c == '<' || c == '>')).ToHashSet();
             var delta = types.Except(alpha).Except(bravo).ToHashSet();
+            var deltaMembers = delta.SelectMany(x => x.GetMethods(BindingFlags.Static | BindingFlags.Public)).ToList();
             Assert.Equal(types.Count, alpha.Count + bravo.Count + delta.Count);
             Assert.Equal(types, alpha.Union(bravo).Union(delta).ToHashSet());
             Assert.True(alpha.All(x => x.IsPublic));
             Assert.True(delta.All(x => !x.IsPublic));
+            Assert.Empty(deltaMembers);
         }
 
         [Fact(DisplayName = "Public Class Object Methods All Invisible")]

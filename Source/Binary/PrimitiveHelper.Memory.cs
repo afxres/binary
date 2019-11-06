@@ -1,5 +1,6 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary
@@ -14,7 +15,7 @@ namespace Mikodev.Binary
                 return;
             ref var target = ref Allocator.Allocate(ref allocator, byteCount);
             ref var source = ref MemoryMarshal.GetReference(span);
-            MemoryHelper.Copy(ref target, ref source, byteCount);
+            Unsafe.CopyBlockUnaligned(ref target, ref source, (uint)byteCount);
         }
 
         public static ReadOnlySpan<byte> DecodeBufferWithLengthPrefix(ref ReadOnlySpan<byte> span)

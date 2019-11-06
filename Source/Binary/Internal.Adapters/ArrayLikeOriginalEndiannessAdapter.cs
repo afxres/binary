@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Internal.Adapters
@@ -9,12 +10,12 @@ namespace Mikodev.Binary.Internal.Adapters
         {
             var span = memory.Span;
             var itemCount = span.Length;
-            var byteCount = checked(itemCount * MemoryHelper.SizeOf<T>());
+            var byteCount = checked(itemCount * Unsafe.SizeOf<T>());
             if (byteCount == 0)
                 return;
             ref var target = ref Allocator.Allocate(ref allocator, byteCount);
             ref var source = ref MemoryMarshal.GetReference(span);
-            MemoryHelper.Copy(ref target, ref MemoryHelper.AsByte(ref source), byteCount);
+            Unsafe.CopyBlockUnaligned(ref target, ref Unsafe.As<T, byte>(ref source), (uint)byteCount);
         }
 
         public override MemoryItem<T> To(ReadOnlySpan<byte> span)
@@ -22,11 +23,11 @@ namespace Mikodev.Binary.Internal.Adapters
             var byteCount = span.Length;
             if (byteCount == 0)
                 return new MemoryItem<T>(Array.Empty<T>(), 0);
-            var itemCount = CollectionAdapterHelper.GetItemCount(byteCount, MemoryHelper.SizeOf<T>());
+            var itemCount = CollectionAdapterHelper.GetItemCount(byteCount, Unsafe.SizeOf<T>());
             var items = new T[itemCount];
             ref var source = ref MemoryMarshal.GetReference(span);
             ref var target = ref items[0];
-            MemoryHelper.Copy(ref MemoryHelper.AsByte(ref target), ref source, byteCount);
+            Unsafe.CopyBlockUnaligned(ref Unsafe.As<T, byte>(ref target), ref source, (uint)byteCount);
             return new MemoryItem<T>(items, itemCount);
         }
     }

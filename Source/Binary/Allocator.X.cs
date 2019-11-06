@@ -38,7 +38,7 @@ namespace Mikodev.Binary
             Debug.Assert(offset <= (source?.Length ?? 0));
             Debug.Assert(offset <= target.Length);
             if (offset != 0)
-                MemoryHelper.Copy(ref target[0], ref source[0], offset);
+                Unsafe.CopyBlock(ref target[0], ref source[0], (uint)offset);
             allocator.buffer = target;
             allocator.bounds = target.Length;
             Debug.Assert(allocator.bounds <= limits);
@@ -94,7 +94,7 @@ namespace Mikodev.Binary
                 return;
             ref var target = ref Allocate(ref allocator, byteCount);
             ref var source = ref MemoryMarshal.GetReference(span);
-            MemoryHelper.Copy(ref target, ref source, byteCount);
+            Unsafe.CopyBlockUnaligned(ref target, ref source, (uint)byteCount);
         }
 
         internal static void AppendAction<T>(ref Allocator allocator, int length, T data, AllocatorAction<T> action)

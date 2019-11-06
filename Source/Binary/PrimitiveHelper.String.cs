@@ -67,7 +67,7 @@ namespace Mikodev.Binary
             var length = DecodeNumber(ref location, prefixLength);
             // check bounds via slice method
             span = span.Slice(prefixLength + length);
-            return StringHelper.Decode(encoding, ref MemoryHelper.Add(ref location, prefixLength), length);
+            return StringHelper.Decode(encoding, ref Unsafe.Add(ref location, prefixLength), length);
 
         fail:
             ThrowHelper.ThrowNotEnoughBytes();

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -15,22 +14,32 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
         private readonly string[] names;
 
-        private readonly HybridList query;
+        private readonly BinaryNode<int> entry;
 
-        public NamedObjectConverter(OfNamedObject<T> ofObject, ToNamedObject<T> toObject, KeyValuePair<string, byte[]>[] buffers)
+        public NamedObjectConverter(OfNamedObject<T> ofObject, ToNamedObject<T> toObject, string[] propertyNames)
         {
-            Debug.Assert(buffers.Any());
+            Debug.Assert(propertyNames != null && propertyNames.Any());
             this.ofObject = ofObject;
             this.toObject = toObject;
-            names = buffers.Select(x => x.Key).ToArray();
-            query = new HybridList(buffers);
+            names = propertyNames;
+            var data = propertyNames.Select((x, i) => (Value: x, Index: i)).ToDictionary(x => x.Value, x => x.Index);
+            entry = BinaryNodeHelper.Create(Encoding, data);
         }
 
         [DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
         private T ThrowKeyFound(int i) => throw new ArgumentException($"Property '{names[i]}' already exists, type: {ItemType}");
 
         [DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
-        private T ThrowNotFound(int i) => throw new ArgumentException($"Property '{names[i]}' does not exist, type: {ItemType}");
+        private void ThrowNotFound(Span<LengthItem> span)
+        {
+            Debug.Assert(names.Length > 0);
+            Debug.Assert(names.Length == span.Length);
+            var item = 0;
+            for (var i = 0; i < span.Length; i++)
+                if (span[i].Offset == 0)
+                    item = i;
+            throw new ArgumentException($"Property '{names[item]}' does not exist, type: {ItemType}");
+        }
 
         public override void Encode(ref Allocator allocator, T item)
         {
@@ -49,26 +58,32 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
             const int ItemLimits = 16;
             var itemCount = names.Length;
+            var count = 0;
             var items = itemCount > ItemLimits ? new LengthItem[itemCount] : stackalloc LengthItem[itemCount];
             var reader = new LengthReader(byteCount);
             ref var source = ref MemoryMarshal.GetReference(span);
 
+            const int NotFound = -1;
             while (reader.Any())
             {
                 reader.Update(ref source);
-                var index = query.Get(span.Slice(reader.Offset, reader.Length));
+                var slice = span.Slice(reader.Offset, reader.Length);
+                var index = BinaryNodeHelper.GetOrDefault(entry, slice)?.Value ?? NotFound;
                 reader.Update(ref source);
-                if (index < 0)
+                if (index == NotFound)
                     continue;
                 Debug.Assert((uint)index < (uint)itemCount);
-                if (items[index].Offset != 0)
+                ref var value = ref items[index];
+                if (value.Offset != 0)
                     return ThrowKeyFound(index);
-                items[index] = new LengthItem(reader.Offset, reader.Length);
+                value = new LengthItem(reader.Offset, reader.Length);
+                count++;
             }
 
-            for (var i = 0; i < itemCount; i++)
-                if (items[i].Offset == 0)
-                    return ThrowNotFound(i);
+            Debug.Assert(itemCount > 0);
+            Debug.Assert(itemCount >= count && count >= 0);
+            if (count != itemCount)
+                ThrowNotFound(items);
             var list = new LengthList(items, span);
             return toObject.Invoke(list);
         }

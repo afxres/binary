@@ -40,10 +40,10 @@ namespace Mikodev.Binary
         internal static void EncodeNumberFixed4(ref byte location, uint number)
         {
             Debug.Assert(number >= 0 && number <= int.MaxValue);
-            MemoryHelper.Add(ref location, 0) = (byte)((number >> 24) | 0x80);
-            MemoryHelper.Add(ref location, 1) = (byte)(number >> 16);
-            MemoryHelper.Add(ref location, 2) = (byte)(number >> 8);
-            MemoryHelper.Add(ref location, 3) = (byte)number;
+            Unsafe.Add(ref location, 0) = (byte)((number >> 24) | 0x80);
+            Unsafe.Add(ref location, 1) = (byte)(number >> 16);
+            Unsafe.Add(ref location, 2) = (byte)(number >> 8);
+            Unsafe.Add(ref location, 3) = (byte)number;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -53,12 +53,12 @@ namespace Mikodev.Binary
             Debug.Assert(length == 1 || length == 2 || length == 4);
             if (length == 1)
             {
-                MemoryHelper.Add(ref location, 0) = (byte)number;
+                Unsafe.Add(ref location, 0) = (byte)number;
             }
             else if (length == 2)
             {
-                MemoryHelper.Add(ref location, 0) = (byte)((number >> 8) | 0x40);
-                MemoryHelper.Add(ref location, 1) = (byte)number;
+                Unsafe.Add(ref location, 0) = (byte)((number >> 8) | 0x40);
+                Unsafe.Add(ref location, 1) = (byte)number;
             }
             else
             {
@@ -73,9 +73,9 @@ namespace Mikodev.Binary
             if (length == 1)
                 return location & 0x3F;
             if (length == 2)
-                return ((location & 0x3F) << 8) | MemoryHelper.Add(ref location, 1);
+                return ((location & 0x3F) << 8) | Unsafe.Add(ref location, 1);
             else
-                return ((location & 0x7F) << 24) | (MemoryHelper.Add(ref location, 1) << 16) | (MemoryHelper.Add(ref location, 2) << 8) | MemoryHelper.Add(ref location, 3);
+                return ((location & 0x7F) << 24) | (Unsafe.Add(ref location, 1) << 16) | (Unsafe.Add(ref location, 2) << 8) | Unsafe.Add(ref location, 3);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

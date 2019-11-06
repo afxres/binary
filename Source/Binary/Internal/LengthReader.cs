@@ -25,7 +25,7 @@ namespace Mikodev.Binary.Internal
         public void Update(ref byte source)
         {
             Offset += Length;
-            ref var location = ref MemoryHelper.Add(ref source, Offset);
+            ref var location = ref Unsafe.Add(ref source, Offset);
             var prefixLength = PrimitiveHelper.DecodeNumberLength(location);
             if ((uint)(Limits - Offset) < (uint)prefixLength)
                 goto fail;

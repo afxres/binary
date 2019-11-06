@@ -19,22 +19,29 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static readonly ConstructorInfo bufferConstructorInfo = typeof(ReadOnlySpan<byte>).GetConstructor(new[] { typeof(byte[]) });
 
-        internal static Converter GetConverterAsNamedObject(Type type, ConstructorInfo constructor, ItemIndexes indexes, MetaList metadata, NameDictionary dictionary, ContextTextCache cache)
+        internal static Converter GetConverterAsNamedObject(Type type, ConstructorInfo constructor, ItemIndexes indexes, MetaList metadata, NameDictionary dictionary)
         {
             if (dictionary == null)
                 dictionary = metadata.Select(x => x.Property).ToDictionary(x => x, x => x.Name);
             Debug.Assert(dictionary.OrderBy(x => x.Value).Select(x => x.Key).SequenceEqual(metadata.Select(x => x.Property)));
-            var encode = GetEncodeDelegateAsNamedObject(type, metadata, dictionary, cache);
+            var encode = GetEncodeDelegateAsNamedObject(type, metadata, dictionary);
             var decode = GetDecodeDelegateAsNamedObject(type, metadata, constructor, indexes);
-            var buffers = metadata.Select(x => dictionary[x.Property]).Select(x => new KeyValuePair<string, byte[]>(x, cache.GetBuffer(x))).ToArray();
-            var converterArguments = new object[] { encode, decode, buffers };
+            var propertyNames = metadata.Select(x => dictionary[x.Property]).ToArray();
+            var converterArguments = new object[] { encode, decode, propertyNames };
             var converterType = typeof(NamedObjectConverter<>).MakeGenericType(type);
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }
 
-        private static Delegate GetEncodeDelegateAsNamedObject(Type type, MetaList metadata, NameDictionary dictionary, ContextTextCache cache)
+        private static Delegate GetEncodeDelegateAsNamedObject(Type type, MetaList metadata, NameDictionary dictionary)
         {
+            static byte[] EncodeStringWithLengthPrefix(string text)
+            {
+                var allocator = new Allocator();
+                PrimitiveHelper.EncodeStringWithLengthPrefix(ref allocator, text.AsSpan());
+                return allocator.AsSpan().ToArray();
+            }
+
             var item = Expression.Parameter(type, "item");
             var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
             var expressions = new List<Expression>();
@@ -42,7 +49,7 @@ namespace Mikodev.Binary.Internal.Contexts
             for (var i = 0; i < metadata.Count; i++)
             {
                 var (property, converter) = metadata[i];
-                var buffer = cache.GetBufferWithLengthPrefix(dictionary[property]);
+                var buffer = EncodeStringWithLengthPrefix(dictionary[property]);
                 var propertyType = property.PropertyType;
                 var propertyExpression = Expression.Property(item, property);
                 var methodInfo = typeof(Converter<>).MakeGenericType(propertyType).GetMethod(nameof(IConverter.EncodeWithLengthPrefix));
