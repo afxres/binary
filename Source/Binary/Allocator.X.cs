@@ -9,10 +9,11 @@ namespace Mikodev.Binary
     public ref partial struct Allocator
     {
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void Expand(ref Allocator allocator, int offset, int expand)
+        private static void Expand(ref Allocator allocator, int expand)
         {
             if (expand <= 0)
                 ThrowHelper.ThrowArgumentLengthInvalid();
+            var offset = allocator.offset;
             Debug.Assert(offset >= 0);
             var limits = allocator.MaxCapacity;
             var amount = ((long)(uint)offset) + ((uint)expand);
@@ -20,7 +21,7 @@ namespace Mikodev.Binary
                 ThrowHelper.ThrowAllocatorOverflow();
 
             var source = allocator.buffer;
-            var length = (long)(source == null ? 0 : source.Length);
+            var length = (long)(source?.Length ?? 0);
             Debug.Assert(length < amount);
             Debug.Assert(length <= limits);
             const int Initial = 64;
@@ -45,30 +46,30 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static byte[] Ensure(ref Allocator allocator, int offset, int expand)
+        private static void Ensure(ref Allocator allocator, int expand)
         {
             Debug.Assert(allocator.bounds >= 0 && allocator.bounds <= allocator.MaxCapacity);
             Debug.Assert(allocator.bounds == 0 || allocator.bounds <= allocator.buffer.Length);
-            if (expand <= 0 || (uint)expand > (uint)(allocator.bounds - offset))
-                Expand(ref allocator, offset, expand);
-            Debug.Assert(allocator.buffer.Length >= offset + expand);
-            return allocator.buffer;
+            if (expand <= 0 || (uint)expand > (uint)(allocator.bounds - allocator.offset))
+                Expand(ref allocator, expand);
+            Debug.Assert(allocator.buffer.Length >= allocator.offset + expand);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ref byte Allocate(ref Allocator allocator, int length)
         {
+            Ensure(ref allocator, length);
             var offset = allocator.offset;
-            var target = Ensure(ref allocator, offset, length);
+            var buffer = allocator.buffer;
             allocator.offset = offset + length;
-            return ref target[offset];
+            return ref buffer[offset];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int AnchorLengthPrefix(ref Allocator allocator)
         {
+            Ensure(ref allocator, sizeof(int));
             var offset = allocator.offset;
-            _ = Ensure(ref allocator, offset, sizeof(int));
             var anchor = offset + sizeof(int);
             allocator.offset = anchor;
             return anchor;
@@ -77,13 +78,13 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void AppendLengthPrefix(ref Allocator allocator, int anchor)
         {
-            var target = allocator.buffer;
             var offset = allocator.offset;
+            var buffer = allocator.buffer;
             Debug.Assert(offset >= 0);
-            Debug.Assert(offset <= (target?.Length ?? 0));
+            Debug.Assert(offset <= (buffer?.Length ?? 0));
             if (anchor < sizeof(int) || offset < anchor)
                 ThrowHelper.ThrowAllocatorOrAnchorInvalid();
-            PrimitiveHelper.EncodeNumberFixed4(ref target[anchor - sizeof(int)], (uint)(offset - anchor));
+            PrimitiveHelper.EncodeNumberFixed4(ref buffer[anchor - sizeof(int)], (uint)(offset - anchor));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -103,9 +104,10 @@ namespace Mikodev.Binary
                 ThrowHelper.ThrowAllocatorActionInvalid();
             if (length == 0)
                 return;
+            Ensure(ref allocator, length);
             var offset = allocator.offset;
-            var target = Ensure(ref allocator, offset, length);
-            var span = new Span<byte>(target, offset, length);
+            var buffer = allocator.buffer;
+            var span = new Span<byte>(buffer, offset, length);
             action.Invoke(span, data);
             allocator.offset = offset + length;
         }
@@ -119,11 +121,12 @@ namespace Mikodev.Binary
             if (!withLengthPrefix && maxByteCount == 0)
                 return;
             var prefixLength = withLengthPrefix ? PrimitiveHelper.EncodeNumberLength((uint)maxByteCount) : 0;
+            Ensure(ref allocator, maxByteCount + prefixLength);
             var offset = allocator.offset;
-            var target = Ensure(ref allocator, offset, maxByteCount + prefixLength);
-            var length = maxByteCount == 0 ? 0 : encoding.GetBytes(ref target[offset + prefixLength], maxByteCount, ref chars, charCount);
+            var buffer = allocator.buffer;
+            var length = maxByteCount == 0 ? 0 : encoding.GetBytes(ref buffer[offset + prefixLength], maxByteCount, ref chars, charCount);
             if (withLengthPrefix)
-                PrimitiveHelper.EncodeNumber(ref target[offset], prefixLength, (uint)length);
+                PrimitiveHelper.EncodeNumber(ref buffer[offset], prefixLength, (uint)length);
             allocator.offset = offset + length + prefixLength;
         }
     }
