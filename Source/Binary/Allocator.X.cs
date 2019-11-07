@@ -21,7 +21,7 @@ namespace Mikodev.Binary
                 ThrowHelper.ThrowAllocatorOverflow();
 
             var source = allocator.buffer;
-            var length = (long)(source?.Length ?? 0);
+            var length = (long)source.Length;
             Debug.Assert(length < amount);
             Debug.Assert(length <= limits);
             const int Initial = 64;
@@ -35,11 +35,11 @@ namespace Mikodev.Binary
             Debug.Assert(amount <= length);
             Debug.Assert(length <= limits);
 
-            var target = new byte[(int)length];
-            Debug.Assert(offset <= (source?.Length ?? 0));
+            var target = new Span<byte>(new byte[(int)length]);
+            Debug.Assert(offset <= source.Length);
             Debug.Assert(offset <= target.Length);
             if (offset != 0)
-                Unsafe.CopyBlock(ref target[0], ref source[0], (uint)offset);
+                Unsafe.CopyBlock(ref MemoryMarshal.GetReference(target), ref MemoryMarshal.GetReference(source), (uint)offset);
             allocator.buffer = target;
             allocator.bounds = target.Length;
             Debug.Assert(allocator.bounds <= limits);
@@ -62,7 +62,7 @@ namespace Mikodev.Binary
             var offset = allocator.offset;
             var buffer = allocator.buffer;
             allocator.offset = offset + length;
-            return ref buffer[offset];
+            return ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -81,10 +81,10 @@ namespace Mikodev.Binary
             var offset = allocator.offset;
             var buffer = allocator.buffer;
             Debug.Assert(offset >= 0);
-            Debug.Assert(offset <= (buffer?.Length ?? 0));
+            Debug.Assert(offset <= buffer.Length);
             if (anchor < sizeof(int) || offset < anchor)
                 ThrowHelper.ThrowAllocatorOrAnchorInvalid();
-            PrimitiveHelper.EncodeNumberFixed4(ref buffer[anchor - sizeof(int)], (uint)(offset - anchor));
+            PrimitiveHelper.EncodeNumberFixed4(ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), anchor - sizeof(int)), (uint)(offset - anchor));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -107,7 +107,7 @@ namespace Mikodev.Binary
             Ensure(ref allocator, length);
             var offset = allocator.offset;
             var buffer = allocator.buffer;
-            var span = new Span<byte>(buffer, offset, length);
+            var span = buffer.Slice(offset, length);
             action.Invoke(span, data);
             allocator.offset = offset + length;
         }
@@ -124,9 +124,10 @@ namespace Mikodev.Binary
             Ensure(ref allocator, maxByteCount + prefixLength);
             var offset = allocator.offset;
             var buffer = allocator.buffer;
-            var length = maxByteCount == 0 ? 0 : encoding.GetBytes(ref buffer[offset + prefixLength], maxByteCount, ref chars, charCount);
+            ref var target = ref MemoryMarshal.GetReference(buffer);
+            var length = maxByteCount == 0 ? 0 : encoding.GetBytes(ref Unsafe.Add(ref target, offset + prefixLength), maxByteCount, ref chars, charCount);
             if (withLengthPrefix)
-                PrimitiveHelper.EncodeNumber(ref buffer[offset], prefixLength, (uint)length);
+                PrimitiveHelper.EncodeNumber(ref Unsafe.Add(ref target, offset), prefixLength, (uint)length);
             allocator.offset = offset + length + prefixLength;
         }
     }

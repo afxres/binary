@@ -9,13 +9,13 @@ namespace Mikodev.Binary
     [DebuggerDisplay(Literals.DebuggerDisplay)]
     public ref partial struct Allocator
     {
-        private readonly int limits;
+        private Span<byte> buffer;
 
         private int offset;
 
         private int bounds;
 
-        private byte[] buffer;
+        private readonly int limits;
 
         public readonly int Length => offset;
 
@@ -24,24 +24,27 @@ namespace Mikodev.Binary
         public readonly int MaxCapacity => limits == 0 ? int.MaxValue : ~limits;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Allocator(byte[] buffer) : this(buffer, int.MaxValue) { }
+        public Allocator(byte[] buffer) : this(new Span<byte>(buffer), int.MaxValue) { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Allocator(byte[] buffer, int maxCapacity)
+        public Allocator(byte[] buffer, int maxCapacity) : this(new Span<byte>(buffer), maxCapacity) { }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Allocator(Span<byte> span) : this(span, int.MaxValue) { }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Allocator(Span<byte> span, int maxCapacity)
         {
             if (maxCapacity < 0)
                 ThrowHelper.ThrowAllocatorMaxCapacityInvalid();
-            this.buffer = buffer;
-            offset = 0;
-            bounds = Math.Min(buffer == null ? 0 : buffer.Length, maxCapacity);
+            buffer = span;
             limits = ~maxCapacity;
+            offset = 0;
+            bounds = Math.Min(span.Length, maxCapacity);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReadOnlyMemory<byte> AsMemory() => new ReadOnlyMemory<byte>(buffer, 0, offset);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReadOnlySpan<byte> AsSpan() => new ReadOnlySpan<byte>(buffer, 0, offset);
+        public readonly ReadOnlySpan<byte> AsSpan() => buffer.Slice(0, offset);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public readonly override bool Equals(object obj) => throw new NotSupportedException();

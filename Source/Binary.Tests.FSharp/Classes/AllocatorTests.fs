@@ -76,21 +76,6 @@ let ``Constructor (limitation)`` (size : int, limitation : int) =
 [<Theory>]
 [<InlineData(0)>]
 [<InlineData(257)>]
-let ``As Memory`` (length : int) =
-    let source = Array.zeroCreate<byte> length
-    let mutable allocator = new Allocator()
-    let span = new ReadOnlySpan<byte>(source)
-    AllocatorHelper.Append(&allocator, span)
-
-    let memory = allocator.AsMemory()
-    Assert.Equal(memory.Length, length)
-    let result = memory.ToArray()
-    Assert.Equal<byte>(source, result)
-    ()
-
-[<Theory>]
-[<InlineData(0)>]
-[<InlineData(257)>]
 let ``As Span`` (length : int) =
     let source = Array.zeroCreate<byte> length
     let mutable allocator = new Allocator()
