@@ -34,6 +34,32 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(Limits - offset, number);
         }
 
+        [Theory(DisplayName = "Fake Anchor (hack, invalid length)")]
+        [InlineData(4, -1)]
+        [InlineData(5, 0)]
+        [InlineData(8, 3)]
+        [InlineData(1024, 5)]
+        public unsafe void FakeAnchorLength(int offset, int length)
+        {
+            const int Limits = 1024;
+
+            void Test()
+            {
+                var anchor = new AllocatorAnchor();
+                ((int*)&anchor)[0] = offset;
+                ((int*)&anchor)[1] = length;
+                Assert.Equal($"AllocatorAnchor(Offset: {offset}, Length: {length})", anchor.ToString());
+                var allocator = new Allocator();
+                AllocatorHelper.Append(ref allocator, Limits, 0, (a, b) => { });
+                Assert.Equal(Limits, allocator.Length);
+                AllocatorHelper.AppendLengthPrefix(ref allocator, anchor);
+            }
+
+            var error = Assert.Throws<ArgumentException>(() => Test());
+            var message = "Invalid length prefix anchor or allocator modified.";
+            Assert.Equal(message, error.Message);
+        }
+
         [Theory(DisplayName = "Fake Anchor (hack, invalid offset)")]
         [InlineData(int.MinValue + 0)]
         [InlineData(int.MinValue + 1)]
