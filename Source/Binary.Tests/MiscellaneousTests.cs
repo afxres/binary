@@ -157,5 +157,20 @@ namespace Mikodev.Binary.Tests
             Assert.All(attributes, Assert.NotNull);
             Assert.All(attributes, x => Assert.Equal("{ToString(),nq}", x.Value));
         }
+
+        [Fact(DisplayName = "Public Methods With Byte Array Parameter")]
+        public void ByteArray()
+        {
+            var types = typeof(Converter).Assembly.GetTypes().Where(x => x.IsPublic).ToList();
+            var members = types.SelectMany(x => x.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)).ToList();
+            var methodBases = members.OfType<MethodBase>().ToList();
+            Assert.NotEmpty(methodBases);
+            Assert.NotEmpty(methodBases.OfType<ConstructorInfo>());
+
+            var parameters = methodBases.SelectMany(x => x.GetParameters()).ToList();
+            var byteArrayParameters = parameters.Where(x => x.ParameterType == typeof(byte[])).ToList();
+            Assert.Equal(5, byteArrayParameters.Count);
+            Assert.All(byteArrayParameters, x => Assert.Equal("Decode", x.Member.Name));
+        }
     }
 }
