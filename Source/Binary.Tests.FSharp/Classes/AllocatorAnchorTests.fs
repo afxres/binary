@@ -27,7 +27,7 @@ let ``Length Prefix Buffer With Length From 0 To 4096`` () =
 let ``Allocator With Default Length Prefix Anchor`` () =
     let error = Assert.Throws<ArgumentException>(fun () ->
         let anchor = AllocatorAnchor()
-        Assert.Equal("AllocatorAnchor(Offset: 0)", anchor.ToString())
+        Assert.Equal("AllocatorAnchor(Offset: 0, Length: 0)", anchor.ToString())
         let mutable allocator = Allocator()
         AllocatorHelper.AppendLengthPrefix(&allocator, anchor))
     Assert.Equal("Invalid length prefix anchor or allocator modified.", error.Message)
@@ -39,7 +39,7 @@ let ``Allocator With Another Length Prefix Anchor`` () =
         let error = Assert.Throws<ArgumentException>(fun () ->
             let mutable allocatorOld = Allocator()
             let anchor = AllocatorHelper.AnchorLengthPrefix &allocatorOld
-            Assert.Equal("AllocatorAnchor(Offset: 4)", anchor.ToString())
+            Assert.Equal("AllocatorAnchor(Offset: 4, Length: 4)", anchor.ToString())
             let mutable allocator = Allocator (Array.zeroCreate<byte> i)
             AllocatorHelper.AppendLengthPrefix(&allocator, anchor))
         Assert.Equal("Invalid length prefix anchor or allocator modified.", error.Message)

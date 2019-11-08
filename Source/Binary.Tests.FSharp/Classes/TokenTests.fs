@@ -125,15 +125,6 @@ let ``As Memory`` () =
     ()
 
 [<Fact>]
-let ``As Span`` () =
-    let buffer = [| 0uy..100uy |]
-    let origin = new ReadOnlyMemory<byte>(buffer, 16, 32)
-    let source = Token(generator, origin)
-    let span = source.AsSpan()
-    Assert.Equal<byte>(origin.ToArray(), span.ToArray())
-    ()
-
-[<Fact>]
 let ``Empty Key Only`` () =
     let buffer = generator.Encode (dict [ "", box 1.41 ])
     let token = Token(generator, buffer)

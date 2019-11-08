@@ -23,12 +23,11 @@ let ``Append (default constructor, length invalid)`` (length : int) =
         let mutable allocator = Allocator()
         AllocatorHelper.Append(&allocator, length, null :> obj, fun a b -> ())
         ())
-    let methodInfo = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4) |> Array.exactlyOne
-    let parameter = methodInfo.GetParameters() |> Array.skip 1 |> Array.head
+    let methodInfos = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4)
+    let parameter = methodInfos |> Array.map (fun x -> x.GetParameters() |> Array.skip 1 |> Array.head) |> Array.filter (fun x -> x.ParameterType = typeof<int>) |> Array.exactlyOne
     Assert.StartsWith("Argument length must be greater than or equal to zero!" + Environment.NewLine, error.Message)
     Assert.Equal("length", error.ParamName)
     Assert.Equal("length", parameter.Name)
-    Assert.Equal(typeof<int>, parameter.ParameterType)
     ()
 
 [<Fact>]
@@ -82,7 +81,7 @@ let ``Append (one byte 512 times)`` () =
     let mutable allocator = Allocator()
     for item in 1..512 do
         AllocatorHelper.Append(&allocator, 1, null :> obj,
-            fun a b ->
+            fun (a : Span<byte>) b ->
                 Assert.Null b
                 Assert.Equal(1, a.Length))
         Assert.Equal(item, allocator.Length)
@@ -99,7 +98,7 @@ let ``Append (default constructor)`` (length : int) =
     let buffer = Array.zeroCreate<byte> length
     random.NextBytes buffer
     AllocatorHelper.Append(&allocator, length, buffer,
-        fun a b ->
+        fun (a : Span<byte>) b ->
             b.CopyTo a
             Assert.Equal(length, a.Length))
     let result = allocator.AsSpan().ToArray()
@@ -136,10 +135,10 @@ let ``Append (default constructor, action null)`` (length : int) =
     let error = Assert.Throws<ArgumentNullException>(fun () ->
         let mutable allocator = Allocator()
         AllocatorHelper.Append(&allocator, length, null :> obj, null))
-    let methodInfo = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4) |> Array.exactlyOne
-    let parameter = methodInfo.GetParameters() |> Array.last
+    let methodInfos = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4)
+    let parameterName = methodInfos |> Array.map (fun x -> x.GetParameters() |> Array.last |> (fun x -> x.Name)) |> Array.distinct |> Array.exactlyOne
     Assert.Equal("action", error.ParamName)
-    Assert.Equal("action", parameter.Name)
+    Assert.Equal("action", parameterName)
     ()
 
 [<Fact>]
@@ -147,10 +146,10 @@ let ``Append (default constructor, length zero with action null)`` () =
     let error = Assert.Throws<ArgumentNullException>(fun () ->
         let mutable allocator = Allocator()
         AllocatorHelper.Append(&allocator, 0, null :> obj, null))
-    let methodInfo = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4) |> Array.exactlyOne
-    let parameter = methodInfo.GetParameters() |> Array.last
+    let methodInfos = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4)
+    let parameterName = methodInfos |> Array.map (fun x -> x.GetParameters() |> Array.last |> (fun x -> x.Name)) |> Array.distinct |> Array.exactlyOne
     Assert.Equal("action", error.ParamName)
-    Assert.Equal("action", parameter.Name)
+    Assert.Equal("action", parameterName)
     ()
 
 [<Fact>]

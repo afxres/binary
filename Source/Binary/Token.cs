@@ -88,8 +88,6 @@ namespace Mikodev.Binary
 
         public ReadOnlyMemory<byte> AsMemory() => memory;
 
-        public ReadOnlySpan<byte> AsSpan() => memory.Span;
-
         [EditorBrowsable(EditorBrowsableState.Never)]
         public sealed override bool Equals(object obj) => throw new NotSupportedException();
 
