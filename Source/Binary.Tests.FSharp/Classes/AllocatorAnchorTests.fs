@@ -40,7 +40,7 @@ let ``Allocator With Another Length Prefix Anchor`` () =
             let mutable allocatorOld = Allocator()
             let anchor = AllocatorHelper.AnchorLengthPrefix &allocatorOld
             Assert.Equal("AllocatorAnchor(Offset: 4, Length: 4)", anchor.ToString())
-            let mutable allocator = Allocator (Array.zeroCreate<byte> i)
+            let mutable allocator = Allocator (Span (Array.zeroCreate<byte> i))
             AllocatorHelper.AppendLengthPrefix(&allocator, anchor))
         Assert.Equal("Invalid length prefix anchor or allocator modified.", error.Message)
     ()

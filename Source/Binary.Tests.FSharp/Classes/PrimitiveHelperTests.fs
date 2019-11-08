@@ -13,7 +13,7 @@ let generator = Generator.CreateDefault()
 let ``Encode Number From 0 To 63`` () =
     let buffer = Array.zeroCreate<byte> 1
     for i = 0 to 63 do
-        let mutable allocator = Allocator(buffer)
+        let mutable allocator = Allocator(Span buffer)
         PrimitiveHelper.EncodeNumber(&allocator, i)
         let span = allocator.AsSpan()
         Assert.Equal(1, span.Length)
@@ -24,7 +24,7 @@ let ``Encode Number From 0 To 63`` () =
 let ``Encode Number From 64 To 16383`` () =
     let buffer = Array.zeroCreate<byte> 2
     for i = 64 to 16383 do
-        let mutable allocator = Allocator(buffer)
+        let mutable allocator = Allocator(Span buffer)
         PrimitiveHelper.EncodeNumber(&allocator, i)
         let span = allocator.AsSpan()
         Assert.Equal(2, span.Length)
@@ -39,7 +39,7 @@ let ``Encode Number From 64 To 16383`` () =
 [<InlineData(0x7FFF_FFFF)>]
 let ``Encode Number From 16384`` (i : int) =
     let buffer = Array.zeroCreate<byte> 4
-    let mutable allocator = Allocator(buffer)
+    let mutable allocator = Allocator(Span buffer)
     PrimitiveHelper.EncodeNumber(&allocator, i)
     let span = allocator.AsSpan()
     Assert.Equal(4, span.Length)

@@ -15,24 +15,15 @@ let generator = Generator.CreateDefault()
 [<Fact>]
 let ``Constructor With Null Generator`` () =
     let bytes = Array.zeroCreate<byte> 0
-    let alpha = Assert.Throws<ArgumentNullException>(fun () -> let memory = ReadOnlyMemory bytes in Token(null, memory) |> ignore)
-    let bravo = Assert.Throws<ArgumentNullException>(fun () -> Token(null, bytes) |> ignore)
-    Assert.Equal("generator", alpha.ParamName)
-    Assert.Equal("generator", bravo.ParamName)
-    ()
-
-[<Fact>]
-let ``Constructor With Null Bytes`` () =
-    let token = Token(generator, null)
-    let dictionary = token :> IReadOnlyDictionary<string, Token>
-    Assert.Equal(0, dictionary.Count)
+    let error = Assert.Throws<ArgumentNullException>(fun () -> let memory = ReadOnlyMemory bytes in Token(null, memory) |> ignore)
+    Assert.Equal("generator", error.ParamName)
     ()
 
 [<Fact>]
 let ``As`` () =
     let source = { id = 1; data = { name = "alice"; age = 20 }}
     let buffer = generator.Encode source
-    let token = Token(generator, buffer)
+    let token = Token(generator, buffer |> ReadOnlyMemory)
     Assert.Equal(source.id, token.["id"].As<int>())
     Assert.Equal(source.data.name, token.["data"].["name"].As<string>())
     ()
@@ -41,14 +32,14 @@ let ``As`` () =
 let ``As (via type)`` () =
     let source = { id = 2; data = { name = "bob"; age = 22 }}
     let buffer = generator.Encode source
-    let token = Token(generator, buffer)
+    let token = Token(generator, buffer |> ReadOnlyMemory)
     Assert.Equal(box source.data.name, token.["data"].["name"].As(typeof<string>))
     Assert.Equal(box source.data.age, token.["data"].["age"].As<int>())
     ()
 
 [<Fact>]
 let ``As (via type, argument null)`` () =
-    let token = Token(generator, Array.empty<byte>)
+    let token = Token(generator, ReadOnlyMemory())
     let error = Assert.Throws<ArgumentNullException>(fun () -> token.As null |> ignore)
     Assert.Equal("type", error.ParamName)
     ()
@@ -57,7 +48,7 @@ let ``As (via type, argument null)`` () =
 let ``Index`` () =
     let source = { id = 5; data = { name = "echo"; age = 24 }}
     let buffer = generator.Encode source
-    let token = Token(generator, buffer)
+    let token = Token(generator, buffer |> ReadOnlyMemory)
     let id = token.["id"]
     let name = token.["data"].["name"]
     Assert.Equal(source.id, id.As<int>())
@@ -68,7 +59,7 @@ let ``Index`` () =
 let ``Index (nothrow)`` () =
     let source = { id = 5; data = { name = "echo"; age = 24 }}
     let buffer = generator.Encode source
-    let token = Token(generator, buffer)
+    let token = Token(generator, buffer |> ReadOnlyMemory)
     let id = token.["id", nothrow = true]
     let name = token.["data"].["name", nothrow = true]
     Assert.Equal(source.id, id.As<int>())
@@ -79,7 +70,7 @@ let ``Index (nothrow)`` () =
 let ``Index (mismatch)`` () =
     let source = { id = 6; data = { name = "golf"; age = 18 }}
     let buffer = generator.Encode source
-    let token = Token(generator, buffer)
+    let token = Token(generator, buffer |> ReadOnlyMemory)
     Assert.Equal(source.data, token.["data"].As<Person>())
     let error = Assert.Throws<KeyNotFoundException>(fun () -> token.["item"] |> ignore)
     Assert.Equal("Key 'item' not found.", error.Message)
@@ -89,7 +80,7 @@ let ``Index (mismatch)`` () =
 let ``Index (nothrow, mismatch)`` () =
     let source = { id = 6; data = { name = "golf"; age = 18 }}
     let buffer = generator.Encode source
-    let token = Token(generator, buffer)
+    let token = Token(generator, buffer |> ReadOnlyMemory)
     Assert.Equal(source.data, token.["data"].As<Person>())
     let item = token.["item", nothrow = true]
     Assert.Null(item)
@@ -97,7 +88,7 @@ let ``Index (nothrow, mismatch)`` () =
 
 [<Fact>]
 let ``Index (null)`` () =
-    let token = Token(generator, Array.empty)
+    let token = Token(generator, ReadOnlyMemory())
     let error = Assert.Throws<ArgumentNullException>(fun () -> token.[null] |> ignore)
     let property = typeof<Token>.GetProperties() |> Array.filter (fun x -> x.GetIndexParameters().Length = 1) |> Array.exactlyOne
     let parameter = property.GetIndexParameters() |> Array.exactlyOne
@@ -106,7 +97,7 @@ let ``Index (null)`` () =
 
 [<Fact>]
 let ``Index (nothrow, null)`` () =
-    let token = Token(generator, Array.empty)
+    let token = Token(generator, ReadOnlyMemory())
     let error = Assert.Throws<ArgumentNullException>(fun () -> token.[null, nothrow = true] |> ignore)
     let property = typeof<Token>.GetProperties() |> Array.filter (fun x -> x.GetIndexParameters().Length = 2) |> Array.exactlyOne
     let parameter = property.GetIndexParameters() |> Array.head
@@ -127,7 +118,7 @@ let ``As Memory`` () =
 [<Fact>]
 let ``Empty Key Only`` () =
     let buffer = generator.Encode (dict [ "", box 1.41 ])
-    let token = Token(generator, buffer)
+    let token = Token(generator, buffer |> ReadOnlyMemory)
     let dictionary = token :> IReadOnlyDictionary<string, Token>
     Assert.Equal(1, dictionary.Count)
     Assert.Equal(1.41, token.[""].As<double>())
@@ -136,7 +127,7 @@ let ``Empty Key Only`` () =
 [<Fact>]
 let ``Empty Key`` () =
     let buffer = generator.Encode (dict [ "a", box 'a'; "", box 2048; "data", box "value" ])
-    let token = Token(generator, buffer)
+    let token = Token(generator, buffer |> ReadOnlyMemory)
     let dictionary = token :> IReadOnlyDictionary<string, Token>
     Assert.Equal(3, dictionary.Count)
     Assert.Equal(2048, token.[""].As<int>())
@@ -144,13 +135,13 @@ let ``Empty Key`` () =
 
 [<Fact>]
 let ``To String (debug)`` () =
-    let token = Token(generator, Array.empty)
+    let token = Token(generator, ReadOnlyMemory())
     Assert.Equal("Token(Items: 0, Bytes: 0)", token.ToString())
     ()
 
 [<Fact>]
 let ``Interface Index (mismatch)`` () =
-    let token = Token(generator, Array.empty)
+    let token = Token(generator, ReadOnlyMemory())
     let d = token :> IReadOnlyDictionary<string, Token>
     let error = Assert.Throws<KeyNotFoundException>(fun () -> d.[""] |> ignore)
     Assert.Equal("Key '' not found.", error.Message)
@@ -158,7 +149,7 @@ let ``Interface Index (mismatch)`` () =
 
 [<Fact>]
 let ``Interface (integration, empty)`` () =
-    let token = Token(generator, Array.empty)
+    let token = Token(generator, ReadOnlyMemory())
     let d = token :> IReadOnlyDictionary<string, Token>
 
     Assert.Equal(0, d.Count)
@@ -183,7 +174,7 @@ let ``Interface (integration, empty)`` () =
 let ``Interface (integration, with data)`` () =
     let source = {| id = 1024; data = "sharp" |}
     let buffer = generator.Encode source
-    let token = Token(generator, buffer)
+    let token = Token(generator, buffer |> ReadOnlyMemory)
     let d = token :> IReadOnlyDictionary<string, Token>
 
     Assert.Equal(2, d.Count)

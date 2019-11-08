@@ -31,8 +31,6 @@ namespace Mikodev.Binary
             tokens = new Lazy<IReadOnlyDictionary<string, Token>>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        public Token(IGenerator generator, byte[] buffer) : this(generator, new ReadOnlyMemory<byte>(buffer)) { }
-
         private static IReadOnlyDictionary<string, Token> GetTokens(Token token)
         {
             var memory = token.memory;

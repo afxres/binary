@@ -44,7 +44,7 @@ let ``Interface`` () =
     let a = new Person(Guid.NewGuid(), "Tom") :> IPerson
     let bytes = generator.Encode a
     Assert.NotEmpty bytes
-    let token = Token(generator, bytes)
+    let token = Token(generator, bytes |> ReadOnlyMemory)
     let dictionary = token :> IReadOnlyDictionary<string, Token>
     Assert.Equal(2, dictionary.Count)
     let id = token.["Id"].As<Guid>()
@@ -66,7 +66,7 @@ let ``Abstract Class`` () =
     let a = new SomeBook("C# To F# ...", 1024, decimal 54.3) :> Book
     let bytes = generator.Encode a
     Assert.NotEmpty bytes
-    let token = Token(generator, bytes)
+    let token = Token(generator, bytes |> ReadOnlyMemory)
     let dictionary = token :> IReadOnlyDictionary<string, Token>
     Assert.Equal(2, dictionary.Count)
     Assert.False(dictionary.ContainsKey("Price"))
@@ -93,7 +93,7 @@ let ``Sub Bytes To Base Value`` () =
     Assert.Equal(a.Name, value.Name)
     Assert.Equal(a.Pages, value.Pages)
     Assert.Equal(a.Price, value.Price)
-    let dictionary = Token(generator, bytes) :> IReadOnlyDictionary<string, Token>
+    let dictionary = Token(generator, bytes |> ReadOnlyMemory) :> IReadOnlyDictionary<string, Token>
     Assert.Equal(4, dictionary.Count)
     let count = dictionary.["Count"].As<int>()
     Assert.Equal(a.Count, count)
@@ -107,6 +107,6 @@ let ``Base Bytes To Sub Value`` () =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode<MiscBook> bytes |> ignore)
     let message = sprintf "Property '%s' does not exist, type: %O" "Count" typeof<MiscBook>
     Assert.Equal(message, error.Message)
-    let dictionary = Token(generator, bytes) :> IReadOnlyDictionary<string, Token>
+    let dictionary = Token(generator, bytes |> ReadOnlyMemory) :> IReadOnlyDictionary<string, Token>
     Assert.Equal(3, dictionary.Count)
     ()

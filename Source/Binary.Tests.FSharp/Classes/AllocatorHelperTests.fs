@@ -70,7 +70,7 @@ let ``Append (append some then, length invalid)`` (length : int) =
 
 [<Fact>]
 let ``Append (limited to zero, length zero with raise expression)`` () =
-    let mutable allocator = Allocator(Array.empty, maxCapacity = 0)
+    let mutable allocator = Allocator(Span(), maxCapacity = 0)
     AllocatorHelper.Append(&allocator, 0, null :> obj, fun a b -> raise (NotSupportedException()))
     Assert.Equal(0, allocator.Length)
     Assert.Equal(0, allocator.Capacity)
@@ -112,7 +112,7 @@ let ``Append (default constructor)`` (length : int) =
 [<InlineData(768)>]
 let ``Append (limited, overflow)`` (limits : int) =
     let error = Assert.Throws<ArgumentException>(fun () ->
-        let mutable allocator = Allocator(Array.empty, limits)
+        let mutable allocator = Allocator(Span(), limits)
         AllocatorHelper.Append(&allocator, limits + 1, null :> obj, fun a b -> ()))
     Assert.Null(error.ParamName)
     Assert.Equal("Maximum allocator capacity has been reached.", error.Message)
@@ -120,7 +120,7 @@ let ``Append (limited, overflow)`` (limits : int) =
 
 [<Fact>]
 let ``Append (limited)`` () =
-    let mutable allocator = Allocator(Array.zeroCreate 96, 640)
+    let mutable allocator = Allocator(Span (Array.zeroCreate 96), 640)
     AllocatorHelper.Append(&allocator, 192, null :> obj, fun a b -> ())
     Assert.Equal(96 <<< 2, allocator.Capacity)
     AllocatorHelper.Append(&allocator, 448, null :> obj, fun a b -> ())

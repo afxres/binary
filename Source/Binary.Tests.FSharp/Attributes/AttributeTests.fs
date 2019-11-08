@@ -547,7 +547,7 @@ type AttributeTests() =
         converter.Encode(&allocator, source)
         let buffer = allocator.AsSpan().ToArray()
 
-        let token = Token(generator, buffer)
+        let token = Token(generator, buffer |> ReadOnlyMemory)
         let dictionary = token :> IReadOnlyDictionary<string, Token>
         Assert.Equal(expected.Length, dictionary.Count)
         for (k, v) in expected do
@@ -571,7 +571,7 @@ type AttributeTests() =
         converter.EncodeAuto(&allocator, source)
         let buffer = allocator.AsSpan().ToArray()
 
-        let token = Token(generator, buffer |> Array.skip sizeof<int>)
+        let token = Token(generator, buffer |> Array.skip sizeof<int> |> ReadOnlyMemory)
         let dictionary = token :> IReadOnlyDictionary<string, Token>
         Assert.Equal(expected.Length, dictionary.Count)
         for (k, v) in expected do
