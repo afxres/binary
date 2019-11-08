@@ -89,8 +89,10 @@ namespace Mikodev.Binary
 
         internal static int AnchorLength(ref Allocator allocator, int length)
         {
-            Ensure(ref allocator, length);
             var offset = allocator.offset;
+            if (length == 0)
+                return offset;
+            Ensure(ref allocator, length);
             var anchor = offset + length;
             allocator.offset = anchor;
             return anchor;
@@ -108,7 +110,7 @@ namespace Mikodev.Binary
             if (length == 0)
                 return;
             var buffer = allocator.buffer;
-            var span = buffer.Slice(anchor, length);
+            var span = buffer.Slice(anchor - length, length);
             action.Invoke(span, data);
         }
 

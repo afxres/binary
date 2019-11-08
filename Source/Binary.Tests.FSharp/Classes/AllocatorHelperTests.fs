@@ -195,3 +195,91 @@ let ``Append Buffer (random)`` (length : int) =
     Assert.Equal(length, allocator.Length)
     Assert.Equal((if length > 256 then 1024 else 256), allocator.Capacity)
     ()
+
+[<Theory>]
+[<InlineData(-1)>]
+[<InlineData(-100)>]
+[<InlineData(Int32.MinValue)>]
+let ``Anchor (length invalid)`` (length : int) =
+    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
+        let mutable allocator = Allocator()
+        let _ = AllocatorHelper.Anchor(&allocator, length)
+        ())
+    let methodInfo = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "Anchor") |> Array.exactlyOne
+    let parameter = methodInfo.GetParameters() |> Array.last
+    Assert.StartsWith("Argument length must be greater than or equal to zero!" + Environment.NewLine, error.Message)
+    Assert.Equal("length", error.ParamName)
+    Assert.Equal("length", parameter.Name)
+    ()
+
+[<Fact>]
+let ``Anchor Then Append (length zero with raise expression)`` () =
+    let mutable allocator = Allocator()
+    let anchor = AllocatorHelper.Anchor(&allocator, 0)
+    Assert.Equal("AllocatorAnchor(Offset: 0, Length: 0)", anchor.ToString())
+    AllocatorHelper.Append(&allocator, anchor, null :> obj, fun a b -> raise (NotSupportedException()))
+    Assert.Equal(0, allocator.Length)
+    Assert.Equal(0, allocator.Capacity)
+    ()
+
+[<Fact>]
+let ``Anchor Then Append (append some then, length zero with raise expression)`` () =
+    let mutable allocator = Allocator()
+    AllocatorHelper.Append(&allocator, 8, null :> obj, fun a b -> ())
+    let anchor = AllocatorHelper.Anchor(&allocator, 0)
+    Assert.Equal("AllocatorAnchor(Offset: 8, Length: 0)", anchor.ToString())
+    AllocatorHelper.Append(&allocator, anchor, null :> obj, fun a b -> raise (NotSupportedException()))
+    Assert.Equal(8, allocator.Length)
+    Assert.Equal(256, allocator.Capacity)
+    ()
+
+[<Theory>]
+[<InlineData(1)>]
+[<InlineData(255)>]
+[<InlineData(513)>]
+[<InlineData(4097)>]
+let ``Anchor Then Append`` (length : int) =
+    let mutable allocator = Allocator()
+    let anchor = AllocatorHelper.Anchor(&allocator, length)
+    Assert.Equal(length, allocator.Length)
+    Assert.Equal(sprintf "AllocatorAnchor(Offset: 0, Length: %d)" length, anchor.ToString())
+    let buffer = Array.zeroCreate<byte> 4
+    random.NextBytes buffer
+    AllocatorHelper.Append(&allocator, ReadOnlySpan buffer)
+    let source = Array.zeroCreate length
+    random.NextBytes source
+    AllocatorHelper.Append(&allocator, anchor, source, fun (a : Span<byte>) b ->
+        Assert.Equal(length, a.Length)
+        Assert.True(obj.ReferenceEquals(source, b))
+        b.CopyTo a)
+    Assert.Equal(length + 4, allocator.Length)
+    let result = allocator.AsSpan().ToArray()
+    Assert.Equal<byte>(result, Array.concat [ source; buffer ])
+    ()
+
+[<Theory>]
+[<InlineData(1, 1)>]
+[<InlineData(127, 512)>]
+[<InlineData(384, 192)>]
+[<InlineData(2048, 4096)>]
+let ``Anchor Then Append (append some then)`` (prefix : int, length : int) =
+    let mutable allocator = Allocator()
+    let origin = Array.zeroCreate<byte> prefix
+    random.NextBytes origin
+    AllocatorHelper.Append(&allocator, ReadOnlySpan origin)
+    let anchor = AllocatorHelper.Anchor(&allocator, length)
+    Assert.Equal(prefix + length, allocator.Length)
+    Assert.Equal(sprintf "AllocatorAnchor(Offset: %d, Length: %d)" prefix length, anchor.ToString())
+    let buffer = Array.zeroCreate<byte> 4
+    random.NextBytes buffer
+    AllocatorHelper.Append(&allocator, ReadOnlySpan buffer)
+    let source = Array.zeroCreate length
+    random.NextBytes source
+    AllocatorHelper.Append(&allocator, anchor, source, fun (a : Span<byte>) b ->
+        Assert.Equal(length, a.Length)
+        Assert.True(obj.ReferenceEquals(source, b))
+        b.CopyTo a)
+    Assert.Equal(prefix + length + 4, allocator.Length)
+    let result = allocator.AsSpan().ToArray()
+    Assert.Equal<byte>(result, Array.concat [ origin; source; buffer ])
+    ()

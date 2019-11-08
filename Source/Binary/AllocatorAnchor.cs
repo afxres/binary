@@ -27,6 +27,6 @@ namespace Mikodev.Binary
         public override int GetHashCode() => throw new NotSupportedException();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => $"{nameof(AllocatorAnchor)}({nameof(Offset)}: {Offset}, {nameof(Length)}: {Length})";
+        public override string ToString() => $"{nameof(AllocatorAnchor)}({nameof(Offset)}: {Offset - Length}, {nameof(Length)}: {Length})";
     }
 }

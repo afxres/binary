@@ -19,7 +19,7 @@ namespace Mikodev.Binary.Tests
                 var anchor = new AllocatorAnchor();
                 ((int*)&anchor)[0] = offset;
                 ((int*)&anchor)[1] = sizeof(int);
-                Assert.Equal($"AllocatorAnchor(Offset: {offset}, Length: 4)", anchor.ToString());
+                Assert.Equal($"AllocatorAnchor(Offset: {offset - sizeof(int)}, Length: 4)", anchor.ToString());
                 var allocator = new Allocator();
                 AllocatorHelper.Append(ref allocator, Limits, 0, (a, b) => { });
                 Assert.Equal(Limits, allocator.Length);
@@ -48,7 +48,7 @@ namespace Mikodev.Binary.Tests
                 var anchor = new AllocatorAnchor();
                 ((int*)&anchor)[0] = offset;
                 ((int*)&anchor)[1] = length;
-                Assert.Equal($"AllocatorAnchor(Offset: {offset}, Length: {length})", anchor.ToString());
+                Assert.Equal($"AllocatorAnchor(Offset: {offset - length}, Length: {length})", anchor.ToString());
                 var allocator = new Allocator();
                 AllocatorHelper.Append(ref allocator, Limits, 0, (a, b) => { });
                 Assert.Equal(Limits, allocator.Length);
@@ -76,7 +76,7 @@ namespace Mikodev.Binary.Tests
                 var anchor = new AllocatorAnchor();
                 ((int*)&anchor)[0] = offset;
                 ((int*)&anchor)[1] = sizeof(int);
-                Assert.Equal($"AllocatorAnchor(Offset: {offset}, Length: 4)", anchor.ToString());
+                Assert.Equal($"AllocatorAnchor(Offset: {offset - sizeof(int)}, Length: 4)", anchor.ToString());
                 var allocator = new Allocator();
                 Assert.Equal(0, allocator.Length);
                 AllocatorHelper.AppendLengthPrefix(ref allocator, anchor);
