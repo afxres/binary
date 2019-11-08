@@ -71,7 +71,7 @@ type ThrowTests() =
     member me.``Bytes Not Enough Or Null Guid`` () = me.Test<Guid>()
 
     [<Fact>]
-    member me.``Allocator Modified`` () =
+    member __.``Allocator Modified`` () =
         let converter = new BadConverter<string>()
         let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
             let mutable allocator = new Allocator()
@@ -90,7 +90,7 @@ type ThrowTests() =
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member me.``No Available Property``(t : Type) =
+    member __.``No Available Property``(t : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
         Assert.Contains(sprintf "No available property found, type: %O" t, error.Message)
         ()
@@ -118,8 +118,28 @@ type ThrowTests() =
 
     [<Theory>]
     [<MemberData("Data Bravo")>]
-    member me.``Simple Or Complex Type With Invalid Type`` (t : Type, by : Type) =
+    member __.``Simple Or Complex Type With Invalid Type`` (t : Type, by : Type) =
         let message = sprintf "Invalid type: %O" by
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
+        Assert.Equal(message, error.Message)
+        ()
+
+    static member ``Data Delta`` : (obj array) seq =
+        seq {
+            yield [| Memory<int32>(); Int32(); 15; 3 |]
+            yield [| ArraySegment<int64>(); Int64(); 7; 7 |]
+            yield [| ResizeArray<TimeSpan>(); TimeSpan(); 10; 2 |]
+            yield [| HashSet<DateTimeOffset>(); DateTimeOffset(); 39; 9 |]
+            yield [| Dictionary<int32, int16>(); KeyValuePair<int32, int16>(); 23; 5 |]
+        }
+
+    [<Theory>]
+    [<MemberData("Data Delta")>]
+    member __.``Unmanaged Collection Bytes Not Match`` (collection : 'a, item : 'b, length : int, remainder : int) =
+        let buffer = Array.zeroCreate<byte> length
+        let converter = generator.GetConverter<'a> ()
+        let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode buffer |> ignore)
+        let message = sprintf "Invalid collection bytes, byte count: %d, remainder: %d, item type: %O" length remainder typeof<'b>
+        Assert.Null(error.ParamName)
         Assert.Equal(message, error.Message)
         ()

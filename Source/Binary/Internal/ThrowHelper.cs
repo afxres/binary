@@ -29,6 +29,9 @@ namespace Mikodev.Binary.Internal
         internal static void ThrowNumberNegative() => throw new ArgumentException("Encode number can not be negative!");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
+        internal static void ThrowCollectionBytesInvalid(Type type, int byteCount, int remainder) => throw new ArgumentException($"Invalid collection bytes, byte count: {byteCount}, remainder: {remainder}, item type: {type}");
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static void ThrowNotEnoughBytes() => throw new ArgumentException("Not enough bytes.");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
