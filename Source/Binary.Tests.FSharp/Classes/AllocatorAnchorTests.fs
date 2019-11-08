@@ -30,19 +30,19 @@ let ``Allocator With Default Length Prefix Anchor`` () =
         Assert.Equal("AllocatorAnchor(Offset: 0, Length: 0)", anchor.ToString())
         let mutable allocator = Allocator()
         AllocatorHelper.AppendLengthPrefix(&allocator, anchor))
-    Assert.Equal("Invalid length prefix anchor or allocator modified.", error.Message)
+    Assert.Equal("Invalid allocator anchor for length prefix.", error.Message)
     ()
 
 [<Fact>]
 let ``Allocator With Another Length Prefix Anchor`` () =
     for i = 0 to 16 do
-        let error = Assert.Throws<ArgumentException>(fun () ->
+        let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
             let mutable allocatorOld = Allocator()
             let anchor = AllocatorHelper.AnchorLengthPrefix &allocatorOld
             Assert.Equal("AllocatorAnchor(Offset: 0, Length: 4)", anchor.ToString())
             let mutable allocator = Allocator (Span (Array.zeroCreate<byte> i))
             AllocatorHelper.AppendLengthPrefix(&allocator, anchor))
-        Assert.Equal("Invalid length prefix anchor or allocator modified.", error.Message)
+        Assert.Contains("Specified argument was out of the range of valid values.", error.Message)
     ()
 
 [<Fact>]

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace Mikodev.Binary.Tests
@@ -56,45 +58,44 @@ namespace Mikodev.Binary.Tests
             }
 
             var error = Assert.Throws<ArgumentException>(() => Test());
-            var message = "Invalid length prefix anchor or allocator modified.";
+            var message = "Invalid allocator anchor for length prefix.";
             Assert.Equal(message, error.Message);
         }
 
         [Theory(DisplayName = "Fake Length Prefix Anchor (hack, invalid offset)")]
-        [InlineData(-8, 7)]
-        [InlineData(int.MinValue, int.MinValue + 15)]
-        [InlineData(int.MaxValue - 15, int.MaxValue)]
-        public unsafe void FakeAnchorRange(int from, int to)
+        [InlineData(-1)]
+        [InlineData(512)]
+        [InlineData(768)]
+        [InlineData(1024)]
+        public unsafe void FakeAnchorRange(int offset)
         {
-            static void Test(int offset)
+            const int Limits = 512;
+
+            void Test()
             {
                 var anchor = new AllocatorAnchor();
                 ((int*)&anchor)[0] = offset;
                 ((int*)&anchor)[1] = sizeof(int);
                 Assert.Equal($"AllocatorAnchor(Offset: {offset}, Length: 4)", anchor.ToString());
                 var allocator = new Allocator();
-                Assert.Equal(0, allocator.Length);
+                AllocatorHelper.Append(ref allocator, new byte[Limits]);
+                Assert.Equal(Limits, allocator.Length);
+                Assert.Equal(1024, allocator.Capacity);
                 AllocatorHelper.AppendLengthPrefix(ref allocator, anchor);
             }
 
-            var loop = 0;
-            for (var i = (long)from; i <= to; i++)
-            {
-                var error = Assert.Throws<ArgumentException>(() => Test((int)i));
-                var message = "Invalid length prefix anchor or allocator modified.";
-                Assert.Equal(message, error.Message);
-                loop++;
-            }
-            Assert.Equal(16, loop);
+            var error = Assert.Throws<ArgumentOutOfRangeException>(() => Test());
+            Assert.Contains("Specified argument was out of the range of valid values.", error.Message);
         }
 
         [Theory(DisplayName = "Fake Anchor (hack, invalid)")]
         [InlineData(0, -1)]
         [InlineData(-1, 0)]
-        [InlineData(512, 1024)]
+        [InlineData(510, 4)]
+        [InlineData(768, 32)]
         public unsafe void FakeAnchorThenAppend(int offset, int length)
         {
-            const int Limits = 1024;
+            const int Limits = 512;
 
             void Test()
             {
@@ -103,14 +104,45 @@ namespace Mikodev.Binary.Tests
                 ((int*)&anchor)[1] = length;
                 Assert.Equal($"AllocatorAnchor(Offset: {offset}, Length: {length})", anchor.ToString());
                 var allocator = new Allocator();
-                AllocatorHelper.Append(ref allocator, Limits, 0, (a, b) => { });
+                AllocatorHelper.Append(ref allocator, new byte[Limits]);
                 Assert.Equal(Limits, allocator.Length);
+                Assert.Equal(1024, allocator.Capacity);
                 AllocatorHelper.Append(ref allocator, anchor, default(object), (a, b) => throw new NotSupportedException());
             }
 
             var error = Assert.Throws<ArgumentOutOfRangeException>(() => Test());
-            Assert.DoesNotContain("anchor", error.Message, StringComparison.InvariantCultureIgnoreCase);
-            Assert.DoesNotContain("allocator", error.Message, StringComparison.InvariantCultureIgnoreCase);
+            Assert.Contains("Specified argument was out of the range of valid values.", error.Message);
+        }
+
+        [Fact(DisplayName = "Expand Capacity")]
+        public unsafe void ExpandCapacity()
+        {
+            var buffer = new byte[256];
+            Array.Fill(buffer, (byte)0x80);
+            var allocator = new Allocator(buffer);
+            Assert.Equal(0, allocator.Length);
+            Assert.Equal(256, allocator.Capacity);
+            AllocatorHelper.Append(ref allocator, Enumerable.Repeat((byte)0x7F, 128).ToArray());
+            Assert.Equal(128, allocator.Length);
+            Assert.Equal(256, allocator.Capacity);
+            var source = allocator.AsSpan();
+            fixed (byte* srcptr = &MemoryMarshal.GetReference(source))
+            {
+                for (var i = 0; i < 128; i++)
+                    Assert.Equal((byte)0x7F, srcptr[i]);
+                for (var i = 128; i < 256; i++)
+                    Assert.Equal((byte)0x80, srcptr[i]);
+            }
+            AllocatorHelper.Append(ref allocator, 512, default(object), (a, b) => { });
+            Assert.Equal(640, allocator.Length);
+            Assert.Equal(1024, allocator.Capacity);
+            var target = allocator.AsSpan();
+            var head = target.Slice(0, 128);
+            var tail = target.Slice(128);
+            Assert.Equal(128, head.Length);
+            Assert.Equal(512, tail.Length);
+            Assert.All(head.ToArray(), x => Assert.Equal((byte)0x7F, x));
+            Assert.All(tail.ToArray(), x => Assert.Equal((byte)0x00, x));
         }
     }
 }

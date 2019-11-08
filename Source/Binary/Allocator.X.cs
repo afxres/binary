@@ -86,16 +86,13 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void AppendLengthPrefix(ref Allocator allocator, int anchor, int length)
+        internal static void AppendLengthPrefix(ref Allocator allocator, int anchor)
         {
             var offset = allocator.offset;
-            Debug.Assert(offset >= 0);
-            Debug.Assert(offset <= allocator.buffer.Length);
-            var origin = anchor + sizeof(int);
-            if (length != sizeof(int) || origin < sizeof(int) || offset < origin)
-                ThrowHelper.ThrowAllocatorOrAnchorInvalid();
             var buffer = allocator.buffer;
-            PrimitiveHelper.EncodeNumberFixed4(ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), anchor), (uint)(offset - origin));
+            // check bounds via slice method
+            var target = buffer.Slice(0, offset).Slice(anchor, sizeof(int));
+            PrimitiveHelper.EncodeNumberFixed4(ref MemoryMarshal.GetReference(target), (uint)(offset - anchor - sizeof(int)));
         }
 
         internal static int AnchorLength(ref Allocator allocator, int length)
@@ -113,14 +110,12 @@ namespace Mikodev.Binary
             if (action == null)
                 ThrowHelper.ThrowAllocatorActionInvalid();
             var offset = allocator.offset;
-            Debug.Assert(offset >= 0);
-            Debug.Assert(offset <= allocator.buffer.Length);
             var buffer = allocator.buffer;
             // check bounds via slice method
-            var span = buffer.Slice(anchor, length);
+            var target = buffer.Slice(0, offset).Slice(anchor, length);
             if (length == 0)
                 return;
-            action.Invoke(span, data);
+            action.Invoke(target, data);
         }
 
         internal static void AppendAction<T>(ref Allocator allocator, int length, T data, AllocatorAction<T> action)
@@ -132,8 +127,8 @@ namespace Mikodev.Binary
             Ensure(ref allocator, length);
             var offset = allocator.offset;
             var buffer = allocator.buffer;
-            var span = buffer.Slice(offset, length);
-            action.Invoke(span, data);
+            var target = buffer.Slice(offset, length);
+            action.Invoke(target, data);
             allocator.offset = offset + length;
         }
 

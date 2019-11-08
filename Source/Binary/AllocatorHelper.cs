@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mikodev.Binary.Internal;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary
@@ -26,7 +27,9 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void AppendLengthPrefix(ref Allocator allocator, AllocatorAnchor anchor)
         {
-            Allocator.AppendLengthPrefix(ref allocator, anchor.Offset, anchor.Length);
+            if (anchor.Length != sizeof(int))
+                ThrowHelper.ThrowLengthPrefixAnchorInvalid();
+            Allocator.AppendLengthPrefix(ref allocator, anchor.Offset);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
