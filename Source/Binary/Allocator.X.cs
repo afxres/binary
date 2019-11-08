@@ -66,13 +66,23 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void AppendBuffer(ref Allocator allocator, ReadOnlySpan<byte> span)
+        {
+            var byteCount = span.Length;
+            if (byteCount == 0)
+                return;
+            ref var target = ref Allocate(ref allocator, byteCount);
+            ref var source = ref MemoryMarshal.GetReference(span);
+            Unsafe.CopyBlockUnaligned(ref target, ref source, (uint)byteCount);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int AnchorLengthPrefix(ref Allocator allocator)
         {
             Ensure(ref allocator, sizeof(int));
             var offset = allocator.offset;
-            var anchor = offset + sizeof(int);
-            allocator.offset = anchor;
-            return anchor;
+            allocator.offset = offset + sizeof(int);
+            return offset;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -81,10 +91,11 @@ namespace Mikodev.Binary
             var offset = allocator.offset;
             Debug.Assert(offset >= 0);
             Debug.Assert(offset <= allocator.buffer.Length);
-            if (length != sizeof(int) || anchor < sizeof(int) || offset < anchor)
+            var origin = anchor + sizeof(int);
+            if (length != sizeof(int) || origin < sizeof(int) || offset < origin)
                 ThrowHelper.ThrowAllocatorOrAnchorInvalid();
             var buffer = allocator.buffer;
-            PrimitiveHelper.EncodeNumberFixed4(ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), anchor - sizeof(int)), (uint)(offset - anchor));
+            PrimitiveHelper.EncodeNumberFixed4(ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), anchor), (uint)(offset - origin));
         }
 
         internal static int AnchorLength(ref Allocator allocator, int length)
@@ -93,9 +104,8 @@ namespace Mikodev.Binary
             if (length == 0)
                 return offset;
             Ensure(ref allocator, length);
-            var anchor = offset + length;
-            allocator.offset = anchor;
-            return anchor;
+            allocator.offset = offset + length;
+            return offset;
         }
 
         internal static void AppendLength<T>(ref Allocator allocator, int anchor, int length, T data, AllocatorAction<T> action)
@@ -105,24 +115,12 @@ namespace Mikodev.Binary
             var offset = allocator.offset;
             Debug.Assert(offset >= 0);
             Debug.Assert(offset <= allocator.buffer.Length);
-            if (length < 0 || anchor < length || offset < anchor)
-                ThrowHelper.ThrowAllocatorOrAnchorInvalid();
+            var buffer = allocator.buffer;
+            // check bounds via slice method
+            var span = buffer.Slice(anchor, length);
             if (length == 0)
                 return;
-            var buffer = allocator.buffer;
-            var span = buffer.Slice(anchor - length, length);
             action.Invoke(span, data);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void AppendBuffer(ref Allocator allocator, ReadOnlySpan<byte> span)
-        {
-            var byteCount = span.Length;
-            if (byteCount == 0)
-                return;
-            ref var target = ref Allocate(ref allocator, byteCount);
-            ref var source = ref MemoryMarshal.GetReference(span);
-            Unsafe.CopyBlockUnaligned(ref target, ref source, (uint)byteCount);
         }
 
         internal static void AppendAction<T>(ref Allocator allocator, int length, T data, AllocatorAction<T> action)
