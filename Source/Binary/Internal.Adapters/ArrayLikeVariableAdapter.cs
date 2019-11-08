@@ -34,7 +34,7 @@ namespace Mikodev.Binary.Internal.Adapters
                 {
                     Debug.Assert(cursor > 0 && cursor == buffer.Length);
                     var target = new T[checked((int)(limits *= 2))];
-                    MemoryExtensions.CopyTo(buffer, (Span<T>)target);
+                    MemoryExtensions.CopyTo(buffer, target.AsSpan());
                     buffer = target;
                 }
                 buffer[cursor++] = converter.DecodeAuto(ref temp);

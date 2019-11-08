@@ -1,6 +1,5 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary
@@ -9,13 +8,9 @@ namespace Mikodev.Binary
     {
         public static void EncodeBufferWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<byte> span)
         {
-            var byteCount = span.Length;
-            EncodeNumber(ref allocator, byteCount);
-            if (byteCount == 0)
-                return;
-            ref var target = ref Allocator.Allocate(ref allocator, byteCount);
-            ref var source = ref MemoryMarshal.GetReference(span);
-            Unsafe.CopyBlockUnaligned(ref target, ref source, (uint)byteCount);
+            var length = span.Length;
+            EncodeNumber(ref allocator, length);
+            Allocator.AppendBuffer(ref allocator, span);
         }
 
         public static ReadOnlySpan<byte> DecodeBufferWithLengthPrefix(ref ReadOnlySpan<byte> span)

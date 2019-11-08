@@ -8,14 +8,9 @@ namespace Mikodev.Binary.Internal.Adapters
     {
         public override void Of(ref Allocator allocator, ReadOnlyMemory<T> memory)
         {
-            var span = memory.Span;
-            var itemCount = span.Length;
-            var byteCount = checked(itemCount * Unsafe.SizeOf<T>());
-            if (byteCount == 0)
-                return;
-            ref var target = ref Allocator.Allocate(ref allocator, byteCount);
-            ref var source = ref MemoryMarshal.GetReference(span);
-            Unsafe.CopyBlockUnaligned(ref target, ref Unsafe.As<T, byte>(ref source), (uint)byteCount);
+            var origin = memory.Span;
+            var source = MemoryMarshal.AsBytes(origin);
+            Allocator.AppendBuffer(ref allocator, source);
         }
 
         public override MemoryItem<T> To(ReadOnlySpan<byte> span)

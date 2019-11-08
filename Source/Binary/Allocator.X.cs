@@ -39,7 +39,7 @@ namespace Mikodev.Binary
             Debug.Assert(offset <= source.Length);
             Debug.Assert(offset <= target.Length);
             if (offset != 0)
-                Unsafe.CopyBlock(ref MemoryMarshal.GetReference(target), ref MemoryMarshal.GetReference(source), (uint)offset);
+                Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetReference(target), ref MemoryMarshal.GetReference(source), (uint)offset);
             allocator.buffer = target;
             allocator.bounds = target.Length;
             Debug.Assert(allocator.bounds <= limits);
@@ -68,12 +68,16 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void AppendBuffer(ref Allocator allocator, ReadOnlySpan<byte> span)
         {
-            var byteCount = span.Length;
-            if (byteCount == 0)
+            var length = span.Length;
+            if (length == 0)
                 return;
-            ref var target = ref Allocate(ref allocator, byteCount);
+            Ensure(ref allocator, length);
+            var offset = allocator.offset;
+            var buffer = allocator.buffer;
+            ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
             ref var source = ref MemoryMarshal.GetReference(span);
-            Unsafe.CopyBlockUnaligned(ref target, ref source, (uint)byteCount);
+            Unsafe.CopyBlockUnaligned(ref target, ref source, (uint)length);
+            allocator.offset = offset + length;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
