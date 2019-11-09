@@ -7,21 +7,21 @@ open Xunit
 
 let generator = Generator.CreateDefault()
 
-let bytes<'a> (c : Converter<'a>) v =
+let encode<'a> (c : Converter<'a>) v =
     let mutable allocator = new Allocator()
     c.Encode(&allocator, v)
     allocator.AsSpan().ToArray()
 
-let bytesWithMark<'a> (c : Converter<'a>) v =
+let encodeAuto<'a> (c : Converter<'a>) v =
     let mutable allocator = new Allocator()
     c.EncodeAuto(&allocator, v)
     allocator.AsSpan().ToArray()
 
-let value<'a> (c : Converter<'a>) buffer =
+let decode<'a> (c : Converter<'a>) buffer =
     let span = new ReadOnlySpan<byte>(buffer)
     c.Decode &span
 
-let valueWithMark<'a> (c : Converter<'a>) buffer =
+let decodeAuto<'a> (c : Converter<'a>) buffer =
     let mutable span = new ReadOnlySpan<byte>(buffer)
     c.DecodeAuto &span
 
@@ -36,17 +36,17 @@ let ``Key-Value Pair`` (k : 'K) (v : 'V) define normal headed =
     let alpha = generator.GetConverter<KeyValuePair<'K, 'V>> ()
     let tuple = generator.GetConverter<'K * 'V> ()
 
-    let bka = bytes alpha i
-    let rka = value alpha bka
+    let bka = encode alpha i
+    let rka = decode alpha bka
 
-    let bkb = bytesWithMark alpha i
-    let rkb = valueWithMark alpha bkb
+    let bkb = encodeAuto alpha i
+    let rkb = decodeAuto alpha bkb
 
-    let bta = bytes tuple t
-    let rta = value tuple bta
+    let bta = encode tuple t
+    let rta = decode tuple bta
 
-    let btb = bytesWithMark tuple t
-    let rtb = valueWithMark tuple btb
+    let btb = encodeAuto tuple t
+    let rtb = decodeAuto tuple btb
 
     Assert.Equal(define, alpha.Length)
     Assert.Equal(define, tuple.Length)

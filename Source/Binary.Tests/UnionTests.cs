@@ -48,7 +48,7 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(message, error.Message);
         }
 
-        [Theory(DisplayName = "Valid Tag (to bytes & to value)")]
+        [Theory(DisplayName = "Valid Tag (encode & decode)")]
         [InlineData("alpha")]
         [InlineData("beta")]
         public void ValidUnionTag(string item)
@@ -68,10 +68,10 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(source.Item, result.Item);
         }
 
-        [Theory(DisplayName = "Valid Tag (to bytes with mark & to value with mark)")]
+        [Theory(DisplayName = "Valid Tag (encode auto & decode auto)")]
         [InlineData("quick")]
         [InlineData("fox")]
-        public void ValidUnionTagWithMark(string item)
+        public void ValidUnionTagAuto(string item)
         {
             var source = new FakeUnion<string>(item);
             var converter = generator.GetConverter(source);
@@ -90,7 +90,7 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(source.Item, result.Item);
         }
 
-        [Theory(DisplayName = "Invalid Tag (to bytes & to bytes with mark)")]
+        [Theory(DisplayName = "Invalid Tag (encode & encode auto)")]
         [InlineData("some", 1)]
         [InlineData("fake", 2)]
         [InlineData("overflow", 257)]

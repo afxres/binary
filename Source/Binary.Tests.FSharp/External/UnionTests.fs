@@ -14,43 +14,43 @@ let converter<'a> =
     Assert.Contains("UnionConverter", value.GetType().Name)
     value :?> Converter<'a>
 
-let bytes<'a> (c : Converter<'a>) v =
+let encode<'a> (c : Converter<'a>) v =
     let mutable allocator = new Allocator()
     c.Encode(&allocator, v)
     allocator.AsSpan().ToArray()
 
-let bytesWithMark<'a> (c : Converter<'a>) v =
+let encodeAuto<'a> (c : Converter<'a>) v =
     let mutable allocator = new Allocator()
     c.EncodeAuto(&allocator, v)
     allocator.AsSpan().ToArray()
 
-let value<'a> (c : Converter<'a>) buffer =
+let decode<'a> (c : Converter<'a>) buffer =
     let span = new ReadOnlySpan<byte>(buffer)
     c.Decode &span
 
-let valueWithMark<'a> (c : Converter<'a>) buffer =
+let decodeAuto<'a> (c : Converter<'a>) buffer =
     let mutable span = new ReadOnlySpan<byte>(buffer)
     c.DecodeAuto &span
 
 let test<'a> ls ll (v : 'a) =
-    // test to bytes, to value
+    // test encode, decode
     let c = converter<'a>
-    let ba = bytes c v
+    let ba = encode c v
     Assert.Equal(ls, Array.length ba)
-    let ra = value c ba
+    let ra = decode c ba
     Assert.Equal(v, ra)
 
-    // test to bytes, to value (bytes)
+    // test encode, decode (bytes)
     let bc = c.Encode v
     Assert.Equal(ls, Array.length bc)
     Assert.Equal<byte>(ba, bc)
     let rc = c.Decode bc
     Assert.Equal(v, rc)
 
-    // test to bytes, to value (with mark)
-    let bb = bytesWithMark c v
+    // test encode, decode (auto)
+    let bb = encodeAuto c v
     Assert.Equal(ll, Array.length bb)
-    let rb = valueWithMark c bb
+    let rb = decodeAuto c bb
     Assert.Equal(v, rb)
     ()
 
@@ -88,7 +88,7 @@ let ``Choice 2`` () =
 [<InlineData(2)>]
 [<InlineData(128)>]
 [<InlineData(4096)>]
-let ``Invalid Tag (to value & to value with mark)`` (tag : int) =
+let ``Invalid Tag (decode & decode auto)`` (tag : int) =
     let converter = generator.GetConverter<int option>()
     Assert.StartsWith("UnionConverter`1", converter.GetType().Name)
 
@@ -97,8 +97,8 @@ let ``Invalid Tag (to value & to value with mark)`` (tag : int) =
     let bytes = allocator.AsSpan().ToArray()
 
     let message = sprintf "Invalid union tag '%d', type: %O" (int tag) typeof<int option>
-    let alpha = Assert.Throws<ArgumentException>(fun () -> value<int option> converter bytes |> ignore)
-    let bravo = Assert.Throws<ArgumentException>(fun () -> valueWithMark<int option> converter bytes |> ignore)
+    let alpha = Assert.Throws<ArgumentException>(fun () -> decode<int option> converter bytes |> ignore)
+    let bravo = Assert.Throws<ArgumentException>(fun () -> decodeAuto<int option> converter bytes |> ignore)
     Assert.Null(alpha.ParamName)
     Assert.Null(bravo.ParamName)
     Assert.StartsWith(message, alpha.Message)
@@ -126,8 +126,8 @@ let ``Invalid Tag With Fake Union Type (hack)`` (tag : int) =
 
     let value = unbox<Box> boxed
     let message = sprintf "Invalid union tag '%d', type: %O" (int tag) typeof<Box>
-    let alpha = Assert.Throws<ArgumentException>(fun () -> bytes<Box> converter value |> ignore)
-    let bravo = Assert.Throws<ArgumentException>(fun () -> bytesWithMark<Box> converter value |> ignore)
+    let alpha = Assert.Throws<ArgumentException>(fun () -> encode<Box> converter value |> ignore)
+    let bravo = Assert.Throws<ArgumentException>(fun () -> encodeAuto<Box> converter value |> ignore)
     Assert.Null(alpha.ParamName)
     Assert.Null(bravo.ParamName)
     Assert.StartsWith(message, alpha.Message)
@@ -140,13 +140,13 @@ type ABC =
     | C of string
 
 [<Fact>]
-let ``Invalid Null Value (to bytes & to bytes with mark)`` () =
+let ``Invalid Null Value (encode & encode auto)`` () =
     let converter = generator.GetConverter<ABC>()
     Assert.StartsWith("UnionConverter`1", converter.GetType().Name)
 
     let message = sprintf "Union can not be null, type: %O" typeof<ABC>
-    let alpha = Assert.Throws<ArgumentNullException>(fun () -> bytes converter Unchecked.defaultof<ABC> |> ignore)
-    let bravo = Assert.Throws<ArgumentNullException>(fun () -> bytesWithMark converter Unchecked.defaultof<ABC> |> ignore)
+    let alpha = Assert.Throws<ArgumentNullException>(fun () -> encode converter Unchecked.defaultof<ABC> |> ignore)
+    let bravo = Assert.Throws<ArgumentNullException>(fun () -> encodeAuto converter Unchecked.defaultof<ABC> |> ignore)
     Assert.Equal("item", alpha.ParamName)
     Assert.Equal("item", bravo.ParamName)
     Assert.StartsWith(message, alpha.Message)

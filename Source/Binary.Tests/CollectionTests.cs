@@ -45,7 +45,7 @@ namespace Mikodev.Binary.Tests
 
         private readonly IGenerator generator = Generator.CreateDefault();
 
-        [Theory(DisplayName = "To Bytes Via 'ToArray()' Or Enumerator")]
+        [Theory(DisplayName = "Encode Via 'ToArray()' Or Enumerator")]
         [MemberData(nameof(MemberData))]
         public void ViaToArray<T>(T collection, string expected)
         {

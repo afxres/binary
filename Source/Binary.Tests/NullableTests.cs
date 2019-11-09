@@ -13,21 +13,21 @@ namespace Mikodev.Binary.Tests
             .AddFSharpConverterCreators()
             .Build();
 
-        private byte[] Bytes<T>(Converter<T> converter, T value)
+        private byte[] Encode<T>(Converter<T> converter, T value)
         {
             var allocator = new Allocator();
             converter.Encode(ref allocator, value);
             return allocator.AsSpan().ToArray();
         }
 
-        private byte[] BytesWithMark<T>(Converter<T> converter, T value)
+        private byte[] EncodeAuto<T>(Converter<T> converter, T value)
         {
             var allocator = new Allocator();
             converter.EncodeAuto(ref allocator, value);
             return allocator.AsSpan().ToArray();
         }
 
-        [Theory(DisplayName = "Nullable (to bytes & to value)")]
+        [Theory(DisplayName = "Nullable (encode & decode)")]
         [InlineData((byte)254)]
         [InlineData(1920)]
         [InlineData(1.4F)]
@@ -40,8 +40,8 @@ namespace Mikodev.Binary.Tests
             var a = (T?)value;
             var b = (T?)null;
 
-            var ta = Bytes(converter, a);
-            var tb = Bytes(converter, b);
+            var ta = Encode(converter, a);
+            var tb = Encode(converter, b);
 
             Assert.Equal(sizeof(T) + 1, ta.Length);
             _ = Assert.Single(tb);
@@ -54,7 +54,7 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(value, ra.Value);
         }
 
-        [Theory(DisplayName = "Nullable (to bytes with mark & to value with mark)")]
+        [Theory(DisplayName = "Nullable (encode auto & decode auto)")]
         [InlineData((byte)254)]
         [InlineData(1920)]
         [InlineData(1.4F)]
@@ -67,8 +67,8 @@ namespace Mikodev.Binary.Tests
             var a = (T?)value;
             var b = (T?)null;
 
-            var ta = BytesWithMark(converter, a);
-            var tb = BytesWithMark(converter, b);
+            var ta = EncodeAuto(converter, a);
+            var tb = EncodeAuto(converter, b);
 
             Assert.Equal(sizeof(T) + 1, ta.Length);
             _ = Assert.Single(tb);
@@ -199,13 +199,13 @@ namespace Mikodev.Binary.Tests
             var m = FSharpOption<T>.Some(data);
             var n = FSharpOption<T>.None;
 
-            Assert.Equal<byte>(Bytes(converterItem, a), Bytes(converterOption, m));
-            Assert.Equal<byte>(BytesWithMark(converterItem, a), BytesWithMark(converterOption, m));
-            Assert.Equal<byte>(Bytes(converterItem, b), Bytes(converterOption, n));
-            Assert.Equal<byte>(BytesWithMark(converterItem, b), BytesWithMark(converterOption, n));
+            Assert.Equal<byte>(Encode(converterItem, a), Encode(converterOption, m));
+            Assert.Equal<byte>(EncodeAuto(converterItem, a), EncodeAuto(converterOption, m));
+            Assert.Equal<byte>(Encode(converterItem, b), Encode(converterOption, n));
+            Assert.Equal<byte>(EncodeAuto(converterItem, b), EncodeAuto(converterOption, n));
         }
 
-        [Theory(DisplayName = "Invalid Nullable Tag (to value & to value with mark)")]
+        [Theory(DisplayName = "Invalid Nullable Tag (decode & decode auto)")]
         [InlineData(2)]
         [InlineData(3)]
         [InlineData(255)]

@@ -19,7 +19,7 @@ let ``Object Converter`` () =
     ()
 
 [<Fact>]
-let ``Object Converter (to value)`` () =
+let ``Object Converter (decode)`` () =
     let converter = generator.GetConverter<obj>()
     let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode Array.empty<byte> |> ignore)
     Assert.Contains("Invalid type", error.Message)

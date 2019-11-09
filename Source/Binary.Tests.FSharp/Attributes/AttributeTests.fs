@@ -538,7 +538,7 @@ type AttributeTests() =
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member __.``Named Object (to bytes, to value)`` (source : 'a, expected : (string * obj) array) =
+    member __.``Named Object (encode, decode)`` (source : 'a, expected : (string * obj) array) =
         let converter = generator.GetConverter<'a>()
         Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
         Assert.Equal(0, converter.Length)
@@ -562,7 +562,7 @@ type AttributeTests() =
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member __.``Named Object (to bytes with, to value with)`` (source : 'a, expected : (string * obj) array) =
+    member __.``Named Object (encode with, decode with)`` (source : 'a, expected : (string * obj) array) =
         let converter = generator.GetConverter<'a>()
         Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
         Assert.Equal(0, converter.Length)
@@ -588,7 +588,7 @@ type AttributeTests() =
 
     [<Theory>]
     [<MemberData("Data Bravo")>]
-    member __.``Tuple Object (to bytes, to value)`` (source : 'a, expected : 'b, size : int) =
+    member __.``Tuple Object (encode, decode)`` (source : 'a, expected : 'b, size : int) =
         let converter = generator.GetConverter<'a>()
         Assert.StartsWith("TupleObjectConverter`1", converter.GetType().Name)
         Assert.Equal(size, converter.Length)
@@ -607,7 +607,7 @@ type AttributeTests() =
 
     [<Theory>]
     [<MemberData("Data Bravo")>]
-    member __.``Tuple Object (to bytes with, to value with)`` (source : 'a, expected : 'b, size : int) =
+    member __.``Tuple Object (encode with, decode with)`` (source : 'a, expected : 'b, size : int) =
         let converter = generator.GetConverter<'a>()
         Assert.StartsWith("TupleObjectConverter`1", converter.GetType().Name)
         Assert.Equal(size, converter.Length)

@@ -54,7 +54,7 @@ let ``Interface`` () =
     ()
 
 [<Fact>]
-let ``Interface To Value`` () =
+let ``Interface Decode`` () =
     let a = new Person(Guid.NewGuid(), "Bob") :> IPerson
     let bytes = generator.Encode a
     let error = Assert.Throws<InvalidOperationException>(fun () -> generator.Decode<IPerson> bytes |> ignore)
@@ -77,7 +77,7 @@ let ``Abstract Class`` () =
     ()
 
 [<Fact>]
-let ``Abstract Class To Value`` () =
+let ``Abstract Class Decode`` () =
     let a = new SomeBook("C# To F# ...", 1024, decimal 54.3) :> Book
     let bytes = generator.Encode a
     let error = Assert.Throws<InvalidOperationException>(fun () -> generator.Decode<Book> bytes |> ignore)

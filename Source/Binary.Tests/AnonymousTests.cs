@@ -24,7 +24,7 @@ namespace Mikodev.Binary.Tests
             Assert.Contains("No available property found", error.Message);
         }
 
-        [Fact(DisplayName = "To Bytes Then To Value")]
+        [Fact(DisplayName = "Encode Then Decode")]
         public void Convert()
         {
             var a = new { id = "some", data = new { name = "Bob" } };
@@ -43,7 +43,7 @@ namespace Mikodev.Binary.Tests
             Assert.Null(value);
         }
 
-        [Fact(DisplayName = "Null Value To Bytes")]
+        [Fact(DisplayName = "Null Value Encode")]
         public void NullValue()
         {
             static T DefaultOf<T>(T _) => default;

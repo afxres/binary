@@ -23,7 +23,7 @@ let ``Key Already Exists`` () =
     ()
 
 [<Fact>]
-let ``Anonymous Class Record To Bytes (from null value)`` () =
+let ``Anonymous Class Record Encode (from null value)`` () =
     let template = {| id = 1024; data = "data" |}
     let converter = generator.GetConverter(template) :> IConverter
     Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
