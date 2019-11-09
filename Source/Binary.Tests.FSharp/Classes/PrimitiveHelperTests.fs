@@ -71,11 +71,14 @@ let ``Encode Number Then Decode`` (number : int, length : int) =
 [<InlineData(-1)>]
 [<InlineData(Int32.MinValue)>]
 let ``Encode Number (overflow)`` (number : int) =
-    let error = Assert.Throws<ArgumentException>(fun () ->
+    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
         let mutable allocator = Allocator()
         PrimitiveHelper.EncodeNumber(&allocator, number))
-    Assert.Null(error.ParamName)
-    Assert.Equal("Encode number can not be negative!", error.Message)
+    let methodInfo = typeof<PrimitiveHelper>.GetMethod("EncodeNumber")
+    let parameter = methodInfo.GetParameters() |> Array.last
+    Assert.Equal("number", error.ParamName)
+    Assert.Equal("number", parameter.Name)
+    Assert.StartsWith("Argument number must be greater than or equal to zero!" + Environment.NewLine, error.Message)
     ()
 
 [<Fact>]

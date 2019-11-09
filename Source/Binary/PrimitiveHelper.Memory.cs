@@ -29,8 +29,7 @@ namespace Mikodev.Binary
             return result;
 
         fail:
-            ThrowHelper.ThrowNotEnoughBytes();
-            throw null;
+            return ThrowHelper.ThrowNotEnoughBytesReadOnlySpan<byte>();
         }
     }
 }

@@ -70,8 +70,7 @@ namespace Mikodev.Binary
             return StringHelper.Decode(encoding, ref Unsafe.Add(ref location, prefixLength), length);
 
         fail:
-            ThrowHelper.ThrowNotEnoughBytes();
-            throw null;
+            return ThrowHelper.ThrowNotEnoughBytes<string>();
         }
     }
 }

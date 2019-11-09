@@ -82,7 +82,7 @@ namespace Mikodev.Binary
         public static void EncodeNumber(ref Allocator allocator, int number)
         {
             if (number < 0)
-                ThrowHelper.ThrowNumberNegative();
+                ThrowHelper.ThrowArgumentNumberInvalid();
             var length = EncodeNumberLength((uint)number);
             ref var location = ref Allocator.Allocate(ref allocator, length);
             EncodeNumber(ref location, length, (uint)number);

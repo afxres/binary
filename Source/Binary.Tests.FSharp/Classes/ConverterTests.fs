@@ -160,9 +160,9 @@ let ``Invalid Converter Allocation`` (length : int) =
     ()
 
 [<Fact>]
-let ``To Value With Length Prefix (length prefix bytes invalid)`` () =
+let ``Decode With Length Prefix (length prefix bytes invalid)`` () =
     let converter = generator.GetConverter<byte[]>()
-    let message = "Not enough bytes."
+    let message = "Not enough bytes, type: System.ReadOnlySpan`1[System.Byte]"
     let bytes = Array.zeroCreate<byte> 0
     let error = Assert.Throws<ArgumentException>(fun () ->
         let mutable span = ReadOnlySpan bytes in converter.DecodeWithLengthPrefix(&span) |> ignore)

@@ -64,8 +64,7 @@ namespace Mikodev.Binary.Creators
             return Unsafe.ReadUnaligned<T>(ref Unsafe.Add(ref location, prefixLength));
 
         fail:
-            ThrowHelper.ThrowNotEnoughBytes();
-            throw null;
+            return ThrowHelper.ThrowNotEnoughBytes<T>();
         }
 
         public override byte[] Encode(T item)
