@@ -1,12 +1,10 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Text;
 
 namespace Mikodev.Binary
 {
-    [DebuggerDisplay(Literals.DebuggerDisplay)]
     public abstract class Converter
     {
         public static readonly Encoding Encoding = Encoding.UTF8;

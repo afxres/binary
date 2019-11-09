@@ -1,12 +1,9 @@
-﻿using Mikodev.Binary.Internal;
-using System;
+﻿using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary
 {
-    [DebuggerDisplay(Literals.DebuggerDisplay)]
     public readonly ref struct AllocatorAnchor
     {
         internal readonly int Offset;

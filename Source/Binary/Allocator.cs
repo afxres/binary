@@ -1,12 +1,10 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary
 {
-    [DebuggerDisplay(Literals.DebuggerDisplay)]
     public ref partial struct Allocator
     {
         private Span<byte> buffer;

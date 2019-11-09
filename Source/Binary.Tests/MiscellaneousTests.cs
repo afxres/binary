@@ -146,16 +146,8 @@ namespace Mikodev.Binary.Tests
         public void DebuggerDisplay()
         {
             var types = typeof(Converter).Assembly.GetTypes();
-            var viewQuery = from t in types
-                            let methodInfo = t.GetMethod(nameof(object.ToString), BindingFlags.Instance | BindingFlags.Public, null, Type.EmptyTypes, null)
-                            where methodInfo != null
-                            where methodInfo.DeclaringType == t
-                            select t;
-            var viewTypes = viewQuery.ToList();
-            Assert.Equal(6, viewTypes.Count);
-            var attributes = viewTypes.Select(x => x.GetCustomAttribute<DebuggerDisplayAttribute>()).ToList();
-            Assert.All(attributes, Assert.NotNull);
-            Assert.All(attributes, x => Assert.Equal("{ToString(),nq}", x.Value));
+            var attributes = types.Select(x => x.GetCustomAttribute<DebuggerDisplayAttribute>()).ToList();
+            Assert.All(attributes, Assert.Null);
         }
 
         [Fact(DisplayName = "Public Methods With Byte Array Parameter")]
