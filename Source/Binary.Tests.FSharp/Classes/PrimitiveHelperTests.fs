@@ -84,7 +84,8 @@ let ``Encode Number (overflow)`` (number : int) =
 [<Fact>]
 let ``Decode Number (empty bytes)`` () =
     let error = Assert.Throws<ArgumentException>(fun () -> let mutable span = ReadOnlySpan<byte>() in PrimitiveHelper.DecodeNumber(&span) |> ignore)
-    Assert.Equal("Not enough bytes.", error.Message)
+    let message = "Not enough bytes or byte sequence invalid."
+    Assert.Equal(message, error.Message)
     ()
 
 [<Fact>]

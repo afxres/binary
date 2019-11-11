@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -30,29 +31,28 @@ namespace Mikodev.Binary
             tokens = new Lazy<IReadOnlyDictionary<string, Token>>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        private static IReadOnlyDictionary<string, Token> GetTokens(Token token)
+        private static IReadOnlyDictionary<string, Token> GetTokens(Token instance)
         {
-            var memory = token.memory;
+            var memory = instance.memory;
             if (memory.IsEmpty)
                 return empty;
-            var generator = token.generator;
+            var generator = instance.generator;
+            var dictionary = new Dictionary<string, Token>();
             var span = memory.Span;
-            var result = new Dictionary<string, Token>();
-            var reader = new LengthReader(memory.Length);
-            var encoding = Converter.Encoding;
             ref var source = ref MemoryMarshal.GetReference(span);
 
             try
             {
-                while (reader.Any())
+                while (!span.IsEmpty)
                 {
-                    reader.Update(ref source);
-                    var key = encoding.GetString(span.Slice(reader.Offset, reader.Length));
-                    reader.Update(ref source);
-                    var value = new Token(generator, memory.Slice(reader.Offset, reader.Length));
-                    result.Add(key, value);
+                    var header = PrimitiveHelper.DecodeStringWithLengthPrefix(ref span);
+                    var buffer = PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span);
+                    var offset = (int)Unsafe.ByteOffset(ref source, ref MemoryMarshal.GetReference(buffer));
+                    var target = memory.Slice(offset, buffer.Length);
+                    var result = new Token(generator, target);
+                    dictionary.Add(header, result);
                 }
-                return result;
+                return dictionary;
             }
             catch (ArgumentException)
             {

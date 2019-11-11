@@ -50,6 +50,24 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
         public override T Decode(in ReadOnlySpan<byte> span)
         {
+            static void DecodePrefix(ref byte location, ref int offset, ref int length, int limits)
+            {
+                Debug.Assert((uint)(limits - offset) > (uint)length);
+                offset += length;
+                ref var source = ref Unsafe.Add(ref location, offset);
+                var numberLength = PrimitiveHelper.DecodeNumberLength(source);
+                if ((uint)(limits - offset) < (uint)numberLength)
+                    goto fail;
+                length = PrimitiveHelper.DecodeNumber(ref source, numberLength);
+                offset += numberLength;
+                if ((uint)(limits - offset) < (uint)length)
+                    goto fail;
+                return;
+
+            fail:
+                ThrowHelper.ThrowNotEnoughBytes();
+            }
+
             if (toObject == null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
             var byteCount = span.Length;
@@ -60,23 +78,24 @@ namespace Mikodev.Binary.Internal.Contexts.Models
             var itemCount = names.Length;
             var count = 0;
             var items = itemCount > ItemLimits ? new LengthItem[itemCount] : stackalloc LengthItem[itemCount];
-            var reader = new LengthReader(byteCount);
             ref var source = ref MemoryMarshal.GetReference(span);
 
             const int NotFound = -1;
-            while (reader.Any())
+            var limits = byteCount;
+            var offset = 0;
+            var length = 0;
+            while (limits - offset != length)
             {
-                reader.Update(ref source);
-                var slice = span.Slice(reader.Offset, reader.Length);
-                var index = BinaryNodeHelper.GetOrDefault(entry, slice)?.Value ?? NotFound;
-                reader.Update(ref source);
+                DecodePrefix(ref source, ref offset, ref length, limits);
+                var index = BinaryNodeHelper.GetOrDefault(entry, ref Unsafe.Add(ref source, offset), length)?.Value ?? NotFound;
+                DecodePrefix(ref source, ref offset, ref length, limits);
                 if (index == NotFound)
                     continue;
                 Debug.Assert((uint)index < (uint)itemCount);
                 ref var value = ref items[index];
                 if (value.Offset != 0)
                     return ThrowKeyFound(index);
-                value = new LengthItem(reader.Offset, reader.Length);
+                value = new LengthItem(offset, length);
                 count++;
             }
 

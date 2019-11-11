@@ -35,36 +35,29 @@ namespace Mikodev.Binary.Creators
         public override T DecodeAuto(ref ReadOnlySpan<byte> span)
         {
             // take reference first, then check bounds via slice method
-            ref var location = ref MemoryMarshal.GetReference(span);
+            ref var source = ref MemoryMarshal.GetReference(span);
             span = span.Slice(Unsafe.SizeOf<T>());
-            return Unsafe.ReadUnaligned<T>(ref location);
+            return Unsafe.ReadUnaligned<T>(ref source);
         }
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
-            ref var location = ref Allocator.Allocate(ref allocator, Unsafe.SizeOf<T>() + 1);
-            location = (byte)Unsafe.SizeOf<T>();
-            Unsafe.WriteUnaligned(ref Unsafe.Add(ref location, 1), item);
+            ref var target = ref Allocator.Allocate(ref allocator, Unsafe.SizeOf<T>() + 1);
+            target = (byte)Unsafe.SizeOf<T>();
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref target, 1), item);
         }
 
         public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
+            int length;
+            int numberLength;
             var limits = span.Length;
-            if (limits == 0)
-                goto fail;
-            ref var location = ref MemoryMarshal.GetReference(span);
-            var prefixLength = PrimitiveHelper.DecodeNumberLength(location);
-            if (limits < prefixLength)
-                goto fail;
-            var length = PrimitiveHelper.DecodeNumber(ref location, prefixLength);
-            if (length < Unsafe.SizeOf<T>())
-                goto fail;
+            ref var source = ref MemoryMarshal.GetReference(span);
+            if (limits == 0 || limits < (numberLength = PrimitiveHelper.DecodeNumberLength(source)) || (length = PrimitiveHelper.DecodeNumber(ref source, numberLength)) < Unsafe.SizeOf<T>())
+                return ThrowHelper.ThrowNotEnoughBytes<T>();
             // check bounds via slice method
-            span = span.Slice(prefixLength + length);
-            return Unsafe.ReadUnaligned<T>(ref Unsafe.Add(ref location, prefixLength));
-
-        fail:
-            return ThrowHelper.ThrowNotEnoughBytes<T>();
+            span = span.Slice(numberLength).Slice(length);
+            return Unsafe.ReadUnaligned<T>(ref Unsafe.Add(ref source, numberLength));
         }
 
         public override byte[] Encode(T item)

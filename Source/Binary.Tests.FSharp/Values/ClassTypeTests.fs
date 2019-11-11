@@ -217,8 +217,7 @@ let ``IPEndPoint Null`` () =
 [<Fact>]
 let ``IPEndPoint Not Enough Bytes`` () =
     let converter = generator.GetConverter<IPEndPoint>()
-    let message = sprintf "Not enough bytes, type: %O" typeof<IPEndPoint>
     let buffer = generator.Encode(struct (Unchecked.defaultof<IPAddress>, uint16 65535))
     let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode buffer |> ignore)
-    Assert.Equal(message, error.Message)
+    Assert.Equal("Not enough bytes or byte sequence invalid.", error.Message)
     ()

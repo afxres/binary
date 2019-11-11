@@ -28,12 +28,10 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int DecodeNumberLength(byte header)
         {
-            if ((header & 0x80) != 0)
-                return 4;
-            if ((header & 0x40) != 0)
-                return 2;
-            else
-                return 1;
+            var result = (uint)header >> 6;
+            if (result > 1U)
+                result = 3U;
+            return (int)(result + 1U);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -78,25 +76,24 @@ namespace Mikodev.Binary
                 return ((location & 0x7F) << 24) | (Unsafe.Add(ref location, 1) << 16) | (Unsafe.Add(ref location, 2) << 8) | Unsafe.Add(ref location, 3);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EncodeNumber(ref Allocator allocator, int number)
         {
             if (number < 0)
                 ThrowHelper.ThrowArgumentNumberInvalid();
             var length = EncodeNumberLength((uint)number);
-            ref var location = ref Allocator.Allocate(ref allocator, length);
-            EncodeNumber(ref location, length, (uint)number);
+            ref var target = ref Allocator.Allocate(ref allocator, length);
+            EncodeNumber(ref target, length, (uint)number);
         }
 
         public static int DecodeNumber(ref ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
                 ThrowHelper.ThrowNotEnoughBytes();
-            ref var location = ref MemoryMarshal.GetReference(span);
-            var length = DecodeNumberLength(location);
+            ref var source = ref MemoryMarshal.GetReference(span);
+            var numberLength = DecodeNumberLength(source);
             // check bounds via slice method
-            span = span.Slice(length);
-            return DecodeNumber(ref location, length);
+            span = span.Slice(numberLength);
+            return DecodeNumber(ref source, numberLength);
         }
     }
 }

@@ -47,7 +47,7 @@ type ThrowTests() =
             generator.Decode<'a> span |> ignore)
         let bravo = Assert.ThrowsAny<ArgumentException>(fun () -> generator.Decode<'a> buffer |> ignore)
         let delta = Assert.ThrowsAny<ArgumentException>(fun () -> generator.Decode<'a> null |> ignore)
-        let message = "Not enough bytes."
+        let message = "Not enough bytes or byte sequence invalid."
         Assert.True(alpha :? ArgumentOutOfRangeException || alpha.Message = message)
         Assert.True(bravo :? ArgumentOutOfRangeException || bravo.Message = message)
         Assert.True(delta :? ArgumentOutOfRangeException || delta.Message = message)

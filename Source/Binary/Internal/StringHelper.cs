@@ -1,7 +1,6 @@
 ﻿using System.Buffers;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Mikodev.Binary.Internal
@@ -19,9 +18,7 @@ namespace Mikodev.Binary.Internal
         internal static unsafe string Decode(Encoding encoding, ref byte bytes, int byteCount)
         {
             Debug.Assert(encoding == Converter.Encoding);
-            if (byteCount == 0)
-                return string.Empty;
-            if (byteCount > MaxCharCountLimits)
+            if (byteCount == 0 || byteCount > MaxCharCountLimits)
                 return encoding.GetString(ref bytes, byteCount);
             var maxCharCount = maxCharCounts[byteCount];
             var chars = stackalloc char[maxCharCount];
@@ -31,7 +28,6 @@ namespace Mikodev.Binary.Internal
             return new string(chars, 0, charCount);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int GetMaxByteCountOrByteCount(Encoding encoding, ref char chars, int charCount)
         {
             Debug.Assert(encoding == Converter.Encoding);

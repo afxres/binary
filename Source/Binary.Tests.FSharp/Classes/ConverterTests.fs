@@ -159,16 +159,6 @@ let ``Invalid Converter Allocation`` (length : int) =
     Assert.Equal("Maximum allocator capacity has been reached.", error.Message)
     ()
 
-[<Fact>]
-let ``Decode With Length Prefix (length prefix bytes invalid)`` () =
-    let converter = generator.GetConverter<byte[]>()
-    let message = "Not enough bytes, type: System.ReadOnlySpan`1[System.Byte]"
-    let bytes = Array.zeroCreate<byte> 0
-    let error = Assert.Throws<ArgumentException>(fun () ->
-        let mutable span = ReadOnlySpan bytes in converter.DecodeWithLengthPrefix(&span) |> ignore)
-    Assert.Equal(message, error.Message)
-    ()
-
 type CustomConverterWithLength<'T>(length : int) =
     inherit Converter<'T>(length)
 

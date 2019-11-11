@@ -32,13 +32,13 @@ namespace Mikodev.Binary.Internal
         internal static void ThrowCollectionBytesInvalid(Type type, int byteCount, int remainder) => throw new ArgumentException($"Invalid collection bytes, byte count: {byteCount}, remainder: {remainder}, item type: {type}");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static void ThrowNotEnoughBytes() => throw new ArgumentException("Not enough bytes.");
+        internal static void ThrowNotEnoughBytes() => throw new ArgumentException("Not enough bytes or byte sequence invalid.");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static ReadOnlySpan<T> ThrowNotEnoughBytesReadOnlySpan<T>() => throw new ArgumentException($"Not enough bytes, type: {typeof(ReadOnlySpan<T>)}");
+        internal static ReadOnlySpan<T> ThrowNotEnoughBytesReadOnlySpan<T>() => throw new ArgumentException("Not enough bytes or byte sequence invalid.");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static T ThrowNotEnoughBytes<T>() => throw new ArgumentException($"Not enough bytes, type: {typeof(T)}");
+        internal static T ThrowNotEnoughBytes<T>() => throw new ArgumentException("Not enough bytes or byte sequence invalid.");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static T ThrowNoSuitableConstructor<T>() => throw new InvalidOperationException($"No suitable constructor found, type: {typeof(T)}");

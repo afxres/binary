@@ -49,7 +49,7 @@ let ``Bytes To Anonymous Value Record (from empty bytes, expect bytes not enough
     let converter = generator.GetConverter struct {| alpha = 0.0; bravo = Unchecked.defaultof<Uri> |}
     Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
     let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode Array.empty<byte> |> ignore)
-    Assert.Contains(sprintf "Not enough bytes, type: %O" converter.ItemType, error.Message)
+    Assert.Equal("Not enough bytes or byte sequence invalid.", error.Message)
     ()
 
 type ``Item 48`` () =

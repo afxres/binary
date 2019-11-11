@@ -15,21 +15,16 @@ namespace Mikodev.Binary
 
         public static ReadOnlySpan<byte> DecodeBufferWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
+            int numberLength;
             var limits = span.Length;
-            if (limits == 0)
-                goto fail;
-            ref var location = ref MemoryMarshal.GetReference(span);
-            var prefixLength = DecodeNumberLength(location);
-            if (limits < prefixLength)
-                goto fail;
-            var length = DecodeNumber(ref location, prefixLength);
+            ref var source = ref MemoryMarshal.GetReference(span);
+            if (limits == 0 || limits < (numberLength = DecodeNumberLength(source)))
+                return ThrowHelper.ThrowNotEnoughBytesReadOnlySpan<byte>();
+            var length = DecodeNumber(ref source, numberLength);
             // check bounds via slice method, then replace span with remaining part
-            var result = span.Slice(prefixLength, length);
-            span = span.Slice(prefixLength + length);
+            var result = span.Slice(numberLength, length);
+            span = span.Slice(numberLength).Slice(length);
             return result;
-
-        fail:
-            return ThrowHelper.ThrowNotEnoughBytesReadOnlySpan<byte>();
         }
     }
 }

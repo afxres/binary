@@ -71,10 +71,9 @@ namespace Mikodev.Binary.Internal
             return root;
         }
 
-        internal static BinaryNode<T> GetOrDefault<T>(BinaryNode<T> root, ReadOnlySpan<byte> span)
+        internal static BinaryNode<T> GetOrDefault<T>(BinaryNode<T> root, ref byte source, int length)
         {
-            ref var source = ref MemoryMarshal.GetReference(span);
-            var length = span.Length;
+            Debug.Assert(length >= 0);
             var result = root;
             for (var i = 0; i < length; i += sizeof(long))
             {
