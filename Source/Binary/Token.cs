@@ -86,12 +86,12 @@ namespace Mikodev.Binary
         public ReadOnlyMemory<byte> AsMemory() => memory;
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public sealed override bool Equals(object obj) => throw new NotSupportedException();
+        public override bool Equals(object obj) => throw new NotSupportedException();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public sealed override int GetHashCode() => throw new NotSupportedException();
+        public override int GetHashCode() => throw new NotSupportedException();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public sealed override string ToString() => $"{nameof(Token)}(Items: {tokens.Value.Count}, Bytes: {memory.Length})";
+        public override string ToString() => $"{nameof(Token)}(Items: {tokens.Value.Count}, Bytes: {memory.Length})";
     }
 }

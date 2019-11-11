@@ -18,9 +18,13 @@ namespace Mikodev.Binary.Creators.Collections
             this.toList = toList;
         }
 
-        public override int Count(ReadOnlyMemory<T> item) => item.Length;
-
-        public override ReadOnlyMemory<T> Of(List<T> item) => item is { Count: var count } && count > 0 ? new ReadOnlyMemory<T>(ofList.Invoke(item), 0, count) : default;
+        public override ReadOnlyMemory<T> Of(List<T> item)
+        {
+            int itemCount;
+            if (item == null || (itemCount = item.Count) == 0)
+                return default;
+            return new ReadOnlyMemory<T>(ofList.Invoke(item), 0, itemCount);
+        }
 
         public override List<T> To(CollectionAdapter<MemoryItem<T>> adapter, ReadOnlySpan<byte> span)
         {

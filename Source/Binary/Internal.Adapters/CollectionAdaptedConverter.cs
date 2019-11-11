@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Mikodev.Binary.Internal.Adapters
 {
@@ -29,16 +30,16 @@ namespace Mikodev.Binary.Internal.Adapters
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
-            int dataCount;
             var data = builder.Of(item);
-            if (data == null || (dataCount = builder.Count(data)) == 0)
-            {
-                PrimitiveHelper.EncodeNumber(ref allocator, 0);
-            }
-            else if (itemLength > 0 && dataCount != CollectionBuilder.NoActualLength)
+            var dataCount = item == null ? 0 : itemLength > 0 ? builder.Count(data) : CollectionBuilder.NoActualLength;
+            if (dataCount != CollectionBuilder.NoActualLength)
             {
                 var byteCount = checked(itemLength * dataCount);
+                Debug.Assert(item == null || itemLength > 0);
+                Debug.Assert(dataCount >= 0 && byteCount >= 0);
                 PrimitiveHelper.EncodeNumber(ref allocator, byteCount);
+                if (byteCount == 0)
+                    return;
                 adapter.Of(ref allocator, data);
             }
             else

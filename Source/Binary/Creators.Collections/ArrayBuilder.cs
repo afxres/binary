@@ -7,8 +7,6 @@ namespace Mikodev.Binary.Creators.Collections
 {
     internal sealed class ArrayBuilder<T> : ArrayLikeBuilder<T[], T>
     {
-        public override int Count(ReadOnlyMemory<T> item) => item.Length;
-
         public override ReadOnlyMemory<T> Of(T[] item) => item;
 
         public override T[] To(CollectionAdapter<MemoryItem<T>> adapter, ReadOnlySpan<byte> span)

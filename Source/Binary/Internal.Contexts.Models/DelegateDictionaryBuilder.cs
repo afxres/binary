@@ -10,10 +10,6 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
         public DelegateDictionaryBuilder(ToDictionary<T, K, V> constructor) => this.constructor = constructor;
 
-        public override int Count(T item) => item is ICollection<KeyValuePair<K, V>> collection ? collection.Count : NoActualLength;
-
-        public override T Of(T item) => item;
-
         public override T To(CollectionAdapter<Dictionary<K, V>> adapter, ReadOnlySpan<byte> span)
         {
             if (constructor == null)

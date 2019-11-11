@@ -24,7 +24,10 @@ let test<'a> (name : string) (builderName : string) (collection : 'a) =
     let bravo = allocator.AsSpan().ToArray()
 
     Assert.Empty(alpha)
-    Assert.Equal(0uy, Assert.Single(bravo))
+    let mutable span = ReadOnlySpan bravo
+    let length = PrimitiveHelper.DecodeNumber &span
+    Assert.True(span.IsEmpty)
+    Assert.Equal(0, length)
     ()
 
 let testNull<'a when 'a : null> (name : string) (builderName : string) (collection : 'a) =
@@ -57,8 +60,10 @@ let ``Integration Test For Converter Implementations And Null Or Empty Collectio
     testNull<IReadOnlyCollection<_>> "EnumerableAdaptedConverter`2" "IEnumerableBuilder`2" (Array.zeroCreate<int> 0)
 
     testNull<ISet<_>> "EnumerableAdaptedConverter`2" "ISetBuilder`2" (HashSet<TimeSpan>())
-    testNull<HashSet<_>> "EnumerableAdaptedConverter`2" "ISetBuilder`2" (HashSet<TimeSpan>())
-
+    testNull<HashSet<_>> "EnumerableAdaptedConverter`2" "ISetBuilder`2" (HashSet<int64>())
+    testNull<HashSet<_>> "EnumerableAdaptedConverter`2" "ISetBuilder`2" (HashSet<string>())
+    
+    testNull<Dictionary<_, _>> "DictionaryAdaptedConverter`3" "IDictionaryBuilder`3" (Dictionary<int16, int64>())
     testNull<Dictionary<_, _>> "DictionaryAdaptedConverter`3" "IDictionaryBuilder`3" (Dictionary<string, int>())
     testNull<IDictionary<_, _>> "DictionaryAdaptedConverter`3" "IDictionaryBuilder`3" (Dictionary<int, string>())
     testNull<IReadOnlyDictionary<_, _>> "DictionaryAdaptedConverter`3" "IDictionaryBuilder`3" (Dictionary<string, int>())

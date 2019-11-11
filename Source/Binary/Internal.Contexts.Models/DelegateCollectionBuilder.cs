@@ -1,6 +1,5 @@
 ﻿using Mikodev.Binary.Internal.Adapters;
 using System;
-using System.Collections.Generic;
 
 namespace Mikodev.Binary.Internal.Contexts.Models
 {
@@ -15,10 +14,6 @@ namespace Mikodev.Binary.Internal.Contexts.Models
             this.constructor = constructor;
             this.reverse = reverse;
         }
-
-        public override int Count(T item) => item is ICollection<E> collection ? collection.Count : NoActualLength;
-
-        public override T Of(T item) => item;
 
         public override T To(CollectionAdapter<MemoryItem<E>> adapter, ReadOnlySpan<byte> span)
         {
