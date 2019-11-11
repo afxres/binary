@@ -181,10 +181,10 @@ let ``Encode String Then Decode (with length prefix, unicode)`` (text : string) 
     ()
 
 [<Fact>]
-let ``Encode String (random)`` () =
+let ``Encode String (random, from 0 to 4096)`` () =
     let encoding = Converter.Encoding
 
-    for i = 1 to 4096 do
+    for i = 0 to 4096 do
         let data = [| for k = 0 to (i - 1) do yield char (random.Next(32, 127)) |]
         let text = String data
         Assert.Equal(i, text.Length)
@@ -198,15 +198,27 @@ let ``Encode String (random)`` () =
     ()
 
 [<Fact>]
-let ``Encode String With Length Prefix (random)`` () =
+let ``Decode String (random, from 0 to 4096)`` () =
+    let encoding = Converter.Encoding
+    
+    for i = 0 to 4096 do
+        let data = [| for k = 0 to (i - 1) do yield byte (random.Next(32, 127)) |]
+        Assert.Equal(i, data.Length)
+    
+        let text = PrimitiveHelper.DecodeString(ReadOnlySpan data)
+        let result = encoding.GetBytes text
+        Assert.Equal<byte>(data, result)
+    ()
+
+[<Fact>]
+let ``Encode String With Length Prefix (random, from 0 to 4096)`` () =
     let encoding = Converter.Encoding
 
-    for i = 1 to 4096 do
+    for i = 0 to 4096 do
         let data = [| for k = 0 to (i - 1) do yield char (random.Next(32, 127)) |]
         let text = String data
         Assert.Equal(i, text.Length)
 
-        // MAKE ALLOCATOR MUTABLE!!!
         let mutable allocator = new Allocator()
         let span = text.AsSpan()
         PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, span)
@@ -219,6 +231,23 @@ let ``Encode String With Length Prefix (random)`` () =
         Assert.Equal(i, span.Length)
         Assert.Equal(i, length)
         Assert.Equal(text, result)
+    ()
+
+[<Fact>]
+let ``Decode String With Length Prefix (random, from 0 to 4096)`` () =
+    let encoding = Converter.Encoding
+    
+    for i = 0 to 4096 do
+        let data = [| for k = 0 to (i - 1) do yield byte (random.Next(32, 127)) |]
+        Assert.Equal(i, data.Length)
+    
+        let mutable allocator = Allocator()
+        PrimitiveHelper.EncodeBufferWithLengthPrefix(&allocator, ReadOnlySpan data)
+        let buffer = allocator.AsSpan().ToArray()
+        let mutable span = ReadOnlySpan buffer
+        let text = PrimitiveHelper.DecodeStringWithLengthPrefix &span
+        let result = encoding.GetBytes text
+        Assert.Equal<byte>(data, result)
     ()
 
 [<Fact>]

@@ -1,26 +1,36 @@
 ﻿using System.Buffers;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Mikodev.Binary.Internal
 {
     internal static class StringHelper
     {
-        private const int MaxByteCountLimits = 64;
+        private static readonly int[] maxByteCounts;
 
-        private const int MaxCharCountLimits = 128;
+        private static readonly int[] maxCharCounts;
 
-        private static readonly int[] maxByteCounts = Enumerable.Range(0, MaxByteCountLimits + 1).Select(Converter.Encoding.GetMaxByteCount).ToArray();
+        static StringHelper()
+        {
+            const int MaxByteCountLimits = 64;
+            const int MaxCharCountLimits = 128;
+            maxByteCounts = Enumerable.Range(0, MaxByteCountLimits + 1).Select(Converter.Encoding.GetMaxByteCount).ToArray();
+            maxCharCounts = Enumerable.Range(0, MaxCharCountLimits + 1).Select(Converter.Encoding.GetMaxCharCount).ToArray();
+            maxByteCounts[0] = 0;
+            maxCharCounts[0] = 0;
+            Debug.Assert(GetMaxByteCountOrByteCount(Converter.Encoding, ref Unsafe.AsRef(' '), 0) == 0);
+        }
 
-        private static readonly int[] maxCharCounts = Enumerable.Range(0, MaxCharCountLimits + 1).Select(Converter.Encoding.GetMaxCharCount).ToArray();
-
-        internal static unsafe string Decode(Encoding encoding, ref byte bytes, int byteCount)
+        internal static unsafe string GetString(Encoding encoding, ref byte bytes, int byteCount)
         {
             Debug.Assert(encoding == Converter.Encoding);
-            if (byteCount == 0 || byteCount > MaxCharCountLimits)
+            var counts = maxCharCounts;
+            if (byteCount == 0 || (uint)byteCount >= (uint)counts.Length)
                 return encoding.GetString(ref bytes, byteCount);
-            var maxCharCount = maxCharCounts[byteCount];
+            var maxCharCount = counts[byteCount];
+            Debug.Assert(maxCharCount > 0);
             var chars = stackalloc char[maxCharCount];
             int charCount;
             fixed (byte* srcptr = &bytes)
@@ -28,13 +38,15 @@ namespace Mikodev.Binary.Internal
             return new string(chars, 0, charCount);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int GetMaxByteCountOrByteCount(Encoding encoding, ref char chars, int charCount)
         {
             Debug.Assert(encoding == Converter.Encoding);
             Debug.Assert(charCount >= 0);
-            return charCount == 0 ? 0 : charCount > MaxByteCountLimits
-                ? encoding.GetByteCount(ref chars, charCount)
-                : maxByteCounts[charCount];
+            var counts = maxByteCounts;
+            if ((uint)charCount < (uint)counts.Length)
+                return counts[charCount];
+            return encoding.GetByteCount(ref chars, charCount);
         }
     }
 }

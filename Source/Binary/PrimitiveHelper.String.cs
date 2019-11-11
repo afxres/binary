@@ -52,7 +52,7 @@ namespace Mikodev.Binary
 
         public static string DecodeString(ReadOnlySpan<byte> span)
         {
-            return StringHelper.Decode(Converter.Encoding, ref MemoryMarshal.GetReference(span), span.Length);
+            return StringHelper.GetString(Converter.Encoding, ref MemoryMarshal.GetReference(span), span.Length);
         }
 
         public static string DecodeStringWithLengthPrefix(ref ReadOnlySpan<byte> span)
@@ -65,7 +65,7 @@ namespace Mikodev.Binary
             var length = DecodeNumber(ref source, numberLength);
             // check bounds via slice method
             span = span.Slice(numberLength).Slice(length);
-            return StringHelper.Decode(Converter.Encoding, ref Unsafe.Add(ref source, numberLength), length);
+            return StringHelper.GetString(Converter.Encoding, ref Unsafe.Add(ref source, numberLength), length);
         }
     }
 }
