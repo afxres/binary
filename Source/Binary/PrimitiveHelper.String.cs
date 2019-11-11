@@ -39,14 +39,15 @@ namespace Mikodev.Binary
         {
             if (encoding is null)
                 throw new ArgumentNullException(nameof(encoding));
-            return encoding.GetString(span);
+            return encoding.GetString(ref MemoryMarshal.GetReference(span), span.Length);
         }
 
         public static string DecodeStringWithLengthPrefix(ref ReadOnlySpan<byte> span, Encoding encoding)
         {
             if (encoding is null)
                 throw new ArgumentNullException(nameof(encoding));
-            return encoding.GetString(DecodeBufferWithLengthPrefix(ref span));
+            var data = DecodeBufferWithLengthPrefix(ref span);
+            return encoding.GetString(ref MemoryMarshal.GetReference(data), data.Length);
         }
 
         public static string DecodeString(ReadOnlySpan<byte> span)

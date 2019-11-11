@@ -1,7 +1,5 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Mikodev.Binary.Internal
@@ -23,20 +21,11 @@ namespace Mikodev.Binary.Internal
         internal static unsafe string GetString(this Encoding encoding, ref byte bytes, int byteCount)
         {
             Debug.Assert(encoding != null);
-            Debug.Assert(byteCount > 0);
-            fixed (byte* srcptr = &bytes)
-                return encoding.GetString(srcptr, byteCount);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static string GetString(this Encoding encoding, ReadOnlySpan<byte> span)
-        {
-            Debug.Assert(encoding != null);
-            var byteCount = span.Length;
+            Debug.Assert(byteCount >= 0);
             if (byteCount == 0)
                 return string.Empty;
-            ref var bytes = ref MemoryMarshal.GetReference(span);
-            return GetString(encoding, ref bytes, byteCount);
+            fixed (byte* srcptr = &bytes)
+                return encoding.GetString(srcptr, byteCount);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

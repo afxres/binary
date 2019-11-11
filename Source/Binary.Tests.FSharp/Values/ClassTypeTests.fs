@@ -49,6 +49,7 @@ let testAuto (value : 'a) (expected : 'a) =
     let length = PrimitiveHelper.DecodeNumber &anotherSpan
     Assert.Equal(bufferOrigin.Length, length)
     Assert.Equal<byte>(bufferOrigin, anotherSpan.ToArray())
+    Assert.Equal(bufferOrigin.Length + 1, buffer.Length)
     ()
 
 let testWithLengthPrefix (value : 'a) (expected : 'a) =
@@ -68,6 +69,7 @@ let testWithLengthPrefix (value : 'a) (expected : 'a) =
     let length = PrimitiveHelper.DecodeNumber &anotherSpan
     Assert.Equal(bufferOrigin.Length, length)
     Assert.Equal<byte>(bufferOrigin, anotherSpan.ToArray())
+    Assert.Equal(bufferOrigin.Length + 1, buffer.Length)
     ()
 
 let test (value : 'a) (expected : 'a) =
@@ -108,9 +110,9 @@ let ``String From Default Value Of Span`` () =
     ()
 
 [<Theory>]
-[<InlineData("ws://localhost:8080/chat/")>]
+[<InlineData("ws://host:8080/chat/")>]
 [<InlineData("Udp://SomeHost:2048")>]
-[<InlineData("tcp://loopback/query?=some")>]
+[<InlineData("tcp://loop/q?=some")>]
 [<InlineData("HTTP://bing.com")>]
 let ``Uri Instance`` (data : string) =
     let item = new Uri(data)

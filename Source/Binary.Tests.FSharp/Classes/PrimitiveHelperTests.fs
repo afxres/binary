@@ -105,6 +105,7 @@ let ``Decode Number (not enough bytes)`` () =
 // string methods ↓↓↓
 
 [<Theory>]
+[<InlineData("")>]
 [<InlineData("The quick brown fox ...")>]
 [<InlineData("今日はいい天気ですね")>]
 let ``Encode String Then Decode`` (text : string) =
@@ -121,6 +122,7 @@ let ``Encode String Then Decode`` (text : string) =
     ()
 
 [<Theory>]
+[<InlineData("")>]
 [<InlineData("one two three four five")>]
 [<InlineData("今晚打老虎")>]
 let ``Encode String Then Decode (unicode)`` (text : string) =
@@ -137,6 +139,7 @@ let ``Encode String Then Decode (unicode)`` (text : string) =
     ()
 
 [<Theory>]
+[<InlineData("")>]
 [<InlineData("Hello, world!")>]
 [<InlineData("你好, 世界!")>]
 let ``Encode String Then Decode (with length prefix)`` (text : string) =
@@ -157,6 +160,7 @@ let ``Encode String Then Decode (with length prefix)`` (text : string) =
     ()
 
 [<Theory>]
+[<InlineData("")>]
 [<InlineData("Hello, world!")>]
 [<InlineData("你好, 世界!")>]
 let ``Encode String Then Decode (with length prefix, unicode)`` (text : string) =

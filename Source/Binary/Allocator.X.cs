@@ -58,6 +58,7 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ref byte Allocate(ref Allocator allocator, int length)
         {
+            Debug.Assert(length > 0);
             Ensure(ref allocator, length);
             var offset = allocator.offset;
             var buffer = allocator.buffer;
