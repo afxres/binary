@@ -20,20 +20,20 @@ namespace Mikodev.Binary.Internal.Adapters
 
         public override Dictionary<K, V> To(ReadOnlySpan<byte> span)
         {
-            static void Add(Dictionary<K, V> data, KeyValuePair<K, V> item) => data.Add(item.Key, item.Value);
+            static void Add(Dictionary<K, V> items, KeyValuePair<K, V> item) => items.Add(item.Key, item.Value);
 
-            var byteCount = span.Length;
-            if (byteCount == 0)
+            var byteLength = span.Length;
+            if (byteLength == 0)
                 return new Dictionary<K, V>();
             const int Initial = 8;
             var converter = this.converter;
             var converterLength = converter.Length;
-            var itemCount = converterLength > 0 ? CollectionAdapterHelper.GetItemCount(byteCount, converterLength, typeof(KeyValuePair<K, V>)) : Initial;
-            var data = new Dictionary<K, V>(itemCount);
-            var temp = span;
-            while (!temp.IsEmpty)
-                Add(data, converter.DecodeAuto(ref temp));
-            return data;
+            var itemCount = converterLength > 0 ? CollectionAdapterHelper.GetItemCount(byteLength, converterLength, typeof(KeyValuePair<K, V>)) : Initial;
+            var items = new Dictionary<K, V>(itemCount);
+            var body = span;
+            while (!body.IsEmpty)
+                Add(items, converter.DecodeAuto(ref body));
+            return items;
         }
     }
 }

@@ -7,12 +7,12 @@ namespace Mikodev.Binary.Internal.Adapters
     internal static class CollectionAdapterHelper
     {
         [DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int GetItemCount(int byteCount, int definition, Type type)
+        internal static int GetItemCount(int byteLength, int itemLength, Type itemType)
         {
-            Debug.Assert(byteCount > 0 && definition > 0);
-            var quotient = Math.DivRem(byteCount, definition, out var remainder);
+            Debug.Assert(byteLength > 0 && itemLength > 0);
+            var quotient = Math.DivRem(byteLength, itemLength, out var remainder);
             if (remainder != 0)
-                ThrowHelper.ThrowCollectionBytesInvalid(type, byteCount, remainder);
+                ThrowHelper.ThrowCollectionBytesInvalid(itemType, byteLength, remainder);
             return quotient;
         }
     }

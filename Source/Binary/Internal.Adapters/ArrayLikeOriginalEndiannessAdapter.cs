@@ -15,14 +15,14 @@ namespace Mikodev.Binary.Internal.Adapters
 
         public override MemoryItem<T> To(ReadOnlySpan<byte> span)
         {
-            var byteCount = span.Length;
-            if (byteCount == 0)
+            var byteLength = span.Length;
+            if (byteLength == 0)
                 return new MemoryItem<T>(Array.Empty<T>(), 0);
-            var itemCount = CollectionAdapterHelper.GetItemCount(byteCount, Unsafe.SizeOf<T>(), typeof(T));
+            var itemCount = CollectionAdapterHelper.GetItemCount(byteLength, Unsafe.SizeOf<T>(), typeof(T));
             var items = new T[itemCount];
             ref var source = ref MemoryMarshal.GetReference(span);
             ref var target = ref items[0];
-            Unsafe.CopyBlockUnaligned(ref Unsafe.As<T, byte>(ref target), ref source, (uint)byteCount);
+            Unsafe.CopyBlockUnaligned(ref Unsafe.As<T, byte>(ref target), ref source, (uint)byteLength);
             return new MemoryItem<T>(items, itemCount);
         }
     }

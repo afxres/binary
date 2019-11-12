@@ -31,8 +31,8 @@ namespace Mikodev.Binary.Internal.Contexts.Models
         {
             if (decode == null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
-            var temp = span;
-            return decode.Invoke(ref temp);
+            var body = span;
+            return decode.Invoke(ref body);
         }
 
         public override void EncodeAuto(ref Allocator allocator, T item)

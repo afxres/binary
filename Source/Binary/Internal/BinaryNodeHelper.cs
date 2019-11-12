@@ -30,14 +30,14 @@ namespace Mikodev.Binary.Internal
             var result = root;
             for (var i = 0; i < length; i += sizeof(long))
             {
-                var index = GetIndex(ref Unsafe.Add(ref source, i), length - i);
-                var temp = result.Nodes?.SingleOrDefault(x => x.Index == index);
-                if (temp == null)
+                var head = GetIndex(ref Unsafe.Add(ref source, i), length - i);
+                var body = result.Nodes?.SingleOrDefault(x => x.Index == head);
+                if (body == null)
                 {
-                    temp = new BinaryNode<T> { Index = index };
-                    result.Nodes = new List<BinaryNode<T>>(result.Nodes ?? Array.Empty<BinaryNode<T>>()) { temp }.ToArray();
+                    body = new BinaryNode<T> { Index = head };
+                    result.Nodes = new List<BinaryNode<T>>(result.Nodes ?? Array.Empty<BinaryNode<T>>()) { body }.ToArray();
                 }
-                result = temp;
+                result = body;
             }
             return result;
         }
@@ -77,8 +77,8 @@ namespace Mikodev.Binary.Internal
             var result = root;
             for (var i = 0; i < length; i += sizeof(long))
             {
-                var index = GetIndex(ref Unsafe.Add(ref source, i), length - i);
-                var node = GetNode(result.Nodes, index);
+                var head = GetIndex(ref Unsafe.Add(ref source, i), length - i);
+                var node = GetNode(result.Nodes, head);
                 if (node == null)
                     return null;
                 result = node;

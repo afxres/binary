@@ -38,15 +38,15 @@ namespace Mikodev.Binary
                 return empty;
             var generator = instance.generator;
             var dictionary = new Dictionary<string, Token>();
-            var span = memory.Span;
-            ref var source = ref MemoryMarshal.GetReference(span);
+            var body = memory.Span;
+            ref var source = ref MemoryMarshal.GetReference(body);
 
             try
             {
-                while (!span.IsEmpty)
+                while (!body.IsEmpty)
                 {
-                    var header = PrimitiveHelper.DecodeStringWithLengthPrefix(ref span);
-                    var buffer = PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span);
+                    var header = PrimitiveHelper.DecodeStringWithLengthPrefix(ref body);
+                    var buffer = PrimitiveHelper.DecodeBufferWithLengthPrefix(ref body);
                     var offset = (int)Unsafe.ByteOffset(ref source, ref MemoryMarshal.GetReference(buffer));
                     var target = memory.Slice(offset, buffer.Length);
                     var result = new Token(generator, target);

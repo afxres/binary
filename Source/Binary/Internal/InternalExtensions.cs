@@ -1,5 +1,4 @@
-﻿using Mikodev.Binary.Creators;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -8,22 +7,17 @@ namespace Mikodev.Binary.Internal
 {
     internal static class InternalExtensions
     {
-        internal static bool IsImplementationOf(this Type type, Type definition)
-        {
-            return type.IsGenericType && type.GetGenericTypeDefinition() == definition;
-        }
-
-        internal static bool IsOriginalEndiannessConverter(this Converter converter)
-        {
-            return converter.GetType().IsImplementationOf(typeof(OriginalEndiannessConverter<>));
-        }
-
         internal static bool IsByRefLike(this Type type)
         {
             if (!type.IsValueType)
                 return false;
             var attributes = type.GetCustomAttributes();
             return attributes.Select(x => x.GetType()).Any(x => x.FullName == "System.Runtime.CompilerServices.IsByRefLikeAttribute");
+        }
+
+        internal static bool IsImplementationOf(this Type type, Type definition)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition() == definition;
         }
 
         internal static bool TryGetGenericArguments(this Type type, Type definition, out Type[] arguments)

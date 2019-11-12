@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mikodev.Binary.Creators;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -32,7 +33,7 @@ namespace Mikodev.Binary.Internal.Adapters
                 .FirstOrDefault();
             adapter = ArrayLikeAdapterHelper.Create(converter);
             toArray = method == null ? null : Compile(method);
-            byArray = converter.IsOriginalEndiannessConverter() && (method != null || typeof(ICollection<E>).IsAssignableFrom(typeof(T)));
+            byArray = converter.GetType().IsImplementationOf(typeof(OriginalEndiannessConverter<>)) && (method != null || typeof(ICollection<E>).IsAssignableFrom(typeof(T)));
         }
 
         public override void Of(ref Allocator allocator, T item)

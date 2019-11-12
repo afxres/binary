@@ -70,8 +70,8 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
             if (toObject == null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
-            var byteCount = span.Length;
-            if (byteCount == 0)
+            var byteLength = span.Length;
+            if (byteLength == 0)
                 return default(T) == null ? default : ThrowHelper.ThrowNotEnoughBytes<T>();
 
             const int ItemLimits = 16;
@@ -81,7 +81,7 @@ namespace Mikodev.Binary.Internal.Contexts.Models
             ref var source = ref MemoryMarshal.GetReference(span);
 
             const int NotFound = -1;
-            var limits = byteCount;
+            var limits = byteLength;
             var offset = 0;
             var length = 0;
             while (limits - offset != length)

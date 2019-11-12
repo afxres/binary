@@ -29,7 +29,7 @@ namespace Mikodev.Binary.Internal
         internal static void ThrowTupleNull(Type type) => throw new ArgumentNullException("item", $"Tuple can not be null, type: {type}");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        internal static void ThrowCollectionBytesInvalid(Type type, int byteCount, int remainder) => throw new ArgumentException($"Invalid collection bytes, byte count: {byteCount}, remainder: {remainder}, item type: {type}");
+        internal static void ThrowCollectionBytesInvalid(Type type, int bytes, int remainder) => throw new ArgumentException($"Invalid collection bytes, byte count: {bytes}, remainder: {remainder}, item type: {type}");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static void ThrowNotEnoughBytes() => throw new ArgumentException("Not enough bytes or byte sequence invalid.");

@@ -20,27 +20,29 @@ namespace Mikodev.Binary.Internal.Adapters
         public override MemoryItem<T> To(ReadOnlySpan<byte> span)
         {
             Debug.Assert(converter.Length == 0);
-            var byteCount = span.Length;
-            if (byteCount == 0)
+            if (span.IsEmpty)
                 return new MemoryItem<T>(Array.Empty<T>(), 0);
             const int Initial = 8;
             var buffer = new T[Initial];
-            var limits = (long)Initial;
-            var cursor = 0L;
-            var temp = span;
-            while (!temp.IsEmpty)
+            var bounds = Initial;
+            var cursor = 0;
+            var body = span;
+            while (!body.IsEmpty)
             {
-                if (cursor >= limits)
+                Debug.Assert(cursor >= 0);
+                Debug.Assert(bounds == buffer.Length);
+                if (cursor == bounds)
                 {
-                    Debug.Assert(cursor > 0 && cursor == buffer.Length);
-                    var target = new T[checked((int)(limits *= 2))];
+                    var length = checked(bounds * 2);
+                    var target = new T[length];
                     MemoryExtensions.CopyTo(buffer, target.AsSpan());
+                    bounds = length;
                     buffer = target;
                 }
-                buffer[cursor++] = converter.DecodeAuto(ref temp);
+                buffer[cursor++] = converter.DecodeAuto(ref body);
             }
             Debug.Assert(cursor <= buffer.Length);
-            return new MemoryItem<T>(buffer, (int)cursor);
+            return new MemoryItem<T>(buffer, cursor);
         }
     }
 }

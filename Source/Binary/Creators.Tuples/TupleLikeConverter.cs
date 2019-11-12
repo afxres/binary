@@ -29,9 +29,9 @@ namespace Mikodev.Binary.Creators.Tuples
 
         public override KeyValuePair<T1, T2> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
-            var any1 = converter1.DecodeAuto(ref temp);
-            var any2 = converter2.Decode(in temp);
+            var body = span;
+            var any1 = converter1.DecodeAuto(ref body);
+            var any2 = converter2.Decode(in body);
             return new KeyValuePair<T1, T2>(any1, any2);
         }
 
@@ -67,8 +67,8 @@ namespace Mikodev.Binary.Creators.Tuples
 
         public override Tuple<T1> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
-            var any1 = converter1.Decode(in temp);
+            var body = span;
+            var any1 = converter1.Decode(in body);
             return new Tuple<T1>(any1);
         }
 
@@ -108,9 +108,9 @@ namespace Mikodev.Binary.Creators.Tuples
 
         public override Tuple<T1, T2> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
-            var any1 = converter1.DecodeAuto(ref temp);
-            var any2 = converter2.Decode(in temp);
+            var body = span;
+            var any1 = converter1.DecodeAuto(ref body);
+            var any2 = converter2.Decode(in body);
             return new Tuple<T1, T2>(any1, any2);
         }
 
@@ -156,10 +156,10 @@ namespace Mikodev.Binary.Creators.Tuples
 
         public override Tuple<T1, T2, T3> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
-            var any1 = converter1.DecodeAuto(ref temp);
-            var any2 = converter2.DecodeAuto(ref temp);
-            var any3 = converter3.Decode(in temp);
+            var body = span;
+            var any1 = converter1.DecodeAuto(ref body);
+            var any2 = converter2.DecodeAuto(ref body);
+            var any3 = converter3.Decode(in body);
             return new Tuple<T1, T2, T3>(any1, any2, any3);
         }
 
@@ -211,11 +211,11 @@ namespace Mikodev.Binary.Creators.Tuples
 
         public override Tuple<T1, T2, T3, T4> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
-            var any1 = converter1.DecodeAuto(ref temp);
-            var any2 = converter2.DecodeAuto(ref temp);
-            var any3 = converter3.DecodeAuto(ref temp);
-            var any4 = converter4.Decode(in temp);
+            var body = span;
+            var any1 = converter1.DecodeAuto(ref body);
+            var any2 = converter2.DecodeAuto(ref body);
+            var any3 = converter3.DecodeAuto(ref body);
+            var any4 = converter4.Decode(in body);
             return new Tuple<T1, T2, T3, T4>(any1, any2, any3, any4);
         }
 
@@ -273,12 +273,12 @@ namespace Mikodev.Binary.Creators.Tuples
 
         public override Tuple<T1, T2, T3, T4, T5> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
-            var any1 = converter1.DecodeAuto(ref temp);
-            var any2 = converter2.DecodeAuto(ref temp);
-            var any3 = converter3.DecodeAuto(ref temp);
-            var any4 = converter4.DecodeAuto(ref temp);
-            var any5 = converter5.Decode(in temp);
+            var body = span;
+            var any1 = converter1.DecodeAuto(ref body);
+            var any2 = converter2.DecodeAuto(ref body);
+            var any3 = converter3.DecodeAuto(ref body);
+            var any4 = converter4.DecodeAuto(ref body);
+            var any5 = converter5.Decode(in body);
             return new Tuple<T1, T2, T3, T4, T5>(any1, any2, any3, any4, any5);
         }
 
@@ -342,13 +342,13 @@ namespace Mikodev.Binary.Creators.Tuples
 
         public override Tuple<T1, T2, T3, T4, T5, T6> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
-            var any1 = converter1.DecodeAuto(ref temp);
-            var any2 = converter2.DecodeAuto(ref temp);
-            var any3 = converter3.DecodeAuto(ref temp);
-            var any4 = converter4.DecodeAuto(ref temp);
-            var any5 = converter5.DecodeAuto(ref temp);
-            var any6 = converter6.Decode(in temp);
+            var body = span;
+            var any1 = converter1.DecodeAuto(ref body);
+            var any2 = converter2.DecodeAuto(ref body);
+            var any3 = converter3.DecodeAuto(ref body);
+            var any4 = converter4.DecodeAuto(ref body);
+            var any5 = converter5.DecodeAuto(ref body);
+            var any6 = converter6.Decode(in body);
             return new Tuple<T1, T2, T3, T4, T5, T6>(any1, any2, any3, any4, any5, any6);
         }
 
@@ -418,14 +418,14 @@ namespace Mikodev.Binary.Creators.Tuples
 
         public override Tuple<T1, T2, T3, T4, T5, T6, T7> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
-            var any1 = converter1.DecodeAuto(ref temp);
-            var any2 = converter2.DecodeAuto(ref temp);
-            var any3 = converter3.DecodeAuto(ref temp);
-            var any4 = converter4.DecodeAuto(ref temp);
-            var any5 = converter5.DecodeAuto(ref temp);
-            var any6 = converter6.DecodeAuto(ref temp);
-            var any7 = converter7.Decode(in temp);
+            var body = span;
+            var any1 = converter1.DecodeAuto(ref body);
+            var any2 = converter2.DecodeAuto(ref body);
+            var any3 = converter3.DecodeAuto(ref body);
+            var any4 = converter4.DecodeAuto(ref body);
+            var any5 = converter5.DecodeAuto(ref body);
+            var any6 = converter6.DecodeAuto(ref body);
+            var any7 = converter7.Decode(in body);
             return new Tuple<T1, T2, T3, T4, T5, T6, T7>(any1, any2, any3, any4, any5, any6, any7);
         }
 
@@ -501,15 +501,15 @@ namespace Mikodev.Binary.Creators.Tuples
 
         public override Tuple<T1, T2, T3, T4, T5, T6, T7, T8> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
-            var any1 = converter1.DecodeAuto(ref temp);
-            var any2 = converter2.DecodeAuto(ref temp);
-            var any3 = converter3.DecodeAuto(ref temp);
-            var any4 = converter4.DecodeAuto(ref temp);
-            var any5 = converter5.DecodeAuto(ref temp);
-            var any6 = converter6.DecodeAuto(ref temp);
-            var any7 = converter7.DecodeAuto(ref temp);
-            var any8 = converter8.Decode(in temp);
+            var body = span;
+            var any1 = converter1.DecodeAuto(ref body);
+            var any2 = converter2.DecodeAuto(ref body);
+            var any3 = converter3.DecodeAuto(ref body);
+            var any4 = converter4.DecodeAuto(ref body);
+            var any5 = converter5.DecodeAuto(ref body);
+            var any6 = converter6.DecodeAuto(ref body);
+            var any7 = converter7.DecodeAuto(ref body);
+            var any8 = converter8.Decode(in body);
             return new Tuple<T1, T2, T3, T4, T5, T6, T7, T8>(any1, any2, any3, any4, any5, any6, any7, any8);
         }
 
@@ -557,8 +557,8 @@ namespace Mikodev.Binary.Creators.Tuples
 
         public override ValueTuple<T1> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
-            var any1 = converter1.Decode(in temp);
+            var body = span;
+            var any1 = converter1.Decode(in body);
             return new ValueTuple<T1>(any1);
         }
 
@@ -594,9 +594,9 @@ namespace Mikodev.Binary.Creators.Tuples
 
         public override ValueTuple<T1, T2> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
-            var any1 = converter1.DecodeAuto(ref temp);
-            var any2 = converter2.Decode(in temp);
+            var body = span;
+            var any1 = converter1.DecodeAuto(ref body);
+            var any2 = converter2.Decode(in body);
             return new ValueTuple<T1, T2>(any1, any2);
         }
 
@@ -638,10 +638,10 @@ namespace Mikodev.Binary.Creators.Tuples
 
         public override ValueTuple<T1, T2, T3> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
-            var any1 = converter1.DecodeAuto(ref temp);
-            var any2 = converter2.DecodeAuto(ref temp);
-            var any3 = converter3.Decode(in temp);
+            var body = span;
+            var any1 = converter1.DecodeAuto(ref body);
+            var any2 = converter2.DecodeAuto(ref body);
+            var any3 = converter3.Decode(in body);
             return new ValueTuple<T1, T2, T3>(any1, any2, any3);
         }
 
@@ -689,11 +689,11 @@ namespace Mikodev.Binary.Creators.Tuples
 
         public override ValueTuple<T1, T2, T3, T4> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
-            var any1 = converter1.DecodeAuto(ref temp);
-            var any2 = converter2.DecodeAuto(ref temp);
-            var any3 = converter3.DecodeAuto(ref temp);
-            var any4 = converter4.Decode(in temp);
+            var body = span;
+            var any1 = converter1.DecodeAuto(ref body);
+            var any2 = converter2.DecodeAuto(ref body);
+            var any3 = converter3.DecodeAuto(ref body);
+            var any4 = converter4.Decode(in body);
             return new ValueTuple<T1, T2, T3, T4>(any1, any2, any3, any4);
         }
 
@@ -747,12 +747,12 @@ namespace Mikodev.Binary.Creators.Tuples
 
         public override ValueTuple<T1, T2, T3, T4, T5> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
-            var any1 = converter1.DecodeAuto(ref temp);
-            var any2 = converter2.DecodeAuto(ref temp);
-            var any3 = converter3.DecodeAuto(ref temp);
-            var any4 = converter4.DecodeAuto(ref temp);
-            var any5 = converter5.Decode(in temp);
+            var body = span;
+            var any1 = converter1.DecodeAuto(ref body);
+            var any2 = converter2.DecodeAuto(ref body);
+            var any3 = converter3.DecodeAuto(ref body);
+            var any4 = converter4.DecodeAuto(ref body);
+            var any5 = converter5.Decode(in body);
             return new ValueTuple<T1, T2, T3, T4, T5>(any1, any2, any3, any4, any5);
         }
 
@@ -812,13 +812,13 @@ namespace Mikodev.Binary.Creators.Tuples
 
         public override ValueTuple<T1, T2, T3, T4, T5, T6> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
-            var any1 = converter1.DecodeAuto(ref temp);
-            var any2 = converter2.DecodeAuto(ref temp);
-            var any3 = converter3.DecodeAuto(ref temp);
-            var any4 = converter4.DecodeAuto(ref temp);
-            var any5 = converter5.DecodeAuto(ref temp);
-            var any6 = converter6.Decode(in temp);
+            var body = span;
+            var any1 = converter1.DecodeAuto(ref body);
+            var any2 = converter2.DecodeAuto(ref body);
+            var any3 = converter3.DecodeAuto(ref body);
+            var any4 = converter4.DecodeAuto(ref body);
+            var any5 = converter5.DecodeAuto(ref body);
+            var any6 = converter6.Decode(in body);
             return new ValueTuple<T1, T2, T3, T4, T5, T6>(any1, any2, any3, any4, any5, any6);
         }
 
@@ -884,14 +884,14 @@ namespace Mikodev.Binary.Creators.Tuples
 
         public override ValueTuple<T1, T2, T3, T4, T5, T6, T7> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
-            var any1 = converter1.DecodeAuto(ref temp);
-            var any2 = converter2.DecodeAuto(ref temp);
-            var any3 = converter3.DecodeAuto(ref temp);
-            var any4 = converter4.DecodeAuto(ref temp);
-            var any5 = converter5.DecodeAuto(ref temp);
-            var any6 = converter6.DecodeAuto(ref temp);
-            var any7 = converter7.Decode(in temp);
+            var body = span;
+            var any1 = converter1.DecodeAuto(ref body);
+            var any2 = converter2.DecodeAuto(ref body);
+            var any3 = converter3.DecodeAuto(ref body);
+            var any4 = converter4.DecodeAuto(ref body);
+            var any5 = converter5.DecodeAuto(ref body);
+            var any6 = converter6.DecodeAuto(ref body);
+            var any7 = converter7.Decode(in body);
             return new ValueTuple<T1, T2, T3, T4, T5, T6, T7>(any1, any2, any3, any4, any5, any6, any7);
         }
 
@@ -963,15 +963,15 @@ namespace Mikodev.Binary.Creators.Tuples
 
         public override ValueTuple<T1, T2, T3, T4, T5, T6, T7, T8> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
-            var any1 = converter1.DecodeAuto(ref temp);
-            var any2 = converter2.DecodeAuto(ref temp);
-            var any3 = converter3.DecodeAuto(ref temp);
-            var any4 = converter4.DecodeAuto(ref temp);
-            var any5 = converter5.DecodeAuto(ref temp);
-            var any6 = converter6.DecodeAuto(ref temp);
-            var any7 = converter7.DecodeAuto(ref temp);
-            var any8 = converter8.Decode(in temp);
+            var body = span;
+            var any1 = converter1.DecodeAuto(ref body);
+            var any2 = converter2.DecodeAuto(ref body);
+            var any3 = converter3.DecodeAuto(ref body);
+            var any4 = converter4.DecodeAuto(ref body);
+            var any5 = converter5.DecodeAuto(ref body);
+            var any6 = converter6.DecodeAuto(ref body);
+            var any7 = converter7.DecodeAuto(ref body);
+            var any8 = converter8.Decode(in body);
             return new ValueTuple<T1, T2, T3, T4, T5, T6, T7, T8>(any1, any2, any3, any4, any5, any6, any7, any8);
         }
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mikodev.Binary.Creators;
+using System;
 
 namespace Mikodev.Binary.Internal.Adapters
 {
@@ -6,14 +7,16 @@ namespace Mikodev.Binary.Internal.Adapters
     {
         internal static ArrayLikeAdapter<T> Create<T>(Converter<T> converter)
         {
-            var flag = converter.IsOriginalEndiannessConverter();
-            var adapterDefinition = flag
-                ? typeof(ArrayLikeOriginalEndiannessAdapter<>)
-                : converter.Length > 0 ? typeof(ArrayLikeConstantAdapter<>) : typeof(ArrayLikeVariableAdapter<>);
-            var adapterType = adapterDefinition.MakeGenericType(converter.ItemType);
-            var adapterArguments = flag ? Array.Empty<object>() : new object[] { converter };
-            var adapter = Activator.CreateInstance(adapterType, adapterArguments);
-            return (ArrayLikeAdapter<T>)adapter;
+            static object Invoke(Converter<T> converter)
+            {
+                if (converter.GetType().IsImplementationOf(typeof(OriginalEndiannessConverter<>)))
+                    return Activator.CreateInstance(typeof(ArrayLikeOriginalEndiannessAdapter<>).MakeGenericType(typeof(T)));
+                if (converter.Length > 0)
+                    return new ArrayLikeConstantAdapter<T>(converter);
+                else
+                    return new ArrayLikeVariableAdapter<T>(converter);
+            }
+            return (ArrayLikeAdapter<T>)Invoke(converter);
         }
     }
 }

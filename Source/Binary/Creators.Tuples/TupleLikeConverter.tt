@@ -87,11 +87,11 @@ foreach (var (from, to, prefix, member) in jobs)
         {
 <#
             var origin = method == "";
-            var source = origin ? "temp" : "span";
+            var source = origin ? "body" : "span";
             if (origin)
             {
 #>
-            var temp = span;
+            var body = span;
 <#
             }
             for (var k = 1; k <= i; k++)

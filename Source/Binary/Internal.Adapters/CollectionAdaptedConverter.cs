@@ -34,11 +34,11 @@ namespace Mikodev.Binary.Internal.Adapters
             var dataCount = item == null ? 0 : itemLength > 0 ? builder.Count(data) : CollectionBuilder.NoActualLength;
             if (dataCount != CollectionBuilder.NoActualLength)
             {
-                var byteCount = checked(itemLength * dataCount);
+                var byteLength = checked(itemLength * dataCount);
                 Debug.Assert(item == null || itemLength > 0);
-                Debug.Assert(dataCount >= 0 && byteCount >= 0);
-                PrimitiveHelper.EncodeNumber(ref allocator, byteCount);
-                if (byteCount == 0)
+                Debug.Assert(dataCount >= 0 && byteLength >= 0);
+                PrimitiveHelper.EncodeNumber(ref allocator, byteLength);
+                if (byteLength == 0)
                     return;
                 adapter.Of(ref allocator, data);
             }
