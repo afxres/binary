@@ -80,9 +80,8 @@ namespace Mikodev.Binary
         {
             if (number < 0)
                 ThrowHelper.ThrowArgumentNumberInvalid();
-            var length = EncodeNumberLength((uint)number);
-            ref var target = ref Allocator.Allocate(ref allocator, length);
-            EncodeNumber(ref target, length, (uint)number);
+            var numberLength = EncodeNumberLength((uint)number);
+            EncodeNumber(ref Allocator.Allocate(ref allocator, numberLength), numberLength, (uint)number);
         }
 
         public static int DecodeNumber(ref ReadOnlySpan<byte> span)

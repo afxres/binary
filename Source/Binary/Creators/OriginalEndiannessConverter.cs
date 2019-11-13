@@ -42,9 +42,9 @@ namespace Mikodev.Binary.Creators
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
-            ref var target = ref Allocator.Allocate(ref allocator, Unsafe.SizeOf<T>() + 1);
+            ref var target = ref Allocator.Allocate(ref allocator, Unsafe.SizeOf<T>() + sizeof(byte));
             target = (byte)Unsafe.SizeOf<T>();
-            Unsafe.WriteUnaligned(ref Unsafe.Add(ref target, 1), item);
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref target, sizeof(byte)), item);
         }
 
         public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
