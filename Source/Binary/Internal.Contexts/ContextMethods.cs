@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using ItemIndexes = System.Collections.Generic.IReadOnlyList<int>;
 using ItemInitializer = System.Func<(System.Linq.Expressions.ParameterExpression, System.Linq.Expressions.Expression[])>;
-using MetaList = System.Collections.Generic.IReadOnlyList<(System.Reflection.PropertyInfo Property, Mikodev.Binary.Converter Converter)>;
+using MemberList = System.Collections.Generic.IReadOnlyList<(System.Reflection.MemberInfo Member, Mikodev.Binary.Converter Converter)>;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
@@ -21,44 +21,28 @@ namespace Mikodev.Binary.Internal.Contexts
             return (int)length;
         }
 
-        internal static MethodInfo GetEncodeMethodInfo(Type type, bool isAuto)
+        internal static bool CanCreateInstance(Type type, IReadOnlyList<MemberInfo> members, ConstructorInfo constructor)
         {
-            var converterType = typeof(Converter<>).MakeGenericType(type);
-            var types = new[] { typeof(Allocator).MakeByRefType(), type };
-            var method = !isAuto
-                ? converterType.GetMethod(nameof(IConverter.Encode), types)
-                : converterType.GetMethod(nameof(IConverter.EncodeAuto), types);
-            Debug.Assert(method != null);
-            return method;
-        }
-
-        internal static MethodInfo GetDecodeMethodInfo(Type type, bool isAuto)
-        {
-            var converterType = typeof(Converter<>).MakeGenericType(type);
-            var types = new[] { typeof(ReadOnlySpan<byte>).MakeByRefType() };
-            var method = !isAuto
-                ? converterType.GetMethod(nameof(IConverter.Decode), types)
-                : converterType.GetMethod(nameof(IConverter.DecodeAuto), types);
-            Debug.Assert(method != null);
-            return method;
-        }
-
-        internal static bool CanCreateInstance(Type type, MetaList metadata, ConstructorInfo constructor)
-        {
-            Debug.Assert(metadata.Any());
+            Debug.Assert(members.Any());
             Debug.Assert(type.IsAbstract || type.IsInterface ? constructor == null : true);
             if (type.IsAbstract || type.IsInterface)
                 return false;
             if (constructor != null)
                 return true;
-            return (type.IsValueType || type.GetConstructor(Type.EmptyTypes) != null) && metadata.All(x => x.Property.GetSetMethod() != null);
+            var predicate = new Func<MemberInfo, bool>(x =>
+                (x is PropertyInfo property && property.GetSetMethod() != null) ||
+                (x is FieldInfo field && !field.IsLiteral && !field.IsInitOnly));
+            return (type.IsValueType || type.GetConstructor(Type.EmptyTypes) != null) && members.All(predicate);
         }
 
-        internal static Delegate GetDecodeDelegateUseProperties(Type delegateType, ItemInitializer initializer, MetaList metadata, Type type)
+        internal static Delegate GetDecodeDelegateUseMembers(Type delegateType, ItemInitializer initializer, MemberList metadata, Type type)
         {
             var item = Expression.Variable(type, "item");
             var expressions = new List<Expression> { Expression.Assign(item, Expression.New(type)) };
-            var targets = metadata.Select(x => Expression.Property(item, x.Property)).ToList();
+            var targets = metadata
+                .Select(x => x.Member)
+                .Select(x => x is FieldInfo field ? Expression.Field(item, field) : Expression.Property(item, (PropertyInfo)x))
+                .ToList();
             var (parameter, values) = initializer.Invoke();
             for (var i = 0; i < metadata.Count; i++)
                 expressions.Add(Expression.Assign(targets[i], values[i]));
@@ -67,12 +51,12 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        internal static Delegate GetDecodeDelegateUseConstructor(Type delegateType, ItemInitializer initializer, MetaList metadata, ItemIndexes indexes, ConstructorInfo constructor)
+        internal static Delegate GetDecodeDelegateUseConstructor(Type delegateType, ItemInitializer initializer, IReadOnlyList<Converter> converters, ItemIndexes indexes, ConstructorInfo constructor)
         {
             var expressions = new List<Expression>();
-            var variables = metadata.Select((x, i) => Expression.Variable(x.Property.PropertyType, $"{i}")).ToList();
+            var variables = converters.Select((x, i) => Expression.Variable(x.ItemType, $"{i}")).ToList();
             var (parameter, values) = initializer.Invoke();
-            for (var i = 0; i < metadata.Count; i++)
+            for (var i = 0; i < converters.Count; i++)
                 expressions.Add(Expression.Assign(variables[i], values[i]));
             expressions.Add(Expression.New(constructor, indexes.Select(x => variables[x]).ToList()));
             var lambda = Expression.Lambda(delegateType, Expression.Block(variables, expressions), parameter);

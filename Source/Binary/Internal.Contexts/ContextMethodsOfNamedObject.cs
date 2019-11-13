@@ -70,7 +70,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
                 for (var i = 0; i < metadata.Count; i++)
                 {
-                    var (_, converter) = metadata[i];
+                    var converter = metadata[i].Converter;
                     var method = invokeMethodInfo.MakeGenericMethod(converter.ItemType);
                     var invoke = Expression.Call(list, method, Expression.Constant(converter), Expression.Constant(i));
                     values[i] = invoke;
@@ -78,12 +78,12 @@ namespace Mikodev.Binary.Internal.Contexts
                 return (list, values);
             }
 
-            if (!ContextMethods.CanCreateInstance(type, metadata, constructor))
+            if (!ContextMethods.CanCreateInstance(type, metadata.Select(x => x.Property).ToList(), constructor))
                 return null;
             var delegateType = typeof(ToNamedObject<>).MakeGenericType(type);
             return constructor == null
-                ? ContextMethods.GetDecodeDelegateUseProperties(delegateType, Initialize, metadata, type)
-                : ContextMethods.GetDecodeDelegateUseConstructor(delegateType, Initialize, metadata, indexes, constructor);
+                ? ContextMethods.GetDecodeDelegateUseMembers(delegateType, Initialize, metadata.Select(x => ((MemberInfo)x.Property, x.Converter)).ToList(), type)
+                : ContextMethods.GetDecodeDelegateUseConstructor(delegateType, Initialize, metadata.Select(x => x.Converter).ToList(), indexes, constructor);
         }
     }
 }

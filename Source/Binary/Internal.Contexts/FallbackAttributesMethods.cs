@@ -59,7 +59,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
             // converter as tuple object
             if (attribute is TupleObjectAttribute)
-                return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, indexes, metadata);
+                return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, indexes, metadata.Select(x => ((MemberInfo)x.Property, x.Converter)).ToList());
             // converter as named object (or default)
             return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, indexes, metadata, dictionary);
         }

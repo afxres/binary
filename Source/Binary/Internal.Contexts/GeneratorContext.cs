@@ -55,15 +55,21 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private Converter GetConverterByDefault(Type type)
         {
+            // tuple types
+            if (FallbackPrimitivesMethods.GetConverter(this, type) is { } converter)
+                return converter;
+
             // not supported
             if (type.Assembly == typeof(Converter).Assembly)
                 throw new ArgumentException($"Invalid type: {type}");
             if (type.Assembly == typeof(object).Assembly)
                 throw new ArgumentException($"Invalid system type: {type}");
 
-            return type.TryGetInterfaceArguments(typeof(IEnumerable<>), out var arguments)
-                ? FallbackCollectionMethods.GetConverter(this, type, arguments.Single())
-                : FallbackAttributesMethods.GetConverter(this, type);
+            // collections and others
+            if (type.TryGetInterfaceArguments(typeof(IEnumerable<>), out var arguments))
+                return FallbackCollectionMethods.GetConverter(this, type, arguments.Single());
+            else
+                return FallbackAttributesMethods.GetConverter(this, type);
         }
     }
 }

@@ -26,17 +26,26 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Creators.Tuples\TupleLikeConverter.cs">
+    <Compile Update="Creators.Tuples\TupleConverter.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>TupleLikeConverter.tt</DependentUpon>
+      <DependentUpon>TupleConverter.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Creators.Tuples\ValueTupleConverter.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ValueTupleConverter.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Creators.Tuples\TupleLikeConverter.tt">
+    <None Update="Creators.Tuples\TupleConverter.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>TupleLikeConverter.cs</LastGenOutput>
+      <LastGenOutput>TupleConverter.cs</LastGenOutput>
+    </None>
+    <None Update="Creators.Tuples\ValueTupleConverter.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ValueTupleConverter.cs</LastGenOutput>
     </None>
   </ItemGroup>
 

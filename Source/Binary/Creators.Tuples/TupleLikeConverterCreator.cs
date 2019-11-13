@@ -9,7 +9,6 @@ namespace Mikodev.Binary.Creators.Tuples
     {
         private static readonly IReadOnlyDictionary<Type, Type> dictionary = new Dictionary<Type, Type>
         {
-            [typeof(KeyValuePair<,>)] = typeof(KeyValuePairConverter<,>),
             [typeof(Tuple<>)] = typeof(TupleConverter<>),
             [typeof(Tuple<,>)] = typeof(TupleConverter<,>),
             [typeof(Tuple<,,>)] = typeof(TupleConverter<,,>),
