@@ -21,32 +21,4 @@
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.6.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Creators.Tuples\TupleConverter.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>TupleConverter.tt</DependentUpon>
-    </Compile>
-    <Compile Update="Creators.Tuples\ValueTupleConverter.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>ValueTupleConverter.tt</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Creators.Tuples\TupleConverter.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>TupleConverter.cs</LastGenOutput>
-    </None>
-    <None Update="Creators.Tuples\ValueTupleConverter.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>ValueTupleConverter.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-
 </Project>

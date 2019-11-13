@@ -1,7 +1,7 @@
 ﻿using Microsoft.FSharp.Collections;
 using System;
 
-namespace Mikodev.Binary.Collections
+namespace Mikodev.Binary.Creators.Collections
 {
     internal sealed class FSharpListConverter<T> : Converter<FSharpList<T>>
     {

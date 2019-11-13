@@ -1,7 +1,7 @@
 ﻿using Microsoft.FSharp.Collections;
 using System;
 
-namespace Mikodev.Binary.Collections
+namespace Mikodev.Binary.Creators.Collections
 {
     internal sealed class FSharpSetConverter<T> : Converter<FSharpSet<T>>
     {
@@ -22,10 +22,10 @@ namespace Mikodev.Binary.Collections
 
         public override FSharpSet<T> Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
+            var body = span;
             var item = SetModule.Empty<T>();
-            while (!temp.IsEmpty)
-                item = item.Add(converter.DecodeAuto(ref temp));
+            while (!body.IsEmpty)
+                item = item.Add(converter.DecodeAuto(ref body));
             return item;
         }
     }

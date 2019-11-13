@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Collections
+namespace Mikodev.Binary.Creators.Collections
 {
     internal sealed class FSharpMapConverter<K, V> : Converter<FSharpMap<K, V>>
     {
@@ -23,11 +23,11 @@ namespace Mikodev.Binary.Collections
         {
             static FSharpMap<K, V> Add(FSharpMap<K, V> data, KeyValuePair<K, V> item) => data.Add(item.Key, item.Value);
 
-            var temp = span;
+            var body = span;
             var data = MapModule.Empty<K, V>();
             var converter = this.converter;
-            while (!temp.IsEmpty)
-                data = Add(data, converter.DecodeAuto(ref temp));
+            while (!body.IsEmpty)
+                data = Add(data, converter.DecodeAuto(ref body));
             return data;
         }
     }

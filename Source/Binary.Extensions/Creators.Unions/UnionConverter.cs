@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Mikodev.Binary.Unions
+namespace Mikodev.Binary.Creators.Unions
 {
     internal delegate void OfUnion<in T>(ref Allocator allocator, T item, ref int mark);
 
@@ -53,9 +53,9 @@ namespace Mikodev.Binary.Unions
 
         public override T Decode(in ReadOnlySpan<byte> span)
         {
-            var temp = span;
+            var body = span;
             var mark = MarkNone;
-            var item = decode.Invoke(ref temp, ref mark);
+            var item = decode.Invoke(ref body, ref mark);
             ThrowOnInvalid(mark);
             return item;
         }

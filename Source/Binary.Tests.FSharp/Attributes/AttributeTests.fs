@@ -38,8 +38,8 @@ type Int64AsStringConverterCreator() =
     interface IConverterCreator with
         member __.GetConverter(context, t) =
             Assert.NotNull(context)
-            let temp = context.GetConverter(typeof<int64>)
-            Assert.Equal(typeof<int64>, temp.ItemType)
+            let converter = context.GetConverter(typeof<int64>)
+            Assert.Equal(typeof<int64>, converter.ItemType)
             Assert.Equal(typeof<int64>, t)
             new Int64AsStringConverter() :> Converter
 

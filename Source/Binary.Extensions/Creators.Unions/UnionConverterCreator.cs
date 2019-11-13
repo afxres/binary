@@ -8,7 +8,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Mikodev.Binary.Unions
+namespace Mikodev.Binary.Creators.Unions
 {
     internal sealed class UnionConverterCreator : IConverterCreator
     {
@@ -41,10 +41,10 @@ namespace Mikodev.Binary.Unions
             return (Converter)converter;
         }
 
-        private static MethodInfo GetEncodeMethodInfo(Type type, bool isAuto)
+        private static MethodInfo GetEncodeMethodInfo(Converter converter, bool isAuto)
         {
-            var converterType = typeof(Converter<>).MakeGenericType(type);
-            var types = new[] { typeof(Allocator).MakeByRefType(), type };
+            var converterType = converter.GetType();
+            var types = new[] { typeof(Allocator).MakeByRefType(), converter.ItemType };
             var method = !isAuto
                 ? converterType.GetMethod(nameof(IConverter.Encode), types)
                 : converterType.GetMethod(nameof(IConverter.EncodeAuto), types);
@@ -52,9 +52,9 @@ namespace Mikodev.Binary.Unions
             return method;
         }
 
-        private static MethodInfo GetDecodeMethodInfo(Type type, bool isAuto)
+        private static MethodInfo GetDecodeMethodInfo(Converter converter, bool isAuto)
         {
-            var converterType = typeof(Converter<>).MakeGenericType(type);
+            var converterType = converter.GetType();
             var types = new[] { typeof(ReadOnlySpan<byte>).MakeByRefType() };
             var method = !isAuto
                 ? converterType.GetMethod(nameof(IConverter.Decode), types)
@@ -78,7 +78,7 @@ namespace Mikodev.Binary.Unions
                     var property = properties[i];
                     var propertyType = property.PropertyType;
                     var converter = context.GetConverter(propertyType);
-                    var method = GetEncodeMethodInfo(propertyType, isAuto || i != properties.Length - 1);
+                    var method = GetEncodeMethodInfo(converter, isAuto || i != properties.Length - 1);
                     var invoke = Expression.Call(Expression.Constant(converter), method, allocator, Expression.Property(instance, property));
                     result.Add(invoke);
                 }
@@ -132,7 +132,7 @@ namespace Mikodev.Binary.Unions
                 {
                     var parameterType = parameters[i].ParameterType;
                     var converter = context.GetConverter(parameterType);
-                    var method = GetDecodeMethodInfo(parameterType, isAuto || i != parameters.Length - 1);
+                    var method = GetDecodeMethodInfo(converter, isAuto || i != parameters.Length - 1);
                     var variable = Expression.Variable(parameterType, $"{i}");
                     variables[i] = variable;
                     var invoke = Expression.Call(Expression.Constant(converter), method, span);

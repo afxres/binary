@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Mikodev.Binary.Collections
+namespace Mikodev.Binary.Creators.Collections
 {
     internal sealed class FSharpCollectionConverterCreator : IConverterCreator
     {
