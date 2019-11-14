@@ -36,6 +36,7 @@
     <Compile Include="Implementations\TupleObjectTests.fs" />
     <Compile Include="Miscellaneous\CrossTests.fs" />
     <Compile Include="Miscellaneous\ThrowTests.fs" />
+    <Compile Include="Miscellaneous\ThrowDecodeTests.fs" />
     <Compile Include="Values\ClassTypeTests.fs" />
     <Compile Include="Values\ValueTypeTests.fs" />
     <Compile Include="TupleLike\KeyValuePairTests.fs" />
