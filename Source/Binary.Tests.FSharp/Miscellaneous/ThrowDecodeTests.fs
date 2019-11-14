@@ -8,6 +8,8 @@ let message = "Not enough bytes or byte sequence invalid."
 
 let outofrange = ArgumentOutOfRangeException().Message
 
+let generator = Generator.CreateDefault()
+
 [<Fact>]
 let ``Decode Number (empty span)`` () =
     let error = Assert.Throws<ArgumentException>(fun () ->
@@ -52,4 +54,76 @@ let ``Decode Buffer With Length Prefix (not enough bytes)`` () =
         let _ = PrimitiveHelper.DecodeBufferWithLengthPrefix &span
         ())
     Assert.Equal(outofrange, error.Message)
+    ()
+
+[<Fact>]
+let ``Decode String With Length Prefix (empty span)`` () =
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable span = ReadOnlySpan<byte>()
+        let _ = PrimitiveHelper.DecodeStringWithLengthPrefix &span
+        ())
+    Assert.Equal(message, error.Message)
+    ()
+
+[<Fact>]
+let ``Decode String With Length Prefix (invalid header)`` () =
+    let buffer = [| 0x40uy |]
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable span = ReadOnlySpan buffer
+        let _ = PrimitiveHelper.DecodeStringWithLengthPrefix &span
+        ())
+    Assert.Equal(message, error.Message)
+    ()
+
+[<Fact>]
+let ``Decode String With Length Prefix (not enough bytes)`` () =
+    let buffer = [| 0x01uy |]
+    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
+        let mutable span = ReadOnlySpan buffer
+        let _ = PrimitiveHelper.DecodeStringWithLengthPrefix &span
+        ())
+    Assert.Equal(outofrange, error.Message)
+    ()
+
+[<Fact>]
+let ``Decode UInt32 With Length Prefix (empty span)`` () =
+    let converter = generator.GetConverter<uint32>()
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable span = ReadOnlySpan<byte>()
+        let _ = converter.DecodeWithLengthPrefix &span
+        ())
+    Assert.Equal(message, error.Message)
+    ()
+
+[<Fact>]
+let ``Decode UInt32 With Length Prefix (invalid header)`` () =
+    let converter = generator.GetConverter<uint32>()
+    let buffer = [| 0x40uy |]
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable span = ReadOnlySpan buffer
+        let _ = converter.DecodeWithLengthPrefix &span
+        ())
+    Assert.Equal(message, error.Message)
+    ()
+
+[<Fact>]
+let ``Decode UInt32 With Length Prefix (not enough bytes)`` () =
+    let converter = generator.GetConverter<uint32>()
+    let buffer = [| 0x04uy |]
+    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
+        let mutable span = ReadOnlySpan buffer
+        let _ = converter.DecodeWithLengthPrefix &span
+        ())
+    Assert.Equal(outofrange, error.Message)
+    ()
+
+[<Fact>]
+let ``Decode UInt32 With Length Prefix (length not match)`` () =
+    let converter = generator.GetConverter<uint32>()
+    let buffer = [| 0x01uy; 0uy; 0uy; 0uy; 0uy; |]
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable span = ReadOnlySpan buffer
+        let _ = converter.DecodeWithLengthPrefix &span
+        ())
+    Assert.Equal(message, error.Message)
     ()
