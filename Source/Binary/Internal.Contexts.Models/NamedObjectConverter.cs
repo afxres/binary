@@ -52,8 +52,10 @@ namespace Mikodev.Binary.Internal.Contexts.Models
         {
             static void DecodePrefix(ref byte location, ref int offset, ref int length, int limits)
             {
-                Debug.Assert((uint)(limits - offset) > (uint)length);
+                Debug.Assert((uint)(limits - offset) >= (uint)length);
                 offset += length;
+                if (limits == offset)
+                    goto fail;
                 ref var source = ref Unsafe.Add(ref location, offset);
                 var numberLength = PrimitiveHelper.DecodeNumberLength(source);
                 if ((uint)(limits - offset) < (uint)numberLength)
@@ -80,17 +82,17 @@ namespace Mikodev.Binary.Internal.Contexts.Models
             var items = itemCount > ItemLimits ? new LengthItem[itemCount] : stackalloc LengthItem[itemCount];
             ref var source = ref MemoryMarshal.GetReference(span);
 
-            const int NotFound = -1;
             var limits = byteLength;
             var offset = 0;
             var length = 0;
             while (limits - offset != length)
             {
                 DecodePrefix(ref source, ref offset, ref length, limits);
-                var index = BinaryNodeHelper.GetOrDefault(entry, ref Unsafe.Add(ref source, offset), length)?.Value ?? NotFound;
+                var token = BinaryNodeHelper.GetOrDefault(entry, ref Unsafe.Add(ref source, offset), length);
                 DecodePrefix(ref source, ref offset, ref length, limits);
-                if (index == NotFound)
+                if (token == null)
                     continue;
+                var index = token.Value;
                 Debug.Assert((uint)index < (uint)itemCount);
                 ref var value = ref items[index];
                 if (value.Offset != 0)

@@ -127,3 +127,58 @@ let ``Decode UInt32 With Length Prefix (length not match)`` () =
         ())
     Assert.Equal(message, error.Message)
     ()
+
+[<Fact>]
+let ``Decode Object (key, invalid header)`` () =
+    let buffer = [| 0x40uy |]
+    let converter = generator.GetConverter({| a = 0 |})
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable span = ReadOnlySpan buffer
+        let _ = converter.Decode &span
+        ())
+    Assert.Equal(message, error.Message)
+    ()
+
+[<Fact>]
+let ``Decode Object (key, not enough bytes)`` () =
+    let buffer = [| 0x01uy |]
+    let converter = generator.GetConverter({| a = 0 |})
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable span = ReadOnlySpan buffer
+        let _ = converter.Decode &span
+        ())
+    Assert.Equal(message, error.Message)
+    ()
+
+[<Fact>]
+let ``Decode Object (value, empty bytes)`` () =
+    let buffer = [| 0x01uy; byte 'b'; |]
+    let converter = generator.GetConverter({| a = 0 |})
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable span = ReadOnlySpan buffer
+        let _ = converter.Decode &span
+        ())
+    Assert.Equal(message, error.Message)
+    ()
+
+[<Fact>]
+let ``Decode Object (value, invalid header)`` () =
+    let buffer = [| 0x01uy; byte 'b'; 0x80uy |]
+    let converter = generator.GetConverter({| a = 0 |})
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable span = ReadOnlySpan buffer
+        let _ = converter.Decode &span
+        ())
+    Assert.Equal(message, error.Message)
+    ()
+
+[<Fact>]
+let ``Decode Object (value, not enough bytes)`` () =
+    let buffer = [| 0x01uy; byte 'b'; 0x02uy; 0x00uy |]
+    let converter = generator.GetConverter({| a = 0 |})
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable span = ReadOnlySpan buffer
+        let _ = converter.Decode &span
+        ())
+    Assert.Equal(message, error.Message)
+    ()
