@@ -5,9 +5,9 @@ open System
 open System.Diagnostics
 open System.Runtime.CompilerServices
 
-type internal OfUnion<'a> = delegate of allocator : inref<Allocator> * item : 'a * mark : byref<int> -> unit
+type internal OfUnion<'a> = delegate of allocator : byref<Allocator> * item : 'a * mark : byref<int> -> unit
 
-type internal ToUnion<'a> = delegate of span : inref<ReadOnlySpan<byte>> * mark : byref<int> -> 'a
+type internal ToUnion<'a> = delegate of span : byref<ReadOnlySpan<byte>> * mark : byref<int> -> 'a
 
 type internal UnionConverter<'a>(encode : OfUnion<'a>, decode : ToUnion<'a>, encodeAuto : OfUnion<'a>, decodeAuto : ToUnion<'a>, noNull : bool) =
     inherit Converter<'a>(0)
@@ -17,7 +17,7 @@ type internal UnionConverter<'a>(encode : OfUnion<'a>, decode : ToUnion<'a>, enc
 
     [<DebuggerStepThrough; MethodImpl(MethodImplOptions.NoInlining)>]
     member private me.ThrowNull () = raise (ArgumentNullException("item", sprintf "Union can not be null, type: %O" me.ItemType))
-    
+
     [<DebuggerStepThrough; MethodImpl(MethodImplOptions.NoInlining)>]
     member private me.ThrowInvalid mark = raise (ArgumentException(sprintf "Invalid union tag '%d', type: %O" mark me.ItemType))
 

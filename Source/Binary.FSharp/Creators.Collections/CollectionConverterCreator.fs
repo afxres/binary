@@ -20,7 +20,7 @@ type internal CollectionConverterCreator() =
                 let converterArguments = itemConverters |> Array.map box
                 let converter = Activator.CreateInstance(converterType, converterArguments)
                 converter :?> Converter
-                
+
             let definition = if t.IsGenericType then t.GetGenericTypeDefinition() else null
             let definition = types |> List.choose (fun (a, b) -> if a = definition then Some b else None) |> List.tryExactlyOne
             match definition with
