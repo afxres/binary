@@ -39,18 +39,25 @@ type BadValueTypeWithOnlyIndexer =
 type ThrowTests() =
     let generator = Generator.CreateDefault()
 
+    let outofrange = ArgumentOutOfRangeException().Message
+
     member private __.Test<'a> () =
         let converter = generator.GetConverter<'a>()
         let buffer = Array.zeroCreate<byte> (converter.Length - 1)
         let alpha = Assert.ThrowsAny<ArgumentException>(fun () ->
             let span = ReadOnlySpan buffer
-            generator.Decode<'a> span |> ignore)
-        let bravo = Assert.ThrowsAny<ArgumentException>(fun () -> generator.Decode<'a> buffer |> ignore)
-        let delta = Assert.ThrowsAny<ArgumentException>(fun () -> generator.Decode<'a> null |> ignore)
+            converter.Decode &span |> ignore)
+        let bravo = Assert.ThrowsAny<ArgumentException>(fun () -> converter.Decode buffer |> ignore)
+        let delta = Assert.ThrowsAny<ArgumentException>(fun () -> converter.Decode null |> ignore)
         let message = "Not enough bytes or byte sequence invalid."
         Assert.True(alpha :? ArgumentOutOfRangeException || alpha.Message = message)
         Assert.True(bravo :? ArgumentOutOfRangeException || bravo.Message = message)
         Assert.True(delta :? ArgumentOutOfRangeException || delta.Message = message)
+
+        let hotel = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
+            let mutable span = ReadOnlySpan buffer
+            converter.DecodeAuto &span |> ignore)
+        Assert.Equal(outofrange, hotel.Message)
         ()
 
     [<Fact>]
@@ -62,13 +69,19 @@ type ThrowTests() =
         ()
 
     [<Fact>]
-    member me.``Bytes Not Enough Or Null DateTimeOffset`` () = me.Test<DateTimeOffset>()
+    member me.``Bytes Not Enough Or Null DateTimeOffset`` () =
+        me.Test<DateTimeOffset>()
+        ()
 
     [<Fact>]
-    member me.``Bytes Not Enough Or Null Decimal`` () = me.Test<Decimal>()
+    member me.``Bytes Not Enough Or Null Decimal`` () =
+        me.Test<Decimal>()
+        ()
 
     [<Fact>]
-    member me.``Bytes Not Enough Or Null Guid`` () = me.Test<Guid>()
+    member me.``Bytes Not Enough Or Null Guid`` () =
+        me.Test<Guid>()
+        ()
 
     [<Fact>]
     member __.``Allocator Modified`` () =
@@ -76,7 +89,7 @@ type ThrowTests() =
         let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
             let mutable allocator = new Allocator()
             converter.EncodeWithLengthPrefix(&allocator, null))
-        Assert.Contains("Specified argument was out of the range of valid values.", error.Message)
+        Assert.Contains(outofrange, error.Message)
         ()
 
     static member ``Data Alpha`` = [|

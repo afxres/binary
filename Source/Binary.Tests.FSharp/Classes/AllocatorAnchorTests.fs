@@ -5,6 +5,8 @@ open System
 open System.Collections.Generic
 open Xunit
 
+let outofrange = ArgumentOutOfRangeException().Message
+
 [<Fact>]
 let ``Length Prefix Buffer With Length From 0 To 4096`` () =
     let random = Random()
@@ -42,7 +44,7 @@ let ``Allocator With Another Length Prefix Anchor`` () =
             Assert.Equal("AllocatorAnchor(Offset: 0, Length: 4)", anchor.ToString())
             let mutable allocator = Allocator (Span (Array.zeroCreate<byte> i))
             AllocatorHelper.AppendLengthPrefix(&allocator, anchor))
-        Assert.Contains("Specified argument was out of the range of valid values.", error.Message)
+        Assert.Contains(outofrange, error.Message)
     ()
 
 [<Fact>]

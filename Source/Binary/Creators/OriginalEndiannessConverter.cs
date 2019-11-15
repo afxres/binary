@@ -34,8 +34,9 @@ namespace Mikodev.Binary.Creators
 
         public override T DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            // take reference first, then check bounds via slice method
+            // take reference first
             ref var source = ref MemoryMarshal.GetReference(span);
+            // check bounds via slice method
             span = span.Slice(Unsafe.SizeOf<T>());
             return Unsafe.ReadUnaligned<T>(ref source);
         }

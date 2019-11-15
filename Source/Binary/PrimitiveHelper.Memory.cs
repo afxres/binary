@@ -21,7 +21,7 @@ namespace Mikodev.Binary
             if (limits == 0 || limits < (numberLength = DecodeNumberLength(source)))
                 return ThrowHelper.ThrowNotEnoughBytesReadOnlySpan<byte>();
             var length = DecodeNumber(ref source, numberLength);
-            // check bounds via slice method, then replace span with remaining part
+            // check bounds via slice method
             var result = span.Slice(numberLength, length);
             span = span.Slice(numberLength).Slice(length);
             return result;
