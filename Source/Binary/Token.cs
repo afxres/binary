@@ -54,7 +54,7 @@ namespace Mikodev.Binary
                 }
                 return dictionary;
             }
-            catch (ArgumentException)
+            catch (Exception)
             {
                 return empty;
             }

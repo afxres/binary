@@ -87,10 +87,10 @@ namespace Mikodev.Binary.Internal.Contexts
                 error = null;
                 return true;
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
                 value = null;
-                error = exception;
+                error = ex;
                 return false;
             }
         }
