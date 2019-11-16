@@ -2,6 +2,6 @@
 {
     internal abstract class CollectionBuilder
     {
-        public const int NoActualLength = -1;
+        public const int UnknownCount = -1;
     }
 }
