@@ -22,7 +22,7 @@ namespace Mikodev.Binary.Creators
         public override T Decode(in ReadOnlySpan<byte> span)
         {
             if (span.Length < Unsafe.SizeOf<T>())
-                ThrowHelper.ThrowNotEnoughBytes();
+                return ThrowHelper.ThrowNotEnoughBytes<T>();
             ref var source = ref MemoryMarshal.GetReference(span);
             return Unsafe.ReadUnaligned<T>(ref source);
         }
@@ -71,7 +71,7 @@ namespace Mikodev.Binary.Creators
         public override T Decode(byte[] buffer)
         {
             if (buffer == null || buffer.Length < Unsafe.SizeOf<T>())
-                ThrowHelper.ThrowNotEnoughBytes();
+                return ThrowHelper.ThrowNotEnoughBytes<T>();
             return Unsafe.ReadUnaligned<T>(ref buffer[0]);
         }
     }

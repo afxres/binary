@@ -8,7 +8,6 @@ namespace Mikodev.Binary
 {
     public ref partial struct Allocator
     {
-        [MethodImpl(MethodImplOptions.NoInlining)]
         private static void Expand(ref Allocator allocator, int expand)
         {
             if (expand <= 0)

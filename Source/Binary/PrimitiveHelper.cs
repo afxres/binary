@@ -87,7 +87,7 @@ namespace Mikodev.Binary
         public static int DecodeNumber(ref ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
-                ThrowHelper.ThrowNotEnoughBytes();
+                return ThrowHelper.ThrowNotEnoughBytes<int>();
             ref var source = ref MemoryMarshal.GetReference(span);
             var numberLength = DecodeNumberLength(source);
             // check bounds via slice method

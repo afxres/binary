@@ -26,10 +26,10 @@ namespace Mikodev.Binary.Internal.Contexts.Models
             entry = BinaryNodeHelper.Create(Encoding, data);
         }
 
-        [DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough]
         private T ThrowKeyFound(int i) => throw new ArgumentException($"Property '{names[i]}' already exists, type: {ItemType}");
 
-        [DebuggerStepThrough, MethodImpl(MethodImplOptions.NoInlining)]
+        [DebuggerStepThrough]
         private void ThrowNotFound(Span<LengthItem> span)
         {
             Debug.Assert(names.Length > 0);
