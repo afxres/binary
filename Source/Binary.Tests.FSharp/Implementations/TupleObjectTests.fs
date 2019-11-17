@@ -92,8 +92,8 @@ let test (instance : 'a) (anonymous : 'b) =
     let buffer = converter.Encode instance
     let target = generator.Encode anonymous
     Assert.Equal<byte>(target, buffer)
-    let alpha = Assert.Throws<InvalidOperationException>(fun () -> converter.Decode buffer |> ignore)
-    let bravo = Assert.Throws<InvalidOperationException>(fun () -> let mutable span = ReadOnlySpan buffer in converter.DecodeAuto &span |> ignore)
+    let alpha = Assert.Throws<NotSupportedException>(fun () -> converter.Decode buffer |> ignore)
+    let bravo = Assert.Throws<NotSupportedException>(fun () -> let mutable span = ReadOnlySpan buffer in converter.DecodeAuto &span |> ignore)
     let message = sprintf "No suitable constructor found, type: %O" typeof<'a>
     Assert.Equal(message, alpha.Message)
     Assert.Equal(message, bravo.Message)

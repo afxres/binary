@@ -53,7 +53,7 @@ let test (converterName : string) (builderName : string) (enumerable : 'a) (expe
     let buffer = converter.Encode enumerable
     let target = generator.Encode expected
     Assert.Equal<byte>(buffer, target)
-    let error = Assert.Throws<InvalidOperationException>(fun () -> converter.Decode(Array.empty) |> ignore)
+    let error = Assert.Throws<NotSupportedException>(fun () -> converter.Decode(Array.empty) |> ignore)
     let message = sprintf "No suitable constructor found, type: %O" typeof<'a>
     Assert.Equal(message, error.Message)
     ()

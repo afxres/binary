@@ -214,7 +214,7 @@ let test (instance : 'a) (anonymous : 'b) =
     let buffer = converter.Encode instance
     let target = generator.Encode anonymous
     Assert.Equal<byte>(target, buffer)
-    let error = Assert.Throws<InvalidOperationException>(fun () -> converter.Decode buffer |> ignore)
+    let error = Assert.Throws<NotSupportedException>(fun () -> converter.Decode buffer |> ignore)
     let message = sprintf "No suitable constructor found, type: %O" typeof<'a>
     Assert.Equal(message, error.Message)
     ()

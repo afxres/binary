@@ -652,7 +652,7 @@ type AttributeTests() =
     [<InlineData(typeof<ClassWithBadConverter>, typeof<ClassWithBadConverter>, typeof<BadConverter<int64>>)>]
     [<InlineData(typeof<ClassAsNamedObjectWithBadConverterOnProperty>, typeof<int>, typeof<BadConverter<string>>)>]
     member __.``Converter Attribute With Invalid Converter`` (t : Type, expectedType : Type, converterType : Type) =
-        let error = Assert.Throws<InvalidOperationException>(fun () -> generator.GetConverter(t) |> ignore)
+        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
         let message = sprintf "Invalid custom converter '%O', expected converter item type: %O" converterType expectedType
         Assert.Equal(message, error.Message)
         ()
@@ -661,7 +661,7 @@ type AttributeTests() =
     [<InlineData(typeof<ClassWithNullConverterCreator>, typeof<ClassWithNullConverterCreator>, typeof<NullConverterCreator>)>]
     [<InlineData(typeof<ClassAsTupleObjectWithNullConverterCreatorOnProperty>, typeof<int64>, typeof<AnotherNullConverterCreator>)>]
     member __.``Converter Creator Attribute With Null Converter`` (t : Type, expectedType : Type, creatorType : Type) =
-        let error = Assert.Throws<InvalidOperationException>(fun () -> generator.GetConverter(t) |> ignore)
+        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
         let message = sprintf "Invalid return value 'null', creator type: %O, expected converter item type: %O" creatorType expectedType
         Assert.Equal(message, error.Message)
         ()
@@ -670,7 +670,7 @@ type AttributeTests() =
     [<InlineData(typeof<ClassWithBadConverterCreator>, typeof<ClassWithBadConverterCreator>, typeof<BadConverter<int16>>, typeof<BadConverterCreator<int16>>)>]
     [<InlineData(typeof<ClassAsTupleObjectWithBadConverterCreatorOnProperty>, typeof<double>, typeof<BadConverter<single>>, typeof<BadConverterCreator<single>>)>]
     member __.``Converter Creator Attribute With Invalid Converter`` (t : Type, expectedType : Type, converterType : Type, creatorType : Type) =
-        let error = Assert.Throws<InvalidOperationException>(fun () -> generator.GetConverter(t) |> ignore)
+        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
         let message = sprintf "Invalid custom converter '%O', creator type: %O, expected converter item type: %O" converterType creatorType expectedType
         Assert.Equal(message, error.Message)
         ()

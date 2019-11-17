@@ -100,7 +100,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (!TryCreateInstance<Converter>(attribute.Type, out var converter, out var error))
                 throw new ArgumentException($"Can not get custom converter by attribute, expected converter item type: {type}", error);
             if (converter.ItemType != type)
-                throw new InvalidOperationException($"Invalid custom converter '{converter.GetType()}', expected converter item type: {type}");
+                throw new ArgumentException($"Invalid custom converter '{converter.GetType()}', expected converter item type: {type}");
             return converter;
         }
 
@@ -111,9 +111,9 @@ namespace Mikodev.Binary.Internal.Contexts
                 throw new ArgumentException($"Can not get custom converter creator by attribute, expected converter item type: {type}", error);
             var converter = creator.GetConverter(context, type);
             if (converter == null)
-                throw new InvalidOperationException($"Invalid return value 'null', creator type: {creatorType}, expected converter item type: {type}");
+                throw new ArgumentException($"Invalid return value 'null', creator type: {creatorType}, expected converter item type: {type}");
             if (converter.ItemType != type)
-                throw new InvalidOperationException($"Invalid custom converter '{converter.GetType()}', creator type: {creatorType}, expected converter item type: {type}");
+                throw new ArgumentException($"Invalid custom converter '{converter.GetType()}', creator type: {creatorType}, expected converter item type: {type}");
             return converter;
         }
 

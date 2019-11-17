@@ -57,7 +57,7 @@ let ``Interface`` () =
 let ``Interface Decode`` () =
     let a = new Person(Guid.NewGuid(), "Bob") :> IPerson
     let bytes = generator.Encode a
-    let error = Assert.Throws<InvalidOperationException>(fun () -> generator.Decode<IPerson> bytes |> ignore)
+    let error = Assert.Throws<NotSupportedException>(fun () -> generator.Decode<IPerson> bytes |> ignore)
     Assert.Equal(sprintf "No suitable constructor found, type: %O" typeof<IPerson>, error.Message)
     ()
 
@@ -80,7 +80,7 @@ let ``Abstract Class`` () =
 let ``Abstract Class Decode`` () =
     let a = new SomeBook("C# To F# ...", 1024, decimal 54.3) :> Book
     let bytes = generator.Encode a
-    let error = Assert.Throws<InvalidOperationException>(fun () -> generator.Decode<Book> bytes |> ignore)
+    let error = Assert.Throws<NotSupportedException>(fun () -> generator.Decode<Book> bytes |> ignore)
     Assert.Equal(sprintf "No suitable constructor found, type: %O" typeof<Book>, error.Message)
     ()
 

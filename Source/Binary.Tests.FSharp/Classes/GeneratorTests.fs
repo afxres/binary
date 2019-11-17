@@ -155,7 +155,7 @@ type BadConverterCreator () =
 [<Fact>]
 let ``Bad Creator`` () =
     let generator = Generator.CreateDefaultBuilder().AddConverterCreator(new BadConverterCreator()).Build()
-    let error = Assert.Throws<InvalidOperationException>(fun () -> generator.GetConverter(typeof<BadType>) |> ignore)
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(typeof<BadType>) |> ignore)
     let message = sprintf "Invalid converter '%O', creator type: %O, expected converter item type: %O" (generator.GetConverter<int>().GetType()) typeof<BadConverterCreator> typeof<BadType>
     Assert.Equal(message, error.Message)
     ()

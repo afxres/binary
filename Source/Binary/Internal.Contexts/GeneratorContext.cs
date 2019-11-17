@@ -49,7 +49,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (converter == null)
                 return null;
             if (converter.ItemType != type)
-                throw new InvalidOperationException($"Invalid converter '{converter.GetType()}', creator type: {creatorType}, expected converter item type: {type}");
+                throw new ArgumentException($"Invalid converter '{converter.GetType()}', creator type: {creatorType}, expected converter item type: {type}");
             return converter;
         }
 
