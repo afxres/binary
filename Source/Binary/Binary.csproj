@@ -12,7 +12,7 @@
     <Copyright>Mikodev 2019</Copyright>
     <Product>Mikodev.Binary</Product>
     <Version>5.0.0-preview01</Version>
-    <PackageTags>binary dynamic serializer serialization</PackageTags>
+    <PackageTags>binary dynamic serialization</PackageTags>
     <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
   </PropertyGroup>
 
