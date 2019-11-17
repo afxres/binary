@@ -153,6 +153,16 @@ let ``Invalid Null Value (encode & encode auto)`` () =
     Assert.StartsWith(message, bravo.Message)
     ()
 
+[<Fact>]
+let ``Value Union With Null Testing`` () =
+    let converter = generator.GetConverter<Box>()
+    let itemType = converter.ItemType
+    Assert.True itemType.IsValueType
+    let field = converter.GetType().GetField("noNull", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    Assert.NotNull field
+    Assert.False(field.GetValue(converter) |> unbox<bool>)
+    ()
+
 type X256 =
     | X00 | X01 | X02 | X03 | X04 | X05 | X06 | X07 | X08 | X09 | X0A | X0B | X0C | X0D | X0E | X0F
     | X10 | X11 | X12 | X13 | X14 | X15 | X16 | X17 | X18 | X19 | X1A | X1B | X1C | X1D | X1E | X1F
