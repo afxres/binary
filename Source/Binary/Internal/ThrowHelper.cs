@@ -14,7 +14,7 @@ namespace Mikodev.Binary.Internal
 
         internal static void ThrowAllocatorOverflow() => throw new ArgumentException("Maximum allocator capacity has been reached.");
 
-        internal static void ThrowLengthPrefixAnchorInvalid() => throw new ArgumentException("Invalid allocator anchor for length prefix.");
+        internal static void ThrowAllocatorAnchorInvalid() => throw new ArgumentOutOfRangeException("anchor");
 
         internal static void ThrowAllocatorActionInvalid() => throw new ArgumentNullException("action");
 

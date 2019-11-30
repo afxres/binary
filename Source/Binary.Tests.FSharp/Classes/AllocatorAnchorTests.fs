@@ -27,12 +27,13 @@ let ``Length Prefix Buffer With Length From 0 To 4096`` () =
 
 [<Fact>]
 let ``Allocator With Default Length Prefix Anchor`` () =
-    let error = Assert.Throws<ArgumentException>(fun () ->
+    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
         let anchor = AllocatorAnchor()
         Assert.Equal("AllocatorAnchor(Offset: 0, Length: 0)", anchor.ToString())
         let mutable allocator = Allocator()
         AllocatorHelper.AppendLengthPrefix(&allocator, anchor))
-    Assert.Equal("Invalid allocator anchor for length prefix.", error.Message)
+    Assert.Contains(outofrange, error.Message)
+    Assert.Equal("anchor", error.ParamName)
     ()
 
 [<Fact>]

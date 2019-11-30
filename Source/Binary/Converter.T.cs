@@ -52,7 +52,7 @@ namespace Mikodev.Binary
             }
             else
             {
-                var anchor = Allocator.AnchorLengthPrefix(ref allocator);
+                var anchor = Allocator.Anchor(ref allocator, sizeof(int));
                 Encode(ref allocator, item);
                 Allocator.AppendLengthPrefix(ref allocator, anchor);
             }

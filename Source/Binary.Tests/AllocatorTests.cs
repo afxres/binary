@@ -7,6 +7,8 @@ namespace Mikodev.Binary.Tests
 {
     public class AllocatorTests
     {
+        private static readonly string outofrange = new ArgumentOutOfRangeException().Message;
+
         [Theory(DisplayName = "Fake Length Prefix Anchor (hack)")]
         [InlineData(0)]
         [InlineData(1)]
@@ -57,16 +59,18 @@ namespace Mikodev.Binary.Tests
                 AllocatorHelper.AppendLengthPrefix(ref allocator, anchor);
             }
 
-            var error = Assert.Throws<ArgumentException>(() => Test());
-            var message = "Invalid allocator anchor for length prefix.";
-            Assert.Equal(message, error.Message);
+            var parameter = typeof(AllocatorHelper).GetMethod(nameof(AllocatorHelper.AppendLengthPrefix)).GetParameters().Last();
+            var error = Assert.Throws<ArgumentOutOfRangeException>(() => Test());
+            Assert.Contains(outofrange, error.Message);
+            Assert.Equal("anchor", error.ParamName);
+            Assert.Equal("anchor", parameter.Name);
         }
 
         [Theory(DisplayName = "Fake Length Prefix Anchor (hack, invalid offset)")]
+        [InlineData(int.MinValue)]
         [InlineData(-1)]
-        [InlineData(512)]
         [InlineData(768)]
-        [InlineData(1024)]
+        [InlineData(int.MaxValue)]
         public unsafe void FakeAnchorRange(int offset)
         {
             const int Limits = 512;
@@ -85,7 +89,7 @@ namespace Mikodev.Binary.Tests
             }
 
             var error = Assert.Throws<ArgumentOutOfRangeException>(() => Test());
-            Assert.Contains("Specified argument was out of the range of valid values.", error.Message);
+            Assert.Contains(outofrange, error.Message);
         }
 
         [Theory(DisplayName = "Fake Anchor (hack, invalid)")]
@@ -111,7 +115,7 @@ namespace Mikodev.Binary.Tests
             }
 
             var error = Assert.Throws<ArgumentOutOfRangeException>(() => Test());
-            Assert.Contains("Specified argument was out of the range of valid values.", error.Message);
+            Assert.Contains(outofrange, error.Message);
         }
 
         [Fact(DisplayName = "Expand Capacity")]

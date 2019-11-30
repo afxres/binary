@@ -9,13 +9,13 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AllocatorAnchor Anchor(ref Allocator allocator, int length)
         {
-            return new AllocatorAnchor(Allocator.AnchorLength(ref allocator, length), length);
+            return new AllocatorAnchor(Allocator.Anchor(ref allocator, length), length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AllocatorAnchor AnchorLengthPrefix(ref Allocator allocator)
         {
-            return new AllocatorAnchor(Allocator.AnchorLengthPrefix(ref allocator), sizeof(int));
+            return new AllocatorAnchor(Allocator.Anchor(ref allocator, sizeof(int)), sizeof(int));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -28,7 +28,7 @@ namespace Mikodev.Binary
         public static void AppendLengthPrefix(ref Allocator allocator, AllocatorAnchor anchor)
         {
             if (anchor.Length != sizeof(int))
-                ThrowHelper.ThrowLengthPrefixAnchorInvalid();
+                ThrowHelper.ThrowAllocatorAnchorInvalid();
             Allocator.AppendLengthPrefix(ref allocator, anchor.Offset);
         }
 

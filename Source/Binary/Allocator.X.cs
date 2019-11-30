@@ -81,11 +81,13 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int AnchorLengthPrefix(ref Allocator allocator)
+        internal static int Anchor(ref Allocator allocator, int length)
         {
-            Ensure(ref allocator, sizeof(int));
             var offset = allocator.offset;
-            allocator.offset = offset + sizeof(int);
+            if (length == 0)
+                return offset;
+            Ensure(ref allocator, length);
+            allocator.offset = offset + length;
             return offset;
         }
 
@@ -97,16 +99,6 @@ namespace Mikodev.Binary
             // check bounds via slice method
             var target = buffer.Slice(0, offset).Slice(anchor, sizeof(int));
             PrimitiveHelper.EncodeNumberFixed4(ref MemoryMarshal.GetReference(target), (uint)(offset - anchor - sizeof(int)));
-        }
-
-        internal static int AnchorLength(ref Allocator allocator, int length)
-        {
-            var offset = allocator.offset;
-            if (length == 0)
-                return offset;
-            Ensure(ref allocator, length);
-            allocator.offset = offset + length;
-            return offset;
         }
 
         internal static void AppendLength<T>(ref Allocator allocator, int anchor, int length, T data, AllocatorAction<T> action)
