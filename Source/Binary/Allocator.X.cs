@@ -45,7 +45,7 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void Ensure(ref Allocator allocator, int expand)
         {
-            if ((ulong)(uint)allocator.offset + (uint)expand >= (uint)allocator.buffer.Length)
+            if ((ulong)(uint)allocator.offset + (uint)expand > (uint)allocator.buffer.Length)
                 Expand(ref allocator, expand);
             Debug.Assert(allocator.buffer.Length <= allocator.MaxCapacity);
             Debug.Assert(allocator.buffer.Length >= allocator.offset + expand);
@@ -88,14 +88,27 @@ namespace Mikodev.Binary
             return offset;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void AppendLengthPrefix(ref Allocator allocator, int anchor)
+        internal static void AppendLengthPrefix(ref Allocator allocator, int anchor, bool compact)
         {
+            const int Limits = 33;
             var offset = allocator.offset;
             var buffer = allocator.buffer;
-            // check bounds via slice method
-            var target = buffer.Slice(0, offset).Slice(anchor, sizeof(int));
-            PrimitiveHelper.EncodeNumberFixed4(ref MemoryMarshal.GetReference(target), (uint)(offset - anchor - sizeof(int)));
+            // check bounds manually
+            if ((ulong)(uint)anchor + sizeof(uint) > (uint)offset)
+                ThrowHelper.ThrowAllocatorAnchorInvalid();
+            ref var location = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), anchor);
+            var length = offset - anchor - sizeof(uint);
+            if (compact && length < Limits)
+            {
+                if (length > 0)
+                    Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref location, sizeof(byte)), ref Unsafe.Add(ref location, sizeof(uint)), (uint)length);
+                location = (byte)length;
+                allocator.offset = offset - (sizeof(uint) - sizeof(byte));
+            }
+            else
+            {
+                PrimitiveHelper.EncodeNumberFixed4(ref location, (uint)length);
+            }
         }
 
         internal static void AppendLength<T>(ref Allocator allocator, int anchor, int length, T data, AllocatorAction<T> action)

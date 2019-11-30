@@ -29,7 +29,7 @@ namespace Mikodev.Binary
         {
             if (anchor.Length != sizeof(int))
                 ThrowHelper.ThrowAllocatorAnchorInvalid();
-            Allocator.AppendLengthPrefix(ref allocator, anchor.Offset);
+            Allocator.AppendLengthPrefix(ref allocator, anchor.Offset, compact: false);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

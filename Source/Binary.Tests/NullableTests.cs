@@ -147,7 +147,7 @@ namespace Mikodev.Binary.Tests
             };
 
             var buffer = generator.Encode(data);
-            Assert.Equal(((1 * 3) + (2 + 3 + 3)) + (((4 + 1) * 3) + (4 + 16 + 0)), buffer.Length);
+            Assert.Equal(((1 * 3) + (2 + 3 + 3)) + (((1 + 1) * 3) + (4 + 16 + 0)), buffer.Length);
             var result = generator.Decode(buffer, data);
             Assert.False(ReferenceEquals(data, result));
             Assert.Equal(data, result);

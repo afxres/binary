@@ -152,10 +152,23 @@ namespace Mikodev.Binary.Tests
             Assert.All(tail.ToArray(), x => Assert.Equal((byte)0x00, x));
         }
 
+        [Fact(DisplayName = "Ensure Capacity (zero)")]
+        public void EnsureCapacityZero()
+        {
+            var methodInfo = typeof(Allocator).GetMethod("Ensure", BindingFlags.NonPublic | BindingFlags.Static);
+            var ensure = (Ensure)Delegate.CreateDelegate(typeof(Ensure), methodInfo);
+            var capacity = 14;
+            var buffer = new byte[capacity];
+            var allocator = new Allocator(buffer);
+            Assert.Equal(capacity, allocator.Capacity);
+            ensure.Invoke(ref allocator, 0);
+            Assert.Equal(capacity, allocator.Capacity);
+        }
+
         [Theory(DisplayName = "Ensure Capacity (invalid)")]
         [InlineData(-1)]
-        [InlineData(0)]
-        public void EnsureCapacity(int expand)
+        [InlineData(int.MinValue)]
+        public void EnsureCapacityInvalid(int expand)
         {
             var methodInfo = typeof(Allocator).GetMethod("Ensure", BindingFlags.NonPublic | BindingFlags.Static);
             var ensure = (Ensure)Delegate.CreateDelegate(typeof(Ensure), methodInfo);
@@ -165,6 +178,24 @@ namespace Mikodev.Binary.Tests
                 ensure.Invoke(ref allocator, expand);
             });
             Assert.Equal("length", error.ParamName);
+        }
+
+        [Theory(DisplayName = "Ensure Capacity (exactly)")]
+        [InlineData(0, 4, 4)]
+        [InlineData(2, 8, 10)]
+        public void EnsureCapacityExactly(int offset, int expand, int capacity)
+        {
+            var methodInfo = typeof(Allocator).GetMethod("Ensure", BindingFlags.NonPublic | BindingFlags.Static);
+            var ensure = (Ensure)Delegate.CreateDelegate(typeof(Ensure), methodInfo);
+            Assert.Equal(capacity, offset + expand);
+            var buffer = new byte[capacity];
+            var allocator = new Allocator(buffer);
+            Assert.Equal(capacity, allocator.Capacity);
+            Assert.Equal(0, allocator.Length);
+            AllocatorHelper.Append(ref allocator, offset, 0, (a, b) => { });
+            Assert.Equal(offset, allocator.Length);
+            ensure.Invoke(ref allocator, expand);
+            Assert.Equal(capacity, allocator.Capacity);
         }
     }
 }

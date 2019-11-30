@@ -43,7 +43,7 @@ namespace Mikodev.Binary.Internal.Adapters
             {
                 var anchor = Allocator.Anchor(ref allocator, sizeof(int));
                 adapter.Of(ref allocator, value);
-                Allocator.AppendLengthPrefix(ref allocator, anchor);
+                Allocator.AppendLengthPrefix(ref allocator, anchor, compact: true);
             }
         }
 

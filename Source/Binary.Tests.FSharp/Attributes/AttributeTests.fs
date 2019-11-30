@@ -543,7 +543,7 @@ type AttributeTests() =
         Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
         Assert.Equal(0, converter.Length)
 
-        let mutable allocator = new Allocator()
+        let mutable allocator = Allocator()
         converter.Encode(&allocator, source)
         let buffer = allocator.AsSpan().ToArray()
 
@@ -567,11 +567,13 @@ type AttributeTests() =
         Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
         Assert.Equal(0, converter.Length)
 
-        let mutable allocator = new Allocator()
+        let mutable allocator = Allocator()
         converter.EncodeAuto(&allocator, source)
         let buffer = allocator.AsSpan().ToArray()
+        let mutable data = ReadOnlySpan buffer
+        let data = PrimitiveHelper.DecodeBufferWithLengthPrefix &data
 
-        let token = Token(generator, buffer |> Array.skip sizeof<int> |> ReadOnlyMemory)
+        let token = Token(generator, data.ToArray() |> ReadOnlyMemory)
         let dictionary = token :> IReadOnlyDictionary<string, Token>
         Assert.Equal(expected.Length, dictionary.Count)
         for (k, v) in expected do
@@ -593,7 +595,7 @@ type AttributeTests() =
         Assert.StartsWith("TupleObjectConverter`1", converter.GetType().Name)
         Assert.Equal(size, converter.Length)
 
-        let mutable allocator = new Allocator()
+        let mutable allocator = Allocator()
         converter.Encode(&allocator, source)
         let buffer = allocator.AsSpan().ToArray()
 
@@ -612,7 +614,7 @@ type AttributeTests() =
         Assert.StartsWith("TupleObjectConverter`1", converter.GetType().Name)
         Assert.Equal(size, converter.Length)
 
-        let mutable allocator = new Allocator()
+        let mutable allocator = Allocator()
         converter.EncodeAuto(&allocator, source)
         let buffer = allocator.AsSpan().ToArray()
 
@@ -738,8 +740,8 @@ type AttributeTests() =
     [<InlineData(typeof<ClassAsTupleObjectWithPartiallyKey>)>]
     member __.``Tuple Object Null`` (t : Type) =
         let converter = generator.GetConverter t |> box :?> IConverter
-        let alpha = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = new Allocator() in converter.Encode(&allocator, null))
-        let bravo = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = new Allocator() in converter.EncodeAuto(&allocator, null))
+        let alpha = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = Allocator() in converter.Encode(&allocator, null))
+        let bravo = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = Allocator() in converter.EncodeAuto(&allocator, null))
         let message = sprintf "Tuple can not be null, type: %O" t
         Assert.Equal("item", alpha.ParamName)
         Assert.StartsWith(message, alpha.Message)

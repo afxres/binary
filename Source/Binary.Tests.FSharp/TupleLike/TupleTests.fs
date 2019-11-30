@@ -87,8 +87,8 @@ let ``Value Tuple Empty Bytes`` () =
 
 [<Fact>]
 let ``Tuple Array`` () =
-    [ 1, "one"; 2, "two"; 3, "three" ] |> test 26 30
-    [ struct (4, "four"); struct (5, "five") ] |> test 18 22
+    [ 1, "one"; 2, "two"; 3, "three" ] |> test 26 27
+    [ struct (4, "four"); struct (5, "five") ] |> test 18 19
     ()
 
 [<Fact>]
