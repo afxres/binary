@@ -10,6 +10,8 @@ namespace Mikodev.Binary.Tests
     {
         private delegate void Ensure(ref Allocator allocator, int expand);
 
+        private delegate void Expand(ref Allocator allocator, int expand);
+
         private static readonly string outofrange = new ArgumentOutOfRangeException().Message;
 
         [Theory(DisplayName = "Fake Length Prefix Anchor (hack)")]
@@ -150,6 +152,23 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(512, tail.Length);
             Assert.All(head.ToArray(), x => Assert.Equal((byte)0x7F, x));
             Assert.All(tail.ToArray(), x => Assert.Equal((byte)0x00, x));
+        }
+
+        [Theory(DisplayName = "Expand Capacity (invalid)")]
+        [InlineData(0)]
+        [InlineData(-1)]
+        [InlineData(-16)]
+        [InlineData(int.MinValue)]
+        public void ExpandCapacityInvalid(int expand)
+        {
+            var methodInfo = typeof(Allocator).GetMethod("Expand", BindingFlags.NonPublic | BindingFlags.Static);
+            var method = (Expand)Delegate.CreateDelegate(typeof(Expand), methodInfo);
+            var error = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            {
+                var allocator = new Allocator();
+                method.Invoke(ref allocator, expand);
+            });
+            Assert.Equal("length", error.ParamName);
         }
 
         [Fact(DisplayName = "Ensure Capacity (zero)")]
