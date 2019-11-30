@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Xunit;
 
@@ -7,6 +8,8 @@ namespace Mikodev.Binary.Tests
 {
     public class AllocatorTests
     {
+        private delegate void Ensure(ref Allocator allocator, int expand);
+
         private static readonly string outofrange = new ArgumentOutOfRangeException().Message;
 
         [Theory(DisplayName = "Fake Length Prefix Anchor (hack)")]
@@ -147,6 +150,21 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(512, tail.Length);
             Assert.All(head.ToArray(), x => Assert.Equal((byte)0x7F, x));
             Assert.All(tail.ToArray(), x => Assert.Equal((byte)0x00, x));
+        }
+
+        [Theory(DisplayName = "Ensure Capacity (invalid)")]
+        [InlineData(-1)]
+        [InlineData(0)]
+        public void EnsureCapacity(int expand)
+        {
+            var methodInfo = typeof(Allocator).GetMethod("Ensure", BindingFlags.NonPublic | BindingFlags.Static);
+            var ensure = (Ensure)Delegate.CreateDelegate(typeof(Ensure), methodInfo);
+            var error = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            {
+                var allocator = new Allocator();
+                ensure.Invoke(ref allocator, expand);
+            });
+            Assert.Equal("length", error.ParamName);
         }
     }
 }

@@ -11,13 +11,11 @@ namespace Mikodev.Binary
 
         private int offset;
 
-        private int bounds;
-
         private readonly int limits;
 
         public readonly int Length => offset;
 
-        public readonly int Capacity => bounds;
+        public readonly int Capacity => buffer.Length;
 
         public readonly int MaxCapacity => limits == 0 ? int.MaxValue : ~limits;
 
@@ -29,10 +27,9 @@ namespace Mikodev.Binary
         {
             if (maxCapacity < 0)
                 ThrowHelper.ThrowAllocatorMaxCapacityInvalid();
-            buffer = span;
             limits = ~maxCapacity;
             offset = 0;
-            bounds = Math.Min(span.Length, maxCapacity);
+            buffer = span.Slice(0, Math.Min(span.Length, maxCapacity));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

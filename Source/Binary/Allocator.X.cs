@@ -40,17 +40,14 @@ namespace Mikodev.Binary
             if (offset != 0)
                 Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetReference(target), ref MemoryMarshal.GetReference(source), (uint)offset);
             allocator.buffer = target;
-            allocator.bounds = target.Length;
-            Debug.Assert(allocator.bounds <= limits);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void Ensure(ref Allocator allocator, int expand)
         {
-            Debug.Assert(allocator.bounds >= 0 && allocator.bounds <= allocator.MaxCapacity);
-            Debug.Assert(allocator.bounds == 0 || allocator.bounds <= allocator.buffer.Length);
-            if (expand <= 0 || (uint)expand > (uint)(allocator.bounds - allocator.offset))
+            if ((ulong)(uint)allocator.offset + (uint)expand >= (uint)allocator.buffer.Length)
                 Expand(ref allocator, expand);
+            Debug.Assert(allocator.buffer.Length <= allocator.MaxCapacity);
             Debug.Assert(allocator.buffer.Length >= allocator.offset + expand);
         }
 
