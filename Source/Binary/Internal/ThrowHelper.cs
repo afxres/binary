@@ -10,6 +10,8 @@ namespace Mikodev.Binary.Internal
 
         internal static void ThrowArgumentNumberInvalid() => throw new ArgumentOutOfRangeException("number", "Argument number must be greater than or equal to zero!");
 
+        internal static void ThrowArgumentEncodingInvalid() => throw new ArgumentNullException("encoding");
+
         internal static void ThrowAllocatorMaxCapacityInvalid() => throw new ArgumentException("Maximum allocator capacity must be greater than or equal to zero!");
 
         internal static void ThrowAllocatorOverflow() => throw new ArgumentException("Maximum allocator capacity has been reached.");

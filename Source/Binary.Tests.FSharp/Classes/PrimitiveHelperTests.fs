@@ -142,7 +142,7 @@ let ``Encode String Then Decode (unicode)`` (text : string) =
 [<InlineData("")>]
 [<InlineData("Hello, world!")>]
 [<InlineData("你好, 世界!")>]
-let ``Encode String Then Decode (with length prefix)`` (text : string) =
+let ``Encode String Then Decode With Length Prefix`` (text : string) =
     let mutable allocator = Allocator()
     let span = text.AsSpan()
     PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, span)
@@ -163,7 +163,7 @@ let ``Encode String Then Decode (with length prefix)`` (text : string) =
 [<InlineData("")>]
 [<InlineData("Hello, world!")>]
 [<InlineData("你好, 世界!")>]
-let ``Encode String Then Decode (with length prefix, unicode)`` (text : string) =
+let ``Encode String Then Decode With Length Prefix (unicode)`` (text : string) =
     let mutable allocator = Allocator()
     let span = text.AsSpan()
     PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, span, Encoding.Unicode)
@@ -200,11 +200,11 @@ let ``Encode String (random, from 0 to 4096)`` () =
 [<Fact>]
 let ``Decode String (random, from 0 to 4096)`` () =
     let encoding = Converter.Encoding
-    
+
     for i = 0 to 4096 do
         let data = [| for k = 0 to (i - 1) do yield byte (random.Next(32, 127)) |]
         Assert.Equal(i, data.Length)
-    
+
         let text = PrimitiveHelper.DecodeString(ReadOnlySpan data)
         let result = encoding.GetBytes text
         Assert.Equal<byte>(data, result)
@@ -236,11 +236,11 @@ let ``Encode String With Length Prefix (random, from 0 to 4096)`` () =
 [<Fact>]
 let ``Decode String With Length Prefix (random, from 0 to 4096)`` () =
     let encoding = Converter.Encoding
-    
+
     for i = 0 to 4096 do
         let data = [| for k = 0 to (i - 1) do yield byte (random.Next(32, 127)) |]
         Assert.Equal(i, data.Length)
-    
+
         let mutable allocator = Allocator()
         PrimitiveHelper.EncodeBufferWithLengthPrefix(&allocator, ReadOnlySpan data)
         let buffer = allocator.AsSpan().ToArray()

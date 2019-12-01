@@ -20,7 +20,6 @@ namespace Mikodev.Binary.Internal
             maxCharCounts = Enumerable.Range(0, MaxCharCountLimits + 1).Select(Converter.Encoding.GetMaxCharCount).ToArray();
             maxByteCounts[0] = 0;
             maxCharCounts[0] = 0;
-            Debug.Assert(GetMaxByteCountOrByteCount(Converter.Encoding, ref Unsafe.AsRef(' '), 0) == 0);
         }
 
         internal static unsafe string GetString(Encoding encoding, ref byte bytes, int byteCount)
@@ -39,14 +38,14 @@ namespace Mikodev.Binary.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int GetMaxByteCountOrByteCount(Encoding encoding, ref char chars, int charCount)
+        internal static unsafe int GetMaxByteCountOrByteCount(Encoding encoding, char* chars, int charCount)
         {
             Debug.Assert(encoding == Converter.Encoding);
             Debug.Assert(charCount >= 0);
             var counts = maxByteCounts;
             if ((uint)charCount < (uint)counts.Length)
                 return counts[charCount];
-            return encoding.GetByteCount(ref chars, charCount);
+            return encoding.GetByteCount(chars, charCount);
         }
     }
 }
