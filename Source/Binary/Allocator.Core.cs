@@ -52,7 +52,7 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static ref byte Allocate(ref Allocator allocator, int length)
+        internal static ref byte Assign(ref Allocator allocator, int length)
         {
             Debug.Assert(length > 0);
             Ensure(ref allocator, length);
@@ -60,6 +60,27 @@ namespace Mikodev.Binary
             var buffer = allocator.buffer;
             allocator.offset = offset + length;
             return ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static int Anchor(ref Allocator allocator, int length)
+        {
+            var offset = allocator.offset;
+            if (length == 0)
+                return offset;
+            Ensure(ref allocator, length);
+            allocator.offset = offset + length;
+            return offset;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void Append(ref Allocator allocator, byte item)
+        {
+            Ensure(ref allocator, sizeof(byte));
+            var offset = allocator.offset;
+            var buffer = allocator.buffer;
+            Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset) = item;
+            allocator.offset = offset + sizeof(byte);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -75,17 +96,6 @@ namespace Mikodev.Binary
             ref var source = ref MemoryMarshal.GetReference(span);
             Unsafe.CopyBlockUnaligned(ref target, ref source, (uint)length);
             allocator.offset = offset + length;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int Anchor(ref Allocator allocator, int length)
-        {
-            var offset = allocator.offset;
-            if (length == 0)
-                return offset;
-            Ensure(ref allocator, length);
-            allocator.offset = offset + length;
-            return offset;
         }
 
         internal static void AppendLengthPrefix(ref Allocator allocator, int anchor, bool compact)
@@ -109,52 +119,6 @@ namespace Mikodev.Binary
             {
                 PrimitiveHelper.EncodeNumberFixed4(ref location, (uint)length);
             }
-        }
-
-        internal static void AppendLength<T>(ref Allocator allocator, int anchor, int length, T data, AllocatorAction<T> action)
-        {
-            if (action == null)
-                ThrowHelper.ThrowAllocatorActionInvalid();
-            var offset = allocator.offset;
-            var buffer = allocator.buffer;
-            // check bounds via slice method
-            var target = buffer.Slice(0, offset).Slice(anchor, length);
-            if (length == 0)
-                return;
-            action.Invoke(target, data);
-        }
-
-        internal static void AppendAction<T>(ref Allocator allocator, int length, T data, AllocatorAction<T> action)
-        {
-            if (action == null)
-                ThrowHelper.ThrowAllocatorActionInvalid();
-            if (length == 0)
-                return;
-            Ensure(ref allocator, length);
-            var offset = allocator.offset;
-            var buffer = allocator.buffer;
-            var target = buffer.Slice(offset, length);
-            action.Invoke(target, data);
-            allocator.offset = offset + length;
-        }
-
-        internal static void AppendString(ref Allocator allocator, ReadOnlySpan<char> span, bool withLengthPrefix)
-        {
-            var encoding = Converter.Encoding;
-            var charCount = span.Length;
-            ref var chars = ref MemoryMarshal.GetReference(span);
-            var maxByteCount = StringHelper.GetMaxByteCountOrByteCount(encoding, ref chars, charCount);
-            if (!withLengthPrefix && maxByteCount == 0)
-                return;
-            var prefixLength = withLengthPrefix ? PrimitiveHelper.EncodeNumberLength((uint)maxByteCount) : 0;
-            Ensure(ref allocator, maxByteCount + prefixLength);
-            var offset = allocator.offset;
-            var buffer = allocator.buffer;
-            ref var target = ref MemoryMarshal.GetReference(buffer);
-            var length = maxByteCount == 0 ? 0 : encoding.GetBytes(ref Unsafe.Add(ref target, offset + prefixLength), maxByteCount, ref chars, charCount);
-            if (withLengthPrefix)
-                PrimitiveHelper.EncodeNumber(ref Unsafe.Add(ref target, offset), prefixLength, (uint)length);
-            allocator.offset = offset + length + prefixLength;
         }
     }
 }

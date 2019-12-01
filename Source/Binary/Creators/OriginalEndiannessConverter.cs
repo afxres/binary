@@ -16,7 +16,7 @@ namespace Mikodev.Binary.Creators
 
         public override void Encode(ref Allocator allocator, T item)
         {
-            Unsafe.WriteUnaligned(ref Allocator.Allocate(ref allocator, Unsafe.SizeOf<T>()), item);
+            Unsafe.WriteUnaligned(ref Allocator.Assign(ref allocator, Unsafe.SizeOf<T>()), item);
         }
 
         public override T Decode(in ReadOnlySpan<byte> span)
@@ -29,7 +29,7 @@ namespace Mikodev.Binary.Creators
 
         public override void EncodeAuto(ref Allocator allocator, T item)
         {
-            Unsafe.WriteUnaligned(ref Allocator.Allocate(ref allocator, Unsafe.SizeOf<T>()), item);
+            Unsafe.WriteUnaligned(ref Allocator.Assign(ref allocator, Unsafe.SizeOf<T>()), item);
         }
 
         public override T DecodeAuto(ref ReadOnlySpan<byte> span)
@@ -43,7 +43,7 @@ namespace Mikodev.Binary.Creators
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
-            ref var target = ref Allocator.Allocate(ref allocator, Unsafe.SizeOf<T>() + sizeof(byte));
+            ref var target = ref Allocator.Assign(ref allocator, Unsafe.SizeOf<T>() + sizeof(byte));
             target = (byte)Unsafe.SizeOf<T>();
             Unsafe.WriteUnaligned(ref Unsafe.Add(ref target, sizeof(byte)), item);
         }

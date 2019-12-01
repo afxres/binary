@@ -19,7 +19,7 @@ namespace Mikodev.Binary
                 EncodeNumber(ref allocator, byteCount);
             if (byteCount == 0)
                 return;
-            _ = encoding.GetBytes(ref Allocator.Allocate(ref allocator, byteCount), byteCount, ref chars, charCount);
+            _ = encoding.GetBytes(ref Allocator.Assign(ref allocator, byteCount), byteCount, ref chars, charCount);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
