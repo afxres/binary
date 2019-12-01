@@ -181,6 +181,48 @@ let ``Encode String Then Decode With Length Prefix (unicode)`` (text : string) =
     ()
 
 [<Fact>]
+let ``Encode String (null)`` () =
+    let mutable allocator = Allocator()
+    let text = Unchecked.defaultof<string>
+    Assert.Null text
+    let span = text.AsSpan()
+    PrimitiveHelper.EncodeString(&allocator, span);
+    Assert.Equal(0, allocator.Length)
+    ()
+
+[<Fact>]
+let ``Encode String (unicode, null)`` () =
+    let mutable allocator = Allocator()
+    let text = Unchecked.defaultof<string>
+    Assert.Null text
+    let span = text.AsSpan()
+    PrimitiveHelper.EncodeString(&allocator, span, Encoding.Unicode);
+    Assert.Equal(0, allocator.Length)
+    ()
+
+[<Fact>]
+let ``Encode String With Length Prefix (null)`` () =
+    let mutable allocator = Allocator()
+    let text = Unchecked.defaultof<string>
+    Assert.Null text
+    let span = text.AsSpan()
+    PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, span);
+    let buffer = allocator.AsSpan().ToArray()
+    Assert.Equal(byte 0, Assert.Single(buffer))
+    ()
+
+[<Fact>]
+let ``Encode String With Length Prefix (unicode, null)`` () =
+    let mutable allocator = Allocator()
+    let text = Unchecked.defaultof<string>
+    Assert.Null text
+    let span = text.AsSpan()
+    PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, span, Encoding.Unicode);
+    let buffer = allocator.AsSpan().ToArray()
+    Assert.Equal(byte 0, Assert.Single(buffer))
+    ()
+
+[<Fact>]
 let ``Encode String (random, from 0 to 4096)`` () =
     let encoding = Converter.Encoding
 
