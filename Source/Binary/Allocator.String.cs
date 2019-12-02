@@ -7,12 +7,13 @@ namespace Mikodev.Binary
 {
     public ref partial struct Allocator
     {
-        internal static unsafe void AppendString(ref Allocator allocator, ref char chars, int charCount)
+        internal static unsafe void AppendString(ref Allocator allocator, ref char source, int length, Encoding encoding)
         {
-            var encoding = Converter.Encoding;
-            fixed (char* srcptr = &chars)
+            if (encoding is null)
+                ThrowHelper.ThrowArgumentEncodingInvalid();
+            fixed (char* srcptr = &source)
             {
-                var dstmax = StringHelper.GetMaxByteCountOrByteCount(encoding, srcptr, charCount);
+                var dstmax = StringHelper.GetMaxByteCount(encoding, srcptr, length);
                 if (dstmax != 0)
                 {
                     Ensure(ref allocator, dstmax);
@@ -21,19 +22,20 @@ namespace Mikodev.Binary
                     fixed (byte* bufptr = &MemoryMarshal.GetReference(buffer))
                     {
                         var dstptr = bufptr + offset;
-                        var length = encoding.GetBytes(srcptr, charCount, dstptr, dstmax);
-                        allocator.offset = offset + length;
+                        var dstlen = encoding.GetBytes(srcptr, length, dstptr, dstmax);
+                        allocator.offset = offset + dstlen;
                     }
                 }
             }
         }
 
-        internal static unsafe void AppendStringWithLengthPrefix(ref Allocator allocator, ref char chars, int charCount)
+        internal static unsafe void AppendStringWithLengthPrefix(ref Allocator allocator, ref char source, int length, Encoding encoding)
         {
-            var encoding = Converter.Encoding;
-            fixed (char* srcptr = &chars)
+            if (encoding is null)
+                ThrowHelper.ThrowArgumentEncodingInvalid();
+            fixed (char* srcptr = &source)
             {
-                var dstmax = StringHelper.GetMaxByteCountOrByteCount(encoding, srcptr, charCount);
+                var dstmax = StringHelper.GetMaxByteCount(encoding, srcptr, length);
                 if (dstmax != 0)
                 {
                     var prefixLength = PrimitiveHelper.EncodeNumberLength((uint)dstmax);
@@ -43,51 +45,10 @@ namespace Mikodev.Binary
                     fixed (byte* bufptr = &MemoryMarshal.GetReference(buffer))
                     {
                         var dstptr = bufptr + offset;
-                        var length = encoding.GetBytes(srcptr, charCount, dstptr + prefixLength, dstmax);
-                        ref var target = ref Unsafe.AsRef<byte>(dstptr);
-                        PrimitiveHelper.EncodeNumber(ref target, prefixLength, (uint)length);
-                        allocator.offset = offset + length + prefixLength;
-                    }
-                }
-                else
-                {
-                    Append(ref allocator, 0);
-                }
-            }
-        }
-
-        internal static unsafe void AppendStringEncoding(ref Allocator allocator, ref char chars, int charCount, Encoding encoding)
-        {
-            if (encoding is null)
-                ThrowHelper.ThrowArgumentEncodingInvalid();
-            fixed (char* srcptr = &chars)
-            {
-                var dstlen = charCount == 0 ? 0 : encoding.GetByteCount(srcptr, charCount);
-                if (dstlen != 0)
-                {
-                    fixed (byte* dstptr = &Assign(ref allocator, dstlen))
-                    {
-                        _ = encoding.GetBytes(srcptr, charCount, dstptr, dstlen);
-                    }
-                }
-            }
-        }
-
-        internal static unsafe void AppendStringEncodingWithLengthPrefix(ref Allocator allocator, ref char chars, int charCount, Encoding encoding)
-        {
-            if (encoding is null)
-                ThrowHelper.ThrowArgumentEncodingInvalid();
-            fixed (char* srcptr = &chars)
-            {
-                var dstlen = charCount == 0 ? 0 : encoding.GetByteCount(srcptr, charCount);
-                if (dstlen != 0)
-                {
-                    var prefixLength = PrimitiveHelper.EncodeNumberLength((uint)dstlen);
-                    fixed (byte* dstptr = &Assign(ref allocator, dstlen + prefixLength))
-                    {
+                        var dstlen = encoding.GetBytes(srcptr, length, dstptr + prefixLength, dstmax);
                         ref var target = ref Unsafe.AsRef<byte>(dstptr);
                         PrimitiveHelper.EncodeNumber(ref target, prefixLength, (uint)dstlen);
-                        _ = encoding.GetBytes(srcptr, charCount, dstptr + prefixLength, dstlen);
+                        allocator.offset = offset + dstlen + prefixLength;
                     }
                 }
                 else

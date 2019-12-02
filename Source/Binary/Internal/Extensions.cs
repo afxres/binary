@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Mikodev.Binary.Internal
 {
-    internal static class InternalExtensions
+    internal static class Extensions
     {
         internal static bool IsByRefLike(this Type type)
         {

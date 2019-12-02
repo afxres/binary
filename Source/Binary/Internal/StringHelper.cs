@@ -22,30 +22,34 @@ namespace Mikodev.Binary.Internal
             maxCharCounts[0] = 0;
         }
 
-        internal static unsafe string GetString(Encoding encoding, ref byte bytes, int byteCount)
+        internal static unsafe string GetString(Encoding encoding, byte* source, int length)
         {
-            Debug.Assert(encoding == Converter.Encoding);
-            var counts = maxCharCounts;
-            if (byteCount == 0 || (uint)byteCount >= (uint)counts.Length)
-                return encoding.GetString(ref bytes, byteCount);
-            var maxCharCount = counts[byteCount];
-            Debug.Assert(maxCharCount > 0);
-            var chars = stackalloc char[maxCharCount];
-            int charCount;
-            fixed (byte* srcptr = &bytes)
-                charCount = encoding.GetChars(srcptr, byteCount, chars, maxCharCount);
-            return new string(chars, 0, charCount);
+            Debug.Assert(encoding != null);
+            Debug.Assert(length >= 0);
+            if (length == 0)
+                return string.Empty;
+            int[] counts;
+            if ((object)encoding != Converter.Encoding || (uint)length >= (uint)(counts = maxCharCounts).Length)
+                return encoding.GetString(source, length);
+            var dstmax = counts[length];
+            Debug.Assert(dstmax > 0);
+            var dstptr = stackalloc char[dstmax];
+            int dstlen;
+            dstlen = encoding.GetChars(source, length, dstptr, dstmax);
+            return new string(dstptr, 0, dstlen);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe int GetMaxByteCountOrByteCount(Encoding encoding, char* chars, int charCount)
+        internal static unsafe int GetMaxByteCount(Encoding encoding, char* source, int length)
         {
-            Debug.Assert(encoding == Converter.Encoding);
-            Debug.Assert(charCount >= 0);
-            var counts = maxByteCounts;
-            if ((uint)charCount < (uint)counts.Length)
-                return counts[charCount];
-            return encoding.GetByteCount(chars, charCount);
+            Debug.Assert(encoding != null);
+            Debug.Assert(length >= 0);
+            if (length == 0)
+                return 0;
+            int[] counts;
+            if ((object)encoding != Converter.Encoding || (uint)length >= (uint)(counts = maxByteCounts).Length)
+                return encoding.GetByteCount(source, length);
+            return counts[length];
         }
     }
 }
