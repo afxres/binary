@@ -1,15 +1,15 @@
-﻿namespace Mikodev.Binary.Creators
+﻿namespace Mikodev.Binary.Internal.Creators
 
 open Mikodev.Binary
 open System
 open System.Diagnostics
 open System.Runtime.CompilerServices
 
-type internal OfUnion<'a> = delegate of allocator : byref<Allocator> * item : 'a * mark : byref<int> -> unit
+type OfUnion<'a> = delegate of allocator : byref<Allocator> * item : 'a * mark : byref<int> -> unit
 
-type internal ToUnion<'a> = delegate of span : byref<ReadOnlySpan<byte>> * mark : byref<int> -> 'a
+type ToUnion<'a> = delegate of span : byref<ReadOnlySpan<byte>> * mark : byref<int> -> 'a
 
-type internal UnionConverter<'a>(encode : OfUnion<'a>, decode : ToUnion<'a>, encodeAuto : OfUnion<'a>, decodeAuto : ToUnion<'a>, noNull : bool) =
+type UnionConverter<'a>(encode : OfUnion<'a>, decode : ToUnion<'a>, encodeAuto : OfUnion<'a>, decodeAuto : ToUnion<'a>, noNull : bool) =
     inherit Converter<'a>(0)
 
     [<Literal>]

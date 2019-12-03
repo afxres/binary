@@ -24,7 +24,7 @@ let ``Decode Number (invalid header)`` () =
     let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
         let mutable span = ReadOnlySpan buffer
         PrimitiveHelper.DecodeNumber &span |> ignore)
-    Assert.Equal(outofrange, error.Message)
+    Assert.StartsWith(outofrange, error.Message)
     ()
 
 [<Fact>]
@@ -53,7 +53,7 @@ let ``Decode Buffer With Length Prefix (not enough bytes)`` () =
         let mutable span = ReadOnlySpan buffer
         let _ = PrimitiveHelper.DecodeBufferWithLengthPrefix &span
         ())
-    Assert.Equal(outofrange, error.Message)
+    Assert.StartsWith(outofrange, error.Message)
     ()
 
 [<Fact>]
@@ -82,7 +82,7 @@ let ``Decode String With Length Prefix (not enough bytes)`` () =
         let mutable span = ReadOnlySpan buffer
         let _ = PrimitiveHelper.DecodeStringWithLengthPrefix &span
         ())
-    Assert.Equal(outofrange, error.Message)
+    Assert.StartsWith(outofrange, error.Message)
     ()
 
 [<Fact>]
@@ -114,7 +114,7 @@ let ``Decode UInt32 With Length Prefix (not enough bytes)`` () =
         let mutable span = ReadOnlySpan buffer
         let _ = converter.DecodeWithLengthPrefix &span
         ())
-    Assert.Equal(outofrange, error.Message)
+    Assert.StartsWith(outofrange, error.Message)
     ()
 
 [<Fact>]

@@ -57,7 +57,7 @@ type ThrowTests() =
         let hotel = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
             let mutable span = ReadOnlySpan buffer
             converter.DecodeAuto &span |> ignore)
-        Assert.Equal(outofrange, hotel.Message)
+        Assert.StartsWith(outofrange, hotel.Message)
         ()
 
     [<Fact>]

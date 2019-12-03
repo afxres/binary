@@ -78,9 +78,7 @@ let ``UInt64 Layout`` (item : UInt64) =
 [<InlineData("A042D19C-DB34-420D-861C-A783FCFFE938")>]
 let ``Guid Layout`` (text : string) =
     let item = Guid.Parse text
-    let origin = Array.zeroCreate<byte> sizeof<Guid>
-    let flag = item.TryWriteBytes(origin.AsSpan())
-    Assert.True flag
+    let origin = item.ToByteArray()
     let buffer = encode item
     Assert.Equal<byte>(origin, buffer)
     ()

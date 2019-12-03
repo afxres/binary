@@ -41,14 +41,14 @@ let ``Get Converter (static type)`` () =
 
 [<Fact>]
 let ``Get Converter (byref-like type)`` () =
-    let t = Type.GetType("System.Span`1").MakeGenericType(typeof<int>)
+    let t = typedefof<Memory<_>>.Assembly.GetType("System.Span`1").MakeGenericType(typeof<int>)
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
     Assert.Equal(sprintf "Invalid byref-like type: %O" t, error.Message)
     ()
 
 [<Fact>]
 let ``Get Converter (byref-like type definition)`` () =
-    let t = Type.GetType("System.Span`1")
+    let t = typedefof<Memory<_>>.Assembly.GetType("System.Span`1")
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
     Assert.Equal(sprintf "Invalid byref-like type: %O" t, error.Message)
     ()

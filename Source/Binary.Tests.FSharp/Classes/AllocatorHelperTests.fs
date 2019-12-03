@@ -25,7 +25,7 @@ let ``Append (default constructor, length invalid)`` (length : int) =
         ())
     let methodInfos = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4)
     let parameter = methodInfos |> Array.map (fun x -> x.GetParameters() |> Array.skip 1 |> Array.head) |> Array.filter (fun x -> x.ParameterType = typeof<int>) |> Array.exactlyOne
-    Assert.StartsWith("Argument length must be greater than or equal to zero!" + Environment.NewLine, error.Message)
+    Assert.StartsWith("Argument length must be greater than or equal to zero!", error.Message)
     Assert.Equal("length", error.ParamName)
     Assert.Equal("length", parameter.Name)
     ()
@@ -36,7 +36,7 @@ let ``Append (default constructor, overflow)`` () =
         let mutable allocator = Allocator()
         AllocatorHelper.Append(&allocator, Int32.MaxValue + 1, null :> obj, fun a b -> ())
         ())
-    Assert.StartsWith("Argument length must be greater than or equal to zero!" + Environment.NewLine, error.Message)
+    Assert.StartsWith("Argument length must be greater than or equal to zero!", error.Message)
     Assert.Equal("length", error.ParamName)
     ()
 
@@ -64,7 +64,7 @@ let ``Append (append some then, length invalid)`` (length : int) =
         AllocatorHelper.Append(&allocator, length, null :> obj, fun a b -> ())
         ())
     Assert.Equal(1, flag)
-    Assert.StartsWith("Argument length must be greater than or equal to zero!" + Environment.NewLine, error.Message)
+    Assert.StartsWith("Argument length must be greater than or equal to zero!", error.Message)
     Assert.Equal("length", error.ParamName)
     ()
 
@@ -207,7 +207,7 @@ let ``Anchor (length invalid)`` (length : int) =
         ())
     let methodInfo = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "Anchor") |> Array.exactlyOne
     let parameter = methodInfo.GetParameters() |> Array.last
-    Assert.StartsWith("Argument length must be greater than or equal to zero!" + Environment.NewLine, error.Message)
+    Assert.StartsWith("Argument length must be greater than or equal to zero!", error.Message)
     Assert.Equal("length", error.ParamName)
     Assert.Equal("length", parameter.Name)
     ()

@@ -15,12 +15,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Creators\UnionConverter.fs" />
-    <Compile Include="Creators\UnionConverterCreator.fs" />
-    <Compile Include="Creators.Collections\SetConverter.fs" />
-    <Compile Include="Creators.Collections\MapConverter.fs" />
-    <Compile Include="Creators.Collections\ListConverter.fs" />
-    <Compile Include="Creators.Collections\CollectionConverterCreator.fs" />
+    <Compile Include="Internal.Creators\UnionConverter.fs" />
+    <Compile Include="Internal.Creators\UnionConverterCreator.fs" />
+    <Compile Include="Internal.Creators.Collections\SetConverter.fs" />
+    <Compile Include="Internal.Creators.Collections\MapConverter.fs" />
+    <Compile Include="Internal.Creators.Collections\ListConverter.fs" />
+    <Compile Include="Internal.Creators.Collections\CollectionConverterCreator.fs" />
     <Compile Include="GeneratorBuilderFSharpExtensions.fs" />
   </ItemGroup>
 

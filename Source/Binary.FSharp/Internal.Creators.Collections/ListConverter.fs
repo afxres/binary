@@ -1,9 +1,9 @@
-﻿namespace Mikodev.Binary.Creators.Collections
+﻿namespace Mikodev.Binary.Internal.Creators.Collections
 
 open Mikodev.Binary
 open System
 
-type internal ListConverter<'a>(converter : Converter<'a> , memoryConverter : Converter<Memory<'a>>) =
+type ListConverter<'a>(converter : Converter<'a> , memoryConverter : Converter<Memory<'a>>) =
     inherit Converter<List<'a>>(0)
 
     override __.Encode(allocator, item) =

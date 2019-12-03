@@ -140,7 +140,7 @@ let ``Invalid Converter Length`` (length : int) =
     let error = Assert.Throws<ArgumentOutOfRangeException>(fun () -> new CustomConverter<obj>(length) |> ignore)
     Assert.Equal("length", parameter.Name)
     Assert.Equal("length", error.ParamName)
-    Assert.StartsWith("Argument length must be greater than or equal to zero!" + Environment.NewLine, error.Message)
+    Assert.StartsWith("Argument length must be greater than or equal to zero!", error.Message)
     ()
 
 type CustomConverterWithInvalidAllocation<'T>(length : int) =

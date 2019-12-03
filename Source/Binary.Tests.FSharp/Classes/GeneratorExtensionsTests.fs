@@ -107,17 +107,17 @@ type GeneratorExtensionsTests() =
         ()
 
     static member ``Data Bravo`` : (obj array) seq = seq {
-        yield [| typeof<int> |]
-        yield [| typeof<string> |]
-        yield [| typeof<Nullable<double>> |]
+        yield [| typeof<int>; typeof<int> |]
+        yield [| typeof<string>; typeof<char> |]
+        yield [| typeof<Nullable<double>>; typeof<Nullable<double>> |]
     }
 
     [<Theory>]
     [<MemberData("Data Bravo")>]
-    member __.``Invalid System Type`` (t : Type) =
+    member __.``Invalid System Type`` (t : Type, expected : Type) =
         let generator = GeneratorBuilder().Build()
         Assert.Equal("Generator(Converters: 1, Creators: 0)", generator.ToString())
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t |> ignore)
-        let message = sprintf "Invalid system type: %O" t
+        let message = sprintf "Invalid system type: %O" expected
         Assert.Equal(message, error.Message)
         ()

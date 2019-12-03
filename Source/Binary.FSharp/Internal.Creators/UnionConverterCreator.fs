@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Creators
+﻿namespace Mikodev.Binary.Internal.Creators
 
 open Microsoft.FSharp.Reflection
 open Mikodev.Binary
@@ -6,21 +6,10 @@ open System
 open System.Linq.Expressions
 open System.Reflection
 
-type internal UnionHelper() =
-    member __.Allocator = Allocator()
+type UnionConverterCreator() =
+    static let AllocatorByRefType = typeof<OfUnion<obj>>.GetMethod("Invoke").GetParameters().[0].ParameterType
 
-    member __.ReadOnlySpanByte = ReadOnlySpan<byte>()
-
-    static member GetByRefPropertyType name =
-        let flags = BindingFlags.Instance ||| BindingFlags.Public ||| BindingFlags.NonPublic
-        let property = typeof<UnionHelper>.GetProperty(name, flags)
-        let propertyType = property.PropertyType
-        propertyType.MakeByRefType()
-
-type internal UnionConverterCreator() =
-    static let AllocatorByRefType = UnionHelper.GetByRefPropertyType("Allocator")
-
-    static let ReadOnlySpanByteByRefType = UnionHelper.GetByRefPropertyType("ReadOnlySpanByte")
+    static let ReadOnlySpanByteByRefType = typeof<ToUnion<obj>>.GetMethod("Invoke").GetParameters().[0].ParameterType
 
     static let EncodeNumberMethodInfo = typeof<PrimitiveHelper>.GetMethod("EncodeNumber", [| AllocatorByRefType; typeof<int> |])
 

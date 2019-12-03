@@ -1,11 +1,13 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary
 {
     public static partial class PrimitiveHelper
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EncodeBufferWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<byte> span)
         {
             var length = span.Length;
@@ -13,6 +15,7 @@ namespace Mikodev.Binary
             Allocator.AppendBuffer(ref allocator, span);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ReadOnlySpan<byte> DecodeBufferWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
             int numberLength;

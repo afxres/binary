@@ -1,9 +1,9 @@
-﻿namespace Mikodev.Binary.Creators.Collections
+﻿namespace Mikodev.Binary.Internal.Creators.Collections
 
 open Mikodev.Binary
 open System
 
-type internal CollectionConverterCreator() =
+type CollectionConverterCreator() =
     static let types = [
         typedefof<List<_>>, typedefof<ListConverter<_>>;
         typedefof<Set<_>>, typedefof<SetConverter<_>>;

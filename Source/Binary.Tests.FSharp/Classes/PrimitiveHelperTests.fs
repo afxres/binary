@@ -9,6 +9,8 @@ let random = Random()
 
 let generator = Generator.CreateDefault()
 
+let outofrange = ArgumentOutOfRangeException().Message
+
 [<Fact>]
 let ``Encode Number From 0 To 63`` () =
     let buffer = Array.zeroCreate<byte> 1
@@ -78,7 +80,7 @@ let ``Encode Number (overflow)`` (number : int) =
     let parameter = methodInfo.GetParameters() |> Array.last
     Assert.Equal("number", error.ParamName)
     Assert.Equal("number", parameter.Name)
-    Assert.StartsWith("Argument number must be greater than or equal to zero!" + Environment.NewLine, error.Message)
+    Assert.StartsWith("Argument number must be greater than or equal to zero!", error.Message)
     ()
 
 [<Fact>]
@@ -92,9 +94,7 @@ let ``Decode Number (empty bytes)`` () =
 let ``Decode Number (not enough bytes)`` () =
     let test (bytes : byte array) =
         let error = Assert.Throws<ArgumentOutOfRangeException>(fun () -> let mutable span = ReadOnlySpan<byte> bytes in PrimitiveHelper.DecodeNumber(&span) |> ignore)
-#if DEBUG
-        Assert.Contains("ReadOnlySpan`1.Slice", error.StackTrace)
-#endif
+        Assert.Contains(outofrange, error.Message)
         ()
 
     test [| 64uy |]

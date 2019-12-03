@@ -1,7 +1,7 @@
 ﻿namespace Mikodev.Binary
 
-open Mikodev.Binary.Creators
-open Mikodev.Binary.Creators.Collections
+open Mikodev.Binary.Internal.Creators
+open Mikodev.Binary.Internal.Creators.Collections
 open System.Runtime.CompilerServices
 
 [<Extension>]

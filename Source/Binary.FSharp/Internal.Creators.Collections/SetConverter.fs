@@ -1,9 +1,9 @@
-﻿namespace Mikodev.Binary.Creators.Collections
+﻿namespace Mikodev.Binary.Internal.Creators.Collections
 
 open Mikodev.Binary
 open System
 
-type internal SetConverter<'a when 'a : comparison>(converter : Converter<'a>) =
+type SetConverter<'a when 'a : comparison>(converter : Converter<'a>) =
     inherit Converter<Set<'a>>(0)
 
     override __.Encode(allocator, item) =

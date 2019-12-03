@@ -58,16 +58,15 @@ namespace Mikodev.Binary.Internal.Contexts
             // tuple types
             if (FallbackPrimitivesMethods.GetConverter(this, type) is { } converter)
                 return converter;
-
             // not supported
             if (type.Assembly == typeof(Converter).Assembly)
                 throw new ArgumentException($"Invalid type: {type}");
-            if (type.Assembly == typeof(object).Assembly)
-                throw new ArgumentException($"Invalid system type: {type}");
-
             // collections and others
             if (type.TryGetInterfaceArguments(typeof(IEnumerable<>), out var arguments))
                 return FallbackCollectionMethods.GetConverter(this, type, arguments.Single());
+            // system types
+            if (type.Assembly == typeof(object).Assembly)
+                throw new ArgumentException($"Invalid system type: {type}");
             else
                 return FallbackAttributesMethods.GetConverter(this, type);
         }

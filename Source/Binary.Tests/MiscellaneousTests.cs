@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -92,13 +93,13 @@ namespace Mikodev.Binary.Tests
                 "Mikodev.Binary",
                 "Mikodev.Binary.Attributes",
             };
-            var types = typeof(Converter).Assembly.GetTypes().ToHashSet();
-            var alpha = types.Where(x => array.Contains(x.Namespace) && !x.IsNested).ToHashSet();
-            var bravo = types.Where(x => x.Name.Any(c => c == '<' || c == '>')).ToHashSet();
-            var delta = types.Except(alpha).Except(bravo).ToHashSet();
+            var types = new HashSet<Type>(typeof(Converter).Assembly.GetTypes());
+            var alpha = new HashSet<Type>(types.Where(x => array.Contains(x.Namespace) && !x.IsNested));
+            var bravo = new HashSet<Type>(types.Where(x => x.Name.Any(c => c == '<' || c == '>')));
+            var delta = new HashSet<Type>(types.Except(alpha).Except(bravo));
             var deltaMembers = delta.SelectMany(x => x.GetMethods(BindingFlags.Static | BindingFlags.Public)).ToList();
             Assert.Equal(types.Count, alpha.Count + bravo.Count + delta.Count);
-            Assert.Equal(types, alpha.Union(bravo).Union(delta).ToHashSet());
+            Assert.Equal(types, new HashSet<Type>(alpha.Union(bravo).Union(delta)));
             Assert.True(alpha.All(x => x.IsPublic));
             Assert.True(delta.All(x => !x.IsPublic));
             Assert.Empty(deltaMembers);

@@ -17,7 +17,7 @@ type Int32AsStringConverter() =
         PrimitiveHelper.EncodeString(&allocator, span)
 
     override __.Decode (span : inref<ReadOnlySpan<byte>>) =
-        let text = Encoding.UTF8.GetString(span)
+        let text = Encoding.UTF8.GetString(span.ToArray())
         let item = Int32.Parse(text)
         item
 
@@ -30,7 +30,7 @@ type Int64AsStringConverter() =
         PrimitiveHelper.EncodeString(&allocator, span)
 
     override __.Decode (span : inref<ReadOnlySpan<byte>>) =
-        let text = Encoding.UTF8.GetString(span)
+        let text = Encoding.UTF8.GetString(span.ToArray())
         let item = Int64.Parse(text)
         item
 

@@ -1,10 +1,10 @@
-﻿namespace Mikodev.Binary.Creators.Collections
+﻿namespace Mikodev.Binary.Internal.Creators.Collections
 
 open Mikodev.Binary
 open System
 open System.Collections.Generic
 
-type internal MapConverter<'a, 'b when 'a : comparison>(converter : Converter<KeyValuePair<'a, 'b>>) =
+type MapConverter<'a, 'b when 'a : comparison>(converter : Converter<KeyValuePair<'a, 'b>>) =
     inherit Converter<Map<'a, 'b>>(0)
 
     override __.Encode(allocator, item) =

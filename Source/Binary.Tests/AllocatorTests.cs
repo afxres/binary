@@ -127,7 +127,7 @@ namespace Mikodev.Binary.Tests
         public unsafe void ExpandCapacity()
         {
             var buffer = new byte[256];
-            Array.Fill(buffer, (byte)0x80);
+            buffer.AsSpan().Fill(0x80);
             var allocator = new Allocator(buffer);
             Assert.Equal(0, allocator.Length);
             Assert.Equal(256, allocator.Capacity);
