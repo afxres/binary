@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
 using System.Net;
 using Xunit;
 
@@ -24,9 +25,9 @@ namespace Mikodev.Binary.Tests
             Assert.NotEmpty(bytes);
             var token = new Token(generator, bytes);
             var d = (dynamic)token;
-            Assert.Equal(head, (double)d.head);
-            Assert.Equal(middle, (string)d.middle);
             Assert.Equal(last, (Guid)d.last);
+            Assert.Equal(middle, (string)d.middle);
+            Assert.Equal(head, (double)d.head);
 
             var dictionary = (IReadOnlyDictionary<string, Token>)token;
             Assert.Equal(3, dictionary.Count);
@@ -52,6 +53,22 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(value.a, (int)d.a);
             Assert.Equal(value.b, (string)d.b);
             Assert.Equal(value.c.e, (double)d.c.e);
+        }
+
+        [Fact(DisplayName = "Dynamic Array")]
+        public void Collection()
+        {
+            var values = Enumerable.Range(0, 10).Select(x => new { id = x, text = $"{x:d2}" }).ToArray();
+            var tokens = values.Select(x => new Token(generator, generator.Encode(x))).ToArray();
+            var ds = tokens.Select(x => (dynamic)x).ToArray();
+
+            for (var i = 0; i < values.Length; i++)
+            {
+                var v = values[i];
+                var d = ds[i];
+                Assert.Equal(v.id, (int)d.id);
+                Assert.Equal(v.text, (string)d.text);
+            }
         }
 
         [Fact(DisplayName = "Property With Null Value")]

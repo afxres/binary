@@ -45,7 +45,7 @@ let ``As (via type, argument null)`` () =
     ()
 
 [<Fact>]
-let ``Index`` () =
+let ``Index (match)`` () =
     let source = { id = 5; data = { name = "echo"; age = 24 }}
     let buffer = generator.Encode source
     let token = Token(generator, buffer |> ReadOnlyMemory)
@@ -56,12 +56,23 @@ let ``Index`` () =
     ()
 
 [<Fact>]
-let ``Index (nothrow)`` () =
+let ``Index (nothrow true, match)`` () =
     let source = { id = 5; data = { name = "echo"; age = 24 }}
     let buffer = generator.Encode source
     let token = Token(generator, buffer |> ReadOnlyMemory)
     let id = token.["id", nothrow = true]
     let name = token.["data"].["name", nothrow = true]
+    Assert.Equal(source.id, id.As<int>())
+    Assert.Equal(source.data.name, name.As<string>())
+    ()
+
+[<Fact>]
+let ``Index (nothrow false, match)`` () =
+    let source = { id = 5; data = { name = "echo"; age = 24 }}
+    let buffer = generator.Encode source
+    let token = Token(generator, buffer |> ReadOnlyMemory)
+    let id = token.["id", nothrow = false]
+    let name = token.["data"].["name", nothrow = false]
     Assert.Equal(source.id, id.As<int>())
     Assert.Equal(source.data.name, name.As<string>())
     ()
@@ -77,13 +88,23 @@ let ``Index (mismatch)`` () =
     ()
 
 [<Fact>]
-let ``Index (nothrow, mismatch)`` () =
+let ``Index (nothrow true, mismatch)`` () =
     let source = { id = 6; data = { name = "golf"; age = 18 }}
     let buffer = generator.Encode source
     let token = Token(generator, buffer |> ReadOnlyMemory)
     Assert.Equal(source.data, token.["data"].As<Person>())
     let item = token.["item", nothrow = true]
     Assert.Null(item)
+    ()
+
+[<Fact>]
+let ``Index (nothrow false, mismatch)`` () =
+    let source = { id = 6; data = { name = "golf"; age = 18 }}
+    let buffer = generator.Encode source
+    let token = Token(generator, buffer |> ReadOnlyMemory)
+    Assert.Equal(source.data, token.["data"].As<Person>())
+    let error = Assert.Throws<KeyNotFoundException>(fun () -> token.["empty", nothrow = false] |> ignore)
+    Assert.Equal("Key 'empty' not found.", error.Message)
     ()
 
 [<Fact>]
@@ -96,9 +117,20 @@ let ``Index (null)`` () =
     ()
 
 [<Fact>]
-let ``Index (nothrow, null)`` () =
+let ``Index (nothrow true, null)`` () =
     let token = Token(generator, ReadOnlyMemory())
     let error = Assert.Throws<ArgumentNullException>(fun () -> token.[null, nothrow = true] |> ignore)
+    let property = typeof<Token>.GetProperties() |> Array.filter (fun x -> x.GetIndexParameters().Length = 2) |> Array.exactlyOne
+    let parameter = property.GetIndexParameters() |> Array.head
+    let last = property.GetIndexParameters() |> Array.last
+    Assert.Equal(parameter.Name, error.ParamName)
+    Assert.Equal("nothrow", last.Name)
+    ()
+
+[<Fact>]
+let ``Index (nothrow false, null)`` () =
+    let token = Token(generator, ReadOnlyMemory())
+    let error = Assert.Throws<ArgumentNullException>(fun () -> token.[null, nothrow = false] |> ignore)
     let property = typeof<Token>.GetProperties() |> Array.filter (fun x -> x.GetIndexParameters().Length = 2) |> Array.exactlyOne
     let parameter = property.GetIndexParameters() |> Array.head
     let last = property.GetIndexParameters() |> Array.last

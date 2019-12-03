@@ -50,15 +50,10 @@ namespace Mikodev.Binary.Creators
 
         public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
-            int length;
-            int numberLength;
-            var limits = span.Length;
-            ref var source = ref MemoryMarshal.GetReference(span);
-            if (limits == 0 || limits < (numberLength = PrimitiveHelper.DecodeNumberLength(source)) || (length = PrimitiveHelper.DecodeNumber(ref source, numberLength)) < Unsafe.SizeOf<T>())
+            var data = PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span);
+            if (data.Length < Unsafe.SizeOf<T>())
                 return ThrowHelper.ThrowNotEnoughBytes<T>();
-            // check bounds via slice method
-            span = span.Slice(numberLength).Slice(length);
-            return Unsafe.ReadUnaligned<T>(ref Unsafe.Add(ref source, numberLength));
+            return Unsafe.ReadUnaligned<T>(ref MemoryMarshal.GetReference(data));
         }
 
         public override byte[] Encode(T item)

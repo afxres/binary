@@ -7,24 +7,24 @@ namespace Mikodev.Binary.Internal
 {
     internal readonly ref struct LengthList
     {
-        private readonly ReadOnlySpan<LengthItem> items;
+        private readonly ReadOnlySpan<LengthItem> info;
 
-        private readonly ReadOnlySpan<byte> bytes;
+        private readonly ReadOnlySpan<byte> data;
 
-        public LengthList(ReadOnlySpan<LengthItem> items, ReadOnlySpan<byte> bytes)
+        public LengthList(ReadOnlySpan<LengthItem> info, ReadOnlySpan<byte> data)
         {
-            Debug.Assert(bytes.Length > 0);
-            Debug.Assert(items.Length > 0);
-            Debug.Assert(items.ToArray().All(x => x.Offset >= sizeof(byte) && x.Length >= 0));
-            this.items = items;
-            this.bytes = bytes;
+            Debug.Assert(data.Length > 0);
+            Debug.Assert(info.Length > 0);
+            Debug.Assert(info.ToArray().All(x => x.Offset >= sizeof(byte) && x.Length >= 0));
+            this.info = info;
+            this.data = data;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Invoke<T>(Converter<T> converter, int index)
         {
-            var item = items[index];
-            var source = bytes.Slice(item.Offset, item.Length);
+            var item = info[index];
+            var source = data.Slice(item.Offset, item.Length);
             return converter.Decode(in source);
         }
     }

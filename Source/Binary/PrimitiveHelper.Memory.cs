@@ -18,16 +18,17 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ReadOnlySpan<byte> DecodeBufferWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
-            int numberLength;
-            var limits = span.Length;
-            ref var source = ref MemoryMarshal.GetReference(span);
-            if (limits == 0 || limits < (numberLength = DecodeNumberLength(source)))
+            var data = span;
+            if (data.IsEmpty)
                 return ThrowHelper.ThrowNotEnoughBytesReadOnlySpan<byte>();
+            ref var source = ref MemoryMarshal.GetReference(data);
+            var numberLength = DecodeNumberLength(source);
+            // check bounds via slice method
+            data = data.Slice(numberLength);
             var length = DecodeNumber(ref source, numberLength);
             // check bounds via slice method
-            var result = span.Slice(numberLength, length);
-            span = span.Slice(numberLength).Slice(length);
-            return result;
+            span = data.Slice(length);
+            return data.Slice(0, length);
         }
     }
 }

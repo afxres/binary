@@ -39,11 +39,11 @@ let ``Decode Buffer With Length Prefix (empty span)`` () =
 [<Fact>]
 let ``Decode Buffer With Length Prefix (invalid header)`` () =
     let buffer = [| 0x40uy |]
-    let error = Assert.Throws<ArgumentException>(fun () ->
+    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
         let mutable span = ReadOnlySpan buffer
         let _ = PrimitiveHelper.DecodeBufferWithLengthPrefix &span
         ())
-    Assert.Equal(message, error.Message)
+    Assert.StartsWith(outofrange, error.Message)
     ()
 
 [<Fact>]
@@ -68,11 +68,11 @@ let ``Decode String With Length Prefix (empty span)`` () =
 [<Fact>]
 let ``Decode String With Length Prefix (invalid header)`` () =
     let buffer = [| 0x40uy |]
-    let error = Assert.Throws<ArgumentException>(fun () ->
+    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
         let mutable span = ReadOnlySpan buffer
         let _ = PrimitiveHelper.DecodeStringWithLengthPrefix &span
         ())
-    Assert.Equal(message, error.Message)
+    Assert.StartsWith(outofrange, error.Message)
     ()
 
 [<Fact>]
@@ -99,11 +99,11 @@ let ``Decode UInt32 With Length Prefix (empty span)`` () =
 let ``Decode UInt32 With Length Prefix (invalid header)`` () =
     let converter = generator.GetConverter<uint32>()
     let buffer = [| 0x40uy |]
-    let error = Assert.Throws<ArgumentException>(fun () ->
+    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
         let mutable span = ReadOnlySpan buffer
         let _ = converter.DecodeWithLengthPrefix &span
         ())
-    Assert.Equal(message, error.Message)
+    Assert.StartsWith(outofrange, error.Message)
     ()
 
 [<Fact>]

@@ -26,7 +26,6 @@ namespace Mikodev.Binary
                 Allocator.AppendStringWithLengthPrefix(ref allocator, srcptr, span.Length, encoding);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static unsafe string DetachString(ReadOnlySpan<byte> span, Encoding encoding)
         {
             if (encoding is null)
@@ -35,21 +34,13 @@ namespace Mikodev.Binary
                 return StringHelper.GetString(encoding, srcptr, span.Length);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static unsafe string DetachStringWithLengthPrefix(ref ReadOnlySpan<byte> span, Encoding encoding)
         {
             if (encoding is null)
                 ThrowHelper.ThrowArgumentEncodingInvalid();
-            int numberLength;
-            var limits = span.Length;
-            ref var source = ref MemoryMarshal.GetReference(span);
-            if (limits == 0 || limits < (numberLength = DecodeNumberLength(source)))
-                return ThrowHelper.ThrowNotEnoughBytes<string>();
-            var length = DecodeNumber(ref source, numberLength);
-            // check bounds via slice method
-            span = span.Slice(numberLength).Slice(length);
-            fixed (byte* srcptr = &source)
-                return StringHelper.GetString(encoding, srcptr + numberLength, length);
+            var data = DecodeBufferWithLengthPrefix(ref span);
+            fixed (byte* srcptr = &MemoryMarshal.GetReference(data))
+                return StringHelper.GetString(encoding, srcptr, data.Length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

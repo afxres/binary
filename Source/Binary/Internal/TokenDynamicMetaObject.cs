@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Mikodev.Binary.Internal
 {
     internal sealed class TokenDynamicMetaObject : DynamicMetaObject
     {
         private static readonly List<Type> assignableTypes;
+
+        private static readonly MethodInfo convertMethodInfo = typeof(Token).GetMethod(nameof(Token.As), Type.EmptyTypes);
+
+        private static readonly MethodInfo indexerMethodInfo = typeof(Token).GetProperty("Item", new[] { typeof(string) }).GetGetMethod();
 
         static TokenDynamicMetaObject()
         {
@@ -26,19 +31,18 @@ namespace Mikodev.Binary.Internal
 
         public override DynamicMetaObject BindConvert(ConvertBinder binder)
         {
-            var value = Value;
             var type = binder.Type;
-            if (!assignableTypes.Contains(type))
-                value = ((Token)value).As(type);
-            var constant = Expression.Constant(value, type);
-            return new DynamicMetaObject(constant, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
+            var body = assignableTypes.Contains(type)
+                ? Expression.Convert(Expression, type) as Expression
+                : Expression.Call(Expression.Convert(Expression, typeof(Token)), convertMethodInfo.MakeGenericMethod(type));
+            return new DynamicMetaObject(body, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
         }
 
         public override DynamicMetaObject BindGetMember(GetMemberBinder binder)
         {
-            var value = ((IReadOnlyDictionary<string, Token>)Value)[binder.Name];
-            var constant = Expression.Constant(value);
-            return new DynamicMetaObject(constant, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
+            var self = Expression.Convert(Expression, typeof(Token));
+            var body = Expression.Call(self, indexerMethodInfo, Expression.Constant(binder.Name));
+            return new DynamicMetaObject(body, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
         }
 
         public override IEnumerable<string> GetDynamicMemberNames() => ((IReadOnlyDictionary<string, Token>)Value).Keys;
