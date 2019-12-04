@@ -165,5 +165,15 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(5, byteArrayParameters.Count);
             Assert.All(byteArrayParameters, x => Assert.Equal("Decode", x.Member.Name));
         }
+
+        [Fact(DisplayName = "Is Ref Struct")]
+        public void IsByRefLike()
+        {
+            var attributeName = "System.Runtime.CompilerServices.IsByRefLikeAttribute";
+            var types = typeof(Converter).Assembly.GetTypes();
+            var byRefTypes = (from t in types let attributes = t.GetCustomAttributes() where attributes.Any(x => x.GetType().FullName == attributeName) select t).ToList();
+            Assert.Contains(typeof(Allocator), byRefTypes);
+            Assert.Contains(typeof(AllocatorAnchor), byRefTypes);
+        }
     }
 }
