@@ -62,7 +62,7 @@ namespace Mikodev.Binary
 
         private Token GetToken(string key, bool nothrow)
         {
-            if (key == null)
+            if (key is null)
                 throw new ArgumentNullException(nameof(key));
             if (tokens.Value.TryGetValue(key, out var value))
                 return value;

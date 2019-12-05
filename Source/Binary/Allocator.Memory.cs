@@ -1,12 +1,14 @@
 ﻿using Mikodev.Binary.Internal;
+using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary
 {
     public ref partial struct Allocator
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void AppendLength<T>(ref Allocator allocator, int anchor, int length, T data, AllocatorAction<T> action)
         {
-            if (action == null)
+            if (action is null)
                 ThrowHelper.ThrowAllocatorActionInvalid();
             var offset = allocator.offset;
             var buffer = allocator.buffer;
@@ -17,9 +19,10 @@ namespace Mikodev.Binary
             action.Invoke(target, data);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void AppendAction<T>(ref Allocator allocator, int length, T data, AllocatorAction<T> action)
         {
-            if (action == null)
+            if (action is null)
                 ThrowHelper.ThrowAllocatorActionInvalid();
             if (length == 0)
                 return;

@@ -32,7 +32,7 @@ namespace Mikodev.Binary.Internal
             {
                 var head = GetIndex(ref Unsafe.Add(ref source, i), length - i);
                 var body = result.Nodes?.SingleOrDefault(x => x.Index == head);
-                if (body == null)
+                if (body is null)
                 {
                     body = new BinaryNode<T> { Index = head };
                     result.Nodes = new List<BinaryNode<T>>(result.Nodes ?? Array.Empty<BinaryNode<T>>()) { body }.ToArray();
@@ -43,9 +43,9 @@ namespace Mikodev.Binary.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static BinaryNode<T> GetNode<T>(BinaryNode<T>[] nodes, long index)
+        private static BinaryNode<T> Get<T>(BinaryNode<T>[] nodes, long index)
         {
-            if (nodes == null)
+            if (nodes is null)
                 return null;
             for (var i = 0; i < nodes.Length; i++)
             {
@@ -78,8 +78,8 @@ namespace Mikodev.Binary.Internal
             for (var i = 0; i < length; i += sizeof(long))
             {
                 var head = GetIndex(ref Unsafe.Add(ref source, i), length - i);
-                var node = GetNode(result.Nodes, head);
-                if (node == null)
+                var node = Get(result.Nodes, head);
+                if (node is null)
                     return null;
                 result = node;
             }
