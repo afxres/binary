@@ -11,14 +11,14 @@
     <Company>Mikodev</Company>
     <Copyright>Mikodev 2019</Copyright>
     <Product>Mikodev.Binary</Product>
-    <Version>5.0.0</Version>
+    <Version>5.0.1</Version>
     <PackageTags>binary dynamic serialization</PackageTags>
     <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Memory" Version="4.5.3" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.6.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.0" />
   </ItemGroup>
 
 </Project>
