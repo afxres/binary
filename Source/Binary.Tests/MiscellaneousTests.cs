@@ -49,7 +49,7 @@ namespace Mikodev.Binary.Tests
             Assert.Empty(inRefUnexpected);
 
             var converterParameters = parameters.Where(x => x.Member is MethodInfo && typeof(IConverter).IsAssignableFrom(x.Member.DeclaringType)).ToList();
-            var converterExpectedParameters = converterParameters.Where(x => !x.Member.Name.StartsWith("Throw") && Equals(x.ParameterType.Name, names)).ToList();
+            var converterExpectedParameters = converterParameters.Where(x => !x.Member.Name.StartsWith("Throw") && !x.Member.Name.StartsWith("Detach") && Equals(x.ParameterType.Name, names)).ToList();
             Assert.All(converterExpectedParameters, x => Assert.True(x.ParameterType.IsByRef));
         }
 

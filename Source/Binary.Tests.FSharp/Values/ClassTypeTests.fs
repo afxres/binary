@@ -187,6 +187,13 @@ let ``IPEndPoint Instance`` (address : string, port : int) =
     test value value
     ()
 
+[<Fact>]
+let ``IPEndPoint All Port`` () =
+    for i = IPEndPoint.MinPort to IPEndPoint.MaxPort do
+        let value = IPEndPoint(IPAddress.Any, i)
+        test value value
+    ()
+
 [<Theory>]
 [<InlineData("192.168.1.1", 15973)>]
 [<InlineData("fe80::1", 62840)>]
@@ -221,5 +228,6 @@ let ``IPEndPoint Not Enough Bytes`` () =
     let converter = generator.GetConverter<IPEndPoint>()
     let buffer = generator.Encode(struct (Unchecked.defaultof<IPAddress>, uint16 65535))
     let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode buffer |> ignore)
-    Assert.Equal("Not enough bytes or byte sequence invalid.", error.Message)
+    let parameter = typeof<IPAddress>.GetConstructor([| typeof<byte[]> |]).GetParameters() |> Array.exactlyOne
+    Assert.Equal(parameter.Name, error.ParamName)
     ()
