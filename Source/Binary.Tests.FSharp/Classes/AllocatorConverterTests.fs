@@ -32,7 +32,7 @@ let ``Variable Converter Length Prefix`` () =
         converter.EncodeWithLengthPrefix(&allocator, source)
         let buffer = allocator.AsSpan().ToArray()
 
-        if i < 33 then
+        if i < 32 then
             Assert.Equal(i, int buffer.[0])
             Assert.Equal(i + 1, buffer.Length)
         else
@@ -57,7 +57,7 @@ let ``Uncountable Collection Length Prefix`` () =
         converter.EncodeWithLengthPrefix(&allocator, source)
         let buffer = allocator.AsSpan().ToArray()
 
-        if i < 33 then
+        if i < 32 then
             Assert.Equal(i, int buffer.[0])
             Assert.Equal(i + 1, buffer.Length)
         else

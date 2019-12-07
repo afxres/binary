@@ -97,28 +97,5 @@ namespace Mikodev.Binary
             Unsafe.CopyBlockUnaligned(ref target, ref source, (uint)length);
             allocator.offset = offset + length;
         }
-
-        internal static void AppendLengthPrefix(ref Allocator allocator, int anchor, bool compact)
-        {
-            const int Limits = 33;
-            var offset = allocator.offset;
-            var buffer = allocator.buffer;
-            // check bounds manually
-            if ((ulong)(uint)anchor + sizeof(uint) > (uint)offset)
-                ThrowHelper.ThrowAllocatorAnchorInvalid();
-            ref var location = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), anchor);
-            var length = offset - anchor - sizeof(uint);
-            if (compact && length < Limits)
-            {
-                if (length > 0)
-                    Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref location, sizeof(byte)), ref Unsafe.Add(ref location, sizeof(uint)), (uint)length);
-                location = (byte)length;
-                allocator.offset = offset - (sizeof(uint) - sizeof(byte));
-            }
-            else
-            {
-                PrimitiveHelper.EncodeNumberFixed4(ref location, (uint)length);
-            }
-        }
     }
 }

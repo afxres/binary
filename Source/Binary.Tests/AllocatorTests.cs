@@ -12,6 +12,8 @@ namespace Mikodev.Binary.Tests
 
         private delegate void Expand(ref Allocator allocator, int expand);
 
+        private unsafe delegate void MemoryMoveForward3(sbyte* source, uint length);
+
         private static readonly string outofrange = new ArgumentOutOfRangeException().Message;
 
         [Theory(DisplayName = "Fake Length Prefix Anchor (hack)")]
@@ -215,6 +217,37 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(offset, allocator.Length);
             ensure.Invoke(ref allocator, expand);
             Assert.Equal(capacity, allocator.Capacity);
+        }
+
+        [Fact(DisplayName = "Memory Move Forward 3")]
+        public unsafe void MemoryMove()
+        {
+            var methodInfo = typeof(Allocator).GetMethod("MemoryMoveForward3", BindingFlags.NonPublic | BindingFlags.Static);
+            var action = (MemoryMoveForward3)Delegate.CreateDelegate(typeof(MemoryMoveForward3), methodInfo);
+
+            var random = new Random();
+            var origin = new byte[48];
+            random.NextBytes(origin);
+
+            for (var offset = 0; offset < 8; offset++)
+            {
+                for (var k = 1; k <= 31; k++)
+                {
+                    var buffer = origin.AsSpan().ToArray();
+                    var source = buffer.AsSpan().Slice(offset + 4, k).ToArray();
+                    fixed (byte* srcptr = &buffer[offset])
+                        action.Invoke((sbyte*)(srcptr + 4), (uint)k);
+                    var target = buffer.AsSpan().Slice(offset + 1, k).ToArray();
+                    Assert.Equal(source, target);
+
+                    var originHead = origin.AsSpan().Slice(0, offset).ToArray();
+                    var bufferHead = buffer.AsSpan().Slice(0, offset).ToArray();
+                    Assert.Equal(originHead, bufferHead);
+                    var originTail = origin.AsSpan().Slice(offset + 1 + k).ToArray();
+                    var bufferTail = buffer.AsSpan().Slice(offset + 1 + k).ToArray();
+                    Assert.Equal(originTail, bufferTail);
+                }
+            }
         }
     }
 }
