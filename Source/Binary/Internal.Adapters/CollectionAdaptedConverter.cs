@@ -29,14 +29,12 @@ namespace Mikodev.Binary.Internal.Adapters
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
-            var value = item == null ? default : builder.Of(item);
-            var count = item == null ? default : itemLength > 0 ? builder.Count(value) : CollectionBuilder.UnknownCount;
-            if (count != CollectionBuilder.UnknownCount)
+            int count;
+            var value = builder.Of(item);
+            if (itemLength > 0 && (count = builder.Count(value)) != CollectionBuilder.UnknownCount)
             {
                 var byteLength = checked(itemLength * count);
                 PrimitiveHelper.EncodeNumber(ref allocator, byteLength);
-                if (byteLength == 0)
-                    return;
                 adapter.Of(ref allocator, value);
             }
             else
