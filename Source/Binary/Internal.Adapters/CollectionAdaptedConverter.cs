@@ -17,17 +17,7 @@ namespace Mikodev.Binary.Internal.Adapters
             this.builder = builder;
         }
 
-        public override void Encode(ref Allocator allocator, T item)
-        {
-            adapter.Of(ref allocator, builder.Of(item));
-        }
-
-        public override T Decode(in ReadOnlySpan<byte> span)
-        {
-            return builder.To(adapter, span);
-        }
-
-        public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
+        private void AppendWithLengthPrefix(ref Allocator allocator, T item)
         {
             int count;
             var value = builder.Of(item);
@@ -45,9 +35,21 @@ namespace Mikodev.Binary.Internal.Adapters
             }
         }
 
-        public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
+        private T DetachWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
             return builder.To(adapter, PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
         }
+
+        public override void Encode(ref Allocator allocator, T item) => adapter.Of(ref allocator, builder.Of(item));
+
+        public override T Decode(in ReadOnlySpan<byte> span) => builder.To(adapter, span);
+
+        public override void EncodeAuto(ref Allocator allocator, T item) => AppendWithLengthPrefix(ref allocator, item);
+
+        public override T DecodeAuto(ref ReadOnlySpan<byte> span) => DetachWithLengthPrefix(ref span);
+
+        public override void EncodeWithLengthPrefix(ref Allocator allocator, T item) => AppendWithLengthPrefix(ref allocator, item);
+
+        public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => DetachWithLengthPrefix(ref span);
     }
 }

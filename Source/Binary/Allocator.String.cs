@@ -39,8 +39,7 @@ namespace Mikodev.Binary
             {
                 var dstptr = bufptr + offset;
                 var dstlen = dstmax == 0 ? 0 : encoding.GetBytes(source, length, dstptr + prefixLength, dstmax);
-                ref var target = ref Unsafe.AsRef<byte>(dstptr);
-                PrimitiveHelper.EncodeNumber(ref target, prefixLength, (uint)dstlen);
+                PrimitiveHelper.EncodeNumber(ref Unsafe.AsRef<byte>(dstptr), prefixLength, (uint)dstlen);
                 allocator.offset = offset + dstlen + prefixLength;
             }
         }
