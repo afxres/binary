@@ -221,6 +221,14 @@ let ``DateTimeOffset Instance`` () =
     ()
 
 [<Fact>]
+let ``DateTimeOffset Offset Ranged`` () =
+    for i = -14 to 14 do
+        let value = DateTimeOffset(DateTime(1970, 1, 1), TimeSpan.FromHours(float i))
+        Assert.Equal(float i, value.Offset.TotalHours)
+        testExplicit value 10
+    ()
+
+[<Fact>]
 let ``Enum`` () =
     test DayOfWeek.Sunday
     test ConsoleColor.Cyan
