@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mikodev.Binary.Internal.Adapters;
+using System;
 
 namespace Mikodev.Binary.Creators.Collections
 {
@@ -14,7 +15,7 @@ namespace Mikodev.Binary.Creators.Collections
             var itemConverter = context.GetConverter(itemType);
             var builder = Activator.CreateInstance(typeof(ArrayBuilder<>).MakeGenericType(itemType));
             var converterArguments = new object[] { itemConverter, builder };
-            var converterType = typeof(ArrayLikeConverter<,>).MakeGenericType(type, itemType);
+            var converterType = typeof(ArrayLikeAdaptedConverter<,>).MakeGenericType(type, itemType);
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }

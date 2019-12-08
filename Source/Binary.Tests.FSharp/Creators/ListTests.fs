@@ -52,7 +52,7 @@ type ListTests () =
         let memory = get.Invoke(builder, [| box (vlist [| 2; 4; 8; 16; 32 |]) |]) |> unbox<ReadOnlyMemory<int>>
         Assert.Equal<int>([| 2; 4; 8; 16; 32 |], memory.ToArray())
 
-        let arrayLikeConverterDefinition = findType "ArrayLikeConverter`2"
+        let arrayLikeConverterDefinition = findType "ArrayLikeAdaptedConverter`2"
         let intConverter = generator.GetConverter<int>()
         let arrayLikeConverterType = arrayLikeConverterDefinition.MakeGenericType(typeof<int vlist>, typeof<int>)
         let arrayLikeConverterConstructor = arrayLikeConverterType.GetConstructors() |> Array.exactlyOne

@@ -47,11 +47,11 @@ let testNull<'a when 'a : null> (name : string) (builderName : string) (collecti
 
 [<Fact>]
 let ``Integration Test For Converter Implementations And Null Or Empty Collection Binary Layout`` () =
-    test "ArrayLikeConverter`2" "ArraySegmentBuilder`1" (ArraySegment<string>())
-    test "ArrayLikeConverter`2" "MemoryBuilder`1" (Memory<TimeSpan>())
-    test "ArrayLikeConverter`2" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<int>())
-    testNull "ArrayLikeConverter`2" "ArrayBuilder`1" (Array.zeroCreate<int> 0)
-    testNull "ArrayLikeConverter`2" "ListDelegateBuilder`1" (ResizeArray<string>())
+    test "ArrayLikeAdaptedConverter`2" "ArraySegmentBuilder`1" (ArraySegment<string>())
+    test "ArrayLikeAdaptedConverter`2" "MemoryBuilder`1" (Memory<TimeSpan>())
+    test "ArrayLikeAdaptedConverter`2" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<int>())
+    testNull "ArrayLikeAdaptedConverter`2" "ArrayBuilder`1" (Array.zeroCreate<int> 0)
+    testNull "ArrayLikeAdaptedConverter`2" "ListDelegateBuilder`1" (ResizeArray<string>())
 
     testNull<IEnumerable<_>> "EnumerableAdaptedConverter`2" "IEnumerableBuilder`2" (ResizeArray<string>())
     testNull<IList<_>> "EnumerableAdaptedConverter`2" "IEnumerableBuilder`2" (Array.zeroCreate<int> 0)
@@ -62,7 +62,7 @@ let ``Integration Test For Converter Implementations And Null Or Empty Collectio
     testNull<ISet<_>> "EnumerableAdaptedConverter`2" "ISetBuilder`2" (HashSet<TimeSpan>())
     testNull<HashSet<_>> "EnumerableAdaptedConverter`2" "ISetBuilder`2" (HashSet<int64>())
     testNull<HashSet<_>> "EnumerableAdaptedConverter`2" "ISetBuilder`2" (HashSet<string>())
-    
+
     testNull<Dictionary<_, _>> "DictionaryAdaptedConverter`3" "IDictionaryBuilder`3" (Dictionary<int16, int64>())
     testNull<Dictionary<_, _>> "DictionaryAdaptedConverter`3" "IDictionaryBuilder`3" (Dictionary<string, int>())
     testNull<IDictionary<_, _>> "DictionaryAdaptedConverter`3" "IDictionaryBuilder`3" (Dictionary<int, string>())
