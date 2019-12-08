@@ -3,8 +3,8 @@
 open Mikodev.Binary
 open System
 
-type SetConverter<'a when 'a : comparison>(converter : Converter<'a>) =
-    inherit Converter<Set<'a>>(0)
+type SetConverter<'T when 'T : comparison>(converter : Converter<'T>) =
+    inherit Converter<Set<'T>>(0)
 
     override __.Encode(allocator, item) =
         if not (obj.ReferenceEquals(item, null)) then
@@ -12,7 +12,7 @@ type SetConverter<'a when 'a : comparison>(converter : Converter<'a>) =
                 converter.EncodeAuto(&allocator, i)
         ()
 
-    override __.Decode(span : inref<ReadOnlySpan<byte>>) : Set<'a> =
+    override __.Decode(span : inref<ReadOnlySpan<byte>>) : Set<'T> =
         let mutable span = span
         let mutable set = Set.empty
         while not span.IsEmpty do

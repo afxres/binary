@@ -4,8 +4,8 @@ open Mikodev.Binary
 open System
 open System.Collections.Generic
 
-type MapConverter<'a, 'b when 'a : comparison>(converter : Converter<KeyValuePair<'a, 'b>>) =
-    inherit Converter<Map<'a, 'b>>(0)
+type MapConverter<'K, 'V when 'K : comparison>(converter : Converter<KeyValuePair<'K, 'V>>) =
+    inherit Converter<Map<'K, 'V>>(0)
 
     override __.Encode(allocator, item) =
         if not (obj.ReferenceEquals(item, null)) then
@@ -13,7 +13,7 @@ type MapConverter<'a, 'b when 'a : comparison>(converter : Converter<KeyValuePai
                 converter.EncodeAuto(&allocator, i)
         ()
 
-    override __.Decode(span : inref<ReadOnlySpan<byte>>) : Map<'a, 'b> =
+    override __.Decode(span : inref<ReadOnlySpan<byte>>) : Map<'K, 'V> =
         let mutable span = span
         let mutable map = Map.empty
         while not span.IsEmpty do

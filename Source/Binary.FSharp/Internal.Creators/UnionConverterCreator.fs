@@ -7,9 +7,9 @@ open System.Linq.Expressions
 open System.Reflection
 
 type UnionConverterCreator() =
-    static let AllocatorByRefType = typeof<OfUnion<obj>>.GetMethod("Invoke").GetParameters().[0].ParameterType
+    static let AllocatorByRefType = typeof<UnionEncoder<obj>>.GetMethod("Invoke").GetParameters().[0].ParameterType
 
-    static let ReadOnlySpanByteByRefType = typeof<ToUnion<obj>>.GetMethod("Invoke").GetParameters().[0].ParameterType
+    static let ReadOnlySpanByteByRefType = typeof<UnionDecoder<obj>>.GetMethod("Invoke").GetParameters().[0].ParameterType
 
     static let EncodeNumberMethodInfo = typeof<PrimitiveHelper>.GetMethod("EncodeNumber", [| AllocatorByRefType; typeof<int> |])
 
@@ -79,7 +79,7 @@ type UnionConverterCreator() =
                 Expression.Assign(flag, tagExpression),
                 Expression.Call(setMethod, allocator, flag),
                 Expression.Switch(flag, defaultBlock, switchCases))
-        let delegateType = typedefof<OfUnion<_>>.MakeGenericType t
+        let delegateType = typedefof<UnionEncoder<_>>.MakeGenericType t
         let lambda = Expression.Lambda(delegateType, block, allocator, item, mark)
         lambda
 
@@ -123,7 +123,7 @@ type UnionConverterCreator() =
                 Seq.singleton flag,
                 Expression.Assign(flag, Expression.Call(getMethod, span)),
                 Expression.Switch(flag, defaultBlock, switchCases))
-        let delegateType = typedefof<ToUnion<_>>.MakeGenericType t
+        let delegateType = typedefof<UnionDecoder<_>>.MakeGenericType t
         let lambda = Expression.Lambda(delegateType, block, span, mark)
         lambda
 

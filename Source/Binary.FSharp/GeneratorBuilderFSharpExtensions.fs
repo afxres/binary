@@ -10,4 +10,6 @@ type GeneratorBuilderFSharpExtensions =
     static member AddFSharpConverterCreators(builder : IGeneratorBuilder) =
         builder
             .AddConverterCreator(UnionConverterCreator())
-            .AddConverterCreator(CollectionConverterCreator())
+            .AddConverterCreator(ListConverterCreator())
+            .AddConverterCreator(MapConverterCreator())
+            .AddConverterCreator(SetConverterCreator())

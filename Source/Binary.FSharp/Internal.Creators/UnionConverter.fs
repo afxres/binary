@@ -5,12 +5,12 @@ open System
 open System.Diagnostics
 open System.Runtime.CompilerServices
 
-type OfUnion<'a> = delegate of allocator : byref<Allocator> * item : 'a * mark : byref<int> -> unit
+type UnionEncoder<'T> = delegate of allocator : byref<Allocator> * item : 'T * mark : byref<int> -> unit
 
-type ToUnion<'a> = delegate of span : byref<ReadOnlySpan<byte>> * mark : byref<int> -> 'a
+type UnionDecoder<'T> = delegate of span : byref<ReadOnlySpan<byte>> * mark : byref<int> -> 'T
 
-type UnionConverter<'a>(encode : OfUnion<'a>, decode : ToUnion<'a>, encodeAuto : OfUnion<'a>, decodeAuto : ToUnion<'a>, noNull : bool) =
-    inherit Converter<'a>(0)
+type UnionConverter<'T>(encode : UnionEncoder<'T>, decode : UnionDecoder<'T>, encodeAuto : UnionEncoder<'T>, decodeAuto : UnionDecoder<'T>, noNull : bool) =
+    inherit Converter<'T>(0)
 
     [<Literal>]
     let MarkNone = 0
@@ -32,7 +32,7 @@ type UnionConverter<'a>(encode : OfUnion<'a>, decode : ToUnion<'a>, encodeAuto :
         me.ThrowOnInvalid mark
         ()
 
-    override me.Decode(span : inref<ReadOnlySpan<byte>>) : 'a =
+    override me.Decode(span : inref<ReadOnlySpan<byte>>) : 'T =
         let mutable span = span
         let mutable mark = MarkNone
         let item = decode.Invoke(&span, &mark)
