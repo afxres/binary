@@ -3,6 +3,7 @@
 open Mikodev.Binary
 open System
 
+[<CompiledName("FSharpSetConverterCreator")>]
 type SetConverterCreator() =
     interface IConverterCreator with
         member __.GetConverter(context, t) =

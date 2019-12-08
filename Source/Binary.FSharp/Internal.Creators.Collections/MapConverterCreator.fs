@@ -4,6 +4,7 @@ open Mikodev.Binary
 open System
 open System.Collections.Generic
 
+[<CompiledName("FSharpMapConverterCreator")>]
 type MapConverterCreator() =
     interface IConverterCreator with
         member __.GetConverter(context, t) =

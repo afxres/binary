@@ -3,6 +3,7 @@
 open Mikodev.Binary
 open System
 
+[<CompiledName("FSharpListConverter`1")>]
 type ListConverter<'T>(converter : Converter<Memory<'T>>) =
     inherit Converter<List<'T>>(0)
 

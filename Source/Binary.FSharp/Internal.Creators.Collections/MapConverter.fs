@@ -4,6 +4,7 @@ open Mikodev.Binary
 open System
 open System.Collections.Generic
 
+[<CompiledName("FSharpMapConverter`2")>]
 type MapConverter<'K, 'V when 'K : comparison>(converter : Converter<KeyValuePair<'K, 'V>>) =
     inherit Converter<Map<'K, 'V>>(0)
 
