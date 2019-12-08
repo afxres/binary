@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using Xunit;
 
@@ -137,6 +138,32 @@ namespace Mikodev.Binary.Tests
             Assert.True(ReferenceEquals(token["a"], (object)d.a));
             Assert.True(ReferenceEquals(token["b"], (object)d.b));
             Assert.True(ReferenceEquals(token["c"]["e"], (object)d.c.e));
+        }
+
+        [Fact(DisplayName = "Dynamic Keys")]
+        public void DynamicKeys()
+        {
+            void Test<T>(T value)
+            {
+                var bytes = generator.Encode(value);
+                var token = new Token(generator, bytes);
+                var keys = ((IDynamicMetaObjectProvider)token).GetMetaObject(Expression.Empty()).GetDynamicMemberNames();
+                var dictionaryKeys = ((IReadOnlyDictionary<string, Token>)token).Keys;
+                Assert.Equal(dictionaryKeys, keys);
+            }
+
+            Test(new
+            {
+                alpha = 1,
+                bravo = "2",
+                delta = new[] { 3 },
+            });
+
+            Test(new
+            {
+                id = 0,
+                name = string.Empty,
+            });
         }
     }
 }
