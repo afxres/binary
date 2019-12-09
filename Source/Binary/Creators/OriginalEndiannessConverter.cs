@@ -1,7 +1,6 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -11,7 +10,7 @@ namespace Mikodev.Binary.Creators
     {
         public OriginalEndiannessConverter() : base(Unsafe.SizeOf<T>())
         {
-            Debug.Assert(typeof(T) == typeof(Guid) || new[] { 1, 2, 4, 8 }.Contains(Unsafe.SizeOf<T>()));
+            Debug.Assert(typeof(T) == typeof(Guid) || Unsafe.SizeOf<T>() == 1 || Unsafe.SizeOf<T>() == 2 || Unsafe.SizeOf<T>() == 4 || Unsafe.SizeOf<T>() == 8);
         }
 
         public override void Encode(ref Allocator allocator, T item)

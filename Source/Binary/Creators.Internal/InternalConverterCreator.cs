@@ -4,7 +4,7 @@ using System.Net;
 
 namespace Mikodev.Binary.Creators.Internal
 {
-    internal sealed class SystemConverterCreator : IConverterCreator
+    internal sealed class InternalConverterCreator : IConverterCreator
     {
         private static readonly IReadOnlyDictionary<Type, Converter> dictionary = new Dictionary<Type, Converter>
         {
