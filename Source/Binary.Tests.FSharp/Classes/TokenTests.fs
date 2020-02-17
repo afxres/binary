@@ -4,6 +4,8 @@ open Mikodev.Binary
 open System
 open System.Collections
 open System.Collections.Generic
+open System.Reflection
+open System.Threading
 open Xunit
 
 type Packet<'a> = { id : int; data : 'a }
@@ -241,4 +243,65 @@ let ``Interface (integration, with data)`` () =
     Assert.True(b.MoveNext())
     Assert.True(b.MoveNext())
     Assert.False(b.MoveNext())
+    ()
+
+[<Fact>]
+let ``Operate Without Valid String Converter`` () =
+    let generator = {
+        new IGenerator with
+            member __.GetConverter t =
+                raise (NotSupportedException(sprintf "Invalid type '%O'" t))
+    }
+    let error = Assert.Throws<NotSupportedException>(fun () -> Token(generator, ReadOnlyMemory<byte>()) |> ignore)
+    let message = sprintf "Invalid type '%O'" typeof<string>
+    Assert.Equal(message, error.Message)
+    ()
+
+[<Fact>]
+let ``Operate With Calling Counter`` () =
+    let backup = Generator.CreateDefault()
+    let mutable count = 0
+    let generator = {
+        new IGenerator with
+            member __.GetConverter t =
+                if t = typeof<string> then
+                    Interlocked.Increment &count |> ignore
+                backup.GetConverter t
+    }
+    let bytes = backup.Encode ({| alpha = 10; beta = {| data = 20.0 |} |})
+    let token = Token(generator, ReadOnlyMemory bytes)
+    Assert.Equal(10, token.["alpha"].As<int>())
+    Assert.Equal(20.0, token.["beta"].["data"].As<double>())
+    Assert.Equal(1, count)
+    ()
+
+[<Fact>]
+let ``Operate With Null String Converter`` () =
+    let generator = {
+        new IGenerator with
+            member __.GetConverter t =
+                if t = typeof<string> then
+                    null
+                else
+                    raise (NotSupportedException(sprintf "Invalid type '%O'" t))
+    }
+    let error = Assert.Throws<ArgumentException>(fun () -> Token(generator, ReadOnlyMemory<byte>()) |> ignore)
+    let message = "Require valid string converter."
+    Assert.Equal(message, error.Message)
+    ()
+
+[<Fact>]
+let ``Operate With Private Constructor`` () =
+    let constructors = typeof<Token>.GetConstructors(BindingFlags.Public ||| BindingFlags.NonPublic ||| BindingFlags.Instance)
+    Assert.Equal(2, constructors.Length)
+    let constructor = Assert.Single(constructors |> Array.filter (fun x -> not x.IsPublic))
+    let generator = {
+        new IGenerator with
+            member __.GetConverter t =
+                raise (NotSupportedException(sprintf "Invalid type '%O'" t))
+    }
+    let error = Assert.Throws<TargetInvocationException>(fun () -> constructor.Invoke([| box generator; box (ReadOnlyMemory<byte>()); null |]))
+    let inner = Assert.IsType<NotSupportedException>(error.InnerException)
+    let message = sprintf "Invalid type '%O'" typeof<string>
+    Assert.Equal(message, inner.Message)
     ()

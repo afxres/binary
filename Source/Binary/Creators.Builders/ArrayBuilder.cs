@@ -3,7 +3,7 @@ using Mikodev.Binary.Internal.Adapters;
 using System;
 using System.Diagnostics;
 
-namespace Mikodev.Binary.Creators.Collections
+namespace Mikodev.Binary.Creators.Builders
 {
     internal sealed class ArrayBuilder<T> : ArrayLikeBuilder<T[], T>
     {

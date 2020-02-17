@@ -1,7 +1,7 @@
 ﻿using Mikodev.Binary.Internal.Adapters;
 using System;
 
-namespace Mikodev.Binary.Creators.Collections
+namespace Mikodev.Binary.Creators.Builders
 {
     internal sealed class ArrayConverterCreator : IConverterCreator
     {
@@ -9,9 +9,9 @@ namespace Mikodev.Binary.Creators.Collections
         {
             if (!type.IsArray)
                 return null;
-            if (type.GetArrayRank() != 1)
-                throw new NotSupportedException("Multidimensional arrays are not supported, use array of arrays instead.");
             var itemType = type.GetElementType();
+            if (type != itemType.MakeArrayType())
+                throw new NotSupportedException($"Only single dimensional zero based arrays are supported, type: {type}");
             var itemConverter = context.GetConverter(itemType);
             var builder = Activator.CreateInstance(typeof(ArrayBuilder<>).MakeGenericType(itemType));
             var converterArguments = new object[] { itemConverter, builder };

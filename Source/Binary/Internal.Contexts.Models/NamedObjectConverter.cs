@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -12,34 +13,25 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
         private readonly ToNamedObject<T> toObject;
 
-        private readonly string[] names;
+        private readonly ReadOnlyMemory<string> names;
 
         private readonly BinaryNode<int> entry;
 
-        public NamedObjectConverter(OfNamedObject<T> ofObject, ToNamedObject<T> toObject, string[] propertyNames)
+        public NamedObjectConverter(OfNamedObject<T> ofObject, ToNamedObject<T> toObject, BinaryNode<int> entry, IReadOnlyCollection<string> names)
         {
-            Debug.Assert(propertyNames != null && propertyNames.Any());
+            Debug.Assert(entry != null);
+            Debug.Assert(names != null && names.Any());
             this.ofObject = ofObject;
             this.toObject = toObject;
-            names = propertyNames;
-            var data = propertyNames.Select((x, i) => (Value: x, Index: i)).ToDictionary(x => x.Value, x => x.Index);
-            entry = BinaryNodeHelper.Create(Encoding, data);
+            this.entry = entry;
+            this.names = new ReadOnlyMemory<string>(names.ToArray());
         }
 
         [DebuggerStepThrough]
-        private T ThrowKeyFound(int i) => throw new ArgumentException($"Property '{names[i]}' already exists, type: {ItemType}");
+        private T ThrowKeyFound(int i) => throw new ArgumentException($"Named key '{names.Span[i]}' already exists, type: {ItemType}");
 
         [DebuggerStepThrough]
-        private void ThrowNotFound(Span<LengthItem> span)
-        {
-            Debug.Assert(names.Length > 0);
-            Debug.Assert(names.Length == span.Length);
-            var item = 0;
-            for (var i = 0; i < span.Length; i++)
-                if (span[i].Offset == 0)
-                    item = i;
-            throw new ArgumentException($"Property '{names[item]}' does not exist, type: {ItemType}");
-        }
+        private T ThrowNotFound(int i) => throw new ArgumentException($"Named key '{names.Span[i]}' does not exist, type: {ItemType}");
 
         public override void Encode(ref Allocator allocator, T item)
         {
@@ -76,10 +68,10 @@ namespace Mikodev.Binary.Internal.Contexts.Models
             if (byteLength == 0)
                 return default(T) == null ? default : ThrowHelper.ThrowNotEnoughBytes<T>();
 
-            const int ItemLimits = 16;
-            var itemCount = names.Length;
-            var count = 0;
-            var items = itemCount > ItemLimits ? new LengthItem[itemCount] : stackalloc LengthItem[itemCount];
+            const int ItemLimits = 32;
+            var capacity = names.Length;
+            var data = capacity > ItemLimits ? new LengthItem[capacity] : stackalloc LengthItem[capacity];
+            var list = new LengthList(span, data);
             ref var source = ref MemoryMarshal.GetReference(span);
 
             var limits = byteLength;
@@ -88,24 +80,16 @@ namespace Mikodev.Binary.Internal.Contexts.Models
             while (limits - offset != length)
             {
                 DecodePrefix(ref source, ref offset, ref length, limits);
-                var token = BinaryNodeHelper.GetOrDefault(entry, ref Unsafe.Add(ref source, offset), length);
+                var result = BinaryNodeHelper.GetOrDefault(entry, ref Unsafe.Add(ref source, offset), length);
                 DecodePrefix(ref source, ref offset, ref length, limits);
-                if (token == null)
+                if (result is null || list.Insert(result.Value, offset, length))
                     continue;
-                var index = token.Value;
-                Debug.Assert((uint)index < (uint)itemCount);
-                ref var value = ref items[index];
-                if (value.Offset != 0)
-                    return ThrowKeyFound(index);
-                value = new LengthItem(offset, length);
-                count++;
+                return ThrowKeyFound(result.Value);
             }
 
-            Debug.Assert(itemCount > 0);
-            Debug.Assert(itemCount >= count && count >= 0);
-            if (count != itemCount)
-                ThrowNotFound(items);
-            var list = new LengthList(items, span);
+            var cursor = list.Ensure();
+            if (cursor != -1)
+                return ThrowNotFound(cursor);
             return toObject.Invoke(list);
         }
     }

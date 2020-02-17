@@ -46,12 +46,12 @@ let testNull<'a when 'a : null> (name : string) (builderName : string) (collecti
     ()
 
 [<Fact>]
-let ``Integration Test For Converter Implementations And Null Or Empty Collection Binary Layout`` () =
+let ``Converter Implementations And Null Or Empty Collection Binary Layout (integration test)`` () =
     test "ArrayLikeAdaptedConverter`2" "ArraySegmentBuilder`1" (ArraySegment<string>())
     test "ArrayLikeAdaptedConverter`2" "MemoryBuilder`1" (Memory<TimeSpan>())
     test "ArrayLikeAdaptedConverter`2" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<int>())
     testNull "ArrayLikeAdaptedConverter`2" "ArrayBuilder`1" (Array.zeroCreate<int> 0)
-    testNull "ArrayLikeAdaptedConverter`2" "ListDelegateBuilder`1" (ResizeArray<string>())
+    testNull "ArrayLikeAdaptedConverter`2" "ListBuilder`1" (ResizeArray<string>())
 
     testNull<IEnumerable<_>> "EnumerableAdaptedConverter`2" "IEnumerableBuilder`2" (ResizeArray<string>())
     testNull<IList<_>> "EnumerableAdaptedConverter`2" "IEnumerableBuilder`2" (Array.zeroCreate<int> 0)

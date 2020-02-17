@@ -5,8 +5,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Mikodev.Binary
@@ -16,18 +14,24 @@ namespace Mikodev.Binary
     {
         private static readonly IReadOnlyDictionary<string, Token> empty = new Dictionary<string, Token>();
 
+        private readonly ReadOnlyMemory<byte> memory;
+
         private readonly IGenerator generator;
 
-        private readonly ReadOnlyMemory<byte> memory;
+        private readonly Converter<string> stringConverter;
 
         private readonly Lazy<IReadOnlyDictionary<string, Token>> tokens;
 
-        public Token(IGenerator generator, ReadOnlyMemory<byte> memory)
+        private Token(IGenerator generator, ReadOnlyMemory<byte> memory, Converter<string> stringConverter)
         {
             if (generator is null)
                 throw new ArgumentNullException(nameof(generator));
+            stringConverter ??= generator.GetConverter<string>();
+            if (stringConverter is null)
+                throw new ArgumentException("Require valid string converter.");
             this.memory = memory;
             this.generator = generator;
+            this.stringConverter = stringConverter;
             tokens = new Lazy<IReadOnlyDictionary<string, Token>>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
@@ -37,19 +41,19 @@ namespace Mikodev.Binary
             if (memory.IsEmpty)
                 return empty;
             var generator = instance.generator;
+            var stringConverter = instance.stringConverter;
             var dictionary = new Dictionary<string, Token>();
             var body = memory.Span;
-            ref var source = ref MemoryMarshal.GetReference(body);
 
             try
             {
                 while (!body.IsEmpty)
                 {
-                    var header = PrimitiveHelper.DecodeStringWithLengthPrefix(ref body);
+                    var header = stringConverter.DecodeWithLengthPrefix(ref body);
                     var buffer = PrimitiveHelper.DecodeBufferWithLengthPrefix(ref body);
-                    var offset = (int)Unsafe.ByteOffset(ref source, ref MemoryMarshal.GetReference(buffer));
+                    var offset = memory.Length - buffer.Length - body.Length;
                     var target = memory.Slice(offset, buffer.Length);
-                    var result = new Token(generator, target);
+                    var result = new Token(generator, target, stringConverter);
                     dictionary.Add(header, result);
                 }
                 return dictionary;
@@ -72,6 +76,8 @@ namespace Mikodev.Binary
         }
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => new TokenDynamicMetaObject(parameter, this);
+
+        public Token(IGenerator generator, ReadOnlyMemory<byte> memory) : this(generator, memory, null) { }
 
         public Token this[string key] => GetToken(key, nothrow: false);
 

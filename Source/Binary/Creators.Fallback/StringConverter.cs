@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Mikodev.Binary.Creators.Internal
+namespace Mikodev.Binary.Creators.Fallback
 {
     internal sealed class StringConverter : Converter<string>
     {

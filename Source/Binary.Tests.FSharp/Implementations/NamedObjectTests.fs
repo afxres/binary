@@ -11,7 +11,7 @@ let generator = Generator.CreateDefault()
 let ``Key Does Not Exist`` () =
     let bytes = generator.Encode {| alpha = 2048; bravo = "Charlie" |}
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode(bytes, {| alpha = 0; bravo = String.Empty; delta = 0.0 |}) |> ignore)
-    Assert.StartsWith("Property 'delta' does not exist, type:", error.Message)
+    Assert.StartsWith("Named key 'delta' does not exist, type:", error.Message)
     ()
 
 [<Fact>]
@@ -19,7 +19,7 @@ let ``Key Already Exists`` () =
     let items = [ ("a", box 1024); ("b", box 256); ("c", box 16); ("b", box 128) ] |> List.map (fun (x, y) -> KeyValuePair(x, y))
     let bytes = generator.Encode items
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode(bytes, {| a = 0; b = 0; c = 0 |}) |> ignore)
-    Assert.StartsWith("Property 'b' already exists, type:", error.Message)
+    Assert.StartsWith("Named key 'b' already exists, type:", error.Message)
     ()
 
 [<Fact>]

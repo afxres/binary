@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Mikodev.Binary.Creators.Collections
+namespace Mikodev.Binary.Creators.Builders
 {
     internal sealed class EnumerableConverterCreator : IConverterCreator
     {
@@ -13,20 +13,18 @@ namespace Mikodev.Binary.Creators.Collections
             if (type.IsValueType || !type.TryGetInterfaceArguments(typeof(IEnumerable<>), out var arguments))
                 return null;
             var interfaceArguments = default(Type[]);
-            Type Detect(Type builderDefinition, Type assignable, params Type[] interfaces) =>
+            Type Detect(Type definition, Type assignable, params Type[] interfaces) =>
                 interfaces.Any(x => type.TryGetInterfaceArguments(x, out interfaceArguments)) && type.IsAssignableFrom(assignable.MakeGenericType(interfaceArguments))
-                    ? builderDefinition
+                    ? definition
                     : null;
             var builderDefinition =
                 Detect(typeof(IDictionaryBuilder<,,>), typeof(Dictionary<,>), typeof(IDictionary<,>), typeof(IReadOnlyDictionary<,>)) ??
                 Detect(typeof(ISetBuilder<,>), typeof(HashSet<>), typeof(ISet<>)) ??
                 Detect(typeof(IEnumerableBuilder<,>), typeof(ArraySegment<>), typeof(IEnumerable<>));
-            if (builderDefinition == null)
+            if (builderDefinition is null)
                 return null;
 
             var itemType = arguments.Single();
-            if (builderDefinition == null)
-                return null;
             var converterDefinition = builderDefinition == typeof(IDictionaryBuilder<,,>)
                 ? typeof(DictionaryAdaptedConverter<,,>)
                 : typeof(EnumerableAdaptedConverter<,>);

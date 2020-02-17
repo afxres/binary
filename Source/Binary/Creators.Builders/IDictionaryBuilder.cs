@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Creators.Collections
+namespace Mikodev.Binary.Creators.Builders
 {
     internal sealed class IDictionaryBuilder<T, K, V> : DictionaryBuilder<T, K, V> where T : IEnumerable<KeyValuePair<K, V>>
     {

@@ -2,7 +2,7 @@
 using Mikodev.Binary.Internal.Adapters;
 using System;
 
-namespace Mikodev.Binary.Creators.Collections
+namespace Mikodev.Binary.Creators.Builders
 {
     internal sealed class MemoryBuilder<T> : ArrayLikeBuilder<Memory<T>, T>
     {

@@ -15,7 +15,7 @@ namespace Mikodev.Binary.Internal
 
     internal delegate List<T> ToList<T>(T[] buffer, int length);
 
-    internal delegate E[] ToArray<in T, E>(T collection) where T : IEnumerable<E>;
+    internal delegate E[] ToArray<in T, out E>(T collection) where T : IEnumerable<E>;
 
     internal delegate T ToCollection<out T, in E>(IEnumerable<E> enumerable);
 

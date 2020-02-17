@@ -19,26 +19,31 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static readonly ConstructorInfo bufferConstructorInfo = typeof(ReadOnlySpan<byte>).GetConstructor(new[] { typeof(byte[]) });
 
-        internal static Converter GetConverterAsNamedObject(Type type, ConstructorInfo constructor, ItemIndexes indexes, MetaList metadata, NameDictionary dictionary)
+        internal static Converter GetConverterAsNamedObject(IGeneratorContext context, Type type, ConstructorInfo constructor, ItemIndexes indexes, MetaList metadata, NameDictionary dictionary)
         {
-            if (dictionary == null)
-                dictionary = metadata.Select(x => x.Property).ToDictionary(x => x, x => x.Name);
+            // require string converter for named key
+            var stringConverter = (Converter<string>)context.GetConverter(typeof(string));
+            var stringContainer = dictionary.Values.ToDictionary(x => x, x => new ReadOnlyMemory<byte>(stringConverter.Encode(x)));
+            Debug.Assert(dictionary.Count == stringContainer.Count);
             Debug.Assert(dictionary.OrderBy(x => x.Value).Select(x => x.Key).SequenceEqual(metadata.Select(x => x.Property)));
-            var encode = GetEncodeDelegateAsNamedObject(type, metadata, dictionary);
+            var names = metadata.Select(x => dictionary[x.Property]).ToList();
+            var entry = BinaryNodeHelper.CreateOrDefault(names.Select((x, i) => (stringContainer[x], i)).ToList());
+            if (entry is null)
+                throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {type}, string converter type: {stringConverter.GetType()}");
+            var encode = GetEncodeDelegateAsNamedObject(type, metadata, dictionary, stringContainer);
             var decode = GetDecodeDelegateAsNamedObject(type, metadata, constructor, indexes);
-            var propertyNames = metadata.Select(x => dictionary[x.Property]).ToArray();
-            var converterArguments = new object[] { encode, decode, propertyNames };
+            var converterArguments = new object[] { encode, decode, entry, names };
             var converterType = typeof(NamedObjectConverter<>).MakeGenericType(type);
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }
 
-        private static Delegate GetEncodeDelegateAsNamedObject(Type type, MetaList metadata, NameDictionary dictionary)
+        private static Delegate GetEncodeDelegateAsNamedObject(Type type, MetaList metadata, NameDictionary dictionary, IReadOnlyDictionary<string, ReadOnlyMemory<byte>> buffers)
         {
-            static byte[] EncodeStringWithLengthPrefix(string text)
+            byte[] EncodeStringWithLengthPrefix(string text)
             {
                 var allocator = new Allocator();
-                PrimitiveHelper.EncodeStringWithLengthPrefix(ref allocator, text.AsSpan());
+                PrimitiveHelper.EncodeBufferWithLengthPrefix(ref allocator, buffers[text].Span);
                 return allocator.AsSpan().ToArray();
             }
 
@@ -53,6 +58,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 var propertyType = property.PropertyType;
                 var propertyExpression = Expression.Property(item, property);
                 var methodInfo = typeof(Converter<>).MakeGenericType(propertyType).GetMethod(nameof(IConverter.EncodeWithLengthPrefix));
+                // append named key with length prefix (cached), then append value with length prefix
                 expressions.Add(Expression.Call(appendMethodInfo, allocator, Expression.New(bufferConstructorInfo, Expression.Constant(buffer))));
                 expressions.Add(Expression.Call(Expression.Constant(converter), methodInfo, allocator, propertyExpression));
             }

@@ -1,31 +1,54 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary.Internal
 {
-    internal readonly ref struct LengthList
+    internal ref struct LengthList
     {
-        private readonly ReadOnlySpan<LengthItem> info;
+        private readonly ReadOnlySpan<byte> span;
 
-        private readonly ReadOnlySpan<byte> data;
+        private readonly Span<LengthItem> data;
 
-        public LengthList(ReadOnlySpan<LengthItem> info, ReadOnlySpan<byte> data)
+        private int size;
+
+        public LengthList(ReadOnlySpan<byte> span, Span<LengthItem> data)
         {
+            Debug.Assert(span.Length > 0);
             Debug.Assert(data.Length > 0);
-            Debug.Assert(info.Length > 0);
-            Debug.Assert(info.ToArray().All(x => x.Offset >= sizeof(byte) && x.Length >= 0));
-            this.info = info;
+            this.span = span;
             this.data = data;
+            this.size = 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T Invoke<T>(Converter<T> converter, int index)
+        public readonly int Ensure()
         {
-            var item = info[index];
-            var source = data.Slice(item.Offset, item.Length);
-            return converter.Decode(in source);
+            if (size == data.Length)
+                return -1;
+            for (var i = 0; i < data.Length; i++)
+                if (data[i].Offset == 0)
+                    return i;
+            return ThrowHelper.ThrowNotEnoughBytes<int>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Insert(int cursor, int offset, int length)
+        {
+            ref var item = ref data[cursor];
+            if (item.Offset != 0)
+                return false;
+            item = new LengthItem(offset, length);
+            size++;
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly T Invoke<T>(Converter<T> converter, int index)
+        {
+            var item = data[index];
+            var body = span.Slice(item.Offset, item.Length);
+            return converter.Decode(in body);
         }
     }
 }

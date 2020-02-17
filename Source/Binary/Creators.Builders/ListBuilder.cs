@@ -4,15 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Mikodev.Binary.Creators.Collections
+namespace Mikodev.Binary.Creators.Builders
 {
-    internal sealed class ListDelegateBuilder<T> : ArrayLikeBuilder<List<T>, T>
+    internal sealed class ListBuilder<T> : ArrayLikeBuilder<List<T>, T>
     {
         private readonly OfList<T> ofList;
 
         private readonly ToList<T> toList;
 
-        public ListDelegateBuilder(OfList<T> ofList, ToList<T> toList)
+        public ListBuilder(OfList<T> ofList, ToList<T> toList)
         {
             this.ofList = ofList;
             this.toList = toList;
@@ -21,7 +21,7 @@ namespace Mikodev.Binary.Creators.Collections
         public override ReadOnlyMemory<T> Of(List<T> item)
         {
             int itemCount;
-            if (item == null || (itemCount = item.Count) == 0)
+            if (item is null || (itemCount = item.Count) == 0)
                 return default;
             return new ReadOnlyMemory<T>(ofList.Invoke(item), 0, itemCount);
         }

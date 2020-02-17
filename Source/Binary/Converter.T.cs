@@ -69,14 +69,14 @@ namespace Mikodev.Binary
             if (length > 0)
             {
                 var buffer = new byte[length];
-                var allocator = new Allocator(buffer, maxCapacity: length);
+                var allocator = new Allocator(new Span<byte>(buffer), maxCapacity: length);
                 Encode(ref allocator, item);
                 return buffer;
             }
             else
             {
                 var buffer = BufferHelper.GetBuffer();
-                var allocator = new Allocator(buffer);
+                var allocator = new Allocator(new Span<byte>(buffer));
                 Encode(ref allocator, item);
                 return allocator.AsSpan().ToArray();
             }

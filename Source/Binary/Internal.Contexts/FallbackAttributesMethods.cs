@@ -60,8 +60,11 @@ namespace Mikodev.Binary.Internal.Contexts
             // converter as tuple object
             if (attribute is TupleObjectAttribute)
                 return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, indexes, metadata.Select(x => ((MemberInfo)x.Property, x.Converter)).ToList());
+
+            if (dictionary == null)
+                dictionary = metadata.Select(x => x.Property).ToDictionary(x => x, x => x.Name);
             // converter as named object (or default)
-            return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, indexes, metadata, dictionary);
+            return ContextMethodsOfNamedObject.GetConverterAsNamedObject(context, type, constructor, indexes, metadata, dictionary);
         }
 
         private static Attribute GetAttribute(Type type)
@@ -168,7 +171,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static (PropertyInfo Property, Attribute Key, Attribute Converter) GetPropertyAttributes(Type type, PropertyInfo property, Attribute attribute)
         {
-            Debug.Assert(attribute == null || attribute is NamedObjectAttribute || attribute is TupleObjectAttribute);
+            Debug.Assert(attribute is null || attribute is NamedObjectAttribute || attribute is TupleObjectAttribute);
             var array = property.GetCustomAttributes(false).OfType<Attribute>();
             var keys = array.Where(x => keyAttributeTypes.Contains(x.GetType())).ToList();
             var converters = array.Where(x => converterAttributeTypes.Contains(x.GetType())).ToList();
@@ -180,12 +183,13 @@ namespace Mikodev.Binary.Internal.Contexts
             if (key == null && converter != null)
                 throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' for '{converter.GetType().Name}', property name: {property.Name}, type: {type}");
 
+            Debug.Assert(key is null || key is NamedKeyAttribute || key is TupleKeyAttribute);
             var (origin, target) = (attribute, key) switch
             {
                 (null, NamedKeyAttribute _) => (nameof(NamedObjectAttribute), nameof(NamedKeyAttribute)),
                 (null, TupleKeyAttribute _) => (nameof(TupleObjectAttribute), nameof(TupleKeyAttribute)),
-                (NamedObjectAttribute _, _) when key != null && !(key is NamedKeyAttribute) => (nameof(NamedKeyAttribute), nameof(NamedObjectAttribute)),
-                (TupleObjectAttribute _, _) when key != null && !(key is TupleKeyAttribute) => (nameof(TupleKeyAttribute), nameof(TupleObjectAttribute)),
+                (NamedObjectAttribute _, TupleKeyAttribute _) => (nameof(NamedKeyAttribute), nameof(NamedObjectAttribute)),
+                (TupleObjectAttribute _, NamedKeyAttribute _) => (nameof(TupleKeyAttribute), nameof(TupleObjectAttribute)),
                 _ => default,
             };
 

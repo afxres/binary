@@ -2,7 +2,7 @@
 using Mikodev.Binary.Internal.Adapters;
 using System;
 
-namespace Mikodev.Binary.Creators.Collections
+namespace Mikodev.Binary.Creators.Builders
 {
     internal abstract class ArrayLikeBuilder<T, E> : CollectionBuilder<T, ReadOnlyMemory<E>, MemoryItem<E>, E>
     {

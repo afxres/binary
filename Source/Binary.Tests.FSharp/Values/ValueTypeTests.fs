@@ -131,18 +131,27 @@ let ``Single Double`` () =
     ()
 
 [<Fact>]
-let ``Bool Char Byte SByte Decimal`` () =
+let ``Bool Char Byte SByte`` () =
     for i = 0 to randomCount do
         let u8 : byte = byte(randomNumber())
         let i8 : sbyte = sbyte(randomNumber())
         let char : char = char(randomNumber())
         let bool : bool = int(randomNumber()) &&& 1 = 0
-        let number : decimal = decimal(random.NextDouble())
 
         test u8
         test i8
         test char
         test bool
+    ()
+
+[<Fact>]
+let ``Decimal`` () =
+    for i = 0 to randomCount do
+        let number : decimal = decimal(random.NextDouble())
+        let converter = typeof<Converter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "DecimalConverter") |> Array.exactlyOne |> Activator.CreateInstance :?> Converter<decimal>
+        let alpha = converter.Encode number
+        let bravo = Decimal.GetBits(number) |> Array.map (fun x -> BitConverter.GetBytes x) |> Array.concat
+        Assert.Equal<byte>(alpha, bravo)
         test number
     ()
 

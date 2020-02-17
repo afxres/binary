@@ -29,7 +29,7 @@ namespace Mikodev.Binary.Internal
             if (length == 0)
                 return string.Empty;
             int[] counts;
-            if ((object)encoding != Converter.Encoding || (uint)length >= (uint)(counts = maxCharCounts).Length)
+            if (!ReferenceEquals(encoding, Converter.Encoding) || (uint)length >= (uint)(counts = maxCharCounts).Length)
                 return encoding.GetString(source, length);
             var dstmax = counts[length];
             Debug.Assert(dstmax > 0);
@@ -47,7 +47,7 @@ namespace Mikodev.Binary.Internal
             if (length == 0)
                 return 0;
             int[] counts;
-            if ((object)encoding != Converter.Encoding || (uint)length >= (uint)(counts = maxByteCounts).Length)
+            if (!ReferenceEquals(encoding, Converter.Encoding) || (uint)length >= (uint)(counts = maxByteCounts).Length)
                 return encoding.GetByteCount(source, length);
             return counts[length];
         }

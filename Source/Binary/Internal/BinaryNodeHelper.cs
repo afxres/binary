@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Mikodev.Binary.Internal
 {
@@ -17,10 +16,17 @@ namespace Mikodev.Binary.Internal
             if (length >= sizeof(long))
                 return Unsafe.As<byte, long>(ref source);
             var index = 0L;
-            ref var target = ref Unsafe.As<long, byte>(ref index);
-            for (var i = 0; i < length; i++)
-                Unsafe.Add(ref target, i) = Unsafe.Add(ref source, i);
+            Unsafe.CopyBlockUnaligned(ref Unsafe.As<long, byte>(ref index), ref source, (uint)length);
             return index;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static BinaryNode<T> Get<T>(ReadOnlySpan<BinaryNode<T>> nodes, long index)
+        {
+            foreach (var node in nodes)
+                if (node.Index == index)
+                    return node;
+            return null;
         }
 
         private static BinaryNode<T> GetOrCreate<T>(BinaryNode<T> root, ReadOnlySpan<byte> span)
@@ -35,38 +41,24 @@ namespace Mikodev.Binary.Internal
                 if (body is null)
                 {
                     body = new BinaryNode<T> { Index = head };
-                    result.Nodes = new List<BinaryNode<T>>(result.Nodes ?? Array.Empty<BinaryNode<T>>()) { body }.ToArray();
+                    var list = new List<BinaryNode<T>>(result.Nodes ?? Array.Empty<BinaryNode<T>>()) { body };
+                    result.Nodes = list.ToArray();
                 }
                 result = body;
             }
             return result;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static BinaryNode<T> Get<T>(BinaryNode<T>[] nodes, long index)
-        {
-            if (nodes is null)
-                return null;
-            for (var i = 0; i < nodes.Length; i++)
-            {
-                var node = nodes[i];
-                if (node.Index != index)
-                    continue;
-                return node;
-            }
-            return null;
-        }
-
-        internal static BinaryNode<T> Create<T>(Encoding encoding, IReadOnlyDictionary<string, T> enumerable)
+        internal static BinaryNode<T> CreateOrDefault<T>(IReadOnlyCollection<(ReadOnlyMemory<byte>, T)> enumerable)
         {
             var root = new BinaryNode<T>();
-            foreach (var i in enumerable)
+            foreach (var (key, value) in enumerable)
             {
-                var node = GetOrCreate(root, encoding.GetBytes(i.Key));
+                var node = GetOrCreate(root, key.Span);
                 if (node.HasValue)
-                    throw new ArgumentException("Invalid or duplicate key detected!");
+                    return null;
                 node.HasValue = true;
-                node.Value = i.Value;
+                node.Value = value;
             }
             return root;
         }
@@ -78,7 +70,7 @@ namespace Mikodev.Binary.Internal
             for (var i = 0; i < length; i += sizeof(long))
             {
                 var head = GetIndex(ref Unsafe.Add(ref source, i), length - i);
-                var node = Get(result.Nodes, head);
+                var node = Get(new ReadOnlySpan<BinaryNode<T>>(result.Nodes), head);
                 if (node is null)
                     return null;
                 result = node;
