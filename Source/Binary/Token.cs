@@ -12,8 +12,6 @@ namespace Mikodev.Binary
     [DebuggerTypeProxy(typeof(TokenDebuggerTypeProxy))]
     public sealed partial class Token : IDynamicMetaObjectProvider
     {
-        private static readonly IReadOnlyDictionary<string, Token> empty = new Dictionary<string, Token>();
-
         private readonly ReadOnlyMemory<byte> memory;
 
         private readonly IGenerator generator;
@@ -39,7 +37,7 @@ namespace Mikodev.Binary
         {
             var memory = instance.memory;
             if (memory.IsEmpty)
-                return empty;
+                return new Dictionary<string, Token>();
             var generator = instance.generator;
             var stringConverter = instance.stringConverter;
             var dictionary = new Dictionary<string, Token>();
@@ -60,7 +58,7 @@ namespace Mikodev.Binary
             }
             catch (Exception)
             {
-                return empty;
+                return new Dictionary<string, Token>();
             }
         }
 

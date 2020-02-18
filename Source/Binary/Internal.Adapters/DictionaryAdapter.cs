@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Mikodev.Binary.Internal.Adapters
 {
-    internal sealed class DictionaryAdapter<T, K, V> : CollectionAdapter<T, Dictionary<K, V>, KeyValuePair<K, V>> where T : IEnumerable<KeyValuePair<K, V>>
+    internal sealed class DictionaryAdapter<T, K, V> : CollectionAdapter<T, Dictionary<K, V>> where T : IEnumerable<KeyValuePair<K, V>>
     {
         private readonly Converter<KeyValuePair<K, V>> converter;
 
@@ -11,7 +11,7 @@ namespace Mikodev.Binary.Internal.Adapters
 
         public override void Of(ref Allocator allocator, T item)
         {
-            if (item == null)
+            if (item is null)
                 return;
             var converter = this.converter;
             foreach (var i in item)

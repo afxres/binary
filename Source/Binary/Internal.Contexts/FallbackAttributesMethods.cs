@@ -13,9 +13,9 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class FallbackAttributesMethods
     {
-        private static readonly IReadOnlyCollection<Type> keyAttributeTypes = new[] { typeof(NamedKeyAttribute), typeof(TupleKeyAttribute) };
+        private static readonly IReadOnlyCollection<Type> KeyAttributeTypes = new[] { typeof(NamedKeyAttribute), typeof(TupleKeyAttribute) };
 
-        private static readonly IReadOnlyCollection<Type> converterAttributeTypes = new[] { typeof(ConverterAttribute), typeof(ConverterCreatorAttribute) };
+        private static readonly IReadOnlyCollection<Type> ConverterAttributeTypes = new[] { typeof(ConverterAttribute), typeof(ConverterCreatorAttribute) };
 
         internal static Converter GetConverter(IGeneratorContext context, Type type)
         {
@@ -61,7 +61,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (attribute is TupleObjectAttribute)
                 return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, indexes, metadata.Select(x => ((MemberInfo)x.Property, x.Converter)).ToList());
 
-            if (dictionary == null)
+            if (dictionary is null)
                 dictionary = metadata.Select(x => x.Property).ToDictionary(x => x, x => x.Name);
             // converter as named object (or default)
             return ContextMethodsOfNamedObject.GetConverterAsNamedObject(context, type, constructor, indexes, metadata, dictionary);
@@ -70,7 +70,7 @@ namespace Mikodev.Binary.Internal.Contexts
         private static Attribute GetAttribute(Type type)
         {
             var array = type.GetCustomAttributes(false);
-            if (array == null || array.Length == 0)
+            if (array is null || array.Length == 0)
                 return null;
             var attributeTypes = new[] { typeof(ConverterAttribute), typeof(ConverterCreatorAttribute), typeof(NamedObjectAttribute), typeof(TupleObjectAttribute) };
             var attributes = array.OfType<Attribute>().Where(x => attributeTypes.Contains(x.GetType())).ToList();
@@ -113,7 +113,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (!TryCreateInstance<IConverterCreator>(creatorType, out var creator, out var error))
                 throw new ArgumentException($"Can not get custom converter creator by attribute, expected converter item type: {type}", error);
             var converter = creator.GetConverter(context, type);
-            if (converter == null)
+            if (converter is null)
                 throw new ArgumentException($"Invalid return value 'null', creator type: {creatorType}, expected converter item type: {type}");
             if (converter.ItemType != type)
                 throw new ArgumentException($"Invalid custom converter '{converter.GetType()}', creator type: {creatorType}, expected converter item type: {type}");
@@ -122,17 +122,20 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static MetaList GetPropertyConverters(IGeneratorContext context, IEnumerable<(PropertyInfo, Attribute)> collection)
         {
-            var list = new List<(PropertyInfo, Converter)>();
+            var result = new List<(PropertyInfo, Converter)>();
             foreach (var (property, attribute) in collection)
             {
                 var propertyType = property.PropertyType;
-                var converter = attribute is ConverterCreatorAttribute creatorAttribute
-                    ? GetConverterByConverterCreatorAttribute(context, creatorAttribute, propertyType)
-                    : attribute is ConverterAttribute converterAttribute ? GetConverterByConverterAttribute(converterAttribute, propertyType) : context.GetConverter(propertyType);
-                list.Add((property, converter));
+                var converter = attribute switch
+                {
+                    ConverterAttribute converterAttribute => GetConverterByConverterAttribute(converterAttribute, propertyType),
+                    ConverterCreatorAttribute creatorAttribute => GetConverterByConverterCreatorAttribute(context, creatorAttribute, propertyType),
+                    _ => context.GetConverter(propertyType)
+                };
+                result.Add((property, converter));
                 Debug.Assert(converter.ItemType == property.PropertyType);
             }
-            return list;
+            return result;
         }
 
         private static void GetPropertiesByNamedKey(Type type, MetaAttributes collection, out IReadOnlyList<PropertyInfo> properties, out NameDictionary dictionary)
@@ -173,14 +176,14 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             Debug.Assert(attribute is null || attribute is NamedObjectAttribute || attribute is TupleObjectAttribute);
             var array = property.GetCustomAttributes(false).OfType<Attribute>();
-            var keys = array.Where(x => keyAttributeTypes.Contains(x.GetType())).ToList();
-            var converters = array.Where(x => converterAttributeTypes.Contains(x.GetType())).ToList();
+            var keys = array.Where(x => KeyAttributeTypes.Contains(x.GetType())).ToList();
+            var converters = array.Where(x => ConverterAttributeTypes.Contains(x.GetType())).ToList();
 
             if (keys.Count > 1 || converters.Count > 1)
                 throw new ArgumentException($"Multiple attributes found, property name: {property.Name}, type: {type}");
             var key = keys.FirstOrDefault();
             var converter = converters.FirstOrDefault();
-            if (key == null && converter != null)
+            if (key is null && converter != null)
                 throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' for '{converter.GetType().Name}', property name: {property.Name}, type: {type}");
 
             Debug.Assert(key is null || key is NamedKeyAttribute || key is TupleKeyAttribute);
@@ -195,7 +198,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
             if ((origin, target) != default)
                 throw new ArgumentException($"Require '{origin}' for '{target}', property name: {property.Name}, type: {type}");
-            return attribute == null || key != null
+            return attribute is null || key != null
                 ? (property, key, converter)
                 : default;
         }
@@ -206,7 +209,7 @@ namespace Mikodev.Binary.Internal.Contexts
             {
                 int parameterCount;
                 var parameters = constructor.GetParameters();
-                if (parameters == null || (parameterCount = parameters.Length) != properties.Count)
+                if (parameters is null || (parameterCount = parameters.Length) != properties.Count)
                     return default;
                 var collection = new PropertyInfo[parameterCount];
                 for (var i = 0; i < parameterCount; i++)
@@ -224,7 +227,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (type.IsAbstract || type.IsInterface)
                 return default;
             var constructors = type.GetConstructors();
-            if (constructors == null || constructors.Length == 0)
+            if (constructors is null || constructors.Length == 0)
                 return default;
             var names = properties.ToDictionary(x => x.Name.ToUpperInvariant());
             var query = constructors.Select(x => CanCreate(x, names)).Where(x => x.Constructor != null).ToList();

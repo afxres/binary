@@ -64,7 +64,7 @@ namespace Mikodev.Binary.Creators
 
         public override T Decode(byte[] buffer)
         {
-            if (buffer == null || buffer.Length < Unsafe.SizeOf<T>())
+            if (buffer is null || buffer.Length < Unsafe.SizeOf<T>())
                 return ThrowHelper.ThrowNotEnoughBytes<T>();
             return Unsafe.ReadUnaligned<T>(ref buffer[0]);
         }

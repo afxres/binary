@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Mikodev.Binary.Internal.Adapters
 {
-    internal sealed class EnumerableAdapter<T, E> : CollectionAdapter<T, MemoryItem<E>, E> where T : IEnumerable<E>
+    internal sealed class EnumerableAdapter<T, E> : CollectionAdapter<T, MemoryItem<E>> where T : IEnumerable<E>
     {
         private readonly bool byArray;
 
@@ -28,17 +28,15 @@ namespace Mikodev.Binary.Internal.Adapters
             }
 
             this.converter = converter;
-            var method = typeof(T).GetMethods(BindingFlags.Instance | BindingFlags.Public)
-                .Where(x => x.Name == "ToArray" && x.ReturnType == typeof(E[]) && x.GetParameters().Length == 0)
-                .FirstOrDefault();
+            var method = typeof(T).GetMethods(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(x => x.Name == "ToArray" && x.ReturnType == typeof(E[]) && x.GetParameters().Length == 0);
             adapter = ArrayLikeAdapterHelper.Create(converter);
-            toArray = method == null ? null : Compile(method);
+            toArray = method is null ? null : Compile(method);
             byArray = converter.GetType().IsImplementationOf(typeof(OriginalEndiannessConverter<>)) && (method != null || typeof(ICollection<E>).IsAssignableFrom(typeof(T)));
         }
 
         public override void Of(ref Allocator allocator, T item)
         {
-            if (item == null)
+            if (item is null)
                 return;
             else if (item is E[] array)
                 adapter.Of(ref allocator, array);
@@ -46,7 +44,7 @@ namespace Mikodev.Binary.Internal.Adapters
                 for (int i = 0, itemCount = items.Count; i < itemCount; i++)
                     converter.EncodeAuto(ref allocator, items[i]);
             else if (byArray)
-                adapter.Of(ref allocator, toArray == null ? Enumerable.ToArray(item) : toArray.Invoke(item));
+                adapter.Of(ref allocator, toArray is null ? Enumerable.ToArray(item) : toArray.Invoke(item));
             else
                 foreach (var i in item)
                     converter.EncodeAuto(ref allocator, i);

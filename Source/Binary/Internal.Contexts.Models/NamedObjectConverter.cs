@@ -35,7 +35,7 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
         public override void Encode(ref Allocator allocator, T item)
         {
-            if (item == null)
+            if (item is null)
                 return;
             ofObject.Invoke(ref allocator, item);
         }
@@ -62,11 +62,11 @@ namespace Mikodev.Binary.Internal.Contexts.Models
                 ThrowHelper.ThrowNotEnoughBytes();
             }
 
-            if (toObject == null)
+            if (toObject is null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
             var byteLength = span.Length;
             if (byteLength == 0)
-                return default(T) == null ? default : ThrowHelper.ThrowNotEnoughBytes<T>();
+                return default(T) is null ? default : ThrowHelper.ThrowNotEnoughBytes<T>();
 
             const int ItemLimits = 32;
             var capacity = names.Length;

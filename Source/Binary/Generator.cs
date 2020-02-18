@@ -7,7 +7,7 @@ namespace Mikodev.Binary
 {
     public static class Generator
     {
-        private static readonly IReadOnlyCollection<IConverterCreator> creators = typeof(Converter).Assembly.GetTypes()
+        private static readonly IReadOnlyCollection<IConverterCreator> Creators = typeof(Converter).Assembly.GetTypes()
             .Where(x => !x.IsAbstract && typeof(IConverterCreator).IsAssignableFrom(x))
             .OrderBy(x => x.Namespace)
             .ThenBy(x => x.Name)
@@ -22,7 +22,7 @@ namespace Mikodev.Binary
         public static IGeneratorBuilder CreateDefaultBuilder()
         {
             var builder = new GeneratorBuilder();
-            foreach (var creator in creators)
+            foreach (var creator in Creators)
                 _ = builder.AddConverterCreator(creator);
             return builder;
         }

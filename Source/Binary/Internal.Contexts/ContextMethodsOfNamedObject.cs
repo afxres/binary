@@ -13,11 +13,11 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class ContextMethodsOfNamedObject
     {
-        private static readonly MethodInfo invokeMethodInfo = typeof(LengthList).GetMethod(nameof(LengthList.Invoke), BindingFlags.Instance | BindingFlags.Public);
+        private static readonly MethodInfo InvokeMethodInfo = typeof(LengthList).GetMethod(nameof(LengthList.Invoke), BindingFlags.Instance | BindingFlags.Public);
 
-        private static readonly MethodInfo appendMethodInfo = typeof(Allocator).GetMethod(nameof(Allocator.AppendBuffer), BindingFlags.Static | BindingFlags.NonPublic);
+        private static readonly MethodInfo AppendMethodInfo = typeof(Allocator).GetMethod(nameof(Allocator.AppendBuffer), BindingFlags.Static | BindingFlags.NonPublic);
 
-        private static readonly ConstructorInfo bufferConstructorInfo = typeof(ReadOnlySpan<byte>).GetConstructor(new[] { typeof(byte[]) });
+        private static readonly ConstructorInfo BufferConstructorInfo = typeof(ReadOnlySpan<byte>).GetConstructor(new[] { typeof(byte[]) });
 
         internal static Converter GetConverterAsNamedObject(IGeneratorContext context, Type type, ConstructorInfo constructor, ItemIndexes indexes, MetaList metadata, NameDictionary dictionary)
         {
@@ -51,15 +51,14 @@ namespace Mikodev.Binary.Internal.Contexts
             var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
             var expressions = new List<Expression>();
 
-            for (var i = 0; i < metadata.Count; i++)
+            foreach (var (property, converter) in metadata)
             {
-                var (property, converter) = metadata[i];
                 var buffer = EncodeStringWithLengthPrefix(dictionary[property]);
                 var propertyType = property.PropertyType;
                 var propertyExpression = Expression.Property(item, property);
                 var methodInfo = typeof(Converter<>).MakeGenericType(propertyType).GetMethod(nameof(IConverter.EncodeWithLengthPrefix));
                 // append named key with length prefix (cached), then append value with length prefix
-                expressions.Add(Expression.Call(appendMethodInfo, allocator, Expression.New(bufferConstructorInfo, Expression.Constant(buffer))));
+                expressions.Add(Expression.Call(AppendMethodInfo, allocator, Expression.New(BufferConstructorInfo, Expression.Constant(buffer))));
                 expressions.Add(Expression.Call(Expression.Constant(converter), methodInfo, allocator, propertyExpression));
             }
             var delegateType = typeof(OfNamedObject<>).MakeGenericType(type);
@@ -77,7 +76,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 for (var i = 0; i < metadata.Count; i++)
                 {
                     var converter = metadata[i].Converter;
-                    var method = invokeMethodInfo.MakeGenericMethod(converter.ItemType);
+                    var method = InvokeMethodInfo.MakeGenericMethod(converter.ItemType);
                     var invoke = Expression.Call(list, method, Expression.Constant(converter), Expression.Constant(i));
                     values[i] = invoke;
                 }
@@ -87,7 +86,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (!ContextMethods.CanCreateInstance(type, metadata.Select(x => x.Property).ToList(), constructor))
                 return null;
             var delegateType = typeof(ToNamedObject<>).MakeGenericType(type);
-            return constructor == null
+            return constructor is null
                 ? ContextMethods.GetDecodeDelegateUseMembers(delegateType, Initialize, metadata.Select(x => ((MemberInfo)x.Property, x.Converter)).ToList(), type)
                 : ContextMethods.GetDecodeDelegateUseConstructor(delegateType, Initialize, metadata.Select(x => x.Converter).ToList(), indexes, constructor);
         }

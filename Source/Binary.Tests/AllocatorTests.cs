@@ -12,7 +12,7 @@ namespace Mikodev.Binary.Tests
 
         private delegate void Expand(ref Allocator allocator, int expand);
 
-        private unsafe delegate void MemoryMoveForward3(sbyte* source, uint length);
+        private unsafe delegate void MemoryMoveForward3(ref byte source, uint length);
 
         private static readonly string outofrange = new ArgumentOutOfRangeException().Message;
 
@@ -222,7 +222,7 @@ namespace Mikodev.Binary.Tests
         [Fact(DisplayName = "Memory Move Forward 3")]
         public unsafe void MemoryMove()
         {
-            var methodInfo = typeof(Allocator).GetMethod("MemoryMoveForward3", BindingFlags.NonPublic | BindingFlags.Static);
+            var methodInfo = typeof(Converter).Assembly.GetTypes().Single(x => x.Name == "MemoryHelper").GetMethod("MemoryMoveForward3", BindingFlags.NonPublic | BindingFlags.Static);
             var action = (MemoryMoveForward3)Delegate.CreateDelegate(typeof(MemoryMoveForward3), methodInfo);
 
             var random = new Random();
@@ -235,8 +235,7 @@ namespace Mikodev.Binary.Tests
                 {
                     var buffer = origin.AsSpan().ToArray();
                     var source = buffer.AsSpan().Slice(offset + 4, k).ToArray();
-                    fixed (byte* srcptr = &buffer[offset])
-                        action.Invoke((sbyte*)(srcptr + 4), (uint)k);
+                    action.Invoke(ref buffer[offset + 4], (uint)k);
                     var target = buffer.AsSpan().Slice(offset + 1, k).ToArray();
                     Assert.Equal(source, target);
 

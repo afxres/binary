@@ -2,5 +2,5 @@
 
 namespace Mikodev.Binary.Internal.Adapters
 {
-    internal abstract class ArrayLikeAdapter<T> : CollectionAdapter<ReadOnlyMemory<T>, MemoryItem<T>, T> { }
+    internal abstract class ArrayLikeAdapter<T> : CollectionAdapter<ReadOnlyMemory<T>, MemoryItem<T>> { }
 }

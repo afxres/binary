@@ -11,7 +11,7 @@ namespace Mikodev.Binary.Internal
         {
             const int Length = 1 << 16;
             var result = buffer;
-            if (result == null)
+            if (result is null)
                 buffer = result = new byte[Length];
             return result;
         }

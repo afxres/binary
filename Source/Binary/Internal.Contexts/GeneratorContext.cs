@@ -46,7 +46,7 @@ namespace Mikodev.Binary.Internal.Contexts
             var (converter, creatorType) = creators
                 .Select(x => (Converter: x.GetConverter(this, type), x.GetType()))
                 .FirstOrDefault(x => x.Converter != null);
-            if (converter == null)
+            if (converter is null)
                 return null;
             if (converter.ItemType != type)
                 throw new ArgumentException($"Invalid converter '{converter.GetType()}', creator type: {creatorType}, expected converter item type: {type}");

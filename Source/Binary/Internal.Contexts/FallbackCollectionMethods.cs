@@ -10,7 +10,7 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class FallbackCollectionMethods
     {
-        private static readonly IReadOnlyCollection<Type> reverseTypes = new[] { typeof(Stack<>), typeof(ConcurrentStack<>) };
+        private static readonly IReadOnlyCollection<Type> ReverseTypes = new[] { typeof(Stack<>), typeof(ConcurrentStack<>) };
 
         internal static Converter GetConverter(IGeneratorContext context, Type type, Type itemType)
         {
@@ -28,7 +28,7 @@ namespace Mikodev.Binary.Internal.Contexts
             {
                 var enumerableType = typeof(IEnumerable<>).MakeGenericType(itemType);
                 var constructor = GetDecodeDelegateAsEnumerable(type, enumerableType, typeof(ToCollection<,>).MakeGenericType(typeArguments));
-                var reverse = type.IsGenericType && reverseTypes.Contains(type.GetGenericTypeDefinition());
+                var reverse = type.IsGenericType && ReverseTypes.Contains(type.GetGenericTypeDefinition());
                 var builderType = typeof(DelegateCollectionBuilder<,>).MakeGenericType(typeArguments);
                 var builderArguments = new object[] { constructor, reverse };
                 return Activator.CreateInstance(builderType, builderArguments);
@@ -67,7 +67,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (type.IsAbstract || type.IsInterface)
                 return null;
             var constructor = type.GetConstructor(new[] { enumerableType });
-            if (constructor == null)
+            if (constructor is null)
                 return null;
             var enumerable = Expression.Parameter(enumerableType, "enumerable");
             var result = Expression.New(constructor, enumerable);

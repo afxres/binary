@@ -6,11 +6,11 @@ namespace Mikodev.Binary.Internal.Adapters
     {
         private readonly int itemLength;
 
-        private readonly CollectionAdapter<U, R, E> adapter;
+        private readonly CollectionAdapter<U, R> adapter;
 
-        private readonly CollectionBuilder<T, U, R, E> builder;
+        private readonly CollectionBuilder<T, U, R> builder;
 
-        public CollectionAdaptedConverter(Converter<E> converter, CollectionAdapter<U, R, E> adapter, CollectionBuilder<T, U, R, E> builder)
+        public CollectionAdaptedConverter(Converter<E> converter, CollectionAdapter<U, R> adapter, CollectionBuilder<T, U, R> builder)
         {
             itemLength = converter.Length;
             this.adapter = adapter;

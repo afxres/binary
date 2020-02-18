@@ -8,18 +8,18 @@ namespace Mikodev.Binary.Internal
 {
     internal static class StringHelper
     {
-        private static readonly int[] maxByteCounts;
+        private static readonly int[] MaxByteCounts;
 
-        private static readonly int[] maxCharCounts;
+        private static readonly int[] MaxCharCounts;
 
         static StringHelper()
         {
             const int MaxByteCountLimits = 64;
             const int MaxCharCountLimits = 128;
-            maxByteCounts = Enumerable.Range(0, MaxByteCountLimits + 1).Select(Converter.Encoding.GetMaxByteCount).ToArray();
-            maxCharCounts = Enumerable.Range(0, MaxCharCountLimits + 1).Select(Converter.Encoding.GetMaxCharCount).ToArray();
-            maxByteCounts[0] = 0;
-            maxCharCounts[0] = 0;
+            MaxByteCounts = Enumerable.Range(0, MaxByteCountLimits + 1).Select(Converter.Encoding.GetMaxByteCount).ToArray();
+            MaxCharCounts = Enumerable.Range(0, MaxCharCountLimits + 1).Select(Converter.Encoding.GetMaxCharCount).ToArray();
+            MaxByteCounts[0] = 0;
+            MaxCharCounts[0] = 0;
         }
 
         internal static unsafe string GetString(Encoding encoding, byte* source, int length)
@@ -29,7 +29,7 @@ namespace Mikodev.Binary.Internal
             if (length == 0)
                 return string.Empty;
             int[] counts;
-            if (!ReferenceEquals(encoding, Converter.Encoding) || (uint)length >= (uint)(counts = maxCharCounts).Length)
+            if (!ReferenceEquals(encoding, Converter.Encoding) || (uint)length >= (uint)(counts = MaxCharCounts).Length)
                 return encoding.GetString(source, length);
             var dstmax = counts[length];
             Debug.Assert(dstmax > 0);
@@ -47,7 +47,7 @@ namespace Mikodev.Binary.Internal
             if (length == 0)
                 return 0;
             int[] counts;
-            if (!ReferenceEquals(encoding, Converter.Encoding) || (uint)length >= (uint)(counts = maxByteCounts).Length)
+            if (!ReferenceEquals(encoding, Converter.Encoding) || (uint)length >= (uint)(counts = MaxByteCounts).Length)
                 return encoding.GetByteCount(source, length);
             return counts[length];
         }

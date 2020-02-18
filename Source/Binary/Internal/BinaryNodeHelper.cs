@@ -23,6 +23,7 @@ namespace Mikodev.Binary.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static BinaryNode<T> Get<T>(ReadOnlySpan<BinaryNode<T>> nodes, long index)
         {
+            Debug.Assert(nodes.ToArray().Count(x => x.Index == index) <= 1);
             foreach (var node in nodes)
                 if (node.Index == index)
                     return node;
@@ -37,14 +38,14 @@ namespace Mikodev.Binary.Internal
             for (var i = 0; i < length; i += sizeof(long))
             {
                 var head = GetIndex(ref Unsafe.Add(ref source, i), length - i);
-                var body = result.Nodes?.SingleOrDefault(x => x.Index == head);
-                if (body is null)
+                var node = Get(new ReadOnlySpan<BinaryNode<T>>(result.Nodes), head);
+                if (node is null)
                 {
-                    body = new BinaryNode<T> { Index = head };
-                    var list = new List<BinaryNode<T>>(result.Nodes ?? Array.Empty<BinaryNode<T>>()) { body };
+                    node = new BinaryNode<T> { Index = head };
+                    var list = new List<BinaryNode<T>>(result.Nodes ?? Array.Empty<BinaryNode<T>>()) { node };
                     result.Nodes = list.ToArray();
                 }
-                result = body;
+                result = node;
             }
             return result;
         }

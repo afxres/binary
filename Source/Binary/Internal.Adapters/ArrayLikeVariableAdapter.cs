@@ -11,9 +11,8 @@ namespace Mikodev.Binary.Internal.Adapters
 
         public override void Of(ref Allocator allocator, ReadOnlyMemory<T> memory)
         {
-            var span = memory.Span;
-            for (var i = 0; i < span.Length; i++)
-                converter.EncodeAuto(ref allocator, span[i]);
+            foreach (var i in memory.Span)
+                converter.EncodeAuto(ref allocator, i);
             Debug.Assert(converter.Length == 0);
         }
 

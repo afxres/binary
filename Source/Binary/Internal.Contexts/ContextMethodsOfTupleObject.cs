@@ -87,7 +87,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (!ContextMethods.CanCreateInstance(type, metadata.Select(x => x.Member).ToList(), constructor))
                 return null;
             var delegateType = typeof(ToTupleObject<>).MakeGenericType(type);
-            return constructor == null
+            return constructor is null
                 ? ContextMethods.GetDecodeDelegateUseMembers(delegateType, Initialize, metadata, type)
                 : ContextMethods.GetDecodeDelegateUseConstructor(delegateType, Initialize, metadata.Select(x => x.Converter).ToList(), indexes, constructor);
         }

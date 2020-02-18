@@ -2,7 +2,7 @@
 
 namespace Mikodev.Binary.Internal.Adapters
 {
-    internal abstract class CollectionBuilder<T, U, R, E> : CollectionBuilder
+    internal abstract class CollectionBuilder<T, U, R> : CollectionBuilder
     {
         public abstract int Count(U item);
 

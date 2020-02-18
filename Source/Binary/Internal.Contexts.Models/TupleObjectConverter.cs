@@ -22,14 +22,14 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
         public override void Encode(ref Allocator allocator, T item)
         {
-            if (item == null)
+            if (item is null)
                 ThrowHelper.ThrowTupleNull(ItemType);
             encode.Invoke(ref allocator, item);
         }
 
         public override T Decode(in ReadOnlySpan<byte> span)
         {
-            if (decode == null)
+            if (decode is null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
             var body = span;
             return decode.Invoke(ref body);
@@ -37,14 +37,14 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
         public override void EncodeAuto(ref Allocator allocator, T item)
         {
-            if (item == null)
+            if (item is null)
                 ThrowHelper.ThrowTupleNull(ItemType);
             encodeWith.Invoke(ref allocator, item);
         }
 
         public override T DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            if (decodeWith == null)
+            if (decodeWith is null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
             return decodeWith.Invoke(ref span);
         }

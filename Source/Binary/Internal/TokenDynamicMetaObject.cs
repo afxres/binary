@@ -8,9 +8,9 @@ namespace Mikodev.Binary.Internal
 {
     internal sealed class TokenDynamicMetaObject : DynamicMetaObject
     {
-        private static readonly MethodInfo convertMethodInfo = typeof(Token).GetMethod(nameof(Token.As), Type.EmptyTypes);
+        private static readonly MethodInfo ConvertMethodInfo = typeof(Token).GetMethod(nameof(Token.As), Type.EmptyTypes);
 
-        private static readonly MethodInfo indexerMethodInfo = typeof(Token).GetProperty("Item", new[] { typeof(string) }).GetGetMethod();
+        private static readonly MethodInfo IndexerMethodInfo = typeof(Token).GetMethod("GetToken", BindingFlags.Instance | BindingFlags.NonPublic);
 
         public TokenDynamicMetaObject(Expression parameter, object value) : base(parameter, BindingRestrictions.Empty, value) { }
 
@@ -19,14 +19,14 @@ namespace Mikodev.Binary.Internal
             var type = binder.Type;
             var body = type.IsAssignableFrom(typeof(Token))
                 ? Expression.Convert(Expression, type) as Expression
-                : Expression.Call(Expression.Convert(Expression, typeof(Token)), convertMethodInfo.MakeGenericMethod(type));
+                : Expression.Call(Expression.Convert(Expression, typeof(Token)), ConvertMethodInfo.MakeGenericMethod(type));
             return new DynamicMetaObject(body, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
         }
 
         public override DynamicMetaObject BindGetMember(GetMemberBinder binder)
         {
             var self = Expression.Convert(Expression, typeof(Token));
-            var body = Expression.Call(self, indexerMethodInfo, Expression.Constant(binder.Name));
+            var body = Expression.Call(self, IndexerMethodInfo, Expression.Constant(binder.Name), Expression.Constant(false));
             return new DynamicMetaObject(body, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
         }
 

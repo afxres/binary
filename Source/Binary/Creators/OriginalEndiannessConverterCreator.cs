@@ -6,7 +6,7 @@ namespace Mikodev.Binary.Creators
 {
     internal sealed class OriginalEndiannessConverterCreator : IConverterCreator
     {
-        private static readonly IReadOnlyCollection<Type> types = new[]
+        private static readonly IReadOnlyCollection<Type> Types = new[]
         {
             typeof(bool),
             typeof(byte),
@@ -27,7 +27,7 @@ namespace Mikodev.Binary.Creators
         {
             if (BitConverter.IsLittleEndian != Converter.UseLittleEndian)
                 throw new NotSupportedException("Endianness not supported!");
-            if (!types.Contains(type) && !type.IsEnum)
+            if (!Types.Contains(type) && !type.IsEnum)
                 return null;
             var converterType = typeof(OriginalEndiannessConverter<>).MakeGenericType(type);
             var converter = Activator.CreateInstance(converterType);

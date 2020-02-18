@@ -7,7 +7,7 @@ namespace Mikodev.Binary.Creators.Builders
 {
     internal sealed class ArrayLikeConverterCreator : IConverterCreator
     {
-        private static readonly IReadOnlyDictionary<Type, Type> dictionary = new Dictionary<Type, Type>
+        private static readonly IReadOnlyDictionary<Type, Type> Types = new Dictionary<Type, Type>
         {
             [typeof(ArraySegment<>)] = typeof(ArraySegmentBuilder<>),
             [typeof(Memory<>)] = typeof(MemoryBuilder<>),
@@ -16,7 +16,7 @@ namespace Mikodev.Binary.Creators.Builders
 
         public Converter GetConverter(IGeneratorContext context, Type type)
         {
-            if (!type.IsGenericType || !dictionary.TryGetValue(type.GetGenericTypeDefinition(), out var definition))
+            if (!type.IsGenericType || !Types.TryGetValue(type.GetGenericTypeDefinition(), out var definition))
                 return null;
             var itemType = type.GetGenericArguments().Single();
             var itemConverter = context.GetConverter(itemType);

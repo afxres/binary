@@ -12,7 +12,7 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
         public override T To(CollectionAdapter<Dictionary<K, V>> adapter, ReadOnlySpan<byte> span)
         {
-            if (constructor == null)
+            if (constructor is null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
             var item = adapter.To(span);
             return constructor.Invoke(item);

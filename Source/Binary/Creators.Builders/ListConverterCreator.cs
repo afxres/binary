@@ -15,9 +15,9 @@ namespace Mikodev.Binary.Creators.Builders
             if (!type.TryGetGenericArguments(typeof(List<>), out var types))
                 return null;
             var itemType = types.Single();
-            var flags = BindingFlags.Instance | BindingFlags.NonPublic;
-            var arrayField = type.GetField("_items", flags);
-            var countField = type.GetField("_size", flags);
+            const BindingFlags Flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            var arrayField = type.GetField("_items", Flags);
+            var countField = type.GetField("_size", Flags);
             if (arrayField is null || arrayField.FieldType != itemType.MakeArrayType() ||
                 countField is null || countField.FieldType != typeof(int))
                 return null;

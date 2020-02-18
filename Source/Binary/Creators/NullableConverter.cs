@@ -22,7 +22,7 @@ namespace Mikodev.Binary.Creators
 
         public override void Encode(ref Allocator allocator, T? item)
         {
-            var header = item == null ? None : Some;
+            var header = item is null ? None : Some;
             Allocator.Append(ref allocator, header);
             if (!(item is T result))
                 return;
@@ -40,7 +40,7 @@ namespace Mikodev.Binary.Creators
 
         public override void EncodeAuto(ref Allocator allocator, T? item)
         {
-            var header = item == null ? None : Some;
+            var header = item is null ? None : Some;
             Allocator.Append(ref allocator, header);
             if (!(item is T result))
                 return;

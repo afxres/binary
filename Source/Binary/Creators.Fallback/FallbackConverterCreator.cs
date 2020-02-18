@@ -6,7 +6,7 @@ namespace Mikodev.Binary.Creators.Fallback
 {
     internal sealed class FallbackConverterCreator : IConverterCreator
     {
-        private static readonly IReadOnlyDictionary<Type, Type> dictionary = new Dictionary<Type, Type>
+        private static readonly IReadOnlyDictionary<Type, Type> Types = new Dictionary<Type, Type>
         {
             [typeof(Uri)] = typeof(UriConverter),
             [typeof(string)] = typeof(StringConverter),
@@ -20,7 +20,7 @@ namespace Mikodev.Binary.Creators.Fallback
 
         public Converter GetConverter(IGeneratorContext context, Type type)
         {
-            if (!dictionary.TryGetValue(type, out var converterType))
+            if (!Types.TryGetValue(type, out var converterType))
                 return null;
             var converter = Activator.CreateInstance(converterType);
             return (Converter)converter;

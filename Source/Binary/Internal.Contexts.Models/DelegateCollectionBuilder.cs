@@ -17,7 +17,7 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
         public override T To(CollectionAdapter<MemoryItem<E>> adapter, ReadOnlySpan<byte> span)
         {
-            if (constructor == null)
+            if (constructor is null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
             var data = adapter.To(span).AsArraySegment();
             if (reverse)
