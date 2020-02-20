@@ -34,7 +34,7 @@ namespace Mikodev.Binary.Internal.Adapters
                 {
                     var length = checked(bounds * 2);
                     var target = new T[length];
-                    MemoryExtensions.CopyTo(buffer, target.AsSpan());
+                    buffer.CopyTo(new Span<T>(target));
                     bounds = length;
                     buffer = target;
                 }

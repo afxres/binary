@@ -21,7 +21,7 @@ namespace Mikodev.Binary.Internal.Contexts.Models
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
             var data = adapter.To(span).AsArraySegment();
             if (reverse)
-                MemoryExtensions.Reverse(data.AsSpan());
+                data.AsSpan().Reverse();
             return constructor.Invoke(data);
         }
     }

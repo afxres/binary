@@ -9,38 +9,34 @@ namespace Mikodev.Binary
     public static partial class PrimitiveHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe void AppendString(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding)
+        private static void AppendString(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding)
         {
             if (encoding is null)
                 ThrowHelper.ThrowArgumentEncodingInvalid();
-            fixed (char* srcptr = &MemoryMarshal.GetReference(span))
-                Allocator.AppendString(ref allocator, srcptr, span.Length, encoding);
+            Allocator.AppendString(ref allocator, ref MemoryMarshal.GetReference(span), span.Length, encoding);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe void AppendStringWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding)
+        private static void AppendStringWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding)
         {
             if (encoding is null)
                 ThrowHelper.ThrowArgumentEncodingInvalid();
-            fixed (char* srcptr = &MemoryMarshal.GetReference(span))
-                Allocator.AppendStringWithLengthPrefix(ref allocator, srcptr, span.Length, encoding);
+            Allocator.AppendStringWithLengthPrefix(ref allocator, ref MemoryMarshal.GetReference(span), span.Length, encoding);
         }
 
-        private static unsafe string DetachString(ReadOnlySpan<byte> span, Encoding encoding)
+        private static string DetachString(ReadOnlySpan<byte> span, Encoding encoding)
         {
             if (encoding is null)
                 ThrowHelper.ThrowArgumentEncodingInvalid();
-            fixed (byte* srcptr = &MemoryMarshal.GetReference(span))
-                return StringHelper.GetString(encoding, srcptr, span.Length);
+            return StringHelper.GetString(encoding, ref MemoryMarshal.GetReference(span), span.Length);
         }
 
-        private static unsafe string DetachStringWithLengthPrefix(ref ReadOnlySpan<byte> span, Encoding encoding)
+        private static string DetachStringWithLengthPrefix(ref ReadOnlySpan<byte> span, Encoding encoding)
         {
             if (encoding is null)
                 ThrowHelper.ThrowArgumentEncodingInvalid();
             var data = DecodeBufferWithLengthPrefix(ref span);
-            fixed (byte* srcptr = &MemoryMarshal.GetReference(data))
-                return StringHelper.GetString(encoding, srcptr, data.Length);
+            return StringHelper.GetString(encoding, ref MemoryMarshal.GetReference(data), data.Length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

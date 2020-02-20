@@ -4,6 +4,7 @@ open Mikodev.Binary
 open System
 open System.Collections
 open System.Collections.Generic
+open System.Linq
 open System.Reflection
 open System.Threading
 open Xunit
@@ -286,7 +287,7 @@ let ``Operate With Null String Converter`` () =
                     raise (NotSupportedException(sprintf "Invalid type '%O'" t))
     }
     let error = Assert.Throws<ArgumentException>(fun () -> Token(generator, ReadOnlyMemory<byte>()) |> ignore)
-    let message = "Require valid string converter."
+    let message = "Invalid string converter."
     Assert.Equal(message, error.Message)
     ()
 
@@ -304,4 +305,27 @@ let ``Operate With Private Constructor`` () =
     let inner = Assert.IsType<NotSupportedException>(error.InnerException)
     let message = sprintf "Invalid type '%O'" typeof<string>
     Assert.Equal(message, inner.Message)
+    ()
+
+[<Fact>]
+let ``From Empty Bytes`` () =
+    let token = Token(generator, ReadOnlyMemory())
+    let dictionary = token :> IReadOnlyDictionary<string, Token>
+    Assert.Equal(0, dictionary.Count)
+    let tokens = typeof<Token>.GetField("tokens", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(token) :?> Lazy<Dictionary<string, Token>>
+    Assert.Equal(0, tokens.Value.Count)
+    let buckets = typeof<Dictionary<string, Token>>.GetFields(BindingFlags.Instance ||| BindingFlags.NonPublic).Single(fun x -> x.FieldType = typeof<int array>).GetValue(tokens.Value) :?> int array
+    Assert.Null buckets
+    ()
+
+[<Fact>]
+let ``From Invalid Bytes`` () =
+    let buffer = generator.Encode [ "alpha"; "value"; "empty" ]
+    let token = Token(generator, ReadOnlyMemory buffer)
+    let dictionary = token :> IReadOnlyDictionary<string, Token>
+    Assert.Equal(0, dictionary.Count)
+    let tokens = typeof<Token>.GetField("tokens", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(token) :?> Lazy<Dictionary<string, Token>>
+    Assert.Equal(0, tokens.Value.Count)
+    let buckets = typeof<Dictionary<string, Token>>.GetFields(BindingFlags.Instance ||| BindingFlags.NonPublic).Single(fun x -> x.FieldType = typeof<int array>).GetValue(tokens.Value) :?> int array
+    Assert.NotEmpty buckets
     ()

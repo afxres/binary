@@ -5,7 +5,7 @@ namespace Mikodev.Binary.Creators.Fallback
 {
     internal sealed class IPAddressConverter : Converter<IPAddress>
     {
-#if NETSTDNEW
+#if NETNEW
         private static readonly AllocatorAction<IPAddress> WriteIPAddress = (span, data) => data.TryWriteBytes(span, out _);
 #endif
 
@@ -13,7 +13,7 @@ namespace Mikodev.Binary.Creators.Fallback
         {
             if (item is null)
                 return;
-#if NETSTDNEW
+#if NETNEW
             var size = item.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ? 4 : 16;
             AllocatorHelper.Append(ref allocator, size, item, WriteIPAddress);
 #else
@@ -34,7 +34,7 @@ namespace Mikodev.Binary.Creators.Fallback
         {
             if (span.IsEmpty)
                 return null;
-#if NETSTDNEW
+#if NETNEW
             return new IPAddress(span);
 #else
             return new IPAddress(span.ToArray());

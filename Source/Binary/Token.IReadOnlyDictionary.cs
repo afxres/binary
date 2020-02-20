@@ -1,24 +1,24 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using TKey = System.String;
-using TValue = Mikodev.Binary.Token;
+using Index = System.String;
+using Value = Mikodev.Binary.Token;
 
 namespace Mikodev.Binary
 {
-    public sealed partial class Token : IReadOnlyDictionary<TKey, TValue>
+    public sealed partial class Token : IReadOnlyDictionary<Index, Value>
     {
-        int IReadOnlyCollection<KeyValuePair<TKey, TValue>>.Count => tokens.Value.Count;
+        int IReadOnlyCollection<KeyValuePair<Index, Value>>.Count => tokens.Value.Count;
 
-        bool IReadOnlyDictionary<TKey, TValue>.ContainsKey(TKey key) => tokens.Value.ContainsKey(key);
+        bool IReadOnlyDictionary<Index, Value>.ContainsKey(Index key) => tokens.Value.ContainsKey(key);
 
-        bool IReadOnlyDictionary<TKey, TValue>.TryGetValue(TKey key, out TValue value) => tokens.Value.TryGetValue(key, out value);
+        bool IReadOnlyDictionary<Index, Value>.TryGetValue(Index key, out Value value) => tokens.Value.TryGetValue(key, out value);
 
-        IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => tokens.Value.Keys;
+        IEnumerable<Index> IReadOnlyDictionary<Index, Value>.Keys => tokens.Value.Keys;
 
-        IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => tokens.Value.Values;
+        IEnumerable<Value> IReadOnlyDictionary<Index, Value>.Values => tokens.Value.Values;
 
         IEnumerator IEnumerable.GetEnumerator() => tokens.Value.GetEnumerator();
 
-        IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator() => tokens.Value.GetEnumerator();
+        IEnumerator<KeyValuePair<Index, Value>> IEnumerable<KeyValuePair<Index, Value>>.GetEnumerator() => tokens.Value.GetEnumerator();
     }
 }

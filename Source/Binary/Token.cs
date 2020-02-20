@@ -18,7 +18,7 @@ namespace Mikodev.Binary
 
         private readonly Converter<string> stringConverter;
 
-        private readonly Lazy<IReadOnlyDictionary<string, Token>> tokens;
+        private readonly Lazy<Dictionary<string, Token>> tokens;
 
         private Token(IGenerator generator, ReadOnlyMemory<byte> memory, Converter<string> stringConverter)
         {
@@ -26,18 +26,16 @@ namespace Mikodev.Binary
                 throw new ArgumentNullException(nameof(generator));
             stringConverter ??= generator.GetConverter<string>();
             if (stringConverter is null)
-                throw new ArgumentException("Require valid string converter.");
+                throw new ArgumentException("Invalid string converter.");
             this.memory = memory;
             this.generator = generator;
             this.stringConverter = stringConverter;
-            tokens = new Lazy<IReadOnlyDictionary<string, Token>>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
+            tokens = new Lazy<Dictionary<string, Token>>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        private static IReadOnlyDictionary<string, Token> GetTokens(Token instance)
+        private static Dictionary<string, Token> GetTokens(Token instance)
         {
             var memory = instance.memory;
-            if (memory.IsEmpty)
-                return new Dictionary<string, Token>();
             var generator = instance.generator;
             var stringConverter = instance.stringConverter;
             var dictionary = new Dictionary<string, Token>();
@@ -54,12 +52,12 @@ namespace Mikodev.Binary
                     var result = new Token(generator, target, stringConverter);
                     dictionary.Add(header, result);
                 }
-                return dictionary;
             }
             catch (Exception)
             {
-                return new Dictionary<string, Token>();
+                dictionary.Clear();
             }
+            return dictionary;
         }
 
         private Token GetToken(string key, bool nothrow)

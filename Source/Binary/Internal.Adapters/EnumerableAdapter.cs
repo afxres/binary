@@ -44,7 +44,7 @@ namespace Mikodev.Binary.Internal.Adapters
                 for (int i = 0, itemCount = items.Count; i < itemCount; i++)
                     converter.EncodeAuto(ref allocator, items[i]);
             else if (byArray)
-                adapter.Of(ref allocator, toArray is null ? Enumerable.ToArray(item) : toArray.Invoke(item));
+                adapter.Of(ref allocator, toArray is null ? item.ToArray() : toArray.Invoke(item));
             else
                 foreach (var i in item)
                     converter.EncodeAuto(ref allocator, i);

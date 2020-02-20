@@ -8,7 +8,7 @@ namespace Mikodev.Binary.Creators.Fallback
     {
         private static readonly AllocatorAction<ushort> WriteUInt16LittleEndian = BinaryPrimitives.WriteUInt16LittleEndian;
 
-#if NETSTDNEW
+#if NETNEW
         private static readonly AllocatorAction<IPAddress> WriteIPAddress = (span, data) => data.TryWriteBytes(span, out _);
 #endif
 
@@ -18,7 +18,7 @@ namespace Mikodev.Binary.Creators.Fallback
                 return;
             var size = item.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ? 4 : 16;
             Allocator.Append(ref allocator, (byte)size);
-#if NETSTDNEW
+#if NETNEW
             AllocatorHelper.Append(ref allocator, size, item.Address, WriteIPAddress);
 #else
             AllocatorHelper.Append(ref allocator, item.Address.GetAddressBytes());
@@ -40,7 +40,7 @@ namespace Mikodev.Binary.Creators.Fallback
             var body = span;
             var head = PrimitiveHelper.DecodeBufferWithLengthPrefix(ref body);
             var port = BinaryPrimitives.ReadUInt16LittleEndian(body);
-#if NETSTDNEW
+#if NETNEW
             var address = new IPAddress(head);
 #else
             var address = new IPAddress(head.ToArray());

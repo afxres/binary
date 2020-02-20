@@ -111,7 +111,7 @@ namespace Mikodev.Binary.Tests
             var types = typeof(Converter).Assembly.GetTypes()
                 .Where(x => (x.IsPublic || x.IsNestedPublic) && !(x.IsAbstract && x.IsSealed) && !typeof(Delegate).IsAssignableFrom(x) && !x.IsInterface && x.Namespace == "Mikodev.Binary")
                 .ToList();
-            Assert.Equal(5, types.Count);
+            Assert.Equal(6, types.Count);
             foreach (var t in types)
             {
                 var equalMethod = t.GetMethod("Equals", new[] { typeof(object) });
@@ -137,8 +137,8 @@ namespace Mikodev.Binary.Tests
             var remainMembers = methods.Except(ignoreMembers).ToList();
             var attributes = remainMembers.Select(x => (x, Flag: HasReadOnlyAttribute(x))).ToList();
 
-            _ = Assert.Single(readonlyTypes);
             _ = Assert.Single(otherTypes);
+            Assert.Equal(new HashSet<Type> { typeof(AllocatorAnchor), typeof(AllocatorUnsafeHandle) }, new HashSet<Type>(readonlyTypes));
             Assert.Equal(3, ignoreMembers.Count);
             Assert.All(attributes, x => Assert.True(x.Flag));
         }

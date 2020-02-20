@@ -12,6 +12,7 @@
     <Compile Include="Classes\AllocatorAnchorTests.fs" />
     <Compile Include="Classes\AllocatorHelperTests.fs" />
     <Compile Include="Classes\AllocatorTests.fs" />
+    <Compile Include="Classes\AllocatorUnsafeHandleTests.fs" />
     <Compile Include="Classes\AllocatorConverterTests.fs" />
     <Compile Include="Classes\ConverterExtensionsTests.fs" />
     <Compile Include="Classes\ConverterTests.fs" />

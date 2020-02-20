@@ -2,5 +2,5 @@
 
 namespace Mikodev.Binary
 {
-    public delegate void AllocatorAction<T>(Span<byte> span, T data);
+    public delegate void AllocatorAction<in T>(Span<byte> span, T data);
 }

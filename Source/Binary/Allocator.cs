@@ -36,12 +36,12 @@ namespace Mikodev.Binary
         public readonly ReadOnlySpan<byte> AsSpan() => buffer.Slice(0, offset);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public readonly override bool Equals(object obj) => throw new NotSupportedException();
+        public override readonly bool Equals(object obj) => throw new NotSupportedException();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public readonly override int GetHashCode() => throw new NotSupportedException();
+        public override readonly int GetHashCode() => throw new NotSupportedException();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public readonly override string ToString() => $"{nameof(Allocator)}({nameof(Length)}: {Length}, {nameof(Capacity)}: {Capacity}, {nameof(MaxCapacity)}: {MaxCapacity})";
+        public override readonly string ToString() => $"{nameof(Allocator)}({nameof(Length)}: {Length}, {nameof(Capacity)}: {Capacity}, {nameof(MaxCapacity)}: {MaxCapacity})";
     }
 }

@@ -22,34 +22,48 @@ namespace Mikodev.Binary.Internal
             MaxCharCounts[0] = 0;
         }
 
-        internal static unsafe string GetString(Encoding encoding, byte* source, int length)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static unsafe int GetBytes(Encoding encoding, ref char source, int sourceLength, ref byte target, int targetLength)
         {
             Debug.Assert(encoding != null);
-            Debug.Assert(length >= 0);
-            if (length == 0)
-                return string.Empty;
-            int[] counts;
-            if (!ReferenceEquals(encoding, Converter.Encoding) || (uint)length >= (uint)(counts = MaxCharCounts).Length)
-                return encoding.GetString(source, length);
-            var dstmax = counts[length];
-            Debug.Assert(dstmax > 0);
-            var dstptr = stackalloc char[dstmax];
-            int dstlen;
-            dstlen = encoding.GetChars(source, length, dstptr, dstmax);
-            return new string(dstptr, 0, dstlen);
+            Debug.Assert(sourceLength >= 0);
+            Debug.Assert(targetLength >= 0);
+            fixed (byte* dstptr = &target)
+            fixed (char* srcptr = &source)
+                return encoding.GetBytes(srcptr, sourceLength, dstptr, targetLength);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe int GetMaxByteCount(Encoding encoding, char* source, int length)
+        internal static unsafe int GetMaxByteCount(Encoding encoding, ref char source, int sourceLength)
         {
             Debug.Assert(encoding != null);
-            Debug.Assert(length >= 0);
-            if (length == 0)
+            Debug.Assert(sourceLength >= 0);
+            if (sourceLength == 0)
                 return 0;
             int[] counts;
-            if (!ReferenceEquals(encoding, Converter.Encoding) || (uint)length >= (uint)(counts = MaxByteCounts).Length)
-                return encoding.GetByteCount(source, length);
-            return counts[length];
+            if (!ReferenceEquals(encoding, Converter.Encoding) || (uint)sourceLength >= (uint)(counts = MaxByteCounts).Length)
+                fixed (char* srcptr = &source)
+                    return encoding.GetByteCount(srcptr, sourceLength);
+            return counts[sourceLength];
+        }
+
+        internal static unsafe string GetString(Encoding encoding, ref byte source, int sourceLength)
+        {
+            Debug.Assert(encoding != null);
+            Debug.Assert(sourceLength >= 0);
+            if (sourceLength == 0)
+                return string.Empty;
+            int[] counts;
+            if (!ReferenceEquals(encoding, Converter.Encoding) || (uint)sourceLength >= (uint)(counts = MaxCharCounts).Length)
+                fixed (byte* srcptr = &source)
+                    return encoding.GetString(srcptr, sourceLength);
+            var targetLimits = counts[sourceLength];
+            Debug.Assert(targetLimits > 0);
+            var dstptr = stackalloc char[targetLimits];
+            int targetLength;
+            fixed (byte* srcptr = &source)
+                targetLength = encoding.GetChars(srcptr, sourceLength, dstptr, targetLimits);
+            return new string(dstptr, 0, targetLength);
         }
     }
 }
