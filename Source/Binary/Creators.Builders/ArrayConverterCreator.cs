@@ -14,7 +14,7 @@ namespace Mikodev.Binary.Creators.Builders
                 throw new NotSupportedException($"Only single dimensional zero based arrays are supported, type: {type}");
             var itemConverter = context.GetConverter(itemType);
             var builder = Activator.CreateInstance(typeof(ArrayBuilder<>).MakeGenericType(itemType));
-            var converterArguments = new object[] { itemConverter, builder };
+            var converterArguments = new object[] { builder, itemConverter };
             var converterType = typeof(ArrayLikeAdaptedConverter<,>).MakeGenericType(type, itemType);
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;

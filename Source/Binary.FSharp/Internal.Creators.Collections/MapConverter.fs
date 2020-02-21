@@ -2,22 +2,29 @@
 
 open Mikodev.Binary
 open System
-open System.Collections.Generic
 
 [<CompiledName("FSharpMapConverter`2")>]
-type MapConverter<'K, 'V when 'K : comparison>(converter : Converter<KeyValuePair<'K, 'V>>) =
+type MapConverter<'K, 'V when 'K : comparison>(headConverter : Converter<'K>, dataConverter : Converter<'V>) =
     inherit Converter<Map<'K, 'V>>(0)
 
     override __.Encode(allocator, item) =
-        if not (obj.ReferenceEquals(item, null)) then
-            for i in item do
-                converter.EncodeAuto(&allocator, i)
+        if isNull (box item) = false then
+            let headConverter = headConverter
+            let dataConverter = dataConverter
+            let handle = AllocatorUnsafeHandle &allocator
+            item |> Map.iter (fun k v ->
+                let allocator = &handle.AsAllocator()
+                headConverter.EncodeAuto(&allocator, k)
+                dataConverter.EncodeAuto(&allocator, v))
         ()
 
     override __.Decode(span : inref<ReadOnlySpan<byte>>) : Map<'K, 'V> =
-        let mutable span = span
+        let mutable body = span
         let mutable map = Map.empty
-        while not span.IsEmpty do
-            let pair = converter.DecodeAuto &span
-            map <- Map.add pair.Key pair.Value map
+        let headConverter = headConverter
+        let dataConverter = dataConverter
+        while not body.IsEmpty do
+            let head = headConverter.DecodeAuto &body
+            let data = dataConverter.DecodeAuto &body
+            map <- Map.add head data map
         map

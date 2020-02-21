@@ -4,8 +4,8 @@ namespace Mikodev.Binary.Internal.Adapters
 {
     internal sealed class DictionaryAdaptedConverter<T, K, V> : CollectionAdaptedConverter<T, T, Dictionary<K, V>, KeyValuePair<K, V>> where T : IEnumerable<KeyValuePair<K, V>>
     {
-        public DictionaryAdaptedConverter(Converter<KeyValuePair<K, V>> converter, CollectionBuilder<T, T, Dictionary<K, V>> builder)
-            : base(converter, new DictionaryAdapter<T, K, V>(converter), builder)
+        public DictionaryAdaptedConverter(CollectionBuilder<T, T, Dictionary<K, V>> builder, Converter<K> headConverter, Converter<V> dataConverter, int itemLength)
+            : base(new DictionaryAdapter<T, K, V>(headConverter, dataConverter, itemLength), builder, itemLength)
         { }
     }
 }

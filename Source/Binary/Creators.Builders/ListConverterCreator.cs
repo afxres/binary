@@ -38,7 +38,7 @@ namespace Mikodev.Binary.Creators.Builders
             var builderArguments = new object[] { alpha.Compile(), bravo.Compile() };
             var builderType = typeof(ListBuilder<>).MakeGenericType(itemType);
             var builder = Activator.CreateInstance(builderType, builderArguments);
-            var converterArguments = new object[] { itemConverter, builder };
+            var converterArguments = new object[] { builder, itemConverter };
             var converterType = typeof(ArrayLikeAdaptedConverter<,>).MakeGenericType(type, itemType);
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;

@@ -8,15 +8,17 @@ type SetConverter<'T when 'T : comparison>(converter : Converter<'T>) =
     inherit Converter<Set<'T>>(0)
 
     override __.Encode(allocator, item) =
-        if not (obj.ReferenceEquals(item, null)) then
-            for i in item do
-                converter.EncodeAuto(&allocator, i)
+        if isNull (box item) = false then
+            let converter = converter
+            let handle = AllocatorUnsafeHandle &allocator
+            item |> Set.iter (fun x -> let allocator = &handle.AsAllocator() in converter.EncodeAuto(&allocator, x))
         ()
 
     override __.Decode(span : inref<ReadOnlySpan<byte>>) : Set<'T> =
-        let mutable span = span
+        let mutable body = span
         let mutable set = Set.empty
-        while not span.IsEmpty do
-            let i = converter.DecodeAuto &span
+        let converter = converter
+        while not body.IsEmpty do
+            let i = converter.DecodeAuto &body
             set <- Set.add i set
         set

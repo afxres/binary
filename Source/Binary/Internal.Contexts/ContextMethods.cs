@@ -12,11 +12,11 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class ContextMethods
     {
-        internal static int GetConverterLength(Type type, IReadOnlyCollection<Converter> values)
+        internal static int GetItemLength(Type type, IReadOnlyCollection<Converter> values)
         {
             Debug.Assert(values.Any() && values.All(x => x != null && x.Length >= 0));
             var length = values.All(x => x.Length > 0) ? values.Sum(x => (long)x.Length) : 0;
-            if (length < 0 || length > int.MaxValue)
+            if ((ulong)length > int.MaxValue)
                 throw new ArgumentException($"Converter length overflow, type: {type}");
             return (int)length;
         }

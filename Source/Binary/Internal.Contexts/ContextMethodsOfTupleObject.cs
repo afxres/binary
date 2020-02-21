@@ -18,8 +18,8 @@ namespace Mikodev.Binary.Internal.Contexts
             var decode = GetDecodeDelegateAsTupleObject(type, metadata, constructor, indexes, isAuto: false);
             var encodeWith = GetEncodeDelegateAsTupleObject(type, metadata, isAuto: true);
             var decodeWith = GetDecodeDelegateAsTupleObject(type, metadata, constructor, indexes, isAuto: true);
-            var converterLength = ContextMethods.GetConverterLength(type, metadata.Select(x => x.Converter).ToList());
-            var converterArguments = new object[] { encode, decode, encodeWith, decodeWith, converterLength };
+            var itemLength = ContextMethods.GetItemLength(type, metadata.Select(x => x.Converter).ToList());
+            var converterArguments = new object[] { encode, decode, encodeWith, decodeWith, itemLength };
             var converterType = typeof(TupleObjectConverter<>).MakeGenericType(type);
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;

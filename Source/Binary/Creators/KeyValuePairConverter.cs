@@ -5,41 +5,41 @@ namespace Mikodev.Binary.Creators
 {
     internal sealed class KeyValuePairConverter<K, V> : Converter<KeyValuePair<K, V>>
     {
-        private readonly Converter<K> converterK;
+        private readonly Converter<K> headConverter;
 
-        private readonly Converter<V> converterV;
+        private readonly Converter<V> dataConverter;
 
-        public KeyValuePairConverter(Converter<K> converterK, Converter<V> converterV, int length) : base(length)
+        public KeyValuePairConverter(Converter<K> headConverter, Converter<V> dataConverter, int length) : base(length)
         {
-            this.converterK = converterK;
-            this.converterV = converterV;
+            this.headConverter = headConverter;
+            this.dataConverter = dataConverter;
         }
 
         public override void Encode(ref Allocator allocator, KeyValuePair<K, V> item)
         {
-            converterK.EncodeAuto(ref allocator, item.Key);
-            converterV.Encode(ref allocator, item.Value);
+            headConverter.EncodeAuto(ref allocator, item.Key);
+            dataConverter.Encode(ref allocator, item.Value);
         }
 
         public override KeyValuePair<K, V> Decode(in ReadOnlySpan<byte> span)
         {
             var body = span;
-            var head = converterK.DecodeAuto(ref body);
-            var tail = converterV.Decode(in body);
-            return new KeyValuePair<K, V>(head, tail);
+            var head = headConverter.DecodeAuto(ref body);
+            var data = dataConverter.Decode(in body);
+            return new KeyValuePair<K, V>(head, data);
         }
 
         public override void EncodeAuto(ref Allocator allocator, KeyValuePair<K, V> item)
         {
-            converterK.EncodeAuto(ref allocator, item.Key);
-            converterV.EncodeAuto(ref allocator, item.Value);
+            headConverter.EncodeAuto(ref allocator, item.Key);
+            dataConverter.EncodeAuto(ref allocator, item.Value);
         }
 
         public override KeyValuePair<K, V> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var head = converterK.DecodeAuto(ref span);
-            var tail = converterV.DecodeAuto(ref span);
-            return new KeyValuePair<K, V>(head, tail);
+            var head = headConverter.DecodeAuto(ref span);
+            var data = dataConverter.DecodeAuto(ref span);
+            return new KeyValuePair<K, V>(head, data);
         }
     }
 }

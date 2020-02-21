@@ -10,11 +10,11 @@ namespace Mikodev.Binary.Internal.Adapters
 
         private readonly CollectionBuilder<T, U, R> builder;
 
-        public CollectionAdaptedConverter(Converter<E> converter, CollectionAdapter<U, R> adapter, CollectionBuilder<T, U, R> builder)
+        public CollectionAdaptedConverter(CollectionAdapter<U, R> adapter, CollectionBuilder<T, U, R> builder, int itemLength)
         {
-            itemLength = converter.Length;
             this.adapter = adapter;
             this.builder = builder;
+            this.itemLength = itemLength;
         }
 
         private void AppendWithLengthPrefix(ref Allocator allocator, T item)

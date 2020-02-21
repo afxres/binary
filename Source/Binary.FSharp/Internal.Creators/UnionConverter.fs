@@ -21,7 +21,7 @@ type UnionConverter<'T>(encode : UnionEncoder<'T>, decode : UnionDecoder<'T>, en
     [<DebuggerStepThrough; MethodImpl(MethodImplOptions.NoInlining)>]
     member private me.ThrowInvalid mark = raise (ArgumentException(sprintf "Invalid union tag '%d', type: %O" mark me.ItemType))
 
-    member inline private me.ThrowOnNull item = if noNull && obj.ReferenceEquals(item, null) then me.ThrowNull()
+    member inline private me.ThrowOnNull item = if noNull && isNull (box item) then me.ThrowNull()
 
     member inline private me.ThrowOnInvalid mark = if mark <> MarkNone then me.ThrowInvalid mark
 

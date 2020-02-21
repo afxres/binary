@@ -22,7 +22,7 @@ namespace Mikodev.Binary.Creators.Builders
             var itemConverter = context.GetConverter(itemType);
             var builderType = definition.MakeGenericType(itemType);
             var builder = Activator.CreateInstance(builderType);
-            var converterArguments = new object[] { itemConverter, builder };
+            var converterArguments = new object[] { builder, itemConverter };
             var converterType = typeof(ArrayLikeAdaptedConverter<,>).MakeGenericType(type, itemType);
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
