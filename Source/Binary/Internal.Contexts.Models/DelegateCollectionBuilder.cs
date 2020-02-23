@@ -1,8 +1,11 @@
 ﻿using Mikodev.Binary.Internal.Adapters;
 using System;
+using System.Collections.Generic;
 
 namespace Mikodev.Binary.Internal.Contexts.Models
 {
+    internal delegate T ToCollection<out T, in E>(IEnumerable<E> enumerable);
+
     internal sealed class DelegateCollectionBuilder<T, E> : EnumerableBuilder<T, E>
     {
         private readonly ToCollection<T, E> constructor;

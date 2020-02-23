@@ -8,11 +8,11 @@ namespace Mikodev.Binary.Creators.Builders
 {
     internal sealed class ListBuilder<T> : ArrayLikeBuilder<List<T>, T>
     {
-        private readonly OfList<T> ofList;
+        private readonly Func<List<T>, T[]> ofList;
 
-        private readonly ToList<T> toList;
+        private readonly Func<T[], int, List<T>> toList;
 
-        public ListBuilder(OfList<T> ofList, ToList<T> toList)
+        public ListBuilder(Func<List<T>, T[]> ofList, Func<T[], int, List<T>> toList)
         {
             this.ofList = ofList;
             this.toList = toList;

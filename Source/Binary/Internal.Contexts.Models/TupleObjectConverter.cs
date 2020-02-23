@@ -2,6 +2,10 @@
 
 namespace Mikodev.Binary.Internal.Contexts.Models
 {
+    internal delegate void OfTupleObject<in T>(ref Allocator allocator, T item);
+
+    internal delegate T ToTupleObject<out T>(ref ReadOnlySpan<byte> span);
+
     internal sealed class TupleObjectConverter<T> : Converter<T>
     {
         private readonly OfTupleObject<T> encode;

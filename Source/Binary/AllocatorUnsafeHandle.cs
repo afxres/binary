@@ -10,18 +10,18 @@ namespace Mikodev.Binary
         private readonly IntPtr handle;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public AllocatorUnsafeHandle(ref Allocator allocator) => handle = DynamicHelper.UnsafeHelperInstance.AsPointer(ref allocator);
+        public AllocatorUnsafeHandle(ref Allocator allocator) => handle = ModuleHelper.Instance.AsHandle(ref allocator);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ref Allocator AsAllocator() => ref DynamicHelper.UnsafeHelperInstance.AsAllocator(handle);
+        public ref Allocator AsAllocator() => ref ModuleHelper.Instance.AsAllocator(handle);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override readonly bool Equals(object obj) => throw new NotSupportedException();
+        public override bool Equals(object obj) => throw new NotSupportedException();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override readonly int GetHashCode() => throw new NotSupportedException();
+        public override int GetHashCode() => throw new NotSupportedException();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override readonly string ToString() => handle == default ? "<Invalid Allocator Handle>" : AsAllocator().ToString();
+        public override string ToString() => handle == default ? "<Invalid Allocator Handle>" : AsAllocator().ToString();
     }
 }

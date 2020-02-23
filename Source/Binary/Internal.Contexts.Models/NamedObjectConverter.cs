@@ -7,6 +7,10 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Internal.Contexts.Models
 {
+    internal delegate void OfNamedObject<in T>(ref Allocator allocator, T item);
+
+    internal delegate T ToNamedObject<out T>(LengthList list);
+
     internal sealed class NamedObjectConverter<T> : Converter<T>
     {
         private readonly OfNamedObject<T> ofObject;

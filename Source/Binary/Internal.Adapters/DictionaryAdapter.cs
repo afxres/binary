@@ -1,23 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary.Internal.Adapters
 {
     internal sealed class DictionaryAdapter<T, K, V> : CollectionAdapter<T, Dictionary<K, V>> where T : IEnumerable<KeyValuePair<K, V>>
     {
+        private readonly int itemLength;
+
         private readonly Converter<K> headConverter;
 
         private readonly Converter<V> dataConverter;
 
-        private readonly int itemLength;
-
         public DictionaryAdapter(Converter<K> headConverter, Converter<V> dataConverter, int itemLength)
         {
+            this.itemLength = itemLength;
             this.headConverter = headConverter;
             this.dataConverter = dataConverter;
-            this.itemLength = itemLength;
             Debug.Assert(itemLength > 0 || (itemLength == 0 && (headConverter.Length == 0 || dataConverter.Length == 0)));
         }
 
@@ -38,13 +39,14 @@ namespace Mikodev.Binary.Internal.Adapters
 
         public override void Of(ref Allocator allocator, T item)
         {
+            const int Limits = 8;
             if (item is null)
                 return;
-            else if (item is Dictionary<K, V> dictionary)
+            else if (item is Dictionary<K, V> dictionary && dictionary.Count < Limits)
                 foreach (var i in dictionary)
                     AppendAuto(ref allocator, i);
             else
-                foreach (var i in item)
+                foreach (var i in item.ToArray())
                     AppendAuto(ref allocator, i);
         }
 

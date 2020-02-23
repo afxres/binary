@@ -4,6 +4,8 @@ using System.Collections.Generic;
 
 namespace Mikodev.Binary.Internal.Contexts.Models
 {
+    internal delegate T ToDictionary<out T, K, V>(IDictionary<K, V> dictionary);
+
     internal sealed class DelegateDictionaryBuilder<T, K, V> : DictionaryBuilder<T, K, V>
     {
         private readonly ToDictionary<T, K, V> constructor;

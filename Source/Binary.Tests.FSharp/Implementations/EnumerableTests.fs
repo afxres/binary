@@ -41,7 +41,7 @@ type DictionaryA<'K, 'V>(item : IDictionary<'K, 'V>) =
 type DictionaryI<'K, 'V>(item : IDictionary<'K, 'V>) =
     inherit DictionaryA<'K, 'V>(item)
 
-type DictionaryR<'K, 'V>(item : KeyValuePair<'K, 'V> list) =
+type DictionaryR<'K, 'V>(item : Queue<KeyValuePair<'K, 'V>>) =
     interface IDictionary<'K, 'V> with
         member __.Add(key: 'K, value: 'V): unit = raise (System.NotImplementedException())
 
@@ -53,9 +53,9 @@ type DictionaryR<'K, 'V>(item : KeyValuePair<'K, 'V> list) =
 
         member __.ContainsKey(key: 'K): bool = raise (System.NotImplementedException())
 
-        member __.CopyTo(array: KeyValuePair<'K,'V> [], arrayIndex: int): unit = raise (System.NotImplementedException())
+        member __.CopyTo(array: KeyValuePair<'K,'V> [], arrayIndex: int): unit = item.CopyTo(array, arrayIndex)
 
-        member __.Count: int = raise (System.NotImplementedException())
+        member __.Count: int = item.Count
 
         member __.GetEnumerator(): IEnumerator = (item :> seq<_>).GetEnumerator() :> IEnumerator
 
@@ -110,9 +110,9 @@ type DictionaryD<'K, 'V>(item : KeyValuePair<'K, 'V> ResizeArray) =
 
         member __.ContainsKey(key: 'K): bool = raise (System.NotImplementedException())
 
-        member __.CopyTo(array: KeyValuePair<'K,'V> [], arrayIndex: int): unit = raise (System.NotImplementedException())
+        member __.CopyTo(array: KeyValuePair<'K,'V> [], arrayIndex: int): unit = item.CopyTo(array, arrayIndex)
 
-        member __.Count: int = raise (System.NotImplementedException())
+        member __.Count: int = item.Count
 
         member __.IsReadOnly: bool = raise (System.NotImplementedException())
 
@@ -180,7 +180,7 @@ let ``No suitable constructor (enumerable with 'KeyValuePair' sequence construct
 
 [<Fact>]
 let ``No suitable constructor (dictionary of 'IDictionary', constructor not match)`` () =
-    test "DictionaryAdaptedConverter`3" "DelegateDictionaryBuilder`3" ((DictionaryR(dict [ 1, "one"; 0, "ZERO" ] |> Seq.toList))) [ 1, "one"; 0, "ZERO" ]
+    test "DictionaryAdaptedConverter`3" "DelegateDictionaryBuilder`3" ((DictionaryR(dict [ 1, "one"; 0, "ZERO" ] |> Queue<_>))) [ 1, "one"; 0, "ZERO" ]
     ()
 
 [<Fact>]
