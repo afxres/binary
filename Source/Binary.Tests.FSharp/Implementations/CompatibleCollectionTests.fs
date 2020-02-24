@@ -9,9 +9,19 @@ open Xunit
 let generator = Generator.CreateDefault()
 
 let test (value : 'a when 'a :> 'e seq) =
-    let buffer = generator.Encode value
-    let result : 'a = generator.Decode buffer
+    let converter = generator.GetConverter<'a>()
+    let buffer = converter.Encode value
+    let result : 'a = converter.Decode buffer
     Assert.Equal<'e seq>(value, result)
+
+    let alpha = converter.Encode Unchecked.defaultof<'a>
+    Assert.NotNull alpha
+    Assert.Empty alpha
+
+    let mutable allocator = Allocator()
+    converter.EncodeWithLengthPrefix(&allocator, Unchecked.defaultof<'a>)
+    let bravo = allocator.AsSpan().ToArray()
+    Assert.Equal(0uy, Assert.Single(bravo))
     ()
 
 [<Fact>]

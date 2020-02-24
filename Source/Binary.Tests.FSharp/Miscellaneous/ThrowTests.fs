@@ -142,7 +142,6 @@ type ThrowTests() =
             yield [| Memory<int32>(); Int32(); 15; 3 |]
             yield [| ArraySegment<int64>(); Int64(); 7; 7 |]
             yield [| ResizeArray<TimeSpan>(); TimeSpan(); 10; 2 |]
-            yield [| HashSet<DateTimeOffset>(); DateTimeOffset(); 39; 9 |]
             yield [| Dictionary<int32, int16>(); KeyValuePair<int32, int16>(); 23; 5 |]
         }
 

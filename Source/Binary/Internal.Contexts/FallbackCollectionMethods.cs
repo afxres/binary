@@ -1,78 +1,93 @@
 ﻿using Mikodev.Binary.Internal.Adapters;
 using Mikodev.Binary.Internal.Contexts.Models;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class FallbackCollectionMethods
     {
-        private static readonly IReadOnlyCollection<Type> ReverseTypes = new[] { typeof(Stack<>), typeof(ConcurrentStack<>) };
+        private static readonly MethodInfo CreateSetMethodInfo = typeof(FallbackCollectionMethods).GetMethod(nameof(CreateSetConverter), BindingFlags.Static | BindingFlags.NonPublic);
+
+        private static readonly MethodInfo CreateLinkedListMethodInfo = typeof(FallbackCollectionMethods).GetMethod(nameof(CreateLinkedListConverter), BindingFlags.Static | BindingFlags.NonPublic);
+
+        private static readonly MethodInfo CreateEnumerableMethodInfo = typeof(FallbackCollectionMethods).GetMethod(nameof(CreateEnumerableConverter), BindingFlags.Static | BindingFlags.NonPublic);
+
+        private static readonly MethodInfo CreateDictionaryMethodInfo = typeof(FallbackCollectionMethods).GetMethod(nameof(CreateDictionaryConverter), BindingFlags.Static | BindingFlags.NonPublic);
 
         internal static Converter GetConverter(IGeneratorContext context, Type type, Type itemType)
         {
-            return type.TryGetInterfaceArguments(typeof(IDictionary<,>), out var interfaceArguments) || type.TryGetInterfaceArguments(typeof(IReadOnlyDictionary<,>), out interfaceArguments)
-                ? GetConverterAsDictionary(context, type, itemType, interfaceArguments)
-                : GetConverterAsCollection(context, type, itemType);
-        }
+            var arguments = default(Type[]);
 
-        private static Converter GetConverterAsCollection(IGeneratorContext context, Type type, Type itemType)
-        {
-            var itemConverter = context.GetConverter(itemType);
-            var typeArguments = new[] { type, itemType };
-
-            object MakeBuilder()
+            MethodInfo GetMethodInfo()
             {
-                var enumerableType = typeof(IEnumerable<>).MakeGenericType(itemType);
-                var constructor = GetDecodeDelegateAsEnumerable(type, enumerableType, typeof(ToCollection<,>).MakeGenericType(typeArguments));
-                var reverse = type.IsGenericType && ReverseTypes.Contains(type.GetGenericTypeDefinition());
-                var builderType = typeof(DelegateCollectionBuilder<,>).MakeGenericType(typeArguments);
-                var builderArguments = new object[] { constructor, reverse };
-                return Activator.CreateInstance(builderType, builderArguments);
+                if (type.TryGetInterfaceArguments(typeof(IDictionary<,>), out arguments) || type.TryGetInterfaceArguments(typeof(IReadOnlyDictionary<,>), out arguments))
+                    return CreateDictionaryMethodInfo;
+                else if (typeof(ISet<>).MakeGenericType(itemType).IsAssignableFrom(type))
+                    return CreateSetMethodInfo;
+                else if (type == typeof(LinkedList<>).MakeGenericType(itemType))
+                    return CreateLinkedListMethodInfo;
+                else
+                    return CreateEnumerableMethodInfo;
             }
 
-            var builder = MakeBuilder();
-            var converterType = typeof(EnumerableAdaptedConverter<,>).MakeGenericType(typeArguments);
-            var converterArguments = new object[] { builder, itemConverter };
-            var converter = Activator.CreateInstance(converterType, converterArguments);
-            return (Converter)converter;
+            var methodInfo = GetMethodInfo();
+            arguments ??= new[] { itemType };
+            var converters = arguments.Select(context.GetConverter).ToArray();
+            var method = methodInfo.MakeGenericMethod(new[] { type }.Concat(arguments).ToArray());
+            var source = Expression.Parameter(typeof(IReadOnlyList<Converter>), "source");
+            var lambda = Expression.Lambda<Func<IReadOnlyList<Converter>, Converter>>(Expression.Call(method, source), source);
+            return lambda.Compile().Invoke(converters);
         }
 
-        private static Converter GetConverterAsDictionary(IGeneratorContext context, Type type, Type itemType, Type[] interfaceArguments)
+        private static Converter CreateSetConverter<T, E>(IReadOnlyList<Converter> converters) where T : ISet<E>
         {
-            var typeArguments = new[] { type, interfaceArguments[0], interfaceArguments[1] };
-            var itemConverters = interfaceArguments.Select(context.GetConverter).ToArray();
-
-            object MakeBuilder()
-            {
-                var dictionaryType = typeof(IDictionary<,>).MakeGenericType(interfaceArguments);
-                var constructor = GetDecodeDelegateAsEnumerable(type, dictionaryType, typeof(ToDictionary<,,>).MakeGenericType(typeArguments));
-                var builderType = typeof(DelegateDictionaryBuilder<,,>).MakeGenericType(typeArguments);
-                var builderArguments = new object[] { constructor };
-                return Activator.CreateInstance(builderType, builderArguments);
-            }
-
-            var builder = MakeBuilder();
-            var itemLength = ContextMethods.GetItemLength(itemType, itemConverters);
-            var converterArguments = new object[] { builder, itemConverters[0], itemConverters[1], itemLength };
-            var converterType = typeof(DictionaryAdaptedConverter<,,>).MakeGenericType(typeArguments);
-            var converter = Activator.CreateInstance(converterType, converterArguments);
-            return (Converter)converter;
+            var converter = (Converter<E>)converters.Single();
+            var adapter = new SetAdapter<T, E>(converter);
+            var builder = new FallbackEnumerableBuilder<T, HashSet<E>>();
+            return new CollectionAdaptedConverter<T, HashSet<E>, E>(adapter, builder, converter.Length);
         }
 
-        private static Delegate GetDecodeDelegateAsEnumerable(Type type, Type enumerableType, Type delegateType)
+        private static Converter CreateLinkedListConverter<T, E>(IReadOnlyList<Converter> converters)
+        {
+            var converter = (Converter<E>)converters.Single();
+            var adapter = new LinkedListAdapter<E>(converter);
+            var builder = new FallbackEnumerableBuilder<LinkedList<E>, LinkedList<E>>();
+            return new CollectionAdaptedConverter<LinkedList<E>, LinkedList<E>, E>(adapter, builder, converter.Length);
+        }
+
+        private static Converter CreateEnumerableConverter<T, E>(IReadOnlyList<Converter> converters) where T : IEnumerable<E>
+        {
+            var converter = (Converter<E>)converters.Single();
+            var builder = typeof(T).IsAssignableFrom(typeof(ArraySegment<E>))
+                ? new FallbackEnumerableBuilder<T, ArraySegment<E>>() as CollectionBuilder<T, T, ArraySegment<E>>
+                : new DelegateCollectionBuilder<T, E>(GetDecodeDelegateAsEnumerable<ToCollection<T, E>>(typeof(T), typeof(IEnumerable<E>)));
+            var adapter = new EnumerableAdapter<T, E>(converter);
+            return new CollectionAdaptedConverter<T, ArraySegment<E>, E>(adapter, builder, converter.Length);
+        }
+
+        private static Converter CreateDictionaryConverter<T, K, V>(IReadOnlyList<Converter> converters) where T : IEnumerable<KeyValuePair<K, V>>
+        {
+            var itemLength = ContextMethods.GetItemLength(typeof(KeyValuePair<K, V>), converters);
+            var adapter = new DictionaryAdapter<T, K, V>((Converter<K>)converters[0], (Converter<V>)converters[1], itemLength);
+            var builder = typeof(T).IsAssignableFrom(typeof(Dictionary<K, V>))
+                ? new FallbackEnumerableBuilder<T, Dictionary<K, V>>() as CollectionBuilder<T, T, Dictionary<K, V>>
+                : new DelegateDictionaryBuilder<T, K, V>(GetDecodeDelegateAsEnumerable<ToDictionary<T, K, V>>(typeof(T), typeof(IDictionary<K, V>)));
+            return new CollectionAdaptedConverter<T, Dictionary<K, V>, KeyValuePair<K, V>>(adapter, builder, itemLength);
+        }
+
+        private static D GetDecodeDelegateAsEnumerable<D>(Type type, Type enumerableType) where D : Delegate
         {
             if (type.IsAbstract || type.IsInterface)
                 return null;
             var constructor = type.GetConstructor(new[] { enumerableType });
             if (constructor is null)
                 return null;
-            var enumerable = Expression.Parameter(enumerableType, "enumerable");
-            var result = Expression.New(constructor, enumerable);
-            var lambda = Expression.Lambda(delegateType, result, enumerable);
+            var source = Expression.Parameter(enumerableType, "source");
+            var lambda = Expression.Lambda<D>(Expression.New(constructor, source), source);
             return lambda.Compile();
         }
     }

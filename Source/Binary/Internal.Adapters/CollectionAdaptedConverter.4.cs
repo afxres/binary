@@ -21,7 +21,7 @@ namespace Mikodev.Binary.Internal.Adapters
         {
             int count;
             var value = builder.Of(item);
-            if (itemLength > 0 && (count = builder.Count(value)) != CollectionBuilder.UnknownCount)
+            if (itemLength > 0 && (count = value is null ? 0 : adapter.Count(value)) != -1)
             {
                 var byteLength = checked(itemLength * count);
                 PrimitiveHelper.EncodeNumber(ref allocator, byteLength);

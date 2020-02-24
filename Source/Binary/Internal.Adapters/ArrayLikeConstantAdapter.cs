@@ -16,18 +16,18 @@ namespace Mikodev.Binary.Internal.Adapters
             Debug.Assert(converter.Length > 0);
         }
 
-        public override MemoryItem<T> To(ReadOnlySpan<byte> span)
+        public override ArraySegment<T> To(ReadOnlySpan<byte> span)
         {
             Debug.Assert(converter.Length > 0);
             var byteLength = span.Length;
             if (byteLength == 0)
-                return new MemoryItem<T>(Array.Empty<T>(), 0);
+                return new ArraySegment<T>(Array.Empty<T>());
             var definition = converter.Length;
             var itemCount = CollectionAdapterHelper.GetItemCount(byteLength, definition, typeof(T));
             var items = new T[itemCount];
             for (var i = 0; i < itemCount; i++)
                 items[i] = converter.Decode(span.Slice(i * definition));
-            return new MemoryItem<T>(items, itemCount);
+            return new ArraySegment<T>(items, 0, itemCount);
         }
     }
 }

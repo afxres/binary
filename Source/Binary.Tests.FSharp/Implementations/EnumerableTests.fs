@@ -160,35 +160,35 @@ let test (converterName : string) (builderName : string) (enumerable : 'a) (expe
 
 [<Fact>]
 let ``No suitable constructor (enumerable, constructor not match)`` () =
-    test "EnumerableAdaptedConverter`2" "DelegateCollectionBuilder`2" (CollectionT [ 1; 2; 3 ]) [ 1; 2; 3 ]
+    test "CollectionAdaptedConverter`3" "DelegateCollectionBuilder`2" (CollectionT [ 1; 2; 3 ]) [ 1; 2; 3 ]
     ()
 
 [<Fact>]
 let ``No suitable constructor (enumerable, abstract)`` () =
-    test "EnumerableAdaptedConverter`2" "DelegateCollectionBuilder`2" ((CollectionI [ 1; 2; 3 ]) :> CollectionA<_>) [ 1; 2; 3 ]
+    test "CollectionAdaptedConverter`3" "DelegateCollectionBuilder`2" ((CollectionI [ 1; 2; 3 ]) :> CollectionA<_>) [ 1; 2; 3 ]
     ()
 
 [<Fact>]
 let ``No suitable constructor (enumerable with 'KeyValuePair' sequence constructor, constructor not match)`` () =
-    test "EnumerableAdaptedConverter`2" "DelegateCollectionBuilder`2" (DictionaryP ((dict [ 1, "one"; 0, "ZERO" ]) |> Seq.toList)) [ 1, "one"; 0, "ZERO" ]
+    test "CollectionAdaptedConverter`3" "DelegateCollectionBuilder`2" (DictionaryP ((dict [ 1, "one"; 0, "ZERO" ]) |> Seq.toList)) [ 1, "one"; 0, "ZERO" ]
     ()
 
 [<Fact>]
 let ``No suitable constructor (enumerable with 'KeyValuePair' sequence constructor, abstract)`` () =
-    test "EnumerableAdaptedConverter`2" "DelegateCollectionBuilder`2" ((DictionaryI(dict [ 1, "one"; 0, "ZERO" ])) :> DictionaryA<_, _>) [ 1, "one"; 0, "ZERO" ]
+    test "CollectionAdaptedConverter`3" "DelegateCollectionBuilder`2" ((DictionaryI(dict [ 1, "one"; 0, "ZERO" ])) :> DictionaryA<_, _>) [ 1, "one"; 0, "ZERO" ]
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary of 'IDictionary', constructor not match)`` () =
-    test "DictionaryAdaptedConverter`3" "DelegateDictionaryBuilder`3" ((DictionaryR(dict [ 1, "one"; 0, "ZERO" ] |> Queue<_>))) [ 1, "one"; 0, "ZERO" ]
+    test "CollectionAdaptedConverter`3" "DelegateDictionaryBuilder`3" ((DictionaryR(dict [ 1, "one"; 0, "ZERO" ] |> Queue<_>))) [ 1, "one"; 0, "ZERO" ]
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary of 'IReadOnlyDictionary', constructor not match)`` () =
-    test "DictionaryAdaptedConverter`3" "DelegateDictionaryBuilder`3" ((DictionaryO(dict [ 1, "one"; 0, "ZERO" ] |> Seq.toArray))) [ 1, "one"; 0, "ZERO" ]
+    test "CollectionAdaptedConverter`3" "DelegateDictionaryBuilder`3" ((DictionaryO(dict [ 1, "one"; 0, "ZERO" ] |> Seq.toArray))) [ 1, "one"; 0, "ZERO" ]
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary of 'IDictionary' and 'IReadOnlyDictionary', constructor not match)`` () =
-    test "DictionaryAdaptedConverter`3" "DelegateDictionaryBuilder`3" ((DictionaryD(dict [ 1, "one"; 0, "ZERO" ] |> ResizeArray))) [ 1, "one"; 0, "ZERO" ]
+    test "CollectionAdaptedConverter`3" "DelegateDictionaryBuilder`3" ((DictionaryD(dict [ 1, "one"; 0, "ZERO" ] |> ResizeArray))) [ 1, "one"; 0, "ZERO" ]
     ()

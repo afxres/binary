@@ -16,11 +16,11 @@ namespace Mikodev.Binary.Internal.Adapters
             Debug.Assert(converter.Length == 0);
         }
 
-        public override MemoryItem<T> To(ReadOnlySpan<byte> span)
+        public override ArraySegment<T> To(ReadOnlySpan<byte> span)
         {
             Debug.Assert(converter.Length == 0);
             if (span.IsEmpty)
-                return new MemoryItem<T>(Array.Empty<T>(), 0);
+                return new ArraySegment<T>(Array.Empty<T>());
             const int Initial = 8;
             var buffer = new T[Initial];
             var bounds = Initial;
@@ -41,7 +41,7 @@ namespace Mikodev.Binary.Internal.Adapters
                 buffer[cursor++] = converter.DecodeAuto(ref body);
             }
             Debug.Assert(cursor <= buffer.Length);
-            return new MemoryItem<T>(buffer, cursor);
+            return new ArraySegment<T>(buffer, 0, cursor);
         }
     }
 }

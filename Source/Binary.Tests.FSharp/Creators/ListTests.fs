@@ -54,7 +54,7 @@ type ListTests () =
         let generator = Activator.CreateInstance(generatorType, [| box Array.empty<Converter>; box creators |]) :?> IGenerator
 
         let alpha = generator.GetConverter<'a vlist>()
-        Assert.Equal("EnumerableAdaptedConverter`2", alpha.GetType().Name)
+        Assert.Equal("CollectionAdaptedConverter`3", alpha.GetType().Name)
         let defaultGenerator = Generator.CreateDefault()
         let bravo = defaultGenerator.GetConverter<'a vlist>()
         Assert.Equal("ArrayLikeAdaptedConverter`2", bravo.GetType().Name)

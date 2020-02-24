@@ -94,61 +94,47 @@ let test (collection : 'a) (except : string) =
     Assert.Equal(except, error.Message)
     ()
 
-let functor<'a> (isArrayNull : bool) (isCountNull : bool) =
+let functor<'a> (isArrayNull : bool) =
     let converter = generator.GetConverter<'a> ()
     let flags = BindingFlags.Instance ||| BindingFlags.NonPublic
     let adapter = converter.GetType().BaseType.GetField("adapter", flags).GetValue(converter)
     Assert.NotNull adapter
     let array = adapter.GetType().GetField("array", flags).GetValue(adapter)
-    let count = adapter.GetType().GetField("count", flags).GetValue(adapter)
     Assert.Equal(isArrayNull, isNull array)
-    Assert.Equal(isCountNull, isNull count)
     ()
-
-[<Fact>]
-let ``Collection Encode (count 1, use enumerator)`` () = test (CollectionA<int> 1) "Collection A, Get Enumerator"
 
 [<Fact>]
 let ``Collection Encode (count 8, copy to)`` () = test (CollectionA<int> 8) "Collection A, Copy To"
 
 [<Fact>]
-let ``Collection Adapter Functor`` () = functor<CollectionA<int>> false false
-
-[<Fact>]
-let ``Read Only Collection With To Array Method Encode (count 7, use enumerator)`` () = test (CollectionB<string> 7) "Collection B, Get Enumerator"
+let ``Collection Adapter Functor`` () = functor<CollectionA<int>> false
 
 [<Fact>]
 let ``Read Only Collection With To Array Method Encode (count 8, to array)`` () = test (CollectionB<string> 8) "Collection B, To Array"
 
 [<Fact>]
-let ``Read Only Collection With To Array Method Adapter Functor`` () = functor<CollectionB<string>> false false
-
-[<Fact>]
-let ``Read Only Collection With Private To Array Method Encode (count 7, use enumerator)`` () = test (CollectionC<string> 7) "Collection C, Get Enumerator"
+let ``Read Only Collection With To Array Method Adapter Functor`` () = functor<CollectionB<string>> false
 
 [<Fact>]
 let ``Read Only Collection With Private To Array Method Encode (count 8, use enumerator)`` () = test (CollectionC<int> 8) "Collection C, Get Enumerator"
 
 [<Fact>]
-let ``Read Only Collection With Private To Array Method Adapter Functor`` () = functor<CollectionC<string>> true false
-
-[<Fact>]
-let ``Collection With Multiple Interfaces (count 7, use enumerator)`` () = test (CollectionD<int> 7) "Collection D, Get Enumerator"
+let ``Read Only Collection With Private To Array Method Adapter Functor`` () = functor<CollectionC<string>> true
 
 [<Fact>]
 let ``Collection With Multiple Interfaces (count 8, copy to)`` () = test (CollectionD<string> 8) "Collection D, Copy To"
 
 [<Fact>]
-let ``Collection With Multiple Interfaces Adapter Functor`` () = functor<CollectionD<int>> false false
+let ``Collection With Multiple Interfaces Adapter Functor`` () = functor<CollectionD<int>> false
 
 [<Fact>]
 let ``Enumerable With Static To Array Method Encode (use enumerator)`` () = test (CollectionE<int> ()) "Collection E, Get Enumerator"
 
 [<Fact>]
-let ``Enumerable With Static To Array Method Functor`` () = functor<CollectionE<int>> true true
+let ``Enumerable With Static To Array Method Functor`` () = functor<CollectionE<int>> true
 
 [<Fact>]
 let ``Enumerable With To Array Method Encode (to array)`` () = test (CollectionF<int> ()) "Collection F, To Array"
 
 [<Fact>]
-let ``Enumerable With To Array Method Functor`` () = functor<CollectionF<int>> false true
+let ``Enumerable With To Array Method Functor`` () = functor<CollectionF<int>> false

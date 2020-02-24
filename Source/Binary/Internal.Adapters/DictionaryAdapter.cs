@@ -37,12 +37,20 @@ namespace Mikodev.Binary.Internal.Adapters
             dictionary.Add(head, data);
         }
 
+        public override int Count(T item) => item switch
+        {
+            null => 0,
+            ICollection<KeyValuePair<K, V>> { Count: var alpha } => alpha,
+            IReadOnlyCollection<KeyValuePair<K, V>> { Count: var bravo } => bravo,
+            _ => -1,
+        };
+
         public override void Of(ref Allocator allocator, T item)
         {
             const int Limits = 8;
             if (item is null)
                 return;
-            else if (item is Dictionary<K, V> dictionary && dictionary.Count < Limits)
+            else if (item is Dictionary<K, V> { Count: var count } dictionary && count < Limits)
                 foreach (var i in dictionary)
                     AppendAuto(ref allocator, i);
             else
@@ -52,14 +60,11 @@ namespace Mikodev.Binary.Internal.Adapters
 
         public override Dictionary<K, V> To(ReadOnlySpan<byte> span)
         {
-            var byteLength = span.Length;
-            if (byteLength == 0)
-                return new Dictionary<K, V>();
             const int Initial = 8;
-            var itemLength = this.itemLength;
-            var dictionaryCount = itemLength > 0 ? CollectionAdapterHelper.GetItemCount(byteLength, itemLength, typeof(KeyValuePair<K, V>)) : Initial;
-            var dictionary = new Dictionary<K, V>(dictionaryCount);
             var body = span;
+            var itemLength = this.itemLength;
+            var dictionaryCount = itemLength > 0 ? CollectionAdapterHelper.GetItemCount(body.Length, itemLength, typeof(KeyValuePair<K, V>)) : Initial;
+            var dictionary = new Dictionary<K, V>(dictionaryCount);
             while (!body.IsEmpty)
                 DetachAuto(ref body, dictionary);
             return dictionary;

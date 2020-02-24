@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Mikodev.Binary.Internal.Adapters
 {
-    internal sealed class EnumerableAdapter<T, E> : CollectionAdapter<T, MemoryItem<E>> where T : IEnumerable<E>
+    internal sealed class EnumerableAdapter<T, E> : CollectionAdapter<T, ArraySegment<E>> where T : IEnumerable<E>
     {
         private readonly Func<T, E[]> array;
-
-        private readonly Func<T, int> count;
 
         private readonly Converter<E> converter;
 
@@ -18,15 +17,12 @@ namespace Mikodev.Binary.Internal.Adapters
 
         public EnumerableAdapter(Converter<E> converter)
         {
-            var arrayExpression = CreateArrayExpression();
-            var countExpression = CreateCountExpression();
             this.converter = converter;
             this.adapter = ArrayLikeAdapterHelper.Create(converter);
-            this.array = arrayExpression?.Compile();
-            this.count = countExpression?.Compile();
+            this.array = CreateArrayExpression();
         }
 
-        private static Expression<Func<T, E[]>> CreateArrayExpression()
+        internal static Func<T, E[]> CreateArrayExpression()
         {
             if (typeof(T).GetInterfaces().Contains(typeof(ICollection<E>)))
                 return source => source.ToArray();
@@ -35,33 +31,42 @@ namespace Mikodev.Binary.Internal.Adapters
                 return null;
             var source = Expression.Parameter(typeof(T), "source");
             var lambda = Expression.Lambda<Func<T, E[]>>(Expression.Call(source, method), source);
-            return lambda;
+            return lambda.Compile();
         }
 
-        private static Expression<Func<T, int>> CreateCountExpression()
+        internal E[] Array(T item)
         {
-            var interfaces = typeof(T).GetInterfaces();
-            if (interfaces.Contains(typeof(ICollection<E>)))
-                return source => ((ICollection<E>)source).Count;
-            if (interfaces.Contains(typeof(IReadOnlyCollection<E>)))
-                return source => ((IReadOnlyCollection<E>)source).Count;
-            return null;
+            Debug.Assert(item != null);
+            if (array != null)
+                return array.Invoke(item);
+            if (!(item is ICollection<E> collection))
+                return null;
+            var data = new E[collection.Count];
+            collection.CopyTo(data, default);
+            return data;
         }
+
+        public override int Count(T item) => item switch
+        {
+            null => 0,
+            ICollection<E> { Count: var alpha } => alpha,
+            IReadOnlyCollection<E> { Count: var bravo } => bravo,
+            _ => -1,
+        };
 
         public override void Of(ref Allocator allocator, T item)
         {
-            const int Limits = 8;
             if (item is null)
                 return;
             else if (item is E[] data)
                 adapter.Of(ref allocator, new ReadOnlyMemory<E>(data));
-            else if (array is null || (count != null && count.Invoke(item) < Limits))
+            else if (!(Array(item) is { } result))
                 foreach (var i in item)
                     converter.EncodeAuto(ref allocator, i);
             else
-                adapter.Of(ref allocator, new ReadOnlyMemory<E>(array.Invoke(item)));
+                adapter.Of(ref allocator, new ReadOnlyMemory<E>(result));
         }
 
-        public override MemoryItem<E> To(ReadOnlySpan<byte> span) => adapter.To(span);
+        public override ArraySegment<E> To(ReadOnlySpan<byte> span) => adapter.To(span);
     }
 }

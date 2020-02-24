@@ -1,5 +1,4 @@
-﻿using Mikodev.Binary.Internal;
-using Mikodev.Binary.Internal.Adapters;
+﻿using Mikodev.Binary.Internal.Adapters;
 using System;
 using System.Diagnostics;
 
@@ -9,12 +8,12 @@ namespace Mikodev.Binary.Creators.Builders
     {
         public override ReadOnlyMemory<T> Of(T[] item) => item;
 
-        public override T[] To(CollectionAdapter<MemoryItem<T>> adapter, ReadOnlySpan<byte> span)
+        public override T[] To(CollectionAdapter<ArraySegment<T>> adapter, ReadOnlySpan<byte> span)
         {
             var data = adapter.To(span);
-            Debug.Assert(data.Buffer != null && data.Length >= 0 && data.Length <= data.Buffer.Length);
-            var buffer = data.Buffer;
-            var length = data.Length;
+            Debug.Assert(data.Array != null && data.Offset == 0);
+            var buffer = data.Array;
+            var length = data.Count;
             if (buffer.Length == length)
                 return buffer;
             return new ReadOnlySpan<T>(buffer, 0, length).ToArray();
