@@ -1,19 +1,11 @@
 ﻿using Mikodev.Binary.Internal.Contexts;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Mikodev.Binary
 {
     public static class Generator
     {
-        private static readonly IReadOnlyCollection<IConverterCreator> Creators = typeof(Converter).Assembly.GetTypes()
-            .Where(x => !x.IsAbstract && typeof(IConverterCreator).IsAssignableFrom(x))
-            .OrderBy(x => x.Namespace)
-            .ThenBy(x => x.Name)
-            .Select(x => (IConverterCreator)Activator.CreateInstance(x))
-            .ToList();
-
         public static IGenerator CreateDefault()
         {
             return CreateDefaultBuilder().Build();
@@ -21,8 +13,12 @@ namespace Mikodev.Binary
 
         public static IGeneratorBuilder CreateDefaultBuilder()
         {
+            var creators = typeof(Converter).Assembly.GetTypes()
+                .Where(x => !x.IsAbstract && typeof(IConverterCreator).IsAssignableFrom(x))
+                .Select(x => (IConverterCreator)Activator.CreateInstance(x))
+                .ToList();
             var builder = new GeneratorBuilder();
-            foreach (var creator in Creators)
+            foreach (var creator in creators)
                 _ = builder.AddConverterCreator(creator);
             return builder;
         }

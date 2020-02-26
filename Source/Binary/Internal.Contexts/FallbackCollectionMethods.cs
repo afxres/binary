@@ -20,13 +20,12 @@ namespace Mikodev.Binary.Internal.Contexts
 
         internal static Converter GetConverter(IGeneratorContext context, Type type, Type itemType)
         {
-            var arguments = default(Type[]);
-
-            MethodInfo GetMethodInfo()
+            MethodInfo GetMethodInfo(out Type[] arguments)
             {
                 if (type.TryGetInterfaceArguments(typeof(IDictionary<,>), out arguments) || type.TryGetInterfaceArguments(typeof(IReadOnlyDictionary<,>), out arguments))
                     return CreateDictionaryMethodInfo;
-                else if (typeof(ISet<>).MakeGenericType(itemType).IsAssignableFrom(type))
+                arguments = new[] { itemType };
+                if (typeof(ISet<>).MakeGenericType(itemType).IsAssignableFrom(type))
                     return CreateSetMethodInfo;
                 else if (type == typeof(LinkedList<>).MakeGenericType(itemType))
                     return CreateLinkedListMethodInfo;
@@ -34,8 +33,7 @@ namespace Mikodev.Binary.Internal.Contexts
                     return CreateEnumerableMethodInfo;
             }
 
-            var methodInfo = GetMethodInfo();
-            arguments ??= new[] { itemType };
+            var methodInfo = GetMethodInfo(out var arguments);
             var converters = arguments.Select(context.GetConverter).ToArray();
             var method = methodInfo.MakeGenericMethod(new[] { type }.Concat(arguments).ToArray());
             var source = Expression.Parameter(typeof(IReadOnlyList<Converter>), "source");

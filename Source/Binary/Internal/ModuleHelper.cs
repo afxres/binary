@@ -9,11 +9,9 @@ namespace Mikodev.Binary.Internal
 {
     internal abstract partial class ModuleHelper
     {
-        internal static readonly AssemblyBuilder AssemblyBuilder;
+        private static readonly AssemblyBuilder AssemblyBuilder;
 
-        internal static readonly ModuleBuilder ModuleBuilder;
-
-        internal static readonly ModuleHelper Instance;
+        private static readonly ModuleBuilder ModuleBuilder;
 
         static ModuleHelper()
         {

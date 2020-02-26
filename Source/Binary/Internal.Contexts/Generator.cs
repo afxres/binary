@@ -12,7 +12,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private readonly IReadOnlyCollection<IConverterCreator> creators;
 
-        public Generator(IEnumerable<Converter> converters = null, IEnumerable<IConverterCreator> creators = null)
+        public Generator(IEnumerable<Converter> converters, IEnumerable<IConverterCreator> creators)
         {
             Debug.Assert(!converters.Any() || converters.All(x => x is Converter));
             Debug.Assert(!creators.Any() || creators.All(x => x is IConverterCreator));

@@ -19,10 +19,10 @@ namespace Mikodev.Binary.Internal.Adapters
         {
             this.converter = converter;
             this.adapter = ArrayLikeAdapterHelper.Create(converter);
-            this.array = CreateArrayExpression();
+            this.array = CreateArrayFunction();
         }
 
-        internal static Func<T, E[]> CreateArrayExpression()
+        internal static Func<T, E[]> CreateArrayFunction()
         {
             if (typeof(T).GetInterfaces().Contains(typeof(ICollection<E>)))
                 return source => source.ToArray();
@@ -37,13 +37,15 @@ namespace Mikodev.Binary.Internal.Adapters
         internal E[] Array(T item)
         {
             Debug.Assert(item != null);
+            if (item is E[] result)
+                return result;
             if (array != null)
                 return array.Invoke(item);
             if (!(item is ICollection<E> collection))
                 return null;
-            var data = new E[collection.Count];
-            collection.CopyTo(data, default);
-            return data;
+            var target = new E[collection.Count];
+            collection.CopyTo(target, default);
+            return target;
         }
 
         public override int Count(T item) => item switch
@@ -58,8 +60,6 @@ namespace Mikodev.Binary.Internal.Adapters
         {
             if (item is null)
                 return;
-            else if (item is E[] data)
-                adapter.Of(ref allocator, new ReadOnlyMemory<E>(data));
             else if (!(Array(item) is { } result))
                 foreach (var i in item)
                     converter.EncodeAuto(ref allocator, i);

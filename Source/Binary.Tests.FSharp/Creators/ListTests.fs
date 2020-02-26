@@ -47,7 +47,7 @@ type ListTests () =
     [<MemberData("Data Alpha")>]
     member __.``Fallback List Implementation (hack, integration test)`` (array : 'a array) =
         let types = typeof<Converter>.Assembly.GetTypes()
-        let listConverterCreator = types |> Array.filter (fun x -> x.Name = "ListConverterCreator") |> Array.exactlyOne
+        let listConverterCreator = types |> Array.filter (fun x -> x.Name = "ArrayLikeConverterCreator") |> Array.exactlyOne
         let creatorTypes = types |> Array.filter (fun x -> not x.IsAbstract && typeof<IConverterCreator>.IsAssignableFrom x)
         let creators = creatorTypes |> Array.except (Array.singleton listConverterCreator) |> Array.map (fun x -> Activator.CreateInstance x :?> IConverterCreator)
         let generatorType = types |> Array.filter (fun x -> x.Name = "Generator" && not x.IsAbstract) |> Array.exactlyOne
