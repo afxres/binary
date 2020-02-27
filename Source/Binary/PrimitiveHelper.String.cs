@@ -1,6 +1,5 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -8,7 +7,6 @@ namespace Mikodev.Binary
 {
     public static partial class PrimitiveHelper
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void AppendString(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding)
         {
             if (encoding is null)
@@ -16,7 +14,6 @@ namespace Mikodev.Binary
             Allocator.AppendString(ref allocator, ref MemoryMarshal.GetReference(span), span.Length, encoding);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void AppendStringWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding)
         {
             if (encoding is null)
@@ -39,49 +36,41 @@ namespace Mikodev.Binary
             return StringHelper.GetString(encoding, ref MemoryMarshal.GetReference(data), data.Length);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EncodeString(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding)
         {
             AppendString(ref allocator, span, encoding);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EncodeStringWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding)
         {
             AppendStringWithLengthPrefix(ref allocator, span, encoding);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EncodeString(ref Allocator allocator, ReadOnlySpan<char> span)
         {
             AppendString(ref allocator, span, Converter.Encoding);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EncodeStringWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<char> span)
         {
             AppendStringWithLengthPrefix(ref allocator, span, Converter.Encoding);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string DecodeString(ReadOnlySpan<byte> span, Encoding encoding)
         {
             return DetachString(span, encoding);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string DecodeStringWithLengthPrefix(ref ReadOnlySpan<byte> span, Encoding encoding)
         {
             return DetachStringWithLengthPrefix(ref span, encoding);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string DecodeString(ReadOnlySpan<byte> span)
         {
             return DetachString(span, Converter.Encoding);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string DecodeStringWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
             return DetachStringWithLengthPrefix(ref span, Converter.Encoding);

@@ -76,7 +76,6 @@ namespace Mikodev.Binary
                 return ((location & 0x7F) << 24) | (Unsafe.Add(ref location, 1) << 16) | (Unsafe.Add(ref location, 2) << 8) | Unsafe.Add(ref location, 3);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EncodeNumber(ref Allocator allocator, int number)
         {
             if (number < 0)
@@ -85,7 +84,6 @@ namespace Mikodev.Binary
             EncodeNumber(ref Allocator.Assign(ref allocator, numberLength), numberLength, (uint)number);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int DecodeNumber(ref ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)

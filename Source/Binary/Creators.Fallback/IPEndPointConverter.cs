@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Buffers.Binary;
 using System.Net;
+using System.Net.Sockets;
 
 namespace Mikodev.Binary.Creators.Fallback
 {
     internal sealed class IPEndPointConverter : Converter<IPEndPoint>
     {
-        private static readonly AllocatorAction<ushort> WriteUInt16LittleEndian = BinaryPrimitives.WriteUInt16LittleEndian;
-
 #if NETNEW
         private static readonly AllocatorAction<IPAddress> WriteIPAddress = (span, data) => data.TryWriteBytes(span, out _);
 #endif
@@ -16,19 +15,19 @@ namespace Mikodev.Binary.Creators.Fallback
         {
             if (item is null)
                 return;
-            var size = item.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ? 4 : 16;
+            var size = item.AddressFamily == AddressFamily.InterNetwork ? 4 : 16;
             Allocator.Append(ref allocator, (byte)size);
 #if NETNEW
             AllocatorHelper.Append(ref allocator, size, item.Address, WriteIPAddress);
 #else
             AllocatorHelper.Append(ref allocator, item.Address.GetAddressBytes());
 #endif
-            AllocatorHelper.Append(ref allocator, sizeof(ushort), (ushort)item.Port, WriteUInt16LittleEndian);
+            Allocator.AppendLittleEndian(ref allocator, (ushort)item.Port);
         }
 
         private static void AppendWithLengthPrefix(ref Allocator allocator, IPEndPoint item)
         {
-            var size = item is null ? 0 : (item.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ? 4 : 16) + sizeof(ushort) + 1;
+            var size = item is null ? 0 : (item.AddressFamily == AddressFamily.InterNetwork ? 4 : 16) + sizeof(ushort) + 1;
             Allocator.Append(ref allocator, (byte)size);
             Append(ref allocator, item);
         }

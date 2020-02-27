@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Net.Sockets;
 
 namespace Mikodev.Binary.Creators.Fallback
 {
@@ -14,7 +15,7 @@ namespace Mikodev.Binary.Creators.Fallback
             if (item is null)
                 return;
 #if NETNEW
-            var size = item.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ? 4 : 16;
+            var size = item.AddressFamily == AddressFamily.InterNetwork ? 4 : 16;
             AllocatorHelper.Append(ref allocator, size, item, WriteIPAddress);
 #else
             AllocatorHelper.Append(ref allocator, item.GetAddressBytes());
@@ -23,7 +24,7 @@ namespace Mikodev.Binary.Creators.Fallback
 
         private static void AppendWithLengthPrefix(ref Allocator allocator, IPAddress item)
         {
-            var size = item is null ? 0 : item.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ? 4 : 16;
+            var size = item is null ? 0 : item.AddressFamily == AddressFamily.InterNetwork ? 4 : 16;
             Allocator.Append(ref allocator, (byte)size);
             if (size == 0)
                 return;

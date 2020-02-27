@@ -41,7 +41,7 @@ namespace Mikodev.Binary.Internal
             if (sourceLength == 0)
                 return 0;
             int[] counts;
-            if (!ReferenceEquals(encoding, Converter.Encoding) || (uint)sourceLength >= (uint)(counts = MaxByteCounts).Length)
+            if (encoding != Converter.Encoding || (uint)sourceLength >= (uint)(counts = MaxByteCounts).Length)
                 fixed (char* srcptr = &source)
                     return encoding.GetByteCount(srcptr, sourceLength);
             return counts[sourceLength];
@@ -54,7 +54,7 @@ namespace Mikodev.Binary.Internal
             if (sourceLength == 0)
                 return string.Empty;
             int[] counts;
-            if (!ReferenceEquals(encoding, Converter.Encoding) || (uint)sourceLength >= (uint)(counts = MaxCharCounts).Length)
+            if (encoding != Converter.Encoding || (uint)sourceLength >= (uint)(counts = MaxCharCounts).Length)
                 fixed (byte* srcptr = &source)
                     return encoding.GetString(srcptr, sourceLength);
             var targetLimits = counts[sourceLength];

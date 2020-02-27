@@ -6,7 +6,6 @@ namespace Mikodev.Binary
 {
     public ref partial struct Allocator
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void AppendLength<T>(ref Allocator allocator, int anchor, int length, T data, AllocatorAction<T> action)
         {
             if (action is null)
@@ -20,7 +19,6 @@ namespace Mikodev.Binary
             action.Invoke(target, data);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void AppendAction<T>(ref Allocator allocator, int length, T data, AllocatorAction<T> action)
         {
             if (action is null)

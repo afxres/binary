@@ -6,17 +6,15 @@ namespace Mikodev.Binary.Creators.Fallback
 {
     internal sealed class DecimalConverter : Converter<decimal>
     {
-        private static readonly AllocatorAction<int> WriteInt32LittleEndian = BinaryPrimitives.WriteInt32LittleEndian;
-
         public DecimalConverter() : base(sizeof(int) * 4) { }
 
         public override void Encode(ref Allocator allocator, decimal item)
         {
             ref var bits = ref Unsafe.As<decimal, int>(ref item);
-            AllocatorHelper.Append(ref allocator, sizeof(int), Unsafe.Add(ref bits, 2), WriteInt32LittleEndian);
-            AllocatorHelper.Append(ref allocator, sizeof(int), Unsafe.Add(ref bits, 3), WriteInt32LittleEndian);
-            AllocatorHelper.Append(ref allocator, sizeof(int), Unsafe.Add(ref bits, 1), WriteInt32LittleEndian);
-            AllocatorHelper.Append(ref allocator, sizeof(int), Unsafe.Add(ref bits, 0), WriteInt32LittleEndian);
+            Allocator.AppendLittleEndian(ref allocator, Unsafe.Add(ref bits, 2));
+            Allocator.AppendLittleEndian(ref allocator, Unsafe.Add(ref bits, 3));
+            Allocator.AppendLittleEndian(ref allocator, Unsafe.Add(ref bits, 1));
+            Allocator.AppendLittleEndian(ref allocator, Unsafe.Add(ref bits, 0));
         }
 
         public override decimal Decode(in ReadOnlySpan<byte> span)
