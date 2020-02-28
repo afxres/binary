@@ -22,8 +22,7 @@ namespace Mikodev.Binary.Creators
         {
             if (span.Length < Unsafe.SizeOf<T>())
                 return ThrowHelper.ThrowNotEnoughBytes<T>();
-            ref var source = ref MemoryMarshal.GetReference(span);
-            return Unsafe.ReadUnaligned<T>(ref source);
+            return Unsafe.ReadUnaligned<T>(ref MemoryMarshal.GetReference(span));
         }
 
         public override void EncodeAuto(ref Allocator allocator, T item)

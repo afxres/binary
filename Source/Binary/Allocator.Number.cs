@@ -13,12 +13,9 @@ namespace Mikodev.Binary
             var offset = allocator.offset;
             var buffer = allocator.buffer;
             var target = buffer.Slice(offset, Unsafe.SizeOf<T>());
-            if (Unsafe.SizeOf<T>() == 2)
-                BinaryPrimitives.WriteUInt16LittleEndian(target, Unsafe.As<T, ushort>(ref item));
-            else if (Unsafe.SizeOf<T>() == 4)
-                BinaryPrimitives.WriteUInt32LittleEndian(target, Unsafe.As<T, uint>(ref item));
-            else
-                BinaryPrimitives.WriteUInt64LittleEndian(target, Unsafe.As<T, ulong>(ref item));
+            if (Unsafe.SizeOf<T>() == 2) BinaryPrimitives.WriteUInt16LittleEndian(target, Unsafe.As<T, ushort>(ref item));
+            if (Unsafe.SizeOf<T>() == 4) BinaryPrimitives.WriteUInt32LittleEndian(target, Unsafe.As<T, uint>(ref item));
+            if (Unsafe.SizeOf<T>() == 8) BinaryPrimitives.WriteUInt64LittleEndian(target, Unsafe.As<T, ulong>(ref item));
             allocator.offset = offset + Unsafe.SizeOf<T>();
         }
     }
