@@ -38,21 +38,17 @@ let ``Queue`` () =
     ()
 
 [<Fact>]
-let ``Stack`` () =
-    let alpha = [ 'a'..'z' ] |> Stack
-    let bravo = [ 32..48 ] |> List.map (sprintf "%d") |> Stack
-
-    test alpha
-    test bravo
+let ``Stack (not supported)`` () =
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter<Stack<int>>() |> ignore)
+    let message = sprintf "Invalid collection type: %O" typeof<Stack<int>>
+    Assert.Equal(message, error.Message)
     ()
 
 [<Fact>]
-let ``ConcurrentStack`` () =
-    let alpha = [ 'h'..'n' ] |> ConcurrentStack
-    let bravo = [ 'o'..'z' ] |> Seq.map string |> ConcurrentStack
-
-    test alpha
-    test bravo
+let ``ConcurrentStack (not supported)`` () =
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter<ConcurrentStack<string>>() |> ignore)
+    let message = sprintf "Invalid collection type: %O" typeof<ConcurrentStack<string>>
+    Assert.Equal(message, error.Message)
     ()
 
 [<Fact>]

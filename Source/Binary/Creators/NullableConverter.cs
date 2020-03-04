@@ -6,9 +6,9 @@ namespace Mikodev.Binary.Creators
 {
     internal sealed class NullableConverter<T> : Converter<T?> where T : struct
     {
-        private const byte None = 0;
+        private const int None = 0;
 
-        private const byte Some = 1;
+        private const int Some = 1;
 
         private readonly Converter<T> converter;
 
@@ -23,7 +23,7 @@ namespace Mikodev.Binary.Creators
         public override void Encode(ref Allocator allocator, T? item)
         {
             var header = item is null ? None : Some;
-            Allocator.Append(ref allocator, header);
+            Allocator.Append(ref allocator, (byte)header);
             if (!(item is T result))
                 return;
             converter.Encode(ref allocator, result);
@@ -41,7 +41,7 @@ namespace Mikodev.Binary.Creators
         public override void EncodeAuto(ref Allocator allocator, T? item)
         {
             var header = item is null ? None : Some;
-            Allocator.Append(ref allocator, header);
+            Allocator.Append(ref allocator, (byte)header);
             if (!(item is T result))
                 return;
             converter.EncodeAuto(ref allocator, result);

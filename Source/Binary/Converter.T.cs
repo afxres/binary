@@ -78,7 +78,7 @@ namespace Mikodev.Binary
                 var buffer = BufferHelper.GetBuffer();
                 var allocator = new Allocator(new Span<byte>(buffer));
                 Encode(ref allocator, item);
-                return allocator.AsSpan().ToArray();
+                return Allocator.Detach(ref allocator);
             }
         }
 

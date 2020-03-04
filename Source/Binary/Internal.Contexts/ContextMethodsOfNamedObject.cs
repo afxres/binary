@@ -44,7 +44,7 @@ namespace Mikodev.Binary.Internal.Contexts
             {
                 var allocator = new Allocator();
                 PrimitiveHelper.EncodeBufferWithLengthPrefix(ref allocator, buffers[text].Span);
-                return allocator.AsSpan().ToArray();
+                return Allocator.Detach(ref allocator);
             }
 
             var item = Expression.Parameter(type, "item");

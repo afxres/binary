@@ -28,19 +28,15 @@ namespace Mikodev.Binary.Internal.Adapters
             var body = span;
             while (!body.IsEmpty)
             {
-                Debug.Assert(cursor >= 0);
-                Debug.Assert(bounds == buffer.Length);
                 if (cursor == bounds)
                 {
-                    var length = checked(bounds * 2);
-                    var target = new T[length];
-                    buffer.CopyTo(new Span<T>(target));
-                    bounds = length;
-                    buffer = target;
+                    var source = buffer;
+                    bounds = checked(bounds * 2);
+                    buffer = new T[bounds];
+                    Array.Copy(source, buffer, source.Length);
                 }
                 buffer[cursor++] = converter.DecodeAuto(ref body);
             }
-            Debug.Assert(cursor <= buffer.Length);
             return new ArraySegment<T>(buffer, 0, cursor);
         }
     }

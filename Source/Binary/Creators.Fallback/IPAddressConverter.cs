@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mikodev.Binary.Internal;
+using System;
 using System.Net;
 using System.Net.Sockets;
 
@@ -6,20 +7,12 @@ namespace Mikodev.Binary.Creators.Fallback
 {
     internal sealed class IPAddressConverter : Converter<IPAddress>
     {
-#if NETNEW
-        private static readonly AllocatorAction<IPAddress> WriteIPAddress = (span, data) => data.TryWriteBytes(span, out _);
-#endif
-
         private static void Append(ref Allocator allocator, IPAddress item)
         {
             if (item is null)
                 return;
-#if NETNEW
             var size = item.AddressFamily == AddressFamily.InterNetwork ? 4 : 16;
-            AllocatorHelper.Append(ref allocator, size, item, WriteIPAddress);
-#else
-            AllocatorHelper.Append(ref allocator, item.GetAddressBytes());
-#endif
+            Allocator.AppendAction(ref allocator, size, item, SharedHelper.WriteIPAddress);
         }
 
         private static void AppendWithLengthPrefix(ref Allocator allocator, IPAddress item)
@@ -35,11 +28,7 @@ namespace Mikodev.Binary.Creators.Fallback
         {
             if (span.IsEmpty)
                 return null;
-#if NETNEW
-            return new IPAddress(span);
-#else
-            return new IPAddress(span.ToArray());
-#endif
+            return SharedHelper.GetIPAddress(span);
         }
 
         private static IPAddress DetachWithLengthPrefix(ref ReadOnlySpan<byte> span)

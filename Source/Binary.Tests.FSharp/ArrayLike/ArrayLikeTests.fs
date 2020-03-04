@@ -149,3 +149,36 @@ type ArrayLikeTests () =
         Assert.Equal(0, buffer.Length)
         Assert.True(obj.ReferenceEquals(Array.Empty<'a>(), result.Array))
         ()
+
+    static member ``Data Large`` : (obj array) seq =
+        seq {
+            yield [| Enumerable.Range(0, 8192).ToArray() |]
+            yield [| Enumerable.Range(0, 4096).Select(fun x -> x.ToString()).ToArray() |]
+        }
+
+    [<Theory>]
+    [<MemberData("Data Large")>]
+    member __.``Memory Large Count`` (item : 'a array) =
+        let converter = generator.GetConverter<Memory<'a>>()
+        let buffer = converter.Encode(Memory item)
+        let result = converter.Decode buffer
+        Assert.Equal<'a>(item, result.ToArray())
+        ()
+
+    [<Theory>]
+    [<MemberData("Data Large")>]
+    member __.``ReadOnlyMemory Large Count`` (item : 'a array) =
+        let converter = generator.GetConverter<ReadOnlyMemory<'a>>()
+        let buffer = converter.Encode(ReadOnlyMemory item)
+        let result = converter.Decode buffer
+        Assert.Equal<'a>(item, result.ToArray())
+        ()
+
+    [<Theory>]
+    [<MemberData("Data Large")>]
+    member __.``ArraySegment Large Count`` (item : 'a array) =
+        let converter = generator.GetConverter<ArraySegment<'a>>()
+        let buffer = converter.Encode(ArraySegment item)
+        let result = converter.Decode buffer
+        Assert.Equal<'a>(item, result)
+        ()

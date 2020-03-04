@@ -20,7 +20,12 @@ namespace Mikodev.Binary
         public readonly int MaxCapacity => limits == 0 ? int.MaxValue : ~limits;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Allocator(Span<byte> span) : this(span, int.MaxValue) { }
+        public Allocator(Span<byte> span)
+        {
+            limits = 0;
+            offset = 0;
+            buffer = span;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Allocator(Span<byte> span, int maxCapacity)

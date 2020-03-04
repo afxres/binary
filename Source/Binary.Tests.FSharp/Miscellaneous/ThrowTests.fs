@@ -118,7 +118,6 @@ type ThrowTests() =
         [| typeof<Token * int>; typeof<Token> |];
         [| typeof<struct (int * Token)>; typeof<Token> |];
         [| typeof<Converter HashSet>; typeof<Converter> |];
-        [| typeof<Converter Stack>; typeof<Converter> |];
         [| typeof<Converter Queue>; typeof<Converter> |];
         [| typeof<Converter list>; typeof<Converter> |];
         [| typeof<ValueTuple Set>; typeof<ValueTuple> |];

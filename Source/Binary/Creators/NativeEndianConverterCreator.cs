@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Mikodev.Binary.Creators
 {
-    internal sealed class OriginalEndiannessConverterCreator : IConverterCreator
+    internal sealed class NativeEndianConverterCreator : IConverterCreator
     {
         private static readonly IReadOnlyCollection<Type> Types = new[]
         {
@@ -29,7 +29,7 @@ namespace Mikodev.Binary.Creators
                 throw new NotSupportedException("Endianness not supported!");
             if (!Types.Contains(type) && !type.IsEnum)
                 return null;
-            var converterType = typeof(OriginalEndiannessConverter<>).MakeGenericType(type);
+            var converterType = typeof(NativeEndianConverter<>).MakeGenericType(type);
             var converter = Activator.CreateInstance(converterType);
             return (Converter)converter;
         }

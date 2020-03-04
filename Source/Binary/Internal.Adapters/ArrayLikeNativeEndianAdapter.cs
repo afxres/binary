@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Internal.Adapters
 {
-    internal sealed class ArrayLikeOriginalEndiannessAdapter<T> : ArrayLikeAdapter<T> where T : unmanaged
+    internal sealed class ArrayLikeNativeEndianAdapter<T> : ArrayLikeAdapter<T> where T : unmanaged
     {
         public override void Of(ref Allocator allocator, ReadOnlyMemory<T> memory)
         {

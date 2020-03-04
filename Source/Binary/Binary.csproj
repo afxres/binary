@@ -5,19 +5,19 @@
     <AssemblyName>Mikodev.Binary</AssemblyName>
     <RootNamespace>Mikodev.Binary</RootNamespace>
     <LangVersion>latest</LangVersion>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Mikodev</Authors>
     <Company>Mikodev</Company>
     <Copyright>Mikodev 2020</Copyright>
     <Product>Mikodev.Binary</Product>
-    <Version>5.0.4</Version>
+    <Version>5.0.6</Version>
     <PackageTags>binary dynamic serialization</PackageTags>
     <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.1' ">
-    <DefineConstants>NETNEW</DefineConstants>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <DefineConstants>NETOLD</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mikodev.Binary.Internal;
+using System;
 using System.Buffers.Binary;
 using System.Net;
 using System.Net.Sockets;
@@ -7,21 +8,13 @@ namespace Mikodev.Binary.Creators.Fallback
 {
     internal sealed class IPEndPointConverter : Converter<IPEndPoint>
     {
-#if NETNEW
-        private static readonly AllocatorAction<IPAddress> WriteIPAddress = (span, data) => data.TryWriteBytes(span, out _);
-#endif
-
         private static void Append(ref Allocator allocator, IPEndPoint item)
         {
             if (item is null)
                 return;
             var size = item.AddressFamily == AddressFamily.InterNetwork ? 4 : 16;
             Allocator.Append(ref allocator, (byte)size);
-#if NETNEW
-            AllocatorHelper.Append(ref allocator, size, item.Address, WriteIPAddress);
-#else
-            AllocatorHelper.Append(ref allocator, item.Address.GetAddressBytes());
-#endif
+            Allocator.AppendAction(ref allocator, size, item.Address, SharedHelper.WriteIPAddress);
             Allocator.AppendLittleEndian(ref allocator, (ushort)item.Port);
         }
 
@@ -39,11 +32,7 @@ namespace Mikodev.Binary.Creators.Fallback
             var body = span;
             var head = PrimitiveHelper.DecodeBufferWithLengthPrefix(ref body);
             var port = BinaryPrimitives.ReadUInt16LittleEndian(body);
-#if NETNEW
-            var address = new IPAddress(head);
-#else
-            var address = new IPAddress(head.ToArray());
-#endif
+            var address = SharedHelper.GetIPAddress(head);
             return new IPEndPoint(address, port);
         }
 

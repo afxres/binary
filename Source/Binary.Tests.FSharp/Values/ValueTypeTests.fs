@@ -247,5 +247,5 @@ let ``Enum`` () =
 [<Fact>]
 let ``Enum Converter`` () =
     let value = generator.GetConverter typeof<DayOfWeek>
-    Assert.StartsWith("OriginalEndiannessConverter", value.GetType().Name)
+    Assert.StartsWith("NativeEndianConverter", value.GetType().Name)
     ()

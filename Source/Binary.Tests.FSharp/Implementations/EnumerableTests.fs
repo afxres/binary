@@ -141,14 +141,16 @@ type DictionaryD<'K, 'V>(item : KeyValuePair<'K, 'V> ResizeArray) =
 
         member __.Values: IEnumerable<'V> = raise (System.NotImplementedException())
 
-let test (converterName : string) (builderName : string) (enumerable : 'a) (expected : 'b) =
+let test (enumerable : 'a) (expected : 'b) (adaptedType : Type) =
     let converter = generator.GetConverter<'a>()
-    Assert.StartsWith(converterName, converter.GetType().Name)
+    Assert.Equal("CollectionAdaptedConverter`3", converter.GetType().Name)
 
     // test internal builder name
     let builderField = converter.GetType().BaseType.GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic)
     let builder = builderField.GetValue(converter)
-    Assert.Equal(builderName, builder.GetType().Name)
+    Assert.Equal("DelegateEnumerableBuilder`2", builder.GetType().Name)
+    let builderGenericArguments = builder.GetType().GetGenericArguments()
+    Assert.Equal(adaptedType, builderGenericArguments |> Array.last)
 
     let buffer = converter.Encode enumerable
     let target = generator.Encode expected
@@ -160,35 +162,35 @@ let test (converterName : string) (builderName : string) (enumerable : 'a) (expe
 
 [<Fact>]
 let ``No suitable constructor (enumerable, constructor not match)`` () =
-    test "CollectionAdaptedConverter`3" "DelegateCollectionBuilder`2" (CollectionT [ 1; 2; 3 ]) [ 1; 2; 3 ]
+    test (CollectionT [ 1; 2; 3 ]) [ 1; 2; 3 ] typeof<ArraySegment<int>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (enumerable, abstract)`` () =
-    test "CollectionAdaptedConverter`3" "DelegateCollectionBuilder`2" ((CollectionI [ 1; 2; 3 ]) :> CollectionA<_>) [ 1; 2; 3 ]
+    test ((CollectionI [ 1; 2; 3 ]) :> CollectionA<_>) [ 1; 2; 3 ] typeof<ArraySegment<int>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (enumerable with 'KeyValuePair' sequence constructor, constructor not match)`` () =
-    test "CollectionAdaptedConverter`3" "DelegateCollectionBuilder`2" (DictionaryP ((dict [ 1, "one"; 0, "ZERO" ]) |> Seq.toList)) [ 1, "one"; 0, "ZERO" ]
+    test (DictionaryP ((dict [ 1, "one"; 0, "ZERO" ]) |> Seq.toList)) [ 1, "one"; 0, "ZERO" ] typeof<ArraySegment<KeyValuePair<int, string>>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (enumerable with 'KeyValuePair' sequence constructor, abstract)`` () =
-    test "CollectionAdaptedConverter`3" "DelegateCollectionBuilder`2" ((DictionaryI(dict [ 1, "one"; 0, "ZERO" ])) :> DictionaryA<_, _>) [ 1, "one"; 0, "ZERO" ]
+    test ((DictionaryI(dict [ 1, "one"; 0, "ZERO" ])) :> DictionaryA<_, _>) [ 1, "one"; 0, "ZERO" ] typeof<ArraySegment<KeyValuePair<int, string>>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary of 'IDictionary', constructor not match)`` () =
-    test "CollectionAdaptedConverter`3" "DelegateDictionaryBuilder`3" ((DictionaryR(dict [ 1, "one"; 0, "ZERO" ] |> Queue<_>))) [ 1, "one"; 0, "ZERO" ]
+    test ((DictionaryR(dict [ 1, "one"; 0, "ZERO" ] |> Queue<_>))) [ 1, "one"; 0, "ZERO" ] typeof<Dictionary<int, string>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary of 'IReadOnlyDictionary', constructor not match)`` () =
-    test "CollectionAdaptedConverter`3" "DelegateDictionaryBuilder`3" ((DictionaryO(dict [ 1, "one"; 0, "ZERO" ] |> Seq.toArray))) [ 1, "one"; 0, "ZERO" ]
+    test ((DictionaryO(dict [ 1, "one"; 0, "ZERO" ] |> Seq.toArray))) [ 1, "one"; 0, "ZERO" ] typeof<Dictionary<int, string>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary of 'IDictionary' and 'IReadOnlyDictionary', constructor not match)`` () =
-    test "CollectionAdaptedConverter`3" "DelegateDictionaryBuilder`3" ((DictionaryD(dict [ 1, "one"; 0, "ZERO" ] |> ResizeArray))) [ 1, "one"; 0, "ZERO" ]
+    test ((DictionaryD(dict [ 1, "one"; 0, "ZERO" ] |> ResizeArray))) [ 1, "one"; 0, "ZERO" ] typeof<Dictionary<int, string>>
     ()

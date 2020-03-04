@@ -1,6 +1,7 @@
 ﻿using Mikodev.Binary.Internal.Adapters;
 using Mikodev.Binary.Internal.Contexts.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -33,6 +34,8 @@ namespace Mikodev.Binary.Internal.Contexts
                     return CreateEnumerableMethodInfo;
             }
 
+            if (type.IsImplementationOf(typeof(Stack<>)) || type.IsImplementationOf(typeof(ConcurrentStack<>)))
+                throw new ArgumentException($"Invalid collection type: {type}");
             var methodInfo = GetMethodInfo(out var arguments);
             var converters = arguments.Select(context.GetConverter).ToArray();
             var method = methodInfo.MakeGenericMethod(new[] { type }.Concat(arguments).ToArray());
@@ -62,7 +65,7 @@ namespace Mikodev.Binary.Internal.Contexts
             var converter = (Converter<E>)converters.Single();
             var builder = typeof(T).IsAssignableFrom(typeof(ArraySegment<E>))
                 ? new FallbackEnumerableBuilder<T, ArraySegment<E>>() as CollectionBuilder<T, T, ArraySegment<E>>
-                : new DelegateCollectionBuilder<T, E>(GetDecodeDelegateAsEnumerable<ToCollection<T, E>>(typeof(T), typeof(IEnumerable<E>)));
+                : new DelegateEnumerableBuilder<T, ArraySegment<E>>(GetDecodeDelegateAsEnumerable<T, ArraySegment<E>>(typeof(T), typeof(IEnumerable<E>)));
             var adapter = new EnumerableAdapter<T, E>(converter);
             return new CollectionAdaptedConverter<T, ArraySegment<E>, E>(adapter, builder, converter.Length);
         }
@@ -73,19 +76,20 @@ namespace Mikodev.Binary.Internal.Contexts
             var adapter = new DictionaryAdapter<T, K, V>((Converter<K>)converters[0], (Converter<V>)converters[1], itemLength);
             var builder = typeof(T).IsAssignableFrom(typeof(Dictionary<K, V>))
                 ? new FallbackEnumerableBuilder<T, Dictionary<K, V>>() as CollectionBuilder<T, T, Dictionary<K, V>>
-                : new DelegateDictionaryBuilder<T, K, V>(GetDecodeDelegateAsEnumerable<ToDictionary<T, K, V>>(typeof(T), typeof(IDictionary<K, V>)));
+                : new DelegateEnumerableBuilder<T, Dictionary<K, V>>(GetDecodeDelegateAsEnumerable<T, Dictionary<K, V>>(typeof(T), typeof(IDictionary<K, V>)));
             return new CollectionAdaptedConverter<T, Dictionary<K, V>, KeyValuePair<K, V>>(adapter, builder, itemLength);
         }
 
-        private static D GetDecodeDelegateAsEnumerable<D>(Type type, Type enumerableType) where D : Delegate
+        private static Func<R, T> GetDecodeDelegateAsEnumerable<T, R>(Type type, Type enumerableType)
         {
             if (type.IsAbstract || type.IsInterface)
                 return null;
             var constructor = type.GetConstructor(new[] { enumerableType });
             if (constructor is null)
                 return null;
-            var source = Expression.Parameter(enumerableType, "source");
-            var lambda = Expression.Lambda<D>(Expression.New(constructor, source), source);
+            var source = Expression.Parameter(typeof(R), "source");
+            var invoke = Expression.New(constructor, Expression.Convert(source, enumerableType));
+            var lambda = Expression.Lambda<Func<R, T>>(invoke, source);
             return lambda.Compile();
         }
     }

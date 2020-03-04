@@ -10,10 +10,10 @@ namespace Mikodev.Binary
         private readonly IntPtr handle;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public AllocatorUnsafeHandle(ref Allocator allocator) => handle = ModuleHelper.Instance.AsHandle(ref allocator);
+        public AllocatorUnsafeHandle(ref Allocator allocator) => handle = SharedHelper.ModuleHelper.AsHandle(ref allocator);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ref Allocator AsAllocator() => ref ModuleHelper.Instance.AsAllocator(handle);
+        public ref Allocator AsAllocator() => ref SharedHelper.ModuleHelper.AsAllocator(handle);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override bool Equals(object obj) => throw new NotSupportedException();
