@@ -16,7 +16,9 @@ namespace Mikodev.Binary.Creators.Builders
             var length = data.Count;
             if (buffer.Length == length)
                 return buffer;
-            return new ReadOnlySpan<T>(buffer, 0, length).ToArray();
+            var result = new T[length];
+            Array.Copy(buffer, 0, result, 0, length);
+            return result;
         }
     }
 }

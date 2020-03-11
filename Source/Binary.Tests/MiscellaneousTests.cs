@@ -65,7 +65,7 @@ namespace Mikodev.Binary.Tests
             }
         }
 
-        [Fact(DisplayName = "Multi Threads (Thread Static)")]
+        [Fact(DisplayName = "Multi Threads (thread static)")]
         public async Task MultiThreadsTestAsync()
         {
             var generator = Generator.CreateDefault();
@@ -73,10 +73,11 @@ namespace Mikodev.Binary.Tests
             const int times = 1 << 10;
             var funcs = Enumerable.Range(0, count).Select(x => new Action(() =>
             {
-                var model = Enumerable.Range(0, 256).Select(_ => Guid.NewGuid().ToString()).ToArray();
+                var model = Enumerable.Range(0, 1024).Select(_ => Guid.NewGuid().ToString()).ToArray();
                 for (var i = 0; i < times; i++)
                 {
                     var bytes = generator.Encode(model);
+                    Assert.True(bytes.Length < (1 << 16));
                     var value = generator.Decode(bytes, anonymous: model);
                     Assert.Equal<string>(model, value);
                 }
@@ -85,7 +86,7 @@ namespace Mikodev.Binary.Tests
             await Task.WhenAll(tasks);
         }
 
-        [Fact(DisplayName = "Public Types (Namespace)")]
+        [Fact(DisplayName = "Public Types (namespace)")]
         public void PublicTypes()
         {
             var array = new[]

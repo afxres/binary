@@ -5,63 +5,65 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Mikodev.Binary.Internal
+namespace Mikodev.Binary.External
 {
     internal static class BinaryNodeHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static long GetIndex(ref byte source, int length)
+        private static long MakeIndex(ref byte source, int length)
         {
             Debug.Assert(length > 0);
             if (length >= sizeof(long))
-                return Unsafe.As<byte, long>(ref source);
+                return Unsafe.ReadUnaligned<long>(ref source);
             var index = 0L;
             Unsafe.CopyBlockUnaligned(ref Unsafe.As<long, byte>(ref index), ref source, (uint)length);
             return index;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static BinaryNode<T> Get<T>(ReadOnlySpan<BinaryNode<T>> nodes, long index)
+        private static BinaryNode<T> Find<T>(BinaryNode<T>[] nodes, long index)
         {
-            Debug.Assert(nodes.ToArray().Count(x => x.Index == index) <= 1);
+            Debug.Assert(nodes != null);
+            Debug.Assert(nodes.Count(x => x.Index == index) <= 1);
             foreach (var node in nodes)
                 if (node.Index == index)
                     return node;
             return null;
         }
 
-        private static BinaryNode<T> GetOrCreate<T>(BinaryNode<T> root, ReadOnlySpan<byte> span)
+        private static BinaryMutableNode<T> FindOrCreate<T>(BinaryMutableNode<T> root, ReadOnlySpan<byte> span)
         {
-            ref var source = ref MemoryMarshal.GetReference(span);
-            var length = span.Length;
             var result = root;
+            var length = span.Length;
+            ref var source = ref MemoryMarshal.GetReference(span);
             for (var i = 0; i < length; i += sizeof(long))
             {
-                var head = GetIndex(ref Unsafe.Add(ref source, i), length - i);
-                var node = Get(new ReadOnlySpan<BinaryNode<T>>(result.Nodes), head);
+                var head = MakeIndex(ref Unsafe.Add(ref source, i), length - i);
+                var node = result.Nodes.Find(x => x.Index == head);
                 if (node is null)
-                {
-                    node = new BinaryNode<T> { Index = head };
-                    var list = new List<BinaryNode<T>>(result.Nodes ?? Array.Empty<BinaryNode<T>>()) { node };
-                    result.Nodes = list.ToArray();
-                }
+                    result.Nodes.Add(node = new BinaryMutableNode<T> { Index = head });
                 result = node;
             }
             return result;
         }
 
-        internal static BinaryNode<T> CreateOrDefault<T>(IReadOnlyCollection<(ReadOnlyMemory<byte>, T)> enumerable)
+        private static BinaryNode<T> Copy<T>(BinaryMutableNode<T> node)
         {
-            var root = new BinaryNode<T>();
-            foreach (var (key, value) in enumerable)
+            return new BinaryNode<T>(node.Nodes.Select(Copy).OrderBy(x => x.Index).ToArray(), node.Index, node.HasValue, node.Value);
+        }
+
+        internal static BinaryNode<T> CreateOrDefault<T>(IReadOnlyCollection<KeyValuePair<ReadOnlyMemory<byte>, T>> enumerable)
+        {
+            var root = new BinaryMutableNode<T>();
+            foreach (var i in enumerable)
             {
-                var node = GetOrCreate(root, key.Span);
+                var node = FindOrCreate(root, i.Key.Span);
                 if (node.HasValue)
                     return null;
                 node.HasValue = true;
-                node.Value = value;
+                node.Value = i.Value;
             }
-            return root;
+            return Copy(root);
         }
 
         internal static BinaryNode<T> GetOrDefault<T>(BinaryNode<T> root, ref byte source, int length)
@@ -70,8 +72,8 @@ namespace Mikodev.Binary.Internal
             var result = root;
             for (var i = 0; i < length; i += sizeof(long))
             {
-                var head = GetIndex(ref Unsafe.Add(ref source, i), length - i);
-                var node = Get(new ReadOnlySpan<BinaryNode<T>>(result.Nodes), head);
+                var head = MakeIndex(ref Unsafe.Add(ref source, i), length - i);
+                var node = Find(result.Nodes, head);
                 if (node is null)
                     return null;
                 result = node;

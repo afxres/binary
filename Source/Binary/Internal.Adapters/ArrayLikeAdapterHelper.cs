@@ -7,7 +7,7 @@ namespace Mikodev.Binary.Internal.Adapters
     {
         internal static ArrayLikeAdapter<T> Create<T>(Converter<T> converter)
         {
-            if (converter.GetType().IsImplementationOf(typeof(NativeEndianConverter<>)))
+            if (CommonHelper.IsImplementationOf(converter.GetType(), typeof(NativeEndianConverter<>)))
                 return (ArrayLikeAdapter<T>)Activator.CreateInstance(typeof(ArrayLikeNativeEndianAdapter<>).MakeGenericType(typeof(T)));
             if (converter.Length > 0)
                 return new ArrayLikeConstantAdapter<T>(converter);

@@ -23,7 +23,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         public Converter GetConverter(Type type)
         {
-            if (type.IsByRefLike())
+            if (CommonHelper.IsByRefLike(type))
                 throw new ArgumentException($"Invalid byref-like type: {type}");
             if (type.IsAbstract && type.IsSealed)
                 throw new ArgumentException($"Invalid static type: {type}");
@@ -62,7 +62,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (type.Assembly == typeof(Converter).Assembly)
                 throw new ArgumentException($"Invalid type: {type}");
             // collections and others
-            if (type.TryGetInterfaceArguments(typeof(IEnumerable<>), out var arguments))
+            if (CommonHelper.TryGetInterfaceArguments(type, typeof(IEnumerable<>), out var arguments))
                 return FallbackCollectionMethods.GetConverter(this, type, arguments.Single());
             // system types
             if (type.Assembly == typeof(object).Assembly)

@@ -230,3 +230,28 @@ let ``No suitable constructor (abstract class with multiple pattern-constructors
 
 [<Fact>]
 let ``No suitable constructor (class with some get-only property)`` () = test (Student("Ann", 22)) ({| Name = "Ann"; Age = 22; View = "Ann, 22" |})
+
+type TypeWithLongNameMember = {
+    LongName : string;
+    VeryLongName : int;
+    VeryVeryLongName : Guid;
+    VeryVeryLongLongName : double;
+    Short : int16;
+    LongLongAgoOneManHaveAVeryVeryVeryLongNameThenDead : string;
+}
+
+[<Fact>]
+let ``Type With Long Name Member`` () =
+    let source = {
+        LongName = "name";
+        VeryLongName = -65535;
+        VeryVeryLongName = Guid.NewGuid();
+        VeryVeryLongLongName = 7.654321;
+        Short = (int16 -255);
+        LongLongAgoOneManHaveAVeryVeryVeryLongNameThenDead = "Laughing my ass off.";
+    }
+    let converter = generator.GetConverter<TypeWithLongNameMember>()
+    let buffer = converter.Encode source
+    let result = converter.Decode buffer
+    Assert.Equal(source, result)
+    ()

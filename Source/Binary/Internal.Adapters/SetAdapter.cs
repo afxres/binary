@@ -23,7 +23,7 @@ namespace Mikodev.Binary.Internal.Adapters
             const int Limits = 8;
             if (item is null)
                 return;
-            else if (item is HashSet<E> { Count: var count } set && count < Limits)
+            if (item is HashSet<E> { Count: var count } set && count < Limits)
                 foreach (var i in set)
                     converter.EncodeAuto(ref allocator, i);
             else

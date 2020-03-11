@@ -18,24 +18,30 @@ namespace Mikodev.Binary.Internal.Adapters
 
         public override ArraySegment<T> To(ReadOnlySpan<byte> span)
         {
+            static void Expand(ref T[] buffer, T item)
+            {
+                var source = buffer;
+                var cursor = source.Length;
+                buffer = new T[checked(cursor * 2)];
+                Array.Copy(source, 0, buffer, 0, cursor);
+                buffer[cursor] = item;
+            }
+
             Debug.Assert(converter.Length == 0);
             if (span.IsEmpty)
                 return new ArraySegment<T>(Array.Empty<T>());
             const int Initial = 8;
             var buffer = new T[Initial];
-            var bounds = Initial;
             var cursor = 0;
             var body = span;
             while (!body.IsEmpty)
             {
-                if (cursor == bounds)
-                {
-                    var source = buffer;
-                    bounds = checked(bounds * 2);
-                    buffer = new T[bounds];
-                    Array.Copy(source, buffer, source.Length);
-                }
-                buffer[cursor++] = converter.DecodeAuto(ref body);
+                var item = converter.DecodeAuto(ref body);
+                if ((uint)cursor < (uint)buffer.Length)
+                    buffer[cursor] = item;
+                else
+                    Expand(ref buffer, item);
+                cursor++;
             }
             return new ArraySegment<T>(buffer, 0, cursor);
         }

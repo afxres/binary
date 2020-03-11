@@ -97,7 +97,7 @@ let test (collection : 'a) (except : string) =
 let functor<'a> (isArrayNull : bool) =
     let converter = generator.GetConverter<'a> ()
     let flags = BindingFlags.Instance ||| BindingFlags.NonPublic
-    let adapter = converter.GetType().BaseType.GetField("adapter", flags).GetValue(converter)
+    let adapter = converter.GetType().GetField("adapter", flags).GetValue(converter)
     Assert.NotNull adapter
     let array = adapter.GetType().GetField("array", flags).GetValue(adapter)
     Assert.Equal(isArrayNull, isNull array)
@@ -107,7 +107,7 @@ let functor<'a> (isArrayNull : bool) =
 let ``Collection Encode (count 8, copy to)`` () = test (CollectionA<int> 8) "Collection A, Copy To"
 
 [<Fact>]
-let ``Collection Adapter Functor`` () = functor<CollectionA<int>> false
+let ``Collection Adapter Functor`` () = functor<CollectionA<int>> true
 
 [<Fact>]
 let ``Read Only Collection With To Array Method Encode (count 8, to array)`` () = test (CollectionB<string> 8) "Collection B, To Array"
@@ -125,7 +125,7 @@ let ``Read Only Collection With Private To Array Method Adapter Functor`` () = f
 let ``Collection With Multiple Interfaces (count 8, copy to)`` () = test (CollectionD<string> 8) "Collection D, Copy To"
 
 [<Fact>]
-let ``Collection With Multiple Interfaces Adapter Functor`` () = functor<CollectionD<int>> false
+let ``Collection With Multiple Interfaces Adapter Functor`` () = functor<CollectionD<int>> true
 
 [<Fact>]
 let ``Enumerable With Static To Array Method Encode (use enumerator)`` () = test (CollectionE<int> ()) "Collection E, Get Enumerator"

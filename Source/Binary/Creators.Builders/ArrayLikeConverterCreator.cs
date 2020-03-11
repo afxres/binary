@@ -1,4 +1,5 @@
-﻿using Mikodev.Binary.Internal.Adapters;
+﻿using Mikodev.Binary.Internal;
+using Mikodev.Binary.Internal.Adapters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,8 @@ namespace Mikodev.Binary.Creators.Builders
 {
     internal sealed class ArrayLikeConverterCreator : IConverterCreator
     {
+        private static readonly MethodInfo CreateConverterMethodInfo = typeof(ArrayLikeConverterCreator).GetMethod(nameof(CreateConverter), BindingFlags.Static | BindingFlags.NonPublic);
+
         private static readonly IReadOnlyDictionary<Type, Type> Types = new Dictionary<Type, Type>
         {
             [typeof(ArraySegment<>)] = typeof(ArraySegmentBuilder<>),
@@ -52,31 +55,42 @@ namespace Mikodev.Binary.Creators.Builders
             return Activator.CreateInstance(builderType, builderArguments);
         }
 
+        private static Converter CreateConverter<T, E>(IReadOnlyList<Converter> converters, object instance)
+        {
+            var converter = (Converter<E>)converters.Single();
+            var builder = (ArrayLikeBuilder<T, E>)instance;
+            var adapter = ArrayLikeAdapterHelper.Create(converter);
+            return new CollectionAdaptedConverter<T, ReadOnlyMemory<E>, ArraySegment<E>>(adapter, builder, converter.Length);
+        }
+
         public Converter GetConverter(IGeneratorContext context, Type type)
         {
-            (Type, object) GetArguments()
+            object GetBuilder()
             {
                 if (type.IsArray && type.GetElementType() is { } elementType)
-                    return (elementType, CreateArrayBuilder(type, elementType));
-                if (type.IsGenericType == false)
-                    return default;
+                    return CreateArrayBuilder(type, elementType);
+                if (type.IsGenericType is false)
+                    return null;
                 var definition = type.GetGenericTypeDefinition();
                 var itemType = type.GetGenericArguments().FirstOrDefault();
                 if (definition == typeof(List<>))
-                    return (itemType, CreateListBuilder(type, itemType));
+                    return CreateListBuilder(type, itemType);
                 if (Types.TryGetValue(definition, out var result))
-                    return (itemType, Activator.CreateInstance(result.MakeGenericType(itemType)));
-                return default;
+                    return Activator.CreateInstance(result.MakeGenericType(itemType));
+                return null;
             }
 
-            var (itemType, builder) = GetArguments();
-            if ((itemType, builder) == default)
+            var builder = GetBuilder();
+            if (builder is null)
                 return null;
-            var itemConverter = context.GetConverter(itemType);
-            var converterArguments = new object[] { builder, itemConverter };
-            var converterType = typeof(ArrayLikeAdaptedConverter<,>).MakeGenericType(type, itemType);
-            var converter = Activator.CreateInstance(converterType, converterArguments);
-            return (Converter)converter;
+            var itemTypes = builder.GetType().GetGenericArguments();
+            var converters = itemTypes.Select(context.GetConverter).ToList();
+
+            var source = Expression.Parameter(typeof(IReadOnlyList<Converter>), "source");
+            var origin = Expression.Parameter(typeof(object), "origin");
+            var method = CreateConverterMethodInfo.MakeGenericMethod(CommonHelper.Concat(type, itemTypes));
+            var lambda = Expression.Lambda<Func<IReadOnlyList<Converter>, object, Converter>>(Expression.Call(method, source, origin), source, origin);
+            return lambda.Compile().Invoke(converters, builder);
         }
     }
 }

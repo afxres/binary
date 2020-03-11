@@ -12,19 +12,17 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class ContextMethods
     {
-        internal static int GetItemLength(Type type, IReadOnlyCollection<Converter> values)
+        internal static int GetItemLength(IReadOnlyCollection<Converter> values)
         {
             Debug.Assert(values.Any() && values.All(x => x != null && x.Length >= 0));
-            var length = values.All(x => x.Length > 0) ? values.Sum(x => (long)x.Length) : 0;
-            if ((ulong)length > int.MaxValue)
-                throw new ArgumentException($"Converter length overflow, type: {type}");
-            return (int)length;
+            var source = values.Select(x => x.Length).ToList();
+            return source.All(x => x > 0) ? source.Sum() : 0;
         }
 
         internal static bool CanCreateInstance(Type type, IReadOnlyList<MemberInfo> members, ConstructorInfo constructor)
         {
             Debug.Assert(members.Any());
-            Debug.Assert(type.IsAbstract || type.IsInterface ? constructor is null : true);
+            Debug.Assert(constructor is null || (!type.IsAbstract && !type.IsInterface));
             if (type.IsAbstract || type.IsInterface)
                 return false;
             if (constructor != null)

@@ -59,7 +59,7 @@ namespace Mikodev.Binary.Tests
         [InlineData(1920)]
         [InlineData(1.4F)]
         [InlineData(3.14)]
-        public unsafe void ItemWith<T>(T value) where T : unmanaged
+        public unsafe void ItemAuto<T>(T value) where T : unmanaged
         {
             var converter = generator.GetConverter<T?>();
             Assert.StartsWith("NullableConverter`1", converter.GetType().Name);
@@ -153,7 +153,7 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(data, result);
         }
 
-        [Theory(DisplayName = "Nullable Variable Length Type")]
+        [Theory(DisplayName = "Nullable Variable Length Type (encode & decode)")]
         [InlineData("alpha")]
         [InlineData("echo")]
         public void Variable(string text)
@@ -166,7 +166,23 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(source, result);
         }
 
-        [Fact(DisplayName = "Nullable variable length collection")]
+        [Theory(DisplayName = "Nullable Variable Length Type (encode auto & decode auto)")]
+        [InlineData("charlie")]
+        [InlineData("delta")]
+        public void VariableAuto(string text)
+        {
+            var source = new (int, string)?((-1, text));
+            var converter = generator.GetConverter(source);
+            var buffer = EncodeAuto(converter, source);
+            Assert.Equal(1 + 4 + 1 + Converter.Encoding.GetByteCount(text), buffer.Length);
+            var span = new ReadOnlySpan<byte>(buffer);
+            var result = converter.DecodeAuto(ref span);
+            Assert.True(result.HasValue);
+            Assert.Equal(source, result);
+            Assert.Equal(0, span.Length);
+        }
+
+        [Fact(DisplayName = "Nullable Variable Length Collection")]
         public void VariableCollection()
         {
             var source = new (float, string)?[] { (-1.1F, "quick"), null, (2.2F, "fox") };

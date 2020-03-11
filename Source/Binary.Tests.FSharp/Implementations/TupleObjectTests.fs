@@ -45,8 +45,7 @@ let ``Tuple Object Length (overflow)`` () =
                         .AddConverter(singleConverter)
                         .AddConverter(doubleConverter)
                         .Build();
-    let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter<Two<Raw<single>, Raw<double>>>() |> ignore)
-    Assert.Equal(sprintf "Converter length overflow, type: %O" typeof<Two<Raw<single>, Raw<double>>>, error.Message)
+    Assert.Throws<OverflowException>(fun () -> generator.GetConverter<Two<Raw<single>, Raw<double>>>() |> ignore) |> ignore
     ()
 
 [<Interface>]

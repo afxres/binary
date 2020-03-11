@@ -14,12 +14,12 @@ namespace Mikodev.Binary.Internal.Contexts
 
         public Generator(IEnumerable<Converter> converters, IEnumerable<IConverterCreator> creators)
         {
-            Debug.Assert(!converters.Any() || converters.All(x => x is Converter));
-            Debug.Assert(!creators.Any() || creators.All(x => x is IConverterCreator));
             var dictionary = converters.ToDictionary(x => x.ItemType);
             Debug.Assert(!dictionary.ContainsKey(typeof(object)));
             this.converters = new ConcurrentDictionary<Type, Converter>(dictionary) { [typeof(object)] = new ObjectConverter(this) };
             this.creators = creators.ToArray();
+            Debug.Assert(this.converters.All(x => x.Value != null));
+            Debug.Assert(this.creators.Count == 0 || this.creators.All(x => x != null));
         }
 
         public Converter GetConverter(Type type)

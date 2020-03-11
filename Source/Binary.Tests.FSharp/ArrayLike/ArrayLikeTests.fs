@@ -3,6 +3,7 @@
 open Mikodev.Binary
 open System
 open System.Linq
+open System.Reflection
 open System.Runtime.InteropServices
 open Xunit
 
@@ -55,17 +56,19 @@ type ArrayLikeTests () =
 
     static member ``Data Bravo`` : (obj array) seq =
         seq {
-            yield [| typeof<ArraySegment<int>>; "ArrayLikeAdaptedConverter`2" |]
-            yield [| typeof<Memory<int>>; "ArrayLikeAdaptedConverter`2" |]
-            yield [| typeof<ReadOnlyMemory<string>>; "ArrayLikeAdaptedConverter`2" |]
+            yield [| typeof<ArraySegment<int>> |]
+            yield [| typeof<Memory<int>> |]
+            yield [| typeof<ReadOnlyMemory<string>> |]
         }
 
-    [<Theory(DisplayName = "Validate Converter Type")>]
+    [<Theory(DisplayName = "Validate Adapter Type")>]
     [<MemberData("Data Bravo")>]
-    member __.``Validate Converter Type`` (t : Type, starts : string) =
+    member __.``Validate Adapter Type`` (t : Type) =
         let converter = generator.GetConverter t
-        let name = converter.GetType().Name
-        Assert.StartsWith(starts, name)
+        let adapterField = converter.GetType().GetField("adapter", BindingFlags.Instance ||| BindingFlags.NonPublic)
+        let adapter = adapterField.GetValue(converter)
+        let adapterTypeName = adapter.GetType().Name
+        Assert.StartsWith("ArrayLike", adapterTypeName)
         ()
 
     static member ``Data Slice`` : (obj array) seq =

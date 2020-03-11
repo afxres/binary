@@ -146,7 +146,7 @@ let test (enumerable : 'a) (expected : 'b) (adaptedType : Type) =
     Assert.Equal("CollectionAdaptedConverter`3", converter.GetType().Name)
 
     // test internal builder name
-    let builderField = converter.GetType().BaseType.GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    let builderField = converter.GetType().GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic)
     let builder = builderField.GetValue(converter)
     Assert.Equal("DelegateEnumerableBuilder`2", builder.GetType().Name)
     let builderGenericArguments = builder.GetType().GetGenericArguments()

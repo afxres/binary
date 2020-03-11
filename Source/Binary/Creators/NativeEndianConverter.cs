@@ -14,7 +14,7 @@ namespace Mikodev.Binary.Creators
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Append(ref Allocator allocator, T item)
+        private static void Append(ref Allocator allocator, T item)
         {
             // write unaligned
             ref var target = ref Allocator.Assign(ref allocator, Unsafe.SizeOf<T>());
@@ -22,7 +22,7 @@ namespace Mikodev.Binary.Creators
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private T Detach(ReadOnlySpan<byte> span)
+        private static T Detach(ReadOnlySpan<byte> span)
         {
             if (span.Length < Unsafe.SizeOf<T>())
                 return ThrowHelper.ThrowNotEnoughBytes<T>();

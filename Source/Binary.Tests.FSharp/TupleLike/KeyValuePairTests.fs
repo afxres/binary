@@ -124,6 +124,5 @@ let ``Key-Value Pair Length (overflow)`` () =
     let generator = Generator.CreateDefaultBuilder()
                         .AddConverter(doubleConverter)
                         .Build();
-    let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter<KeyValuePair<Raw<double>, Raw<double>>>() |> ignore)
-    Assert.Equal(sprintf "Converter length overflow, type: %O" typeof<KeyValuePair<Raw<double>, Raw<double>>>, error.Message)
+    Assert.Throws<OverflowException>(fun () -> generator.GetConverter<KeyValuePair<Raw<double>, Raw<double>>>() |> ignore) |> ignore
     ()

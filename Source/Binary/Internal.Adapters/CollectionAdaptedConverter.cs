@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Mikodev.Binary.Internal.Adapters
 {
-    internal abstract class CollectionAdaptedConverter<T, U, R, E> : Converter<T>
+    internal sealed class CollectionAdaptedConverter<T, U, R> : Converter<T>
     {
         private readonly int itemLength;
 
@@ -12,6 +13,7 @@ namespace Mikodev.Binary.Internal.Adapters
 
         public CollectionAdaptedConverter(CollectionAdapter<U, R> adapter, CollectionBuilder<T, U, R> builder, int itemLength)
         {
+            Debug.Assert(itemLength >= 0);
             this.adapter = adapter;
             this.builder = builder;
             this.itemLength = itemLength;

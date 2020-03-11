@@ -66,8 +66,6 @@ namespace Mikodev.Binary
         internal static int Anchor(ref Allocator allocator, int length)
         {
             var offset = allocator.offset;
-            if (length == 0)
-                return offset;
             Ensure(ref allocator, length);
             allocator.offset = offset + length;
             return offset;

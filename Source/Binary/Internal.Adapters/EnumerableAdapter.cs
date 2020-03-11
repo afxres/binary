@@ -22,10 +22,8 @@ namespace Mikodev.Binary.Internal.Adapters
             this.array = CreateArrayFunction();
         }
 
-        internal static Func<T, E[]> CreateArrayFunction()
+        private static Func<T, E[]> CreateArrayFunction()
         {
-            if (typeof(T).GetInterfaces().Contains(typeof(ICollection<E>)))
-                return source => source.ToArray();
             var method = typeof(T).GetMethods(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(x => x.Name == "ToArray" && x.ReturnType == typeof(E[]) && x.GetParameters().Length == 0);
             if (method is null)
                 return null;
@@ -34,17 +32,17 @@ namespace Mikodev.Binary.Internal.Adapters
             return lambda.Compile();
         }
 
-        internal E[] Array(T item)
+        private E[] Array(T item)
         {
             Debug.Assert(item != null);
             if (item is E[] result)
                 return result;
             if (array != null)
                 return array.Invoke(item);
-            if (!(item is ICollection<E> collection))
+            if (!(item is ICollection<E> { Count: var count } collection))
                 return null;
-            var target = new E[collection.Count];
-            collection.CopyTo(target, default);
+            var target = new E[count];
+            collection.CopyTo(target, 0);
             return target;
         }
 
@@ -60,7 +58,7 @@ namespace Mikodev.Binary.Internal.Adapters
         {
             if (item is null)
                 return;
-            else if (!(Array(item) is { } result))
+            if (!(Array(item) is { } result))
                 foreach (var i in item)
                     converter.EncodeAuto(ref allocator, i);
             else

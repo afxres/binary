@@ -12,16 +12,16 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
         private readonly ToTupleObject<T> decode;
 
-        private readonly OfTupleObject<T> encodeWith;
+        private readonly OfTupleObject<T> encodeAuto;
 
-        private readonly ToTupleObject<T> decodeWith;
+        private readonly ToTupleObject<T> decodeAuto;
 
-        public TupleObjectConverter(OfTupleObject<T> encode, ToTupleObject<T> decode, OfTupleObject<T> encodeWith, ToTupleObject<T> decodeWith, int length) : base(length)
+        public TupleObjectConverter(OfTupleObject<T> encode, ToTupleObject<T> decode, OfTupleObject<T> encodeAuto, ToTupleObject<T> decodeAuto, int length) : base(length)
         {
             this.encode = encode;
             this.decode = decode;
-            this.encodeWith = encodeWith;
-            this.decodeWith = decodeWith;
+            this.encodeAuto = encodeAuto;
+            this.decodeAuto = decodeAuto;
         }
 
         public override void Encode(ref Allocator allocator, T item)
@@ -43,14 +43,14 @@ namespace Mikodev.Binary.Internal.Contexts.Models
         {
             if (item is null)
                 ThrowHelper.ThrowTupleNull(ItemType);
-            encodeWith.Invoke(ref allocator, item);
+            encodeAuto.Invoke(ref allocator, item);
         }
 
         public override T DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            if (decodeWith is null)
+            if (decodeAuto is null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
-            return decodeWith.Invoke(ref span);
+            return decodeAuto.Invoke(ref span);
         }
     }
 }

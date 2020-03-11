@@ -1,4 +1,5 @@
-﻿using Mikodev.Binary.Internal.Contexts.Models;
+﻿using Mikodev.Binary.External;
+using Mikodev.Binary.Internal.Contexts.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -27,7 +28,7 @@ namespace Mikodev.Binary.Internal.Contexts
             Debug.Assert(dictionary.Count == stringContainer.Count);
             Debug.Assert(dictionary.OrderBy(x => x.Value).Select(x => x.Key).SequenceEqual(metadata.Select(x => x.Property)));
             var names = metadata.Select(x => dictionary[x.Property]).ToList();
-            var entry = BinaryNodeHelper.CreateOrDefault(names.Select((x, i) => (stringContainer[x], i)).ToList());
+            var entry = BinaryNodeHelper.CreateOrDefault(names.Select((x, i) => new KeyValuePair<ReadOnlyMemory<byte>, int>(stringContainer[x], i)).ToList());
             if (entry is null)
                 throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {type}, string converter type: {stringConverter.GetType()}");
             var encode = GetEncodeDelegateAsNamedObject(type, metadata, dictionary, stringContainer);
@@ -38,12 +39,22 @@ namespace Mikodev.Binary.Internal.Contexts
             return (Converter)converter;
         }
 
+        private static MethodInfo GetEncodeWithLengthPrefixMethodInfo(Converter converter)
+        {
+            var converterType = converter.GetType();
+            var types = new[] { typeof(Allocator).MakeByRefType(), converter.ItemType };
+            var name = nameof(IConverter.EncodeWithLengthPrefix);
+            var method = converterType.GetMethod(name, types);
+            Debug.Assert(method != null);
+            return method;
+        }
+
         private static Delegate GetEncodeDelegateAsNamedObject(Type type, MetaList metadata, NameDictionary dictionary, IReadOnlyDictionary<string, ReadOnlyMemory<byte>> buffers)
         {
-            byte[] EncodeStringWithLengthPrefix(string text)
+            static byte[] EncodeBufferWithLengthPrefix(ReadOnlyMemory<byte> memory)
             {
                 var allocator = new Allocator();
-                PrimitiveHelper.EncodeBufferWithLengthPrefix(ref allocator, buffers[text].Span);
+                PrimitiveHelper.EncodeBufferWithLengthPrefix(ref allocator, memory.Span);
                 return Allocator.Detach(ref allocator);
             }
 
@@ -53,10 +64,10 @@ namespace Mikodev.Binary.Internal.Contexts
 
             foreach (var (property, converter) in metadata)
             {
-                var buffer = EncodeStringWithLengthPrefix(dictionary[property]);
+                var buffer = EncodeBufferWithLengthPrefix(buffers[dictionary[property]]);
                 var propertyType = property.PropertyType;
                 var propertyExpression = Expression.Property(item, property);
-                var methodInfo = typeof(Converter<>).MakeGenericType(propertyType).GetMethod(nameof(IConverter.EncodeWithLengthPrefix));
+                var methodInfo = GetEncodeWithLengthPrefixMethodInfo(converter);
                 // append named key with length prefix (cached), then append value with length prefix
                 expressions.Add(Expression.Call(AppendMethodInfo, allocator, Expression.New(BufferConstructorInfo, Expression.Constant(buffer))));
                 expressions.Add(Expression.Call(Expression.Constant(converter), methodInfo, allocator, propertyExpression));

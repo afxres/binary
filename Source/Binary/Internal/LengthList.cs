@@ -24,12 +24,13 @@ namespace Mikodev.Binary.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly int Ensure()
         {
+            var data = this.data;
             if (size == data.Length)
                 return -1;
             for (var i = 0; i < data.Length; i++)
                 if (data[i].Offset == 0)
                     return i;
-            return ThrowHelper.ThrowNotEnoughBytes<int>();
+            return 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

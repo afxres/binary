@@ -14,40 +14,38 @@ namespace Mikodev.Binary.Internal.Contexts
     {
         internal static Converter GetConverterAsTupleObject(Type type, ConstructorInfo constructor, ItemIndexes indexes, MemberList metadata)
         {
-            var encode = GetEncodeDelegateAsTupleObject(type, metadata, isAuto: false);
-            var decode = GetDecodeDelegateAsTupleObject(type, metadata, constructor, indexes, isAuto: false);
-            var encodeWith = GetEncodeDelegateAsTupleObject(type, metadata, isAuto: true);
-            var decodeWith = GetDecodeDelegateAsTupleObject(type, metadata, constructor, indexes, isAuto: true);
-            var itemLength = ContextMethods.GetItemLength(type, metadata.Select(x => x.Converter).ToList());
-            var converterArguments = new object[] { encode, decode, encodeWith, decodeWith, itemLength };
+            var encode = GetEncodeDelegateAsTupleObject(type, metadata, auto: false);
+            var decode = GetDecodeDelegateAsTupleObject(type, metadata, constructor, indexes, auto: false);
+            var encodeAuto = GetEncodeDelegateAsTupleObject(type, metadata, auto: true);
+            var decodeAuto = GetDecodeDelegateAsTupleObject(type, metadata, constructor, indexes, auto: true);
+            var itemLength = ContextMethods.GetItemLength(metadata.Select(x => x.Converter).ToList());
+            var converterArguments = new object[] { encode, decode, encodeAuto, decodeAuto, itemLength };
             var converterType = typeof(TupleObjectConverter<>).MakeGenericType(type);
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }
 
-        private static MethodInfo GetEncodeMethodInfo(Converter converter, bool isAuto)
+        private static MethodInfo GetEncodeMethodInfo(Converter converter, bool auto)
         {
             var converterType = converter.GetType();
             var types = new[] { typeof(Allocator).MakeByRefType(), converter.ItemType };
-            var method = !isAuto
-                ? converterType.GetMethod(nameof(IConverter.Encode), types)
-                : converterType.GetMethod(nameof(IConverter.EncodeAuto), types);
+            var name = auto ? nameof(IConverter.EncodeAuto) : nameof(IConverter.Encode);
+            var method = converterType.GetMethod(name, types);
             Debug.Assert(method != null);
             return method;
         }
 
-        private static MethodInfo GetDecodeMethodInfo(Converter converter, bool isAuto)
+        private static MethodInfo GetDecodeMethodInfo(Converter converter, bool auto)
         {
             var converterType = converter.GetType();
             var types = new[] { typeof(ReadOnlySpan<byte>).MakeByRefType() };
-            var method = !isAuto
-                ? converterType.GetMethod(nameof(IConverter.Decode), types)
-                : converterType.GetMethod(nameof(IConverter.DecodeAuto), types);
+            var name = auto ? nameof(IConverter.DecodeAuto) : nameof(IConverter.Decode);
+            var method = converterType.GetMethod(name, types);
             Debug.Assert(method != null);
             return method;
         }
 
-        private static Delegate GetEncodeDelegateAsTupleObject(Type type, MemberList metadata, bool isAuto)
+        private static Delegate GetEncodeDelegateAsTupleObject(Type type, MemberList metadata, bool auto)
         {
             var item = Expression.Parameter(type, "item");
             var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
@@ -59,15 +57,16 @@ namespace Mikodev.Binary.Internal.Contexts
                 var memberExpression = member is FieldInfo fieldInfo
                     ? Expression.Field(item, fieldInfo)
                     : Expression.Property(item, (PropertyInfo)member);
-                var method = GetEncodeMethodInfo(converter, isAuto || i != metadata.Count - 1);
-                expressions.Add(Expression.Call(Expression.Constant(converter), method, allocator, memberExpression));
+                var method = GetEncodeMethodInfo(converter, auto || i != metadata.Count - 1);
+                var invoke = Expression.Call(Expression.Constant(converter), method, allocator, memberExpression);
+                expressions.Add(invoke);
             }
             var delegateType = typeof(OfTupleObject<>).MakeGenericType(type);
             var lambda = Expression.Lambda(delegateType, Expression.Block(expressions), allocator, item);
             return lambda.Compile();
         }
 
-        private static Delegate GetDecodeDelegateAsTupleObject(Type type, MemberList metadata, ConstructorInfo constructor, ItemIndexes indexes, bool isAuto)
+        private static Delegate GetDecodeDelegateAsTupleObject(Type type, MemberList metadata, ConstructorInfo constructor, ItemIndexes indexes, bool auto)
         {
             (ParameterExpression, Expression[]) Initialize()
             {
@@ -77,7 +76,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 for (var i = 0; i < metadata.Count; i++)
                 {
                     var converter = metadata[i].Converter;
-                    var method = GetDecodeMethodInfo(converter, isAuto || i != metadata.Count - 1);
+                    var method = GetDecodeMethodInfo(converter, auto || i != metadata.Count - 1);
                     var invoke = Expression.Call(Expression.Constant(converter), method, span);
                     values[i] = invoke;
                 }

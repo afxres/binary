@@ -209,10 +209,8 @@ let ``Tuple Length (overflow)`` () =
     let fixGenerator = Generator.CreateDefaultBuilder().AddConverter(fixConverter).Build()
     let alpha = fixGenerator.GetConverter<Fix * Fix>()
     let bravo = fixGenerator.GetConverter<struct (Fix * Fix * Fix)>()
-    let errorAlpha = Assert.Throws<ArgumentException>(fun () -> fixGenerator.GetConverter<Fix * Fix * Fix * Fix>() |> ignore)
-    let errorBravo = Assert.Throws<ArgumentException>(fun () -> fixGenerator.GetConverter<struct (Fix * Fix * Fix * Fix)>() |> ignore)
-    Assert.Equal(sprintf "Converter length overflow, type: %O" typeof<Fix * Fix * Fix * Fix>, errorAlpha.Message)
-    Assert.Equal(sprintf "Converter length overflow, type: %O" typeof<struct (Fix * Fix * Fix * Fix)>, errorBravo.Message)
+    Assert.Throws<OverflowException>(fun () -> fixGenerator.GetConverter<Fix * Fix * Fix * Fix>() |> ignore) |> ignore
+    Assert.Throws<OverflowException>(fun () -> fixGenerator.GetConverter<struct (Fix * Fix * Fix * Fix)>() |> ignore) |> ignore
     Assert.Equal(0x4000_0000, alpha.Length)
     Assert.Equal(0x6000_0000, bravo.Length)
     ()

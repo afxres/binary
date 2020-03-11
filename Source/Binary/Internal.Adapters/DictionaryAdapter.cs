@@ -10,31 +10,31 @@ namespace Mikodev.Binary.Internal.Adapters
     {
         private readonly int itemLength;
 
-        private readonly Converter<K> headConverter;
+        private readonly Converter<K> initConverter;
 
-        private readonly Converter<V> dataConverter;
+        private readonly Converter<V> tailConverter;
 
-        public DictionaryAdapter(Converter<K> headConverter, Converter<V> dataConverter, int itemLength)
+        public DictionaryAdapter(Converter<K> initConverter, Converter<V> tailConverter, int itemLength)
         {
             this.itemLength = itemLength;
-            this.headConverter = headConverter;
-            this.dataConverter = dataConverter;
-            Debug.Assert(itemLength > 0 || (itemLength == 0 && (headConverter.Length == 0 || dataConverter.Length == 0)));
+            this.initConverter = initConverter;
+            this.tailConverter = tailConverter;
+            Debug.Assert(itemLength > 0 || (itemLength == 0 && (initConverter.Length == 0 || tailConverter.Length == 0)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AppendAuto(ref Allocator allocator, KeyValuePair<K, V> pair)
         {
-            headConverter.EncodeAuto(ref allocator, pair.Key);
-            dataConverter.EncodeAuto(ref allocator, pair.Value);
+            initConverter.EncodeAuto(ref allocator, pair.Key);
+            tailConverter.EncodeAuto(ref allocator, pair.Value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DetachAuto(ref ReadOnlySpan<byte> span, Dictionary<K, V> dictionary)
         {
-            var head = headConverter.DecodeAuto(ref span);
-            var data = dataConverter.DecodeAuto(ref span);
-            dictionary.Add(head, data);
+            var init = initConverter.DecodeAuto(ref span);
+            var tail = tailConverter.DecodeAuto(ref span);
+            dictionary.Add(init, tail);
         }
 
         public override int Count(T item) => item switch
@@ -50,7 +50,7 @@ namespace Mikodev.Binary.Internal.Adapters
             const int Limits = 8;
             if (item is null)
                 return;
-            else if (item is Dictionary<K, V> { Count: var count } dictionary && count < Limits)
+            if (item is Dictionary<K, V> { Count: var count } dictionary && count < Limits)
                 foreach (var i in dictionary)
                     AppendAuto(ref allocator, i);
             else

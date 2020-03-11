@@ -22,11 +22,11 @@ namespace Mikodev.Binary.Creators
 
         public override void Encode(ref Allocator allocator, T? item)
         {
-            var header = item is null ? None : Some;
-            Allocator.Append(ref allocator, (byte)header);
-            if (!(item is T result))
+            var head = item.HasValue ? Some : None;
+            Allocator.Append(ref allocator, (byte)head);
+            if (head == None)
                 return;
-            converter.Encode(ref allocator, result);
+            converter.Encode(ref allocator, item.GetValueOrDefault());
         }
 
         public override T? Decode(in ReadOnlySpan<byte> span)
@@ -40,11 +40,11 @@ namespace Mikodev.Binary.Creators
 
         public override void EncodeAuto(ref Allocator allocator, T? item)
         {
-            var header = item is null ? None : Some;
-            Allocator.Append(ref allocator, (byte)header);
-            if (!(item is T result))
+            var head = item.HasValue ? Some : None;
+            Allocator.Append(ref allocator, (byte)head);
+            if (head == None)
                 return;
-            converter.EncodeAuto(ref allocator, result);
+            converter.EncodeAuto(ref allocator, item.GetValueOrDefault());
         }
 
         public override T? DecodeAuto(ref ReadOnlySpan<byte> span)

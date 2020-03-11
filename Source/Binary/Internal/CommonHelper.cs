@@ -1,13 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
 namespace Mikodev.Binary.Internal
 {
-    internal static class Extensions
+    internal static class CommonHelper
     {
-        internal static bool IsByRefLike(this Type type)
+        internal static T[] Concat<T>(T item, T[] values)
+        {
+            var result = new List<T> { item };
+            result.AddRange(values);
+            return result.ToArray();
+        }
+
+        internal static bool IsByRefLike(Type type)
         {
             if (!type.IsValueType)
                 return false;
@@ -15,24 +23,24 @@ namespace Mikodev.Binary.Internal
             return attributes.Select(x => x.GetType()).Any(x => x.FullName == "System.Runtime.CompilerServices.IsByRefLikeAttribute");
         }
 
-        internal static bool IsImplementationOf(this Type type, Type definition)
+        internal static bool IsImplementationOf(Type type, Type definition)
         {
             return type.IsGenericType && type.GetGenericTypeDefinition() == definition;
         }
 
-        internal static bool TryGetGenericArguments(this Type type, Type definition, out Type[] arguments)
+        internal static bool TryGetGenericArguments(Type type, Type definition, out Type[] arguments)
         {
             Debug.Assert(definition.IsGenericTypeDefinition);
-            arguments = type.IsImplementationOf(definition) ? type.GetGenericArguments() : null;
+            arguments = IsImplementationOf(type, definition) ? type.GetGenericArguments() : null;
             return arguments != null;
         }
 
-        internal static bool TryGetInterfaceArguments(this Type type, Type definition, out Type[] arguments)
+        internal static bool TryGetInterfaceArguments(Type type, Type definition, out Type[] arguments)
         {
             Debug.Assert(definition.IsInterface);
             Debug.Assert(definition.IsGenericTypeDefinition);
-            var interfaces = type.IsInterface ? type.GetInterfaces().Concat(new[] { type }).ToArray() : type.GetInterfaces();
-            var types = interfaces.Where(r => r.IsImplementationOf(definition)).ToList();
+            var interfaces = type.IsInterface ? Concat(type, type.GetInterfaces()) : type.GetInterfaces();
+            var types = interfaces.Where(x => IsImplementationOf(x, definition)).ToList();
             var count = types.Count;
             if (count > 1)
                 throw new ArgumentException($"Multiple interface implementations detected, type: {type}, interface type: {definition}");

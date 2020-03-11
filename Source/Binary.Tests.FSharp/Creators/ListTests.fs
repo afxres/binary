@@ -2,6 +2,7 @@
 
 open Mikodev.Binary
 open System
+open System.Reflection
 open Xunit
 
 type ListTests () =
@@ -54,10 +55,12 @@ type ListTests () =
         let generator = Activator.CreateInstance(generatorType, [| box Array.empty<Converter>; box creators |]) :?> IGenerator
 
         let alpha = generator.GetConverter<'a vlist>()
-        Assert.Equal("CollectionAdaptedConverter`3", alpha.GetType().Name)
+        let alphaBuilder = alpha.GetType().GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(alpha)
+        Assert.Equal("DelegateEnumerableBuilder`2", alphaBuilder.GetType().Name)
         let defaultGenerator = Generator.CreateDefault()
         let bravo = defaultGenerator.GetConverter<'a vlist>()
-        Assert.Equal("ArrayLikeAdaptedConverter`2", bravo.GetType().Name)
+        let bravoBuilder = bravo.GetType().GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(bravo)
+        Assert.Equal("ListBuilder`1", bravoBuilder.GetType().Name)
 
         let buffer = bravo.Encode (vlist array)
         Assert.Equal<byte>(buffer, alpha.Encode (vlist array))

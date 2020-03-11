@@ -30,7 +30,9 @@
     <Compile Include="External\RecordTests.fs" />
     <Compile Include="External\UnionTests.fs" />
     <Compile Include="Implementations\CollectionLayoutTests.fs" />
+    <Compile Include="Implementations\CollectionOverflowTests.fs" />
     <Compile Include="Implementations\CompatibleCollectionTests.fs" />
+    <Compile Include="Implementations\EnumerableAdapterIntegrationTests.fs" />
     <Compile Include="Implementations\EnumerableAdapterTests.fs" />
     <Compile Include="Implementations\EnumerableTests.fs" />
     <Compile Include="Implementations\InheritanceTests.fs" />
@@ -58,8 +60,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Binary.FSharp\Binary.FSharp.fsproj" />
     <ProjectReference Include="..\Binary\Binary.csproj" />
+    <ProjectReference Include="..\Binary.FSharp\Binary.FSharp.fsproj" />
   </ItemGroup>
 
 </Project>

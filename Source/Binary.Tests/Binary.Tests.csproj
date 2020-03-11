@@ -21,8 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Binary.FSharp\Binary.FSharp.fsproj" />
     <ProjectReference Include="..\Binary\Binary.csproj" />
+    <ProjectReference Include="..\Binary.FSharp\Binary.FSharp.fsproj" />
   </ItemGroup>
 
 </Project>

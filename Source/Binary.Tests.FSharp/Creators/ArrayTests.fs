@@ -2,13 +2,14 @@
 
 open Mikodev.Binary
 open System
+open System.Linq
 open Xunit
 
 type ArrayTests () =
     let generator = Generator.CreateDefault()
 
     [<Fact>]
-    member __.``Array Instance`` () =
+    member __.``Array`` () =
         let a : int array = [| 1; 4; 16; |]
         let b : string array = [| "alpha"; "beta"; "release" |]
         let bytesA = generator.Encode a
@@ -19,6 +20,17 @@ type ArrayTests () =
         let valueB = generator.Decode<string array> bytesB
         Assert.Equal<int>(a, valueA)
         Assert.Equal<string>(b, valueB)
+        ()
+
+    [<Fact>]
+    member __.``Array Of String (from 0 to 4096)`` () =
+        let converter = generator.GetConverter<string array>()
+        for i = 0 to 4096 do
+            let source = Enumerable.Range(0, i) |> Seq.map string |> Seq.toArray
+            let buffer = converter.Encode source
+            let result = converter.Decode buffer
+            Assert.Equal(i, result.Length)
+            Assert.Equal<string>(source, result)
         ()
 
     [<Fact>]

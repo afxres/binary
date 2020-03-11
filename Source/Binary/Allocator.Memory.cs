@@ -37,18 +37,17 @@ namespace Mikodev.Binary
         {
             const int Limits = 32;
             var offset = allocator.offset;
-            var buffer = allocator.buffer;
             // check bounds manually
             if ((ulong)(uint)anchor + sizeof(uint) > (uint)offset)
                 ThrowHelper.ThrowAllocatorAnchorInvalid();
-            ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), anchor);
             var length = offset - anchor - sizeof(uint);
+            var buffer = allocator.buffer;
+            ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), anchor);
             if (compact && length < Limits)
             {
-                if (length > 0)
-                    MemoryHelper.MemoryMoveForward3(ref Unsafe.Add(ref target, sizeof(uint)), (uint)length);
                 target = (byte)length;
-                allocator.offset = offset - (sizeof(uint) - sizeof(byte));
+                allocator.offset = offset - 3;
+                BufferHelper.MemoryMoveForward3(ref Unsafe.Add(ref target, sizeof(uint)), (uint)length);
             }
             else
             {

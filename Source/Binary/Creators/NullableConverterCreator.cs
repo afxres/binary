@@ -8,12 +8,12 @@ namespace Mikodev.Binary.Creators
     {
         public Converter GetConverter(IGeneratorContext context, Type type)
         {
-            if (!type.TryGetGenericArguments(typeof(Nullable<>), out var arguments))
+            if (!CommonHelper.TryGetGenericArguments(type, typeof(Nullable<>), out var arguments))
                 return null;
             var itemType = arguments.Single();
             var itemConverter = context.GetConverter(itemType);
-            var converterType = typeof(NullableConverter<>).MakeGenericType(itemType);
             var converterArguments = new object[] { itemConverter };
+            var converterType = typeof(NullableConverter<>).MakeGenericType(itemType);
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (Converter)converter;
         }
