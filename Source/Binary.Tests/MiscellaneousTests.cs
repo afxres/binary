@@ -176,5 +176,22 @@ namespace Mikodev.Binary.Tests
             Assert.Contains(typeof(Allocator), byRefTypes);
             Assert.Contains(typeof(AllocatorAnchor), byRefTypes);
         }
+
+        [Fact(DisplayName = "Throw Method With 'DoesNotReturnAttribute'")]
+        public void NoReturn()
+        {
+            var types = typeof(Converter).Assembly.GetTypes();
+            var methods = types.SelectMany(x => x.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)).ToList();
+            var throwMethods = methods.Where(x => x.Name.StartsWith("Throw") && !x.Name.Contains("Or")).ToList();
+            Assert.NotEmpty(throwMethods);
+            foreach (var method in throwMethods)
+            {
+                Assert.False(method.IsPublic);
+                var attributes = method.GetCustomAttributes();
+                const string AttributeName = "System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute";
+                var validAttributes = attributes.Where(x => x.GetType().FullName == AttributeName).ToList();
+                _ = Assert.Single(validAttributes);
+            }
+        }
     }
 }

@@ -12,7 +12,7 @@ namespace Mikodev.Binary.Creators.Fallback
             if (item is null)
                 return;
             var size = item.AddressFamily == AddressFamily.InterNetwork ? 4 : 16;
-            Allocator.AppendAction(ref allocator, size, item, SharedHelper.WriteIPAddress);
+            Allocator.AppendAction(ref allocator, size, item, SharedHelper.IPAddressAction);
         }
 
         private static void AppendWithLengthPrefix(ref Allocator allocator, IPAddress item)

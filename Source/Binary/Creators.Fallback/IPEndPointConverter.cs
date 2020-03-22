@@ -14,7 +14,7 @@ namespace Mikodev.Binary.Creators.Fallback
                 return;
             var size = item.AddressFamily == AddressFamily.InterNetwork ? 4 : 16;
             Allocator.Append(ref allocator, (byte)size);
-            Allocator.AppendAction(ref allocator, size, item.Address, SharedHelper.WriteIPAddress);
+            Allocator.AppendAction(ref allocator, size, item.Address, SharedHelper.IPAddressAction);
             Allocator.AppendLittleEndian(ref allocator, (ushort)item.Port);
         }
 

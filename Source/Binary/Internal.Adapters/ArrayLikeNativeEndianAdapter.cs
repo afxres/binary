@@ -20,9 +20,7 @@ namespace Mikodev.Binary.Internal.Adapters
                 return new ArraySegment<T>(Array.Empty<T>());
             var itemCount = CollectionAdapterHelper.GetItemCount(byteLength, Unsafe.SizeOf<T>(), typeof(T));
             var items = new T[itemCount];
-            ref var source = ref MemoryMarshal.GetReference(span);
-            ref var target = ref items[0];
-            Unsafe.CopyBlockUnaligned(ref Unsafe.As<T, byte>(ref target), ref source, (uint)byteLength);
+            Unsafe.CopyBlockUnaligned(ref Unsafe.As<T, byte>(ref MemoryMarshal.GetReference(new Span<T>(items))), ref MemoryMarshal.GetReference(span), (uint)byteLength);
             return new ArraySegment<T>(items, 0, itemCount);
         }
     }

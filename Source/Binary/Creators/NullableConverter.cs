@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary.Creators
@@ -14,7 +15,7 @@ namespace Mikodev.Binary.Creators
 
         public NullableConverter(Converter<T> converter) => this.converter = converter;
 
-        [DebuggerStepThrough]
+        [DebuggerStepThrough, DoesNotReturn]
         private T? ThrowInvalid(int tag) => throw new ArgumentException($"Invalid nullable tag: {tag}, type: {ItemType}");
 
         [DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]

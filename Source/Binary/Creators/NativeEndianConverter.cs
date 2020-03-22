@@ -16,9 +16,7 @@ namespace Mikodev.Binary.Creators
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void Append(ref Allocator allocator, T item)
         {
-            // write unaligned
-            ref var target = ref Allocator.Assign(ref allocator, Unsafe.SizeOf<T>());
-            Unsafe.WriteUnaligned(ref target, item);
+            Unsafe.WriteUnaligned(ref Allocator.Assign(ref allocator, Unsafe.SizeOf<T>()), item);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -46,7 +44,6 @@ namespace Mikodev.Binary.Creators
 
         public override T DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            // take reference first
             // check bounds via slice method
             ref var source = ref MemoryMarshal.GetReference(span);
             span = span.Slice(Unsafe.SizeOf<T>());
@@ -68,7 +65,7 @@ namespace Mikodev.Binary.Creators
         public override byte[] Encode(T item)
         {
             var buffer = new byte[Unsafe.SizeOf<T>()];
-            Unsafe.WriteUnaligned(ref buffer[0], item);
+            Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(new Span<byte>(buffer)), item);
             return buffer;
         }
 
@@ -76,7 +73,7 @@ namespace Mikodev.Binary.Creators
         {
             if (buffer is null || buffer.Length < Unsafe.SizeOf<T>())
                 return ThrowHelper.ThrowNotEnoughBytes<T>();
-            return Unsafe.ReadUnaligned<T>(ref buffer[0]);
+            return Unsafe.ReadUnaligned<T>(ref MemoryMarshal.GetReference(new Span<byte>(buffer)));
         }
     }
 }

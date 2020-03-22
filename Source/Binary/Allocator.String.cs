@@ -13,13 +13,13 @@ namespace Mikodev.Binary
         {
             Debug.Assert(encoding != null);
             var targetLimits = SharedHelper.GetMaxByteCount(span, encoding);
+            Debug.Assert(targetLimits <= encoding.GetMaxByteCount(span.Length));
             if (targetLimits == 0)
                 return;
             Ensure(ref allocator, targetLimits);
             var offset = allocator.offset;
             var buffer = allocator.buffer;
-            ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
-            var targetLength = SharedHelper.GetBytes(span, ref target, targetLimits, encoding);
+            var targetLength = SharedHelper.GetBytes(span, buffer.Slice(offset, targetLimits), encoding);
             allocator.offset = offset + targetLength;
         }
 
@@ -27,14 +27,13 @@ namespace Mikodev.Binary
         {
             Debug.Assert(encoding != null);
             var targetLimits = SharedHelper.GetMaxByteCount(span, encoding);
+            Debug.Assert(targetLimits <= encoding.GetMaxByteCount(span.Length));
             var prefixLength = PrimitiveHelper.EncodeNumberLength((uint)targetLimits);
-            var bufferExpand = targetLimits + prefixLength;
-            Ensure(ref allocator, bufferExpand);
+            Ensure(ref allocator, prefixLength + targetLimits);
             var offset = allocator.offset;
             var buffer = allocator.buffer;
-            ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
-            var targetLength = targetLimits == 0 ? 0 : SharedHelper.GetBytes(span, ref Unsafe.Add(ref target, prefixLength), targetLimits, encoding);
-            PrimitiveHelper.EncodeNumber(ref target, prefixLength, (uint)targetLength);
+            var targetLength = targetLimits == 0 ? 0 : SharedHelper.GetBytes(span, buffer.Slice(offset + prefixLength, targetLimits), encoding);
+            PrimitiveHelper.EncodeNumber(ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset), prefixLength, (uint)targetLength);
             allocator.offset = offset + targetLength + prefixLength;
         }
     }

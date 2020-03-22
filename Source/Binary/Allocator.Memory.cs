@@ -45,8 +45,8 @@ namespace Mikodev.Binary
             ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), anchor);
             if (compact && length < Limits)
             {
-                target = (byte)length;
                 allocator.offset = offset - 3;
+                Unsafe.WriteUnaligned(ref target, (byte)length);
                 BufferHelper.MemoryMoveForward3(ref Unsafe.Add(ref target, sizeof(uint)), (uint)length);
             }
             else

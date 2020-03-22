@@ -103,6 +103,28 @@ let functor<'a> (isArrayNull : bool) =
     Assert.Equal(isArrayNull, isNull array)
     ()
 
+let testEnumerableCount (collection : 'a seq) (expectedCount : int) =
+    let converter = generator.GetConverter<'a>()
+    let adapterGenericDefinition = typeof<Converter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "EnumerableAdapter`2") |> Array.exactlyOne
+    let adapterType = adapterGenericDefinition.MakeGenericType(typeof<'a seq>, typeof<'a>)
+    let adapter = Activator.CreateInstance(adapterType, [| box converter |])
+    let countMethod = adapterType.GetMethod("Count")
+    let count = countMethod.Invoke(adapter, [| box collection |]) |> unbox<int>
+    Assert.Equal(expectedCount, count)
+    ()
+
+let testDictionaryCount (collection : KeyValuePair<'a, 'b> seq) (expectedCount : int) =
+    let initConverter = generator.GetConverter<'a>()
+    let tailConverter = generator.GetConverter<'b>()
+    let itemLength = let list = [| initConverter.Length; tailConverter.Length |] in if Array.contains 0 list then 0 else Array.sum list
+    let adapterGenericDefinition = typeof<Converter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "DictionaryAdapter`3") |> Array.exactlyOne
+    let adapterType = adapterGenericDefinition.MakeGenericType(typeof<KeyValuePair<'a, 'b> seq>, typeof<'a>, typeof<'b>)
+    let adapter = Activator.CreateInstance(adapterType, [| box initConverter; box tailConverter; box itemLength |])
+    let countMethod = adapterType.GetMethod("Count")
+    let count = countMethod.Invoke(adapter, [| box collection |]) |> unbox<int>
+    Assert.Equal(expectedCount, count)
+    ()
+
 [<Fact>]
 let ``Collection Encode (count 8, copy to)`` () = test (CollectionA<int> 8) "Collection A, Copy To"
 
@@ -138,3 +160,33 @@ let ``Enumerable With To Array Method Encode (to array)`` () = test (CollectionF
 
 [<Fact>]
 let ``Enumerable With To Array Method Functor`` () = functor<CollectionF<int>> false
+
+[<Fact>]
+let ``Collection Count (enumerable adapter)`` () = testEnumerableCount (CollectionA<int> 16) 16
+
+[<Fact>]
+let ``Collection Count (dictionary adapter)`` () = testDictionaryCount (CollectionA<KeyValuePair<int, int>> 33) 33
+
+[<Fact>]
+let ``Read Only Collection Count (enumerable adapter)`` () = testEnumerableCount (CollectionB<string> 9) 9
+
+[<Fact>]
+let ``Read Only Collection Count (dictionary adapter)`` () = testDictionaryCount (CollectionB<KeyValuePair<int, string>> 13) 13
+
+[<Fact>]
+let ``Collection With Multiple Interfaces Count (enumerable adapter)`` () = testEnumerableCount (CollectionD<int> 11) 11
+
+[<Fact>]
+let ``Collection With Multiple Interfaces Count (dictionary adapter)`` () = testDictionaryCount (CollectionD<KeyValuePair<string, int>> 17) 17
+
+[<Fact>]
+let ``Enumerable Count (enumerable adapter)`` () = testEnumerableCount (Seq.empty<string>) -1
+
+[<Fact>]
+let ``Enumerable Count (dictionary adapter)`` () = testDictionaryCount (Seq.empty<KeyValuePair<string, int>>) -1
+
+[<Fact>]
+let ``Enumerable Count (enumerable adapter, null)`` () = testEnumerableCount (Unchecked.defaultof<int seq>) 0
+
+[<Fact>]
+let ``Enumerable Count (dictionary adapter, null)`` () = testDictionaryCount (Unchecked.defaultof<KeyValuePair<int, string> seq>) 0

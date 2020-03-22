@@ -74,9 +74,7 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void Append(ref Allocator allocator, byte item)
         {
-            // write unaligned
-            ref var target = ref Assign(ref allocator, sizeof(byte));
-            Unsafe.WriteUnaligned(ref target, item);
+            Unsafe.WriteUnaligned(ref Assign(ref allocator, sizeof(byte)), item);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -85,9 +83,7 @@ namespace Mikodev.Binary
             var length = span.Length;
             if (length == 0)
                 return;
-            ref var target = ref Assign(ref allocator, length);
-            ref var source = ref MemoryMarshal.GetReference(span);
-            Unsafe.CopyBlockUnaligned(ref target, ref source, (uint)length);
+            Unsafe.CopyBlockUnaligned(ref Assign(ref allocator, length), ref MemoryMarshal.GetReference(span), (uint)length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -98,7 +94,7 @@ namespace Mikodev.Binary
                 return Array.Empty<byte>();
             var result = new byte[offset];
             var buffer = allocator.buffer;
-            Unsafe.CopyBlockUnaligned(ref result[0], ref MemoryMarshal.GetReference(buffer), (uint)offset);
+            Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetReference(new Span<byte>(result)), ref MemoryMarshal.GetReference(buffer), (uint)offset);
             return result;
         }
     }

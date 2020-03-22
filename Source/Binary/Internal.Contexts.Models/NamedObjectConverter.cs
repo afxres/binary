@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -32,10 +33,10 @@ namespace Mikodev.Binary.Internal.Contexts.Models
             this.names = names.ToArray();
         }
 
-        [DebuggerStepThrough]
+        [DebuggerStepThrough, DoesNotReturn]
         private T ThrowKeyFound(int i) => throw new ArgumentException($"Named key '{names[i]}' already exists, type: {ItemType}");
 
-        [DebuggerStepThrough]
+        [DebuggerStepThrough, DoesNotReturn]
         private T ThrowNotFound(int i) => throw new ArgumentException($"Named key '{names[i]}' does not exist, type: {ItemType}");
 
         private static void DetachPrefix(ref byte location, ref int offset, ref int length, int limits)
