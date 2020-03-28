@@ -4,9 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using ItemIndexes = System.Collections.Generic.IReadOnlyList<int>;
-using ItemInitializer = System.Func<(System.Linq.Expressions.ParameterExpression, System.Linq.Expressions.Expression[])>;
-using MemberList = System.Collections.Generic.IReadOnlyList<(System.Reflection.MemberInfo Member, Mikodev.Binary.Converter Converter)>;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
@@ -19,43 +16,38 @@ namespace Mikodev.Binary.Internal.Contexts
             return source.All(x => x > 0) ? source.Sum() : 0;
         }
 
-        internal static bool CanCreateInstance(Type type, IReadOnlyList<MemberInfo> members, ConstructorInfo constructor)
+        internal static bool CanCreateInstance(Type type, IReadOnlyList<PropertyInfo> properties, ConstructorInfo constructor)
         {
-            Debug.Assert(members.Any());
+            Debug.Assert(properties.Any());
             Debug.Assert(constructor is null || (!type.IsAbstract && !type.IsInterface));
             if (type.IsAbstract || type.IsInterface)
                 return false;
             if (constructor != null)
                 return true;
-            var predicate = new Func<MemberInfo, bool>(x =>
-                (x is PropertyInfo property && property.GetSetMethod() != null) ||
-                (x is FieldInfo field && !field.IsLiteral && !field.IsInitOnly));
-            return (type.IsValueType || type.GetConstructor(Type.EmptyTypes) != null) && members.All(predicate);
+            return (type.IsValueType || type.GetConstructor(Type.EmptyTypes) != null) && properties.All(x => x.GetSetMethod() != null);
         }
 
-        internal static Delegate GetDecodeDelegateUseMembers(Type delegateType, ItemInitializer initializer, MemberList metadata, Type type)
+        internal static Delegate GetDecodeDelegateUseMembers(Type delegateType, Func<(ParameterExpression, IReadOnlyList<Expression>)> initializer, IReadOnlyList<Func<Expression, Expression>> members, Type type)
         {
             var item = Expression.Variable(type, "item");
-            var expressions = new List<Expression> { Expression.Assign(item, Expression.New(type)) };
-            var targets = metadata
-                .Select(x => x.Member)
-                .Select(x => x is FieldInfo field ? Expression.Field(item, field) : Expression.Property(item, (PropertyInfo)x))
-                .ToList();
+            var targets = members.Select(x => x.Invoke(item)).ToList();
             var (parameter, values) = initializer.Invoke();
-            for (var i = 0; i < metadata.Count; i++)
-                expressions.Add(Expression.Assign(targets[i], values[i]));
+            Debug.Assert(values.Count == members.Count);
+            Debug.Assert(values.Count == targets.Count);
+            var expressions = new List<Expression> { Expression.Assign(item, Expression.New(type)) };
+            expressions.AddRange(values.Select((x, i) => Expression.Assign(targets[i], x)));
             expressions.Add(item);
             var lambda = Expression.Lambda(delegateType, Expression.Block(new[] { item }, expressions), parameter);
             return lambda.Compile();
         }
 
-        internal static Delegate GetDecodeDelegateUseConstructor(Type delegateType, ItemInitializer initializer, IReadOnlyList<Converter> converters, ItemIndexes indexes, ConstructorInfo constructor)
+        internal static Delegate GetDecodeDelegateUseConstructor(Type delegateType, Func<(ParameterExpression, IReadOnlyList<Expression>)> initializer, IReadOnlyList<int> indexes, ConstructorInfo constructor)
         {
-            var expressions = new List<Expression>();
-            var variables = converters.Select((x, i) => Expression.Variable(x.ItemType, $"{i}")).ToList();
             var (parameter, values) = initializer.Invoke();
-            for (var i = 0; i < converters.Count; i++)
-                expressions.Add(Expression.Assign(variables[i], values[i]));
+            var variables = values.Select((x, i) => Expression.Variable(x.Type, $"{i}")).ToList();
+            Debug.Assert(values.Count == indexes.Count);
+            var expressions = new List<Expression>();
+            expressions.AddRange(values.Select((x, i) => Expression.Assign(variables[i], x)));
             expressions.Add(Expression.New(constructor, indexes.Select(x => variables[x]).ToList()));
             var lambda = Expression.Lambda(delegateType, Expression.Block(variables, expressions), parameter);
             return lambda.Compile();

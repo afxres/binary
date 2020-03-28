@@ -8,15 +8,14 @@ namespace Mikodev.Binary
 {
     public static partial class PrimitiveHelper
     {
-        /* x = 0 or 1
-         * 0b1xxx_xxxx fixed length 4 bytes
+        /* 0b1xxx_xxxx constant length 4 bytes
          * 0b01xx_xxxx variable length 2 bytes
          * 0b00xx_xxxx variable length 1 bytes */
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int EncodeNumberLength(uint number)
         {
-            Debug.Assert(number >= 0 && number <= int.MaxValue);
+            Debug.Assert(number <= int.MaxValue);
             if (number < 0x40)
                 return 1;
             if (number < 0x4000)
@@ -37,7 +36,7 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void EncodeNumberFixed4(ref byte location, uint number)
         {
-            Debug.Assert(number >= 0 && number <= int.MaxValue);
+            Debug.Assert(number <= int.MaxValue);
             Unsafe.Add(ref location, 0) = (byte)((number >> 24) | 0x80);
             Unsafe.Add(ref location, 1) = (byte)(number >> 16);
             Unsafe.Add(ref location, 2) = (byte)(number >> 8);
@@ -47,7 +46,7 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void EncodeNumber(ref byte location, int length, uint number)
         {
-            Debug.Assert(number >= 0 && number <= int.MaxValue);
+            Debug.Assert(number <= int.MaxValue);
             Debug.Assert(length == 1 || length == 2 || length == 4);
             if (length == 1)
             {

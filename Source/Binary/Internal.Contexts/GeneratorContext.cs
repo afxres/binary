@@ -12,9 +12,9 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private readonly ConcurrentDictionary<Type, Converter> converters;
 
-        private readonly IEnumerable<IConverterCreator> creators;
+        private readonly IReadOnlyCollection<IConverterCreator> creators;
 
-        public GeneratorContext(ConcurrentDictionary<Type, Converter> converters, IEnumerable<IConverterCreator> creators)
+        public GeneratorContext(ConcurrentDictionary<Type, Converter> converters, IReadOnlyCollection<IConverterCreator> creators)
         {
             this.converters = converters;
             this.creators = creators;

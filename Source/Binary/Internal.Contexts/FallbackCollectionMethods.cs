@@ -3,6 +3,7 @@ using Mikodev.Binary.Internal.Contexts.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -54,6 +55,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static Converter CreateLinkedListConverter<T, E>(IReadOnlyList<Converter> converters)
         {
+            Debug.Assert(typeof(T) == typeof(LinkedList<E>));
             var converter = (Converter<E>)converters.Single();
             var adapter = new LinkedListAdapter<E>(converter);
             var builder = new FallbackEnumerableBuilder<LinkedList<E>, LinkedList<E>>();

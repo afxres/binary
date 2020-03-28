@@ -2,23 +2,21 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using ItemIndexes = System.Collections.Generic.IReadOnlyList<int>;
-using MemberList = System.Collections.Generic.IReadOnlyList<(System.Reflection.MemberInfo Member, Mikodev.Binary.Converter Converter)>;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class ContextMethodsOfTupleObject
     {
-        internal static Converter GetConverterAsTupleObject(Type type, ConstructorInfo constructor, ItemIndexes indexes, MemberList metadata)
+        internal static Converter GetConverterAsTupleObject(Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<Converter> converters, ConstructorInfo constructor, IReadOnlyList<int> indexes, IReadOnlyList<Func<Expression, Expression>> members)
         {
-            var encode = GetEncodeDelegateAsTupleObject(type, metadata, auto: false);
-            var decode = GetDecodeDelegateAsTupleObject(type, metadata, constructor, indexes, auto: false);
-            var encodeAuto = GetEncodeDelegateAsTupleObject(type, metadata, auto: true);
-            var decodeAuto = GetDecodeDelegateAsTupleObject(type, metadata, constructor, indexes, auto: true);
-            var itemLength = ContextMethods.GetItemLength(metadata.Select(x => x.Converter).ToList());
+            Debug.Assert(converters.Count == members.Count);
+            var encode = GetEncodeDelegateAsTupleObject(type, converters, members, auto: false);
+            var decode = GetDecodeDelegateAsTupleObject(type, properties, converters, constructor, indexes, members, auto: false);
+            var encodeAuto = GetEncodeDelegateAsTupleObject(type, converters, members, auto: true);
+            var decodeAuto = GetDecodeDelegateAsTupleObject(type, properties, converters, constructor, indexes, members, auto: true);
+            var itemLength = ContextMethods.GetItemLength(converters);
             var converterArguments = new object[] { encode, decode, encodeAuto, decodeAuto, itemLength };
             var converterType = typeof(TupleObjectConverter<>).MakeGenericType(type);
             var converter = Activator.CreateInstance(converterType, converterArguments);
@@ -45,20 +43,18 @@ namespace Mikodev.Binary.Internal.Contexts
             return method;
         }
 
-        private static Delegate GetEncodeDelegateAsTupleObject(Type type, MemberList metadata, bool auto)
+        private static Delegate GetEncodeDelegateAsTupleObject(Type type, IReadOnlyList<Converter> converters, IReadOnlyList<Func<Expression, Expression>> members, bool auto)
         {
+            Debug.Assert(converters.Count == members.Count);
             var item = Expression.Parameter(type, "item");
             var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
             var expressions = new List<Expression>();
 
-            for (var i = 0; i < metadata.Count; i++)
+            for (var i = 0; i < members.Count; i++)
             {
-                var (member, converter) = metadata[i];
-                var memberExpression = member is FieldInfo fieldInfo
-                    ? Expression.Field(item, fieldInfo)
-                    : Expression.Property(item, (PropertyInfo)member);
-                var method = GetEncodeMethodInfo(converter, auto || i != metadata.Count - 1);
-                var invoke = Expression.Call(Expression.Constant(converter), method, allocator, memberExpression);
+                var converter = converters[i];
+                var method = GetEncodeMethodInfo(converter, auto || i != members.Count - 1);
+                var invoke = Expression.Call(Expression.Constant(converter), method, allocator, members[i].Invoke(item));
                 expressions.Add(invoke);
             }
             var delegateType = typeof(OfTupleObject<>).MakeGenericType(type);
@@ -66,29 +62,30 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        private static Delegate GetDecodeDelegateAsTupleObject(Type type, MemberList metadata, ConstructorInfo constructor, ItemIndexes indexes, bool auto)
+        private static Delegate GetDecodeDelegateAsTupleObject(Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<Converter> converters, ConstructorInfo constructor, IReadOnlyList<int> indexes, IReadOnlyList<Func<Expression, Expression>> members, bool auto)
         {
-            (ParameterExpression, Expression[]) Initialize()
+            (ParameterExpression, IReadOnlyList<Expression>) Initialize()
             {
                 var span = Expression.Parameter(typeof(ReadOnlySpan<byte>).MakeByRefType(), "span");
-                var values = new Expression[metadata.Count];
+                var values = new Expression[members.Count];
 
-                for (var i = 0; i < metadata.Count; i++)
+                for (var i = 0; i < members.Count; i++)
                 {
-                    var converter = metadata[i].Converter;
-                    var method = GetDecodeMethodInfo(converter, auto || i != metadata.Count - 1);
+                    var converter = converters[i];
+                    var method = GetDecodeMethodInfo(converter, auto || i != members.Count - 1);
                     var invoke = Expression.Call(Expression.Constant(converter), method, span);
                     values[i] = invoke;
                 }
                 return (span, values);
             }
 
-            if (!ContextMethods.CanCreateInstance(type, metadata.Select(x => x.Member).ToList(), constructor))
+            Debug.Assert(converters.Count == members.Count);
+            if (properties != null && !ContextMethods.CanCreateInstance(type, properties, constructor))
                 return null;
             var delegateType = typeof(ToTupleObject<>).MakeGenericType(type);
             return constructor is null
-                ? ContextMethods.GetDecodeDelegateUseMembers(delegateType, Initialize, metadata, type)
-                : ContextMethods.GetDecodeDelegateUseConstructor(delegateType, Initialize, metadata.Select(x => x.Converter).ToList(), indexes, constructor);
+                ? ContextMethods.GetDecodeDelegateUseMembers(delegateType, Initialize, members, type)
+                : ContextMethods.GetDecodeDelegateUseConstructor(delegateType, Initialize, indexes, constructor);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private readonly IReadOnlyCollection<IConverterCreator> creators;
 
-        public Generator(IEnumerable<Converter> converters, IEnumerable<IConverterCreator> creators)
+        public Generator(IReadOnlyCollection<Converter> converters, IReadOnlyCollection<IConverterCreator> creators)
         {
             var dictionary = converters.ToDictionary(x => x.ItemType);
             Debug.Assert(!dictionary.ContainsKey(typeof(object)));

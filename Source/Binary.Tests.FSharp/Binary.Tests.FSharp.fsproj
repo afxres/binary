@@ -48,6 +48,7 @@
     <Compile Include="Values\ValueTypeTests.fs" />
     <Compile Include="TupleLike\KeyValuePairTests.fs" />
     <Compile Include="TupleLike\TupleTests.fs" />
+    <Compile Include="TupleLike\ValueTupleAdvanceTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -99,7 +99,7 @@ namespace Mikodev.Binary.Internal
             if (length == 0)
                 return 0;
             const int Limits = 64;
-            if ((uint)length <= Limits && encoding == Converter.Encoding)
+            if ((uint)length <= Limits && ReferenceEquals(encoding, Converter.Encoding))
                 return (length + 1) * 3;
 #if NETOLD
             unsafe
