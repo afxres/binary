@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Mikodev.Binary.Tests
@@ -67,6 +68,18 @@ namespace Mikodev.Binary.Tests
             var inner = token["inner"].As(a.inner);
             Assert.False(ReferenceEquals(a.inner, inner));
             Assert.Equal(a.inner, inner);
+        }
+
+        [Fact(DisplayName = "No Suitable Constructor (case sensitive)")]
+        public void CaseSensitive()
+        {
+            var a = new { name = "Tex", Name = 0 };
+            var bytes = generator.Encode(a);
+            var bravo = generator.Encode(new SortedDictionary<string, object> { ["name"] = "Tex", ["Name"] = 0 });
+            Assert.Equal(bravo, bytes);
+            var error = Assert.Throws<NotSupportedException>(() => generator.Decode(bytes, anonymous: a));
+            var message = $"No suitable constructor found, type: {a.GetType()}";
+            Assert.Equal(message, error.Message);
         }
     }
 }

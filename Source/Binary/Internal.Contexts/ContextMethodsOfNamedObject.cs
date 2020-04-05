@@ -21,15 +21,15 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             // require string converter for named key
             var stringConverter = (Converter<string>)context.GetConverter(typeof(string));
-            var stringContainer = dictionary.Values.ToDictionary(x => x, x => new ReadOnlyMemory<byte>(stringConverter.Encode(x)));
-            Debug.Assert(dictionary.Count == stringContainer.Count);
+            var memories = dictionary.ToDictionary(x => x.Key, x => new ReadOnlyMemory<byte>(stringConverter.Encode(x.Value)));
+            Debug.Assert(dictionary.Count == memories.Count);
             Debug.Assert(dictionary.OrderBy(x => x.Value).Select(x => x.Key).SequenceEqual(properties));
             Debug.Assert(properties.Count == converters.Count);
             var names = properties.Select(x => dictionary[x]).ToList();
-            var entry = BinaryNodeHelper.CreateOrDefault(names.Select((x, i) => new KeyValuePair<ReadOnlyMemory<byte>, int>(stringContainer[x], i)).ToList());
+            var entry = BinaryNodeHelper.CreateOrDefault(properties.Select((x, i) => new KeyValuePair<ReadOnlyMemory<byte>, int>(memories[x], i)).ToList());
             if (entry is null)
                 throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {type}, string converter type: {stringConverter.GetType()}");
-            var encode = GetEncodeDelegateAsNamedObject(type, properties, converters, dictionary, stringContainer);
+            var encode = GetEncodeDelegateAsNamedObject(type, properties, converters, memories);
             var decode = GetDecodeDelegateAsNamedObject(type, properties, converters, constructor, indexes);
             var converterArguments = new object[] { encode, decode, entry, names };
             var converterType = typeof(NamedObjectConverter<>).MakeGenericType(type);
@@ -47,7 +47,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return method;
         }
 
-        private static Delegate GetEncodeDelegateAsNamedObject(Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<Converter> converters, IReadOnlyDictionary<PropertyInfo, string> dictionary, IReadOnlyDictionary<string, ReadOnlyMemory<byte>> memories)
+        private static Delegate GetEncodeDelegateAsNamedObject(Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<Converter> converters, IReadOnlyDictionary<PropertyInfo, ReadOnlyMemory<byte>> memories)
         {
             static byte[] EncodeBufferWithLengthPrefix(ReadOnlyMemory<byte> memory)
             {
@@ -64,12 +64,11 @@ namespace Mikodev.Binary.Internal.Contexts
             {
                 var property = properties[i];
                 var converter = converters[i];
-                var buffer = EncodeBufferWithLengthPrefix(memories[dictionary[property]]);
-                var propertyExpression = Expression.Property(item, property);
+                var buffer = EncodeBufferWithLengthPrefix(memories[property]);
                 var methodInfo = GetEncodeWithLengthPrefixMethodInfo(converter);
                 // append named key with length prefix (cached), then append value with length prefix
                 expressions.Add(Expression.Call(AppendMethodInfo, allocator, Expression.New(ReadOnlySpanByteConstructorInfo, Expression.Constant(buffer))));
-                expressions.Add(Expression.Call(Expression.Constant(converter), methodInfo, allocator, propertyExpression));
+                expressions.Add(Expression.Call(Expression.Constant(converter), methodInfo, allocator, Expression.Property(item, property)));
             }
 
             var delegateType = typeof(OfNamedObject<>).MakeGenericType(type);
@@ -81,7 +80,7 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             (ParameterExpression, IReadOnlyList<Expression>) Initialize()
             {
-                var list = Expression.Parameter(typeof(LengthList), "list");
+                var list = Expression.Parameter(typeof(LengthList).MakeByRefType(), "list");
                 var values = new Expression[properties.Count];
 
                 for (var i = 0; i < properties.Count; i++)

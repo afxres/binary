@@ -208,6 +208,11 @@ type Student (name : string, age : int) =
 
         member me.Age = me.Age
 
+type BadType(key : int, Key : string) =
+    member __.key = key
+
+    member __.Key = Key
+
 let test (instance : 'a) (anonymous : 'b) =
     let converter = generator.GetConverter<'a>()
     Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
@@ -220,16 +225,19 @@ let test (instance : 'a) (anonymous : 'b) =
     ()
 
 [<Fact>]
-let ``No suitable constructor (interface)`` () = test (Student("Tom", 18) :> IPerson) ({| Name = "Tom"; Age = 18 |})
+let ``No Suitable Constructor (interface)`` () = test (Student("Tom", 18) :> IPerson) ({| Name = "Tom"; Age = 18 |})
 
 [<Fact>]
-let ``No suitable constructor (abstract class with single pattern-constructors)`` () = test (Student("Bob", 24) :> BasicPerson) ({| Name = "Bob"; Age = 24 |})
+let ``No Suitable Constructor (abstract class with single pattern-constructors)`` () = test (Student("Bob", 24) :> BasicPerson) ({| Name = "Bob"; Age = 24 |})
 
 [<Fact>]
-let ``No suitable constructor (abstract class with multiple pattern-constructors)`` () = test (Student("Alice", 20) :> AbstractPerson) ({| Name = "Alice"; Age = 20 |})
+let ``No Suitable Constructor (abstract class with multiple pattern-constructors)`` () = test (Student("Alice", 20) :> AbstractPerson) ({| Name = "Alice"; Age = 20 |})
 
 [<Fact>]
-let ``No suitable constructor (class with some get-only property)`` () = test (Student("Ann", 22)) ({| Name = "Ann"; Age = 22; View = "Ann, 22" |})
+let ``No Suitable Constructor (class with some get-only property)`` () = test (Student("Ann", 22)) ({| Name = "Ann"; Age = 22; View = "Ann, 22" |})
+
+[<Fact>]
+let ``No Suitable Constructor (case sensitive)`` () = test (BadType(18, "Fox")) ({| key = 18; Key = "Fox" |})
 
 type TypeWithLongNameMember = {
     LongName : string;

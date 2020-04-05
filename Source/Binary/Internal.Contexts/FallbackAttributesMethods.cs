@@ -45,9 +45,9 @@ namespace Mikodev.Binary.Internal.Contexts
             if ((origin, target) != default)
                 throw new ArgumentException($"Require '{origin}' for '{target}', type: {type}");
             if (attribute is NamedObjectAttribute)
-                GetPropertiesByNamedKey(type, enumerable, out properties, out dictionary);
+                GetSortedPropertiesByNamedKey(type, enumerable, out properties, out dictionary);
             else if (attribute is TupleObjectAttribute)
-                GetPropertiesByTupleKey(type, enumerable, out properties);
+                GetSortedPropertiesByTupleKey(type, enumerable, out properties);
 
             Debug.Assert(collection.Any());
             Debug.Assert(properties.Any());
@@ -129,7 +129,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return converters;
         }
 
-        private static void GetPropertiesByNamedKey(Type type, IReadOnlyCollection<(PropertyInfo, Attribute)> collection, out IReadOnlyList<PropertyInfo> properties, out IReadOnlyDictionary<PropertyInfo, string> dictionary)
+        private static void GetSortedPropertiesByNamedKey(Type type, IReadOnlyCollection<(PropertyInfo, Attribute)> collection, out IReadOnlyList<PropertyInfo> properties, out IReadOnlyDictionary<PropertyInfo, string> dictionary)
         {
             Debug.Assert(collection.Any());
             var map = new SortedDictionary<string, PropertyInfo>();
@@ -146,7 +146,7 @@ namespace Mikodev.Binary.Internal.Contexts
             dictionary = map.ToDictionary(x => x.Value, x => x.Key);
         }
 
-        private static void GetPropertiesByTupleKey(Type type, IReadOnlyCollection<(PropertyInfo, Attribute)> collection, out IReadOnlyList<PropertyInfo> properties)
+        private static void GetSortedPropertiesByTupleKey(Type type, IReadOnlyCollection<(PropertyInfo, Attribute)> collection, out IReadOnlyList<PropertyInfo> properties)
         {
             Debug.Assert(collection.Any());
             var map = new SortedDictionary<int, PropertyInfo>();
@@ -217,7 +217,10 @@ namespace Mikodev.Binary.Internal.Contexts
 
             if (type.IsAbstract || type.IsInterface)
                 return default;
-            var names = properties.ToDictionary(x => x.Name.ToUpperInvariant());
+            var selector = new Func<PropertyInfo, string>(x => x.Name.ToUpperInvariant());
+            if (properties.Select(selector).Distinct().Count() != properties.Count)
+                return default;
+            var names = properties.ToDictionary(selector);
             var query = type.GetConstructors().Select(x => CanCreate(x, names)).Where(x => x.Constructor != null).ToList();
             if (query.Count == 0)
                 return default;

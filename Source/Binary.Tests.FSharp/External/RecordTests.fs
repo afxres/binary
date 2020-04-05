@@ -28,7 +28,7 @@ let ``Person Detail`` () =
     ()
 
 [<Fact>]
-let ``Anonymous Record`` () =
+let ``Anonymous Class Record`` () =
     let source = {| key = "sharp"; data = Guid.NewGuid() |}
     let buffer = generator.Encode source
     let span = new ReadOnlySpan<byte>(buffer)

@@ -11,7 +11,7 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 {
     internal delegate void OfNamedObject<in T>(ref Allocator allocator, T item);
 
-    internal delegate T ToNamedObject<out T>(LengthList list);
+    internal delegate T ToNamedObject<out T>(in LengthList list);
 
     internal sealed class NamedObjectConverter<T> : Converter<T>
     {
@@ -96,7 +96,7 @@ namespace Mikodev.Binary.Internal.Contexts.Models
             var cursor = list.Ensure();
             if (cursor != -1)
                 return ThrowNotFound(cursor);
-            return decode.Invoke(list);
+            return decode.Invoke(in list);
         }
     }
 }

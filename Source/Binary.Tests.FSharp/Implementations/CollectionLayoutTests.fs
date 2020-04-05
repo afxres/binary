@@ -8,7 +8,7 @@ open Xunit
 
 let generator = Generator.CreateDefault()
 
-let test<'a> (adapterName : string) (builderName : string) (collection : 'a) =
+let test<'a> (generator : IGenerator) (adapterName : string) (builderName : string) (collection : 'a) =
     let converter = generator.GetConverter<'a>()
     Assert.Equal("CollectionAdaptedConverter`3", converter.GetType().Name)
 
@@ -36,7 +36,7 @@ let test<'a> (adapterName : string) (builderName : string) (collection : 'a) =
 let testNull<'a when 'a : null> (adapterName : string) (builderName : string) (collection : 'a) =
     let converter = generator.GetConverter<'a>()
 
-    test adapterName builderName collection
+    test generator adapterName builderName collection
 
     // test null
     let delta = converter.Encode(null)
@@ -49,10 +49,10 @@ let testNull<'a when 'a : null> (adapterName : string) (builderName : string) (c
     ()
 
 [<Fact>]
-let ``Converter Implementations And Null Or Empty Collection Binary Layout (integration test)`` () =
-    test "ArrayLikeVariableAdapter`1" "ArraySegmentBuilder`1" (ArraySegment<string>())
-    test "ArrayLikeConstantAdapter`1" "MemoryBuilder`1" (Memory<TimeSpan>())
-    test "ArrayLikeNativeEndianAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<int>())
+let ``Collection Layout (integration test, adapter type test, builder type test, null or empty collection test, default interface implementation test)`` () =
+    test generator "ArrayLikeVariableAdapter`1" "ArraySegmentBuilder`1" (ArraySegment<string>())
+    test generator "ArrayLikeConstantAdapter`1" "MemoryBuilder`1" (Memory<TimeSpan>())
+    test generator "ArrayLikeNativeEndianAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<int>())
     testNull "ArrayLikeNativeEndianAdapter`1" "ArrayBuilder`1" (Array.zeroCreate<int> 0)
     testNull "ArrayLikeVariableAdapter`1" "ListBuilder`1" (ResizeArray<string>())
 
@@ -75,4 +75,21 @@ let ``Converter Implementations And Null Or Empty Collection Binary Layout (inte
     testNull<IReadOnlyDictionary<_, _>> "DictionaryAdapter`3" "FallbackEnumerableBuilder`2" (Dictionary<string, int>())
     testNull<SortedList<_, _>> "DictionaryAdapter`3" "DelegateEnumerableBuilder`2" (SortedList<string, int>())
     testNull<SortedDictionary<_, _>> "DictionaryAdapter`3" "DelegateEnumerableBuilder`2" (SortedDictionary<TimeSpan, DateTime>())
+    ()
+
+type TestConverter<'a> (length : int) =
+    inherit Converter<'a>(length)
+
+    override __.Encode(_, _) = raise (NotSupportedException())
+
+    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : 'a = raise (NotSupportedException())
+
+[<Fact>]
+let ``Array Like Collection Layout (integration test)`` () =
+    test (Generator.CreateDefault()) "ArrayLikeNativeEndianAdapter`1" "MemoryBuilder`1" (Memory<single>())
+    test (Generator.CreateDefaultBuilder().Build()) "ArrayLikeNativeEndianAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<double>())
+    test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<int32>(4)).Build()) "ArrayLikeConstantAdapter`1" "MemoryBuilder`1" (Memory<int32>())
+    test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<int64>(8)).Build()) "ArrayLikeConstantAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<int64>())
+    test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<uint32>(0)).Build()) "ArrayLikeVariableAdapter`1" "MemoryBuilder`1" (Memory<uint32>())
+    test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<uint64>(0)).Build()) "ArrayLikeVariableAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<uint64>())
     ()

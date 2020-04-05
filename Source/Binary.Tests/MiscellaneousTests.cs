@@ -46,7 +46,8 @@ namespace Mikodev.Binary.Tests
 
             Assert.NotEmpty(inRefExpected);
             Assert.All(inRefExpected, x => Assert.EndsWith(nameof(IConverter.Decode), x.Member.Name));
-            Assert.Empty(inRefUnexpected);
+            Assert.NotEmpty(inRefUnexpected);
+            Assert.All(inRefUnexpected, x => Assert.Equal("ToNamedObject`1", x.DeclaringType.Name));
 
             var converterParameters = parameters.Where(x => x.Member is MethodInfo && typeof(IConverter).IsAssignableFrom(x.Member.DeclaringType)).ToList();
             var converterExpectedParameters = converterParameters.Where(x => !x.Member.Name.StartsWith("Throw") && !x.Member.Name.StartsWith("Detach") && Equals(x.ParameterType.Name, names)).ToList();

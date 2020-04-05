@@ -9,7 +9,7 @@
     <Company>Mikodev</Company>
     <Copyright>Mikodev 2020</Copyright>
     <Product>Mikodev.Binary</Product>
-    <Version>5.0.4</Version>
+    <Version>5.0.6</Version>
     <PackageTags>binary dynamic serialization fsharp</PackageTags>
     <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
   </PropertyGroup>
@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="System.Memory" Version="4.5.3" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
   </ItemGroup>
 
   <ItemGroup>
