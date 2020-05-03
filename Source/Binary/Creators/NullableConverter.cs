@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary.Creators
 {
@@ -18,13 +17,13 @@ namespace Mikodev.Binary.Creators
         [DebuggerStepThrough, DoesNotReturn]
         private T? ThrowInvalid(int tag) => throw new ArgumentException($"Invalid nullable tag: {tag}, type: {ItemType}");
 
-        [DebuggerStepThrough, MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [DebuggerStepThrough]
         private T? ThrowInvalidOrNull(int tag) => tag == None ? null : ThrowInvalid(tag);
 
         public override void Encode(ref Allocator allocator, T? item)
         {
             var head = item.HasValue ? Some : None;
-            Allocator.Append(ref allocator, (byte)head);
+            PrimitiveHelper.EncodeNumber(ref allocator, head);
             if (head == None)
                 return;
             converter.Encode(ref allocator, item.GetValueOrDefault());
@@ -32,8 +31,8 @@ namespace Mikodev.Binary.Creators
 
         public override T? Decode(in ReadOnlySpan<byte> span)
         {
-            var head = span[0];
-            var body = span.Slice(sizeof(byte));
+            var body = span;
+            var head = PrimitiveHelper.DecodeNumber(ref body);
             if (head == Some)
                 return converter.Decode(in body);
             return ThrowInvalidOrNull(head);
@@ -42,7 +41,7 @@ namespace Mikodev.Binary.Creators
         public override void EncodeAuto(ref Allocator allocator, T? item)
         {
             var head = item.HasValue ? Some : None;
-            Allocator.Append(ref allocator, (byte)head);
+            PrimitiveHelper.EncodeNumber(ref allocator, head);
             if (head == None)
                 return;
             converter.EncodeAuto(ref allocator, item.GetValueOrDefault());
@@ -50,8 +49,7 @@ namespace Mikodev.Binary.Creators
 
         public override T? DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var head = span[0];
-            span = span.Slice(sizeof(byte));
+            var head = PrimitiveHelper.DecodeNumber(ref span);
             if (head == Some)
                 return converter.DecodeAuto(ref span);
             return ThrowInvalidOrNull(head);

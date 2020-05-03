@@ -27,29 +27,31 @@ namespace Mikodev.Binary.Internal.Contexts
             return (type.IsValueType || type.GetConstructor(Type.EmptyTypes) != null) && properties.All(x => x.GetSetMethod() != null);
         }
 
-        internal static Delegate GetDecodeDelegateUseMembers(Type delegateType, Func<(ParameterExpression, IReadOnlyList<Expression>)> initializer, IReadOnlyList<Func<Expression, Expression>> members, Type type)
+        internal static Delegate GetDecodeDelegateUseMembers(Type delegateType, Type parameterType, Func<ParameterExpression, IReadOnlyList<Expression>> initializer, IReadOnlyList<Func<Expression, Expression>> members, Type type)
         {
+            var data = Expression.Parameter(parameterType, "parameter");
             var item = Expression.Variable(type, "item");
             var targets = members.Select(x => x.Invoke(item)).ToList();
-            var (parameter, values) = initializer.Invoke();
-            Debug.Assert(values.Count == members.Count);
-            Debug.Assert(values.Count == targets.Count);
+            var sources = initializer.Invoke(data);
+            Debug.Assert(sources.Count == members.Count);
+            Debug.Assert(sources.Count == targets.Count);
             var expressions = new List<Expression> { Expression.Assign(item, Expression.New(type)) };
-            expressions.AddRange(values.Select((x, i) => Expression.Assign(targets[i], x)));
+            expressions.AddRange(sources.Select((x, i) => Expression.Assign(targets[i], x)));
             expressions.Add(item);
-            var lambda = Expression.Lambda(delegateType, Expression.Block(new[] { item }, expressions), parameter);
+            var lambda = Expression.Lambda(delegateType, Expression.Block(new[] { item }, expressions), data);
             return lambda.Compile();
         }
 
-        internal static Delegate GetDecodeDelegateUseConstructor(Type delegateType, Func<(ParameterExpression, IReadOnlyList<Expression>)> initializer, IReadOnlyList<int> indexes, ConstructorInfo constructor)
+        internal static Delegate GetDecodeDelegateUseConstructor(Type delegateType, Type parameterType, Func<ParameterExpression, IReadOnlyList<Expression>> initializer, IReadOnlyList<int> indexes, ConstructorInfo constructor)
         {
-            var (parameter, values) = initializer.Invoke();
-            var variables = values.Select((x, i) => Expression.Variable(x.Type, $"{i}")).ToList();
-            Debug.Assert(values.Count == indexes.Count);
+            var data = Expression.Parameter(parameterType, "parameter");
+            var sources = initializer.Invoke(data);
+            var targets = sources.Select((x, i) => Expression.Variable(x.Type, $"{i}")).ToList();
+            Debug.Assert(sources.Count == indexes.Count);
             var expressions = new List<Expression>();
-            expressions.AddRange(values.Select((x, i) => Expression.Assign(variables[i], x)));
-            expressions.Add(Expression.New(constructor, indexes.Select(x => variables[x]).ToList()));
-            var lambda = Expression.Lambda(delegateType, Expression.Block(variables, expressions), parameter);
+            expressions.AddRange(sources.Select((x, i) => Expression.Assign(targets[i], x)));
+            expressions.Add(Expression.New(constructor, indexes.Select(x => targets[x]).ToList()));
+            var lambda = Expression.Lambda(delegateType, Expression.Block(targets, expressions), data);
             return lambda.Compile();
         }
     }

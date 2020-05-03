@@ -1,51 +1,47 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
 using System.Net;
-using System.Net.Sockets;
 
 namespace Mikodev.Binary.Creators.Fallback
 {
     internal sealed class IPAddressConverter : Converter<IPAddress>
     {
-        private static void Append(ref Allocator allocator, IPAddress item)
+        private static void EncodeInternal(ref Allocator allocator, IPAddress item)
         {
             if (item is null)
                 return;
-            var size = item.AddressFamily == AddressFamily.InterNetwork ? 4 : 16;
-            Allocator.AppendAction(ref allocator, size, item, SharedHelper.IPAddressAction);
+            SharedHelper.EncodeIPAddress(ref allocator, item);
         }
 
-        private static void AppendWithLengthPrefix(ref Allocator allocator, IPAddress item)
+        private static void EncodeWithLengthPrefixInternal(ref Allocator allocator, IPAddress item)
         {
-            var size = item is null ? 0 : item.AddressFamily == AddressFamily.InterNetwork ? 4 : 16;
-            Allocator.Append(ref allocator, (byte)size);
-            if (size == 0)
-                return;
-            Append(ref allocator, item);
+            var size = item is null ? 0 : SharedHelper.SizeOfIPAddress(item);
+            PrimitiveHelper.EncodeNumber(ref allocator, size);
+            EncodeInternal(ref allocator, item);
         }
 
-        private static IPAddress Detach(ReadOnlySpan<byte> span)
+        private static IPAddress DecodeInternal(ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
                 return null;
-            return SharedHelper.GetIPAddress(span);
+            return SharedHelper.DecodeIPAddress(span);
         }
 
-        private static IPAddress DetachWithLengthPrefix(ref ReadOnlySpan<byte> span)
+        private static IPAddress DecodeWithLengthPrefixInternal(ref ReadOnlySpan<byte> span)
         {
-            return Detach(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
+            return DecodeInternal(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
         }
 
-        public override void Encode(ref Allocator allocator, IPAddress item) => Append(ref allocator, item);
+        public override void Encode(ref Allocator allocator, IPAddress item) => EncodeInternal(ref allocator, item);
 
-        public override void EncodeAuto(ref Allocator allocator, IPAddress item) => AppendWithLengthPrefix(ref allocator, item);
+        public override void EncodeAuto(ref Allocator allocator, IPAddress item) => EncodeWithLengthPrefixInternal(ref allocator, item);
 
-        public override void EncodeWithLengthPrefix(ref Allocator allocator, IPAddress item) => AppendWithLengthPrefix(ref allocator, item);
+        public override void EncodeWithLengthPrefix(ref Allocator allocator, IPAddress item) => EncodeWithLengthPrefixInternal(ref allocator, item);
 
-        public override IPAddress Decode(in ReadOnlySpan<byte> span) => Detach(span);
+        public override IPAddress Decode(in ReadOnlySpan<byte> span) => DecodeInternal(span);
 
-        public override IPAddress DecodeAuto(ref ReadOnlySpan<byte> span) => DetachWithLengthPrefix(ref span);
+        public override IPAddress DecodeAuto(ref ReadOnlySpan<byte> span) => DecodeWithLengthPrefixInternal(ref span);
 
-        public override IPAddress DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => DetachWithLengthPrefix(ref span);
+        public override IPAddress DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => DecodeWithLengthPrefixInternal(ref span);
     }
 }

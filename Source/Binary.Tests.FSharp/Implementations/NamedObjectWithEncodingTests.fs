@@ -56,7 +56,7 @@ let ``Named Object Encode (utf32 string converter)`` () =
     let generator = Generator.CreateDefaultBuilder().AddConverter(EncodingStringConverter(Encoding.UTF32)).Build()
     let value = {| id = 2; name = "fsharp" |}
     let alpha = generator.Encode value
-    Assert.Equal(14 + 42, alpha.Length)
+    Assert.Equal(14 + 45, alpha.Length)
     let dictionary = dict [ "id", box 2; "name", box "fsharp" ] |> SortedDictionary
     let bravo = generator.Encode dictionary
     Assert.Equal<byte>(alpha, bravo)
@@ -67,7 +67,7 @@ let ``Named Object Decode (utf32 string converter)`` () =
     let generator = Generator.CreateDefaultBuilder().AddConverter(EncodingStringConverter(Encoding.UTF32)).Build()
     let dictionary = dict [ "id", box 8; "name", box "dotnet" ]
     let alpha = generator.Encode dictionary
-    Assert.Equal(14 + 42, alpha.Length)
+    Assert.Equal(14 + 45, alpha.Length)
     let value = generator.Decode(alpha, anonymous = {| id = 0; name = Unchecked.defaultof<string> |})
     Assert.Equal(8, value.id)
     Assert.Equal("dotnet", value.name)

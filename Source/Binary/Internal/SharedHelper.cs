@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net;
-using System.Reflection;
-using System.Reflection.Emit;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -11,42 +10,25 @@ namespace Mikodev.Binary.Internal
 {
     internal static class SharedHelper
     {
-        internal static readonly ModuleHelper ModuleHelperInstance;
-
-        internal static readonly AllocatorAction<IPAddress> IPAddressAction;
-
-        static SharedHelper()
+        internal static int SizeOfIPAddress(IPAddress item)
         {
-            static void MakeModuleHelperMethod(TypeBuilder typeBuilder, string name, Type returnType, Type[] parameterTypes)
-            {
-                var methodBuilder = typeBuilder.DefineMethod(name, MethodAttributes.Public | MethodAttributes.Virtual, returnType, parameterTypes);
-                var generator = methodBuilder.GetILGenerator();
-                generator.Emit(OpCodes.Ldarg_1);
-                generator.Emit(OpCodes.Ret);
-                typeBuilder.DefineMethodOverride(methodBuilder, typeof(ModuleHelper).GetMethod(name));
-            }
+            Debug.Assert(item != null);
+            var family = item.AddressFamily;
+            return family == AddressFamily.InterNetwork ? 4 : 16;
+        }
 
-            static ModuleHelper MakeModuleHelper(ModuleBuilder moduleBuilder)
-            {
-                var typeBuilder = moduleBuilder.DefineType(nameof(ModuleHelper), TypeAttributes.Public | TypeAttributes.Sealed, typeof(ModuleHelper));
-                var allocatorByRefType = typeof(Allocator).MakeByRefType();
-                MakeModuleHelperMethod(typeBuilder, nameof(ModuleHelper.AsHandle), typeof(IntPtr), new[] { allocatorByRefType });
-                MakeModuleHelperMethod(typeBuilder, nameof(ModuleHelper.AsAllocator), allocatorByRefType, new[] { typeof(IntPtr) });
-                return (ModuleHelper)Activator.CreateInstance(typeBuilder.CreateTypeInfo());
-            }
-
-            var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("Mikodev.Binary.Dynamic"), AssemblyBuilderAccess.Run);
-            var moduleBuilder = assemblyBuilder.DefineDynamicModule("InMemoryModule");
-            ModuleHelperInstance = MakeModuleHelper(moduleBuilder);
+        internal static void EncodeIPAddress(ref Allocator allocator, IPAddress item)
+        {
+            Debug.Assert(item != null);
 #if NETOLD
-            IPAddressAction = (span, data) => data.GetAddressBytes().CopyTo(span);
+            Allocator.AppendBuffer(ref allocator, item.GetAddressBytes());
 #else
-            IPAddressAction = (span, data) => data.TryWriteBytes(span, out _);
+            var size = SizeOfIPAddress(item);
+            Allocator.AppendAction(ref allocator, size, item, (span, data) => data.TryWriteBytes(span, out _));
 #endif
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IPAddress GetIPAddress(ReadOnlySpan<byte> source)
+        internal static IPAddress DecodeIPAddress(ReadOnlySpan<byte> source)
         {
 #if NETOLD
             return new IPAddress(source.ToArray());
@@ -74,20 +56,22 @@ namespace Mikodev.Binary.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int GetBytes(ReadOnlySpan<char> source, Span<byte> target, Encoding encoding)
+        internal static int GetBytes(ref char source, int sourceLength, ref byte target, int targetLength, Encoding encoding)
         {
             Debug.Assert(encoding != null);
-            Debug.Assert(source.Length != 0);
-            Debug.Assert(target.Length != 0);
+            Debug.Assert(sourceLength > 0);
+            Debug.Assert(targetLength > 0);
 #if NETOLD
             unsafe
             {
-                fixed (char* srcptr = &MemoryMarshal.GetReference(source))
-                fixed (byte* dstptr = &MemoryMarshal.GetReference(target))
-                    return encoding.GetBytes(srcptr, source.Length, dstptr, target.Length);
+                fixed (char* srcptr = &source)
+                fixed (byte* dstptr = &target)
+                    return encoding.GetBytes(srcptr, sourceLength, dstptr, targetLength);
             }
 #else
-            return encoding.GetBytes(source, target);
+            var targetMemory = MemoryMarshal.CreateSpan(ref target, targetLength);
+            var sourceMemory = MemoryMarshal.CreateReadOnlySpan(ref source, sourceLength);
+            return encoding.GetBytes(sourceMemory, targetMemory);
 #endif
         }
 
@@ -98,7 +82,7 @@ namespace Mikodev.Binary.Internal
             var length = span.Length;
             if (length == 0)
                 return 0;
-            const int Limits = 64;
+            const int Limits = 32;
             if ((uint)length <= Limits && ReferenceEquals(encoding, Converter.Encoding))
                 return (length + 1) * 3;
 #if NETOLD

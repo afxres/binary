@@ -15,7 +15,7 @@ namespace Mikodev.Binary
             var offset = allocator.offset;
             Debug.Assert(offset >= 0);
             var limits = allocator.MaxCapacity;
-            var amount = ((long)(uint)offset) + ((uint)expand);
+            var amount = (long)(uint)offset + (uint)expand;
             if (amount > limits)
                 ThrowHelper.ThrowAllocatorOverflow();
 
@@ -43,38 +43,32 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void Ensure(ref Allocator allocator, int expand)
+        private static int Ensure(ref Allocator allocator, int length)
         {
-            if ((ulong)(uint)allocator.offset + (uint)expand > (uint)allocator.buffer.Length)
-                Expand(ref allocator, expand);
+            var offset = allocator.offset;
+            if ((ulong)(uint)offset + (uint)length > (uint)allocator.buffer.Length)
+                Expand(ref allocator, length);
+            Debug.Assert(allocator.offset == offset);
             Debug.Assert(allocator.buffer.Length <= allocator.MaxCapacity);
-            Debug.Assert(allocator.buffer.Length >= allocator.offset + expand);
+            Debug.Assert(allocator.buffer.Length >= offset + length);
+            return offset;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static int Anchor(ref Allocator allocator, int length)
+        {
+            var offset = Ensure(ref allocator, length);
+            allocator.offset = offset + length;
+            return offset;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ref byte Assign(ref Allocator allocator, int length)
         {
             Debug.Assert(length > 0);
-            Ensure(ref allocator, length);
-            var offset = allocator.offset;
+            var offset = Anchor(ref allocator, length);
             var buffer = allocator.buffer;
-            allocator.offset = offset + length;
             return ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int Anchor(ref Allocator allocator, int length)
-        {
-            var offset = allocator.offset;
-            Ensure(ref allocator, length);
-            allocator.offset = offset + length;
-            return offset;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Append(ref Allocator allocator, byte item)
-        {
-            Unsafe.WriteUnaligned(ref Assign(ref allocator, sizeof(byte)), item);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -87,7 +81,7 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static byte[] Detach(ref Allocator allocator)
+        internal static byte[] Result(ref Allocator allocator)
         {
             var offset = allocator.offset;
             if (offset == 0)

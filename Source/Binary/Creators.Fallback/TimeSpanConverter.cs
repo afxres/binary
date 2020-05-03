@@ -1,5 +1,5 @@
-﻿using System;
-using System.Buffers.Binary;
+﻿using Mikodev.Binary.Internal;
+using System;
 
 namespace Mikodev.Binary.Creators.Fallback
 {
@@ -9,12 +9,12 @@ namespace Mikodev.Binary.Creators.Fallback
 
         public override void Encode(ref Allocator allocator, TimeSpan item)
         {
-            Allocator.AppendLittleEndian(ref allocator, item.Ticks);
+            MemoryHelper.EncodeLittleEndian(ref allocator, item.Ticks);
         }
 
         public override TimeSpan Decode(in ReadOnlySpan<byte> span)
         {
-            return new TimeSpan(BinaryPrimitives.ReadInt64LittleEndian(span));
+            return new TimeSpan(MemoryHelper.DecodeLittleEndian<long>(span));
         }
     }
 }

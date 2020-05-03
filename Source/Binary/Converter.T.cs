@@ -38,15 +38,15 @@ namespace Mikodev.Binary
             var length = Length;
             if (length > 0)
             {
-                var prefix = length;
-                PrimitiveHelper.EncodeNumber(ref allocator, prefix);
+                var numberLength = MemoryHelper.EncodeNumberLength((uint)length);
+                MemoryHelper.EncodeNumber(ref Allocator.Assign(ref allocator, numberLength), (uint)length, numberLength);
                 Encode(ref allocator, item);
             }
             else
             {
                 var anchor = Allocator.Anchor(ref allocator, sizeof(int));
                 Encode(ref allocator, item);
-                Allocator.AppendLengthPrefix(ref allocator, anchor, compact: true);
+                Allocator.AppendLengthPrefix(ref allocator, anchor, reduce: true);
             }
         }
 
@@ -67,10 +67,17 @@ namespace Mikodev.Binary
             }
             else
             {
-                var buffer = BufferHelper.GetBuffer();
-                var allocator = new Allocator(new Span<byte>(buffer));
-                Encode(ref allocator, item);
-                return Allocator.Detach(ref allocator);
+                var memory = BufferHelper.Borrow();
+                try
+                {
+                    var allocator = new Allocator(BufferHelper.Intent(memory));
+                    Encode(ref allocator, item);
+                    return Allocator.Result(ref allocator);
+                }
+                finally
+                {
+                    BufferHelper.Return(memory);
+                }
             }
         }
 

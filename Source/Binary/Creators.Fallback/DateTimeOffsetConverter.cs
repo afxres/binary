@@ -1,5 +1,5 @@
-﻿using System;
-using System.Buffers.Binary;
+﻿using Mikodev.Binary.Internal;
+using System;
 
 namespace Mikodev.Binary.Creators.Fallback
 {
@@ -9,14 +9,14 @@ namespace Mikodev.Binary.Creators.Fallback
 
         public override void Encode(ref Allocator allocator, DateTimeOffset item)
         {
-            Allocator.AppendLittleEndian(ref allocator, item.Ticks);
-            Allocator.AppendLittleEndian(ref allocator, (short)(item.Offset.Ticks / TimeSpan.TicksPerMinute));
+            MemoryHelper.EncodeLittleEndian(ref allocator, item.Ticks);
+            MemoryHelper.EncodeLittleEndian(ref allocator, (short)(item.Offset.Ticks / TimeSpan.TicksPerMinute));
         }
 
         public override DateTimeOffset Decode(in ReadOnlySpan<byte> span)
         {
-            var head = BinaryPrimitives.ReadInt64LittleEndian(span);
-            var tail = BinaryPrimitives.ReadInt16LittleEndian(span.Slice(sizeof(long)));
+            var head = MemoryHelper.DecodeLittleEndian<long>(span);
+            var tail = MemoryHelper.DecodeLittleEndian<short>(span.Slice(sizeof(long)));
             return new DateTimeOffset(head, new TimeSpan(tail * TimeSpan.TicksPerMinute));
         }
     }

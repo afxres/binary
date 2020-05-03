@@ -1,11 +1,12 @@
 ﻿using BenchmarkDotNet.Attributes;
-using Mikodev.Binary.Benchmarks.Models;
+using Mikodev.Binary.Benchmarks.IntegrationTests.Models;
 using System.Collections.Generic;
 using TypeX1 = System.ValueTuple<int, string, int[], System.ValueTuple<double, System.Collections.Generic.List<string>>>;
 
-namespace Mikodev.Binary.Benchmarks
+namespace Mikodev.Binary.Benchmarks.IntegrationTests
 {
-    public class StandardBenchmark
+    [MemoryDiagnoser]
+    public class IntegrationBenchmarks
     {
         private IGenerator generator;
 

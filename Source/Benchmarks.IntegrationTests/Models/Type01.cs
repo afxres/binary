@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.Models
+﻿namespace Mikodev.Binary.Benchmarks.IntegrationTests.Models
 {
     public class Type01
     {

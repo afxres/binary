@@ -1,15 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyName>Mikodev.Binary.Benchmarks</AssemblyName>
-    <RootNamespace>Mikodev.Binary.Benchmarks</RootNamespace>
+    <AssemblyName>Mikodev.Binary.Benchmarks.IntegrationTests</AssemblyName>
+    <RootNamespace>Mikodev.Binary.Benchmarks.IntegrationTests</RootNamespace>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.12.0" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
   </ItemGroup>
 
   <ItemGroup>

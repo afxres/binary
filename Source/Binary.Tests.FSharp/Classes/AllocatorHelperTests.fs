@@ -2,6 +2,7 @@
 
 open Mikodev.Binary
 open System
+open System.Reflection
 open Xunit
 
 let random = Random()
@@ -77,7 +78,7 @@ let ``Append (limited to zero, length zero with raise expression)`` () =
     ()
 
 [<Fact>]
-let ``Append (one byte 512 times)`` () =
+let ``Append (1 byte 512 times, capacity test)`` () =
     let mutable allocator = Allocator()
     for item in 1..512 do
         AllocatorHelper.Append(&allocator, 1, null :> obj,
@@ -282,4 +283,72 @@ let ``Anchor Then Append (append some then)`` (prefix : int, length : int) =
     Assert.Equal(prefix + length + 4, allocator.Length)
     let result = allocator.AsSpan().ToArray()
     Assert.Equal<byte>(result, Array.concat [ origin; source; buffer ])
+    ()
+
+[<Fact>]
+let ``Append Action (contravariant)`` () =
+    let assembly = typeof<Converter>.Assembly
+    let attribute = assembly.GetCustomAttributes() |> Seq.pick (fun x -> match x with :? System.Runtime.Versioning.TargetFrameworkAttribute as v -> Some v | _ -> None)
+    let frameworkName = attribute.FrameworkName
+    let methods = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4)
+    let parameters = methods |> Array.map (fun x -> x.GetParameters() |> Array.last)
+    let delegateTypes = assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SpanAction`2")
+    Assert.NotEmpty parameters
+    for i in parameters do
+        Assert.Equal("action", i.Name)
+        let parameterType = i.ParameterType
+        Assert.Equal("SpanAction`2", parameterType.Name)
+        if frameworkName = ".NETStandard,Version=v2.0" then
+            let delegateType = Assert.Single delegateTypes
+            Assert.Equal("Mikodev.Binary", parameterType.Namespace)
+            let genericParameter = delegateType.GetGenericArguments() |> Array.last
+            Assert.Equal(GenericParameterAttributes.Contravariant, genericParameter.GenericParameterAttributes)
+        else
+            Assert.Empty delegateTypes
+            Assert.Equal("System.Buffers", parameterType.Namespace)
+        ()
+    ()
+
+[<Fact>]
+let ``Invoke Action (contravariant)`` () =
+    let t = typedefof<AllocatorAction<_>>
+    let parameter = t.GetGenericArguments() |> Array.exactlyOne
+    Assert.Equal(GenericParameterAttributes.Contravariant, parameter.GenericParameterAttributes)
+    ()
+
+[<Fact>]
+let ``Invoke (action null)`` () =
+    let error = Assert.Throws<ArgumentNullException>(fun () -> AllocatorHelper.Invoke(0, null) |> ignore)
+    let methodInfo = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "Invoke") |> Array.exactlyOne
+    let parameter = methodInfo.GetParameters() |> Array.last
+    Assert.Equal("action", error.ParamName)
+    Assert.Equal("action", parameter.Name)
+    ()
+
+[<Fact>]
+let ``Invoke (empty action)`` () =
+    let mutable length = -1;
+    let mutable capacity = -1;
+    let mutable maxCapacity = -1
+    let buffer = AllocatorHelper.Invoke(0, fun allocator _ ->
+        length <- allocator.Length
+        capacity <- allocator.Capacity
+        maxCapacity <- allocator.MaxCapacity)
+    Assert.Equal(0, length)
+    Assert.Equal(capacity, 65536)
+    Assert.Equal(Int32.MaxValue, maxCapacity)
+    Assert.NotNull(buffer)
+    Assert.Equal(0, buffer.Length)
+    ()
+
+[<Theory>]
+[<InlineData("")>]
+[<InlineData("Hello, 世界")>]
+[<InlineData("一二三四五六七八九十")>]
+let ``Invoke (encode some string with length prefix)`` (text : string) =
+    let buffer = AllocatorHelper.Invoke(text, fun allocator item -> PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, item.AsSpan()))
+    let mutable span = new ReadOnlySpan<byte>(buffer)
+    let result = PrimitiveHelper.DecodeStringWithLengthPrefix &span
+    Assert.Equal(text, result)
+    Assert.Equal(0, span.Length)
     ()

@@ -2,11 +2,15 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
+#if !NETOLD
+using System.Buffers;
+#endif
+
 namespace Mikodev.Binary
 {
     public ref partial struct Allocator
     {
-        internal static void AppendLength<T>(ref Allocator allocator, int anchor, int length, T data, AllocatorAction<T> action)
+        internal static void AppendLength<T>(ref Allocator allocator, int anchor, int length, T data, SpanAction<byte, T> action)
         {
             if (action is null)
                 ThrowHelper.ThrowAllocatorActionInvalid();
@@ -19,23 +23,22 @@ namespace Mikodev.Binary
             action.Invoke(target, data);
         }
 
-        internal static void AppendAction<T>(ref Allocator allocator, int length, T data, AllocatorAction<T> action)
+        internal static void AppendAction<T>(ref Allocator allocator, int length, T data, SpanAction<byte, T> action)
         {
             if (action is null)
                 ThrowHelper.ThrowAllocatorActionInvalid();
             if (length == 0)
                 return;
-            Ensure(ref allocator, length);
-            var offset = allocator.offset;
+            var offset = Ensure(ref allocator, length);
             var buffer = allocator.buffer;
             var target = buffer.Slice(offset, length);
             action.Invoke(target, data);
             allocator.offset = offset + length;
         }
 
-        internal static void AppendLengthPrefix(ref Allocator allocator, int anchor, bool compact)
+        internal static void AppendLengthPrefix(ref Allocator allocator, int anchor, bool reduce)
         {
-            const int Limits = 32;
+            const int Limits = 16;
             var offset = allocator.offset;
             // check bounds manually
             if ((ulong)(uint)anchor + sizeof(uint) > (uint)offset)
@@ -43,15 +46,16 @@ namespace Mikodev.Binary
             var length = offset - anchor - sizeof(uint);
             var buffer = allocator.buffer;
             ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), anchor);
-            if (compact && length < Limits)
+            if (reduce && length <= Limits && buffer.Length - offset >= ((-length) & 7))
             {
+                MemoryHelper.EncodeNumber(ref target, (uint)length, numberLength: 1);
+                for (var i = 0; i < length; i += 8)
+                    MemoryHelper.EncodeNativeEndian(ref Unsafe.Add(ref target, i + 1), MemoryHelper.DecodeNativeEndian<long>(ref Unsafe.Add(ref target, i + 4)));
                 allocator.offset = offset - 3;
-                Unsafe.WriteUnaligned(ref target, (byte)length);
-                BufferHelper.MemoryMoveForward3(ref Unsafe.Add(ref target, sizeof(uint)), (uint)length);
             }
             else
             {
-                PrimitiveHelper.EncodeNumberFixed4(ref target, (uint)length);
+                MemoryHelper.EncodeNumber(ref target, (uint)length, numberLength: 4);
             }
         }
     }

@@ -16,10 +16,10 @@ namespace Mikodev.Binary
             Debug.Assert(targetLimits <= encoding.GetMaxByteCount(span.Length));
             if (targetLimits == 0)
                 return;
-            Ensure(ref allocator, targetLimits);
-            var offset = allocator.offset;
+            var offset = Ensure(ref allocator, targetLimits);
             var buffer = allocator.buffer;
-            var targetLength = SharedHelper.GetBytes(span, buffer.Slice(offset, targetLimits), encoding);
+            ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
+            var targetLength = SharedHelper.GetBytes(ref MemoryMarshal.GetReference(span), span.Length, ref target, targetLimits, encoding);
             allocator.offset = offset + targetLength;
         }
 
@@ -28,12 +28,12 @@ namespace Mikodev.Binary
             Debug.Assert(encoding != null);
             var targetLimits = SharedHelper.GetMaxByteCount(span, encoding);
             Debug.Assert(targetLimits <= encoding.GetMaxByteCount(span.Length));
-            var prefixLength = PrimitiveHelper.EncodeNumberLength((uint)targetLimits);
-            Ensure(ref allocator, prefixLength + targetLimits);
-            var offset = allocator.offset;
+            var prefixLength = MemoryHelper.EncodeNumberLength((uint)targetLimits);
+            var offset = Ensure(ref allocator, prefixLength + targetLimits);
             var buffer = allocator.buffer;
-            var targetLength = targetLimits == 0 ? 0 : SharedHelper.GetBytes(span, buffer.Slice(offset + prefixLength, targetLimits), encoding);
-            PrimitiveHelper.EncodeNumber(ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset), prefixLength, (uint)targetLength);
+            ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
+            var targetLength = targetLimits == 0 ? 0 : SharedHelper.GetBytes(ref MemoryMarshal.GetReference(span), span.Length, ref Unsafe.Add(ref target, prefixLength), targetLimits, encoding);
+            MemoryHelper.EncodeNumber(ref target, (uint)targetLength, prefixLength);
             allocator.offset = offset + targetLength + prefixLength;
         }
     }

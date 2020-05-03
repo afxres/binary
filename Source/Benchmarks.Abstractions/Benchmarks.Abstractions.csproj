@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>Mikodev.Binary.Benchmarks.Abstractions</AssemblyName>
+    <RootNamespace>Mikodev.Binary.Benchmarks.Abstractions</RootNamespace>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Binary\Binary.csproj" />
+  </ItemGroup>
+
+</Project>

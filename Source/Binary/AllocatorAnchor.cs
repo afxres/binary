@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary
 {
@@ -10,7 +9,6 @@ namespace Mikodev.Binary
 
         internal readonly int Length;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal AllocatorAnchor(int offset, int length)
         {
             Offset = offset;

@@ -1,45 +1,36 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary.Internal
 {
-    internal static class BufferHelper
+    internal sealed class BufferHelper
     {
+        private static readonly BufferHelper GlobalSharedInstance = new BufferHelper(Array.Empty<byte>());
+
         [ThreadStatic]
-        private static byte[] buffer;
+        private static BufferHelper ThreadStaticInstance;
 
-        private static byte[] CreateBuffer()
+        private readonly byte[] buffer;
+
+        private bool borrow;
+
+        private BufferHelper(byte[] buffer) => this.buffer = buffer;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Span<byte> Intent(BufferHelper buffer) => new Span<byte>(buffer.buffer);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void Return(BufferHelper buffer) => buffer.borrow = false;
+
+        internal static BufferHelper Borrow()
         {
-            Debug.Assert(buffer is null);
-            const int Length = 1 << 16;
-            var result = new byte[Length];
-            buffer = result;
+            var result = ThreadStaticInstance;
+            if (result is null)
+                ThreadStaticInstance = result = new BufferHelper(new byte[64 * 1024]);
+            if (result.borrow)
+                return GlobalSharedInstance;
+            result.borrow = true;
             return result;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void AssignCopyForward3<T>(ref byte source) where T : unmanaged
-        {
-            Unsafe.WriteUnaligned(ref Unsafe.Add(ref source, -3), Unsafe.ReadUnaligned<T>(ref source));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static byte[] GetBuffer()
-        {
-            return buffer ?? CreateBuffer();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void MemoryMoveForward3(ref byte source, uint length)
-        {
-            Debug.Assert(length < 32);
-            for (var i = 0U; i < (length & 0xF8); i += 8)
-                AssignCopyForward3<long>(ref Unsafe.Add(ref source, (int)i));
-            if ((length & 4) != 0)
-                AssignCopyForward3<uint>(ref Unsafe.Add(ref source, (int)(length & 24)));
-            for (var i = length & 28; i < length; i++)
-                AssignCopyForward3<byte>(ref Unsafe.Add(ref source, (int)i));
         }
     }
 }

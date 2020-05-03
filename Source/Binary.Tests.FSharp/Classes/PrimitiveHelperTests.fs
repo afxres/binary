@@ -106,7 +106,7 @@ let ``Decode Number (not enough bytes)`` () =
 
 [<Theory>]
 [<InlineData("")>]
-[<InlineData("The quick brown fox ...")>]
+[<InlineData("Hello, 世界")>]
 [<InlineData("今日はいい天気ですね")>]
 let ``Encode String Then Decode`` (text : string) =
     let mutable allocator = new Allocator()

@@ -147,7 +147,7 @@ namespace Mikodev.Binary.Tests
             };
 
             var buffer = generator.Encode(data);
-            Assert.Equal(((1 * 3) + (2 + 3 + 3)) + (((1 + 1) * 3) + (4 + 16 + 0)), buffer.Length);
+            Assert.Equal(((1 * 3) + (2 + 3 + 3)) + (((1 + 1) * 2 + (1 + 4)) + (4 + 16 + 0)), buffer.Length);
             var result = generator.Decode(buffer, data);
             Assert.False(ReferenceEquals(data, result));
             Assert.Equal(data, result);
@@ -222,22 +222,41 @@ namespace Mikodev.Binary.Tests
         }
 
         [Theory(DisplayName = "Invalid Nullable Tag (decode & decode auto)")]
-        [InlineData(2)]
-        [InlineData(3)]
-        [InlineData(255)]
-        public void Invalid(byte tag)
+        [InlineData(2, new byte[] { 0x02 })]
+        [InlineData(3, new byte[] { 0x03 })]
+        [InlineData(255, new byte[] { 0x40, 0xFF })]
+        [InlineData(127, new byte[] { 0x80, 0x00, 0x00, 0x7F })]
+        public void Invalid(int tag, byte[] buffer)
         {
             var converter = generator.GetConverter<int?>();
             Assert.StartsWith("NullableConverter`1", converter.GetType().Name);
 
-            var bytes = new byte[] { tag };
-            var alpha = Assert.Throws<ArgumentException>(() => converter.Decode(bytes));
-            var bravo = Assert.Throws<ArgumentException>(() => { var span = new ReadOnlySpan<byte>(bytes); _ = converter.DecodeAuto(ref span); });
+            var alpha = Assert.Throws<ArgumentException>(() => converter.Decode(buffer));
+            var bravo = Assert.Throws<ArgumentException>(() => { var span = new ReadOnlySpan<byte>(buffer); _ = converter.DecodeAuto(ref span); });
             var message = $"Invalid nullable tag: {tag}, type: System.Nullable`1[System.Int32]";
             Assert.Null(alpha.ParamName);
             Assert.Null(bravo.ParamName);
             Assert.Equal(message, alpha.Message);
             Assert.Equal(message, bravo.Message);
+        }
+
+        [Theory(DisplayName = "Valid Nullable Tag (decode & decode auto)")]
+        [InlineData(true, 0xFF0000FF, new byte[] { 0x40, 0x01, 0xFF, 0x00, 0x00, 0xFF })]
+        [InlineData(false, 0, new byte[] { 0x80, 0x00, 0x00, 0x00 })]
+        [InlineData(true, (byte)0x7F, new byte[] { 0x80, 0x00, 0x00, 0x01, 0x7F })]
+        public void ValidTag<T>(bool hasValue, T value, byte[] buffer) where T : struct
+        {
+            var converter = generator.GetConverter<T?>();
+            var a = new ReadOnlySpan<byte>(buffer);
+            var b = new ReadOnlySpan<byte>(buffer);
+            var m = converter.Decode(in a);
+            var n = converter.DecodeAuto(ref b);
+            Assert.Equal(buffer.Length, a.Length);
+            Assert.Equal(0, b.Length);
+            Assert.Equal(hasValue, m.HasValue);
+            Assert.Equal(hasValue, n.HasValue);
+            Assert.Equal(value, m.GetValueOrDefault());
+            Assert.Equal(value, m.GetValueOrDefault());
         }
     }
 }

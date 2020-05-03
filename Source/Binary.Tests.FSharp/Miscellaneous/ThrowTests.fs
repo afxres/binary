@@ -42,22 +42,23 @@ type ThrowTests() =
     let outofrange = ArgumentOutOfRangeException().Message
 
     member private __.Test<'a> () =
-        let converter = generator.GetConverter<'a>()
-        let buffer = Array.zeroCreate<byte> (converter.Length - 1)
-        let alpha = Assert.ThrowsAny<ArgumentException>(fun () ->
-            let span = ReadOnlySpan buffer
-            converter.Decode &span |> ignore)
-        let bravo = Assert.ThrowsAny<ArgumentException>(fun () -> converter.Decode buffer |> ignore)
-        let delta = Assert.ThrowsAny<ArgumentException>(fun () -> converter.Decode null |> ignore)
-        let message = "Not enough bytes or byte sequence invalid."
-        Assert.True(alpha :? ArgumentOutOfRangeException || alpha.Message = message)
-        Assert.True(bravo :? ArgumentOutOfRangeException || bravo.Message = message)
-        Assert.True(delta :? ArgumentOutOfRangeException || delta.Message = message)
+        let throwExpected (action : unit -> unit) =
+            let error = Assert.ThrowsAny<ArgumentException> action
+            if error :? ArgumentOutOfRangeException then
+                Assert.StartsWith(outofrange, error.Message)
+            else
+                let message = "Not enough bytes or byte sequence invalid."
+                Assert.Equal(message, error.Message)
+            ()
 
-        let hotel = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
-            let mutable span = ReadOnlySpan buffer
-            converter.DecodeAuto &span |> ignore)
-        Assert.StartsWith(outofrange, hotel.Message)
+        let converter = generator.GetConverter<'a>()
+        throwExpected (fun () -> converter.Decode null |> ignore)
+
+        for i = 0 to (converter.Length - 1) do
+            let buffer = Array.zeroCreate<byte> i
+            throwExpected (fun () -> converter.Decode buffer |> ignore)
+            throwExpected (fun () -> let span = ReadOnlySpan buffer in converter.Decode &span |> ignore)
+            throwExpected (fun () -> let mutable span = ReadOnlySpan buffer in converter.DecodeAuto &span |> ignore)
         ()
 
     [<Fact>]

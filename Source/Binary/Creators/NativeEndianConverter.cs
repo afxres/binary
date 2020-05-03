@@ -13,33 +13,19 @@ namespace Mikodev.Binary.Creators
             Debug.Assert(typeof(T) == typeof(Guid) || Unsafe.SizeOf<T>() == 1 || Unsafe.SizeOf<T>() == 2 || Unsafe.SizeOf<T>() == 4 || Unsafe.SizeOf<T>() == 8);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void Append(ref Allocator allocator, T item)
-        {
-            Unsafe.WriteUnaligned(ref Allocator.Assign(ref allocator, Unsafe.SizeOf<T>()), item);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T Detach(ReadOnlySpan<byte> span)
-        {
-            if (span.Length < Unsafe.SizeOf<T>())
-                return ThrowHelper.ThrowNotEnoughBytes<T>();
-            return Unsafe.ReadUnaligned<T>(ref MemoryMarshal.GetReference(span));
-        }
-
         public override void Encode(ref Allocator allocator, T item)
         {
-            Append(ref allocator, item);
+            MemoryHelper.EncodeNativeEndian(ref allocator, item);
         }
 
         public override T Decode(in ReadOnlySpan<byte> span)
         {
-            return Detach(span);
+            return MemoryHelper.DecodeNativeEndian<T>(span);
         }
 
         public override void EncodeAuto(ref Allocator allocator, T item)
         {
-            Append(ref allocator, item);
+            MemoryHelper.EncodeNativeEndian(ref allocator, item);
         }
 
         public override T DecodeAuto(ref ReadOnlySpan<byte> span)
@@ -47,25 +33,25 @@ namespace Mikodev.Binary.Creators
             // check bounds via slice method
             ref var source = ref MemoryMarshal.GetReference(span);
             span = span.Slice(Unsafe.SizeOf<T>());
-            return Unsafe.ReadUnaligned<T>(ref source);
+            return MemoryHelper.DecodeNativeEndian<T>(ref source);
         }
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
             ref var target = ref Allocator.Assign(ref allocator, Unsafe.SizeOf<T>() + sizeof(byte));
-            Unsafe.WriteUnaligned(ref target, (byte)Unsafe.SizeOf<T>());
-            Unsafe.WriteUnaligned(ref Unsafe.Add(ref target, sizeof(byte)), item);
+            MemoryHelper.EncodeNumber(ref target, (uint)Unsafe.SizeOf<T>(), numberLength: 1);
+            MemoryHelper.EncodeNativeEndian(ref Unsafe.Add(ref target, sizeof(byte)), item);
         }
 
         public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
-            return Detach(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
+            return MemoryHelper.DecodeNativeEndian<T>(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
         }
 
         public override byte[] Encode(T item)
         {
             var buffer = new byte[Unsafe.SizeOf<T>()];
-            Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(new Span<byte>(buffer)), item);
+            MemoryHelper.EncodeNativeEndian(ref MemoryMarshal.GetReference(new Span<byte>(buffer)), item);
             return buffer;
         }
 
@@ -73,7 +59,7 @@ namespace Mikodev.Binary.Creators
         {
             if (buffer is null || buffer.Length < Unsafe.SizeOf<T>())
                 return ThrowHelper.ThrowNotEnoughBytes<T>();
-            return Unsafe.ReadUnaligned<T>(ref MemoryMarshal.GetReference(new Span<byte>(buffer)));
+            return MemoryHelper.DecodeNativeEndian<T>(ref MemoryMarshal.GetReference(new Span<byte>(buffer)));
         }
     }
 }

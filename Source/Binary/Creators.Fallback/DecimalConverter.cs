@@ -1,6 +1,7 @@
-﻿using System;
-using System.Buffers.Binary;
+﻿using Mikodev.Binary.Internal;
+using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Creators.Fallback
 {
@@ -10,19 +11,23 @@ namespace Mikodev.Binary.Creators.Fallback
 
         public override void Encode(ref Allocator allocator, decimal item)
         {
-            ref var bits = ref Unsafe.As<decimal, int>(ref item);
-            Allocator.AppendLittleEndian(ref allocator, Unsafe.Add(ref bits, 2));
-            Allocator.AppendLittleEndian(ref allocator, Unsafe.Add(ref bits, 3));
-            Allocator.AppendLittleEndian(ref allocator, Unsafe.Add(ref bits, 1));
-            Allocator.AppendLittleEndian(ref allocator, Unsafe.Add(ref bits, 0));
+            ref var target = ref Allocator.Assign(ref allocator, 16);
+            ref var source = ref Unsafe.As<decimal, int>(ref item);
+            MemoryHelper.EncodeLittleEndian(ref Unsafe.Add(ref target, sizeof(int) * 0), Unsafe.Add(ref source, 2));
+            MemoryHelper.EncodeLittleEndian(ref Unsafe.Add(ref target, sizeof(int) * 1), Unsafe.Add(ref source, 3));
+            MemoryHelper.EncodeLittleEndian(ref Unsafe.Add(ref target, sizeof(int) * 2), Unsafe.Add(ref source, 1));
+            MemoryHelper.EncodeLittleEndian(ref Unsafe.Add(ref target, sizeof(int) * 3), Unsafe.Add(ref source, 0));
         }
 
         public override decimal Decode(in ReadOnlySpan<byte> span)
         {
-            var alpha = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(sizeof(int) * 0));
-            var bravo = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(sizeof(int) * 1));
-            var delta = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(sizeof(int) * 2));
-            var flags = BinaryPrimitives.ReadInt32LittleEndian(span.Slice(sizeof(int) * 3));
+            if (span.Length < 16)
+                return ThrowHelper.ThrowNotEnoughBytes<decimal>();
+            ref var source = ref MemoryMarshal.GetReference(span);
+            var alpha = MemoryHelper.DecodeLittleEndian<int>(ref Unsafe.Add(ref source, sizeof(int) * 0));
+            var bravo = MemoryHelper.DecodeLittleEndian<int>(ref Unsafe.Add(ref source, sizeof(int) * 1));
+            var delta = MemoryHelper.DecodeLittleEndian<int>(ref Unsafe.Add(ref source, sizeof(int) * 2));
+            var flags = MemoryHelper.DecodeLittleEndian<int>(ref Unsafe.Add(ref source, sizeof(int) * 3));
             return new decimal(alpha, bravo, delta, ((uint)flags & 0x8000_0000) != 0, (byte)(flags >> 16));
         }
     }

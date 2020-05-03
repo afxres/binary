@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Mikodev.Binary.Tests
@@ -50,8 +49,9 @@ namespace Mikodev.Binary.Tests
             Assert.All(inRefUnexpected, x => Assert.Equal("ToNamedObject`1", x.DeclaringType.Name));
 
             var converterParameters = parameters.Where(x => x.Member is MethodInfo && typeof(IConverter).IsAssignableFrom(x.Member.DeclaringType)).ToList();
-            var converterExpectedParameters = converterParameters.Where(x => !x.Member.Name.StartsWith("Throw") && !x.Member.Name.StartsWith("Detach") && Equals(x.ParameterType.Name, names)).ToList();
-            Assert.All(converterExpectedParameters, x => Assert.True(x.ParameterType.IsByRef));
+            var converterExpectedParameters = converterParameters.Where(x => !x.Member.Name.StartsWith("Throw") && Equals(x.ParameterType.Name, names)).ToList();
+            var ignoredParameters = converterExpectedParameters.Where(x => !x.ParameterType.IsByRef).ToList();
+            Assert.All(ignoredParameters, x => Assert.Equal("DecodeInternal", x.Member.Name));
         }
 
         [Fact(DisplayName = "Types With Sealed Modifier")]
@@ -64,27 +64,6 @@ namespace Mikodev.Binary.Tests
                     continue;
                 Assert.True(type.IsSealed);
             }
-        }
-
-        [Fact(DisplayName = "Multi Threads (thread static)")]
-        public async Task MultiThreadsTestAsync()
-        {
-            var generator = Generator.CreateDefault();
-            const int count = 16;
-            const int times = 1 << 10;
-            var funcs = Enumerable.Range(0, count).Select(x => new Action(() =>
-            {
-                var model = Enumerable.Range(0, 1024).Select(_ => Guid.NewGuid().ToString()).ToArray();
-                for (var i = 0; i < times; i++)
-                {
-                    var bytes = generator.Encode(model);
-                    Assert.True(bytes.Length < (1 << 16));
-                    var value = generator.Decode(bytes, anonymous: model);
-                    Assert.Equal<string>(model, value);
-                }
-            })).ToList();
-            var tasks = funcs.Select(Task.Run).ToList();
-            await Task.WhenAll(tasks);
         }
 
         [Fact(DisplayName = "Public Types (namespace)")]

@@ -1,56 +1,54 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
-using System.Buffers.Binary;
 using System.Net;
-using System.Net.Sockets;
 
 namespace Mikodev.Binary.Creators.Fallback
 {
     internal sealed class IPEndPointConverter : Converter<IPEndPoint>
     {
-        private static void Append(ref Allocator allocator, IPEndPoint item)
+        private static void EncodeInternal(ref Allocator allocator, IPEndPoint item)
         {
             if (item is null)
                 return;
-            var size = item.AddressFamily == AddressFamily.InterNetwork ? 4 : 16;
-            Allocator.Append(ref allocator, (byte)size);
-            Allocator.AppendAction(ref allocator, size, item.Address, SharedHelper.IPAddressAction);
-            Allocator.AppendLittleEndian(ref allocator, (ushort)item.Port);
+            var size = SharedHelper.SizeOfIPAddress(item.Address);
+            PrimitiveHelper.EncodeNumber(ref allocator, size);
+            SharedHelper.EncodeIPAddress(ref allocator, item.Address);
+            MemoryHelper.EncodeLittleEndian(ref allocator, (short)(ushort)item.Port);
         }
 
-        private static void AppendWithLengthPrefix(ref Allocator allocator, IPEndPoint item)
+        private static void EncodeWithLengthPrefixInternal(ref Allocator allocator, IPEndPoint item)
         {
-            var size = item is null ? 0 : (item.AddressFamily == AddressFamily.InterNetwork ? 4 : 16) + sizeof(ushort) + 1;
-            Allocator.Append(ref allocator, (byte)size);
-            Append(ref allocator, item);
+            var size = item is null ? 0 : SharedHelper.SizeOfIPAddress(item.Address) + sizeof(ushort) + 1;
+            PrimitiveHelper.EncodeNumber(ref allocator, size);
+            EncodeInternal(ref allocator, item);
         }
 
-        private static IPEndPoint Detach(ReadOnlySpan<byte> span)
+        private static IPEndPoint DecodeInternal(ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
                 return null;
             var body = span;
             var head = PrimitiveHelper.DecodeBufferWithLengthPrefix(ref body);
-            var port = BinaryPrimitives.ReadUInt16LittleEndian(body);
-            var address = SharedHelper.GetIPAddress(head);
-            return new IPEndPoint(address, port);
+            var port = MemoryHelper.DecodeLittleEndian<short>(body);
+            var data = SharedHelper.DecodeIPAddress(head);
+            return new IPEndPoint(data, (ushort)port);
         }
 
-        private static IPEndPoint DetachWithLengthPrefix(ref ReadOnlySpan<byte> span)
+        private static IPEndPoint DecodeWithLengthPrefixInternal(ref ReadOnlySpan<byte> span)
         {
-            return Detach(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
+            return DecodeInternal(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
         }
 
-        public override void Encode(ref Allocator allocator, IPEndPoint item) => Append(ref allocator, item);
+        public override void Encode(ref Allocator allocator, IPEndPoint item) => EncodeInternal(ref allocator, item);
 
-        public override void EncodeAuto(ref Allocator allocator, IPEndPoint item) => AppendWithLengthPrefix(ref allocator, item);
+        public override void EncodeAuto(ref Allocator allocator, IPEndPoint item) => EncodeWithLengthPrefixInternal(ref allocator, item);
 
-        public override void EncodeWithLengthPrefix(ref Allocator allocator, IPEndPoint item) => AppendWithLengthPrefix(ref allocator, item);
+        public override void EncodeWithLengthPrefix(ref Allocator allocator, IPEndPoint item) => EncodeWithLengthPrefixInternal(ref allocator, item);
 
-        public override IPEndPoint Decode(in ReadOnlySpan<byte> span) => Detach(span);
+        public override IPEndPoint Decode(in ReadOnlySpan<byte> span) => DecodeInternal(span);
 
-        public override IPEndPoint DecodeAuto(ref ReadOnlySpan<byte> span) => DetachWithLengthPrefix(ref span);
+        public override IPEndPoint DecodeAuto(ref ReadOnlySpan<byte> span) => DecodeWithLengthPrefixInternal(ref span);
 
-        public override IPEndPoint DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => DetachWithLengthPrefix(ref span);
+        public override IPEndPoint DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => DecodeWithLengthPrefixInternal(ref span);
     }
 }

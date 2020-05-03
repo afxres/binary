@@ -10,11 +10,11 @@ namespace Mikodev.Binary.Tests
     {
         private delegate int Anchor(ref Allocator allocator, int length);
 
-        private delegate void Ensure(ref Allocator allocator, int expand);
+        private delegate int Ensure(ref Allocator allocator, int expand);
 
         private delegate void Expand(ref Allocator allocator, int expand);
 
-        private delegate void MemoryMoveForward3(ref byte source, uint length);
+        private delegate void AppendLengthPrefix(ref Allocator allocator, int anchor, bool reduce);
 
         private static readonly string outofrange = new ArgumentOutOfRangeException().Message;
 
@@ -184,8 +184,9 @@ namespace Mikodev.Binary.Tests
             var buffer = new byte[capacity];
             var allocator = new Allocator(buffer);
             Assert.Equal(capacity, allocator.Capacity);
-            ensure.Invoke(ref allocator, 0);
+            var result = ensure.Invoke(ref allocator, 0);
             Assert.Equal(capacity, allocator.Capacity);
+            Assert.Equal(0, result);
         }
 
         [Theory(DisplayName = "Ensure Capacity (hack, invalid)")]
@@ -198,7 +199,7 @@ namespace Mikodev.Binary.Tests
             var error = Assert.Throws<ArgumentOutOfRangeException>(() =>
             {
                 var allocator = new Allocator();
-                ensure.Invoke(ref allocator, expand);
+                _ = ensure.Invoke(ref allocator, expand);
             });
             Assert.Equal("length", error.ParamName);
         }
@@ -217,8 +218,9 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(0, allocator.Length);
             AllocatorHelper.Append(ref allocator, offset, 0, (a, b) => { });
             Assert.Equal(offset, allocator.Length);
-            ensure.Invoke(ref allocator, expand);
+            var result = ensure.Invoke(ref allocator, expand);
             Assert.Equal(capacity, allocator.Capacity);
+            Assert.Equal(offset, result);
         }
 
         [Fact(DisplayName = "Anchor (hack, zero)")]
@@ -234,51 +236,78 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(buffer.Length, allocator.Capacity);
         }
 
-        [Fact(DisplayName = "Memory Move Forward 3 (hack, from 1 to 31)")]
-        public void MemoryMove()
+        [Theory(DisplayName = "Anchor & Append Length Prefix")]
+        [InlineData(true, 0, 4, 1)]
+        [InlineData(true, 1, 5, 5)]
+        [InlineData(true, 1, 6, 5)]
+        [InlineData(true, 1, 7, 5)]
+        [InlineData(true, 1, 8, 5)]
+        [InlineData(true, 1, 9, 5)]
+        [InlineData(true, 1, 10, 5)]
+        [InlineData(true, 1, 11, 5)]
+        [InlineData(true, 1, 12, 2)]
+        [InlineData(true, 1, 13, 2)]
+        [InlineData(true, 15, 19, 19)]
+        [InlineData(true, 15, 20, 16)]
+        [InlineData(true, 16, 20, 17)]
+        [InlineData(true, 17, 21, 21)]
+        [InlineData(false, 17, 21, 21)]
+        [InlineData(false, 0, 4, 4)]
+        public void AnchorAppend(bool reduce, int length, int allocatorCapacity, int allocatorLength)
         {
-            var methodInfo = typeof(Converter).Assembly.GetTypes().Single(x => x.Name == "BufferHelper").GetMethod("MemoryMoveForward3", BindingFlags.Static | BindingFlags.NonPublic);
-            var action = (MemoryMoveForward3)Delegate.CreateDelegate(typeof(MemoryMoveForward3), methodInfo);
-
+            var anchorMethod = (Anchor)Delegate.CreateDelegate(typeof(Anchor), typeof(Allocator).GetMethod("Anchor", BindingFlags.Static | BindingFlags.NonPublic));
+            var appendMethod = (AppendLengthPrefix)Delegate.CreateDelegate(typeof(AppendLengthPrefix), typeof(Allocator).GetMethod("AppendLengthPrefix", BindingFlags.Static | BindingFlags.NonPublic));
+            var buffer = new byte[length];
             var random = new Random();
-            var origin = new byte[256];
-            random.NextBytes(origin);
-
-            for (var offset = 0; offset < 64; offset++)
-            {
-                for (var length = 1; length <= 31; length++)
-                {
-                    var buffer = origin.AsSpan().ToArray();
-                    var source = buffer.AsSpan().Slice(offset + 4, length).ToArray();
-                    action.Invoke(ref buffer[offset + 4], (uint)length);
-                    var target = buffer.AsSpan().Slice(offset + 1, length).ToArray();
-                    Assert.Equal(source, target);
-
-                    var originHead = origin.AsSpan().Slice(0, offset).ToArray();
-                    var bufferHead = buffer.AsSpan().Slice(0, offset).ToArray();
-                    Assert.Equal(originHead, bufferHead);
-                    var originTail = origin.AsSpan().Slice(offset + 1 + length).ToArray();
-                    var bufferTail = buffer.AsSpan().Slice(offset + 1 + length).ToArray();
-                    Assert.Equal(originTail, bufferTail);
-                }
-            }
+            random.NextBytes(buffer);
+            var allocator = new Allocator(new Span<byte>(new byte[allocatorCapacity]), maxCapacity: allocatorCapacity);
+            var anchor = anchorMethod.Invoke(ref allocator, 4);
+            Assert.Equal(4, allocator.Length);
+            Assert.Equal(allocatorCapacity, allocator.Capacity);
+            AllocatorHelper.Append(ref allocator, buffer);
+            appendMethod.Invoke(ref allocator, anchor, reduce);
+            Assert.Equal(allocatorLength, allocator.Length);
+            Assert.Equal(allocatorCapacity, allocator.Capacity);
+            var span = allocator.AsSpan();
+            var number = PrimitiveHelper.DecodeNumber(ref span);
+            Assert.Equal(length, number);
+            Assert.Equal(length, span.Length);
+            Assert.Equal(buffer, span.ToArray());
         }
 
-        [Fact(DisplayName = "Memory Move Forward 3 (hack, zero)")]
-        public void MemoryMoveZero()
+        [Fact(DisplayName = "Anchor & Append Length Prefix (for loop all conditions)")]
+        public void AnchorAppendRange()
         {
-            var methodInfo = typeof(Converter).Assembly.GetTypes().Single(x => x.Name == "BufferHelper").GetMethod("MemoryMoveForward3", BindingFlags.Static | BindingFlags.NonPublic);
-            var action = (MemoryMoveForward3)Delegate.CreateDelegate(typeof(MemoryMoveForward3), methodInfo);
-
+            const int Limits = 16;
+            var anchorMethod = (Anchor)Delegate.CreateDelegate(typeof(Anchor), typeof(Allocator).GetMethod("Anchor", BindingFlags.Static | BindingFlags.NonPublic));
+            var appendMethod = (AppendLengthPrefix)Delegate.CreateDelegate(typeof(AppendLengthPrefix), typeof(Allocator).GetMethod("AppendLengthPrefix", BindingFlags.Static | BindingFlags.NonPublic));
             var random = new Random();
-            var origin = new byte[256];
-            random.NextBytes(origin);
-
-            for (var offset = 0; offset < 64; offset++)
+            foreach (var reduce in new[] { true, false })
             {
-                var buffer = origin.AsSpan().ToArray();
-                action.Invoke(ref buffer[offset + 4], 0);
-                Assert.Equal(origin, buffer);
+                for (var length = 0; length <= 64; length++)
+                {
+                    for (var additional = 0; additional <= 16; additional++)
+                    {
+                        var capacity = length + additional + 4;
+                        var buffer = new byte[length];
+                        random.NextBytes(buffer);
+                        var allocator = new Allocator(new byte[capacity], maxCapacity: capacity);
+                        var anchor = anchorMethod.Invoke(ref allocator, 4);
+                        Assert.Equal(4, allocator.Length);
+                        AllocatorHelper.Append(ref allocator, buffer);
+                        Assert.Equal(length + 4, allocator.Length);
+                        appendMethod.Invoke(ref allocator, anchor, reduce);
+                        var lengthAlign8 = (length % 8) == 0 ? length : ((length >> 3) + 1) << 3;
+                        Assert.True(lengthAlign8 >= length && lengthAlign8 % 8 == 0);
+                        Assert.Equal(lengthAlign8 - length, (-length) & 7);
+                        var actualReduce = reduce && length <= Limits && capacity - 4 - lengthAlign8 >= 0;
+                        Assert.Equal(length + (actualReduce ? 1 : 4), allocator.Length);
+                        var span = allocator.AsSpan();
+                        var actualLength = PrimitiveHelper.DecodeNumber(ref span);
+                        Assert.Equal(length, actualLength);
+                        Assert.Equal(buffer, span.ToArray());
+                    }
+                }
             }
         }
     }

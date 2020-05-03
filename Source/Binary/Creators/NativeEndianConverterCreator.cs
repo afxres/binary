@@ -26,7 +26,7 @@ namespace Mikodev.Binary.Creators
         public Converter GetConverter(IGeneratorContext context, Type type)
         {
             if (BitConverter.IsLittleEndian != Converter.UseLittleEndian)
-                throw new NotSupportedException("Endianness not supported!");
+                return null;
             if (!Types.Contains(type) && !type.IsEnum)
                 return null;
             var converterType = typeof(NativeEndianConverter<>).MakeGenericType(type);

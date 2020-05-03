@@ -64,11 +64,9 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static Delegate GetDecodeDelegateAsTupleObject(Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<Converter> converters, ConstructorInfo constructor, IReadOnlyList<int> indexes, IReadOnlyList<Func<Expression, Expression>> members, bool auto)
         {
-            (ParameterExpression, IReadOnlyList<Expression>) Initialize()
+            IReadOnlyList<Expression> Initialize(ParameterExpression span)
             {
-                var span = Expression.Parameter(typeof(ReadOnlySpan<byte>).MakeByRefType(), "span");
                 var values = new Expression[members.Count];
-
                 for (var i = 0; i < members.Count; i++)
                 {
                     var converter = converters[i];
@@ -76,16 +74,17 @@ namespace Mikodev.Binary.Internal.Contexts
                     var invoke = Expression.Call(Expression.Constant(converter), method, span);
                     values[i] = invoke;
                 }
-                return (span, values);
+                return values;
             }
 
             Debug.Assert(converters.Count == members.Count);
             if (properties != null && !ContextMethods.CanCreateInstance(type, properties, constructor))
                 return null;
             var delegateType = typeof(ToTupleObject<>).MakeGenericType(type);
+            var parameterType = typeof(ReadOnlySpan<byte>).MakeByRefType();
             return constructor is null
-                ? ContextMethods.GetDecodeDelegateUseMembers(delegateType, Initialize, members, type)
-                : ContextMethods.GetDecodeDelegateUseConstructor(delegateType, Initialize, indexes, constructor);
+                ? ContextMethods.GetDecodeDelegateUseMembers(delegateType, parameterType, Initialize, members, type)
+                : ContextMethods.GetDecodeDelegateUseConstructor(delegateType, parameterType, Initialize, indexes, constructor);
         }
     }
 }

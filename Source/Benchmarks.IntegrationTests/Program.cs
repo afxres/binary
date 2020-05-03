@@ -3,15 +3,15 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Toolchains.InProcess.Emit;
 
-namespace Mikodev.Binary.Benchmarks
+namespace Mikodev.Binary.Benchmarks.IntegrationTests
 {
     internal class Program
     {
         private static void Main()
         {
             var config = ManualConfig.Create(DefaultConfig.Instance);
-            config.Add(Job.MediumRun.With(InProcessEmitToolchain.Instance));
-            _ = BenchmarkRunner.Run<StandardBenchmark>(config);
+            _ = config.AddJob(Job.ShortRun.WithToolchain(InProcessEmitToolchain.Instance));
+            _ = BenchmarkRunner.Run<IntegrationBenchmarks>(config);
         }
     }
 }

@@ -23,14 +23,14 @@ namespace Mikodev.Binary.Internal.Adapters
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AppendAuto(ref Allocator allocator, KeyValuePair<K, V> pair)
+        private void EncodeAutoInternal(ref Allocator allocator, KeyValuePair<K, V> pair)
         {
             initConverter.EncodeAuto(ref allocator, pair.Key);
             tailConverter.EncodeAuto(ref allocator, pair.Value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DetachAuto(ref ReadOnlySpan<byte> span, Dictionary<K, V> dictionary)
+        private void DecodeAutoInternal(ref ReadOnlySpan<byte> span, Dictionary<K, V> dictionary)
         {
             var init = initConverter.DecodeAuto(ref span);
             var tail = tailConverter.DecodeAuto(ref span);
@@ -52,10 +52,10 @@ namespace Mikodev.Binary.Internal.Adapters
                 return;
             if (item is Dictionary<K, V> { Count: var count } dictionary && count < Limits)
                 foreach (var i in dictionary)
-                    AppendAuto(ref allocator, i);
+                    EncodeAutoInternal(ref allocator, i);
             else
                 foreach (var i in item.ToArray())
-                    AppendAuto(ref allocator, i);
+                    EncodeAutoInternal(ref allocator, i);
         }
 
         public override Dictionary<K, V> To(ReadOnlySpan<byte> span)
@@ -66,7 +66,7 @@ namespace Mikodev.Binary.Internal.Adapters
             var dictionaryCount = itemLength > 0 ? CollectionAdapterHelper.GetItemCount(body.Length, itemLength, typeof(KeyValuePair<K, V>)) : Initial;
             var dictionary = new Dictionary<K, V>(dictionaryCount);
             while (!body.IsEmpty)
-                DetachAuto(ref body, dictionary);
+                DecodeAutoInternal(ref body, dictionary);
             return dictionary;
         }
     }

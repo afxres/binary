@@ -11,7 +11,7 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 {
     internal delegate void OfNamedObject<in T>(ref Allocator allocator, T item);
 
-    internal delegate T ToNamedObject<out T>(in LengthList list);
+    internal delegate T ToNamedObject<out T>(in MemorySlices list);
 
     internal sealed class NamedObjectConverter<T> : Converter<T>
     {
@@ -19,37 +19,40 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
         private readonly ToNamedObject<T> decode;
 
-        private readonly BinaryNode<int> entry;
+        private readonly Node<int> nodeTree;
 
-        private readonly string[] names;
+        private readonly IReadOnlyList<string> nameList;
 
-        public NamedObjectConverter(OfNamedObject<T> encode, ToNamedObject<T> decode, BinaryNode<int> entry, IReadOnlyCollection<string> names)
+        private readonly int capacity;
+
+        public NamedObjectConverter(OfNamedObject<T> encode, ToNamedObject<T> decode, Node<int> nodeTree, IReadOnlyCollection<string> nameList)
         {
-            Debug.Assert(entry != null);
-            Debug.Assert(names != null && names.Any());
+            Debug.Assert(nodeTree != null);
+            Debug.Assert(nameList != null && nameList.Any());
             this.encode = encode;
             this.decode = decode;
-            this.entry = entry;
-            this.names = names.ToArray();
+            this.nodeTree = nodeTree;
+            this.nameList = nameList.ToArray();
+            this.capacity = nameList.Count;
         }
 
         [DebuggerStepThrough, DoesNotReturn]
-        private T ThrowKeyFound(int i) => throw new ArgumentException($"Named key '{names[i]}' already exists, type: {ItemType}");
+        private T ThrowKeyFound(int i) => throw new ArgumentException($"Named key '{nameList[i]}' already exists, type: {ItemType}");
 
         [DebuggerStepThrough, DoesNotReturn]
-        private T ThrowNotFound(int i) => throw new ArgumentException($"Named key '{names[i]}' does not exist, type: {ItemType}");
+        private T ThrowNotFound(int i) => throw new ArgumentException($"Named key '{nameList[i]}' does not exist, type: {ItemType}");
 
-        private static void DetachPrefix(ref byte location, ref int offset, ref int length, int limits)
+        private static void DecodeInternal(ref byte origin, ref int offset, ref int length, int limits)
         {
             Debug.Assert((uint)(limits - offset) >= (uint)length);
             offset += length;
             if (limits == offset)
                 goto fail;
-            ref var source = ref Unsafe.Add(ref location, offset);
-            var numberLength = PrimitiveHelper.DecodeNumberLength(source);
+            ref var source = ref Unsafe.Add(ref origin, offset);
+            var numberLength = MemoryHelper.DecodeNumberLength(source);
             if ((uint)(limits - offset) < (uint)numberLength)
                 goto fail;
-            length = PrimitiveHelper.DecodeNumber(ref source, numberLength);
+            length = MemoryHelper.DecodeNumber(ref source, numberLength);
             offset += numberLength;
             if ((uint)(limits - offset) < (uint)length)
                 goto fail;
@@ -70,33 +73,35 @@ namespace Mikodev.Binary.Internal.Contexts.Models
         {
             if (decode is null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
-            var byteLength = span.Length;
-            if (byteLength == 0)
+            if (span.IsEmpty)
                 return default(T) is null ? default : ThrowHelper.ThrowNotEnoughBytes<T>();
 
-            const int Limits = 32;
-            var capacity = names.Length;
-            var data = capacity > Limits ? new LengthItem[capacity] : stackalloc LengthItem[capacity];
-            var list = new LengthList(span, data);
+            // maybe 'StackOverflowException', just let it crash
+            var remain = this.capacity;
+            var values = (Span<long>)stackalloc long[remain];
             ref var source = ref MemoryMarshal.GetReference(span);
 
-            var limits = byteLength;
+            var limits = span.Length;
             var offset = 0;
             var length = 0;
             while (limits - offset != length)
             {
-                DetachPrefix(ref source, ref offset, ref length, limits);
-                var result = BinaryNodeHelper.GetOrDefault(entry, ref Unsafe.Add(ref source, offset), length);
-                DetachPrefix(ref source, ref offset, ref length, limits);
-                if (result is null || list.Insert(result.Value, offset, length))
+                DecodeInternal(ref source, ref offset, ref length, limits);
+                var result = NodeTreeHelper.NodeOrNull(nodeTree, ref Unsafe.Add(ref source, offset), length);
+                DecodeInternal(ref source, ref offset, ref length, limits);
+                if (result is null)
                     continue;
-                return ThrowKeyFound(result.Value);
+                var cursor = result.Intent;
+                ref var handle = ref values[cursor];
+                if (handle != 0)
+                    return ThrowKeyFound(cursor);
+                handle = (long)(((ulong)(uint)offset << 32) | (uint)length);
+                remain--;
             }
 
-            var cursor = list.Ensure();
-            if (cursor != -1)
-                return ThrowNotFound(cursor);
-            return decode.Invoke(in list);
+            if (remain != 0)
+                return ThrowNotFound(values.IndexOf(0));
+            return decode.Invoke(new MemorySlices(span, values));
         }
     }
 }
