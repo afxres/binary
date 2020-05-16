@@ -2,6 +2,7 @@
 
 open Mikodev.Binary
 open System
+open System.Collections.Generic
 open Xunit
 
 type SimpleVariableLengthConverter () =
@@ -30,7 +31,7 @@ type BackupConverter<'a>(length : int) =
 
 type CollectionOverflowTests () =
     [<Fact>]
-    member __.``Large Collection Decode ('ArrayLikeVariableAdapter', overflow or out of memory)`` () =
+    member __.``Large Collection Decode (variable item length, overflow or out of memory)`` () =
         let simpleConverter = SimpleVariableLengthConverter()
         let generator = Generator.CreateDefaultBuilder().AddConverter(simpleConverter).Build()
         let converter = generator.GetConverter<Memory<byte>>()
@@ -45,13 +46,14 @@ type CollectionOverflowTests () =
         ()
 
     [<Fact>]
-    member __.``Large Collection Encode With Length Prefix ('CollectionAdaptedConverter')`` () =
+    member __.``Large Collection Encode With Length Prefix (constant item length, overflow)`` () =
         let backupConverter = BackupConverter<int>(0x10_0000)
         let generator = Generator.CreateDefaultBuilder().AddConverter(backupConverter).Build()
-        let converter = generator.GetConverter<Backup<int> array>()
         let backup = { data = 4 }
-        let source = Array.create 0x1000 backup
         Assert.Throws<OverflowException>(fun () ->
             let mutable allocator = Allocator()
-            converter.EncodeWithLengthPrefix(&allocator, source) |> ignore) |> ignore
+            generator.GetConverter<Backup<int> array>().EncodeWithLengthPrefix(&allocator, Array.create 0x1000 backup) |> ignore) |> ignore
+        Assert.Throws<OverflowException>(fun () ->
+            let mutable allocator = Allocator()
+            generator.GetConverter<LinkedList<Backup<int>>>().EncodeWithLengthPrefix(&allocator, Array.create 0x1000 backup |> LinkedList<_>) |> ignore) |> ignore
         ()

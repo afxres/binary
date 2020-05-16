@@ -1,12 +1,10 @@
-﻿using Mikodev.Binary.Internal.Adapters;
+﻿using Mikodev.Binary.Creators.Generics;
 using System;
 
 namespace Mikodev.Binary.Internal.Contexts.Models
 {
-    internal sealed class FallbackEnumerableBuilder<T, R> : CollectionBuilder<T, T, R>
+    internal sealed class FallbackEnumerableBuilder<T> : GenericsBuilder<T, T>
     {
-        public override T Of(T item) => item;
-
-        public override T To(CollectionAdapter<R> adapter, ReadOnlySpan<byte> span) => (T)(object)adapter.To(span);
+        public override T Invoke(ReadOnlySpan<byte> span, GenericsAdapter<T, T> adapter) => adapter.Decode(span);
     }
 }

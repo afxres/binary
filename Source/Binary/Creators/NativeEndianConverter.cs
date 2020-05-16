@@ -10,7 +10,7 @@ namespace Mikodev.Binary.Creators
     {
         public NativeEndianConverter() : base(Unsafe.SizeOf<T>())
         {
-            Debug.Assert(typeof(T) == typeof(Guid) || Unsafe.SizeOf<T>() == 1 || Unsafe.SizeOf<T>() == 2 || Unsafe.SizeOf<T>() == 4 || Unsafe.SizeOf<T>() == 8);
+            Debug.Assert(BitConverter.IsLittleEndian);
         }
 
         public override void Encode(ref Allocator allocator, T item)

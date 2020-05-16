@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="ArrayLike\ArrayLikeTests.fs" />
     <Compile Include="Attributes\AttributeTests.fs" />
     <Compile Include="Attributes\InheritanceTests.fs" />
     <Compile Include="Classes\AllocatorAnchorTests.fs" />
@@ -29,28 +28,30 @@
     <Compile Include="External\CollectionTests.fs" />
     <Compile Include="External\RecordTests.fs" />
     <Compile Include="External\UnionTests.fs" />
-    <Compile Include="Internal\MemoryHelperTests.fs" />
     <Compile Include="Implementations\CollectionLayoutTests.fs" />
     <Compile Include="Implementations\CollectionOverflowTests.fs" />
     <Compile Include="Implementations\CompatibleCollectionTests.fs" />
     <Compile Include="Implementations\EnumerableAdapterIntegrationTests.fs" />
     <Compile Include="Implementations\EnumerableAdapterTests.fs" />
+    <Compile Include="Implementations\EnumerableCounterTests.fs" />
     <Compile Include="Implementations\EnumerableTests.fs" />
     <Compile Include="Implementations\InheritanceTests.fs" />
     <Compile Include="Implementations\InstanceTests.fs" />
     <Compile Include="Implementations\NamedObjectTests.fs" />
     <Compile Include="Implementations\NamedObjectWithEncodingTests.fs" />
     <Compile Include="Implementations\TupleObjectTests.fs" />
+    <Compile Include="Internal\MemoryHelperTests.fs" />
     <Compile Include="Miscellaneous\CrossTests.fs" />
     <Compile Include="Miscellaneous\ThrowTests.fs" />
     <Compile Include="Miscellaneous\ThrowDecodeTests.fs" />
     <Compile Include="Miscellaneous\ThrowObjectTests.fs" />
     <Compile Include="Miscellaneous\ValueLayoutTests.fs" />
-    <Compile Include="Values\ClassTypeTests.fs" />
-    <Compile Include="Values\ValueTypeTests.fs" />
+    <Compile Include="SpanLike\SpanLikeTests.fs" />
     <Compile Include="TupleLike\KeyValuePairTests.fs" />
     <Compile Include="TupleLike\TupleTests.fs" />
     <Compile Include="TupleLike\ValueTupleAdvanceTests.fs" />
+    <Compile Include="Values\ClassTypeTests.fs" />
+    <Compile Include="Values\ValueTypeTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -25,7 +25,7 @@ namespace Mikodev.Binary.Creators
 
         public Converter GetConverter(IGeneratorContext context, Type type)
         {
-            if (BitConverter.IsLittleEndian != Converter.UseLittleEndian)
+            if (!BitConverter.IsLittleEndian)
                 return null;
             if (!Types.Contains(type) && !type.IsEnum)
                 return null;
