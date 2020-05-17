@@ -19,7 +19,7 @@ namespace Mikodev.Binary.Creators.SpanLike.Adapters
             if (byteLength == 0)
                 return new MemoryResult<T>(Array.Empty<T>(), 0);
             var itemLength = Unsafe.SizeOf<T>();
-            var capacity = GenericsMethods.GetActualCapacity(byteLength, itemLength, typeof(T));
+            var capacity = GenericsMethods.GetCapacity(byteLength, itemLength, typeof(T));
             var collection = new T[capacity];
             Unsafe.CopyBlockUnaligned(ref Unsafe.As<T, byte>(ref MemoryMarshal.GetReference(new Span<T>(collection))), ref MemoryMarshal.GetReference(span), (uint)byteLength);
             return new MemoryResult<T>(collection, capacity);

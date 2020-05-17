@@ -35,13 +35,6 @@ namespace Mikodev.Binary.Creators.Generics.Adapters
 
         public override void Encode(ref Allocator allocator, T item)
         {
-            static E[] Handle(ICollection<E> item)
-            {
-                var target = new E[item.Count];
-                item.CopyTo(target, 0);
-                return target;
-            }
-
             static E[] Invoke(T item, Func<T, E[]> func)
             {
                 if (item is E[] result)
@@ -49,7 +42,7 @@ namespace Mikodev.Binary.Creators.Generics.Adapters
                 if (func != null)
                     return func.Invoke(item);
                 if (item is ICollection<E> data)
-                    return Handle(data);
+                    return GenericsMethods.GetContents(data);
                 return null;
             }
 

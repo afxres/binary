@@ -1,7 +1,6 @@
 ﻿using Mikodev.Binary.Creators.SpanLike;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Mikodev.Binary.Creators.Generics.Adapters
 {
@@ -26,7 +25,7 @@ namespace Mikodev.Binary.Creators.Generics.Adapters
                 foreach (var i in set)
                     converter.EncodeAuto(ref allocator, i);
             else
-                adapter.Encode(ref allocator, new ReadOnlySpan<E>(item.ToArray()));
+                adapter.Encode(ref allocator, GenericsMethods.GetContents(item));
         }
 
         public override HashSet<E> Decode(ReadOnlySpan<byte> span)

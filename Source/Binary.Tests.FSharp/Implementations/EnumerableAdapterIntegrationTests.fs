@@ -4,6 +4,7 @@ open Mikodev.Binary
 open System
 open System.Collections.Generic
 open System.Linq
+open System.Reflection
 open Xunit
 
 type CollectionOfMemory<'T> (memory : ReadOnlyMemory<'T>) =
@@ -53,5 +54,32 @@ type EnumerableAdapterIntegrationTests () =
         let buffer = converter.Encode collection
         Assert.Equal(1, collection.CopyToCalledCount)
         let result = converter.Decode buffer |> Seq.toArray
+        Assert.Equal<'a>(item, result)
+        ()
+
+    static member ``Data Bravo`` : (obj array) seq =
+        seq {
+            yield [| [| 1; 4; 9; 7; 3 |] |]
+            yield [| "error" |> ResizeArray<char> |]
+            yield [| seq { for i = 0 to 127 do yield (double i) } |]
+            yield [| "Exception" |> Seq.map int64 |> HashSet<_> |]
+        }
+
+    [<Theory>]
+    [<MemberData("Data Bravo")>]
+    member __.``Encode Then Decode As 'IEnumerable'`` (item : 'a seq) =
+        let converter = generator.GetConverter<'a seq>()
+        Assert.Equal("GenericsConverter`2", converter.GetType().Name)
+        let adapter = converter.GetType().GetField("adapter", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(converter)
+        Assert.Equal("EnumerableAdapter`2", adapter.GetType().Name)
+
+        let bufferNull = converter.Encode null
+        Assert.Equal(0, bufferNull.Length)
+        let resultNull = converter.Decode bufferNull
+        Assert.Empty resultNull
+
+        let buffer = converter.Encode item
+        let result = converter.Decode buffer
+        Assert.IsType<ArraySegment<'a>>(box result) |> ignore
         Assert.Equal<'a>(item, result)
         ()

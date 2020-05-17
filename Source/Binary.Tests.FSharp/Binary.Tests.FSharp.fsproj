@@ -30,7 +30,9 @@
     <Compile Include="External\UnionTests.fs" />
     <Compile Include="Implementations\CollectionLayoutTests.fs" />
     <Compile Include="Implementations\CollectionOverflowTests.fs" />
+    <Compile Include="Implementations\CollectionTests.fs" />
     <Compile Include="Implementations\CompatibleCollectionTests.fs" />
+    <Compile Include="Implementations\DictionaryAdapterIntegrationTests.fs" />
     <Compile Include="Implementations\EnumerableAdapterIntegrationTests.fs" />
     <Compile Include="Implementations\EnumerableAdapterTests.fs" />
     <Compile Include="Implementations\EnumerableCounterTests.fs" />

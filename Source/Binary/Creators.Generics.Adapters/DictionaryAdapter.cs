@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary.Creators.Generics.Adapters
@@ -45,8 +44,11 @@ namespace Mikodev.Binary.Creators.Generics.Adapters
             if (item is Dictionary<K, V> { Count: var count } dictionary && count < Limits)
                 foreach (var i in dictionary)
                     EncodeAutoInternal(ref allocator, i);
+            else if (item is ICollection<KeyValuePair<K, V>> collection)
+                foreach (var i in GenericsMethods.GetContents(collection))
+                    EncodeAutoInternal(ref allocator, i);
             else
-                foreach (var i in item.ToArray())
+                foreach (var i in item)
                     EncodeAutoInternal(ref allocator, i);
         }
 
@@ -57,7 +59,7 @@ namespace Mikodev.Binary.Creators.Generics.Adapters
                 return new Dictionary<K, V>();
             const int Initial = 8;
             var itemLength = this.itemLength;
-            var capacity = itemLength > 0 ? GenericsMethods.GetActualCapacity(byteLength, itemLength, typeof(KeyValuePair<K, V>)) : Initial;
+            var capacity = itemLength > 0 ? GenericsMethods.GetCapacity(byteLength, itemLength, typeof(KeyValuePair<K, V>)) : Initial;
             var collection = new Dictionary<K, V>(capacity);
             var body = span;
             while (!body.IsEmpty)
