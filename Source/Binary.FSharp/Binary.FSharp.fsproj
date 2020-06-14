@@ -9,9 +9,14 @@
     <Company>Mikodev</Company>
     <Copyright>Mikodev 2020</Copyright>
     <Product>Mikodev.Binary</Product>
-    <Version>5.0.8</Version>
+    <Version>5.0.12</Version>
     <PackageTags>binary dynamic serialization fsharp</PackageTags>
     <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
 
   <ItemGroup>

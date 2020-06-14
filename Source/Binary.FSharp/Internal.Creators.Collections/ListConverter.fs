@@ -4,8 +4,52 @@ open Mikodev.Binary
 open System
 
 [<CompiledName("FSharpListConverter`1")>]
-type ListConverter<'T>(converter : Converter<'T>, memoryConverter : Converter<Memory<'T>>) =
+type ListConverter<'T>(converter : Converter<'T>) =
     inherit Converter<List<'T>>(0)
+
+    let constant = converter.Length > 0
+
+    let NotifyConstant(length : int, remainder : int) : unit =
+        raise (ArgumentException(sprintf "Invalid collection bytes, byte count: %d, remainder: %d, item type: %O" length remainder typeof<'T>))
+
+    let DecodeConstant(span : ReadOnlySpan<byte>) : List<'T> =
+        let converter = converter
+        let itemLength = converter.Length
+        let spanLength = span.Length;
+        let quotient, remainder = Math.DivRem(spanLength, itemLength)
+        if remainder <> 0 then
+            NotifyConstant(spanLength, remainder)
+        let mutable list = []
+        let mutable i = quotient - 1
+        while i >= 0 do
+            let data = span.Slice(i * itemLength, itemLength)
+            let head = converter.Decode &data
+            list <- head :: list
+            i <- i - 1
+        list
+
+    let SelectVariable(span : byref<ReadOnlySpan<byte>>) : List<'T> =
+        let converter = converter
+        let data = ResizeArray<'T>()
+        while not span.IsEmpty do
+            data.Add(converter.DecodeAuto &span)
+        let mutable list = []
+        let mutable i = data.Count - 1
+        while i >= 0 do
+            let head = data.[i]
+            list <- head :: list
+            i <- i - 1
+        list
+
+    let rec DecodeVariable(span : byref<ReadOnlySpan<byte>>, loop : int) : List<'T> =
+        if span.IsEmpty then
+            []
+        elif loop < 64 then
+            let head = converter.DecodeAuto &span
+            let tail = DecodeVariable(&span, loop + 1)
+            head :: tail
+        else
+            SelectVariable &span
 
     override __.Encode(allocator, item) =
         if isNull (box item) = false then
@@ -15,8 +59,8 @@ type ListConverter<'T>(converter : Converter<'T>, memoryConverter : Converter<Me
         ()
 
     override __.Decode(span : inref<ReadOnlySpan<byte>>) : List<'T> =
-        let data = (memoryConverter.Decode &span).Span
-        let mutable list = []
-        for i = data.Length - 1 downto 0 do
-            list <- data.[i] :: list
-        list
+        if constant then
+            DecodeConstant span
+        else
+            let mutable body = span
+            DecodeVariable(&body, 0)

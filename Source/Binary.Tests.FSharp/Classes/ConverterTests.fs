@@ -3,7 +3,6 @@
 open Mikodev.Binary
 open System
 open System.Reflection
-open System.Text
 open Xunit
 
 let generator = Generator.CreateDefault()
@@ -85,12 +84,6 @@ let testWithLengthPrefix<'T> (item : 'T) =
     Assert.Equal(ra, rb)
     Assert.Equal(0, ba.Length)
     Assert.Equal(0, bb.Length)
-    ()
-
-[<Fact>]
-let ``Static ReadOnly Members`` () =
-    Assert.True(Converter.UseLittleEndian)
-    Assert.True(obj.ReferenceEquals(Encoding.UTF8, Converter.Encoding))
     ()
 
 [<Fact>]

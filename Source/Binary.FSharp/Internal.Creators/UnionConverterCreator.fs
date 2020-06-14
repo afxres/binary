@@ -17,19 +17,19 @@ type UnionConverterCreator() =
 
     static let MakeConverterType (t : Type) = typedefof<Converter<_>>.MakeGenericType t
 
-    static let GetEncodeMethodInfo (t : Type) (isAuto : bool) =
+    static let GetEncodeMethodInfo (t : Type) (auto : bool) =
         let converterType = MakeConverterType t
-        let methodName = if isAuto then "EncodeAuto" else "Encode"
+        let methodName = if auto then "EncodeAuto" else "Encode"
         let method = converterType.GetMethod(methodName, [| AllocatorByRefType; t |])
         method
 
-    static let GetDecodeMethodInfo (t : Type) (isAuto : bool) =
+    static let GetDecodeMethodInfo (t : Type) (auto : bool) =
         let converterType = MakeConverterType t
-        let methodName = if isAuto then "DecodeAuto" else "Decode"
+        let methodName = if auto then "DecodeAuto" else "Decode"
         let method = converterType.GetMethod(methodName, [| ReadOnlySpanByteByRefType |])
         method
 
-    static let GetEncodeExpression (context : IGeneratorContext) (t : Type) (caseInfos : UnionCaseInfo seq) (tagMember : MemberInfo) (isAuto : bool) =
+    static let GetEncodeExpression (context : IGeneratorContext) (t : Type) (caseInfos : UnionCaseInfo seq) (tagMember : MemberInfo) (auto : bool) =
         let allocator = Expression.Parameter(AllocatorByRefType, "allocator")
         let mark = Expression.Parameter(typeof<int>.MakeByRefType(), "mark")
         let item = Expression.Parameter(t, "item")
@@ -40,7 +40,7 @@ type UnionConverterCreator() =
                 let property = properties.[i]
                 let propertyType = property.PropertyType
                 let converter = context.GetConverter propertyType
-                let method = GetEncodeMethodInfo propertyType (isAuto || i <> properties.Length - 1)
+                let method = GetEncodeMethodInfo propertyType (auto || i <> properties.Length - 1)
                 let invoke = Expression.Call(Expression.Constant(converter), method, allocator, Expression.Property(instance, property))
                 yield invoke
         |]
@@ -71,19 +71,18 @@ type UnionConverterCreator() =
             match tagMember with
             | :? PropertyInfo as p -> Expression.Property(item, p) :> Expression
             | _ -> Expression.Call(tagMember :?> MethodInfo, item) :> Expression
-        let setMethod = EncodeNumberMethodInfo
         let defaultBlock = Expression.Block(Expression.Assign(mark, flag), Expression.Empty())
         let block =
             Expression.Block(
                 Seq.singleton flag,
                 Expression.Assign(flag, tagExpression),
-                Expression.Call(setMethod, allocator, flag),
+                Expression.Call(EncodeNumberMethodInfo, allocator, flag),
                 Expression.Switch(flag, defaultBlock, switchCases))
         let delegateType = typedefof<UnionEncoder<_>>.MakeGenericType t
         let lambda = Expression.Lambda(delegateType, block, allocator, item, mark)
         lambda
 
-    static let GetDecodeExpression (context : IGeneratorContext) (t : Type) (caseInfos : UnionCaseInfo seq) (isAuto : bool) =
+    static let GetDecodeExpression (context : IGeneratorContext) (t : Type) (caseInfos : UnionCaseInfo seq) (auto : bool) =
         let span = Expression.Parameter(ReadOnlySpanByteByRefType, "span")
         let mark = Expression.Parameter(typeof<int>.MakeByRefType(), "mark")
         let flag = Expression.Variable(typeof<int>, "flag")
@@ -97,7 +96,7 @@ type UnionConverterCreator() =
                     for i = 0 to parameters.Length - 1 do
                         let parameterType = parameters.[i].ParameterType
                         let converter = context.GetConverter parameterType
-                        let method = GetDecodeMethodInfo parameterType (isAuto || i <> parameters.Length - 1)
+                        let method = GetDecodeMethodInfo parameterType (auto || i <> parameters.Length - 1)
                         let variable = Expression.Variable(parameterType, sprintf "%d" i)
                         let invoke = Expression.Call(Expression.Constant(converter), method, span)
                         let assign = Expression.Assign(variable, invoke)
@@ -116,12 +115,11 @@ type UnionConverterCreator() =
             caseInfos
             |> Seq.map (fun x -> Expression.SwitchCase(MakeBody x, Expression.Constant(x.Tag)))
             |> Seq.toArray
-        let getMethod = DecodeNumberMethodInfo
         let defaultBlock = Expression.Block(Expression.Assign(mark, flag), Expression.Default(t))
         let block =
             Expression.Block(
                 Seq.singleton flag,
-                Expression.Assign(flag, Expression.Call(getMethod, span)),
+                Expression.Assign(flag, Expression.Call(DecodeNumberMethodInfo, span)),
                 Expression.Switch(flag, defaultBlock, switchCases))
         let delegateType = typedefof<UnionDecoder<_>>.MakeGenericType t
         let lambda = Expression.Lambda(delegateType, block, span, mark)

@@ -173,5 +173,28 @@ namespace Mikodev.Binary.Tests
                 _ = Assert.Single(validAttributes);
             }
         }
+
+        [Fact(DisplayName = "Converter Constructor (internal)")]
+        public void ConverterAccessLevel()
+        {
+            var constructors = typeof(Converter).GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var constructor = Assert.Single(constructors);
+            // internal, not protected
+            Assert.True(constructor.IsAssembly);
+            Assert.False(constructor.IsFamily);
+        }
+
+        [Fact(DisplayName = "Generic Converter Constructor (protected)")]
+        public void ConverterGenericAccessLevel()
+        {
+            var constructors = typeof(Converter<int>).GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.Equal(2, constructors.Length);
+            foreach (var constructor in constructors)
+            {
+                // protected, not internal
+                Assert.True(constructor.IsFamily);
+                Assert.False(constructor.IsAssembly);
+            }
+        }
     }
 }

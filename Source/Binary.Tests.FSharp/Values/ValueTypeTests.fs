@@ -166,11 +166,9 @@ let ``Guid`` () =
         let hex = guid.ToString("N")
         let items = [ 0..2..(hex.Length - 1) ] |> Seq.map (fun x -> Convert.ToByte(hex.Substring(x, 2), 16))
         Assert.Equal(16, items |> Seq.length)
-        if BitConverter.IsLittleEndian = Converter.UseLittleEndian then
+        if BitConverter.IsLittleEndian then
             let array = guid.ToByteArray()
             Assert.Equal<byte>(array, bytes)
-        if Converter.UseLittleEndian = false then
-            Assert.Equal<byte>(items, bytes)
     ()
 
 [<Fact>]

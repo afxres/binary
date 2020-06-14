@@ -1,6 +1,7 @@
 ﻿module External.CollectionTests
 
 open Mikodev.Binary
+open System
 open System.Net
 open Xunit
 
@@ -63,10 +64,27 @@ let ``List (null)`` () =
     ()
 
 [<Theory>]
+[<InlineData(1, 1)>]
+[<InlineData(4, 4)>]
+[<InlineData(23, 7)>]
+let ``List (value type, invalid byte count)`` (bytes : int, remainder : int) =
+    let buffer = Array.zeroCreate<byte> bytes
+    let converter = generator.GetConverter<List<double>>()
+    let otherConverter = generator.GetConverter<double array>()
+    let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode buffer |> ignore)
+    let otherError = Assert.Throws<ArgumentException>(fun () -> otherConverter.Decode buffer |> ignore)
+    let message = sprintf "Invalid collection bytes, byte count: %d, remainder: %d, item type: %O" bytes remainder typeof<double>
+    Assert.Null(error.ParamName)
+    Assert.Null(otherError.ParamName)
+    Assert.Equal(message, error.Message)
+    Assert.Equal(message, otherError.Message)
+    ()
+
+[<Theory>]
 [<InlineData(0)>]
 [<InlineData(1)>]
 [<InlineData(32768)>]
-let ``List (value type, stack overflow)`` (count : int) =
+let ``List (value type, no stack overflow)`` (count : int) =
     let source = Array.zeroCreate<byte> count |> Array.toList
     let buffer = generator.Encode source
     let result = generator.Decode<byte list> buffer
@@ -77,7 +95,7 @@ let ``List (value type, stack overflow)`` (count : int) =
 [<InlineData(0)>]
 [<InlineData(1)>]
 [<InlineData(32768)>]
-let ``List (class type, stack overflow)`` (count : int) =
+let ``List (class type, no stack overflow)`` (count : int) =
     let source = seq { for i in 0..(count - 1) do yield sprintf "%d" i } |> Seq.toList
     let buffer = generator.Encode source
     let result = generator.Decode<string list> buffer

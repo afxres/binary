@@ -2,8 +2,6 @@
 
 open Mikodev.Binary
 open System
-open System.Diagnostics
-open System.Runtime.CompilerServices
 
 type UnionEncoder<'T> = delegate of allocator : byref<Allocator> * item : 'T * mark : byref<int> -> unit
 
@@ -15,39 +13,37 @@ type UnionConverter<'T>(encode : UnionEncoder<'T>, decode : UnionDecoder<'T>, en
     [<Literal>]
     let MarkNone = 0
 
-    [<DebuggerStepThrough; MethodImpl(MethodImplOptions.NoInlining)>]
-    member private me.ThrowNull () = raise (ArgumentNullException("item", sprintf "Union can not be null, type: %O" me.ItemType))
+    member private me.NotifyNull() : unit = raise (ArgumentNullException("item", sprintf "Union can not be null, type: %O" me.ItemType))
 
-    [<DebuggerStepThrough; MethodImpl(MethodImplOptions.NoInlining)>]
-    member private me.ThrowInvalid mark = raise (ArgumentException(sprintf "Invalid union tag '%d', type: %O" mark me.ItemType))
+    member private me.NotifyMark(mark : int) : unit = raise (ArgumentException(sprintf "Invalid union tag '%d', type: %O" mark me.ItemType))
 
-    member inline private me.ThrowOnNull item = if noNull && isNull (box item) then me.ThrowNull()
+    member inline private me.DetectNull(item : 'T) : unit = if noNull && isNull (box item) then me.NotifyNull()
 
-    member inline private me.ThrowOnInvalid mark = if mark <> MarkNone then me.ThrowInvalid mark
+    member inline private me.DetectMark(mark : int) : unit = if mark <> MarkNone then me.NotifyMark mark
 
     override me.Encode(allocator, item) =
-        me.ThrowOnNull item
+        me.DetectNull item
         let mutable mark = MarkNone
         encode.Invoke(&allocator, item, &mark)
-        me.ThrowOnInvalid mark
+        me.DetectMark mark
         ()
 
     override me.Decode(span : inref<ReadOnlySpan<byte>>) : 'T =
-        let mutable span = span
+        let mutable body = span
         let mutable mark = MarkNone
-        let item = decode.Invoke(&span, &mark)
-        me.ThrowOnInvalid mark
+        let item = decode.Invoke(&body, &mark)
+        me.DetectMark mark
         item
 
     override me.EncodeAuto(allocator, item) =
-        me.ThrowOnNull item
+        me.DetectNull item
         let mutable mark = MarkNone
         encodeAuto.Invoke(&allocator, item, &mark)
-        me.ThrowOnInvalid mark
+        me.DetectMark mark
         ()
 
     override me.DecodeAuto span =
         let mutable mark = MarkNone
         let item = decodeAuto.Invoke(&span, &mark)
-        me.ThrowOnInvalid mark
+        me.DetectMark mark
         item

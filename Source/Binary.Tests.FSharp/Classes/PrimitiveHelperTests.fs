@@ -113,7 +113,7 @@ let ``Encode String Then Decode`` (text : string) =
     let span = text.AsSpan()
     PrimitiveHelper.EncodeString(&allocator, span)
     let buffer = allocator.AsSpan().ToArray()
-    let target = Converter.Encoding.GetBytes text
+    let target = Encoding.UTF8.GetBytes text
     Assert.Equal<byte>(buffer, target)
 
     let span = allocator.AsSpan()
@@ -147,7 +147,7 @@ let ``Encode String Then Decode With Length Prefix`` (text : string) =
     let span = text.AsSpan()
     PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, span)
     let mutable span = allocator.AsSpan()
-    let target = Converter.Encoding.GetBytes text
+    let target = Encoding.UTF8.GetBytes text
     let length = PrimitiveHelper.DecodeNumber(&span)
     Assert.Equal(target.Length, length)
     Assert.Equal(target.Length, span.Length)
@@ -224,7 +224,7 @@ let ``Encode String With Length Prefix (unicode, null)`` () =
 
 [<Fact>]
 let ``Encode String (random, from 0 to 4096)`` () =
-    let encoding = Converter.Encoding
+    let encoding = Encoding.UTF8
 
     for i = 0 to 4096 do
         let data = [| for k = 0 to (i - 1) do yield char (random.Next(32, 127)) |]
@@ -241,7 +241,7 @@ let ``Encode String (random, from 0 to 4096)`` () =
 
 [<Fact>]
 let ``Decode String (random, from 0 to 4096)`` () =
-    let encoding = Converter.Encoding
+    let encoding = Encoding.UTF8
 
     for i = 0 to 4096 do
         let data = [| for k = 0 to (i - 1) do yield byte (random.Next(32, 127)) |]
@@ -254,7 +254,7 @@ let ``Decode String (random, from 0 to 4096)`` () =
 
 [<Fact>]
 let ``Encode String With Length Prefix (random, from 0 to 4096)`` () =
-    let encoding = Converter.Encoding
+    let encoding = Encoding.UTF8
 
     for i = 0 to 4096 do
         let data = [| for k = 0 to (i - 1) do yield char (random.Next(32, 127)) |]
@@ -277,7 +277,7 @@ let ``Encode String With Length Prefix (random, from 0 to 4096)`` () =
 
 [<Fact>]
 let ``Decode String With Length Prefix (random, from 0 to 4096)`` () =
-    let encoding = Converter.Encoding
+    let encoding = Encoding.UTF8
 
     for i = 0 to 4096 do
         let data = [| for k = 0 to (i - 1) do yield byte (random.Next(32, 127)) |]

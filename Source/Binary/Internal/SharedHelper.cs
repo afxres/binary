@@ -10,6 +10,8 @@ namespace Mikodev.Binary.Internal
 {
     internal static class SharedHelper
     {
+        internal static readonly Encoding Encoding = Encoding.UTF8;
+
         internal static int SizeOfIPAddress(IPAddress item)
         {
             Debug.Assert(item != null);
@@ -83,7 +85,7 @@ namespace Mikodev.Binary.Internal
             if (length == 0)
                 return 0;
             const int Limits = 32;
-            if ((uint)length <= Limits && ReferenceEquals(encoding, Converter.Encoding))
+            if ((uint)length <= Limits && ReferenceEquals(encoding, Encoding))
                 return (length + 1) * 3;
 #if NETOLD
             unsafe

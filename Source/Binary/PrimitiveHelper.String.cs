@@ -22,12 +22,12 @@ namespace Mikodev.Binary
 
         public static void EncodeString(ref Allocator allocator, ReadOnlySpan<char> span)
         {
-            Allocator.AppendString(ref allocator, span, Converter.Encoding);
+            Allocator.AppendString(ref allocator, span, SharedHelper.Encoding);
         }
 
         public static void EncodeStringWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<char> span)
         {
-            Allocator.AppendStringWithLengthPrefix(ref allocator, span, Converter.Encoding);
+            Allocator.AppendStringWithLengthPrefix(ref allocator, span, SharedHelper.Encoding);
         }
 
         public static string DecodeString(ReadOnlySpan<byte> span, Encoding encoding)
@@ -46,12 +46,12 @@ namespace Mikodev.Binary
 
         public static string DecodeString(ReadOnlySpan<byte> span)
         {
-            return SharedHelper.GetString(span, Converter.Encoding);
+            return SharedHelper.GetString(span, SharedHelper.Encoding);
         }
 
         public static string DecodeStringWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
-            return SharedHelper.GetString(DecodeBufferWithLengthPrefix(ref span), Converter.Encoding);
+            return SharedHelper.GetString(DecodeBufferWithLengthPrefix(ref span), SharedHelper.Encoding);
         }
     }
 }

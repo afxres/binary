@@ -28,7 +28,7 @@ namespace Mikodev.Binary.Creators.SpanLike.Adapters
             var capacity = GenericsMethods.GetCapacity(byteLength, itemLength, typeof(T));
             var collection = new T[capacity];
             for (var i = 0; i < capacity; i++)
-                collection[i] = converter.Decode(span.Slice(i * itemLength));
+                collection[i] = converter.Decode(span.Slice(i * itemLength, itemLength));
             return new MemoryResult<T>(collection, capacity);
         }
     }

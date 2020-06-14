@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using Xunit;
 
 namespace Mikodev.Binary.Tests
@@ -160,7 +161,7 @@ namespace Mikodev.Binary.Tests
         {
             var source = new (int, string)?((-1, text));
             var buffer = generator.Encode(source);
-            Assert.Equal(1 + 4 + Converter.Encoding.GetByteCount(text), buffer.Length);
+            Assert.Equal(1 + 4 + Encoding.UTF8.GetByteCount(text), buffer.Length);
             var result = generator.Decode<(int, string)?>(buffer);
             Assert.True(result.HasValue);
             Assert.Equal(source, result);
@@ -174,7 +175,7 @@ namespace Mikodev.Binary.Tests
             var source = new (int, string)?((-1, text));
             var converter = generator.GetConverter(source);
             var buffer = EncodeAuto(converter, source);
-            Assert.Equal(1 + 4 + 1 + Converter.Encoding.GetByteCount(text), buffer.Length);
+            Assert.Equal(1 + 4 + 1 + Encoding.UTF8.GetByteCount(text), buffer.Length);
             var span = new ReadOnlySpan<byte>(buffer);
             var result = converter.DecodeAuto(ref span);
             Assert.True(result.HasValue);

@@ -8,7 +8,6 @@ open Xunit
 let generator = Generator.CreateDefault()
 
 let encode (item : 'a) =
-    Assert.True(Converter.UseLittleEndian)
     let converter = generator.GetConverter<'a>()
     Assert.StartsWith("NativeEndianConverter`1", converter.GetType().Name)
     converter.Encode item
