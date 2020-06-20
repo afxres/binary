@@ -6,9 +6,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace Mikodev.Binary.Creators.Generics.Adapters
+namespace Mikodev.Binary.Creators.Sequence.Adapters
 {
-    internal sealed class EnumerableAdapter<T, E> : GenericsAdapter<T, ArraySegment<E>> where T : IEnumerable<E>
+    internal sealed class EnumerableAdapter<T, E> : SequenceAdapter<T, ArraySegment<E>> where T : IEnumerable<E>
     {
         private readonly Func<T, E[]> functor;
 
@@ -42,7 +42,7 @@ namespace Mikodev.Binary.Creators.Generics.Adapters
                 if (func != null)
                     return func.Invoke(item);
                 if (item is ICollection<E> data)
-                    return GenericsMethods.GetContents(data);
+                    return SequenceMethods.GetContents(data);
                 return null;
             }
 

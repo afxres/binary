@@ -1,23 +1,23 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Mikodev.Binary.Creators.Generics
+namespace Mikodev.Binary.Creators.Sequence
 {
-    internal sealed class GenericsConverter<T, R> : Converter<T>
+    internal sealed class SequenceConverter<T, R> : Converter<T>
     {
-        private readonly GenericsAdapter<T, R> adapter;
+        private readonly SequenceAdapter<T, R> adapter;
 
-        private readonly GenericsBuilder<T, R> builder;
+        private readonly SequenceBuilder<T, R> builder;
 
-        private readonly GenericsAbstractEncoder<T> encoder;
+        private readonly SequenceAbstractEncoder<T> encoder;
 
-        public GenericsConverter(GenericsAdapter<T, R> adapter, GenericsBuilder<T, R> builder, GenericsCounter<T> counter, int itemLength)
+        public SequenceConverter(SequenceAdapter<T, R> adapter, SequenceBuilder<T, R> builder, SequenceCounter<T> counter, int itemLength)
         {
             this.adapter = adapter;
             this.builder = builder;
             this.encoder = itemLength > 0 && counter != null
-                ? new GenericsConstantEncoder<T, R>(adapter, counter, itemLength)
-                : new GenericsVariableEncoder<T, R>(adapter) as GenericsAbstractEncoder<T>;
+                ? new SequenceConstantEncoder<T, R>(adapter, counter, itemLength)
+                : new SequenceVariableEncoder<T, R>(adapter) as SequenceAbstractEncoder<T>;
             Debug.Assert(itemLength >= 0);
         }
 

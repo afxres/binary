@@ -10,7 +10,7 @@ let generator = Generator.CreateDefault()
 
 let test<'a> (generator : IGenerator) (adapterName : string) (builderName : string) (collection : 'a) =
     let converter = generator.GetConverter<'a>()
-    let converterName = if adapterName.StartsWith("SpanLike") then "SpanLikeConverter`2" else "GenericsConverter`2"
+    let converterName = if adapterName.StartsWith("SpanLike") then "SpanLikeConverter`2" else "SequenceConverter`2"
     Assert.Equal(converterName, converter.GetType().Name)
 
     // test internal builder name

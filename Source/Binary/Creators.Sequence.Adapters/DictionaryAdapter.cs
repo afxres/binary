@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Mikodev.Binary.Creators.Generics.Adapters
+namespace Mikodev.Binary.Creators.Sequence.Adapters
 {
-    internal sealed class DictionaryAdapter<T, K, V> : GenericsAdapter<T, Dictionary<K, V>> where T : IEnumerable<KeyValuePair<K, V>>
+    internal sealed class DictionaryAdapter<T, K, V> : SequenceAdapter<T, Dictionary<K, V>> where T : IEnumerable<KeyValuePair<K, V>>
     {
         private readonly int itemLength;
 
@@ -45,7 +45,7 @@ namespace Mikodev.Binary.Creators.Generics.Adapters
                 foreach (var i in dictionary)
                     EncodeAutoInternal(ref allocator, i);
             else if (item is ICollection<KeyValuePair<K, V>> collection)
-                foreach (var i in GenericsMethods.GetContents(collection))
+                foreach (var i in SequenceMethods.GetContents(collection))
                     EncodeAutoInternal(ref allocator, i);
             else
                 foreach (var i in item)
@@ -59,7 +59,7 @@ namespace Mikodev.Binary.Creators.Generics.Adapters
                 return new Dictionary<K, V>();
             const int Initial = 8;
             var itemLength = this.itemLength;
-            var capacity = itemLength > 0 ? GenericsMethods.GetCapacity(byteLength, itemLength, typeof(KeyValuePair<K, V>)) : Initial;
+            var capacity = itemLength > 0 ? SequenceMethods.GetCapacity(byteLength, itemLength, typeof(KeyValuePair<K, V>)) : Initial;
             var collection = new Dictionary<K, V>(capacity);
             var body = span;
             while (!body.IsEmpty)

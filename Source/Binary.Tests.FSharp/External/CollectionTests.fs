@@ -26,7 +26,7 @@ let ``Array Instance`` () =
 
 [<Fact>]
 let ``Array (empty)`` () =
-    let source : int array = [| |]
+    let source : int array = Array.empty
     let buffer = generator.Encode source
     let result : int array = generator.Decode buffer
 

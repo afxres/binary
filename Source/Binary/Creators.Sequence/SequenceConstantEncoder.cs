@@ -1,17 +1,17 @@
 ﻿using Mikodev.Binary.Internal;
 using System.Diagnostics;
 
-namespace Mikodev.Binary.Creators.Generics
+namespace Mikodev.Binary.Creators.Sequence
 {
-    internal sealed class GenericsConstantEncoder<T, R> : GenericsAbstractEncoder<T>
+    internal sealed class SequenceConstantEncoder<T, R> : SequenceAbstractEncoder<T>
     {
         private readonly int itemLength;
 
-        private readonly GenericsAdapter<T, R> adapter;
+        private readonly SequenceAdapter<T, R> adapter;
 
-        private readonly GenericsCounter<T> counter;
+        private readonly SequenceCounter<T> counter;
 
-        public GenericsConstantEncoder(GenericsAdapter<T, R> adapter, GenericsCounter<T> counter, int itemLength)
+        public SequenceConstantEncoder(SequenceAdapter<T, R> adapter, SequenceCounter<T> counter, int itemLength)
         {
             this.adapter = adapter;
             this.counter = counter;

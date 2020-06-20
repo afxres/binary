@@ -54,9 +54,9 @@ type UnionConverterCreator() =
                 let body = MakeBody data properties
                 Expression.Block(Seq.singleton data, Array.append<Expression> [| cast |] body)
 
-            match properties with
-            | null | [| |] -> Expression.Empty() :> Expression
-            | _ ->
+            if properties |> Array.isEmpty then
+                Expression.Empty() :> Expression
+            else
                 let dataType = properties |> Array.map (fun x -> x.DeclaringType) |> Array.distinct |> Array.exactlyOne
                 if t = dataType then
                     Expression.Block(MakeBody item properties) :> Expression
@@ -107,9 +107,10 @@ type UnionConverterCreator() =
                 let block = Expression.Block(variables, expressions)
                 block :> Expression
 
-            match parameters with
-            | null | [| |] -> Expression.Call(constructor) :> Expression
-            | _ -> MakeBodyItem ()
+            if parameters |> Array.isEmpty then
+                Expression.Call(constructor) :> Expression
+            else
+                MakeBodyItem ()
 
         let switchCases =
             caseInfos
@@ -144,7 +145,7 @@ type UnionConverterCreator() =
                 null
             else
                 let cases = FSharpType.GetUnionCases(t)
-                if (cases = null || cases.Length = 0) then
+                if (cases |> Array.isEmpty) then
                     raise (ArgumentException(sprintf "No available union case found, type: %O" t))
                 let unionType = cases |> Array.map (fun x -> x.DeclaringType) |> Array.distinct |> Array.exactlyOne
                 if (unionType <> t) then

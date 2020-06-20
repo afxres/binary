@@ -1,6 +1,6 @@
-﻿namespace Mikodev.Binary.Creators.Generics
+﻿namespace Mikodev.Binary.Creators.Sequence
 {
-    internal abstract class GenericsAbstractEncoder<T>
+    internal abstract class SequenceAbstractEncoder<T>
     {
         public abstract void EncodeWithLengthPrefix(ref Allocator allocator, T item);
     }

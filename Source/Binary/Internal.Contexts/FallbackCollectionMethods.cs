@@ -1,6 +1,6 @@
-﻿using Mikodev.Binary.Creators.Generics;
-using Mikodev.Binary.Creators.Generics.Adapters;
-using Mikodev.Binary.Creators.Generics.Counters;
+﻿using Mikodev.Binary.Creators.Sequence;
+using Mikodev.Binary.Creators.Sequence.Adapters;
+using Mikodev.Binary.Creators.Sequence.Counters;
 using Mikodev.Binary.Internal.Contexts.Models;
 using System;
 using System.Collections.Concurrent;
@@ -47,7 +47,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile().Invoke(converters);
         }
 
-        private static GenericsBuilder<T, R> CreateCollectionBuilder<T, R>()
+        private static SequenceBuilder<T, R> CreateCollectionBuilder<T, R>()
         {
             static Func<R, T> Invoke()
             {
@@ -58,12 +58,12 @@ namespace Mikodev.Binary.Internal.Contexts
             }
 
             if (typeof(T) == typeof(R))
-                return (GenericsBuilder<T, R>)(object)new FallbackEnumerableBuilder<T>();
+                return (SequenceBuilder<T, R>)(object)new FallbackEnumerableBuilder<T>();
             var constructor = Invoke();
             return new DelegateEnumerableBuilder<T, R>(constructor);
         }
 
-        private static GenericsBuilder<T, R> CreateCollectionBuilder<T, R, I>()
+        private static SequenceBuilder<T, R> CreateCollectionBuilder<T, R, I>()
         {
             static Func<R, T> Invoke()
             {
@@ -86,7 +86,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return new DelegateEnumerableBuilder<T, R>(constructor);
         }
 
-        private static GenericsCounter<T> CreateCollectionCounter<T, E>()
+        private static SequenceCounter<T> CreateCollectionCounter<T, E>()
         {
             static Type Invoke()
             {
@@ -98,7 +98,7 @@ namespace Mikodev.Binary.Internal.Contexts
                     return null;
             }
 
-            return Invoke() is { } type ? (GenericsCounter<T>)Activator.CreateInstance(type.MakeGenericType(typeof(T), typeof(E))) : null;
+            return Invoke() is { } type ? (SequenceCounter<T>)Activator.CreateInstance(type.MakeGenericType(typeof(T), typeof(E))) : null;
         }
 
         private static Converter CreateSetConverter<T, E>(IReadOnlyList<Converter> converters) where T : ISet<E>
@@ -106,8 +106,8 @@ namespace Mikodev.Binary.Internal.Contexts
             var converter = (Converter<E>)converters.Single();
             var adapter = new SetAdapter<T, E>(converter);
             var builder = CreateCollectionBuilder<T, HashSet<E>>();
-            var counter = typeof(T) == typeof(HashSet<E>) ? (GenericsCounter<T>)(object)new HashSetCounter<E>() : new CollectionCounter<T, E>();
-            return new GenericsConverter<T, HashSet<E>>(adapter, builder, counter, converter.Length);
+            var counter = typeof(T) == typeof(HashSet<E>) ? (SequenceCounter<T>)(object)new HashSetCounter<E>() : new CollectionCounter<T, E>();
+            return new SequenceConverter<T, HashSet<E>>(adapter, builder, counter, converter.Length);
         }
 
         private static Converter CreateLinkedListConverter<T, E>(IReadOnlyList<Converter> converters)
@@ -117,7 +117,7 @@ namespace Mikodev.Binary.Internal.Contexts
             var adapter = new LinkedListAdapter<E>(converter);
             var builder = new FallbackEnumerableBuilder<LinkedList<E>>();
             var counter = new LinkedListCounter<E>();
-            return new GenericsConverter<LinkedList<E>, LinkedList<E>>(adapter, builder, counter, converter.Length);
+            return new SequenceConverter<LinkedList<E>, LinkedList<E>>(adapter, builder, counter, converter.Length);
         }
 
         private static Converter CreateEnumerableConverter<T, E>(IReadOnlyList<Converter> converters) where T : IEnumerable<E>
@@ -126,7 +126,7 @@ namespace Mikodev.Binary.Internal.Contexts
             var builder = CreateCollectionBuilder<T, ArraySegment<E>, IEnumerable<E>>();
             var adapter = new EnumerableAdapter<T, E>(converter);
             var counter = CreateCollectionCounter<T, E>();
-            return new GenericsConverter<T, ArraySegment<E>>(adapter, builder, counter, converter.Length);
+            return new SequenceConverter<T, ArraySegment<E>>(adapter, builder, counter, converter.Length);
         }
 
         private static Converter CreateDictionaryConverter<T, K, V>(IReadOnlyList<Converter> converters) where T : IEnumerable<KeyValuePair<K, V>>
@@ -134,8 +134,8 @@ namespace Mikodev.Binary.Internal.Contexts
             var itemLength = ContextMethods.GetItemLength(converters);
             var adapter = new DictionaryAdapter<T, K, V>((Converter<K>)converters[0], (Converter<V>)converters[1], itemLength);
             var builder = CreateCollectionBuilder<T, Dictionary<K, V>, IDictionary<K, V>>();
-            var counter = typeof(T) == typeof(Dictionary<K, V>) ? (GenericsCounter<T>)(object)new DictionaryCounter<K, V>() : CreateCollectionCounter<T, KeyValuePair<K, V>>();
-            return new GenericsConverter<T, Dictionary<K, V>>(adapter, builder, counter, itemLength);
+            var counter = typeof(T) == typeof(Dictionary<K, V>) ? (SequenceCounter<T>)(object)new DictionaryCounter<K, V>() : CreateCollectionCounter<T, KeyValuePair<K, V>>();
+            return new SequenceConverter<T, Dictionary<K, V>>(adapter, builder, counter, itemLength);
         }
     }
 }

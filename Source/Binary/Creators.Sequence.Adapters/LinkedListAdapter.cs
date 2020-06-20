@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Creators.Generics.Adapters
+namespace Mikodev.Binary.Creators.Sequence.Adapters
 {
-    internal sealed class LinkedListAdapter<E> : GenericsAdapter<LinkedList<E>, LinkedList<E>>
+    internal sealed class LinkedListAdapter<E> : SequenceAdapter<LinkedList<E>, LinkedList<E>>
     {
         private readonly Converter<E> converter;
 

@@ -143,7 +143,7 @@ type DictionaryD<'K, 'V>(item : KeyValuePair<'K, 'V> ResizeArray) =
 
 let test (enumerable : 'a) (expected : 'b) (adaptedType : Type) =
     let converter = generator.GetConverter<'a>()
-    Assert.Equal("GenericsConverter`2", converter.GetType().Name)
+    Assert.Equal("SequenceConverter`2", converter.GetType().Name)
 
     // test internal builder name
     let builderField = converter.GetType().GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic)

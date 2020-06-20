@@ -63,7 +63,7 @@ type DictionaryAdapterIntegrationTests() =
 
     member  __.Test<'t, 'k, 'v when 't : null and 't :> IEnumerable<KeyValuePair<'k, 'v>>> (origin : IEnumerable<KeyValuePair<'k, 'v>>) (item : 't) =
         let converter = generator.GetConverter<'t>()
-        Assert.Equal("GenericsConverter`2", converter.GetType().Name)
+        Assert.Equal("SequenceConverter`2", converter.GetType().Name)
         let adapter = converter.GetType().GetField("adapter", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(converter)
         Assert.Equal("DictionaryAdapter`3", adapter.GetType().Name)
 

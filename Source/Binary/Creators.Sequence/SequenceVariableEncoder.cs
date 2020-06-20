@@ -1,10 +1,10 @@
-﻿namespace Mikodev.Binary.Creators.Generics
+﻿namespace Mikodev.Binary.Creators.Sequence
 {
-    internal sealed class GenericsVariableEncoder<T, R> : GenericsAbstractEncoder<T>
+    internal sealed class SequenceVariableEncoder<T, R> : SequenceAbstractEncoder<T>
     {
-        private readonly GenericsAdapter<T, R> adapter;
+        private readonly SequenceAdapter<T, R> adapter;
 
-        public GenericsVariableEncoder(GenericsAdapter<T, R> adapter)
+        public SequenceVariableEncoder(SequenceAdapter<T, R> adapter)
         {
             this.adapter = adapter;
         }

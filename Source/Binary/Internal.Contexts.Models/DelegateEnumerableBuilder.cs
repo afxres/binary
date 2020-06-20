@@ -1,15 +1,15 @@
-﻿using Mikodev.Binary.Creators.Generics;
+﻿using Mikodev.Binary.Creators.Sequence;
 using System;
 
 namespace Mikodev.Binary.Internal.Contexts.Models
 {
-    internal sealed class DelegateEnumerableBuilder<T, R> : GenericsBuilder<T, R>
+    internal sealed class DelegateEnumerableBuilder<T, R> : SequenceBuilder<T, R>
     {
         private readonly Func<R, T> constructor;
 
         public DelegateEnumerableBuilder(Func<R, T> constructor) => this.constructor = constructor;
 
-        public override T Invoke(ReadOnlySpan<byte> span, GenericsAdapter<T, R> adapter)
+        public override T Invoke(ReadOnlySpan<byte> span, SequenceAdapter<T, R> adapter)
         {
             if (constructor is null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();

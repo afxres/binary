@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Mikodev.Binary.Creators.Generics
+namespace Mikodev.Binary.Creators.Sequence
 {
-    internal abstract class GenericsAdapter<T, R>
+    internal abstract class SequenceAdapter<T, R>
     {
         public abstract void Encode(ref Allocator allocator, T item);
 

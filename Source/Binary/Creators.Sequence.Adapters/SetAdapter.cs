@@ -2,9 +2,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Creators.Generics.Adapters
+namespace Mikodev.Binary.Creators.Sequence.Adapters
 {
-    internal sealed class SetAdapter<T, E> : GenericsAdapter<T, HashSet<E>> where T : ISet<E>
+    internal sealed class SetAdapter<T, E> : SequenceAdapter<T, HashSet<E>> where T : ISet<E>
     {
         private readonly Converter<E> converter;
 
@@ -25,7 +25,7 @@ namespace Mikodev.Binary.Creators.Generics.Adapters
                 foreach (var i in set)
                     converter.EncodeAuto(ref allocator, i);
             else
-                adapter.Encode(ref allocator, GenericsMethods.GetContents(item));
+                adapter.Encode(ref allocator, SequenceMethods.GetContents(item));
         }
 
         public override HashSet<E> Decode(ReadOnlySpan<byte> span)

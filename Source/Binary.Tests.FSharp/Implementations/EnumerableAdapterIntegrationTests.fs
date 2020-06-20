@@ -69,7 +69,7 @@ type EnumerableAdapterIntegrationTests () =
     [<MemberData("Data Bravo")>]
     member __.``Encode Then Decode As 'IEnumerable'`` (item : 'a seq) =
         let converter = generator.GetConverter<'a seq>()
-        Assert.Equal("GenericsConverter`2", converter.GetType().Name)
+        Assert.Equal("SequenceConverter`2", converter.GetType().Name)
         let adapter = converter.GetType().GetField("adapter", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(converter)
         Assert.Equal("EnumerableAdapter`2", adapter.GetType().Name)
 

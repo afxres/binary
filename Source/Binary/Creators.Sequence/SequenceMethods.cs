@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Mikodev.Binary.Creators.Generics
+namespace Mikodev.Binary.Creators.Sequence
 {
-    internal static class GenericsMethods
+    internal static class SequenceMethods
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int GetCapacity(int byteLength, int itemLength, Type itemType)
