@@ -28,7 +28,7 @@ let ``Object Converter (decode)`` () =
 [<Fact>]
 let ``To String (debug)`` () =
     let converter = generator.GetConverter<string> ()
-    Assert.Equal("Converter(Length: 0, ItemType: System.String)", converter.ToString())
+    Assert.Equal("Converter(Length: 0)", converter.ToString())
     ()
 
 let test<'T> (item : 'T) =

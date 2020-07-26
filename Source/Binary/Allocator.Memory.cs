@@ -10,10 +10,10 @@ namespace Mikodev.Binary
 {
     public ref partial struct Allocator
     {
-        internal static void AppendLength<T>(ref Allocator allocator, int anchor, int length, T data, SpanAction<byte, T> action)
+        internal static void AppendAnchorAction<T>(ref Allocator allocator, int anchor, int length, T data, SpanAction<byte, T> action)
         {
             if (action is null)
-                ThrowHelper.ThrowAllocatorActionInvalid();
+                ThrowHelper.ThrowAllocatorActionNull();
             var offset = allocator.offset;
             var buffer = allocator.buffer;
             // check bounds via slice method
@@ -23,10 +23,10 @@ namespace Mikodev.Binary
             action.Invoke(target, data);
         }
 
-        internal static void AppendAction<T>(ref Allocator allocator, int length, T data, SpanAction<byte, T> action)
+        internal static void AppendLengthAction<T>(ref Allocator allocator, int length, T data, SpanAction<byte, T> action)
         {
             if (action is null)
-                ThrowHelper.ThrowAllocatorActionInvalid();
+                ThrowHelper.ThrowAllocatorActionNull();
             if (length == 0)
                 return;
             var offset = Ensure(ref allocator, length);
@@ -36,17 +36,17 @@ namespace Mikodev.Binary
             allocator.offset = offset + length;
         }
 
-        internal static void AppendLengthPrefix(ref Allocator allocator, int anchor, bool reduce)
+        internal static void AppendLengthPrefix(ref Allocator allocator, int anchor)
         {
             const int Limits = 16;
             var offset = allocator.offset;
             // check bounds manually
             if ((ulong)(uint)anchor + sizeof(uint) > (uint)offset)
-                ThrowHelper.ThrowAllocatorAnchorInvalid();
+                ThrowHelper.ThrowAllocatorAnchorOutOfRange();
             var length = offset - anchor - sizeof(uint);
             var buffer = allocator.buffer;
             ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), anchor);
-            if (reduce && length <= Limits && buffer.Length - offset >= ((-length) & 7))
+            if (length <= Limits && buffer.Length - offset >= ((-length) & 7))
             {
                 MemoryHelper.EncodeNumber(ref target, (uint)length, numberLength: 1);
                 for (var i = 0; i < length; i += 8)

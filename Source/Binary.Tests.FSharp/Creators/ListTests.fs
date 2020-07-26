@@ -47,12 +47,12 @@ type ListTests () =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     member __.``Fallback List Implementation (hack, integration test)`` (array : 'a array) =
-        let types = typeof<Converter>.Assembly.GetTypes()
+        let types = typeof<IConverter>.Assembly.GetTypes()
         let listConverterCreator = types |> Array.filter (fun x -> x.Name = "SpanLikeConverterCreator") |> Array.exactlyOne
         let creatorTypes = types |> Array.filter (fun x -> not x.IsAbstract && typeof<IConverterCreator>.IsAssignableFrom x)
         let creators = creatorTypes |> Array.except (Array.singleton listConverterCreator) |> Array.map (fun x -> Activator.CreateInstance x :?> IConverterCreator)
         let generatorType = types |> Array.filter (fun x -> x.Name = "Generator" && not x.IsAbstract) |> Array.exactlyOne
-        let generator = Activator.CreateInstance(generatorType, [| box Array.empty<Converter>; box creators |]) :?> IGenerator
+        let generator = Activator.CreateInstance(generatorType, [| box Array.empty<IConverter>; box creators |]) :?> IGenerator
 
         let alpha = generator.GetConverter<'a vlist>()
         let alphaBuilder = alpha.GetType().GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(alpha)

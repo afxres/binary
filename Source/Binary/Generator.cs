@@ -13,7 +13,7 @@ namespace Mikodev.Binary
 
         public static IGeneratorBuilder CreateDefaultBuilder()
         {
-            var creators = typeof(Converter).Assembly.GetTypes()
+            var creators = typeof(IConverter).Assembly.GetTypes()
                 .Where(x => !x.IsAbstract && typeof(IConverterCreator).IsAssignableFrom(x))
                 .Select(x => (IConverterCreator)Activator.CreateInstance(x))
                 .ToList();

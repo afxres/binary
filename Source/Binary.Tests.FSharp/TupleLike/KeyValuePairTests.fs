@@ -94,8 +94,8 @@ type RawConverter<'a>(length : int) =
 
 [<Fact>]
 let ``Key-Value Pair Length`` () =
-    let singleConverter = RawConverter<single>(0x2000_0000) :> Converter
-    let doubleConverter = RawConverter<double>(0x4000_0000) :> Converter
+    let singleConverter = RawConverter<single>(0x2000_0000) :> IConverter
+    let doubleConverter = RawConverter<double>(0x4000_0000) :> IConverter
     let generator = Generator.CreateDefaultBuilder()
                         .AddConverter(singleConverter)
                         .AddConverter(doubleConverter)
@@ -108,8 +108,8 @@ let ``Key-Value Pair Length`` () =
 
 [<Fact>]
 let ``Key-Value Pair Length (max value)`` () =
-    let doubleConverter = RawConverter<double>(0x4000_0000) :> Converter
-    let stringConverter = RawConverter<string>(0x3FFF_FFFF) :> Converter
+    let doubleConverter = RawConverter<double>(0x4000_0000) :> IConverter
+    let stringConverter = RawConverter<string>(0x3FFF_FFFF) :> IConverter
     let generator = Generator.CreateDefaultBuilder()
                         .AddConverter(doubleConverter)
                         .AddConverter(stringConverter)
@@ -120,7 +120,7 @@ let ``Key-Value Pair Length (max value)`` () =
 
 [<Fact>]
 let ``Key-Value Pair Length (overflow)`` () =
-    let doubleConverter = RawConverter<double>(0x4000_0000) :> Converter
+    let doubleConverter = RawConverter<double>(0x4000_0000) :> IConverter
     let generator = Generator.CreateDefaultBuilder()
                         .AddConverter(doubleConverter)
                         .Build();

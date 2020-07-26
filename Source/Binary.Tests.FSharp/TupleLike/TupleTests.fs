@@ -205,7 +205,7 @@ type FixConverter(length : int) =
 
 [<Fact>]
 let ``Tuple Length (overflow)`` () =
-    let fixConverter = FixConverter(0x2000_0000) :> Converter
+    let fixConverter = FixConverter(0x2000_0000) :> IConverter
     let fixGenerator = Generator.CreateDefaultBuilder().AddConverter(fixConverter).Build()
     let alpha = fixGenerator.GetConverter<Fix * Fix>()
     let bravo = fixGenerator.GetConverter<struct (Fix * Fix * Fix)>()

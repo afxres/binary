@@ -17,7 +17,7 @@
             var data = builder.Handle(item);
             var anchor = Allocator.Anchor(ref allocator, sizeof(int));
             adapter.Encode(ref allocator, data);
-            Allocator.AppendLengthPrefix(ref allocator, anchor, reduce: true);
+            Allocator.AppendLengthPrefix(ref allocator, anchor);
         }
     }
 }

@@ -4,6 +4,6 @@ namespace Mikodev.Binary
 {
     public interface IConverterCreator
     {
-        Converter GetConverter(IGeneratorContext context, Type type);
+        IConverter GetConverter(IGeneratorContext context, Type type);
     }
 }

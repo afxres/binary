@@ -9,7 +9,7 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class ContextMethods
     {
-        internal static int GetItemLength(IReadOnlyCollection<Converter> values)
+        internal static int GetItemLength(IReadOnlyCollection<IConverter> values)
         {
             Debug.Assert(values.Any() && values.All(x => x != null && x.Length >= 0));
             var source = values.Select(x => x.Length).ToList();

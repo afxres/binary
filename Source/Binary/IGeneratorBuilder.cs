@@ -2,7 +2,7 @@
 {
     public interface IGeneratorBuilder
     {
-        IGeneratorBuilder AddConverter(Converter converter);
+        IGeneratorBuilder AddConverter(IConverter converter);
 
         IGeneratorBuilder AddConverterCreator(IConverterCreator creator);
 

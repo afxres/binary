@@ -139,7 +139,7 @@ type UnionConverterCreator() =
                 let delegates = [| encode; decode; encodeAuto; decodeAuto |] |> Array.map (fun x -> x.Compile())
                 let converterArguments = Array.append (delegates |> Seq.cast<obj> |> Seq.toArray) [| box noNull |]
                 let converter = Activator.CreateInstance(converterType, converterArguments)
-                converter :?> Converter
+                converter :?> IConverter
 
             if not (FSharpType.IsUnion(t)) || (t.IsGenericType && t.GetGenericTypeDefinition() = typedefof<List<_>>) then
                 null

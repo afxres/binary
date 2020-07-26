@@ -17,7 +17,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static readonly ConstructorInfo ReadOnlySpanByteConstructorInfo = typeof(ReadOnlySpan<byte>).GetConstructor(new[] { typeof(byte[]) });
 
-        internal static Converter GetConverterAsNamedObject(IGeneratorContext context, Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<Converter> converters, ConstructorInfo constructor, IReadOnlyList<int> indexes, IReadOnlyDictionary<PropertyInfo, string> dictionary)
+        internal static IConverter GetConverterAsNamedObject(IGeneratorContext context, Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<IConverter> converters, ConstructorInfo constructor, IReadOnlyList<int> indexes, IReadOnlyDictionary<PropertyInfo, string> dictionary)
         {
             // require string converter for named key
             var stringConverter = (Converter<string>)context.GetConverter(typeof(string));
@@ -34,20 +34,20 @@ namespace Mikodev.Binary.Internal.Contexts
             var converterArguments = new object[] { encode, decode, nodeTree, nameList };
             var converterType = typeof(NamedObjectConverter<>).MakeGenericType(type);
             var converter = Activator.CreateInstance(converterType, converterArguments);
-            return (Converter)converter;
+            return (IConverter)converter;
         }
 
-        private static MethodInfo GetEncodeWithLengthPrefixMethodInfo(Converter converter)
+        private static MethodInfo GetEncodeWithLengthPrefixMethodInfo(IConverter converter)
         {
             var converterType = converter.GetType();
-            var types = new[] { typeof(Allocator).MakeByRefType(), converter.ItemType };
+            var types = new[] { typeof(Allocator).MakeByRefType(), ConverterHelper.GetGenericArgument(converter) };
             var name = nameof(IConverter.EncodeWithLengthPrefix);
             var method = converterType.GetMethod(name, types);
             Debug.Assert(method != null);
             return method;
         }
 
-        private static Delegate GetEncodeDelegateAsNamedObject(Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<Converter> converters, IReadOnlyDictionary<PropertyInfo, ReadOnlyMemory<byte>> memories)
+        private static Delegate GetEncodeDelegateAsNamedObject(Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<IConverter> converters, IReadOnlyDictionary<PropertyInfo, ReadOnlyMemory<byte>> memories)
         {
             var item = Expression.Parameter(type, "item");
             var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
@@ -69,7 +69,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        private static Delegate GetDecodeDelegateAsNamedObject(Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<Converter> converters, ConstructorInfo constructor, IReadOnlyList<int> indexes)
+        private static Delegate GetDecodeDelegateAsNamedObject(Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<IConverter> converters, ConstructorInfo constructor, IReadOnlyList<int> indexes)
         {
             IReadOnlyList<Expression> Initialize(ParameterExpression slices)
             {
@@ -77,7 +77,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 for (var i = 0; i < properties.Count; i++)
                 {
                     var converter = converters[i];
-                    var method = InvokeMethodInfo.MakeGenericMethod(converter.ItemType);
+                    var method = InvokeMethodInfo.MakeGenericMethod(ConverterHelper.GetGenericArgument(converter));
                     var invoke = Expression.Call(slices, method, Expression.Constant(converter), Expression.Constant(i));
                     values[i] = invoke;
                 }

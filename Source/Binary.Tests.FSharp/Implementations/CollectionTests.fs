@@ -12,7 +12,7 @@ type CollectionTests() =
     [<InlineData(4, 4, 1)>]
     [<InlineData(12, 6, 2)>]
     member __.``Capacity (valid)`` (byteLength : int, itemLength : int, expectedCapacity : int) =
-        let t = typeof<Converter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SequenceMethods") |> Array.exactlyOne
+        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SequenceMethods") |> Array.exactlyOne
         let m = t.GetMethod("GetCapacity", BindingFlags.Static ||| BindingFlags.NonPublic)
         let f = Delegate.CreateDelegate(typeof<Func<int, int, Type, int>>, m) :?> Func<int, int, Type, int>
         let capacity = f.Invoke(byteLength, itemLength, typeof<int>)
@@ -23,7 +23,7 @@ type CollectionTests() =
     [<InlineData(17, 4)>]
     [<InlineData(23, 8)>]
     member __.``Capacity (invalid)`` (byteLength : int, itemLength : int) =
-        let t = typeof<Converter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SequenceMethods") |> Array.exactlyOne
+        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SequenceMethods") |> Array.exactlyOne
         let m = t.GetMethod("GetCapacity", BindingFlags.Static ||| BindingFlags.NonPublic)
         let f = Delegate.CreateDelegate(typeof<Func<int, int, Type, int>>, m) :?> Func<int, int, Type, int>
         let error = Assert.Throws<ArgumentException>(fun () -> f.Invoke(byteLength, itemLength, typeof<int>) |> ignore)
@@ -41,7 +41,7 @@ type CollectionTests() =
     [<Theory>]
     [<MemberData("Data Empty")>]
     member __.``Contents (empty)`` (collection : ICollection<'a>) =
-        let t = typeof<Converter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SequenceMethods") |> Array.exactlyOne
+        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SequenceMethods") |> Array.exactlyOne
         let m = t.GetMethod("GetContents", BindingFlags.Static ||| BindingFlags.NonPublic).MakeGenericMethod(typeof<'a>)
         let f = Delegate.CreateDelegate(typeof<Func<ICollection<'a>, 'a array>>, m) :?> Func<ICollection<'a>, 'a array>
         let result = f.Invoke collection
@@ -57,7 +57,7 @@ type CollectionTests() =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     member __.``Contents (not empty)`` (collection : ICollection<'a>) =
-        let t = typeof<Converter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SequenceMethods") |> Array.exactlyOne
+        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SequenceMethods") |> Array.exactlyOne
         let m = t.GetMethod("GetContents", BindingFlags.Static ||| BindingFlags.NonPublic).MakeGenericMethod(typeof<'a>)
         let f = Delegate.CreateDelegate(typeof<Func<ICollection<'a>, 'a array>>, m) :?> Func<ICollection<'a>, 'a array>
         let result = f.Invoke collection

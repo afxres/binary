@@ -34,7 +34,7 @@ namespace Mikodev.Binary.Tests
 
             public BinaryHelper()
             {
-                var nodeType = typeof(Converter).Assembly.GetTypes().Single(x => x.Name == "Node`1").MakeGenericType(typeof(T));
+                var nodeType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name == "Node`1").MakeGenericType(typeof(T));
                 Node = CompileNode(nodeType);
                 NodeData = CompileNodeData(nodeType);
                 NodeOrNull = CompileNodeOrNull(nodeType);
@@ -86,7 +86,7 @@ namespace Mikodev.Binary.Tests
                 var root = Expression.Parameter(typeof(object), "root");
                 var source = Expression.Parameter(typeof(byte).MakeByRefType(), "source");
                 var length = Expression.Parameter(typeof(int), "length");
-                var helperType = typeof(Converter).Assembly.GetTypes().Single(x => x.Name == "NodeTreeHelper");
+                var helperType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name == "NodeTreeHelper");
                 var method = helperType.GetMethod("NodeOrNull", BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(typeof(T));
                 var lambda = Expression.Lambda<NodeOrNull<T>>(Expression.Call(method, Expression.Convert(root, nodeType), source, length), root, source, length);
                 return lambda.Compile();
@@ -94,7 +94,7 @@ namespace Mikodev.Binary.Tests
 
             private MakeOrNull<T> CompileMakeOrNull()
             {
-                var helperType = typeof(Converter).Assembly.GetTypes().Single(x => x.Name == "NodeTreeHelper");
+                var helperType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name == "NodeTreeHelper");
                 var method = helperType.GetMethod("MakeOrNull", BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(typeof(T));
                 return (MakeOrNull<T>)Delegate.CreateDelegate(typeof(MakeOrNull<T>), method);
             }

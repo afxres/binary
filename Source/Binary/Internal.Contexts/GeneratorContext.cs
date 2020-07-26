@@ -10,18 +10,18 @@ namespace Mikodev.Binary.Internal.Contexts
     {
         private readonly HashSet<Type> types = new HashSet<Type>();
 
-        private readonly ConcurrentDictionary<Type, Converter> converters;
+        private readonly ConcurrentDictionary<Type, IConverter> converters;
 
         private readonly IReadOnlyCollection<IConverterCreator> creators;
 
-        public GeneratorContext(ConcurrentDictionary<Type, Converter> converters, IReadOnlyCollection<IConverterCreator> creators)
+        public GeneratorContext(ConcurrentDictionary<Type, IConverter> converters, IReadOnlyCollection<IConverterCreator> creators)
         {
             this.converters = converters;
             this.creators = creators;
             Debug.Assert(creators is IConverterCreator[]);
         }
 
-        public Converter GetConverter(Type type)
+        public IConverter GetConverter(Type type)
         {
             if (CommonHelper.IsByRefLike(type))
                 throw new ArgumentException($"Invalid byref-like type: {type}");
@@ -37,29 +37,29 @@ namespace Mikodev.Binary.Internal.Contexts
 
             var converter = GetConverterByCreator(type) ?? GetConverterByDefault(type);
             Debug.Assert(converter != null);
-            Debug.Assert(converter.ItemType == type);
+            Debug.Assert(ConverterHelper.GetGenericArgument(converter) == type);
             return converters.GetOrAdd(type, converter);
         }
 
-        private Converter GetConverterByCreator(Type type)
+        private IConverter GetConverterByCreator(Type type)
         {
             var (converter, creatorType) = creators
                 .Select(x => (Converter: x.GetConverter(this, type), x.GetType()))
                 .FirstOrDefault(x => x.Converter != null);
             if (converter is null)
                 return null;
-            if (converter.ItemType != type)
+            if (ConverterHelper.GetGenericArgument(converter) != type)
                 throw new ArgumentException($"Invalid converter '{converter.GetType()}', creator type: {creatorType}, expected converter item type: {type}");
             return converter;
         }
 
-        private Converter GetConverterByDefault(Type type)
+        private IConverter GetConverterByDefault(Type type)
         {
             // tuple types
             if (FallbackPrimitivesMethods.GetConverter(this, type) is { } converter)
                 return converter;
             // not supported
-            if (type.Assembly == typeof(Converter).Assembly)
+            if (type.Assembly == typeof(IConverter).Assembly)
                 throw new ArgumentException($"Invalid type: {type}");
             // collections and others
             if (CommonHelper.TryGetInterfaceArguments(type, typeof(IEnumerable<>), out var arguments))

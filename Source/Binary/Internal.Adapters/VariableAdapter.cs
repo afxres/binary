@@ -17,7 +17,7 @@ namespace Mikodev.Binary.Internal.Adapters
         {
             var anchor = Allocator.Anchor(ref allocator, sizeof(int));
             converter.Encode(ref allocator, item);
-            Allocator.AppendLengthPrefix(ref allocator, anchor, reduce: true);
+            Allocator.AppendLengthPrefix(ref allocator, anchor);
         }
 
         public override byte[] Encode(T item)

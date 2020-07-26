@@ -13,7 +13,7 @@
         {
             var anchor = Allocator.Anchor(ref allocator, sizeof(int));
             adapter.Encode(ref allocator, item);
-            Allocator.AppendLengthPrefix(ref allocator, anchor, reduce: true);
+            Allocator.AppendLengthPrefix(ref allocator, anchor);
         }
     }
 }

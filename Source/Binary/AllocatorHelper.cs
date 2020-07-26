@@ -7,28 +7,11 @@ using System.Buffers;
 
 namespace Mikodev.Binary
 {
-    public static partial class AllocatorHelper
+    public static class AllocatorHelper
     {
         public static AllocatorAnchor Anchor(ref Allocator allocator, int length)
         {
             return new AllocatorAnchor(Allocator.Anchor(ref allocator, length), length);
-        }
-
-        public static AllocatorAnchor AnchorLengthPrefix(ref Allocator allocator)
-        {
-            return new AllocatorAnchor(Allocator.Anchor(ref allocator, sizeof(int)), sizeof(int));
-        }
-
-        public static void Append<T>(ref Allocator allocator, AllocatorAnchor anchor, T data, SpanAction<byte, T> action)
-        {
-            Allocator.AppendLength(ref allocator, anchor.Offset, anchor.Length, data, action);
-        }
-
-        public static void AppendLengthPrefix(ref Allocator allocator, AllocatorAnchor anchor)
-        {
-            if (anchor.Length != sizeof(int))
-                ThrowHelper.ThrowAllocatorAnchorInvalid();
-            Allocator.AppendLengthPrefix(ref allocator, anchor.Offset, reduce: false);
         }
 
         public static void Append(ref Allocator allocator, ReadOnlySpan<byte> span)
@@ -36,9 +19,40 @@ namespace Mikodev.Binary
             Allocator.AppendBuffer(ref allocator, span);
         }
 
+        public static void Append<T>(ref Allocator allocator, AllocatorAnchor anchor, T data, SpanAction<byte, T> action)
+        {
+            Allocator.AppendAnchorAction(ref allocator, anchor.Offset, anchor.Length, data, action);
+        }
+
         public static void Append<T>(ref Allocator allocator, int length, T data, SpanAction<byte, T> action)
         {
-            Allocator.AppendAction(ref allocator, length, data, action);
+            Allocator.AppendLengthAction(ref allocator, length, data, action);
+        }
+
+        public static void AppendWithLengthPrefix<T>(ref Allocator allocator, T data, AllocatorAction<T> action)
+        {
+            if (action is null)
+                ThrowHelper.ThrowAllocatorActionNull();
+            var anchor = Allocator.Anchor(ref allocator, sizeof(int));
+            action.Invoke(ref allocator, data);
+            Allocator.AppendLengthPrefix(ref allocator, anchor);
+        }
+
+        public static byte[] Invoke<T>(T data, AllocatorAction<T> action)
+        {
+            if (action is null)
+                ThrowHelper.ThrowAllocatorActionNull();
+            var memory = BufferHelper.Borrow();
+            try
+            {
+                var allocator = new Allocator(BufferHelper.Intent(memory));
+                action.Invoke(ref allocator, data);
+                return Allocator.Result(ref allocator);
+            }
+            finally
+            {
+                BufferHelper.Return(memory);
+            }
         }
     }
 }

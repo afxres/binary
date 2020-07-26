@@ -5,7 +5,7 @@ open System
 open Xunit
 
 let GeneratorBuilder() =
-    let t = typeof<Converter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "GeneratorBuilder") |> Array.exactlyOne
+    let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "GeneratorBuilder") |> Array.exactlyOne
     let builder = Activator.CreateInstance(t)
     builder :?> IGeneratorBuilder
 

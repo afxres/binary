@@ -76,12 +76,14 @@ let ``Allocator Anchor Length Prefix`` () =
         random.NextBytes source
 
         let mutable allocator = Allocator()
-        let anchor = AllocatorHelper.AnchorLengthPrefix &allocator
-        AllocatorHelper.Append(&allocator, ReadOnlySpan source)
-        AllocatorHelper.AppendLengthPrefix(&allocator, anchor)
+        AllocatorHelper.AppendWithLengthPrefix(&allocator, source, fun a b -> AllocatorHelper.Append(&a, ReadOnlySpan b))
         let buffer = allocator.AsSpan().ToArray()
 
-        Assert.Equal(i + 4, buffer.Length)
+        if i <= 16 then
+            Assert.Equal(i, int buffer.[0])
+            Assert.Equal(i + 1, buffer.Length)
+        else
+            Assert.Equal(i + 4, buffer.Length)
 
         let mutable span = ReadOnlySpan buffer
         let result = PrimitiveHelper.DecodeBufferWithLengthPrefix &span

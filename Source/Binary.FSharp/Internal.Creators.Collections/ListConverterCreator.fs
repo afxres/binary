@@ -13,6 +13,6 @@ type ListConverterCreator() =
                 let converterType = typedefof<ListConverter<_>>.MakeGenericType itemType
                 let converterArguments = [| box itemConverter |]
                 let converter = Activator.CreateInstance(converterType, converterArguments)
-                converter :?> Converter
+                converter :?> IConverter
             else
                 null

@@ -8,7 +8,7 @@ namespace Mikodev.Binary.Creators
 {
     internal sealed class KeyValuePairConverterCreator : IConverterCreator
     {
-        public Converter GetConverter(IGeneratorContext context, Type type)
+        public IConverter GetConverter(IGeneratorContext context, Type type)
         {
             if (!CommonHelper.TryGetGenericArguments(type, typeof(KeyValuePair<,>), out var arguments))
                 return null;
@@ -17,7 +17,7 @@ namespace Mikodev.Binary.Creators
             var converterArguments = new object[] { itemConverters[0], itemConverters[1], itemLength };
             var converterType = typeof(KeyValuePairConverter<,>).MakeGenericType(arguments);
             var converter = Activator.CreateInstance(converterType, converterArguments);
-            return (Converter)converter;
+            return (IConverter)converter;
         }
     }
 }

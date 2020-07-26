@@ -6,7 +6,7 @@ namespace Mikodev.Binary.Creators
 {
     internal sealed class NullableConverterCreator : IConverterCreator
     {
-        public Converter GetConverter(IGeneratorContext context, Type type)
+        public IConverter GetConverter(IGeneratorContext context, Type type)
         {
             if (!CommonHelper.TryGetGenericArguments(type, typeof(Nullable<>), out var arguments))
                 return null;
@@ -15,7 +15,7 @@ namespace Mikodev.Binary.Creators
             var converterArguments = new object[] { itemConverter };
             var converterType = typeof(NullableConverter<>).MakeGenericType(itemType);
             var converter = Activator.CreateInstance(converterType, converterArguments);
-            return (Converter)converter;
+            return (IConverter)converter;
         }
     }
 }

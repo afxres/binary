@@ -23,7 +23,7 @@ namespace Mikodev.Binary.Creators
             typeof(Guid),
         };
 
-        public Converter GetConverter(IGeneratorContext context, Type type)
+        public IConverter GetConverter(IGeneratorContext context, Type type)
         {
             if (!BitConverter.IsLittleEndian)
                 return null;
@@ -31,7 +31,7 @@ namespace Mikodev.Binary.Creators
                 return null;
             var converterType = typeof(NativeEndianConverter<>).MakeGenericType(type);
             var converter = Activator.CreateInstance(converterType);
-            return (Converter)converter;
+            return (IConverter)converter;
         }
     }
 }

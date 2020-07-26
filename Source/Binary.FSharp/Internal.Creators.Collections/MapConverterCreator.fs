@@ -13,6 +13,6 @@ type MapConverterCreator() =
                 let converterType = typedefof<MapConverter<_, _>>.MakeGenericType itemTypes
                 let converterArguments = itemConverters |> Array.map box
                 let converter = Activator.CreateInstance(converterType, converterArguments)
-                converter :?> Converter
+                converter :?> IConverter
             else
                 null

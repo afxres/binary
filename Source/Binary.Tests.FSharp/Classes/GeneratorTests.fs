@@ -22,7 +22,7 @@ let ``Get Converter (generic)`` () =
 let ``Get Converter (anonymous)`` () =
     let anonymous = {| id = 0; data = "1024" |}
     let alpha = generator.GetConverter(anonymous)
-    Assert.Equal(anonymous.GetType(), alpha.ItemType)
+    Assert.NotNull alpha
     ()
 
 [<Fact>]
@@ -136,7 +136,7 @@ let ``Encode and Decode`` (data : 'a) =
 
 [<Fact>]
 let ``Internal Types`` () =
-    let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode<Converter> Array.empty<byte> |> ignore)
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode<Converter<obj>> Array.empty<byte> |> ignore)
     Assert.Contains("Invalid type", error.Message)
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode<Token> Array.empty<byte> |> ignore)
     Assert.Contains("Invalid type", error.Message)

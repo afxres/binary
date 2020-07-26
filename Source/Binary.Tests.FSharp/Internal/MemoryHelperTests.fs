@@ -14,7 +14,7 @@ type Decode<'T> = delegate of location : byref<byte> -> 'T
 
 type MemoryHelperTests () =
     member private __.MakeDelegate<'T when 'T :> Delegate> (method : string) =
-        let t = typeof<Converter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "MemoryHelper") |> Array.exactlyOne
+        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "MemoryHelper") |> Array.exactlyOne
         let a = t.GetMethods(BindingFlags.Static ||| BindingFlags.NonPublic) |> Array.filter (fun x -> x.Name = method)
         let m =
             match a with

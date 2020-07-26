@@ -30,7 +30,7 @@ namespace Mikodev.Binary.Tests
                 typeof(ReadOnlyMemory<>).Name,
             };
 
-            var types = typeof(Converter).Assembly.GetTypes();
+            var types = typeof(IConverter).Assembly.GetTypes();
             var members = types.SelectMany(x => x.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static)).ToList();
             var methodBases = members.OfType<MethodBase>().ToList();
             var otherMembers = members.Except(methodBases).ToList();
@@ -57,7 +57,7 @@ namespace Mikodev.Binary.Tests
         [Fact(DisplayName = "Types With Sealed Modifier")]
         public void Sealed()
         {
-            var types = typeof(Converter).Assembly.GetTypes();
+            var types = typeof(IConverter).Assembly.GetTypes();
             foreach (var type in types)
             {
                 if (type.IsValueType || type.IsAbstract || type.IsInterface)
@@ -74,7 +74,7 @@ namespace Mikodev.Binary.Tests
                 "Mikodev.Binary",
                 "Mikodev.Binary.Attributes",
             };
-            var types = new HashSet<Type>(typeof(Converter).Assembly.GetTypes());
+            var types = new HashSet<Type>(typeof(IConverter).Assembly.GetTypes());
             var alpha = new HashSet<Type>(types.Where(x => array.Contains(x.Namespace) && !x.IsNested));
             var bravo = new HashSet<Type>(types.Where(x => x.Name.Any(c => c == '<' || c == '>')));
             var delta = new HashSet<Type>(types.Except(alpha).Except(bravo));
@@ -89,10 +89,10 @@ namespace Mikodev.Binary.Tests
         [Fact(DisplayName = "Public Class Object Methods All Invisible")]
         public void PublicObjectMethods()
         {
-            var types = typeof(Converter).Assembly.GetTypes()
+            var types = typeof(IConverter).Assembly.GetTypes()
                 .Where(x => (x.IsPublic || x.IsNestedPublic) && !(x.IsAbstract && x.IsSealed) && !typeof(Delegate).IsAssignableFrom(x) && !x.IsInterface && x.Namespace == "Mikodev.Binary")
                 .ToList();
-            Assert.Equal(6, types.Count);
+            Assert.Equal(5, types.Count);
             foreach (var t in types)
             {
                 var equalMethod = t.GetMethod("Equals", new[] { typeof(object) });
@@ -110,7 +110,7 @@ namespace Mikodev.Binary.Tests
         {
             static bool HasReadOnlyAttribute(MemberInfo info) => info.GetCustomAttributes().SingleOrDefault(x => x.GetType().Name == "IsReadOnlyAttribute") != null;
 
-            var types = typeof(Converter).Assembly.GetTypes().Where(x => (x.IsPublic || x.IsNestedPublic) && x.IsValueType).ToList();
+            var types = typeof(IConverter).Assembly.GetTypes().Where(x => (x.IsPublic || x.IsNestedPublic) && x.IsValueType).ToList();
             var readonlyTypes = types.Where(HasReadOnlyAttribute).ToList();
             var otherTypes = types.Except(readonlyTypes).ToList();
             var methods = otherTypes.SelectMany(x => x.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)).ToList();
@@ -127,7 +127,7 @@ namespace Mikodev.Binary.Tests
         [Fact(DisplayName = "Debugger Display")]
         public void DebuggerDisplay()
         {
-            var types = typeof(Converter).Assembly.GetTypes();
+            var types = typeof(IConverter).Assembly.GetTypes();
             var attributes = types.Select(x => x.GetCustomAttribute<DebuggerDisplayAttribute>()).ToList();
             Assert.All(attributes, Assert.Null);
         }
@@ -135,7 +135,7 @@ namespace Mikodev.Binary.Tests
         [Fact(DisplayName = "Public Methods With Byte Array Parameter")]
         public void ByteArray()
         {
-            var types = typeof(Converter).Assembly.GetTypes().Where(x => x.IsPublic).ToList();
+            var types = typeof(IConverter).Assembly.GetTypes().Where(x => x.IsPublic).ToList();
             var members = types.SelectMany(x => x.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)).ToList();
             var methodBases = members.OfType<MethodBase>().ToList();
             Assert.NotEmpty(methodBases);
@@ -151,7 +151,7 @@ namespace Mikodev.Binary.Tests
         public void IsByRefLike()
         {
             var attributeName = "System.Runtime.CompilerServices.IsByRefLikeAttribute";
-            var types = typeof(Converter).Assembly.GetTypes();
+            var types = typeof(IConverter).Assembly.GetTypes();
             var byRefTypes = (from t in types let attributes = t.GetCustomAttributes() where attributes.Any(x => x.GetType().FullName == attributeName) select t).ToList();
             Assert.Contains(typeof(Allocator), byRefTypes);
             Assert.Contains(typeof(AllocatorAnchor), byRefTypes);
@@ -160,7 +160,7 @@ namespace Mikodev.Binary.Tests
         [Fact(DisplayName = "Throw Method With 'DoesNotReturnAttribute'")]
         public void NoReturn()
         {
-            var types = typeof(Converter).Assembly.GetTypes();
+            var types = typeof(IConverter).Assembly.GetTypes();
             var methods = types.SelectMany(x => x.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)).ToList();
             var throwMethods = methods.Where(x => x.Name.StartsWith("Throw") && !x.Name.Contains("Or")).ToList();
             Assert.NotEmpty(throwMethods);
@@ -172,16 +172,6 @@ namespace Mikodev.Binary.Tests
                 var validAttributes = attributes.Where(x => x.GetType().FullName == AttributeName).ToList();
                 _ = Assert.Single(validAttributes);
             }
-        }
-
-        [Fact(DisplayName = "Converter Constructor (internal)")]
-        public void ConverterAccessLevel()
-        {
-            var constructors = typeof(Converter).GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            var constructor = Assert.Single(constructors);
-            // internal, not protected
-            Assert.True(constructor.IsAssembly);
-            Assert.False(constructor.IsFamily);
         }
 
         [Fact(DisplayName = "Generic Converter Constructor (protected)")]

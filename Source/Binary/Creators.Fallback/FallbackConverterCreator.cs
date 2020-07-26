@@ -18,12 +18,12 @@ namespace Mikodev.Binary.Creators.Fallback
             [typeof(DateTimeOffset)] = typeof(DateTimeOffsetConverter),
         };
 
-        public Converter GetConverter(IGeneratorContext context, Type type)
+        public IConverter GetConverter(IGeneratorContext context, Type type)
         {
             if (!Types.TryGetValue(type, out var converterType))
                 return null;
             var converter = Activator.CreateInstance(converterType);
-            return (Converter)converter;
+            return (IConverter)converter;
         }
     }
 }

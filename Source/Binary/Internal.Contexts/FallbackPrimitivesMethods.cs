@@ -39,17 +39,17 @@ namespace Mikodev.Binary.Internal.Contexts
             return type.IsGenericType && Types.Contains(type.GetGenericTypeDefinition());
         }
 
-        private static (IReadOnlyList<Func<Expression, Expression>>, IReadOnlyList<Converter>, IReadOnlyList<PropertyInfo>) GetValueTupleParameters(IGeneratorContext context, Type type)
+        private static (IReadOnlyList<Func<Expression, Expression>>, IReadOnlyList<IConverter>, IReadOnlyList<PropertyInfo>) GetValueTupleParameters(IGeneratorContext context, Type type)
         {
             var members = new List<Func<Expression, Expression>>();
-            var converters = new List<Converter>();
+            var converters = new List<IConverter>();
 
             static IReadOnlyList<FieldInfo> GetValueTupleFields(Type type)
             {
                 return Names.Take(type.GetGenericArguments().Length).Select(x => type.GetField(x, BindingFlags.Instance | BindingFlags.Public)).ToList();
             }
 
-            void Insert(Func<Expression, Expression> func, Converter converter)
+            void Insert(Func<Expression, Expression> func, IConverter converter)
             {
                 members.Add(func);
                 converters.Add(converter);
@@ -73,10 +73,10 @@ namespace Mikodev.Binary.Internal.Contexts
             return (members, converters, null);
         }
 
-        private static (IReadOnlyList<Func<Expression, Expression>>, IReadOnlyList<Converter>, IReadOnlyList<PropertyInfo>) GetTupleParameters(IGeneratorContext context, Type type)
+        private static (IReadOnlyList<Func<Expression, Expression>>, IReadOnlyList<IConverter>, IReadOnlyList<PropertyInfo>) GetTupleParameters(IGeneratorContext context, Type type)
         {
             var members = new List<Func<Expression, Expression>>();
-            var converters = new List<Converter>();
+            var converters = new List<IConverter>();
             var properties = Names.Take(type.GetGenericArguments().Length).Select(x => type.GetProperty(x, BindingFlags.Instance | BindingFlags.Public)).ToList();
 
             foreach (var property in properties)
@@ -88,7 +88,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return (members, converters, properties);
         }
 
-        internal static Converter GetConverter(IGeneratorContext context, Type type)
+        internal static IConverter GetConverter(IGeneratorContext context, Type type)
         {
             if (!IsTupleOrValueTuple(type))
                 return null;

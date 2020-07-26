@@ -58,7 +58,7 @@ type ArrayTests () =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     member __.``Non Array Type`` (t : Type) =
-        let creator = typeof<Converter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SpanLikeConverterCreator") |> Array.exactlyOne
+        let creator = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SpanLikeConverterCreator") |> Array.exactlyOne
         let creator = Activator.CreateInstance creator :?> IConverterCreator
         let converter = creator.GetConverter(null, t)
         Assert.Null converter
@@ -67,7 +67,7 @@ type ArrayTests () =
     [<Theory>]
     [<MemberData("Data Bravo")>]
     member __.``Non SZ Array`` (o : obj) =
-        let creator = typeof<Converter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SpanLikeConverterCreator") |> Array.exactlyOne
+        let creator = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SpanLikeConverterCreator") |> Array.exactlyOne
         let creator = Activator.CreateInstance creator :?> IConverterCreator
         let t = o.GetType()
         Assert.True t.IsArray

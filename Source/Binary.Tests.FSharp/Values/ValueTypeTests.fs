@@ -148,7 +148,7 @@ let ``Bool Char Byte SByte`` () =
 let ``Decimal`` () =
     for i = 0 to randomCount do
         let number : decimal = decimal(random.NextDouble())
-        let converter = typeof<Converter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "DecimalConverter") |> Array.exactlyOne |> Activator.CreateInstance :?> Converter<decimal>
+        let converter = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "DecimalConverter") |> Array.exactlyOne |> Activator.CreateInstance :?> Converter<decimal>
         let alpha = converter.Encode number
         let bravo = Decimal.GetBits(number) |> Array.map (fun x -> BitConverter.GetBytes x) |> Array.concat
         Assert.Equal<byte>(alpha, bravo)

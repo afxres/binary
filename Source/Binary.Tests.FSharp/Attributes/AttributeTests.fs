@@ -39,9 +39,9 @@ type Int64AsStringConverterCreator() =
         member __.GetConverter(context, t) =
             Assert.NotNull(context)
             let converter = context.GetConverter(typeof<int64>)
-            Assert.Equal(typeof<int64>, converter.ItemType)
+            Assert.Equal(typeof<int64>, ConverterHelper.GetGenericArgument(converter))
             Assert.Equal(typeof<int64>, t)
-            new Int64AsStringConverter() :> Converter
+            new Int64AsStringConverter() :> IConverter
 
 type BadConverter<'T>() =
     inherit Converter<'T>()
@@ -63,7 +63,7 @@ type BadConverterCreatorWithoutPublicConstructor private() =
 
 type BadConverterCreator<'T>() =
     interface IConverterCreator with
-        member __.GetConverter(_, _) = new BadConverter<'T>() :> Converter
+        member __.GetConverter(_, _) = new BadConverter<'T>() :> IConverter
 
 type NullConverterCreator() =
     interface IConverterCreator with
@@ -492,7 +492,7 @@ type AttributeTests() =
 
     [<Fact>]
     member __.``Attributes All Public & Sealed & Not Allow Multiple & Not Inherited`` () =
-        let assemblyTypes = typeof<Converter>.Assembly.GetTypes()
+        let assemblyTypes = typeof<IConverter>.Assembly.GetTypes()
         let types = assemblyTypes |> Array.where (fun x -> x.Namespace <> null && x.Namespace.EndsWith("Attributes") && x.IsSubclassOf(typeof<Attribute>))
         Assert.Equal(6, types.Length)
         let map = Dictionary<Type, AttributeTargets>()

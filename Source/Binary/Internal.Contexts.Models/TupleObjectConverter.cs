@@ -27,7 +27,7 @@ namespace Mikodev.Binary.Internal.Contexts.Models
         public override void Encode(ref Allocator allocator, T item)
         {
             if (item is null)
-                ThrowHelper.ThrowTupleNull(ItemType);
+                ThrowHelper.ThrowTupleNull(typeof(T));
             encode.Invoke(ref allocator, item);
         }
 
@@ -42,7 +42,7 @@ namespace Mikodev.Binary.Internal.Contexts.Models
         public override void EncodeAuto(ref Allocator allocator, T item)
         {
             if (item is null)
-                ThrowHelper.ThrowTupleNull(ItemType);
+                ThrowHelper.ThrowTupleNull(typeof(T));
             encodeAuto.Invoke(ref allocator, item);
         }
 

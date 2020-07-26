@@ -4,6 +4,8 @@ namespace Mikodev.Binary
 {
     public interface IConverter
     {
+        int Length { get; }
+
         void Encode(ref Allocator allocator, object item);
 
         void EncodeAuto(ref Allocator allocator, object item);

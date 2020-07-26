@@ -9,7 +9,7 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class ContextMethodsOfTupleObject
     {
-        internal static Converter GetConverterAsTupleObject(Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<Converter> converters, ConstructorInfo constructor, IReadOnlyList<int> indexes, IReadOnlyList<Func<Expression, Expression>> members)
+        internal static IConverter GetConverterAsTupleObject(Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<IConverter> converters, ConstructorInfo constructor, IReadOnlyList<int> indexes, IReadOnlyList<Func<Expression, Expression>> members)
         {
             Debug.Assert(converters.Count == members.Count);
             var encode = GetEncodeDelegateAsTupleObject(type, converters, members, auto: false);
@@ -20,20 +20,20 @@ namespace Mikodev.Binary.Internal.Contexts
             var converterArguments = new object[] { encode, decode, encodeAuto, decodeAuto, itemLength };
             var converterType = typeof(TupleObjectConverter<>).MakeGenericType(type);
             var converter = Activator.CreateInstance(converterType, converterArguments);
-            return (Converter)converter;
+            return (IConverter)converter;
         }
 
-        private static MethodInfo GetEncodeMethodInfo(Converter converter, bool auto)
+        private static MethodInfo GetEncodeMethodInfo(IConverter converter, bool auto)
         {
             var converterType = converter.GetType();
-            var types = new[] { typeof(Allocator).MakeByRefType(), converter.ItemType };
+            var types = new[] { typeof(Allocator).MakeByRefType(), ConverterHelper.GetGenericArgument(converter) };
             var name = auto ? nameof(IConverter.EncodeAuto) : nameof(IConverter.Encode);
             var method = converterType.GetMethod(name, types);
             Debug.Assert(method != null);
             return method;
         }
 
-        private static MethodInfo GetDecodeMethodInfo(Converter converter, bool auto)
+        private static MethodInfo GetDecodeMethodInfo(IConverter converter, bool auto)
         {
             var converterType = converter.GetType();
             var types = new[] { typeof(ReadOnlySpan<byte>).MakeByRefType() };
@@ -43,7 +43,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return method;
         }
 
-        private static Delegate GetEncodeDelegateAsTupleObject(Type type, IReadOnlyList<Converter> converters, IReadOnlyList<Func<Expression, Expression>> members, bool auto)
+        private static Delegate GetEncodeDelegateAsTupleObject(Type type, IReadOnlyList<IConverter> converters, IReadOnlyList<Func<Expression, Expression>> members, bool auto)
         {
             Debug.Assert(converters.Count == members.Count);
             var item = Expression.Parameter(type, "item");
@@ -62,7 +62,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        private static Delegate GetDecodeDelegateAsTupleObject(Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<Converter> converters, ConstructorInfo constructor, IReadOnlyList<int> indexes, IReadOnlyList<Func<Expression, Expression>> members, bool auto)
+        private static Delegate GetDecodeDelegateAsTupleObject(Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<IConverter> converters, ConstructorInfo constructor, IReadOnlyList<int> indexes, IReadOnlyList<Func<Expression, Expression>> members, bool auto)
         {
             IReadOnlyList<Expression> Initialize(ParameterExpression span)
             {

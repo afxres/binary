@@ -13,9 +13,9 @@ type UnionConverter<'T>(encode : UnionEncoder<'T>, decode : UnionDecoder<'T>, en
     [<Literal>]
     let MarkNone = 0
 
-    member private me.NotifyNull() : unit = raise (ArgumentNullException("item", sprintf "Union can not be null, type: %O" me.ItemType))
+    member private __.NotifyNull() : unit = raise (ArgumentNullException("item", sprintf "Union can not be null, type: %O" typeof<'T>))
 
-    member private me.NotifyMark(mark : int) : unit = raise (ArgumentException(sprintf "Invalid union tag '%d', type: %O" mark me.ItemType))
+    member private __.NotifyMark(mark : int) : unit = raise (ArgumentException(sprintf "Invalid union tag '%d', type: %O" mark typeof<'T>))
 
     member inline private me.DetectNull(item : 'T) : unit = if noNull && isNull (box item) then me.NotifyNull()
 

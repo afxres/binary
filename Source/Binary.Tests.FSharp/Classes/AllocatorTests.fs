@@ -20,11 +20,15 @@ let ``Constructor (default)`` () =
 [<InlineData(-1)>]
 [<InlineData(-255)>]
 let ``Constructor (argument out of range)`` (limits : int) =
-    let error = Assert.Throws<ArgumentException>(fun () ->
+    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
         let _ = new Allocator(Span(), limits)
         ())
-    Assert.Null(error.ParamName)
-    Assert.Equal("Maximum allocator capacity must be greater than or equal to zero!", error.Message)
+    let allocatorType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "Allocator") |> Array.exactlyOne
+    let constructor = allocatorType.GetConstructors() |> Array.filter (fun x -> x.GetParameters().Length = 2) |> Array.exactlyOne
+    let parameter = constructor.GetParameters() |> Array.last
+    Assert.Equal("maxCapacity", parameter.Name)
+    Assert.Equal("maxCapacity", error.ParamName)
+    Assert.StartsWith("Maximum allocator capacity must be greater than or equal to zero!", error.Message)
     ()
 
 [<Theory>]

@@ -31,7 +31,7 @@ namespace Mikodev.Binary
         public Allocator(Span<byte> span, int maxCapacity)
         {
             if (maxCapacity < 0)
-                ThrowHelper.ThrowAllocatorMaxCapacityInvalid();
+                ThrowHelper.ThrowAllocatorMaxCapacityOutOfRange();
             limits = ~maxCapacity;
             offset = 0;
             buffer = span.Slice(0, Math.Min(span.Length, maxCapacity));

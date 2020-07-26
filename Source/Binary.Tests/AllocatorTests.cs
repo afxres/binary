@@ -14,92 +14,9 @@ namespace Mikodev.Binary.Tests
 
         private delegate void Expand(ref Allocator allocator, int expand);
 
-        private delegate void AppendLengthPrefix(ref Allocator allocator, int anchor, bool reduce);
+        private delegate void AppendLengthPrefix(ref Allocator allocator, int anchor);
 
         private static readonly string outofrange = new ArgumentOutOfRangeException().Message;
-
-        [Theory(DisplayName = "Fake Length Prefix Anchor (hack)")]
-        [InlineData(0)]
-        [InlineData(1)]
-        [InlineData(8)]
-        [InlineData(1020)]
-        public unsafe void FakeAnchor(int offset)
-        {
-            const int Limits = 1024;
-
-            byte[] Test()
-            {
-                var anchor = new AllocatorAnchor();
-                ((int*)&anchor)[0] = offset;
-                ((int*)&anchor)[1] = sizeof(int);
-                Assert.Equal($"AllocatorAnchor(Offset: {offset}, Length: 4)", anchor.ToString());
-                var allocator = new Allocator();
-                AllocatorHelper.Append(ref allocator, Limits, 0, (a, b) => { });
-                Assert.Equal(Limits, allocator.Length);
-                AllocatorHelper.AppendLengthPrefix(ref allocator, anchor);
-                return allocator.AsSpan().ToArray();
-            }
-
-            var buffer = Test();
-            var span = new ReadOnlySpan<byte>(buffer);
-            var numberSpan = span.Slice(offset);
-            var number = PrimitiveHelper.DecodeNumber(ref numberSpan);
-            Assert.Equal(Limits - offset - sizeof(int), number);
-        }
-
-        [Theory(DisplayName = "Fake Length Prefix Anchor (hack, invalid length)")]
-        [InlineData(0, -1)]
-        [InlineData(1, 0)]
-        [InlineData(8, 3)]
-        [InlineData(1020, 5)]
-        public unsafe void FakeAnchorLength(int offset, int length)
-        {
-            const int Limits = 1024;
-
-            void Test()
-            {
-                var anchor = new AllocatorAnchor();
-                ((int*)&anchor)[0] = offset;
-                ((int*)&anchor)[1] = length;
-                Assert.Equal($"AllocatorAnchor(Offset: {offset}, Length: {length})", anchor.ToString());
-                var allocator = new Allocator();
-                AllocatorHelper.Append(ref allocator, Limits, 0, (a, b) => { });
-                Assert.Equal(Limits, allocator.Length);
-                AllocatorHelper.AppendLengthPrefix(ref allocator, anchor);
-            }
-
-            var parameter = typeof(AllocatorHelper).GetMethod(nameof(AllocatorHelper.AppendLengthPrefix)).GetParameters().Last();
-            var error = Assert.Throws<ArgumentOutOfRangeException>(() => Test());
-            Assert.Contains(outofrange, error.Message);
-            Assert.Equal("anchor", error.ParamName);
-            Assert.Equal("anchor", parameter.Name);
-        }
-
-        [Theory(DisplayName = "Fake Length Prefix Anchor (hack, invalid offset)")]
-        [InlineData(int.MinValue)]
-        [InlineData(-1)]
-        [InlineData(768)]
-        [InlineData(int.MaxValue)]
-        public unsafe void FakeAnchorRange(int offset)
-        {
-            const int Limits = 512;
-
-            void Test()
-            {
-                var anchor = new AllocatorAnchor();
-                ((int*)&anchor)[0] = offset;
-                ((int*)&anchor)[1] = sizeof(int);
-                Assert.Equal($"AllocatorAnchor(Offset: {offset}, Length: 4)", anchor.ToString());
-                var allocator = new Allocator();
-                AllocatorHelper.Append(ref allocator, new byte[Limits]);
-                Assert.Equal(Limits, allocator.Length);
-                Assert.Equal(1024, allocator.Capacity);
-                AllocatorHelper.AppendLengthPrefix(ref allocator, anchor);
-            }
-
-            var error = Assert.Throws<ArgumentOutOfRangeException>(() => Test());
-            Assert.Contains(outofrange, error.Message);
-        }
 
         [Theory(DisplayName = "Fake Anchor (hack, invalid)")]
         [InlineData(0, -1)]
@@ -237,23 +154,21 @@ namespace Mikodev.Binary.Tests
         }
 
         [Theory(DisplayName = "Anchor & Append Length Prefix")]
-        [InlineData(true, 0, 4, 1)]
-        [InlineData(true, 1, 5, 5)]
-        [InlineData(true, 1, 6, 5)]
-        [InlineData(true, 1, 7, 5)]
-        [InlineData(true, 1, 8, 5)]
-        [InlineData(true, 1, 9, 5)]
-        [InlineData(true, 1, 10, 5)]
-        [InlineData(true, 1, 11, 5)]
-        [InlineData(true, 1, 12, 2)]
-        [InlineData(true, 1, 13, 2)]
-        [InlineData(true, 15, 19, 19)]
-        [InlineData(true, 15, 20, 16)]
-        [InlineData(true, 16, 20, 17)]
-        [InlineData(true, 17, 21, 21)]
-        [InlineData(false, 17, 21, 21)]
-        [InlineData(false, 0, 4, 4)]
-        public void AnchorAppend(bool reduce, int length, int allocatorCapacity, int allocatorLength)
+        [InlineData(0, 4, 1)]
+        [InlineData(1, 5, 5)]
+        [InlineData(1, 6, 5)]
+        [InlineData(1, 7, 5)]
+        [InlineData(1, 8, 5)]
+        [InlineData(1, 9, 5)]
+        [InlineData(1, 10, 5)]
+        [InlineData(1, 11, 5)]
+        [InlineData(1, 12, 2)]
+        [InlineData(1, 13, 2)]
+        [InlineData(15, 19, 19)]
+        [InlineData(15, 20, 16)]
+        [InlineData(16, 20, 17)]
+        [InlineData(17, 21, 21)]
+        public void AnchorAppend(int length, int allocatorCapacity, int allocatorLength)
         {
             var anchorMethod = (Anchor)Delegate.CreateDelegate(typeof(Anchor), typeof(Allocator).GetMethod("Anchor", BindingFlags.Static | BindingFlags.NonPublic));
             var appendMethod = (AppendLengthPrefix)Delegate.CreateDelegate(typeof(AppendLengthPrefix), typeof(Allocator).GetMethod("AppendLengthPrefix", BindingFlags.Static | BindingFlags.NonPublic));
@@ -265,7 +180,7 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(4, allocator.Length);
             Assert.Equal(allocatorCapacity, allocator.Capacity);
             AllocatorHelper.Append(ref allocator, buffer);
-            appendMethod.Invoke(ref allocator, anchor, reduce);
+            appendMethod.Invoke(ref allocator, anchor);
             Assert.Equal(allocatorLength, allocator.Length);
             Assert.Equal(allocatorCapacity, allocator.Capacity);
             var span = allocator.AsSpan();
@@ -282,31 +197,28 @@ namespace Mikodev.Binary.Tests
             var anchorMethod = (Anchor)Delegate.CreateDelegate(typeof(Anchor), typeof(Allocator).GetMethod("Anchor", BindingFlags.Static | BindingFlags.NonPublic));
             var appendMethod = (AppendLengthPrefix)Delegate.CreateDelegate(typeof(AppendLengthPrefix), typeof(Allocator).GetMethod("AppendLengthPrefix", BindingFlags.Static | BindingFlags.NonPublic));
             var random = new Random();
-            foreach (var reduce in new[] { true, false })
+            for (var length = 0; length <= 64; length++)
             {
-                for (var length = 0; length <= 64; length++)
+                for (var additional = 0; additional <= 16; additional++)
                 {
-                    for (var additional = 0; additional <= 16; additional++)
-                    {
-                        var capacity = length + additional + 4;
-                        var buffer = new byte[length];
-                        random.NextBytes(buffer);
-                        var allocator = new Allocator(new byte[capacity], maxCapacity: capacity);
-                        var anchor = anchorMethod.Invoke(ref allocator, 4);
-                        Assert.Equal(4, allocator.Length);
-                        AllocatorHelper.Append(ref allocator, buffer);
-                        Assert.Equal(length + 4, allocator.Length);
-                        appendMethod.Invoke(ref allocator, anchor, reduce);
-                        var lengthAlign8 = (length % 8) == 0 ? length : ((length >> 3) + 1) << 3;
-                        Assert.True(lengthAlign8 >= length && lengthAlign8 % 8 == 0);
-                        Assert.Equal(lengthAlign8 - length, (-length) & 7);
-                        var actualReduce = reduce && length <= Limits && capacity - 4 - lengthAlign8 >= 0;
-                        Assert.Equal(length + (actualReduce ? 1 : 4), allocator.Length);
-                        var span = allocator.AsSpan();
-                        var actualLength = PrimitiveHelper.DecodeNumber(ref span);
-                        Assert.Equal(length, actualLength);
-                        Assert.Equal(buffer, span.ToArray());
-                    }
+                    var capacity = length + additional + 4;
+                    var buffer = new byte[length];
+                    random.NextBytes(buffer);
+                    var allocator = new Allocator(new byte[capacity], maxCapacity: capacity);
+                    var anchor = anchorMethod.Invoke(ref allocator, 4);
+                    Assert.Equal(4, allocator.Length);
+                    AllocatorHelper.Append(ref allocator, buffer);
+                    Assert.Equal(length + 4, allocator.Length);
+                    appendMethod.Invoke(ref allocator, anchor);
+                    var lengthAlign8 = (length % 8) == 0 ? length : ((length >> 3) + 1) << 3;
+                    Assert.True(lengthAlign8 >= length && lengthAlign8 % 8 == 0);
+                    Assert.Equal(lengthAlign8 - length, (-length) & 7);
+                    var actualReduce = length <= Limits && capacity - 4 - lengthAlign8 >= 0;
+                    Assert.Equal(length + (actualReduce ? 1 : 4), allocator.Length);
+                    var span = allocator.AsSpan();
+                    var actualLength = PrimitiveHelper.DecodeNumber(ref span);
+                    Assert.Equal(length, actualLength);
+                    Assert.Equal(buffer, span.ToArray());
                 }
             }
         }

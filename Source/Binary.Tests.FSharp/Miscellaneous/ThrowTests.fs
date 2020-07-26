@@ -118,9 +118,9 @@ type ThrowTests() =
         [| typeof<Token ArraySegment>; typeof<Token> |];
         [| typeof<Token * int>; typeof<Token> |];
         [| typeof<struct (int * Token)>; typeof<Token> |];
-        [| typeof<Converter HashSet>; typeof<Converter> |];
-        [| typeof<Converter Queue>; typeof<Converter> |];
-        [| typeof<Converter list>; typeof<Converter> |];
+        [| typeof<IConverter HashSet>; typeof<IConverter> |];
+        [| typeof<IConverter Queue>; typeof<IConverter> |];
+        [| typeof<IConverter list>; typeof<IConverter> |];
         [| typeof<ValueTuple Set>; typeof<ValueTuple> |];
         [| typeof<ValueTuple ICollection>; typeof<ValueTuple> |];
         [| typeof<ValueTuple IEnumerable>; typeof<ValueTuple> |];

@@ -11,7 +11,7 @@ namespace Mikodev.Binary
         private static void Expand(ref Allocator allocator, int expand)
         {
             if (expand <= 0)
-                ThrowHelper.ThrowArgumentLengthInvalid();
+                ThrowHelper.ThrowArgumentLengthOutOfRange();
             var offset = allocator.offset;
             Debug.Assert(offset >= 0);
             var limits = allocator.MaxCapacity;

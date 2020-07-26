@@ -8,21 +8,21 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal sealed partial class Generator : IGenerator
     {
-        private readonly ConcurrentDictionary<Type, Converter> converters;
+        private readonly ConcurrentDictionary<Type, IConverter> converters;
 
         private readonly IReadOnlyCollection<IConverterCreator> creators;
 
-        public Generator(IReadOnlyCollection<Converter> converters, IReadOnlyCollection<IConverterCreator> creators)
+        public Generator(IReadOnlyCollection<IConverter> converters, IReadOnlyCollection<IConverterCreator> creators)
         {
-            var dictionary = converters.ToDictionary(x => x.ItemType);
+            var dictionary = converters.ToDictionary(converter => ConverterHelper.GetGenericArgument(converter));
             Debug.Assert(!dictionary.ContainsKey(typeof(object)));
-            this.converters = new ConcurrentDictionary<Type, Converter>(dictionary) { [typeof(object)] = new ObjectConverter(this) };
+            this.converters = new ConcurrentDictionary<Type, IConverter>(dictionary) { [typeof(object)] = new ObjectConverter(this) };
             this.creators = creators.ToArray();
             Debug.Assert(this.converters.All(x => x.Value != null));
             Debug.Assert(this.creators.Count == 0 || this.creators.All(x => x != null));
         }
 
-        public Converter GetConverter(Type type)
+        public IConverter GetConverter(Type type)
         {
             if (type is null)
                 throw new ArgumentNullException(nameof(type));

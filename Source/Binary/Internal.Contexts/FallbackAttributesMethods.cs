@@ -14,7 +14,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static readonly IReadOnlyCollection<Type> ConverterAttributeTypes = new[] { typeof(ConverterAttribute), typeof(ConverterCreatorAttribute) };
 
-        internal static Converter GetConverter(IGeneratorContext context, Type type)
+        internal static IConverter GetConverter(IGeneratorContext context, Type type)
         {
             var attribute = GetAttribute(type);
             if (attribute is ConverterAttribute converterAttribute)
@@ -89,16 +89,16 @@ namespace Mikodev.Binary.Internal.Contexts
             }
         }
 
-        private static Converter GetConverterByConverterAttribute(Type type, ConverterAttribute attribute)
+        private static IConverter GetConverterByConverterAttribute(Type type, ConverterAttribute attribute)
         {
-            if (GetInstanceOrException<Converter>(attribute.Type, out var converter) is { } exception)
+            if (GetInstanceOrException<IConverter>(attribute.Type, out var converter) is { } exception)
                 throw new ArgumentException($"Can not get custom converter by attribute, expected converter item type: {type}", exception);
-            if (converter.ItemType != type)
+            if (ConverterHelper.GetGenericArgument(converter) != type)
                 throw new ArgumentException($"Invalid custom converter '{converter.GetType()}', expected converter item type: {type}");
             return converter;
         }
 
-        private static Converter GetConverterByConverterCreatorAttribute(IGeneratorContext context, Type type, ConverterCreatorAttribute attribute)
+        private static IConverter GetConverterByConverterCreatorAttribute(IGeneratorContext context, Type type, ConverterCreatorAttribute attribute)
         {
             var creatorType = attribute.Type;
             if (GetInstanceOrException<IConverterCreator>(creatorType, out var creator) is { } exception)
@@ -106,14 +106,14 @@ namespace Mikodev.Binary.Internal.Contexts
             var converter = creator.GetConverter(context, type);
             if (converter is null)
                 throw new ArgumentException($"Invalid return value 'null', creator type: {creatorType}, expected converter item type: {type}");
-            if (converter.ItemType != type)
+            if (ConverterHelper.GetGenericArgument(converter) != type)
                 throw new ArgumentException($"Invalid custom converter '{converter.GetType()}', creator type: {creatorType}, expected converter item type: {type}");
             return converter;
         }
 
-        private static IReadOnlyList<Converter> GetPropertyConverters(IGeneratorContext context, IReadOnlyList<(PropertyInfo, Attribute)> collection)
+        private static IReadOnlyList<IConverter> GetPropertyConverters(IGeneratorContext context, IReadOnlyList<(PropertyInfo, Attribute)> collection)
         {
-            var converters = new List<Converter>();
+            var converters = new List<IConverter>();
             foreach (var (property, attribute) in collection)
             {
                 var propertyType = property.PropertyType;
@@ -124,7 +124,7 @@ namespace Mikodev.Binary.Internal.Contexts
                     _ => context.GetConverter(propertyType)
                 };
                 converters.Add(converter);
-                Debug.Assert(converter.ItemType == property.PropertyType);
+                Debug.Assert(ConverterHelper.GetGenericArgument(converter) == property.PropertyType);
             }
             return converters;
         }

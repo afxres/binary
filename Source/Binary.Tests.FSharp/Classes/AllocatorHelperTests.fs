@@ -130,6 +130,7 @@ let ``Append (limited)`` () =
     ()
 
 [<Theory>]
+[<InlineData(0)>]
 [<InlineData(1)>]
 [<InlineData(4)>]
 let ``Append (default constructor, action null)`` (length : int) =
@@ -137,20 +138,10 @@ let ``Append (default constructor, action null)`` (length : int) =
         let mutable allocator = Allocator()
         AllocatorHelper.Append(&allocator, length, null :> obj, null))
     let methodInfos = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4)
-    let parameterName = methodInfos |> Array.map (fun x -> x.GetParameters() |> Array.last |> (fun x -> x.Name)) |> Array.distinct |> Array.exactlyOne
+    let methodInfo = methodInfos |> Array.filter (fun x -> x.GetParameters().[1].ParameterType = typeof<int>) |> Array.exactlyOne
+    let parameter = methodInfo.GetParameters() |> Array.last
+    Assert.Equal("action", parameter.Name)
     Assert.Equal("action", error.ParamName)
-    Assert.Equal("action", parameterName)
-    ()
-
-[<Fact>]
-let ``Append (default constructor, length zero with action null)`` () =
-    let error = Assert.Throws<ArgumentNullException>(fun () ->
-        let mutable allocator = Allocator()
-        AllocatorHelper.Append(&allocator, 0, null :> obj, null))
-    let methodInfos = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4)
-    let parameterName = methodInfos |> Array.map (fun x -> x.GetParameters() |> Array.last |> (fun x -> x.Name)) |> Array.distinct |> Array.exactlyOne
-    Assert.Equal("action", error.ParamName)
-    Assert.Equal("action", parameterName)
     ()
 
 [<Fact>]
@@ -211,6 +202,23 @@ let ``Anchor (length invalid)`` (length : int) =
     Assert.StartsWith("Argument length must be greater than or equal to zero!", error.Message)
     Assert.Equal("length", error.ParamName)
     Assert.Equal("length", parameter.Name)
+    ()
+
+[<Theory>]
+[<InlineData(0)>]
+[<InlineData(1)>]
+[<InlineData(4)>]
+let ``Anchor Then Append (action null)`` (length : int) =
+    let error = Assert.Throws<ArgumentNullException>(fun () ->
+        let mutable allocator = new Allocator()
+        let anchor = AllocatorHelper.Anchor(&allocator, length)
+        AllocatorHelper.Append(&allocator, anchor, null :> obj, null)
+        ())
+    let methodInfos = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4)
+    let methodInfo = methodInfos |> Array.filter (fun x -> x.GetParameters().[1].ParameterType.Name = "AllocatorAnchor") |> Array.exactlyOne
+    let parameter = methodInfo.GetParameters() |> Array.last
+    Assert.Equal("action", parameter.Name)
+    Assert.Equal("action", error.ParamName)
     ()
 
 [<Fact>]
@@ -287,7 +295,7 @@ let ``Anchor Then Append (append some then)`` (prefix : int, length : int) =
 
 [<Fact>]
 let ``Append Action (contravariant)`` () =
-    let assembly = typeof<Converter>.Assembly
+    let assembly = typeof<IConverter>.Assembly
     let attribute = assembly.GetCustomAttributes() |> Seq.pick (fun x -> match x with :? System.Runtime.Versioning.TargetFrameworkAttribute as v -> Some v | _ -> None)
     let frameworkName = attribute.FrameworkName
     let methods = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4)
@@ -307,6 +315,34 @@ let ``Append Action (contravariant)`` () =
             Assert.Empty delegateTypes
             Assert.Equal("System.Buffers", parameterType.Namespace)
         ()
+    ()
+
+[<Fact>]
+let ``Append With Length Prefix (action null)`` () =
+    let error = Assert.Throws<ArgumentNullException>(fun () ->
+        let mutable allocator = new Allocator()
+        AllocatorHelper.AppendWithLengthPrefix(&allocator, Array.empty<byte>, null)
+        ())
+    let methodInfo = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "AppendWithLengthPrefix") |> Array.exactlyOne
+    let parameter = methodInfo.GetParameters() |> Array.last
+    Assert.Equal("action", parameter.Name)
+    Assert.Equal("action", error.ParamName)
+    ()
+
+[<Theory>]
+[<InlineData(0)>]
+[<InlineData(1)>]
+[<InlineData(256)>]
+[<InlineData(65536)>]
+let ``Append With Length Prefix`` (length : int) =
+    let source = Array.zeroCreate length
+    random.NextBytes source
+    let mutable allocator = new Allocator()
+    AllocatorHelper.AppendWithLengthPrefix(&allocator, source, fun a b -> AllocatorHelper.Append(&a, ReadOnlySpan b))
+    let mutable span = allocator.AsSpan()
+    let result = PrimitiveHelper.DecodeBufferWithLengthPrefix &span
+    Assert.True(span.IsEmpty)
+    Assert.Equal<byte>(source, result.ToArray())
     ()
 
 [<Fact>]

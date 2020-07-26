@@ -52,7 +52,7 @@ namespace Mikodev.Binary.Creators.SpanLike
             return Activator.CreateInstance(builderType, builderArguments);
         }
 
-        public Converter GetConverter(IGeneratorContext context, Type type)
+        public IConverter GetConverter(IGeneratorContext context, Type type)
         {
             object GetBuilder()
             {
@@ -78,7 +78,7 @@ namespace Mikodev.Binary.Creators.SpanLike
             var converterType = typeof(SpanLikeConverter<,>).MakeGenericType(type, itemType);
             var converterArguments = new object[] { builder, itemConverter };
             var converter = Activator.CreateInstance(converterType, converterArguments);
-            return (Converter)converter;
+            return (IConverter)converter;
         }
     }
 }

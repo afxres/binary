@@ -22,7 +22,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static readonly MethodInfo CreateDictionaryConverterMethodInfo = typeof(FallbackCollectionMethods).GetMethod(nameof(CreateDictionaryConverter), BindingFlags.Static | BindingFlags.NonPublic);
 
-        internal static Converter GetConverter(IGeneratorContext context, Type type, Type enumerableArgument)
+        internal static IConverter GetConverter(IGeneratorContext context, Type type, Type enumerableArgument)
         {
             MethodInfo Method(out Type[] arguments)
             {
@@ -42,8 +42,8 @@ namespace Mikodev.Binary.Internal.Contexts
             var methodInfo = Method(out var itemTypes);
             var converters = itemTypes.Select(context.GetConverter).ToArray();
             var method = methodInfo.MakeGenericMethod(CommonHelper.Concat(type, itemTypes));
-            var source = Expression.Parameter(typeof(IReadOnlyList<Converter>), "source");
-            var lambda = Expression.Lambda<Func<IReadOnlyList<Converter>, Converter>>(Expression.Call(method, source), source);
+            var source = Expression.Parameter(typeof(IReadOnlyList<IConverter>), "source");
+            var lambda = Expression.Lambda<Func<IReadOnlyList<IConverter>, IConverter>>(Expression.Call(method, source), source);
             return lambda.Compile().Invoke(converters);
         }
 
@@ -101,7 +101,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return Invoke() is { } type ? (SequenceCounter<T>)Activator.CreateInstance(type.MakeGenericType(typeof(T), typeof(E))) : null;
         }
 
-        private static Converter CreateSetConverter<T, E>(IReadOnlyList<Converter> converters) where T : ISet<E>
+        private static IConverter CreateSetConverter<T, E>(IReadOnlyList<IConverter> converters) where T : ISet<E>
         {
             var converter = (Converter<E>)converters.Single();
             var adapter = new SetAdapter<T, E>(converter);
@@ -110,7 +110,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return new SequenceConverter<T, HashSet<E>>(adapter, builder, counter, converter.Length);
         }
 
-        private static Converter CreateLinkedListConverter<T, E>(IReadOnlyList<Converter> converters)
+        private static IConverter CreateLinkedListConverter<T, E>(IReadOnlyList<IConverter> converters)
         {
             Debug.Assert(typeof(T) == typeof(LinkedList<E>));
             var converter = (Converter<E>)converters.Single();
@@ -120,7 +120,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return new SequenceConverter<LinkedList<E>, LinkedList<E>>(adapter, builder, counter, converter.Length);
         }
 
-        private static Converter CreateEnumerableConverter<T, E>(IReadOnlyList<Converter> converters) where T : IEnumerable<E>
+        private static IConverter CreateEnumerableConverter<T, E>(IReadOnlyList<IConverter> converters) where T : IEnumerable<E>
         {
             var converter = (Converter<E>)converters.Single();
             var builder = CreateCollectionBuilder<T, ArraySegment<E>, IEnumerable<E>>();
@@ -129,7 +129,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return new SequenceConverter<T, ArraySegment<E>>(adapter, builder, counter, converter.Length);
         }
 
-        private static Converter CreateDictionaryConverter<T, K, V>(IReadOnlyList<Converter> converters) where T : IEnumerable<KeyValuePair<K, V>>
+        private static IConverter CreateDictionaryConverter<T, K, V>(IReadOnlyList<IConverter> converters) where T : IEnumerable<KeyValuePair<K, V>>
         {
             var itemLength = ContextMethods.GetItemLength(converters);
             var adapter = new DictionaryAdapter<T, K, V>((Converter<K>)converters[0], (Converter<V>)converters[1], itemLength);

@@ -15,7 +15,7 @@ namespace Mikodev.Binary.Creators
         public NullableConverter(Converter<T> converter) => this.converter = converter;
 
         [DebuggerStepThrough, DoesNotReturn]
-        private T? ThrowInvalid(int tag) => throw new ArgumentException($"Invalid nullable tag: {tag}, type: {ItemType}");
+        private T? ThrowInvalid(int tag) => throw new ArgumentException($"Invalid nullable tag: {tag}, type: {typeof(T?)}");
 
         [DebuggerStepThrough]
         private T? ThrowInvalidOrNull(int tag) => tag == None ? null : ThrowInvalid(tag);

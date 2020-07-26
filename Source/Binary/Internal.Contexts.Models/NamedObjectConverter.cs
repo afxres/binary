@@ -37,10 +37,10 @@ namespace Mikodev.Binary.Internal.Contexts.Models
         }
 
         [DebuggerStepThrough, DoesNotReturn]
-        private T ThrowKeyFound(int i) => throw new ArgumentException($"Named key '{nameList[i]}' already exists, type: {ItemType}");
+        private T ThrowKeyFound(int i) => throw new ArgumentException($"Named key '{nameList[i]}' already exists, type: {typeof(T)}");
 
         [DebuggerStepThrough, DoesNotReturn]
-        private T ThrowNotFound(int i) => throw new ArgumentException($"Named key '{nameList[i]}' does not exist, type: {ItemType}");
+        private T ThrowNotFound(int i) => throw new ArgumentException($"Named key '{nameList[i]}' does not exist, type: {typeof(T)}");
 
         private static void DecodeInternal(ref byte origin, ref int offset, ref int length, int limits)
         {
