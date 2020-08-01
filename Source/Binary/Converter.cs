@@ -18,7 +18,7 @@ namespace Mikodev.Binary
         protected Converter(int length)
         {
             if (length < 0)
-                ThrowHelper.ThrowArgumentLengthOutOfRange();
+                ThrowHelper.ThrowLengthNegative();
             this.length = length;
             this.adapter = length > 0
                 ? new ConstantAdapter<T>(this)
@@ -48,6 +48,6 @@ namespace Mikodev.Binary
         public override int GetHashCode() => throw new NotSupportedException();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => $"{nameof(Converter<T>)}({nameof(Length)}: {Length})";
+        public override string ToString() => $"{nameof(Converter<T>)}<{typeof(T).Name}>({nameof(Length)}: {Length})";
     }
 }

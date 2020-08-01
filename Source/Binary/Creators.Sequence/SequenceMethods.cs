@@ -9,13 +9,13 @@ namespace Mikodev.Binary.Creators.Sequence
     internal static class SequenceMethods
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int GetCapacity(int byteLength, int itemLength, Type itemType)
+        internal static int GetCapacity<T>(int byteLength, int itemLength)
         {
             Debug.Assert(byteLength > 0);
             Debug.Assert(itemLength > 0);
             var quotient = Math.DivRem(byteLength, itemLength, out var remainder);
             if (remainder != 0)
-                ThrowHelper.ThrowCollectionBytesInvalid(itemType, byteLength, remainder);
+                ThrowHelper.ThrowNotEnoughBytesCollection<T>(byteLength);
             return quotient;
         }
 

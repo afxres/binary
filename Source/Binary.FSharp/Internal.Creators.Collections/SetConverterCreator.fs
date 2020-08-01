@@ -4,7 +4,7 @@ open Mikodev.Binary
 open System
 
 [<CompiledName("FSharpSetConverterCreator")>]
-type SetConverterCreator() =
+type internal SetConverterCreator() =
     interface IConverterCreator with
         member __.GetConverter(context, t) =
             if t.IsGenericType && t.GetGenericTypeDefinition() = typedefof<Set<_>> then

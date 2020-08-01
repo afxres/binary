@@ -23,6 +23,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Internal\UnionEncoder.fs" />
+    <Compile Include="Internal\UnionDecoder.fs" />
     <Compile Include="Internal.Creators\UnionConverter.fs" />
     <Compile Include="Internal.Creators\UnionConverterCreator.fs" />
     <Compile Include="Internal.Creators.Collections\ListConverter.fs" />

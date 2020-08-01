@@ -14,6 +14,7 @@
     <Compile Include="Classes\AllocatorUnsafeHandleTests.fs" />
     <Compile Include="Classes\AllocatorConverterTests.fs" />
     <Compile Include="Classes\ConverterExtensionsTests.fs" />
+    <Compile Include="Classes\ConverterHelperTests.fs" />
     <Compile Include="Classes\ConverterTests.fs" />
     <Compile Include="Classes\GeneratorBuilderTests.fs" />
     <Compile Include="Classes\GeneratorExtensionsTests.fs" />

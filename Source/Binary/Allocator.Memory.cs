@@ -13,7 +13,7 @@ namespace Mikodev.Binary
         internal static void AppendAnchorAction<T>(ref Allocator allocator, int anchor, int length, T data, SpanAction<byte, T> action)
         {
             if (action is null)
-                ThrowHelper.ThrowAllocatorActionNull();
+                ThrowHelper.ThrowActionNull();
             var offset = allocator.offset;
             var buffer = allocator.buffer;
             // check bounds via slice method
@@ -26,7 +26,7 @@ namespace Mikodev.Binary
         internal static void AppendLengthAction<T>(ref Allocator allocator, int length, T data, SpanAction<byte, T> action)
         {
             if (action is null)
-                ThrowHelper.ThrowAllocatorActionNull();
+                ThrowHelper.ThrowActionNull();
             if (length == 0)
                 return;
             var offset = Ensure(ref allocator, length);
@@ -42,7 +42,7 @@ namespace Mikodev.Binary
             var offset = allocator.offset;
             // check bounds manually
             if ((ulong)(uint)anchor + sizeof(uint) > (uint)offset)
-                ThrowHelper.ThrowAllocatorAnchorOutOfRange();
+                ThrowHelper.ThrowAllocatorOrAnchorInvalid();
             var length = offset - anchor - sizeof(uint);
             var buffer = allocator.buffer;
             ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), anchor);

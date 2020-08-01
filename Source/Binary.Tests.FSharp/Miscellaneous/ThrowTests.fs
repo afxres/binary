@@ -87,10 +87,11 @@ type ThrowTests() =
     [<Fact>]
     member __.``Allocator Modified`` () =
         let converter = new BadConverter<string>()
-        let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
+        let error = Assert.Throws<InvalidOperationException>(fun () ->
             let mutable allocator = new Allocator()
             converter.EncodeWithLengthPrefix(&allocator, null))
-        Assert.Contains(outofrange, error.Message)
+        let message = "Allocator or internal anchor has been modified unexpectedly!"
+        Assert.Equal(message, error.Message)
         ()
 
     static member ``Data Alpha`` = [|
@@ -139,19 +140,19 @@ type ThrowTests() =
 
     static member ``Data Delta`` : (obj array) seq =
         seq {
-            yield [| Memory<int32>(); Int32(); 15; 3 |]
-            yield [| ArraySegment<int64>(); Int64(); 7; 7 |]
-            yield [| ResizeArray<TimeSpan>(); TimeSpan(); 10; 2 |]
-            yield [| Dictionary<int32, int16>(); KeyValuePair<int32, int16>(); 23; 5 |]
+            yield [| Memory<int32>(); Int32(); 15; |]
+            yield [| ArraySegment<int64>(); Int64(); 7; |]
+            yield [| ResizeArray<TimeSpan>(); TimeSpan(); 10; |]
+            yield [| Dictionary<int32, int16>(); KeyValuePair<int32, int16>(); 23; |]
         }
 
     [<Theory>]
     [<MemberData("Data Delta")>]
-    member __.``Unmanaged Collection Bytes Not Match`` (collection : 'a, item : 'b, length : int, remainder : int) =
+    member __.``Unmanaged Collection Bytes Not Match`` (collection : 'a, item : 'b, length : int) =
         let buffer = Array.zeroCreate<byte> length
         let converter = generator.GetConverter<'a> ()
         let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode buffer |> ignore)
-        let message = sprintf "Invalid collection bytes, byte count: %d, remainder: %d, item type: %O" length remainder typeof<'b>
+        let message = sprintf "Not enough bytes for collection element, byte length: %d, element type: %O" length typeof<'b>
         Assert.Null(error.ParamName)
         Assert.Equal(message, error.Message)
         ()

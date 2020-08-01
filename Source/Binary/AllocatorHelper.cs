@@ -32,7 +32,7 @@ namespace Mikodev.Binary
         public static void AppendWithLengthPrefix<T>(ref Allocator allocator, T data, AllocatorAction<T> action)
         {
             if (action is null)
-                ThrowHelper.ThrowAllocatorActionNull();
+                ThrowHelper.ThrowActionNull();
             var anchor = Allocator.Anchor(ref allocator, sizeof(int));
             action.Invoke(ref allocator, data);
             Allocator.AppendLengthPrefix(ref allocator, anchor);
@@ -41,7 +41,7 @@ namespace Mikodev.Binary
         public static byte[] Invoke<T>(T data, AllocatorAction<T> action)
         {
             if (action is null)
-                ThrowHelper.ThrowAllocatorActionNull();
+                ThrowHelper.ThrowActionNull();
             var memory = BufferHelper.Borrow();
             try
             {

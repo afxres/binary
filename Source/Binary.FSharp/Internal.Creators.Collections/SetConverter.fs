@@ -4,7 +4,7 @@ open Mikodev.Binary
 open System
 
 [<CompiledName("FSharpSetConverter`1")>]
-type SetConverter<'T when 'T : comparison>(converter : Converter<'T>) =
+type internal SetConverter<'T when 'T : comparison>(converter : Converter<'T>) =
     inherit Converter<Set<'T>>(0)
 
     override __.Encode(allocator, item) =

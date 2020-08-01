@@ -4,7 +4,7 @@ open Mikodev.Binary
 open System
 
 [<CompiledName("FSharpMapConverter`2")>]
-type MapConverter<'K, 'V when 'K : comparison>(initConverter : Converter<'K>, tailConverter : Converter<'V>) =
+type internal MapConverter<'K, 'V when 'K : comparison>(initConverter : Converter<'K>, tailConverter : Converter<'V>) =
     inherit Converter<Map<'K, 'V>>(0)
 
     override __.Encode(allocator, item) =

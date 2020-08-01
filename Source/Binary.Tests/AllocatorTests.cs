@@ -190,6 +190,27 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(buffer, span.ToArray());
         }
 
+        [Theory(DisplayName = "Append Length Prefix Invalid")]
+        [InlineData(0, 0)]
+        [InlineData(0, 3)]
+        [InlineData(-1, 0)]
+        [InlineData(-1, 4)]
+        [InlineData(16, 15)]
+        [InlineData(16, 19)]
+        public void AnchorAppendInvalid(int anchor, int allocatorLength)
+        {
+            var appendMethod = (AppendLengthPrefix)Delegate.CreateDelegate(typeof(AppendLengthPrefix), typeof(Allocator).GetMethod("AppendLengthPrefix", BindingFlags.Static | BindingFlags.NonPublic));
+            var error = Assert.Throws<InvalidOperationException>(() =>
+            {
+                var allocator = new Allocator();
+                AllocatorHelper.Append(ref allocator, allocatorLength, 0, (_a, _b) => { });
+                Assert.Equal(allocatorLength, allocator.Length);
+                appendMethod.Invoke(ref allocator, anchor);
+            });
+            var message = "Allocator or internal anchor has been modified unexpectedly!";
+            Assert.Equal(message, error.Message);
+        }
+
         [Fact(DisplayName = "Anchor & Append Length Prefix (for loop all conditions)")]
         public void AnchorAppendRange()
         {

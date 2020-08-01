@@ -116,7 +116,7 @@ let ``Append (limited, overflow)`` (limits : int) =
         let mutable allocator = Allocator(Span(), limits)
         AllocatorHelper.Append(&allocator, limits + 1, null :> obj, fun a b -> ()))
     Assert.Null(error.ParamName)
-    Assert.Equal("Maximum allocator capacity has been reached.", error.Message)
+    Assert.Equal("Maximum capacity has been reached.", error.Message)
     ()
 
 [<Fact>]

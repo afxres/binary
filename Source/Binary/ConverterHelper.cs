@@ -10,10 +10,18 @@ namespace Mikodev.Binary
         {
             if (converter is null)
                 throw new ArgumentNullException(nameof(converter));
-            for (var i = converter.GetType(); i != null; i = i.BaseType)
-                if (CommonHelper.TryGetGenericArguments(i, typeof(Converter<>), out var arguments))
+            return GetGenericArgument(converter.GetType());
+        }
+
+        public static Type GetGenericArgument(Type type)
+        {
+            if (type is null)
+                throw new ArgumentNullException(nameof(type));
+            var node = type;
+            while ((node = node.BaseType) != null)
+                if (CommonHelper.TryGetGenericArguments(node, typeof(Converter<>), out var arguments))
                     return arguments.Single();
-            throw new ArgumentException($"Invalid converter type, '{converter.GetType()}' is not a subclass of '{typeof(Converter<>)}'");
+            throw new ArgumentException($"Invalid type, '{type}' is not a subclass of '{typeof(Converter<>)}'");
         }
     }
 }

@@ -1,25 +1,30 @@
 ﻿namespace Mikodev.Binary.Internal.Creators
 
 open Mikodev.Binary
+open Mikodev.Binary.Internal
 open System
 
-type UnionEncoder<'T> = delegate of allocator : byref<Allocator> * item : 'T * mark : byref<int> -> unit
-
-type UnionDecoder<'T> = delegate of span : byref<ReadOnlySpan<byte>> * mark : byref<int> -> 'T
-
-type UnionConverter<'T>(encode : UnionEncoder<'T>, decode : UnionDecoder<'T>, encodeAuto : UnionEncoder<'T>, decodeAuto : UnionDecoder<'T>, noNull : bool) =
+type internal UnionConverter<'T>(encode : UnionEncoder<'T>, decode : UnionDecoder<'T>, encodeAuto : UnionEncoder<'T>, decodeAuto : UnionDecoder<'T>, noNull : bool) =
     inherit Converter<'T>(0)
 
     [<Literal>]
     let MarkNone = 0
 
-    member private __.NotifyNull() : unit = raise (ArgumentNullException("item", sprintf "Union can not be null, type: %O" typeof<'T>))
+    member private __.NotifyNull() : unit =
+        raise (ArgumentNullException("item", sprintf "Union can not be null, type: %O" typeof<'T>))
 
-    member private __.NotifyMark(mark : int) : unit = raise (ArgumentException(sprintf "Invalid union tag '%d', type: %O" mark typeof<'T>))
+    member private __.NotifyMark(mark : int) : unit =
+        raise (ArgumentException(sprintf "Invalid union tag '%d', type: %O" mark typeof<'T>))
 
-    member inline private me.DetectNull(item : 'T) : unit = if noNull && isNull (box item) then me.NotifyNull()
+    member inline private me.DetectNull(item : 'T) : unit =
+        if noNull && isNull (box item) then
+            me.NotifyNull()
+        ()
 
-    member inline private me.DetectMark(mark : int) : unit = if mark <> MarkNone then me.NotifyMark mark
+    member inline private me.DetectMark(mark : int) : unit =
+        if mark <> MarkNone then
+            me.NotifyMark mark
+        ()
 
     override me.Encode(allocator, item) =
         me.DetectNull item

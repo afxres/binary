@@ -15,10 +15,10 @@ namespace Mikodev.Binary.Creators
         public NullableConverter(Converter<T> converter) => this.converter = converter;
 
         [DebuggerStepThrough, DoesNotReturn]
-        private T? ThrowInvalid(int tag) => throw new ArgumentException($"Invalid nullable tag: {tag}, type: {typeof(T?)}");
+        private static T? ThrowInvalid(int tag) => throw new ArgumentException($"Invalid nullable tag: {tag}, type: {typeof(T?)}");
 
         [DebuggerStepThrough]
-        private T? ThrowInvalidOrNull(int tag) => tag == None ? null : ThrowInvalid(tag);
+        private static T? ThrowInvalidOrNull(int tag) => tag == None ? null : ThrowInvalid(tag);
 
         public override void Encode(ref Allocator allocator, T? item)
         {

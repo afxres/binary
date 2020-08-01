@@ -4,7 +4,7 @@ open Mikodev.Binary
 open System
 
 [<CompiledName("FSharpMapConverterCreator")>]
-type MapConverterCreator() =
+type internal MapConverterCreator() =
     interface IConverterCreator with
         member __.GetConverter(context, t) =
             if t.IsGenericType && t.GetGenericTypeDefinition() = typedefof<Map<_, _>> then

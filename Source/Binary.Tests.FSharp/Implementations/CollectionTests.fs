@@ -14,8 +14,8 @@ type CollectionTests() =
     member __.``Capacity (valid)`` (byteLength : int, itemLength : int, expectedCapacity : int) =
         let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SequenceMethods") |> Array.exactlyOne
         let m = t.GetMethod("GetCapacity", BindingFlags.Static ||| BindingFlags.NonPublic)
-        let f = Delegate.CreateDelegate(typeof<Func<int, int, Type, int>>, m) :?> Func<int, int, Type, int>
-        let capacity = f.Invoke(byteLength, itemLength, typeof<int>)
+        let f = Delegate.CreateDelegate(typeof<Func<int, int, int>>, m.MakeGenericMethod typeof<int>) :?> Func<int, int, int>
+        let capacity = f.Invoke(byteLength, itemLength)
         Assert.Equal(expectedCapacity, capacity)
         ()
 
@@ -25,9 +25,9 @@ type CollectionTests() =
     member __.``Capacity (invalid)`` (byteLength : int, itemLength : int) =
         let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SequenceMethods") |> Array.exactlyOne
         let m = t.GetMethod("GetCapacity", BindingFlags.Static ||| BindingFlags.NonPublic)
-        let f = Delegate.CreateDelegate(typeof<Func<int, int, Type, int>>, m) :?> Func<int, int, Type, int>
-        let error = Assert.Throws<ArgumentException>(fun () -> f.Invoke(byteLength, itemLength, typeof<int>) |> ignore)
-        let message = sprintf "Invalid collection bytes, byte count: %d, remainder: %d, item type: %O" byteLength (byteLength % itemLength) (typeof<int>)
+        let f = Delegate.CreateDelegate(typeof<Func<int, int, int>>, m.MakeGenericMethod typeof<int>) :?> Func<int, int, int>
+        let error = Assert.Throws<ArgumentException>(fun () -> f.Invoke(byteLength, itemLength) |> ignore)
+        let message = sprintf "Not enough bytes for collection element, byte length: %d, element type: %O" byteLength typeof<int>
         Assert.Null error.ParamName
         Assert.Equal(message, error.Message)
         ()

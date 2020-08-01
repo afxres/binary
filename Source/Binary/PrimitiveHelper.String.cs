@@ -9,14 +9,14 @@ namespace Mikodev.Binary
         public static void EncodeString(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding)
         {
             if (encoding is null)
-                ThrowHelper.ThrowArgumentEncodingNull();
+                ThrowHelper.ThrowEncodingNull();
             Allocator.AppendString(ref allocator, span, encoding);
         }
 
         public static void EncodeStringWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding)
         {
             if (encoding is null)
-                ThrowHelper.ThrowArgumentEncodingNull();
+                ThrowHelper.ThrowEncodingNull();
             Allocator.AppendStringWithLengthPrefix(ref allocator, span, encoding);
         }
 
@@ -33,14 +33,14 @@ namespace Mikodev.Binary
         public static string DecodeString(ReadOnlySpan<byte> span, Encoding encoding)
         {
             if (encoding is null)
-                ThrowHelper.ThrowArgumentEncodingNull();
+                ThrowHelper.ThrowEncodingNull();
             return SharedHelper.GetString(span, encoding);
         }
 
         public static string DecodeStringWithLengthPrefix(ref ReadOnlySpan<byte> span, Encoding encoding)
         {
             if (encoding is null)
-                ThrowHelper.ThrowArgumentEncodingNull();
+                ThrowHelper.ThrowEncodingNull();
             return SharedHelper.GetString(DecodeBufferWithLengthPrefix(ref span), encoding);
         }
 

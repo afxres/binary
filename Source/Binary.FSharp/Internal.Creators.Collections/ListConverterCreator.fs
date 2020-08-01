@@ -4,7 +4,7 @@ open Mikodev.Binary
 open System
 
 [<CompiledName("FSharpListConverterCreator")>]
-type ListConverterCreator() =
+type internal ListConverterCreator() =
     interface IConverterCreator with
         member __.GetConverter(context, t) =
             if t.IsGenericType && t.GetGenericTypeDefinition() = typedefof<List<_>> then

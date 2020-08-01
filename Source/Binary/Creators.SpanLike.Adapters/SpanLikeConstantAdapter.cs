@@ -25,7 +25,7 @@ namespace Mikodev.Binary.Creators.SpanLike.Adapters
             if (byteLength == 0)
                 return new MemoryResult<T>(Array.Empty<T>(), 0);
             var itemLength = converter.Length;
-            var capacity = SequenceMethods.GetCapacity(byteLength, itemLength, typeof(T));
+            var capacity = SequenceMethods.GetCapacity<T>(byteLength, itemLength);
             var collection = new T[capacity];
             for (var i = 0; i < capacity; i++)
                 collection[i] = converter.Decode(span.Slice(i * itemLength, itemLength));

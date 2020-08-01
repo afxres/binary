@@ -73,7 +73,7 @@ let ``List (value type, invalid byte count)`` (bytes : int, remainder : int) =
     let otherConverter = generator.GetConverter<double array>()
     let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode buffer |> ignore)
     let otherError = Assert.Throws<ArgumentException>(fun () -> otherConverter.Decode buffer |> ignore)
-    let message = sprintf "Invalid collection bytes, byte count: %d, remainder: %d, item type: %O" bytes remainder typeof<double>
+    let message = sprintf "Not enough bytes for collection element, byte length: %d, element type: %O" bytes typeof<double>
     Assert.Null(error.ParamName)
     Assert.Null(otherError.ParamName)
     Assert.Equal(message, error.Message)

@@ -59,7 +59,7 @@ namespace Mikodev.Binary.Creators.Sequence.Adapters
                 return new Dictionary<K, V>();
             const int Initial = 8;
             var itemLength = this.itemLength;
-            var capacity = itemLength > 0 ? SequenceMethods.GetCapacity(byteLength, itemLength, typeof(KeyValuePair<K, V>)) : Initial;
+            var capacity = itemLength > 0 ? SequenceMethods.GetCapacity<KeyValuePair<K, V>>(byteLength, itemLength) : Initial;
             var collection = new Dictionary<K, V>(capacity);
             var body = span;
             while (!body.IsEmpty)
