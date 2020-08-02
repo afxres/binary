@@ -673,7 +673,7 @@ type AttributeTests() =
     [<InlineData(typeof<ClassAsTupleObjectWithBadConverterCreatorOnProperty>, typeof<double>, typeof<BadConverter<single>>, typeof<BadConverterCreator<single>>)>]
     member __.``Converter Creator Attribute With Invalid Converter`` (t : Type, expectedType : Type, converterType : Type, creatorType : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Invalid custom converter '%O', creator type: %O, expected converter item type: %O" converterType creatorType expectedType
+        let message = sprintf "Invalid return value '%O', creator type: %O, expected converter item type: %O" converterType creatorType expectedType
         Assert.Equal(message, error.Message)
         ()
 
@@ -702,7 +702,7 @@ type AttributeTests() =
     [<InlineData(typeof<ClassWithNoSequentialTupleKey04>)>]
     member __.``Tuple Key Not Sequential`` (t : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Tuple key must be start from zero and must be sequential, type: %O" t
+        let message = sprintf "Tuple key must be start at zero and must be sequential, type: %O" t
         Assert.Equal(message, error.Message)
         ()
 

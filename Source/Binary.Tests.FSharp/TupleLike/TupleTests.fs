@@ -5,9 +5,10 @@ open System
 open System.Net
 open Xunit
 
-let generator = Generator.CreateDefaultBuilder()
-                    .AddFSharpConverterCreators()
-                    .Build();
+let generator =
+    Generator.CreateDefaultBuilder()
+        .AddFSharpConverterCreators()
+        .Build();
 
 let test (ls : int) (ll : int) (value : 'T) =
     let c = generator.GetConverter<'T> ()

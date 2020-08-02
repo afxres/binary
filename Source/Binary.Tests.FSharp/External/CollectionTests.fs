@@ -5,9 +5,10 @@ open System
 open System.Net
 open Xunit
 
-let generator = Generator.CreateDefaultBuilder()
-                    .AddFSharpConverterCreators()
-                    .Build();
+let generator =
+    Generator.CreateDefaultBuilder()
+        .AddFSharpConverterCreators()
+        .Build();
 
 let test (value : 'a when 'a :> 'e seq) =
     let buffer = generator.Encode value

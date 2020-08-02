@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Internal.Creators
+﻿namespace Mikodev.Binary.Creators.Fallback
 
 open Mikodev.Binary
 open Mikodev.Binary.Internal

@@ -94,7 +94,7 @@ let ``Decode Number (empty bytes)`` () =
 let ``Decode Number (not enough bytes)`` () =
     let test (bytes : byte array) =
         let error = Assert.Throws<ArgumentOutOfRangeException>(fun () -> let mutable span = ReadOnlySpan<byte> bytes in PrimitiveHelper.DecodeNumber(&span) |> ignore)
-        Assert.Contains(outofrange, error.Message)
+        Assert.StartsWith(outofrange, error.Message)
         ()
 
     test [| 64uy |]

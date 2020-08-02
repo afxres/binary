@@ -79,7 +79,7 @@ namespace Mikodev.Binary
 
         public Token this[string key, bool nothrow] => GetToken(key, nothrow);
 
-        public object As(Type type) => ((IConverter)generator.GetConverter(type)).Decode(memory.Span);
+        public object As(Type type) => generator.GetConverter(type).Decode(memory.Span);
 
         public T As<T>() => ((Converter<T>)generator.GetConverter(typeof(T))).Decode(memory.Span);
 

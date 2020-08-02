@@ -49,7 +49,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (converter is null)
                 return null;
             if (ConverterHelper.GetGenericArgument(converter) != type)
-                throw new ArgumentException($"Invalid converter '{converter.GetType()}', creator type: {creatorType}, expected converter item type: {type}");
+                throw new ArgumentException($"Invalid return value '{converter.GetType()}', creator type: {creatorType}, expected converter item type: {type}");
             return converter;
         }
 
@@ -60,7 +60,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 return converter;
             // not supported
             if (type.Assembly == typeof(IConverter).Assembly)
-                throw new ArgumentException($"Invalid type: {type}");
+                throw new ArgumentException($"Invalid internal type: {type}");
             // collections and others
             if (CommonHelper.TryGetInterfaceArguments(type, typeof(IEnumerable<>), out var arguments))
                 return FallbackCollectionMethods.GetConverter(this, type, arguments.Single());

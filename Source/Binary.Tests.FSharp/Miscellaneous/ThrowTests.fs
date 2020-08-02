@@ -107,10 +107,10 @@ type ThrowTests() =
     [<MemberData("Data Alpha")>]
     member __.``No Available Property``(t : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        Assert.Contains(sprintf "No available property found, type: %O" t, error.Message)
+        Assert.Equal(sprintf "No available property found, type: %O" t, error.Message)
         ()
 
-    static member ``Data Bravo`` = [|
+    static member ``Data Internal`` = [|
         [| typeof<Token>; typeof<Token> |];
         [| typeof<Token array>; typeof<Token> |];
         [| typeof<Token ResizeArray>; typeof<Token> |];
@@ -122,6 +122,9 @@ type ThrowTests() =
         [| typeof<IConverter HashSet>; typeof<IConverter> |];
         [| typeof<IConverter Queue>; typeof<IConverter> |];
         [| typeof<IConverter list>; typeof<IConverter> |];
+    |]
+
+    static member ``Data Bravo`` = [|
         [| typeof<ValueTuple Set>; typeof<ValueTuple> |];
         [| typeof<ValueTuple ICollection>; typeof<ValueTuple> |];
         [| typeof<ValueTuple IEnumerable>; typeof<ValueTuple> |];
@@ -134,6 +137,14 @@ type ThrowTests() =
     [<MemberData("Data Bravo")>]
     member __.``Simple Or Complex Type With Invalid Type`` (t : Type, by : Type) =
         let message = sprintf "Invalid type: %O" by
+        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
+        Assert.Equal(message, error.Message)
+        ()
+
+    [<Theory>]
+    [<MemberData("Data Internal")>]
+    member __.``Simple Or Complex Type With Invalid Internal Type`` (t : Type, by : Type) =
+        let message = sprintf "Invalid internal type: %O" by
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
         Assert.Equal(message, error.Message)
         ()

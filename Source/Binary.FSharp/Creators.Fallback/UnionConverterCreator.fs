@@ -1,8 +1,9 @@
-﻿namespace Mikodev.Binary.Internal.Creators
+﻿namespace Mikodev.Binary.Creators.Fallback
 
 open Microsoft.FSharp.Reflection
 open Mikodev.Binary
 open Mikodev.Binary.Internal
+open Mikodev.Binary.Internal.Contexts
 open System
 open System.Collections.Generic
 open System.Linq.Expressions
@@ -137,7 +138,7 @@ type internal UnionConverterCreator() =
                     for i in constructorInfos do
                         for p in i.Value.GetParameters() do
                             yield p.ParameterType } |> Seq.distinct |> Seq.toArray
-                let converters = memberTypes |> Array.map (fun x -> x, context.GetConverter x) |> readOnlyDict
+                let converters = memberTypes |> Array.map (fun x -> x, (Validate.GetConverter context x)) |> readOnlyDict
                 let tagMember = FSharpValue.PreComputeUnionTagMemberInfo(t)
                 let noNull = not t.IsValueType && not (tagMember :? MethodInfo)
                 let encode = GetEncodeExpression t converters caseInfos tagMember false

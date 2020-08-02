@@ -65,20 +65,21 @@ let ``Get Converter (generic type definition)`` () =
 let ``Get Converter (generic type parameter)`` () =
     let definition = typedefof<_ list>
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter definition |> ignore)
-    Assert.Contains("Invalid generic type definition", error.Message)
+    let message = sprintf "Invalid generic type definition: %O" definition
+    Assert.Equal(message, error.Message)
     ()
 
 [<Fact>]
 let ``Encode (obj, instance)`` () =
     let source = new obj()
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Encode source |> ignore)
-    Assert.Contains("Invalid type", error.Message)
+    Assert.Equal("Invalid system type: System.Object", error.Message)
     ()
 
 [<Fact>]
 let ``Encode (obj, null)`` () =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Encode<obj> null |> ignore)
-    Assert.Contains("Can not get type of null object.", error.Message)
+    Assert.Equal("Can not get type of null object.", error.Message)
     ()
 
 [<Theory>]
@@ -107,7 +108,7 @@ let ``Encode ('a : obj)`` (value : obj) =
 [<Fact>]
 let ``Decode ('a : obj)`` () =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode<obj> Array.empty<byte>)
-    Assert.Contains("Invalid type", error.Message)
+    Assert.Equal("Invalid system type: System.Object", error.Message)
     ()
 
 [<Theory>]
@@ -137,9 +138,9 @@ let ``Encode and Decode`` (data : 'a) =
 [<Fact>]
 let ``Internal Types`` () =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode<Converter<obj>> Array.empty<byte> |> ignore)
-    Assert.Contains("Invalid type", error.Message)
+    Assert.Equal(sprintf "Invalid internal type: %O" typeof<Converter<obj>>, error.Message)
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode<Token> Array.empty<byte> |> ignore)
-    Assert.Contains("Invalid type", error.Message)
+    Assert.Equal(sprintf "Invalid internal type: %O" typeof<Token>, error.Message)
     ()
 
 // Bad creator operation
@@ -156,7 +157,7 @@ type BadConverterCreator () =
 let ``Bad Creator`` () =
     let generator = Generator.CreateDefaultBuilder().AddConverterCreator(new BadConverterCreator()).Build()
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(typeof<BadType>) |> ignore)
-    let message = sprintf "Invalid converter '%O', creator type: %O, expected converter item type: %O" (generator.GetConverter<int>().GetType()) typeof<BadConverterCreator> typeof<BadType>
+    let message = sprintf "Invalid return value '%O', creator type: %O, expected converter item type: %O" (generator.GetConverter<int>().GetType()) typeof<BadConverterCreator> typeof<BadType>
     Assert.Equal(message, error.Message)
     ()
 

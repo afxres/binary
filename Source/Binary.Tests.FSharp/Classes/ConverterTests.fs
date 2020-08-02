@@ -68,10 +68,24 @@ type ConverterTests () =
         ()
 
     [<Fact>]
+    member __.``Object Converter (encode object instance)`` () =
+        let converter = generator.GetConverter<obj>()
+        let error = Assert.Throws<ArgumentException>(fun () -> converter.Encode (new obj()) |> ignore)
+        Assert.Equal("Invalid system type: System.Object", error.Message)
+        ()
+
+    [<Fact>]
+    member __.``Object Converter (encode null)`` () =
+        let converter = generator.GetConverter<obj>()
+        let error = Assert.Throws<ArgumentException>(fun () -> converter.Encode null |> ignore)
+        Assert.Equal("Can not get type of null object.", error.Message)
+        ()
+
+    [<Fact>]
     member __.``Object Converter (decode)`` () =
         let converter = generator.GetConverter<obj>()
         let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode Array.empty<byte> |> ignore)
-        Assert.Contains("Invalid type", error.Message)
+        Assert.Equal("Invalid system type: System.Object", error.Message)
         ()
 
     static member ``Data Alpha`` : (obj array) seq =

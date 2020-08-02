@@ -41,7 +41,7 @@ namespace Mikodev.Binary.Tests
             }
 
             var error = Assert.Throws<ArgumentOutOfRangeException>(() => Test());
-            Assert.Contains(outofrange, error.Message);
+            Assert.StartsWith(outofrange, error.Message);
         }
 
         [Fact(DisplayName = "Expand Capacity (hack)")]

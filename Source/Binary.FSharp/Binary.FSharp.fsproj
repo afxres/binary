@@ -25,14 +25,15 @@
   <ItemGroup>
     <Compile Include="Internal\UnionEncoder.fs" />
     <Compile Include="Internal\UnionDecoder.fs" />
-    <Compile Include="Internal.Creators\UnionConverter.fs" />
-    <Compile Include="Internal.Creators\UnionConverterCreator.fs" />
-    <Compile Include="Internal.Creators.Collections\ListConverter.fs" />
-    <Compile Include="Internal.Creators.Collections\ListConverterCreator.fs" />
-    <Compile Include="Internal.Creators.Collections\MapConverter.fs" />
-    <Compile Include="Internal.Creators.Collections\MapConverterCreator.fs" />
-    <Compile Include="Internal.Creators.Collections\SetConverter.fs" />
-    <Compile Include="Internal.Creators.Collections\SetConverterCreator.fs" />
+    <Compile Include="Internal.Contexts\Validate.fs" />
+    <Compile Include="Creators.Fallback\UnionConverter.fs" />
+    <Compile Include="Creators.Fallback\UnionConverterCreator.fs" />
+    <Compile Include="Creators.Sequence\ListConverter.fs" />
+    <Compile Include="Creators.Sequence\ListConverterCreator.fs" />
+    <Compile Include="Creators.Sequence\MapConverter.fs" />
+    <Compile Include="Creators.Sequence\MapConverterCreator.fs" />
+    <Compile Include="Creators.Sequence\SetConverter.fs" />
+    <Compile Include="Creators.Sequence\SetConverterCreator.fs" />
     <Compile Include="GeneratorBuilderFSharpExtensions.fs" />
   </ItemGroup>
 

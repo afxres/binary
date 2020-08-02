@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Internal.Creators.Collections
+﻿namespace Mikodev.Binary.Creators.Sequence
 
 open Mikodev.Binary
 open System

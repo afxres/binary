@@ -42,7 +42,8 @@ namespace Mikodev.Binary.Tests
         {
             var list = new LinkedList<int>(2, null).Add(4).Add(6);
             var error = Assert.Throws<ArgumentException>(() => generator.GetConverter(list));
-            Assert.Contains("Circular type reference", error.Message);
+            var message = $"Circular type reference detected, type: {typeof(LinkedList<int>)}";
+            Assert.Equal(message, error.Message);
         }
 
         [Fact(DisplayName = "Circular Type Reference")]
@@ -50,7 +51,8 @@ namespace Mikodev.Binary.Tests
         {
             var data = new A();
             var error = Assert.Throws<ArgumentException>(() => generator.Encode(data));
-            Assert.Contains("Circular type reference", error.Message);
+            var message = $"Circular type reference detected, type: {typeof(A)}";
+            Assert.Equal(message, error.Message);
         }
     }
 }

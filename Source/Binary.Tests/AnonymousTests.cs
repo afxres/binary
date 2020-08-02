@@ -22,7 +22,8 @@ namespace Mikodev.Binary.Tests
         {
             var a = new { };
             var error = Assert.Throws<ArgumentException>(() => generator.GetConverter(a));
-            Assert.Contains("No available property found", error.Message);
+            var message = $"No available property found, type: {a.GetType()}";
+            Assert.Equal(message, error.Message);
         }
 
         [Fact(DisplayName = "Encode Then Decode")]

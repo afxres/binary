@@ -107,7 +107,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (converter is null)
                 throw new ArgumentException($"Invalid return value 'null', creator type: {creatorType}, expected converter item type: {type}");
             if (ConverterHelper.GetGenericArgument(converter) != type)
-                throw new ArgumentException($"Invalid custom converter '{converter.GetType()}', creator type: {creatorType}, expected converter item type: {type}");
+                throw new ArgumentException($"Invalid return value '{converter.GetType()}', creator type: {creatorType}, expected converter item type: {type}");
             return converter;
         }
 
@@ -159,7 +159,7 @@ namespace Mikodev.Binary.Internal.Contexts
             }
             var keys = map.Keys.ToList();
             if (keys.First() != 0 || keys.Last() != keys.Count - 1)
-                throw new ArgumentException($"Tuple key must be start from zero and must be sequential, type: {type}");
+                throw new ArgumentException($"Tuple key must be start at zero and must be sequential, type: {type}");
             properties = map.Values.ToList();
         }
 

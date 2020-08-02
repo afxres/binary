@@ -5,13 +5,14 @@ open System
 open System.Reflection
 open Xunit
 
-let generator = Generator.CreateDefaultBuilder()
-                    .AddFSharpConverterCreators()
-                    .Build();
+let generator =
+    Generator.CreateDefaultBuilder()
+        .AddFSharpConverterCreators()
+        .Build();
 
 let converter<'a> =
     let value = generator.GetConverter(typeof<'a>)
-    Assert.Contains("UnionConverter", value.GetType().Name)
+    Assert.Equal("UnionConverter`1", value.GetType().Name)
     value :?> Converter<'a>
 
 let encode<'a> (c : Converter<'a>) v =

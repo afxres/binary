@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Internal.Creators.Collections
+﻿namespace Mikodev.Binary.Creators.Sequence
 
 open Mikodev.Binary
 open System
@@ -9,10 +9,10 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
 
     let constant = converter.Length > 0
 
-    member __.NotifyConstant(length : int) : unit =
+    member private __.NotifyConstant(length : int) : unit =
         raise (ArgumentException(sprintf "Not enough bytes for collection element, byte length: %d, element type: %O" length typeof<'T>))
 
-    member me.DecodeConstant(span : ReadOnlySpan<byte>) : List<'T> =
+    member private me.DecodeConstant(span : ReadOnlySpan<byte>) : List<'T> =
         let converter = converter
         let itemLength = converter.Length
         let spanLength = span.Length;
@@ -28,7 +28,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
             i <- i - 1
         list
 
-    member __.SelectVariable(span : byref<ReadOnlySpan<byte>>) : List<'T> =
+    member private __.SelectVariable(span : byref<ReadOnlySpan<byte>>) : List<'T> =
         let converter = converter
         let data = ResizeArray<'T>()
         while not span.IsEmpty do
@@ -41,7 +41,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
             i <- i - 1
         list
 
-    member me.DecodeVariable(span : byref<ReadOnlySpan<byte>>, loop : int) : List<'T> =
+    member private me.DecodeVariable(span : byref<ReadOnlySpan<byte>>, loop : int) : List<'T> =
         if span.IsEmpty then
             []
         elif loop < 64 then

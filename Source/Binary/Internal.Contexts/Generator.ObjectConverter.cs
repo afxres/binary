@@ -16,12 +16,12 @@ namespace Mikodev.Binary.Internal.Contexts
                     throw new ArgumentException("Can not get type of null object.");
                 var type = item.GetType();
                 if (type == typeof(object))
-                    throw new ArgumentException($"Invalid type: {typeof(object)}");
-                var converter = (IConverter)generator.GetConverter(type);
+                    throw new ArgumentException($"Invalid system type: {typeof(object)}");
+                var converter = generator.GetConverter(type);
                 converter.Encode(ref allocator, item);
             }
 
-            public override object Decode(in ReadOnlySpan<byte> span) => throw new ArgumentException($"Invalid type: {typeof(object)}");
+            public override object Decode(in ReadOnlySpan<byte> span) => throw new ArgumentException($"Invalid system type: {typeof(object)}");
         }
     }
 }
