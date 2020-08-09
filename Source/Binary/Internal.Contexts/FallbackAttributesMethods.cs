@@ -56,7 +56,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
             // converter as tuple object
             if (attribute is TupleObjectAttribute)
-                return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, properties, converters, constructor, indexes, properties.Select(x => new Func<Expression, Expression>(e => Expression.Property(e, x))).ToList());
+                return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, properties, properties.Select(x => x.PropertyType).ToList(), converters, constructor, indexes, properties.Select(x => new Func<Expression, Expression>(e => Expression.Property(e, x))).ToList());
 
             if (dictionary is null)
                 dictionary = properties.ToDictionary(x => x, x => x.Name);

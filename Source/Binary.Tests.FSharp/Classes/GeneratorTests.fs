@@ -153,11 +153,46 @@ type BadConverterCreator () =
                 context.GetConverter typeof<int> // bad return value
             else null
 
+type BadConverterInterfaceImplementation () =
+    interface IConverter with
+        member __.Decode(span: inref<ReadOnlySpan<byte>>): obj = raise (System.NotImplementedException())
+
+        member __.Decode(buffer: byte []): obj = raise (System.NotImplementedException())
+
+        member __.DecodeAuto(span: byref<ReadOnlySpan<byte>>): obj = raise (System.NotImplementedException())
+
+        member __.DecodeWithLengthPrefix(span: byref<ReadOnlySpan<byte>>): obj = raise (System.NotImplementedException())
+
+        member __.Encode(item: obj): byte [] = raise (System.NotImplementedException())
+
+        member __.Encode(allocator: byref<Allocator>, item: obj): unit = raise (System.NotImplementedException())
+
+        member __.EncodeAuto(allocator: byref<Allocator>, item: obj): unit = raise (System.NotImplementedException())
+
+        member __.EncodeWithLengthPrefix(allocator: byref<Allocator>, item: obj): unit = raise (System.NotImplementedException())
+
+        member __.Length: int = raise (System.NotImplementedException())
+
+type BadConverterCreatorInterfaceImplementation () =
+    interface IConverterCreator with
+        member __.GetConverter(context, ``type``) =
+            if ``type`` = typeof<BadType> then
+                new BadConverterInterfaceImplementation() :> IConverter // bad return value
+            else null
+
 [<Fact>]
-let ``Bad Creator`` () =
+let ``Bad Creator (item type mismatch)`` () =
     let generator = Generator.CreateDefaultBuilder().AddConverterCreator(new BadConverterCreator()).Build()
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(typeof<BadType>) |> ignore)
     let message = sprintf "Invalid return value '%O', creator type: %O, expected converter item type: %O" (generator.GetConverter<int>().GetType()) typeof<BadConverterCreator> typeof<BadType>
+    Assert.Equal(message, error.Message)
+    ()
+
+[<Fact>]
+let ``Bad Creator (not a subclass)`` () =
+    let generator = Generator.CreateDefaultBuilder().AddConverterCreator(new BadConverterCreatorInterfaceImplementation()).Build()
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(typeof<BadType>) |> ignore)
+    let message = sprintf "Invalid type, '%O' is not a subclass of '%O'" typeof<BadConverterInterfaceImplementation> typedefof<Converter<_>>
     Assert.Equal(message, error.Message)
     ()
 

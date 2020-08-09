@@ -28,7 +28,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return this;
         }
 
-        public IGenerator Build() => new Generator(converters.Values, creators);
+        public IGenerator Build() => new Generator(converters, creators);
 
         public override string ToString() => $"{nameof(GeneratorBuilder)}(Converters: {converters.Count}, Creators: {creators.Count})";
     }

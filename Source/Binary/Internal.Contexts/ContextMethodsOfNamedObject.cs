@@ -37,12 +37,11 @@ namespace Mikodev.Binary.Internal.Contexts
             return (IConverter)converter;
         }
 
-        private static MethodInfo GetEncodeWithLengthPrefixMethodInfo(IConverter converter)
+        private static MethodInfo GetEncodeWithLengthPrefixMethodInfo(Type itemType)
         {
-            var converterType = converter.GetType();
-            var types = new[] { typeof(Allocator).MakeByRefType(), ConverterHelper.GetGenericArgument(converter) };
+            var types = new[] { typeof(Allocator).MakeByRefType(), itemType };
             var name = nameof(IConverter.EncodeWithLengthPrefix);
-            var method = converterType.GetMethod(name, types);
+            var method = typeof(Converter<>).MakeGenericType(itemType).GetMethod(name, types);
             Debug.Assert(method != null);
             return method;
         }
@@ -58,7 +57,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 var property = properties[i];
                 var converter = converters[i];
                 var buffer = AllocatorHelper.Invoke(memories[property], (ref Allocator allocator, ReadOnlyMemory<byte> data) => PrimitiveHelper.EncodeBufferWithLengthPrefix(ref allocator, data.Span));
-                var methodInfo = GetEncodeWithLengthPrefixMethodInfo(converter);
+                var methodInfo = GetEncodeWithLengthPrefixMethodInfo(property.PropertyType);
                 // append named key with length prefix (cached), then append value with length prefix
                 expressions.Add(Expression.Call(AppendMethodInfo, allocator, Expression.New(ReadOnlySpanByteConstructorInfo, Expression.Constant(buffer))));
                 expressions.Add(Expression.Call(Expression.Constant(converter), methodInfo, allocator, Expression.Property(item, property)));
@@ -76,8 +75,9 @@ namespace Mikodev.Binary.Internal.Contexts
                 var values = new Expression[properties.Count];
                 for (var i = 0; i < properties.Count; i++)
                 {
+                    var property = properties[i];
                     var converter = converters[i];
-                    var method = InvokeMethodInfo.MakeGenericMethod(ConverterHelper.GetGenericArgument(converter));
+                    var method = InvokeMethodInfo.MakeGenericMethod(property.PropertyType);
                     var invoke = Expression.Call(slices, method, Expression.Constant(converter), Expression.Constant(i));
                     values[i] = invoke;
                 }

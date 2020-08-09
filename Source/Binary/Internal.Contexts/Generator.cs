@@ -12,11 +12,9 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private readonly IReadOnlyCollection<IConverterCreator> creators;
 
-        public Generator(IReadOnlyCollection<IConverter> converters, IReadOnlyCollection<IConverterCreator> creators)
+        public Generator(IReadOnlyDictionary<Type, IConverter> converters, IReadOnlyCollection<IConverterCreator> creators)
         {
-            var dictionary = converters.ToDictionary(converter => ConverterHelper.GetGenericArgument(converter));
-            Debug.Assert(!dictionary.ContainsKey(typeof(object)));
-            this.converters = new ConcurrentDictionary<Type, IConverter>(dictionary) { [typeof(object)] = new ObjectConverter(this) };
+            this.converters = new ConcurrentDictionary<Type, IConverter>(converters) { [typeof(object)] = new ObjectConverter(this) };
             this.creators = creators.ToArray();
             Debug.Assert(this.converters.All(x => x.Value != null));
             Debug.Assert(this.creators.Count == 0 || this.creators.All(x => x != null));
