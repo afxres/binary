@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
-    internal sealed partial class Generator : IGenerator
+    internal sealed class Generator : IGenerator
     {
         private readonly ConcurrentDictionary<Type, IConverter> converters;
 
@@ -14,7 +14,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         public Generator(IReadOnlyDictionary<Type, IConverter> converters, IReadOnlyCollection<IConverterCreator> creators)
         {
-            this.converters = new ConcurrentDictionary<Type, IConverter>(converters) { [typeof(object)] = new ObjectConverter(this) };
+            this.converters = new ConcurrentDictionary<Type, IConverter>(converters) { [typeof(object)] = new GeneratorObjectConverter(this) };
             this.creators = creators.ToArray();
             Debug.Assert(this.converters.All(x => x.Value != null));
             Debug.Assert(this.creators.Count == 0 || this.creators.All(x => x != null));
@@ -23,7 +23,7 @@ namespace Mikodev.Binary.Internal.Contexts
         public IConverter GetConverter(Type type)
         {
             if (type is null)
-                throw new ArgumentNullException(nameof(type));
+                ThrowHelper.ThrowTypeNull();
             if (converters.TryGetValue(type, out var result))
                 return result;
             var context = new GeneratorContext(converters, creators);

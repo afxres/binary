@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Mikodev.Binary.External
 {
@@ -14,7 +15,8 @@ namespace Mikodev.Binary.External
 
         public Node(Node<T>[] values, long header, bool exists, T intent)
         {
-            this.Values = values ?? throw new ArgumentNullException(nameof(values));
+            Debug.Assert(values != null);
+            this.Values = values;
             this.Header = header;
             this.Exists = exists;
             this.Intent = intent;

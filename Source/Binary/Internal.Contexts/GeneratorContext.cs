@@ -25,6 +25,8 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             if (CommonHelper.IsByRefLike(type))
                 throw new ArgumentException($"Invalid byref-like type: {type}");
+            if (type.IsPointer)
+                throw new ArgumentException($"Invalid pointer type: {type}");
             if (type.IsAbstract && type.IsSealed)
                 throw new ArgumentException($"Invalid static type: {type}");
             if (type.IsGenericTypeDefinition || type.IsGenericParameter)
@@ -35,28 +37,23 @@ namespace Mikodev.Binary.Internal.Contexts
             if (!types.Add(type))
                 throw new ArgumentException($"Circular type reference detected, type: {type}");
 
-            var converter = GetConverterByCreator(type) ?? GetConverterByDefault(type);
+            var converter = GetConverterInternal(type);
             Debug.Assert(converter != null);
             Debug.Assert(ConverterHelper.GetGenericArgument(converter) == type);
             return converters.GetOrAdd(type, converter);
         }
 
-        private IConverter GetConverterByCreator(Type type)
+        private IConverter GetConverterInternal(Type type)
         {
+            // fetch all converter creators
             var (converter, creatorType) = creators
                 .Select(x => (Converter: x.GetConverter(this, type), x.GetType()))
                 .FirstOrDefault(x => x.Converter != null);
-            if (converter is null)
-                return null;
-            if (ConverterHelper.GetGenericArgument(converter) != type)
-                throw new ArgumentException($"Invalid return value '{converter.GetType()}', creator type: {creatorType}, expected converter item type: {type}");
-            return converter;
-        }
+            if ((converter, creatorType) != default)
+                return ContextMethods.EnsureConverter(converter, type, creatorType);
 
-        private IConverter GetConverterByDefault(Type type)
-        {
             // tuple types
-            if (FallbackPrimitivesMethods.GetConverter(this, type) is { } converter)
+            if ((converter = FallbackPrimitivesMethods.GetConverter(this, type)) != null)
                 return converter;
             // not supported
             if (type.Assembly == typeof(IConverter).Assembly)
@@ -67,8 +64,9 @@ namespace Mikodev.Binary.Internal.Contexts
             // system types
             if (type.Assembly == typeof(object).Assembly)
                 throw new ArgumentException($"Invalid system type: {type}");
-            else
-                return FallbackAttributesMethods.GetConverter(this, type);
+
+            // create converter or throw
+            return FallbackAttributesMethods.GetConverter(this, type);
         }
     }
 }

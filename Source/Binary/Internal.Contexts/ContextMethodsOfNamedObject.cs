@@ -17,20 +17,18 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static readonly ConstructorInfo ReadOnlySpanByteConstructorInfo = typeof(ReadOnlySpan<byte>).GetConstructor(new[] { typeof(byte[]) });
 
-        internal static IConverter GetConverterAsNamedObject(IGeneratorContext context, Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<IConverter> converters, ConstructorInfo constructor, IReadOnlyList<int> indexes, IReadOnlyDictionary<PropertyInfo, string> dictionary)
+        internal static IConverter GetConverterAsNamedObject(Type type, ConstructorInfo constructor, IReadOnlyList<int> indexes, IReadOnlyList<IConverter> converters, IReadOnlyList<PropertyInfo> properties, IReadOnlyDictionary<PropertyInfo, string> dictionary, Converter<string> encoder)
         {
-            // require string converter for named key
-            var stringConverter = (Converter<string>)context.GetConverter(typeof(string));
-            var memories = dictionary.ToDictionary(x => x.Key, x => new ReadOnlyMemory<byte>(stringConverter.Encode(x.Value)));
+            var memories = dictionary.ToDictionary(x => x.Key, x => new ReadOnlyMemory<byte>(encoder.Encode(x.Value)));
             Debug.Assert(dictionary.Count == memories.Count);
             Debug.Assert(dictionary.OrderBy(x => x.Value).Select(x => x.Key).SequenceEqual(properties));
             Debug.Assert(properties.Count == converters.Count);
             var nameList = properties.Select(x => dictionary[x]).ToList();
             var nodeTree = NodeTreeHelper.MakeOrNull(properties.Select((x, i) => new KeyValuePair<ReadOnlyMemory<byte>, int>(memories[x], i)).ToList());
             if (nodeTree is null)
-                throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {type}, string converter type: {stringConverter.GetType()}");
-            var encode = GetEncodeDelegateAsNamedObject(type, properties, converters, memories);
-            var decode = GetDecodeDelegateAsNamedObject(type, properties, converters, constructor, indexes);
+                throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {type}, string converter type: {encoder.GetType()}");
+            var encode = GetEncodeDelegateAsNamedObject(type, converters, properties, memories);
+            var decode = GetDecodeDelegateAsNamedObject(type, converters, properties, constructor, indexes);
             var converterArguments = new object[] { encode, decode, nodeTree, nameList };
             var converterType = typeof(NamedObjectConverter<>).MakeGenericType(type);
             var converter = Activator.CreateInstance(converterType, converterArguments);
@@ -46,7 +44,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return method;
         }
 
-        private static Delegate GetEncodeDelegateAsNamedObject(Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<IConverter> converters, IReadOnlyDictionary<PropertyInfo, ReadOnlyMemory<byte>> memories)
+        private static Delegate GetEncodeDelegateAsNamedObject(Type type, IReadOnlyList<IConverter> converters, IReadOnlyList<PropertyInfo> properties, IReadOnlyDictionary<PropertyInfo, ReadOnlyMemory<byte>> memories)
         {
             var item = Expression.Parameter(type, "item");
             var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
@@ -68,7 +66,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        private static Delegate GetDecodeDelegateAsNamedObject(Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<IConverter> converters, ConstructorInfo constructor, IReadOnlyList<int> indexes)
+        private static Delegate GetDecodeDelegateAsNamedObject(Type type, IReadOnlyList<IConverter> converters, IReadOnlyList<PropertyInfo> properties, ConstructorInfo constructor, IReadOnlyList<int> indexes)
         {
             IReadOnlyList<Expression> Initialize(ParameterExpression slices)
             {
@@ -89,7 +87,7 @@ namespace Mikodev.Binary.Internal.Contexts
             var delegateType = typeof(ToNamedObject<>).MakeGenericType(type);
             var parameterType = typeof(MemorySlices).MakeByRefType();
             return constructor is null
-                ? ContextMethods.GetDecodeDelegateUseMembers(delegateType, parameterType, Initialize, properties.Select(x => new Func<Expression, Expression>(e => Expression.Property(e, x))).ToList(), type)
+                ? ContextMethods.GetDecodeDelegateUseMembers(delegateType, parameterType, Initialize, properties.Select(x => new Func<Expression, Expression>(e => Expression.Property(e, x))).ToList())
                 : ContextMethods.GetDecodeDelegateUseConstructor(delegateType, parameterType, Initialize, indexes, constructor);
         }
     }

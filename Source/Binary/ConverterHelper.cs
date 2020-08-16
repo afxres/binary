@@ -21,7 +21,7 @@ namespace Mikodev.Binary
             while ((node = node.BaseType) != null)
                 if (CommonHelper.TryGetGenericArguments(node, typeof(Converter<>), out var arguments))
                     return arguments.Single();
-            throw new ArgumentException($"Invalid type, '{type}' is not a subclass of '{typeof(Converter<>)}'");
+            throw new ArgumentException($"Can not get generic argument, '{type}' is not a subclass of '{typeof(Converter<>)}'");
         }
     }
 }

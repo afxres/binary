@@ -56,38 +56,6 @@ type CustomConverterAllOverride<'T>(length : int) =
 type ConverterTests () =
     let generator = Generator.CreateDefault()
 
-    [<Fact>]
-    member __.``Object Converter`` () =
-        let converter = generator.GetConverter<obj>()
-        let source : obj = box (struct (3, 2.1))
-        let mutable allocator = new Allocator()
-        converter.Encode(&allocator, source)
-        let buffer = allocator.AsSpan().ToArray()
-        let result = generator.Decode<struct (int * double)> buffer
-        Assert.Equal(source, box result)
-        ()
-
-    [<Fact>]
-    member __.``Object Converter (encode object instance)`` () =
-        let converter = generator.GetConverter<obj>()
-        let error = Assert.Throws<ArgumentException>(fun () -> converter.Encode (new obj()) |> ignore)
-        Assert.Equal("Invalid system type: System.Object", error.Message)
-        ()
-
-    [<Fact>]
-    member __.``Object Converter (encode null)`` () =
-        let converter = generator.GetConverter<obj>()
-        let error = Assert.Throws<ArgumentException>(fun () -> converter.Encode null |> ignore)
-        Assert.Equal("Can not get type of null object.", error.Message)
-        ()
-
-    [<Fact>]
-    member __.``Object Converter (decode)`` () =
-        let converter = generator.GetConverter<obj>()
-        let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode Array.empty<byte> |> ignore)
-        Assert.Equal("Invalid system type: System.Object", error.Message)
-        ()
-
     static member ``Data Alpha`` : (obj array) seq =
         seq {
             yield [| typeof<int>; 4 |]

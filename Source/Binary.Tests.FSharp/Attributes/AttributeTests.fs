@@ -651,29 +651,29 @@ type AttributeTests() =
         ()
 
     [<Theory>]
-    [<InlineData(typeof<ClassWithBadConverter>, typeof<ClassWithBadConverter>, typeof<BadConverter<int64>>)>]
-    [<InlineData(typeof<ClassAsNamedObjectWithBadConverterOnProperty>, typeof<int>, typeof<BadConverter<string>>)>]
+    [<InlineData(typeof<ClassWithBadConverter>, typeof<Converter<ClassWithBadConverter>>, typeof<BadConverter<int64>>)>]
+    [<InlineData(typeof<ClassAsNamedObjectWithBadConverterOnProperty>, typeof<Converter<int>>, typeof<BadConverter<string>>)>]
     member __.``Converter Attribute With Invalid Converter`` (t : Type, expectedType : Type, converterType : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Invalid custom converter '%O', expected converter item type: %O" converterType expectedType
+        let message = sprintf "Can not convert '%O' to '%O'" converterType expectedType
         Assert.Equal(message, error.Message)
         ()
 
     [<Theory>]
-    [<InlineData(typeof<ClassWithNullConverterCreator>, typeof<ClassWithNullConverterCreator>, typeof<NullConverterCreator>)>]
-    [<InlineData(typeof<ClassAsTupleObjectWithNullConverterCreatorOnProperty>, typeof<int64>, typeof<AnotherNullConverterCreator>)>]
+    [<InlineData(typeof<ClassWithNullConverterCreator>, typeof<Converter<ClassWithNullConverterCreator>>, typeof<NullConverterCreator>)>]
+    [<InlineData(typeof<ClassAsTupleObjectWithNullConverterCreatorOnProperty>, typeof<Converter<int64>>, typeof<AnotherNullConverterCreator>)>]
     member __.``Converter Creator Attribute With Null Converter`` (t : Type, expectedType : Type, creatorType : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Invalid return value 'null', creator type: %O, expected converter item type: %O" creatorType expectedType
+        let message = sprintf "Can not convert 'null' to '%O', converter creator type: %O" expectedType creatorType
         Assert.Equal(message, error.Message)
         ()
 
     [<Theory>]
-    [<InlineData(typeof<ClassWithBadConverterCreator>, typeof<ClassWithBadConverterCreator>, typeof<BadConverter<int16>>, typeof<BadConverterCreator<int16>>)>]
-    [<InlineData(typeof<ClassAsTupleObjectWithBadConverterCreatorOnProperty>, typeof<double>, typeof<BadConverter<single>>, typeof<BadConverterCreator<single>>)>]
+    [<InlineData(typeof<ClassWithBadConverterCreator>, typeof<Converter<ClassWithBadConverterCreator>>, typeof<BadConverter<int16>>, typeof<BadConverterCreator<int16>>)>]
+    [<InlineData(typeof<ClassAsTupleObjectWithBadConverterCreatorOnProperty>, typeof<Converter<double>>, typeof<BadConverter<single>>, typeof<BadConverterCreator<single>>)>]
     member __.``Converter Creator Attribute With Invalid Converter`` (t : Type, expectedType : Type, converterType : Type, creatorType : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Invalid return value '%O', creator type: %O, expected converter item type: %O" converterType creatorType expectedType
+        let message = sprintf "Can not convert '%O' to '%O', converter creator type: %O" converterType expectedType creatorType
         Assert.Equal(message, error.Message)
         ()
 
@@ -741,7 +741,7 @@ type AttributeTests() =
     member __.``Tuple Object Null`` (t : Type) =
         let converter = generator.GetConverter t |> box :?> IConverter
         let alpha = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = Allocator() in converter.Encode(&allocator, null))
-        let bravo = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = Allocator() in converter.EncodeAuto(&allocator, null))
+        let bravo = Assert.Throws<ArgumentNullException>(fun () -> converter.Encode null |> ignore)
         let message = sprintf "Tuple can not be null, type: %O" t
         Assert.Equal("item", alpha.ParamName)
         Assert.StartsWith(message, alpha.Message)
@@ -770,24 +770,24 @@ type AttributeTests() =
         ()
 
     [<Theory>]
-    [<InlineData(typeof<ClassWithBadConverterAttribute01>, typeof<ClassWithBadConverterAttribute01>, typeof<InvalidCastException>)>]
-    [<InlineData(typeof<ClassWithBadConverterAttribute02>, typeof<ClassWithBadConverterAttribute02>, typeof<ArgumentNullException>)>]
-    [<InlineData(typeof<ClassWithBadConverterAttribute03>, typeof<char>, typeof<MissingMethodException>)>]
+    [<InlineData(typeof<ClassWithBadConverterAttribute01>, typeof<Converter<ClassWithBadConverterAttribute01>>, typeof<InvalidCastException>)>]
+    [<InlineData(typeof<ClassWithBadConverterAttribute02>, typeof<Converter<ClassWithBadConverterAttribute02>>, typeof<ArgumentNullException>)>]
+    [<InlineData(typeof<ClassWithBadConverterAttribute03>, typeof<Converter<char>>, typeof<MissingMethodException>)>]
     member __.``Converter Attribute With Invalid Type`` (t : Type, expectedType : Type, errorType : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Can not get custom converter by attribute, expected converter item type: %O" expectedType
+        let message = sprintf "Can not get custom converter via attribute, expected converter type: %O" expectedType
         Assert.Equal(message, error.Message)
         let innerError = error.InnerException
         Assert.IsType(errorType, innerError)
         ()
 
     [<Theory>]
-    [<InlineData(typeof<ClassWithBadConverterCreatorAttribute01>, typeof<ClassWithBadConverterCreatorAttribute01>, typeof<ArgumentNullException>)>]
-    [<InlineData(typeof<ClassWithBadConverterCreatorAttribute02>, typeof<ClassWithBadConverterCreatorAttribute02>, typeof<MissingMethodException>)>]
-    [<InlineData(typeof<ClassWithBadConverterCreatorAttribute03>, typeof<double>, typeof<InvalidCastException>)>]
+    [<InlineData(typeof<ClassWithBadConverterCreatorAttribute01>, typeof<Converter<ClassWithBadConverterCreatorAttribute01>>, typeof<ArgumentNullException>)>]
+    [<InlineData(typeof<ClassWithBadConverterCreatorAttribute02>, typeof<Converter<ClassWithBadConverterCreatorAttribute02>>, typeof<MissingMethodException>)>]
+    [<InlineData(typeof<ClassWithBadConverterCreatorAttribute03>, typeof<Converter<double>>, typeof<InvalidCastException>)>]
     member __.``Converter Creator Attribute With Invalid Type`` (t : Type, expectedType : Type, errorType : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Can not get custom converter creator by attribute, expected converter item type: %O" expectedType
+        let message = sprintf "Can not get custom converter creator via attribute, expected converter type: %O" expectedType
         Assert.Equal(message, error.Message)
         let innerError = error.InnerException
         Assert.IsType(errorType, innerError)

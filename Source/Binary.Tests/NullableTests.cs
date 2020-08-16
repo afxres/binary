@@ -234,7 +234,7 @@ namespace Mikodev.Binary.Tests
 
             var alpha = Assert.Throws<ArgumentException>(() => converter.Decode(buffer));
             var bravo = Assert.Throws<ArgumentException>(() => { var span = new ReadOnlySpan<byte>(buffer); _ = converter.DecodeAuto(ref span); });
-            var message = $"Invalid nullable tag: {tag}, type: System.Nullable`1[System.Int32]";
+            var message = $"Invalid nullable tag '{tag}', type: System.Nullable`1[System.Int32]";
             Assert.Null(alpha.ParamName);
             Assert.Null(bravo.ParamName);
             Assert.Equal(message, alpha.Message);

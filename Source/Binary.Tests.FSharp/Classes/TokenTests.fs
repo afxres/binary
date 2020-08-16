@@ -116,7 +116,8 @@ let ``Index (null)`` () =
     let error = Assert.Throws<ArgumentNullException>(fun () -> token.[null] |> ignore)
     let property = typeof<Token>.GetProperties() |> Array.filter (fun x -> x.GetIndexParameters().Length = 1) |> Array.exactlyOne
     let parameter = property.GetIndexParameters() |> Array.exactlyOne
-    Assert.Equal(parameter.Name, error.ParamName)
+    Assert.Equal("key", error.ParamName)
+    Assert.Equal("key", parameter.Name)
     ()
 
 [<Fact>]
@@ -126,7 +127,8 @@ let ``Index (nothrow true, null)`` () =
     let property = typeof<Token>.GetProperties() |> Array.filter (fun x -> x.GetIndexParameters().Length = 2) |> Array.exactlyOne
     let parameter = property.GetIndexParameters() |> Array.head
     let last = property.GetIndexParameters() |> Array.last
-    Assert.Equal(parameter.Name, error.ParamName)
+    Assert.Equal("key", error.ParamName)
+    Assert.Equal("key", parameter.Name)
     Assert.Equal("nothrow", last.Name)
     ()
 
@@ -137,7 +139,8 @@ let ``Index (nothrow false, null)`` () =
     let property = typeof<Token>.GetProperties() |> Array.filter (fun x -> x.GetIndexParameters().Length = 2) |> Array.exactlyOne
     let parameter = property.GetIndexParameters() |> Array.head
     let last = property.GetIndexParameters() |> Array.last
-    Assert.Equal(parameter.Name, error.ParamName)
+    Assert.Equal("key", error.ParamName)
+    Assert.Equal("key", parameter.Name)
     Assert.Equal("nothrow", last.Name)
     ()
 
@@ -287,7 +290,7 @@ let ``Operate With Null String Converter`` () =
                     raise (NotSupportedException(sprintf "Invalid type '%O'" t))
     }
     let error = Assert.Throws<ArgumentException>(fun () -> Token(generator, ReadOnlyMemory<byte>()) |> ignore)
-    let message = "Invalid string converter."
+    let message = "No available string converter found."
     Assert.Equal(message, error.Message)
     ()
 
@@ -326,6 +329,7 @@ let ``From Invalid Bytes`` () =
     Assert.Equal(0, dictionary.Count)
     let tokens = typeof<Token>.GetField("tokens", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(token) :?> Lazy<Dictionary<string, Token>>
     Assert.Equal(0, tokens.Value.Count)
-    let buckets = typeof<Dictionary<string, Token>>.GetFields(BindingFlags.Instance ||| BindingFlags.NonPublic).Single(fun x -> x.FieldType = typeof<int array>).GetValue(tokens.Value) :?> int array
-    Assert.NotEmpty buckets
+    let dictionary = tokens.Value;
+    let buckets = typeof<Dictionary<string, Token>>.GetFields(BindingFlags.Instance ||| BindingFlags.NonPublic).Single(fun x -> x.FieldType = typeof<int array>).GetValue(dictionary) :?> int array
+    Assert.Null buckets
     ()

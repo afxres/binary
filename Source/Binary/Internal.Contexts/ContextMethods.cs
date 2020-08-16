@@ -27,8 +27,9 @@ namespace Mikodev.Binary.Internal.Contexts
             return (type.IsValueType || type.GetConstructor(Type.EmptyTypes) != null) && properties.All(x => x.GetSetMethod() != null);
         }
 
-        internal static Delegate GetDecodeDelegateUseMembers(Type delegateType, Type parameterType, Func<ParameterExpression, IReadOnlyList<Expression>> initializer, IReadOnlyList<Func<Expression, Expression>> members, Type type)
+        internal static Delegate GetDecodeDelegateUseMembers(Type delegateType, Type parameterType, Func<ParameterExpression, IReadOnlyList<Expression>> initializer, IReadOnlyList<Func<Expression, Expression>> members)
         {
+            var type = delegateType.GetGenericArguments().Single();
             var data = Expression.Parameter(parameterType, "parameter");
             var item = Expression.Variable(type, "item");
             var targets = members.Select(x => x.Invoke(item)).ToList();
@@ -53,6 +54,27 @@ namespace Mikodev.Binary.Internal.Contexts
             expressions.Add(Expression.New(constructor, indexes.Select(x => targets[x]).ToList()));
             var lambda = Expression.Lambda(delegateType, Expression.Block(targets, expressions), data);
             return lambda.Compile();
+        }
+
+        internal static IConverter EnsureConverter(IConverter converter, Type type)
+        {
+            Debug.Assert(converter != null);
+            var expectedType = typeof(Converter<>).MakeGenericType(type);
+            var instanceType = converter.GetType();
+            if (!expectedType.IsAssignableFrom(instanceType))
+                throw new ArgumentException($"Can not convert '{instanceType}' to '{expectedType}'");
+            return converter;
+        }
+
+        internal static IConverter EnsureConverter(IConverter converter, Type type, Type creatorType)
+        {
+            var expectedType = typeof(Converter<>).MakeGenericType(type);
+            if (converter is null)
+                throw new ArgumentException($"Can not convert 'null' to '{expectedType}', converter creator type: {creatorType}");
+            var instanceType = converter.GetType();
+            if (!expectedType.IsAssignableFrom(instanceType))
+                throw new ArgumentException($"Can not convert '{instanceType}' to '{expectedType}', converter creator type: {creatorType}");
+            return converter;
         }
     }
 }

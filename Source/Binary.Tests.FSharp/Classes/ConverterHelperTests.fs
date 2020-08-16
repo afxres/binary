@@ -59,7 +59,7 @@ type ConverterHelperTests() =
     [<MemberData("Data Invalid Converter")>]
     member __.``Get Generic Argument (invalid converter instance)`` (converter : IConverter) =
         let error = Assert.Throws<ArgumentException>(fun () -> ConverterHelper.GetGenericArgument converter |> ignore)
-        let message = sprintf "Invalid type, '%O' is not a subclass of '%O'" (converter.GetType()) typedefof<Converter<_>>
+        let message = sprintf "Can not get generic argument, '%O' is not a subclass of '%O'" (converter.GetType()) typedefof<Converter<_>>
         Assert.Null(error.ParamName)
         Assert.Equal(message, error.Message)
         ()
@@ -76,7 +76,7 @@ type ConverterHelperTests() =
     [<MemberData("Data Invalid Type")>]
     member __.``Get Generic Argument (invalid converter type)`` (t : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> ConverterHelper.GetGenericArgument t |> ignore)
-        let message = sprintf "Invalid type, '%O' is not a subclass of '%O'" t typedefof<Converter<_>>
+        let message = sprintf "Can not get generic argument, '%O' is not a subclass of '%O'" t typedefof<Converter<_>>
         Assert.Null(error.ParamName)
         Assert.Equal(message, error.Message)
         ()

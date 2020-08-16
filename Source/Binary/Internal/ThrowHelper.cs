@@ -14,6 +14,9 @@ namespace Mikodev.Binary.Internal
         internal static void ThrowEncodingNull() => throw new ArgumentNullException("encoding");
 
         [DoesNotReturn]
+        internal static void ThrowTypeNull() => throw new ArgumentNullException("type");
+
+        [DoesNotReturn]
         internal static void ThrowAllocatorOrAnchorInvalid() => throw new InvalidOperationException("Allocator or internal anchor has been modified unexpectedly!");
 
         [DoesNotReturn]

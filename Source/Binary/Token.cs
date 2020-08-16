@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq.Expressions;
 using System.Threading;
@@ -16,59 +17,63 @@ namespace Mikodev.Binary
 
         private readonly IGenerator generator;
 
-        private readonly Converter<string> stringConverter;
+        private readonly Converter<string> encoder;
 
         private readonly Lazy<Dictionary<string, Token>> tokens;
 
-        private Token(IGenerator generator, ReadOnlyMemory<byte> memory, Converter<string> stringConverter)
+        private Token(IGenerator generator, ReadOnlyMemory<byte> memory, Converter<string> encoder)
         {
             if (generator is null)
                 throw new ArgumentNullException(nameof(generator));
-            stringConverter ??= generator.GetConverter<string>();
-            if (stringConverter is null)
-                throw new ArgumentException("Invalid string converter.");
+            encoder ??= generator.GetConverter<string>();
+            if (encoder is null)
+                throw new ArgumentException("No available string converter found.");
             this.memory = memory;
             this.generator = generator;
-            this.stringConverter = stringConverter;
-            tokens = new Lazy<Dictionary<string, Token>>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
+            this.encoder = encoder;
+            this.tokens = new Lazy<Dictionary<string, Token>>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
         private static Dictionary<string, Token> GetTokens(Token instance)
         {
             var memory = instance.memory;
             var generator = instance.generator;
-            var stringConverter = instance.stringConverter;
-            var dictionary = new Dictionary<string, Token>();
+            var encoder = instance.encoder;
             var body = memory.Span;
 
             try
             {
+                var dictionary = new Dictionary<string, Token>();
                 while (!body.IsEmpty)
                 {
-                    var header = stringConverter.DecodeWithLengthPrefix(ref body);
+                    var header = encoder.DecodeWithLengthPrefix(ref body);
                     var buffer = PrimitiveHelper.DecodeBufferWithLengthPrefix(ref body);
                     var offset = memory.Length - buffer.Length - body.Length;
                     var target = memory.Slice(offset, buffer.Length);
-                    var result = new Token(generator, target, stringConverter);
+                    var result = new Token(generator, target, encoder);
                     dictionary.Add(header, result);
                 }
+                return dictionary;
             }
             catch (Exception)
             {
-                dictionary.Clear();
+                return new Dictionary<string, Token>(capacity: 0);
             }
-            return dictionary;
         }
+
+        [DebuggerStepThrough, DoesNotReturn]
+        private static Token ThrowKeyNull() => throw new ArgumentNullException("key");
+
+        [DebuggerStepThrough, DoesNotReturn]
+        private static Token ThrowKeyNotFound(string key) => throw new KeyNotFoundException($"Key '{key}' not found.");
 
         private Token GetToken(string key, bool nothrow)
         {
             if (key is null)
-                throw new ArgumentNullException(nameof(key));
+                return ThrowKeyNull();
             if (tokens.Value.TryGetValue(key, out var value))
                 return value;
-            if (nothrow)
-                return null;
-            throw new KeyNotFoundException($"Key '{key}' not found.");
+            return nothrow ? null : ThrowKeyNotFound(key);
         }
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => new TokenDynamicMetaObject(parameter, this);

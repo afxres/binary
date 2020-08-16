@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -9,14 +10,18 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class ContextMethodsOfTupleObject
     {
-        internal static IConverter GetConverterAsTupleObject(Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<Type> types, IReadOnlyList<IConverter> converters, ConstructorInfo constructor, IReadOnlyList<int> indexes, IReadOnlyList<Func<Expression, Expression>> members)
+        internal static IConverter GetConverterAsTupleObject(Type type, ConstructorInfo constructor, IReadOnlyList<int> indexes, IReadOnlyList<IConverter> converters, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<Type> types, IReadOnlyList<Func<Expression, Expression>> members)
         {
+            Debug.Assert(properties != null || types != null);
+            Debug.Assert(properties != null || members != null);
+            types ??= properties.Select(x => x.PropertyType).ToList();
+            members ??= properties.Select(x => new Func<Expression, Expression>(e => Expression.Property(e, x))).ToList();
             Debug.Assert(converters.Count == types.Count);
             Debug.Assert(converters.Count == members.Count);
             var encode = GetEncodeDelegateAsTupleObject(type, types, converters, members, auto: false);
-            var decode = GetDecodeDelegateAsTupleObject(type, properties, types, converters, constructor, indexes, members, auto: false);
+            var decode = GetDecodeDelegateAsTupleObject(type, types, converters, members, properties, constructor, indexes, auto: false);
             var encodeAuto = GetEncodeDelegateAsTupleObject(type, types, converters, members, auto: true);
-            var decodeAuto = GetDecodeDelegateAsTupleObject(type, properties, types, converters, constructor, indexes, members, auto: true);
+            var decodeAuto = GetDecodeDelegateAsTupleObject(type, types, converters, members, properties, constructor, indexes, auto: true);
             var itemLength = ContextMethods.GetItemLength(converters);
             var converterArguments = new object[] { encode, decode, encodeAuto, decodeAuto, itemLength };
             var converterType = typeof(TupleObjectConverter<>).MakeGenericType(type);
@@ -63,7 +68,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        private static Delegate GetDecodeDelegateAsTupleObject(Type type, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<Type> types, IReadOnlyList<IConverter> converters, ConstructorInfo constructor, IReadOnlyList<int> indexes, IReadOnlyList<Func<Expression, Expression>> members, bool auto)
+        private static Delegate GetDecodeDelegateAsTupleObject(Type type, IReadOnlyList<Type> types, IReadOnlyList<IConverter> converters, IReadOnlyList<Func<Expression, Expression>> members, IReadOnlyList<PropertyInfo> properties, ConstructorInfo constructor, IReadOnlyList<int> indexes, bool auto)
         {
             IReadOnlyList<Expression> Initialize(ParameterExpression span)
             {
@@ -86,7 +91,7 @@ namespace Mikodev.Binary.Internal.Contexts
             var delegateType = typeof(ToTupleObject<>).MakeGenericType(type);
             var parameterType = typeof(ReadOnlySpan<byte>).MakeByRefType();
             return constructor is null
-                ? ContextMethods.GetDecodeDelegateUseMembers(delegateType, parameterType, Initialize, members, type)
+                ? ContextMethods.GetDecodeDelegateUseMembers(delegateType, parameterType, Initialize, members)
                 : ContextMethods.GetDecodeDelegateUseConstructor(delegateType, parameterType, Initialize, indexes, constructor);
         }
     }

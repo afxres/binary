@@ -25,12 +25,12 @@ let ``Key Already Exists`` () =
 [<Fact>]
 let ``Anonymous Class Record Encode (from null value)`` () =
     let template = {| id = 1024; data = "data" |}
-    let converter = generator.GetConverter(template) :> IConverter
+    let converter = generator.GetConverter(template)
     Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
     let mutable allocator = new Allocator()
-    converter.Encode(&allocator, null)
+    converter.Encode(&allocator, null |> Unchecked.unbox)
     Assert.Equal(0, allocator.Length)
-    converter.EncodeWithLengthPrefix(&allocator, null)
+    converter.EncodeWithLengthPrefix(&allocator, null |> Unchecked.unbox)
     Assert.Equal(1, allocator.Length)
     let mutable span = ReadOnlySpan (allocator.AsSpan().ToArray())
     Assert.Equal(0, PrimitiveHelper.DecodeNumber(&span))
