@@ -4,7 +4,7 @@ open Mikodev.Binary
 open Mikodev.Binary.Internal
 open System
 
-type internal UnionConverter<'T>(encode : UnionEncoder<'T>, decode : UnionDecoder<'T>, encodeAuto : UnionEncoder<'T>, decodeAuto : UnionDecoder<'T>, noNull : bool) =
+type internal UnionConverter<'T>(encode : UnionEncoder<'T>, encodeAuto : UnionEncoder<'T>, decode : UnionDecoder<'T>, decodeAuto : UnionDecoder<'T>, noNull : bool) =
     inherit Converter<'T>(0)
 
     [<Literal>]
@@ -33,19 +33,19 @@ type internal UnionConverter<'T>(encode : UnionEncoder<'T>, decode : UnionDecode
         me.DetectMark mark
         ()
 
-    override me.Decode(span : inref<ReadOnlySpan<byte>>) : 'T =
-        let mutable body = span
-        let mutable mark = MarkNone
-        let item = decode.Invoke(&body, &mark)
-        me.DetectMark mark
-        item
-
     override me.EncodeAuto(allocator, item) =
         me.DetectNull item
         let mutable mark = MarkNone
         encodeAuto.Invoke(&allocator, item, &mark)
         me.DetectMark mark
         ()
+
+    override me.Decode(span : inref<ReadOnlySpan<byte>>) : 'T =
+        let mutable body = span
+        let mutable mark = MarkNone
+        let item = decode.Invoke(&body, &mark)
+        me.DetectMark mark
+        item
 
     override me.DecodeAuto span =
         let mutable mark = MarkNone

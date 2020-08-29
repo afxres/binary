@@ -220,6 +220,4 @@ type ConverterTests () =
         Assert.Equal("04", da.Message)
         Assert.Equal("06", dw.Message)
         Assert.Equal("08", d2.Message)
-        let errors = [| e1; ea; ew; e2; d1; da; dw; d2 |]
-        Assert.All(errors, fun x -> Assert.Contains("Mikodev.Binary.IConverter.", x.StackTrace))
         ()

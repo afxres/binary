@@ -101,35 +101,34 @@ let ``Encode Buffer`` () =
     TestEncode "Encode Buffer" (fun (converter : Converter<obj>) -> converter.Encode 0 |> ignore)
     ()
 
-let TestDecode (method : string) (action : Converter<obj> -> unit) =
+let TestDecode (action : Converter<obj> -> unit) =
     let converterType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "GeneratorObjectConverter") |> Array.exactlyOne
     let converter = Activator.CreateInstance(converterType, [| Unchecked.defaultof<obj> |]) :?> Converter<obj>
     let alpha = Assert.Throws<NotSupportedException>(fun () -> action converter)
     let message = "Can not decode object, type: System.Object"
     Assert.Equal(message, alpha.Message)
-    let traces = alpha.StackTrace.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries)
-    let lineThrow = "Mikodev.Binary.Internal.Contexts.GeneratorObjectConverter.ThrowDecode()"
-    Assert.Contains(lineThrow, traces.[0])
-    let lineError = sprintf "Mikodev.Binary.Internal.Contexts.GeneratorObjectConverter.%s" method
-    Assert.Contains(lineError, traces.[1])
+
+    let methods = converterType.GetMethods() |> Array.filter (fun x -> x.Name.StartsWith "Encode")
+    Assert.Equal(4, methods.Length)
+    Assert.All(methods, fun x -> Assert.True(x.IsVirtual && x.DeclaringType = converterType && x.ReflectedType = converterType))
     ()
 
 [<Fact>]
 let ``Decode`` () =
-    TestDecode "Decode(ReadOnlySpan`1& span)" (fun converter -> let span = ReadOnlySpan<byte>() in converter.Decode &span |> ignore)
+    TestDecode (fun converter -> let span = ReadOnlySpan<byte>() in converter.Decode &span |> ignore)
     ()
 
 [<Fact>]
 let ``Decode Auto`` () =
-    TestDecode "DecodeAuto" (fun converter -> let mutable span = ReadOnlySpan<byte>() in converter.DecodeAuto &span |> ignore)
+    TestDecode (fun converter -> let mutable span = ReadOnlySpan<byte>() in converter.DecodeAuto &span |> ignore)
     ()
 
 [<Fact>]
 let ``Decode With Length Prefix`` () =
-    TestDecode "DecodeWithLengthPrefix" (fun converter -> let mutable span = ReadOnlySpan<byte>() in converter.DecodeWithLengthPrefix &span |> ignore)
+    TestDecode (fun converter -> let mutable span = ReadOnlySpan<byte>() in converter.DecodeWithLengthPrefix &span |> ignore)
     ()
 
 [<Fact>]
 let ``Decode Buffer`` () =
-    TestDecode "Decode(Byte[] buffer)" (fun converter -> converter.Decode Array.empty<byte> |> ignore)
+    TestDecode (fun converter -> converter.Decode Array.empty<byte> |> ignore)
     ()

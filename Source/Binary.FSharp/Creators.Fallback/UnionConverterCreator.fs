@@ -142,11 +142,11 @@ type internal UnionConverterCreator() =
                 let tagMember = FSharpValue.PreComputeUnionTagMemberInfo(t)
                 let noNull = not t.IsValueType && not (tagMember :? MethodInfo)
                 let encode = GetEncodeExpression t converters caseInfos tagMember false
-                let decode = GetDecodeExpression t converters constructorInfos false
                 let encodeAuto = GetEncodeExpression t converters caseInfos tagMember true
+                let decode = GetDecodeExpression t converters constructorInfos false
                 let decodeAuto = GetDecodeExpression t converters constructorInfos true
                 let converterType = typedefof<UnionConverter<_>>.MakeGenericType t
-                let delegates = [| encode; decode; encodeAuto; decodeAuto |] |> Array.map (fun x -> x.Compile())
+                let delegates = [| encode; encodeAuto; decode; decodeAuto |] |> Array.map (fun x -> x.Compile())
                 let converterArguments = Array.append (delegates |> Seq.cast<obj> |> Seq.toArray) [| box noNull |]
                 let converter = Activator.CreateInstance(converterType, converterArguments)
                 converter :?> IConverter

@@ -21,7 +21,6 @@ namespace Mikodev.Binary.Internal.Contexts
             if (attribute is ConverterCreatorAttribute creatorAttribute)
                 return GetConverterUseConverterCreatorAttribute(context, type, creatorAttribute);
 
-            // find available properties
             var properties = (IReadOnlyList<PropertyInfo>)type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .Where(x => x.GetGetMethod()?.GetParameters().Length == 0)
                 .OrderBy(x => x.Name)
@@ -53,15 +52,12 @@ namespace Mikodev.Binary.Internal.Contexts
             var (constructor, indexes) = GetConstructor(type, properties);
             var converters = GetConverterCollection(context, properties.Select(x => (x, collection[x].Converter)).ToList());
 
-            // converter as tuple object
             if (attribute is TupleObjectAttribute)
                 return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, indexes, converters, properties, null, null);
 
+            var encoder = (Converter<string>)context.GetConverter(typeof(string));
             if (dictionary is null)
                 dictionary = properties.ToDictionary(x => x, x => x.Name);
-            // require string converter for named key
-            var encoder = (Converter<string>)context.GetConverter(typeof(string));
-            // converter as named object (or default)
             return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, indexes, converters, properties, dictionary, encoder);
         }
 

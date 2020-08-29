@@ -1,4 +1,4 @@
-﻿using Mikodev.Binary.Creators.Sequence;
+﻿using Mikodev.Binary.Internal.Sequence;
 using System;
 
 namespace Mikodev.Binary.Internal.Contexts.Models

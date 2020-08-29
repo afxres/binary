@@ -1,6 +1,5 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
-using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary
 {
@@ -16,9 +15,7 @@ namespace Mikodev.Binary
 
         public static int DecodeNumber(ref ReadOnlySpan<byte> span)
         {
-            if (span.IsEmpty)
-                return ThrowHelper.ThrowNotEnoughBytes<int>();
-            ref var source = ref MemoryMarshal.GetReference(span);
+            ref var source = ref MemoryHelper.EnsureLength(span);
             var numberLength = MemoryHelper.DecodeNumberLength(source);
             // check bounds via slice method
             span = span.Slice(numberLength);

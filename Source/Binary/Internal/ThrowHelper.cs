@@ -47,6 +47,6 @@ namespace Mikodev.Binary.Internal
         internal static T ThrowNoSuitableConstructor<T>() => throw new NotSupportedException($"No suitable constructor found, type: {typeof(T)}");
 
         [DoesNotReturn]
-        internal static ReadOnlySpan<T> ThrowNotEnoughBytesReadOnlySpan<T>() => throw new ArgumentException("Not enough bytes or byte sequence invalid.");
+        internal static T? ThrowNullableTagInvalid<T>(int tag) where T : struct => throw new ArgumentException($"Invalid nullable tag '{tag}', type: {typeof(T?)}");
     }
 }

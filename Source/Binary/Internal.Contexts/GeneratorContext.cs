@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
@@ -23,49 +22,46 @@ namespace Mikodev.Binary.Internal.Contexts
 
         public IConverter GetConverter(Type type)
         {
-            if (CommonHelper.IsByRefLike(type))
-                throw new ArgumentException($"Invalid byref-like type: {type}");
-            if (type.IsPointer)
-                throw new ArgumentException($"Invalid pointer type: {type}");
-            if (type.IsAbstract && type.IsSealed)
-                throw new ArgumentException($"Invalid static type: {type}");
-            if (type.IsGenericTypeDefinition || type.IsGenericParameter)
-                throw new ArgumentException($"Invalid generic type definition: {type}");
-
-            if (converters.TryGetValue(type, out var result))
-                return result;
-            if (!types.Add(type))
-                throw new ArgumentException($"Circular type reference detected, type: {type}");
-
-            var converter = GetConverterInternal(type);
+            var converter = GetOrCreateConverter(type);
             Debug.Assert(converter != null);
             Debug.Assert(ConverterHelper.GetGenericArgument(converter) == type);
             return converters.GetOrAdd(type, converter);
         }
 
-        private IConverter GetConverterInternal(Type type)
+        private IConverter GetOrCreateConverter(Type type)
         {
-            // fetch all converter creators
-            var (converter, creatorType) = creators
-                .Select(x => (Converter: x.GetConverter(this, type), x.GetType()))
-                .FirstOrDefault(x => x.Converter != null);
-            if ((converter, creatorType) != default)
-                return ContextMethods.EnsureConverter(converter, type, creatorType);
+            if (CommonHelper.IsByRefLike(type))
+                throw new ArgumentException($"Invalid byref-like type: {type}");
+            if (type.IsAbstract && type.IsSealed)
+                throw new ArgumentException($"Invalid static type: {type}");
+            if (type.IsGenericTypeDefinition || type.IsGenericParameter)
+                throw new ArgumentException($"Invalid generic type definition: {type}");
 
-            // tuple types
+            if (converters.TryGetValue(type, out var converter))
+                return converter;
+            if (types.Add(type) is false)
+                throw new ArgumentException($"Circular type reference detected, type: {type}");
+            foreach (var creator in creators)
+                if ((converter = creator.GetConverter(this, type)) != null)
+                    return ContextMethods.EnsureConverter(converter, type, creator.GetType());
+
+            if ((converter = FallbackConvertersMethods.GetConverter(type)) != null)
+                return converter;
             if ((converter = FallbackPrimitivesMethods.GetConverter(this, type)) != null)
                 return converter;
-            // not supported
+            if ((converter = FallbackSequentialMethods.GetConverter(this, type)) != null)
+                return converter;
+
+            if (type.IsPointer)
+                throw new ArgumentException($"Invalid pointer type: {type}");
             if (type.Assembly == typeof(IConverter).Assembly)
                 throw new ArgumentException($"Invalid internal type: {type}");
-            // collections and others
-            if (CommonHelper.TryGetInterfaceArguments(type, typeof(IEnumerable<>), out var arguments))
-                return FallbackCollectionMethods.GetConverter(this, type, arguments.Single());
-            // system types
+
+            if ((converter = FallbackCollectionMethods.GetConverter(this, type)) != null)
+                return converter;
+
             if (type.Assembly == typeof(object).Assembly)
                 throw new ArgumentException($"Invalid system type: {type}");
-
-            // create converter or throw
             return FallbackAttributesMethods.GetConverter(this, type);
         }
     }

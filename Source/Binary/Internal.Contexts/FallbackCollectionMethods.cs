@@ -1,7 +1,7 @@
-﻿using Mikodev.Binary.Creators.Sequence;
-using Mikodev.Binary.Creators.Sequence.Adapters;
-using Mikodev.Binary.Creators.Sequence.Counters;
-using Mikodev.Binary.Internal.Contexts.Models;
+﻿using Mikodev.Binary.Internal.Contexts.Models;
+using Mikodev.Binary.Internal.Sequence;
+using Mikodev.Binary.Internal.Sequence.Adapters;
+using Mikodev.Binary.Internal.Sequence.Counters;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -22,24 +22,26 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static readonly MethodInfo CreateDictionaryConverterMethodInfo = typeof(FallbackCollectionMethods).GetMethod(nameof(CreateDictionaryConverter), BindingFlags.Static | BindingFlags.NonPublic);
 
-        internal static IConverter GetConverter(IGeneratorContext context, Type type, Type enumerableArgument)
+        internal static IConverter GetConverter(IGeneratorContext context, Type type)
         {
-            MethodInfo Method(out Type[] arguments)
+            MethodInfo Method(Type argument, out Type[] arguments)
             {
                 if (CommonHelper.TryGetInterfaceArguments(type, typeof(IDictionary<,>), out arguments) || CommonHelper.TryGetInterfaceArguments(type, typeof(IReadOnlyDictionary<,>), out arguments))
                     return CreateDictionaryConverterMethodInfo;
-                arguments = new[] { enumerableArgument };
-                if (typeof(ISet<>).MakeGenericType(enumerableArgument).IsAssignableFrom(type))
+                arguments = new[] { argument };
+                if (typeof(ISet<>).MakeGenericType(argument).IsAssignableFrom(type))
                     return CreateSetConverterMethodInfo;
-                else if (type == typeof(LinkedList<>).MakeGenericType(enumerableArgument))
+                else if (type == typeof(LinkedList<>).MakeGenericType(argument))
                     return CreateLinkedListConverterMethodInfo;
                 else
                     return CreateEnumerableConverterMethodInfo;
             }
 
+            if (CommonHelper.TryGetInterfaceArguments(type, typeof(IEnumerable<>), out var arguments) is false)
+                return null;
             if (CommonHelper.IsImplementationOf(type, typeof(Stack<>)) || CommonHelper.IsImplementationOf(type, typeof(ConcurrentStack<>)))
                 throw new ArgumentException($"Invalid collection type: {type}");
-            var methodInfo = Method(out var itemTypes);
+            var methodInfo = Method(arguments.Single(), out var itemTypes);
             var converters = itemTypes.Select(context.GetConverter).ToArray();
             var method = methodInfo.MakeGenericMethod(CommonHelper.Concat(type, itemTypes));
             var source = Expression.Parameter(typeof(IReadOnlyList<IConverter>), "source");

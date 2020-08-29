@@ -9,15 +9,15 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Internal.Contexts.Models
 {
-    internal delegate void OfNamedObject<in T>(ref Allocator allocator, T item);
+    internal delegate void NamedObjectEncoder<in T>(ref Allocator allocator, T item);
 
-    internal delegate T ToNamedObject<out T>(in MemorySlices list);
+    internal delegate T NamedObjectDecoder<out T>(in MemorySlices list);
 
     internal sealed class NamedObjectConverter<T> : Converter<T>
     {
-        private readonly OfNamedObject<T> encode;
+        private readonly NamedObjectEncoder<T> encode;
 
-        private readonly ToNamedObject<T> decode;
+        private readonly NamedObjectDecoder<T> decode;
 
         private readonly Node<int> nodeTree;
 
@@ -25,7 +25,7 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
         private readonly int capacity;
 
-        public NamedObjectConverter(OfNamedObject<T> encode, ToNamedObject<T> decode, Node<int> nodeTree, IReadOnlyCollection<string> nameList)
+        public NamedObjectConverter(NamedObjectEncoder<T> encode, NamedObjectDecoder<T> decode, Node<int> nodeTree, IReadOnlyCollection<string> nameList)
         {
             Debug.Assert(nodeTree != null);
             Debug.Assert(nameList != null && nameList.Any());
@@ -42,7 +42,7 @@ namespace Mikodev.Binary.Internal.Contexts.Models
         [DebuggerStepThrough, DoesNotReturn]
         private T ThrowNotFound(int i) => throw new ArgumentException($"Named key '{nameList[i]}' does not exist, type: {typeof(T)}");
 
-        private static void DecodeInternal(ref byte origin, ref int offset, ref int length, int limits)
+        private static void DecodeBuffer(ref byte origin, ref int offset, ref int length, int limits)
         {
             Debug.Assert((uint)(limits - offset) >= (uint)length);
             offset += length;
@@ -71,12 +71,14 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
         public override T Decode(in ReadOnlySpan<byte> span)
         {
+            var decode = this.decode;
             if (decode is null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
             if (span.IsEmpty)
                 return default(T) is null ? default : ThrowHelper.ThrowNotEnoughBytes<T>();
 
             // maybe 'StackOverflowException', just let it crash
+            var record = this.nodeTree;
             var remain = this.capacity;
             var values = (Span<long>)stackalloc long[remain];
             ref var source = ref MemoryMarshal.GetReference(span);
@@ -86,9 +88,9 @@ namespace Mikodev.Binary.Internal.Contexts.Models
             var length = 0;
             while (limits - offset != length)
             {
-                DecodeInternal(ref source, ref offset, ref length, limits);
-                var result = NodeTreeHelper.NodeOrNull(nodeTree, ref Unsafe.Add(ref source, offset), length);
-                DecodeInternal(ref source, ref offset, ref length, limits);
+                DecodeBuffer(ref source, ref offset, ref length, limits);
+                var result = NodeTreeHelper.NodeOrNull(record, ref Unsafe.Add(ref source, offset), length);
+                DecodeBuffer(ref source, ref offset, ref length, limits);
                 if (result is null)
                     continue;
                 var cursor = result.Intent;

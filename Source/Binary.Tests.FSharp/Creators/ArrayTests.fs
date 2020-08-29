@@ -3,6 +3,7 @@
 open Mikodev.Binary
 open System
 open System.Linq
+open System.Reflection
 open Xunit
 
 type ArrayTests () =
@@ -58,20 +59,21 @@ type ArrayTests () =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     member __.``Non Array Type`` (t : Type) =
-        let creator = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SpanLikeConverterCreator") |> Array.exactlyOne
-        let creator = Activator.CreateInstance creator :?> IConverterCreator
-        let converter = creator.GetConverter(null, t)
+        let methodType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "FallbackSequentialMethods") |> Array.exactlyOne
+        let method = methodType.GetMethod("GetConverter", BindingFlags.Static ||| BindingFlags.NonPublic)
+        let converter = method.Invoke(null, [| null; box t |])
         Assert.Null converter
         ()
 
     [<Theory>]
     [<MemberData("Data Bravo")>]
     member __.``Non SZ Array`` (o : obj) =
-        let creator = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SpanLikeConverterCreator") |> Array.exactlyOne
-        let creator = Activator.CreateInstance creator :?> IConverterCreator
+        let methodType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "FallbackSequentialMethods") |> Array.exactlyOne
+        let method = methodType.GetMethod("GetConverter", BindingFlags.Static ||| BindingFlags.NonPublic)
         let t = o.GetType()
         Assert.True t.IsArray
-        let error = Assert.Throws<NotSupportedException>(fun () -> creator.GetConverter(null, t) |> ignore)
+        let error = Assert.Throws<TargetInvocationException>(fun () -> method.Invoke(null, [| null; box t |]) |> ignore)
+        let error = Assert.IsType<NotSupportedException> error.InnerException
         let message = sprintf "Only single dimensional zero based arrays are supported, type: %O" t
         Assert.Equal(message, error.Message)
         ()

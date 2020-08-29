@@ -61,7 +61,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 expressions.Add(Expression.Call(Expression.Constant(converter), methodInfo, allocator, Expression.Property(item, property)));
             }
 
-            var delegateType = typeof(OfNamedObject<>).MakeGenericType(type);
+            var delegateType = typeof(NamedObjectEncoder<>).MakeGenericType(type);
             var lambda = Expression.Lambda(delegateType, Expression.Block(expressions), allocator, item);
             return lambda.Compile();
         }
@@ -84,7 +84,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
             if (!ContextMethods.CanCreateInstance(type, properties, constructor))
                 return null;
-            var delegateType = typeof(ToNamedObject<>).MakeGenericType(type);
+            var delegateType = typeof(NamedObjectDecoder<>).MakeGenericType(type);
             var parameterType = typeof(MemorySlices).MakeByRefType();
             return constructor is null
                 ? ContextMethods.GetDecodeDelegateUseMembers(delegateType, parameterType, Initialize, properties.Select(x => new Func<Expression, Expression>(e => Expression.Property(e, x))).ToList())

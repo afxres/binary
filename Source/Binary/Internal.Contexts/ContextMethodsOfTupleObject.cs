@@ -19,11 +19,11 @@ namespace Mikodev.Binary.Internal.Contexts
             Debug.Assert(converters.Count == types.Count);
             Debug.Assert(converters.Count == members.Count);
             var encode = GetEncodeDelegateAsTupleObject(type, types, converters, members, auto: false);
-            var decode = GetDecodeDelegateAsTupleObject(type, types, converters, members, properties, constructor, indexes, auto: false);
             var encodeAuto = GetEncodeDelegateAsTupleObject(type, types, converters, members, auto: true);
+            var decode = GetDecodeDelegateAsTupleObject(type, types, converters, members, properties, constructor, indexes, auto: false);
             var decodeAuto = GetDecodeDelegateAsTupleObject(type, types, converters, members, properties, constructor, indexes, auto: true);
             var itemLength = ContextMethods.GetItemLength(converters);
-            var converterArguments = new object[] { encode, decode, encodeAuto, decodeAuto, itemLength };
+            var converterArguments = new object[] { encode, encodeAuto, decode, decodeAuto, itemLength };
             var converterType = typeof(TupleObjectConverter<>).MakeGenericType(type);
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (IConverter)converter;
@@ -63,7 +63,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 var invoke = Expression.Call(Expression.Constant(converter), method, allocator, members[i].Invoke(item));
                 expressions.Add(invoke);
             }
-            var delegateType = typeof(OfTupleObject<>).MakeGenericType(type);
+            var delegateType = typeof(TupleObjectEncoder<>).MakeGenericType(type);
             var lambda = Expression.Lambda(delegateType, Expression.Block(expressions), allocator, item);
             return lambda.Compile();
         }
@@ -88,7 +88,7 @@ namespace Mikodev.Binary.Internal.Contexts
             Debug.Assert(converters.Count == members.Count);
             if (properties != null && !ContextMethods.CanCreateInstance(type, properties, constructor))
                 return null;
-            var delegateType = typeof(ToTupleObject<>).MakeGenericType(type);
+            var delegateType = typeof(TupleObjectDecoder<>).MakeGenericType(type);
             var parameterType = typeof(ReadOnlySpan<byte>).MakeByRefType();
             return constructor is null
                 ? ContextMethods.GetDecodeDelegateUseMembers(delegateType, parameterType, Initialize, members)

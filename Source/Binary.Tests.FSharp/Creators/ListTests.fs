@@ -1,7 +1,6 @@
 ﻿namespace Creators
 
 open Mikodev.Binary
-open System
 open System.Reflection
 open Xunit
 
@@ -47,18 +46,17 @@ type ListTests () =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     member __.``Fallback List Implementation (hack, integration test)`` (array : 'a array) =
-        let types = typeof<IConverter>.Assembly.GetTypes()
-        let listConverterCreator = types |> Array.filter (fun x -> x.Name = "SpanLikeConverterCreator") |> Array.exactlyOne
-        let creatorTypes = types |> Array.filter (fun x -> not x.IsAbstract && typeof<IConverterCreator>.IsAssignableFrom x)
-        let creators = creatorTypes |> Array.except (Array.singleton listConverterCreator) |> Array.map (fun x -> Activator.CreateInstance x :?> IConverterCreator)
-        let generatorType = types |> Array.filter (fun x -> x.Name = "Generator" && not x.IsAbstract) |> Array.exactlyOne
-        let generator = Activator.CreateInstance(generatorType, [| box (Array.empty<Type * IConverter> |> readOnlyDict); box creators |]) :?> IGenerator
+        let generator = Generator.CreateDefault()
+        let types = [ typeof<int>; typeof<string> ] |> List.map (fun x -> x, generator.GetConverter x) |> readOnlyDict
+        let context = { new IGeneratorContext with member __.GetConverter t = types.[t] }
 
-        let alpha = generator.GetConverter<'a vlist>()
+        let methodType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "FallbackCollectionMethods") |> Array.exactlyOne
+        let method = methodType.GetMethod("GetConverter", BindingFlags.Static ||| BindingFlags.NonPublic)
+
+        let alpha = method.Invoke(null, [| box context; typeof<'a vlist> |]) :?> Converter<'a vlist>
         let alphaBuilder = alpha.GetType().GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(alpha)
         Assert.Equal("DelegateEnumerableBuilder`2", alphaBuilder.GetType().Name)
-        let defaultGenerator = Generator.CreateDefault()
-        let bravo = defaultGenerator.GetConverter<'a vlist>()
+        let bravo = generator.GetConverter<'a vlist>()
         let bravoBuilder = bravo.GetType().GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(bravo)
         Assert.Equal("ListBuilder`1", bravoBuilder.GetType().Name)
 

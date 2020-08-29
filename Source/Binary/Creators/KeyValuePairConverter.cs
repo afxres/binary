@@ -21,18 +21,18 @@ namespace Mikodev.Binary.Creators
             tailConverter.Encode(ref allocator, item.Value);
         }
 
+        public override void EncodeAuto(ref Allocator allocator, KeyValuePair<K, V> item)
+        {
+            initConverter.EncodeAuto(ref allocator, item.Key);
+            tailConverter.EncodeAuto(ref allocator, item.Value);
+        }
+
         public override KeyValuePair<K, V> Decode(in ReadOnlySpan<byte> span)
         {
             var body = span;
             var init = initConverter.DecodeAuto(ref body);
             var tail = tailConverter.Decode(in body);
             return new KeyValuePair<K, V>(init, tail);
-        }
-
-        public override void EncodeAuto(ref Allocator allocator, KeyValuePair<K, V> item)
-        {
-            initConverter.EncodeAuto(ref allocator, item.Key);
-            tailConverter.EncodeAuto(ref allocator, item.Value);
         }
 
         public override KeyValuePair<K, V> DecodeAuto(ref ReadOnlySpan<byte> span)

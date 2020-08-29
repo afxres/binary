@@ -1,4 +1,4 @@
-﻿using Mikodev.Binary.Creators.Sequence;
+﻿using Mikodev.Binary.Internal.Sequence;
 using System;
 
 namespace Mikodev.Binary.Internal.Contexts.Models
@@ -11,6 +11,7 @@ namespace Mikodev.Binary.Internal.Contexts.Models
 
         public override T Invoke(ReadOnlySpan<byte> span, SequenceAdapter<T, R> adapter)
         {
+            var constructor = this.constructor;
             if (constructor is null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
             var data = adapter.Decode(span);

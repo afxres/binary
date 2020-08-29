@@ -10,13 +10,13 @@ namespace Mikodev.Binary
 
         void IConverter.EncodeWithLengthPrefix(ref Allocator allocator, object item) => EncodeWithLengthPrefix(ref allocator, (T)item);
 
+        byte[] IConverter.Encode(object item) => Encode((T)item);
+
         object IConverter.Decode(in ReadOnlySpan<byte> span) => Decode(in span);
 
         object IConverter.DecodeAuto(ref ReadOnlySpan<byte> span) => DecodeAuto(ref span);
 
         object IConverter.DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => DecodeWithLengthPrefix(ref span);
-
-        byte[] IConverter.Encode(object item) => Encode((T)item);
 
         object IConverter.Decode(byte[] buffer) => Decode(buffer);
     }

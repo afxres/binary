@@ -19,7 +19,7 @@ namespace Mikodev.Binary.Benchmarks.ConverterTests
 
         private Converter<int> converter;
 
-        [Params("constant", "variable")]
+        [Params("constant", "variable", "native")]
         public string Flag;
 
         [GlobalSetup]
@@ -27,9 +27,13 @@ namespace Mikodev.Binary.Benchmarks.ConverterTests
         {
             this.buffer = new byte[65536];
             this.number = 31415926;
-            this.converter = Flag == "constant"
-                ? new ConstantNativeConverter<int>()
-                : new VariableNativeConverter<int>() as Converter<int>;
+            this.converter = Flag switch
+            {
+                "constant" => new ConstantNativeConverter<int>(),
+                "variable" => new VariableNativeConverter<int>(),
+                "native" => Generator.CreateDefault().GetConverter<int>(),
+                _ => throw new NotSupportedException(),
+            };
             this.encodeBytes = this.converter.Encode(this.number);
             this.encodeAutoBytes = AllocatorHelper.Invoke(this.number, this.converter.EncodeAuto);
             this.encodeWithLengthPrefixBytes = AllocatorHelper.Invoke(this.number, this.converter.EncodeWithLengthPrefix);

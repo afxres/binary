@@ -1,3 +1,3 @@
 ﻿using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Mikodev.Binary.Dynamic")]
+[assembly: InternalsVisibleTo("Mikodev.Binary.Unsafe.Handle")]

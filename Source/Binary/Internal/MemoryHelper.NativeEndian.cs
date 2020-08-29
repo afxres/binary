@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Internal
 {
@@ -27,9 +26,7 @@ namespace Mikodev.Binary.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static T DecodeNativeEndian<T>(ReadOnlySpan<byte> span) where T : unmanaged
         {
-            if (span.Length < Unsafe.SizeOf<T>())
-                return ThrowHelper.ThrowNotEnoughBytes<T>();
-            return DecodeNativeEndian<T>(ref MemoryMarshal.GetReference(span));
+            return DecodeNativeEndian<T>(ref EnsureLength(span, Unsafe.SizeOf<T>()));
         }
     }
 }

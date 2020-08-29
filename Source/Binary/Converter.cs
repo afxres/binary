@@ -1,5 +1,5 @@
 ﻿using Mikodev.Binary.Internal;
-using Mikodev.Binary.Internal.Adapters;
+using Mikodev.Binary.Internal.Fallback;
 using System;
 using System.ComponentModel;
 
@@ -9,7 +9,7 @@ namespace Mikodev.Binary
     {
         private readonly int length;
 
-        private readonly AbstractAdapter<T> adapter;
+        private readonly FallbackAbstractAdapter<T> adapter;
 
         public int Length => length;
 
@@ -21,23 +21,23 @@ namespace Mikodev.Binary
                 ThrowHelper.ThrowLengthNegative();
             this.length = length;
             this.adapter = length > 0
-                ? new ConstantAdapter<T>(this)
-                : new VariableAdapter<T>(this) as AbstractAdapter<T>;
+                ? new FallbackConstantAdapter<T>(this)
+                : new FallbackVariableAdapter<T>(this) as FallbackAbstractAdapter<T>;
         }
 
         public abstract void Encode(ref Allocator allocator, T item);
 
-        public abstract T Decode(in ReadOnlySpan<byte> span);
-
         public virtual void EncodeAuto(ref Allocator allocator, T item) => adapter.EncodeAuto(ref allocator, item);
-
-        public virtual T DecodeAuto(ref ReadOnlySpan<byte> span) => adapter.DecodeAuto(ref span);
 
         public virtual void EncodeWithLengthPrefix(ref Allocator allocator, T item) => adapter.EncodeWithLengthPrefix(ref allocator, item);
 
-        public virtual T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => Decode(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
-
         public virtual byte[] Encode(T item) => adapter.Encode(item);
+
+        public abstract T Decode(in ReadOnlySpan<byte> span);
+
+        public virtual T DecodeAuto(ref ReadOnlySpan<byte> span) => adapter.DecodeAuto(ref span);
+
+        public virtual T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => Decode(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
 
         public virtual T Decode(byte[] buffer) => Decode(new ReadOnlySpan<byte>(buffer));
 

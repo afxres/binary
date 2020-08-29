@@ -12,13 +12,13 @@ namespace Mikodev.Binary
 
         void EncodeWithLengthPrefix(ref Allocator allocator, object item);
 
+        byte[] Encode(object item);
+
         object Decode(in ReadOnlySpan<byte> span);
 
         object DecodeAuto(ref ReadOnlySpan<byte> span);
 
         object DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span);
-
-        byte[] Encode(object item);
 
         object Decode(byte[] buffer);
     }
