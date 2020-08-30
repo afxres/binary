@@ -10,15 +10,13 @@ namespace Mikodev.Binary.Converters
         {
             if (item is null)
                 return;
-            var size = SharedHelper.SizeOfIPAddress(item.Address);
-            PrimitiveHelper.EncodeNumber(ref allocator, size);
             SharedHelper.EncodeIPAddress(ref allocator, item.Address);
             MemoryHelper.EncodeLittleEndian(ref allocator, (short)(ushort)item.Port);
         }
 
         private static void EncodeWithLengthPrefixInternal(ref Allocator allocator, IPEndPoint item)
         {
-            var size = item is null ? 0 : SharedHelper.SizeOfIPAddress(item.Address) + sizeof(ushort) + 1;
+            var size = item is null ? 0 : SharedHelper.SizeOfIPAddress(item.Address) + sizeof(ushort);
             PrimitiveHelper.EncodeNumber(ref allocator, size);
             EncodeInternal(ref allocator, item);
         }
@@ -27,10 +25,9 @@ namespace Mikodev.Binary.Converters
         {
             if (span.IsEmpty)
                 return null;
-            var body = span;
-            var head = PrimitiveHelper.DecodeBufferWithLengthPrefix(ref body);
-            var port = MemoryHelper.DecodeLittleEndian<short>(body);
-            var data = SharedHelper.DecodeIPAddress(head);
+            var size = span.Length - sizeof(ushort);
+            var port = MemoryHelper.DecodeLittleEndian<short>(span.Slice(size));
+            var data = SharedHelper.DecodeIPAddress(span.Slice(0, size));
             return new IPEndPoint(data, (ushort)port);
         }
 

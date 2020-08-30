@@ -1,4 +1,4 @@
-﻿module Classes.PrimitiveHelperTests
+﻿module Contexts.PrimitiveHelperTests
 
 open Mikodev.Binary
 open System

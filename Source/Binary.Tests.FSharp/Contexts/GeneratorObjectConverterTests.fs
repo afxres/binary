@@ -1,4 +1,4 @@
-﻿module Classes.GeneratorObjectConverterTests
+﻿module Contexts.GeneratorObjectConverterTests
 
 open Mikodev.Binary
 open System

@@ -194,21 +194,6 @@ let ``IPEndPoint All Port`` () =
         test value value
     ()
 
-[<Theory>]
-[<InlineData("192.168.1.1", 15973)>]
-[<InlineData("fe80::1", 62840)>]
-let ``IPEndPoint And Tuple`` (address : string, port : int) =
-    let address = IPAddress.Parse address
-    let a = new IPEndPoint(address, port)
-    let b = (address, uint16 port)
-    let d = struct (address, uint16 port)
-    let alpha = generator.Encode a
-    let bravo = generator.Encode b
-    let delta = generator.Encode d
-    Assert.Equal<byte>(alpha, bravo)
-    Assert.Equal<byte>(alpha, delta)
-    ()
-
 [<Fact>]
 let ``IPEndPoint Null`` () =
     let endpoint : IPEndPoint = null
@@ -221,13 +206,4 @@ let ``IPEndPoint Null`` () =
     Assert.Null(result)
     Assert.Empty(buffer)
     Assert.Equal(endpoint, result)
-    ()
-
-[<Fact>]
-let ``IPEndPoint Not Enough Bytes`` () =
-    let converter = generator.GetConverter<IPEndPoint>()
-    let buffer = generator.Encode(struct (Unchecked.defaultof<IPAddress>, uint16 65535))
-    let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode buffer |> ignore)
-    let parameter = typeof<IPAddress>.GetConstructor([| typeof<byte[]> |]).GetParameters() |> Array.exactlyOne
-    Assert.Equal(parameter.Name, error.ParamName)
     ()

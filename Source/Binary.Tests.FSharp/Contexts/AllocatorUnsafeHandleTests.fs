@@ -1,4 +1,4 @@
-﻿module Classes.AllocatorUnsafeHandleTests
+﻿module Contexts.AllocatorUnsafeHandleTests
 
 open Mikodev.Binary
 open System

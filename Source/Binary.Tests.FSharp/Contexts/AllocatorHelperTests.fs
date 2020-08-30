@@ -1,4 +1,4 @@
-﻿module Classes.AllocatorHelperTests
+﻿module Contexts.AllocatorHelperTests
 
 open Mikodev.Binary
 open System

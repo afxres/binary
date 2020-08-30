@@ -1,4 +1,4 @@
-﻿module Classes.TokenTests
+﻿module Contexts.TokenTests
 
 open Mikodev.Binary
 open System
