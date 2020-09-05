@@ -42,16 +42,16 @@ namespace Mikodev.Binary
         {
             if (action is null)
                 ThrowHelper.ThrowActionNull();
-            var memory = BufferHelper.Borrow();
+            var handle = BufferHelper.Borrow();
             try
             {
-                var allocator = new Allocator(BufferHelper.Intent(memory));
+                var allocator = new Allocator(BufferHelper.Result(handle));
                 action.Invoke(ref allocator, data);
                 return Allocator.Result(ref allocator);
             }
             finally
             {
-                BufferHelper.Return(memory);
+                BufferHelper.Return(handle);
             }
         }
     }

@@ -5,10 +5,10 @@ namespace Mikodev.Binary.Internal
 {
     internal sealed class BufferHelper
     {
-        private static readonly BufferHelper GlobalSharedInstance = new BufferHelper(Array.Empty<byte>());
-
         [ThreadStatic]
         private static BufferHelper ThreadStaticInstance;
+
+        private static readonly BufferHelper GlobalSharedInstance = new BufferHelper(Array.Empty<byte>());
 
         private readonly byte[] buffer;
 
@@ -17,7 +17,7 @@ namespace Mikodev.Binary.Internal
         private BufferHelper(byte[] buffer) => this.buffer = buffer;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Span<byte> Intent(BufferHelper buffer) => new Span<byte>(buffer.buffer);
+        internal static Span<byte> Result(BufferHelper buffer) => new Span<byte>(buffer.buffer);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void Return(BufferHelper buffer) => buffer.borrow = false;

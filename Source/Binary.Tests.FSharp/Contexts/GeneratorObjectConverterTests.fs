@@ -1,134 +1,125 @@
-﻿module Contexts.GeneratorObjectConverterTests
+﻿namespace Contexts
 
 open Mikodev.Binary
 open System
 open System.Collections.Generic
+open System.Runtime.CompilerServices
 open Xunit
 
-type FakeConverter<'T>() =
+type FakeObjectConverter<'T>() =
     inherit Converter<'T>()
 
     override __.Encode(_, _) = raise (InvalidOperationException("Encode"))
 
-    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : 'T = raise (InvalidOperationException("Decode"))
+    override __.EncodeAuto(_, _) = raise (InvalidOperationException("EncodeAuto"))
 
-    override __.EncodeAuto(_, _) = raise (InvalidOperationException("Encode Auto"))
+    override __.EncodeWithLengthPrefix(_, _) = raise (InvalidOperationException("EncodeWithLengthPrefix"))
 
-    override __.DecodeAuto _ = raise (InvalidOperationException("Decode Auto"))
+    override __.Encode(_) = raise (InvalidOperationException("EncodeBuffer"))
 
-    override __.EncodeWithLengthPrefix(_, _) = raise (InvalidOperationException("Encode With Length Prefix"))
+    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotImplementedException())
 
-    override __.DecodeWithLengthPrefix _ = raise (InvalidOperationException("Decode With Length Prefix"))
+    override __.DecodeAuto _ = raise (NotImplementedException())
 
-    override __.Encode(_) = raise (InvalidOperationException("Encode Buffer"))
+    override __.DecodeWithLengthPrefix _ = raise (NotImplementedException())
 
-    override __.Decode(_ : byte array) : 'T = raise (InvalidOperationException("Decode Buffer"))
+    override __.Decode(_ : byte array) : 'T = raise (NotImplementedException())
 
-type FakeGenerator(converters : IReadOnlyDictionary<Type, IConverter>) =
+type FakeObjectGenerator(converters : IReadOnlyDictionary<Type, IConverter>) =
     interface IGenerator with
         member __.GetConverter t =
             converters.[t]
 
-let CreateConverter() =
-    let converterType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "GeneratorObjectConverter") |> Array.exactlyOne
-    let converter = Activator.CreateInstance(converterType, [| Unchecked.defaultof<obj> |]) :?> Converter<obj>
-    converter
+type GeneratorObjectConverterTests() =
+    static let CreateConverter() =
+        let converterType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "GeneratorObjectConverter") |> Array.exactlyOne
+        let converter = Activator.CreateInstance(converterType, [| [ typeof<int>, FakeObjectConverter<int>() :> IConverter ] |> readOnlyDict |> FakeObjectGenerator |> box |]) :?> Converter<obj>
+        converter
 
-[<Fact>]
-let ``Length`` () =
-    let generator = Generator.CreateDefault()
-    let alpha = generator.GetConverter<obj>()
-    let bravo = CreateConverter()
-    Assert.Equal(alpha.GetType(), bravo.GetType())
-    Assert.Equal(0, alpha.Length)
-    Assert.Equal(0, bravo.Length)
-    ()
+    static let rec InvokeWithInsufficientExecutionStack (action : Action) =
+        let status = try RuntimeHelpers.EnsureSufficientExecutionStack(); None with :? InsufficientExecutionStackException as x -> Some x
+        match status with
+        | None ->
+            InvokeWithInsufficientExecutionStack action
+        | _ ->
+            action.Invoke()
+        ()
 
-[<Fact>]
-let ``Generator Get Object Converter`` () =
-    let generator = Generator.CreateDefault()
-    let converter = generator.GetConverter<obj>()
-    let t = converter.GetType()
-    Assert.Equal("GeneratorObjectConverter", t.Name)
-    ()
+    static member ``Encode Arguments`` : (obj array) seq = seq {
+        yield [| Action<obj>(fun x -> let mutable allocator = Allocator() in CreateConverter().Encode(&allocator, x)); "Encode" |]
+        yield [| Action<obj>(fun x -> let mutable allocator = Allocator() in CreateConverter().EncodeAuto(&allocator, x)); "EncodeWithLengthPrefix" |]
+        yield [| Action<obj>(fun x -> let mutable allocator = Allocator() in CreateConverter().EncodeWithLengthPrefix(&allocator, x)); "EncodeWithLengthPrefix" |]
+        yield [| Action<obj>(fun x -> CreateConverter().Encode x |> ignore); "EncodeBuffer" |]
+    }
 
-[<Fact>]
-let ``Encode Null`` () =
-    let converter = CreateConverter()
-    let alpha = Assert.Throws<ArgumentException>(fun () -> let mutable allocator = Allocator() in converter.Encode(&allocator, null) |> ignore)
-    let bravo = Assert.Throws<ArgumentException>(fun () -> converter.Encode null |> ignore)
-    let message = "Can not get type of null object."
-    Assert.Null(alpha.ParamName)
-    Assert.Null(bravo.ParamName)
-    Assert.Equal(message, alpha.Message)
-    Assert.Equal(message, bravo.Message)
-    ()
+    static member ``Decode Arguments`` : (obj array) seq = seq {
+        yield [| Action(fun () -> let mutable span = ReadOnlySpan() in CreateConverter().Decode &span |> ignore); "Decode(System.ReadOnlySpan`1[System.Byte] ByRef)" |]
+        yield [| Action(fun () -> let mutable span = ReadOnlySpan() in CreateConverter().DecodeAuto &span |> ignore); "DecodeAuto" |]
+        yield [| Action(fun () -> let mutable span = ReadOnlySpan() in CreateConverter().DecodeWithLengthPrefix &span |> ignore); "DecodeWithLengthPrefix" |]
+        yield [| Action(fun () -> CreateConverter().Decode Array.empty |> ignore); "Decode(Byte[])" |]
+    }
 
-[<Fact>]
-let ``Encode Object Instance`` () =
-    let converter = CreateConverter()
-    let alpha = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = Allocator() in converter.Encode(&allocator, obj()) |> ignore)
-    let bravo = Assert.Throws<NotSupportedException>(fun () -> converter.Encode(obj()) |> ignore)
-    let message = "Can not encode object, type: System.Object"
-    Assert.Equal(message, alpha.Message)
-    Assert.Equal(message, bravo.Message)
-    ()
+    [<Fact>]
+    member __.``Length`` () =
+        let generator = Generator.CreateDefault()
+        let alpha = generator.GetConverter<obj>()
+        let bravo = CreateConverter()
+        Assert.Equal(alpha.GetType(), bravo.GetType())
+        Assert.Equal(0, alpha.Length)
+        Assert.Equal(0, bravo.Length)
+        ()
 
-let TestEncode (message : string) (action : Converter<obj> -> unit) =
-    let converterType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "GeneratorObjectConverter") |> Array.exactlyOne
-    let converter = Activator.CreateInstance(converterType, [| [ typeof<int>, FakeConverter<int>() :> IConverter ] |> readOnlyDict |> FakeGenerator |> box |]) :?> Converter<obj>
-    let alpha = Assert.Throws<InvalidOperationException>(fun () -> action converter)
-    Assert.Equal(message, alpha.Message)
-    ()
+    [<Fact>]
+    member __.``Generator Get Object Converter`` () =
+        let generator = Generator.CreateDefault()
+        let converter = generator.GetConverter<obj>()
+        let t = converter.GetType()
+        Assert.Equal("GeneratorObjectConverter", t.Name)
+        ()
 
-[<Fact>]
-let ``Encode`` () =
-    TestEncode "Encode" (fun (converter : Converter<obj>) -> let mutable allocator = Allocator() in converter.Encode(&allocator, 0))
-    ()
+    [<Theory>]
+    [<MemberData("Encode Arguments")>]
+    member __.``Encode Null`` (action : Action<obj>, _ : string) =
+        let error = Assert.Throws<ArgumentException>(fun () -> action.Invoke null)
+        let message = "Can not get type of null object."
+        Assert.Null error.ParamName
+        Assert.Equal(message, error.Message)
+        ()
 
-[<Fact>]
-let ``Encode Auto`` () =
-    TestEncode "Encode With Length Prefix" (fun (converter : Converter<obj>) -> let mutable allocator = Allocator() in converter.EncodeAuto(&allocator, 0))
-    ()
+    [<Theory>]
+    [<MemberData("Encode Arguments")>]
+    member __.``Encode Object Instance`` (action : Action<obj>, _ : string) =
+        let error = Assert.Throws<NotSupportedException>(fun () -> action.Invoke(obj()))
+        let message = "Can not encode object, type: System.Object"
+        Assert.Equal(message, error.Message)
+        ()
 
-[<Fact>]
-let ``Encode With Length Prefix`` () =
-    TestEncode "Encode With Length Prefix" (fun (converter : Converter<obj>) -> let mutable allocator = Allocator() in converter.EncodeWithLengthPrefix(&allocator, 0))
-    ()
+    [<Theory>]
+    [<MemberData("Encode Arguments")>]
+    member __.``Encode (ensure override)`` (action : Action<obj>, message : string) =
+        let error = Assert.Throws<InvalidOperationException>(fun () -> action.Invoke(box 0))
+        Assert.Equal(message, error.Message)
+        ()
 
-[<Fact>]
-let ``Encode Buffer`` () =
-    TestEncode "Encode Buffer" (fun (converter : Converter<obj>) -> converter.Encode 0 |> ignore)
-    ()
+    [<Theory>]
+    [<MemberData("Encode Arguments")>]
+    member __.``Encode Ensure Sufficient Execution Stack`` (action : Action<obj>, _ : string) =
+        let action = Action(fun () -> Assert.Throws<InsufficientExecutionStackException>(fun () -> action.Invoke(box 0)) |> ignore)
+        InvokeWithInsufficientExecutionStack action
+        ()
 
-let TestDecode (action : Converter<obj> -> unit) =
-    let converterType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "GeneratorObjectConverter") |> Array.exactlyOne
-    let converter = Activator.CreateInstance(converterType, [| Unchecked.defaultof<obj> |]) :?> Converter<obj>
-    let alpha = Assert.Throws<NotSupportedException>(fun () -> action converter)
-    let message = "Can not decode object, type: System.Object"
-    Assert.Equal(message, alpha.Message)
+    [<Theory>]
+    [<MemberData("Decode Arguments")>]
+    member __.``Decode (ensure override)`` (action : Action, name : string) =
+        let error = Assert.Throws<NotSupportedException>(fun () -> action.Invoke())
+        let message = "Can not decode object, type: System.Object"
+        Assert.Equal(message, error.Message)
 
-    let methods = converterType.GetMethods() |> Array.filter (fun x -> x.Name.StartsWith "Encode")
-    Assert.Equal(4, methods.Length)
-    Assert.All(methods, fun x -> Assert.True(x.IsVirtual && x.DeclaringType = converterType && x.ReflectedType = converterType))
-    ()
-
-[<Fact>]
-let ``Decode`` () =
-    TestDecode (fun converter -> let span = ReadOnlySpan<byte>() in converter.Decode &span |> ignore)
-    ()
-
-[<Fact>]
-let ``Decode Auto`` () =
-    TestDecode (fun converter -> let mutable span = ReadOnlySpan<byte>() in converter.DecodeAuto &span |> ignore)
-    ()
-
-[<Fact>]
-let ``Decode With Length Prefix`` () =
-    TestDecode (fun converter -> let mutable span = ReadOnlySpan<byte>() in converter.DecodeWithLengthPrefix &span |> ignore)
-    ()
-
-[<Fact>]
-let ``Decode Buffer`` () =
-    TestDecode (fun converter -> converter.Decode Array.empty<byte> |> ignore)
-    ()
+        let converterType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "GeneratorObjectConverter") |> Array.exactlyOne
+        let methods = converterType.GetMethods()
+        let method = Assert.Single(methods, fun x -> x.ToString().Contains(name))
+        Assert.StartsWith("Decode", method.Name)
+        Assert.True(method.IsVirtual)
+        Assert.Equal(converterType, method.DeclaringType)
+        Assert.Equal(converterType, method.ReflectedType)
+        ()

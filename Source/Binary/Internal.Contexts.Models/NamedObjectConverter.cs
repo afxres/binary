@@ -37,10 +37,10 @@ namespace Mikodev.Binary.Internal.Contexts.Models
         }
 
         [DebuggerStepThrough, DoesNotReturn]
-        private T ThrowKeyFound(int i) => throw new ArgumentException($"Named key '{nameList[i]}' already exists, type: {typeof(T)}");
+        private T ExceptKeyFound(int i) => throw new ArgumentException($"Named key '{nameList[i]}' already exists, type: {typeof(T)}");
 
         [DebuggerStepThrough, DoesNotReturn]
-        private T ThrowNotFound(int i) => throw new ArgumentException($"Named key '{nameList[i]}' does not exist, type: {typeof(T)}");
+        private T ExceptNotFound(int i) => throw new ArgumentException($"Named key '{nameList[i]}' does not exist, type: {typeof(T)}");
 
         private static void DecodeBuffer(ref byte origin, ref int offset, ref int length, int limits)
         {
@@ -96,13 +96,13 @@ namespace Mikodev.Binary.Internal.Contexts.Models
                 var cursor = result.Intent;
                 ref var handle = ref values[cursor];
                 if (handle != 0)
-                    return ThrowKeyFound(cursor);
+                    return ExceptKeyFound(cursor);
                 handle = (long)(((ulong)(uint)offset << 32) | (uint)length);
                 remain--;
             }
 
             if (remain != 0)
-                return ThrowNotFound(values.IndexOf(0));
+                return ExceptNotFound(values.IndexOf(0));
             return decode.Invoke(new MemorySlices(span, values));
         }
     }

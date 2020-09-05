@@ -2,6 +2,7 @@
 
 open Mikodev.Binary
 open System
+open System.Collections
 open Xunit
 
 let generator = Generator.CreateDefault()
@@ -87,6 +88,17 @@ let ``Get Converter (generic type parameter)`` () =
     Assert.Null(error.ParamName)
     let message = sprintf "Invalid generic type definition: %O" definition
     Assert.Equal(message, error.Message)
+    ()
+
+[<Fact>]
+let ``Get Converter (non-generic collection)`` () =
+    let types = [| typeof<IEnumerable>; typeof<Stack>; typeof<Queue> |]
+    for i in types do
+        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter i |> ignore)
+        Assert.Null error.ParamName
+        let message = sprintf "Invalid non-generic collection type: %O" i
+        Assert.Equal(message, error.Message)
+        ()
     ()
 
 [<Fact>]

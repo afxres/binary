@@ -22,16 +22,16 @@ namespace Mikodev.Binary.Internal.Fallback
 
         public override byte[] Encode(T item)
         {
-            var memory = BufferHelper.Borrow();
+            var handle = BufferHelper.Borrow();
             try
             {
-                var allocator = new Allocator(BufferHelper.Intent(memory));
+                var allocator = new Allocator(BufferHelper.Result(handle));
                 converter.Encode(ref allocator, item);
                 return Allocator.Result(ref allocator);
             }
             finally
             {
-                BufferHelper.Return(memory);
+                BufferHelper.Return(handle);
             }
         }
 

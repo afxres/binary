@@ -157,21 +157,20 @@ namespace Mikodev.Binary.Tests
             Assert.Contains(typeof(AllocatorAnchor), byRefTypes);
         }
 
-        [Fact(DisplayName = "Throw Method With 'DoesNotReturnAttribute'")]
+        [Fact(DisplayName = "Method With 'DoesNotReturnAttribute'")]
         public void NoReturn()
         {
+            const string AttributeName = "System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute";
             var types = typeof(IConverter).Assembly.GetTypes();
             var methods = types.SelectMany(x => x.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)).ToList();
-            var throwMethods = methods.Where(x => x.Name.StartsWith("Throw") && !x.Name.Contains("Or")).ToList();
-            Assert.NotEmpty(throwMethods);
-            foreach (var method in throwMethods)
-            {
-                Assert.False(method.IsPublic);
-                var attributes = method.GetCustomAttributes();
-                const string AttributeName = "System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute";
-                var validAttributes = attributes.Where(x => x.GetType().FullName == AttributeName).ToList();
-                _ = Assert.Single(validAttributes);
-            }
+            var attributedMethods = methods.Where(x => x.GetCustomAttributes().SingleOrDefault(x => x.GetType().FullName == AttributeName) != null).ToList();
+            Assert.All(attributedMethods, x => Assert.True((x.DeclaringType.Name == "ThrowHelper" && x.Name.StartsWith("Throw")) || x.Name.StartsWith("Except")));
+
+            var expectedMethods = methods.Where(x => x.Name.Contains("Throw") || x.Name.Contains("Except")).ToList();
+            Assert.Equal(new HashSet<MethodInfo>(attributedMethods), new HashSet<MethodInfo>(expectedMethods));
+
+            var misspelledMethods = methods.Where(x => x.Name.ToUpperInvariant().Contains("Expect".ToUpperInvariant())).ToList();
+            Assert.Empty(misspelledMethods);
         }
 
         [Fact(DisplayName = "Generic Converter Constructor (protected)")]

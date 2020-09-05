@@ -62,18 +62,18 @@ namespace Mikodev.Binary
         }
 
         [DebuggerStepThrough, DoesNotReturn]
-        private static Token ThrowKeyNull() => throw new ArgumentNullException("key");
+        private static Token ExceptKeyNull() => throw new ArgumentNullException("key");
 
         [DebuggerStepThrough, DoesNotReturn]
-        private static Token ThrowKeyNotFound(string key) => throw new KeyNotFoundException($"Key '{key}' not found.");
+        private static Token ExceptKeyNotFound(string key) => throw new KeyNotFoundException($"Key '{key}' not found.");
 
         private Token GetToken(string key, bool nothrow)
         {
             if (key is null)
-                return ThrowKeyNull();
+                return ExceptKeyNull();
             if (tokens.Value.TryGetValue(key, out var value))
                 return value;
-            return nothrow ? null : ThrowKeyNotFound(key);
+            return nothrow ? null : ExceptKeyNotFound(key);
         }
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => new TokenDynamicMetaObject(parameter, this);

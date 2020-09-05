@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -60,8 +61,11 @@ namespace Mikodev.Binary.Internal.Contexts
             if ((converter = FallbackCollectionMethods.GetConverter(this, type)) != null)
                 return converter;
 
+            if (type == typeof(IEnumerable) || typeof(IEnumerable).IsAssignableFrom(type))
+                throw new ArgumentException($"Invalid non-generic collection type: {type}");
             if (type.Assembly == typeof(object).Assembly)
                 throw new ArgumentException($"Invalid system type: {type}");
+
             return FallbackAttributesMethods.GetConverter(this, type);
         }
     }
