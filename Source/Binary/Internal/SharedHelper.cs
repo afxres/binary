@@ -26,7 +26,10 @@ namespace Mikodev.Binary.Internal
             Allocator.AppendBuffer(ref allocator, item.GetAddressBytes());
 #else
             var size = SizeOfIPAddress(item);
-            Allocator.AppendLengthAction(ref allocator, size, item, (span, data) => data.TryWriteBytes(span, out _));
+            ref var target = ref Allocator.Assign(ref allocator, size);
+            var flag = item.TryWriteBytes(MemoryMarshal.CreateSpan(ref target, size), out var actual);
+            Debug.Assert(flag);
+            Debug.Assert(size == actual);
 #endif
         }
 
