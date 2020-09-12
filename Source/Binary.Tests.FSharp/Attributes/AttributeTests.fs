@@ -412,6 +412,16 @@ type ClassMissAttribute04() =
     [<NamedKey("error")>]
     member val Throw = "zero" with get, set
 
+[<Converter(typeof<BadConverter<ClassMissAttribute05>>)>]
+type ClassMissAttribute05() =
+    [<NamedKey("3")>]
+    member val Three = 2L with get, set
+
+[<ConverterCreator(typeof<BadConverterCreator<ClassMissAttribute06>>)>]
+type ClassMissAttribute06() =
+    [<TupleKey(5)>]
+    member val Query = obj with get, set
+
 [<NamedObject>]
 type ClassAsNamedObjectWithNullOrEmptyKey01() =
     [<NamedKey(null)>]
@@ -514,27 +524,25 @@ type AttributeTests() =
         Assert.Equal(c, map.[typeof<ConverterCreatorAttribute>])
         ()
 
-    static member ``Data Alpha`` : (obj array) seq =
-        seq {
-            yield [| new ClassAsNamedObjectWithKey(1.1, "second", 5.5m); [| "Last one", box 5.5m; "OneOfThree", box 1.1;  "2/3", box "second" |] |]
-            yield [| new ClassAsNamedObjectWithPartiallyKey("f", -0.2F, DayOfWeek.Sunday); [| "sec", box -0.2F; "day of WEEK", box DayOfWeek.Sunday; "1", box "f" |] |]
-        }
+    static member ``Data Alpha`` : (obj array) seq = seq {
+        yield [| new ClassAsNamedObjectWithKey(1.1, "second", 5.5m); [| "Last one", box 5.5m; "OneOfThree", box 1.1;  "2/3", box "second" |] |]
+        yield [| new ClassAsNamedObjectWithPartiallyKey("f", -0.2F, DayOfWeek.Sunday); [| "sec", box -0.2F; "day of WEEK", box DayOfWeek.Sunday; "1", box "f" |] |]
+    }
 
-    static member ``Data Bravo`` : (obj array) seq =
-        seq {
-            yield [| new ClassAsTupleObjectWithKey(513L, new Uri("ws://loopback")); (513L, new Uri("ws://loopback")); 0 |]
-            yield [| new ClassAsTupleObjectWithPartiallyKey(false, "debugging", -33); struct (-33, "debugging", false); 0 |]
-            yield [| new ClassAsTupleObjectWithUnorderedKey(Alpha = 257, Candidate = "overflow"); ("overflow", 257); 0 |]
-            yield [| new ClassAsTupleObjectWithCustomConverterOfProperty(X = 99, Y = 1080); (99, "1080"); 0 |]
-            yield [| new ValueAsTupleObject(X = 1.1, Y = 2.3); (1.1, 2.3); 16 |]
-            yield [| new ValueAsTupleObjectWithCustomConverterCreatorOfProperty(-2L, 333L); ("-2", 333L); 0 |]
-            yield [| Tuple01(Int32.MaxValue); Tuple.Create(Int32.MaxValue); 4 |]
-            yield [| Tuple01("01"); Tuple.Create("01"); 0 |]
-            yield [| Tuple02(1.0, 3M); struct (1.0, 3M); 24 |]
-            yield [| Tuple02(3.14, "pi"); (3.14, "pi"); 0 |]
-            yield [| Tuple03(1uy, 2s, 3.0F); (1uy, 2s, 3.0F); 7 |]
-            yield [| Tuple03("e", -2, Double.Epsilon); struct ("e", -2, Double.Epsilon); 0 |]
-        }
+    static member ``Data Bravo`` : (obj array) seq = seq {
+        yield [| new ClassAsTupleObjectWithKey(513L, new Uri("ws://loopback")); (513L, new Uri("ws://loopback")); 0 |]
+        yield [| new ClassAsTupleObjectWithPartiallyKey(false, "debugging", -33); struct (-33, "debugging", false); 0 |]
+        yield [| new ClassAsTupleObjectWithUnorderedKey(Alpha = 257, Candidate = "overflow"); ("overflow", 257); 0 |]
+        yield [| new ClassAsTupleObjectWithCustomConverterOfProperty(X = 99, Y = 1080); (99, "1080"); 0 |]
+        yield [| new ValueAsTupleObject(X = 1.1, Y = 2.3); (1.1, 2.3); 16 |]
+        yield [| new ValueAsTupleObjectWithCustomConverterCreatorOfProperty(-2L, 333L); ("-2", 333L); 0 |]
+        yield [| Tuple01(Int32.MaxValue); Tuple.Create(Int32.MaxValue); 4 |]
+        yield [| Tuple01("01"); Tuple.Create("01"); 0 |]
+        yield [| Tuple02(1.0, 3M); struct (1.0, 3M); 24 |]
+        yield [| Tuple02(3.14, "pi"); (3.14, "pi"); 0 |]
+        yield [| Tuple03(1uy, 2s, 3.0F); (1uy, 2s, 3.0F); 7 |]
+        yield [| Tuple03("e", -2, Double.Epsilon); struct ("e", -2, Double.Epsilon); 0 |]
+    }
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
@@ -727,11 +735,20 @@ type AttributeTests() =
     [<Theory>]
     [<InlineData(typeof<ClassMissAttribute01>, "NamedObjectAttribute", "NamedKeyAttribute", "Class")>]
     [<InlineData(typeof<ClassMissAttribute02>, "TupleObjectAttribute", "TupleKeyAttribute", "Value")>]
-    [<InlineData(typeof<ClassMissAttribute03>, "NamedKeyAttribute", "NamedObjectAttribute", "Empty")>]
-    [<InlineData(typeof<ClassMissAttribute04>, "TupleKeyAttribute", "TupleObjectAttribute", "Throw")>]
-    member __.``Require Attribute`` (t: Type, required : string, existed : string, propertyName : string) =
-        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
+    [<InlineData(typeof<ClassMissAttribute05>, "NamedObjectAttribute", "NamedKeyAttribute", "Three")>]
+    [<InlineData(typeof<ClassMissAttribute06>, "TupleObjectAttribute", "TupleKeyAttribute", "Query")>]
+    member __.``Require Object Attribute For Key Attribute`` (t: Type, required : string, existed : string, propertyName : string) =
+        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t |> ignore)
         let message = sprintf "Require '%s' for '%s', property name: %s, type: %O" required existed propertyName t
+        Assert.Equal(message, error.Message)
+        ()
+
+    [<Theory>]
+    [<InlineData(typeof<ClassMissAttribute03>, "NamedKeyAttribute", "NamedObjectAttribute")>]
+    [<InlineData(typeof<ClassMissAttribute04>, "TupleKeyAttribute", "TupleObjectAttribute")>]
+    member __.``Require Key Attribute For Object Attribute`` (t : Type, required : string, existed : string) =
+        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t |> ignore)
+        let message = sprintf "Require '%s' for '%s', type: %O" required existed t
         Assert.Equal(message, error.Message)
         ()
 

@@ -6,14 +6,13 @@ open Xunit
 type ConverterExtensionsTests() =
     let generator = Generator.CreateDefault()
 
-    static member ``Data Alpha`` : (obj array) seq =
-        seq {
-            yield [| 1024 |]
-            yield [| 512.0 |]
-            yield [| "some" |]
-            yield [| (10, "ten") |]
-            yield [| struct ('A', 47, "K") |]
-        }
+    static member ``Data Alpha`` : (obj array) seq = seq {
+        yield [| 1024 |]
+        yield [| 512.0 |]
+        yield [| "some" |]
+        yield [| (10, "ten") |]
+        yield [| struct ('A', 47, "K") |]
+    }
 
     [<Theory>]
     [<MemberData("Data Alpha")>]

@@ -50,10 +50,9 @@ type ConverterHelperTests() =
         Assert.Equal("type", error.ParamName)
         ()
 
-    static member ``Data Invalid Converter`` : (obj array) seq =
-        seq {
-            yield [| new FakeConverter() |]
-        }
+    static member ``Data Invalid Converter`` : (obj array) seq = seq {
+        yield [| new FakeConverter() |]
+    }
 
     [<Theory>]
     [<MemberData("Data Invalid Converter")>]
@@ -64,13 +63,12 @@ type ConverterHelperTests() =
         Assert.Equal(message, error.Message)
         ()
 
-    static member ``Data Invalid Type`` : (obj array) seq =
-        seq {
-            yield [| typeof<FakeConverter> |]
-            yield [| typeof<IConverter> |]
-            yield [| typeof<Converter<int>> |]
-            yield [| typeof<obj> |]
-        }
+    static member ``Data Invalid Type`` : (obj array) seq = seq {
+        yield [| typeof<FakeConverter> |]
+        yield [| typeof<IConverter> |]
+        yield [| typeof<Converter<int>> |]
+        yield [| typeof<obj> |]
+    }
 
     [<Theory>]
     [<MemberData("Data Invalid Type")>]
@@ -81,11 +79,10 @@ type ConverterHelperTests() =
         Assert.Equal(message, error.Message)
         ()
 
-    static member ``Data Converter`` : (obj array) seq =
-        seq {
-            yield [| new GoodConverter<int>(); box typeof<int> |]
-            yield [| new GoodConverter<obj>(); box typeof<obj> |]
-        }
+    static member ``Data Converter`` : (obj array) seq = seq {
+        yield [| new GoodConverter<int>(); box typeof<int> |]
+        yield [| new GoodConverter<obj>(); box typeof<obj> |]
+    }
 
     [<Theory>]
     [<MemberData("Data Converter")>]

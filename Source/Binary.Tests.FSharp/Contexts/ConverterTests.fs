@@ -56,12 +56,21 @@ type CustomConverterAllOverride<'T>(length : int) =
 type ConverterTests () =
     let generator = Generator.CreateDefault()
 
-    static member ``Data Alpha`` : (obj array) seq =
-        seq {
-            yield [| typeof<int>; 4 |]
-            yield [| typeof<double>; 8 |]
-            yield [| typeof<string>; 0 |]
-        }
+    static member ``Data Alpha`` : (obj array) seq = seq {
+        yield [| typeof<int>; 4 |]
+        yield [| typeof<double>; 8 |]
+        yield [| typeof<string>; 0 |]
+    }
+
+    [<Fact>]
+    member __.``Equals (not supported)`` () =
+        Assert.Throws<NotSupportedException>(fun () -> CustomConverter<obj>(0).Equals null |> ignore) |> ignore
+        ()
+
+    [<Fact>]
+    member __.``Get Hash Code (not supported)`` () =
+        Assert.Throws<NotSupportedException>(fun () -> CustomConverter<obj>(0).GetHashCode() |> ignore) |> ignore
+        ()
 
     [<Theory>]
     [<MemberData("Data Alpha")>]

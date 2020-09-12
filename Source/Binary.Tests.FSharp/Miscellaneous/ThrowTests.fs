@@ -149,13 +149,12 @@ type ThrowTests() =
         Assert.Equal(message, error.Message)
         ()
 
-    static member ``Data Delta`` : (obj array) seq =
-        seq {
-            yield [| Memory<int32>(); Int32(); 15; |]
-            yield [| ArraySegment<int64>(); Int64(); 7; |]
-            yield [| ResizeArray<TimeSpan>(); TimeSpan(); 10; |]
-            yield [| Dictionary<int32, int16>(); KeyValuePair<int32, int16>(); 23; |]
-        }
+    static member ``Data Delta`` : (obj array) seq = seq {
+        yield [| Memory<int32>(); Int32(); 15; |]
+        yield [| ArraySegment<int64>(); Int64(); 7; |]
+        yield [| ResizeArray<TimeSpan>(); TimeSpan(); 10; |]
+        yield [| Dictionary<int32, int16>(); KeyValuePair<int32, int16>(); 23; |]
+    }
 
     [<Theory>]
     [<MemberData("Data Delta")>]

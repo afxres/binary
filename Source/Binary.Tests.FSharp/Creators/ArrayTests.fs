@@ -44,17 +44,15 @@ type ArrayTests () =
         Assert.Equal<int []>(array, value)
         ()
 
-    static member ``Data Alpha`` : (obj array) seq =
-        seq {
-            yield [| typeof<int> |]
-            yield [| typeof<double seq> |]
-        }
+    static member ``Data Alpha`` : (obj array) seq = seq {
+        yield [| typeof<int> |]
+        yield [| typeof<double seq> |]
+    }
 
-    static member ``Data Bravo`` : (obj array) seq =
-        seq {
-            yield [| Array2D.zeroCreate<int> 2 3 |]
-            yield [| Array.CreateInstance(typeof<int>, [| 3; 4 |], [| 1; 2 |]) |]
-        }
+    static member ``Data Bravo`` : (obj array) seq = seq {
+        yield [| Array2D.zeroCreate<int> 2 3 |]
+        yield [| Array.CreateInstance(typeof<int>, [| 3; 4 |], [| 1; 2 |]) |]
+    }
 
     [<Theory>]
     [<MemberData("Data Alpha")>]

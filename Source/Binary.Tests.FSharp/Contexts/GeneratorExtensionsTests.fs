@@ -23,13 +23,12 @@ type GeneratorExtensionsTests() =
         let builder = Activator.CreateInstance(t)
         builder :?> IGeneratorBuilder
 
-    static member ``Data Alpha`` : (obj array) seq =
-        seq {
-            yield [| 256 |]
-            yield [| 2.0 |]
-            yield [| struct (2L, 'Z') |]
-            yield [| ("001", 20, struct (true, Guid.NewGuid())) |]
-        }
+    static member ``Data Alpha`` : (obj array) seq = seq {
+        yield [| 256 |]
+        yield [| 2.0 |]
+        yield [| struct (2L, 'Z') |]
+        yield [| ("001", 20, struct (true, Guid.NewGuid())) |]
+    }
 
     [<Theory>]
     [<MemberData("Data Alpha")>]

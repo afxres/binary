@@ -16,14 +16,24 @@ let ``New Handle`` () =
     ()
 
 [<Fact>]
-let ``Handle To String`` () =
+let ``Equals (not supported)`` () =
+    Assert.Throws<NotSupportedException>(fun () -> AllocatorUnsafeHandle().Equals null |> ignore) |> ignore
+    ()
+
+[<Fact>]
+let ``Get Hash Code (not supported)`` () =
+    Assert.Throws<NotSupportedException>(fun () -> AllocatorUnsafeHandle().GetHashCode() |> ignore) |> ignore
+    ()
+
+[<Fact>]
+let ``To String (debug)`` () =
     let mutable allocator = Allocator(Span (Array.zeroCreate 24), 36)
     let handle = AllocatorUnsafeHandle &allocator
     Assert.Equal(allocator.ToString(), handle.ToString())
     ()
 
 [<Fact>]
-let ``Invalid Default Handle To String`` () =
+let ``To String (invalid default value)`` () =
     let handle = AllocatorUnsafeHandle()
     let message = "<Invalid Allocator Handle>"
     Assert.Equal(message, handle.ToString())

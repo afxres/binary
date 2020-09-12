@@ -1,6 +1,7 @@
 ﻿module Contexts.AllocatorAnchorTests
 
 open Mikodev.Binary
+open System
 open System.Collections.Generic
 open Xunit
 
@@ -13,6 +14,16 @@ let ``Public Members`` () =
     Assert.Empty(constructors)
     Assert.Empty(properties)
     Assert.Equal<string>(members |> Seq.map (fun x -> x.Name) |> HashSet, [| "Equals"; "GetHashCode"; "ToString"; "GetType" |] |> HashSet)
+    ()
+
+[<Fact>]
+let ``Equals (not supported)`` () =
+    Assert.Throws<NotSupportedException>(fun () -> AllocatorAnchor().Equals null |> ignore) |> ignore
+    ()
+
+[<Fact>]
+let ``Get Hash Code (not supported)`` () =
+    Assert.Throws<NotSupportedException>(fun () -> AllocatorAnchor().GetHashCode() |> ignore) |> ignore
     ()
 
 [<Fact>]

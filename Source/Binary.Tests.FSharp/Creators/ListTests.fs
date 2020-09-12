@@ -37,11 +37,10 @@ type ListTests () =
         Assert.Empty(valueB)
         ()
 
-    static member ``Data Alpha`` : (obj array) seq =
-        seq {
-            yield [| box [| 2; 6; 10 |] |]
-            yield [| box [| "one"; "second"; "final" |] |]
-        }
+    static member ``Data Alpha`` : (obj array) seq = seq {
+        yield [| box [| 2; 6; 10 |] |]
+        yield [| box [| "one"; "second"; "final" |] |]
+    }
 
     [<Theory>]
     [<MemberData("Data Alpha")>]

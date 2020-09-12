@@ -24,12 +24,11 @@ type MemoryHelperTests () =
         let d = Delegate.CreateDelegate(typeof<'T>, m.MakeGenericMethod(typeof<'T>.GetGenericArguments()))
         d :?> 'T
 
-    static member ``Data Alpha`` : (obj array) seq =
-        seq {
-            yield [| int16 0x3389 |]
-            yield [| int32 0xB5A7_3EF8 |]
-            yield [| int64 0x87A6_E592_66DF_1A36UL |]
-        }
+    static member ``Data Alpha`` : (obj array) seq = seq {
+        yield [| int16 0x3389 |]
+        yield [| int32 0xB5A7_3EF8 |]
+        yield [| int64 0x87A6_E592_66DF_1A36UL |]
+    }
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
@@ -39,12 +38,11 @@ type MemoryHelperTests () =
         Assert.Equal<'a>(item, result)
         ()
 
-    static member ``Data Bravo`` : (obj array) seq =
-        seq {
-            yield [| int16 0x3CED; int16 0xED3C |]
-            yield [| int32 0x2B9C_6E74; int32 0x746E_9C2B |]
-            yield [| int64 0x11223344_5566AADDL; int64 0xDDAA6655_44332211UL |]
-        }
+    static member ``Data Bravo`` : (obj array) seq = seq {
+        yield [| int16 0x3CED; int16 0xED3C |]
+        yield [| int32 0x2B9C_6E74; int32 0x746E_9C2B |]
+        yield [| int64 0x11223344_5566AADDL; int64 0xDDAA6655_44332211UL |]
+    }
 
     [<Theory>]
     [<MemberData("Data Bravo")>]
@@ -54,17 +52,16 @@ type MemoryHelperTests () =
         Assert.Equal<'a>(invert, result)
         ()
 
-    static member ``Data Charlie`` : (obj array) seq =
-        seq {
-            yield [| byte 0x81 |]
-            yield [| sbyte 0x23 |]
-            yield [| char 0x6666 |]
-            yield [| uint16 0x7887 |]
-            yield [| uint32 0xCCDD_AABB |]
-            yield [| uint64 0xFFEEDDCC_88775544UL |]
-            yield [| single 2.1 |]
-            yield [| double 3.4 |]
-        }
+    static member ``Data Charlie`` : (obj array) seq = seq {
+        yield [| byte 0x81 |]
+        yield [| sbyte 0x23 |]
+        yield [| char 0x6666 |]
+        yield [| uint16 0x7887 |]
+        yield [| uint32 0xCCDD_AABB |]
+        yield [| uint64 0xFFEEDDCC_88775544UL |]
+        yield [| single 2.1 |]
+        yield [| double 3.4 |]
+    }
 
     [<Theory>]
     [<MemberData("Data Charlie")>]
@@ -77,12 +74,11 @@ type MemoryHelperTests () =
         Assert.Equal(message, bravo.Message)
         ()
 
-    static member ``Data Delta`` : (obj array) seq =
-        seq {
-            yield [| int16 0xAC96 ; [| 0x96uy; 0xACuy |] |]
-            yield [| int32 0x1122_CCDD ; [| 0xDDuy; 0xCCuy; 0x22uy; 0x11uy |] |]
-            yield [| int64 0xEFFE_3289_DC5A_7503UL ; [| 0x03uy; 0x75uy; 0x5Auy; 0xDCuy; 0x89uy; 0x32uy; 0xFEuy; 0xEFuy |] |]
-        }
+    static member ``Data Delta`` : (obj array) seq = seq {
+        yield [| int16 0xAC96 ; [| 0x96uy; 0xACuy |] |]
+        yield [| int32 0x1122_CCDD ; [| 0xDDuy; 0xCCuy; 0x22uy; 0x11uy |] |]
+        yield [| int64 0xEFFE_3289_DC5A_7503UL ; [| 0x03uy; 0x75uy; 0x5Auy; 0xDCuy; 0x89uy; 0x32uy; 0xFEuy; 0xEFuy |] |]
+    }
 
     [<Theory>]
     [<MemberData("Data Delta")>]

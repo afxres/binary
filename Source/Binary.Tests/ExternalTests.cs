@@ -203,6 +203,33 @@ namespace Mikodev.Binary.Tests
             }
         }
 
+        public class NodeTreeNotFoundData : IEnumerable<object[]>
+        {
+            public IEnumerator<object[]> GetEnumerator()
+            {
+                var alpha = new string[] { string.Empty, "Alpha", "LongLongLongName" };
+                var bravo = new string[] { "x", "The quick brown fox jumps over the lazy dog", string.Empty, "9876543", };
+                yield return new object[] { alpha, "alpha" };
+                yield return new object[] { bravo, "The quic" };
+            }
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+
+        [Theory(DisplayName = "Node Tree Not Found")]
+        [ClassData(typeof(NodeTreeNotFoundData))]
+        public void NodeTreeNotFound(IReadOnlyList<string> list, string key)
+        {
+            var helper = new BinaryHelper<string>();
+            var encoding = Encoding.UTF8;
+            var memories = list.ToDictionary(x => x, x => encoding.GetBytes(x));
+            var enumerable = memories.Select(x => new KeyValuePair<ReadOnlyMemory<byte>, string>(x.Value, x.Key)).ToList();
+            var root = helper.MakeOrNull.Invoke(enumerable);
+            var source = encoding.GetBytes(key).AsSpan();
+            var result = helper.NodeOrNull(root, ref MemoryMarshal.GetReference(source), source.Length);
+            Assert.Null(result);
+        }
+
         public class NodeTreeSame : IEnumerable<object[]>
         {
             public IEnumerator<object[]> GetEnumerator()

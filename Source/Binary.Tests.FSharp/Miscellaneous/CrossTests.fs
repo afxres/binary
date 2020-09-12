@@ -17,14 +17,13 @@ type CrossTests () =
             .AddFSharpConverterCreators()
             .Build();
 
-    static member ``Data Alpha`` : (obj array) seq =
-        seq {
-            yield [| I0; 0uy |]
-            yield [| I1 100; (1uy, 100) |]
-            yield [| I2 ("two",  255); (2uy, "two", 255) |]
-            yield [| I3 (1.1f, "three", 2.2); (3uy, 1.1f, "three", 2.2) |]
-            yield [| I4 ("fox", -1s, "dog", 5L); (4uy, "fox", -1s, "dog", 5L) |]
-        }
+    static member ``Data Alpha`` : (obj array) seq = seq {
+        yield [| I0; 0uy |]
+        yield [| I1 100; (1uy, 100) |]
+        yield [| I2 ("two",  255); (2uy, "two", 255) |]
+        yield [| I3 (1.1f, "three", 2.2); (3uy, 1.1f, "three", 2.2) |]
+        yield [| I4 ("fox", -1s, "dog", 5L); (4uy, "fox", -1s, "dog", 5L) |]
+    }
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
@@ -34,11 +33,10 @@ type CrossTests () =
         Assert.Equal<byte>(alpha, bravo)
         ()
 
-    static member ``Data Bravo`` : (obj array) seq =
-        seq {
-            yield [| I1 127 |]
-            yield [| I3 (0.3f, "let", 2.6) |]
-        }
+    static member ``Data Bravo`` : (obj array) seq = seq {
+        yield [| I1 127 |]
+        yield [| I3 (0.3f, "let", 2.6) |]
+    }
 
     [<Theory>]
     [<MemberData("Data Bravo")>]

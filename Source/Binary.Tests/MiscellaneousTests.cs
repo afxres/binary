@@ -76,7 +76,7 @@ namespace Mikodev.Binary.Tests
             };
             var types = new HashSet<Type>(typeof(IConverter).Assembly.GetTypes());
             var alpha = new HashSet<Type>(types.Where(x => array.Contains(x.Namespace) && !x.IsNested));
-            var bravo = new HashSet<Type>(types.Where(x => x.Name.Any(c => c == '<' || c == '>')));
+            var bravo = new HashSet<Type>(types.Where(x => x.Name.Any(c => c == '<' || c == '>' || c == '-')));
             var delta = new HashSet<Type>(types.Except(alpha).Except(bravo));
             var deltaMembers = delta.SelectMany(x => x.GetMethods(BindingFlags.Static | BindingFlags.Public)).ToList();
             Assert.Equal(types.Count, alpha.Count + bravo.Count + delta.Count);

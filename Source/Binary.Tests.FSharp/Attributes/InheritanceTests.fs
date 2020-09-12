@@ -31,12 +31,19 @@ type Foxtrot () =
 
 [<Theory>]
 [<InlineData(typeof<Bravo>, "TupleObjectAttribute", "TupleKeyAttribute", "A")>]
-[<InlineData(typeof<Charlie>, "NamedKeyAttribute", "NamedObjectAttribute", "A")>]
 [<InlineData(typeof<Echo>, "NamedObjectAttribute", "NamedKeyAttribute", "D")>]
-[<InlineData(typeof<Foxtrot>, "TupleKeyAttribute", "TupleObjectAttribute", "D")>]
-let ``Require Attribute`` (t: Type, required : string, existed : string, propertyName : string) =
+let ``Require Object Attribute For Key Attribute`` (t: Type, required : string, existed : string, propertyName : string) =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
     let message = sprintf "Require '%s' for '%s', property name: %s, type: %O" required existed propertyName t
+    Assert.Equal(message, error.Message)
+    ()
+
+[<Theory>]
+[<InlineData(typeof<Charlie>, "NamedKeyAttribute", "NamedObjectAttribute")>]
+[<InlineData(typeof<Foxtrot>, "TupleKeyAttribute", "TupleObjectAttribute")>]
+let ``Require Key Attribute For Object Attribute`` (t: Type, required : string, existed : string) =
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
+    let message = sprintf "Require '%s' for '%s', type: %O" required existed t
     Assert.Equal(message, error.Message)
     ()
 

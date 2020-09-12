@@ -1,4 +1,4 @@
-﻿namespace Implementations
+﻿namespace Sequence
 
 open Mikodev.Binary
 open System
@@ -38,11 +38,10 @@ type CollectionOfMemory<'T> (memory : ReadOnlyMemory<'T>) =
 type EnumerableAdapterIntegrationTests () =
     let generator = Generator.CreateDefault()
 
-    static member ``Data Alpha`` : (obj array) seq =
-        seq {
-            yield [| Enumerable.Range(0, 8192).ToArray() |]
-            yield [| Enumerable.Range(0, 4096).Select(fun x -> x.ToString()).ToArray() |]
-        }
+    static member ``Data Alpha`` : (obj array) seq = seq {
+        yield [| Enumerable.Range(0, 8192).ToArray() |]
+        yield [| Enumerable.Range(0, 4096).Select(fun x -> x.ToString()).ToArray() |]
+    }
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
@@ -57,13 +56,12 @@ type EnumerableAdapterIntegrationTests () =
         Assert.Equal<'a>(item, result)
         ()
 
-    static member ``Data Bravo`` : (obj array) seq =
-        seq {
-            yield [| [| 1; 4; 9; 7; 3 |] |]
-            yield [| "error" |> ResizeArray<char> |]
-            yield [| seq { for i = 0 to 127 do yield (double i) } |]
-            yield [| "Exception" |> Seq.map int64 |> HashSet<_> |]
-        }
+    static member ``Data Bravo`` : (obj array) seq = seq {
+        yield [| [| 1; 4; 9; 7; 3 |] |]
+        yield [| "error" |> ResizeArray<char> |]
+        yield [| seq { for i = 0 to 127 do yield (double i) } |]
+        yield [| "Exception" |> Seq.map int64 |> HashSet<_> |]
+    }
 
     [<Theory>]
     [<MemberData("Data Bravo")>]

@@ -31,17 +31,8 @@
     <Compile Include="External\CollectionTests.fs" />
     <Compile Include="External\RecordTests.fs" />
     <Compile Include="External\UnionTests.fs" />
-    <Compile Include="Implementations\CollectionLayoutTests.fs" />
-    <Compile Include="Implementations\CollectionOverflowTests.fs" />
-    <Compile Include="Implementations\CollectionTests.fs" />
-    <Compile Include="Implementations\CompatibleCollectionTests.fs" />
-    <Compile Include="Implementations\DictionaryAdapterIntegrationTests.fs" />
-    <Compile Include="Implementations\EnumerableAdapterIntegrationTests.fs" />
-    <Compile Include="Implementations\EnumerableAdapterTests.fs" />
-    <Compile Include="Implementations\EnumerableCounterTests.fs" />
-    <Compile Include="Implementations\EnumerableTests.fs" />
     <Compile Include="Implementations\InheritanceTests.fs" />
-    <Compile Include="Implementations\InstanceTests.fs" />
+    <Compile Include="Implementations\NamedObjectDecodeImplementationTests.fs" />
     <Compile Include="Implementations\NamedObjectTests.fs" />
     <Compile Include="Implementations\NamedObjectWithEncodingTests.fs" />
     <Compile Include="Implementations\TupleObjectTests.fs" />
@@ -51,6 +42,16 @@
     <Compile Include="Miscellaneous\ThrowDecodeTests.fs" />
     <Compile Include="Miscellaneous\ThrowObjectTests.fs" />
     <Compile Include="Miscellaneous\ValueLayoutTests.fs" />
+    <Compile Include="Sequence\CollectionLayoutTests.fs" />
+    <Compile Include="Sequence\CollectionOverflowTests.fs" />
+    <Compile Include="Sequence\CollectionTests.fs" />
+    <Compile Include="Sequence\CompatibleCollectionTests.fs" />
+    <Compile Include="Sequence\DictionaryAdapterIntegrationTests.fs" />
+    <Compile Include="Sequence\EnumerableAdapterIntegrationTests.fs" />
+    <Compile Include="Sequence\EnumerableAdapterTests.fs" />
+    <Compile Include="Sequence\EnumerableCounterTests.fs" />
+    <Compile Include="Sequence\EnumerableTests.fs" />
+    <Compile Include="Sequence\SetAdapterIntegrationTests.fs" />
     <Compile Include="SpanLike\SpanLikeTests.fs" />
     <Compile Include="TupleLike\KeyValuePairTests.fs" />
     <Compile Include="TupleLike\TupleTests.fs" />
@@ -60,6 +61,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="1.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">

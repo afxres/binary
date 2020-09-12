@@ -10,15 +10,14 @@ open Xunit
 type SpanLikeTests () =
     let generator = Generator.CreateDefault()
 
-    static member ``Data Alpha`` : (obj array) seq =
-        seq {
-            yield [| [| 1; 2 |]; 2 |]
-            yield [| [| 1.1; 2.2; 3.3; 4.4; 5.5; 6.6 |]; 6 |]
-            yield [| [| "alpha" |]; 8 |]
-            yield [| [| "a"; "b"; "c"; "d"; "e" |]; 8 |]
-            yield [| Enumerable.Range(0, 48) |> Seq.map (fun x -> struct (sprintf "%4x" x, x)) |> Seq.toArray; 64 |]
-            yield [| Enumerable.Range(0, 192) |> Seq.map (fun x -> (x, sprintf "%4d" x)) |> Seq.toArray; 256 |]
-        }
+    static member ``Data Alpha`` : (obj array) seq = seq {
+        yield [| [| 1; 2 |]; 2 |]
+        yield [| [| 1.1; 2.2; 3.3; 4.4; 5.5; 6.6 |]; 6 |]
+        yield [| [| "alpha" |]; 8 |]
+        yield [| [| "a"; "b"; "c"; "d"; "e" |]; 8 |]
+        yield [| Enumerable.Range(0, 48) |> Seq.map (fun x -> struct (sprintf "%4x" x, x)) |> Seq.toArray; 64 |]
+        yield [| Enumerable.Range(0, 192) |> Seq.map (fun x -> (x, sprintf "%4d" x)) |> Seq.toArray; 256 |]
+    }
 
     [<Theory(DisplayName = "Memory")>]
     [<MemberData("Data Alpha")>]
@@ -54,12 +53,11 @@ type SpanLikeTests () =
         Assert.Equal(capacity, result.Array.Length)
         ()
 
-    static member ``Data Bravo`` : (obj array) seq =
-        seq {
-            yield [| typeof<ArraySegment<int>> |]
-            yield [| typeof<Memory<int>> |]
-            yield [| typeof<ReadOnlyMemory<string>> |]
-        }
+    static member ``Data Bravo`` : (obj array) seq = seq {
+        yield [| typeof<ArraySegment<int>> |]
+        yield [| typeof<Memory<int>> |]
+        yield [| typeof<ReadOnlyMemory<string>> |]
+    }
 
     [<Theory(DisplayName = "Validate Adapter Type")>]
     [<MemberData("Data Bravo")>]
@@ -71,12 +69,11 @@ type SpanLikeTests () =
         Assert.StartsWith("SpanLike", adapterTypeName)
         ()
 
-    static member ``Data Slice`` : (obj array) seq =
-        seq {
-            yield [| [| 1; 2; 3; 4; 5 |]; 1; 2 |]
-            yield [| [| "a"; "bb"; "ccc"; "0"; "1"; "-1" |]; 2; 3 |]
-            yield [| [| 1, "a"; 2, "b"; 3, "c"; 4, "d"; 5, "e"; 6, "f" |]; 3; 3 |]
-        }
+    static member ``Data Slice`` : (obj array) seq = seq {
+        yield [| [| 1; 2; 3; 4; 5 |]; 1; 2 |]
+        yield [| [| "a"; "bb"; "ccc"; "0"; "1"; "-1" |]; 2; 3 |]
+        yield [| [| 1, "a"; 2, "b"; 3, "c"; 4, "d"; 5, "e"; 6, "f" |]; 3; 3 |]
+    }
 
     [<Theory>]
     [<MemberData("Data Slice")>]
@@ -108,13 +105,12 @@ type SpanLikeTests () =
         Assert.Equal<'a>(source.ToArray(), result.ToArray())
         ()
 
-    static member ``Data Empty`` : (obj array) seq =
-        seq {
-            yield [| Array.empty<int> |]
-            yield [| Array.empty<string> |]
-            yield [| Array.empty<(int * string)> |]
-            yield [| Array.empty<struct (string * int)> |]
-        }
+    static member ``Data Empty`` : (obj array) seq = seq {
+        yield [| Array.empty<int> |]
+        yield [| Array.empty<string> |]
+        yield [| Array.empty<(int * string)> |]
+        yield [| Array.empty<struct (string * int)> |]
+    }
 
     [<Theory>]
     [<MemberData("Data Empty")>]
@@ -153,11 +149,10 @@ type SpanLikeTests () =
         Assert.True(obj.ReferenceEquals(Array.Empty<'a>(), result.Array))
         ()
 
-    static member ``Data Large`` : (obj array) seq =
-        seq {
-            yield [| Enumerable.Range(0, 8192).ToArray() |]
-            yield [| Enumerable.Range(0, 4096).Select(fun x -> x.ToString()).ToArray() |]
-        }
+    static member ``Data Large`` : (obj array) seq = seq {
+        yield [| Enumerable.Range(0, 8192).ToArray() |]
+        yield [| Enumerable.Range(0, 4096).Select(fun x -> x.ToString()).ToArray() |]
+    }
 
     [<Theory>]
     [<MemberData("Data Large")>]

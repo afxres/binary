@@ -1,4 +1,4 @@
-﻿module Implementations.InstanceTests
+﻿module Implementations.NamedObjectDecodeImplementationTests
 
 open Mikodev.Binary
 open System
@@ -112,6 +112,11 @@ type AlphaMultipleConstructors(a : int, bravo : string, charlie : Guid) =
 
     new (charlie : Guid, a : int, bravo : string) = new AlphaMultipleConstructors(a, bravo, charlie)
 
+type NamedTypeMismatch(head : int, body : string) =
+    member __.Head = head.ToString()
+
+    member __.Body = let _, data = Int32.TryParse(body) in data
+
 [<Fact>]
 let ``Class Via Constructor Ordered`` () =
     let constructor = typeof<AlphaUnordered>.GetConstructors() |> Array.exactlyOne
@@ -131,7 +136,18 @@ let ``Class Via Constructor Ordered`` () =
     ()
 
 [<Fact>]
-let ``Class Via Constructor With Multiple Constructors`` () =
+let ``Class Via Constructor With Multiple Suitable Constructors`` () =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter<AlphaMultipleConstructors>() |> ignore)
-    Assert.Equal(sprintf "Multiple constructors found, type: %O" typeof<AlphaMultipleConstructors>, error.Message)
+    Assert.Equal(sprintf "Multiple suitable constructors found, type: %O" typeof<AlphaMultipleConstructors>, error.Message)
+    ()
+
+[<Fact>]
+let ``Class Via Constructor With Type Mismatch Properties`` () =
+    let converter = generator.GetConverter<NamedTypeMismatch>()
+    let buffer = converter.Encode (NamedTypeMismatch(1024, "4096"))
+    let expect = generator.Encode {| Head = "1024"; Body = 4096 |}
+    Assert.Equal<byte>(expect, buffer)
+    let error = Assert.Throws<NotSupportedException>(fun () -> converter.Decode buffer |> ignore)
+    let message = sprintf "No suitable constructor found, type: %O" typeof<NamedTypeMismatch>
+    Assert.Equal(message, error.Message)
     ()

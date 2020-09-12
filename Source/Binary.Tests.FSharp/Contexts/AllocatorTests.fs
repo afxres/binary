@@ -81,6 +81,16 @@ let ``As Span`` (length : int) =
     ()
 
 [<Fact>]
+let ``Equals (not supported)`` () =
+    Assert.Throws<NotSupportedException>(fun () -> Allocator().Equals null |> ignore) |> ignore
+    ()
+
+[<Fact>]
+let ``Get Hash Code (not supported)`` () =
+    Assert.Throws<NotSupportedException>(fun () -> Allocator().GetHashCode() |> ignore) |> ignore
+    ()
+
+[<Fact>]
 let ``To String (debug)`` () =
     let mutable allocator = new Allocator(Span (Array.zeroCreate 64), 32)
     AllocatorHelper.Append(&allocator, 4, null :> obj, fun a b -> ())

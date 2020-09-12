@@ -3,6 +3,7 @@
 open Mikodev.Binary
 open Mikodev.Binary.Internal
 open System
+open System.Runtime.CompilerServices
 
 type internal UnionConverter<'T>(encode : UnionEncoder<'T>, encodeAuto : UnionEncoder<'T>, decode : UnionDecoder<'T>, decodeAuto : UnionDecoder<'T>, noNull : bool) =
     inherit Converter<'T>(0)
@@ -16,12 +17,14 @@ type internal UnionConverter<'T>(encode : UnionEncoder<'T>, encodeAuto : UnionEn
     member private __.NotifyMark(mark : int) : unit =
         raise (ArgumentException(sprintf "Invalid union tag '%d', type: %O" mark typeof<'T>))
 
-    member inline private me.DetectNull(item : 'T) : unit =
+    [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
+    member private me.DetectNull(item : 'T) : unit =
         if noNull && isNull (box item) then
             me.NotifyNull()
         ()
 
-    member inline private me.DetectMark(mark : int) : unit =
+    [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
+    member private me.DetectMark(mark : int) : unit =
         if mark <> MarkNone then
             me.NotifyMark mark
         ()

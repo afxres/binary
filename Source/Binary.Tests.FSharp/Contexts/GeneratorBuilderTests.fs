@@ -39,6 +39,24 @@ let ``Build Empty`` () =
     ()
 
 [<Fact>]
+let ``Add Null Converter`` () =
+    let error = Assert.Throws<ArgumentNullException>(fun () -> GeneratorBuilder().AddConverter null |> ignore)
+    let method = typeof<IGeneratorBuilder>.GetMethod("AddConverter")
+    let parameter = method.GetParameters() |> Array.exactlyOne
+    Assert.Equal("converter", parameter.Name)
+    Assert.Equal("converter", error.ParamName)
+    ()
+
+[<Fact>]
+let ``Add Null Converter Creator`` () =
+    let error = Assert.Throws<ArgumentNullException>(fun () -> GeneratorBuilder().AddConverterCreator null |> ignore)
+    let method = typeof<IGeneratorBuilder>.GetMethod("AddConverterCreator")
+    let parameter = method.GetParameters() |> Array.exactlyOne
+    Assert.Equal("creator", parameter.Name)
+    Assert.Equal("creator", error.ParamName)
+    ()
+
+[<Fact>]
 let ``Add Two Converters For One Type`` () =
     let test a b =
         let builder =

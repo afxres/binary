@@ -1,4 +1,4 @@
-﻿namespace Implementations
+﻿namespace Sequence
 
 open Mikodev.Binary
 open System

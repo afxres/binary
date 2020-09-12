@@ -1,4 +1,4 @@
-﻿module Implementations.EnumerableCounterTests
+﻿module Sequence.EnumerableCounterTests
 
 open Mikodev.Binary
 open System.Collections.Generic
