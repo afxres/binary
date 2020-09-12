@@ -1,7 +1,6 @@
 ﻿using Mikodev.Binary.Internal.Contexts.Models;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -10,7 +9,17 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class FallbackPrimitivesMethods
     {
-        private static readonly IReadOnlyCollection<string> Names = new[] { "Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Rest" };
+        private static readonly IReadOnlyCollection<string> Names = new[]
+        {
+            "Item1",
+            "Item2",
+            "Item3",
+            "Item4",
+            "Item5",
+            "Item6",
+            "Item7",
+            "Rest",
+        };
 
         private static readonly IReadOnlyCollection<Type> Types = new[]
         {
@@ -39,55 +48,50 @@ namespace Mikodev.Binary.Internal.Contexts
             return type.IsGenericType && Types.Contains(type.GetGenericTypeDefinition());
         }
 
-        private static (IReadOnlyList<Func<Expression, Expression>>, IReadOnlyList<Type>, IReadOnlyList<IConverter>, IReadOnlyList<PropertyInfo>) GetValueTupleParameters(IGeneratorContext context, Type type)
+        private static IReadOnlyList<IConverter> GetValueTupleParameters(IGeneratorContext context, Type type, out IReadOnlyList<Type> types, out IReadOnlyList<Func<Expression, Expression>> members)
         {
-            var types = new List<Type>();
-            var members = new List<Func<Expression, Expression>>();
-            var converters = new List<IConverter>();
-
             static void Fields(Type type, Action<FieldInfo> action)
             {
-                Names.Take(type.GetGenericArguments().Length).Select(x => type.GetField(x, BindingFlags.Instance | BindingFlags.Public)).ToList().ForEach(action);
+                var names = Names.Take(type.GetGenericArguments().Length);
+                var fields = names.Select(x => type.GetField(x, BindingFlags.Instance | BindingFlags.Public)).ToList();
+                fields.ForEach(action);
             }
 
-            void Insert(Func<Expression, Expression> func, Type type, IConverter converter)
-            {
-                types.Add(type);
-                members.Add(func);
-                converters.Add(converter);
-                Debug.Assert(converters.Count == types.Count);
-                Debug.Assert(converters.Count == members.Count);
-            }
-
-            void Expand(Func<Expression, Expression> parent, FieldInfo field)
+            static void Expand(IGeneratorContext context, List<(Type, Func<Expression, Expression>, IConverter)> result, FieldInfo field, Func<Expression, Expression> parent)
             {
                 var type = field.FieldType;
                 var func = new Func<Expression, Expression>(x => Expression.Field(parent.Invoke(x), field));
                 var converter = context.GetConverter(type);
                 if (type.IsValueType && IsTupleOrValueTuple(type) && converter.GetType() == typeof(TupleObjectConverter<>).MakeGenericType(type))
-                    Fields(type, x => Expand(func, x));
+                    Fields(type, x => Expand(context, result, x, func));
                 else
-                    Insert(x => func.Invoke(x), type, converter);
+                    result.Add((type, x => func.Invoke(x), converter));
             }
 
-            Fields(type, x => Expand(v => v, x));
-            return (members, types, converters, null);
+            var result = new List<(Type Type, Func<Expression, Expression> Member, IConverter Converter)>();
+            Fields(type, x => Expand(context, result, x, v => v));
+            types = result.Select(x => x.Type).ToList();
+            members = result.Select(x => x.Member).ToList();
+            return result.Select(x => x.Converter).ToList();
         }
 
-        private static (IReadOnlyList<Func<Expression, Expression>>, IReadOnlyList<Type>, IReadOnlyList<IConverter>, IReadOnlyList<PropertyInfo>) GetTupleParameters(IGeneratorContext context, Type type)
+        private static IReadOnlyList<IConverter> GetTupleParameters(IGeneratorContext context, Type type, out IReadOnlyList<PropertyInfo> properties)
         {
-            var properties = Names.Take(type.GetGenericArguments().Length).Select(x => type.GetProperty(x, BindingFlags.Instance | BindingFlags.Public)).ToList();
-            var converters = properties.Select(x => context.GetConverter(x.PropertyType)).ToList();
-            return (null, null, converters, properties);
+            var names = Names.Take(type.GetGenericArguments().Length);
+            properties = names.Select(x => type.GetProperty(x, BindingFlags.Instance | BindingFlags.Public)).ToList();
+            return properties.Select(x => context.GetConverter(x.PropertyType)).ToList();
         }
 
         internal static IConverter GetConverter(IGeneratorContext context, Type type)
         {
-            if (!IsTupleOrValueTuple(type))
+            if (IsTupleOrValueTuple(type) is false)
                 return null;
-            var (members, types, converters, properties) = !type.IsValueType
-                ? GetTupleParameters(context, type)
-                : GetValueTupleParameters(context, type);
+            var types = default(IReadOnlyList<Type>);
+            var members = default(IReadOnlyList<Func<Expression, Expression>>);
+            var properties = default(IReadOnlyList<PropertyInfo>);
+            var converters = !type.IsValueType
+                ? GetTupleParameters(context, type, out properties)
+                : GetValueTupleParameters(context, type, out types, out members);
             var typeArguments = type.GetGenericArguments();
             var constructor = type.IsValueType ? null : type.GetConstructor(typeArguments);
             var indexes = Enumerable.Range(0, typeArguments.Length).ToList();
