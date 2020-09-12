@@ -1,19 +1,13 @@
 ﻿module Miscellaneous.MiscellaneousTests
 
-open Microsoft.FSharp.Linq.RuntimeHelpers
 open Mikodev.Binary
-open System
 open System.Collections.Generic
-open System.Linq.Expressions
 open System.Reflection
 open Xunit
 
 [<Fact>]
 let ``Public Types`` () =
-    let expression = <@ Func<_, _>(GeneratorBuilderFSharpExtensions.AddFSharpConverterCreators) @>
-    let x = expression |> LeafExpressionConverter.QuotationToExpression
-    let method = ((x :?> LambdaExpression).Body :?> MethodCallExpression).Method
-    let types = method.DeclaringType.Assembly.GetTypes()
+    let types = typeof<GeneratorBuilderFSharpExtensions>.Assembly.GetTypes()
     let myTypes = types |> Array.filter (fun x -> x.IsPublic)
     let myTypeNames = myTypes |> Array.map (fun x -> x.Name)
     let names = [| "UnionEncoder`1"; "UnionDecoder`1"; "GeneratorBuilderFSharpExtensions" |] |> HashSet
@@ -23,10 +17,7 @@ let ``Public Types`` () =
 
 [<Fact>]
 let ``Public Members`` () =
-    let expression = <@ Func<_, _>(GeneratorBuilderFSharpExtensions.AddFSharpConverterCreators) @>
-    let x = expression |> LeafExpressionConverter.QuotationToExpression
-    let method = ((x :?> LambdaExpression).Body :?> MethodCallExpression).Method
-    let types = method.DeclaringType.Assembly.GetTypes()
+    let types = typeof<GeneratorBuilderFSharpExtensions>.Assembly.GetTypes()
     let myNonPublicTypes = types |> Array.filter (fun x -> x.Namespace.StartsWith "Mikodev.Binary.Creators" && not x.IsPublic)
     Assert.Equal(8, myNonPublicTypes.Length)
     for t in myNonPublicTypes do

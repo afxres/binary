@@ -1,7 +1,6 @@
 ﻿namespace Miscellaneous
 
 open Mikodev.Binary
-open Mikodev.Binary.Internal
 open System
 open System.Collections.Generic
 open Xunit
@@ -62,7 +61,7 @@ type ConverterCreatorTests() =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     member __.``Invalid IConverter Implementation`` (creatorName : string, itemType : Type) =
-        let creatorType = typeof<UnionEncoder<int>>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = creatorName) |> Array.exactlyOne
+        let creatorType = typeof<GeneratorBuilderFSharpExtensions>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = creatorName) |> Array.exactlyOne
         let creator = Activator.CreateInstance creatorType :?> IConverterCreator
         let context = [| typeof<int>, new FakeIConverterImplementation() :> IConverter |] |> readOnlyDict |> FakeIGeneratorContextImplementation :> IGeneratorContext
         let error = Assert.Throws<ArgumentException>(fun () -> creator.GetConverter(context, itemType) |> ignore)
@@ -73,7 +72,7 @@ type ConverterCreatorTests() =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     member __.``Invalid Converter Instance`` (creatorName : string, itemType : Type) =
-        let creatorType = typeof<UnionEncoder<int>>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = creatorName) |> Array.exactlyOne
+        let creatorType = typeof<GeneratorBuilderFSharpExtensions>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = creatorName) |> Array.exactlyOne
         let creator = Activator.CreateInstance creatorType :?> IConverterCreator
         let context = [| typeof<int>, new FakeGenericConverterImplementation<string>() :> IConverter |] |> readOnlyDict |> FakeIGeneratorContextImplementation :> IGeneratorContext
         let error = Assert.Throws<ArgumentException>(fun () -> creator.GetConverter(context, itemType) |> ignore)
@@ -84,7 +83,7 @@ type ConverterCreatorTests() =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     member __.``Invalid Null Converter Return`` (creatorName : string, itemType : Type) =
-        let creatorType = typeof<UnionEncoder<int>>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = creatorName) |> Array.exactlyOne
+        let creatorType = typeof<GeneratorBuilderFSharpExtensions>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = creatorName) |> Array.exactlyOne
         let creator = Activator.CreateInstance creatorType :?> IConverterCreator
         let context = Array.empty |> readOnlyDict |> FakeIGeneratorContextImplementation :> IGeneratorContext
         let error = Assert.Throws<ArgumentException>(fun () -> creator.GetConverter(context, itemType) |> ignore)
