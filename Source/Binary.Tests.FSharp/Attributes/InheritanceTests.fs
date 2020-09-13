@@ -57,10 +57,13 @@ type Hotel () =
 
 [<Theory>]
 [<InlineData(typeof<Hotel>, "G")>]
-let ``Multiple Attributes On Property`` (t : Type, propertyName : string) =
-    let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-    let message = sprintf "Multiple attributes found, property name: %s, type: %O" propertyName t
-    Assert.Equal(message, error.Message)
+let ``Multiple Attributes On Base Class Property`` (t : Type, propertyName : string) =
+    let thisError = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t |> ignore)
+    let baseError = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t.BaseType |> ignore)
+    let thisMessage = sprintf "Multiple attributes found, property name: %s, type: %O" propertyName t
+    let baseMessage = sprintf "Multiple attributes found, property name: %s, type: %O" propertyName t.BaseType
+    Assert.Equal(thisMessage, thisError.Message)
+    Assert.Equal(baseMessage, baseError.Message)
     ()
 
 type India () =
@@ -99,4 +102,78 @@ let ``Named Key Duplicated`` (t : Type, propertyName : string, key : string) =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
     let message = sprintf "Named key '%s' already exists, property name: %s, type: %O" key propertyName t
     Assert.Equal(message, error.Message)
+    ()
+
+[<NamedObject>]
+type Mike () =
+    [<NamedKey("M")>]
+    member val M = 3L with get, set
+
+type November () =
+    class
+    inherit Mike()
+    end
+
+[<Theory>]
+[<InlineData(typeof<November>, "NamedObjectAttribute", "NamedKeyAttribute", "M")>]
+let ``Require Object Attribute On This Class For Base Class Key Attribute`` (t: Type, required : string, existed : string, propertyName : string) =
+    // ensure base class works
+    generator.GetConverter t.BaseType |> ignore
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
+    let message = sprintf "Require '%s' for '%s', property name: %s, type: %O" required existed propertyName t
+    Assert.Equal(message, error.Message)
+    ()
+
+[<TupleObject>]
+type Oscar () =
+    abstract member O : int with get, set
+
+    [<TupleKey(0)>]
+    default val O = 0 with get, set
+
+    override me.Equals obj = match obj with | :? Oscar as a -> a.O = me.O | _ -> false
+
+    override me.GetHashCode () = me.O.GetHashCode()
+
+[<TupleObject>]
+type Papa () =
+    inherit Oscar()
+
+    override val O = 1 with get, set
+
+[<NamedObject>]
+type Quebec () =
+    inherit Oscar()
+
+    [<NamedKey("Oscar")>]
+    override val O = 2 with get, set
+
+[<Theory>]
+[<InlineData(typeof<Papa>, "TupleKeyAttribute", "TupleObjectAttribute")>]
+let ``Require Key Attribute On This Type For Object Attribute`` (t: Type, required : string, existed : string) =
+    // ensure base class works
+    generator.GetConverter t.BaseType |> ignore
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
+    let message = sprintf "Require '%s' for '%s', type: %O" required existed t
+    Assert.Equal(message, error.Message)
+    ()
+
+[<Theory>]
+[<InlineData(typeof<Quebec>, "NamedObjectConverter`1", "TupleObjectConverter`1")>]
+let ``Rewrite Base Class Attribute On This Class`` (t : Type, thisConverterDefinition : string, baseConverterDefinition : string) =
+    let thisConverter = generator.GetConverter t
+    let baseConverter = generator.GetConverter t.BaseType
+    let thisDefinition = thisConverter.GetType().GetGenericTypeDefinition()
+    let baseDefinition = baseConverter.GetType().GetGenericTypeDefinition()
+    Assert.NotEqual(thisDefinition, baseDefinition)
+    Assert.Equal(thisConverterDefinition, thisDefinition.Name)
+    Assert.Equal(baseConverterDefinition, baseDefinition.Name)
+
+    let object = Activator.CreateInstance t
+    let thisBuffer = thisConverter.Encode object
+    let baseBuffer = baseConverter.Encode object
+    let thisResult = thisConverter.Decode thisBuffer
+    let baseResult = baseConverter.Decode baseBuffer
+    Assert.Equal(object, thisResult)
+    Assert.Equal(object, baseResult)
     ()
