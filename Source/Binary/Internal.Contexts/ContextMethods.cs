@@ -16,20 +16,12 @@ namespace Mikodev.Binary.Internal.Contexts
             return source.All(x => x > 0) ? source.Sum() : 0;
         }
 
-        internal static bool CanCreateInstance(Type type, IReadOnlyList<PropertyInfo> properties, ConstructorInfo constructor)
+        internal static Delegate GetDecodeDelegateUseMembers(Type delegateType, Func<ParameterExpression, IReadOnlyList<Expression>> initializer, IReadOnlyList<Func<Expression, Expression>> members)
         {
-            Debug.Assert(properties.Any());
-            Debug.Assert(constructor is null || (!type.IsAbstract && !type.IsInterface));
-            if (type.IsAbstract || type.IsInterface)
-                return false;
-            if (constructor != null)
-                return true;
-            return (type.IsValueType || type.GetConstructor(Type.EmptyTypes) != null) && properties.All(x => x.GetSetMethod() != null);
-        }
-
-        internal static Delegate GetDecodeDelegateUseMembers(Type delegateType, Type parameterType, Func<ParameterExpression, IReadOnlyList<Expression>> initializer, IReadOnlyList<Func<Expression, Expression>> members)
-        {
-            var type = delegateType.GetGenericArguments().Single();
+            var delegateInvoke = delegateType.GetMethod("Invoke");
+            Debug.Assert(delegateInvoke != null && delegateInvoke.GetParameters().Length == 1);
+            var type = delegateInvoke.ReturnType;
+            var parameterType = delegateInvoke.GetParameters().Single().ParameterType;
             var data = Expression.Parameter(parameterType, "parameter");
             var item = Expression.Variable(type, "item");
             var targets = members.Select(x => x.Invoke(item)).ToList();
@@ -43,8 +35,11 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        internal static Delegate GetDecodeDelegateUseConstructor(Type delegateType, Type parameterType, Func<ParameterExpression, IReadOnlyList<Expression>> initializer, IReadOnlyList<int> indexes, ConstructorInfo constructor)
+        internal static Delegate GetDecodeDelegateUseConstructor(Type delegateType, Func<ParameterExpression, IReadOnlyList<Expression>> initializer, IReadOnlyList<int> indexes, ConstructorInfo constructor)
         {
+            var delegateInvoke = delegateType.GetMethod("Invoke");
+            Debug.Assert(delegateInvoke != null && delegateInvoke.GetParameters().Length == 1);
+            var parameterType = delegateInvoke.GetParameters().Single().ParameterType;
             var data = Expression.Parameter(parameterType, "parameter");
             var sources = initializer.Invoke(data);
             var targets = sources.Select((x, i) => Expression.Variable(x.Type, $"{i}")).ToList();
@@ -61,7 +56,7 @@ namespace Mikodev.Binary.Internal.Contexts
             Debug.Assert(converter != null);
             var expectedType = typeof(Converter<>).MakeGenericType(type);
             var instanceType = converter.GetType();
-            if (!expectedType.IsAssignableFrom(instanceType))
+            if (expectedType.IsAssignableFrom(instanceType) is false)
                 throw new ArgumentException($"Can not convert '{instanceType}' to '{expectedType}'");
             return converter;
         }
@@ -72,7 +67,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (converter is null)
                 throw new ArgumentException($"Can not convert 'null' to '{expectedType}', converter creator type: {creatorType}");
             var instanceType = converter.GetType();
-            if (!expectedType.IsAssignableFrom(instanceType))
+            if (expectedType.IsAssignableFrom(instanceType) is false)
                 throw new ArgumentException($"Can not convert '{instanceType}' to '{expectedType}', converter creator type: {creatorType}");
             return converter;
         }

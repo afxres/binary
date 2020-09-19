@@ -44,7 +44,7 @@ namespace Mikodev.Binary
             try
             {
                 var dictionary = new Dictionary<string, Token>();
-                while (!body.IsEmpty)
+                while (body.IsEmpty is false)
                 {
                     var header = encoder.DecodeWithLengthPrefix(ref body);
                     var buffer = PrimitiveHelper.DecodeBufferWithLengthPrefix(ref body);

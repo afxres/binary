@@ -48,7 +48,19 @@ namespace Mikodev.Binary.Internal.Contexts
             return type.IsGenericType && Types.Contains(type.GetGenericTypeDefinition());
         }
 
-        private static IReadOnlyList<IConverter> GetValueTupleParameters(IGeneratorContext context, Type type, out IReadOnlyList<Type> types, out IReadOnlyList<Func<Expression, Expression>> members)
+        private static IConverter GetTupleConverter(IGeneratorContext context, Type type)
+        {
+            var names = Names.Take(type.GetGenericArguments().Length);
+            var types = type.GetGenericArguments();
+            var constructor = type.IsValueType ? null : type.GetConstructor(types);
+            var indexes = Enumerable.Range(0, types.Length).ToList();
+            var properties = names.Select(x => type.GetProperty(x, BindingFlags.Instance | BindingFlags.Public)).ToList();
+            var converters = properties.Select(x => context.GetConverter(x.PropertyType)).ToList();
+            var functor = new Func<Type, Func<ParameterExpression, IReadOnlyList<Expression>>, Delegate>((delegateType, initializer) => ContextMethods.GetDecodeDelegateUseConstructor(delegateType, initializer, indexes, constructor));
+            return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, functor, converters, properties);
+        }
+
+        private static IConverter GetValueTupleConverter(IGeneratorContext context, Type type)
         {
             static void Fields(Type type, Action<FieldInfo> action)
             {
@@ -70,33 +82,20 @@ namespace Mikodev.Binary.Internal.Contexts
 
             var result = new List<(Type Type, Func<Expression, Expression> Member, IConverter Converter)>();
             Fields(type, x => Expand(context, result, x, v => v));
-            types = result.Select(x => x.Type).ToList();
-            members = result.Select(x => x.Member).ToList();
-            return result.Select(x => x.Converter).ToList();
-        }
-
-        private static IReadOnlyList<IConverter> GetTupleParameters(IGeneratorContext context, Type type, out IReadOnlyList<PropertyInfo> properties)
-        {
-            var names = Names.Take(type.GetGenericArguments().Length);
-            properties = names.Select(x => type.GetProperty(x, BindingFlags.Instance | BindingFlags.Public)).ToList();
-            return properties.Select(x => context.GetConverter(x.PropertyType)).ToList();
+            var types = result.Select(x => x.Type).ToList();
+            var members = result.Select(x => x.Member).ToList();
+            var converters = result.Select(x => x.Converter).ToList();
+            var functor = new Func<Type, Func<ParameterExpression, IReadOnlyList<Expression>>, Delegate>((delegateType, initializer) => ContextMethods.GetDecodeDelegateUseMembers(delegateType, initializer, members));
+            return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, functor, converters, types, members);
         }
 
         internal static IConverter GetConverter(IGeneratorContext context, Type type)
         {
             if (IsTupleOrValueTuple(type) is false)
                 return null;
-            var types = default(IReadOnlyList<Type>);
-            var members = default(IReadOnlyList<Func<Expression, Expression>>);
-            var properties = default(IReadOnlyList<PropertyInfo>);
-            var converters = !type.IsValueType
-                ? GetTupleParameters(context, type, out properties)
-                : GetValueTupleParameters(context, type, out types, out members);
-            var typeArguments = type.GetGenericArguments();
-            var constructor = type.IsValueType ? null : type.GetConstructor(typeArguments);
-            var indexes = Enumerable.Range(0, typeArguments.Length).ToList();
-            var converter = ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, indexes, converters, properties, types, members);
-            return converter;
+            return type.IsValueType is false
+                ? GetTupleConverter(context, type)
+                : GetValueTupleConverter(context, type);
         }
     }
 }

@@ -34,7 +34,7 @@ namespace Mikodev.Binary.Internal.SpanLike.Adapters
             var buffer = new T[Initial];
             var cursor = 0;
             var body = span;
-            while (!body.IsEmpty)
+            while (body.IsEmpty is false)
             {
                 var item = converter.DecodeAuto(ref body);
                 if ((uint)cursor < (uint)buffer.Length)

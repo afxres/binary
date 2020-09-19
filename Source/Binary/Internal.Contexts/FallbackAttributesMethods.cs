@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Mikodev.Binary.Internal.Contexts
@@ -31,9 +32,9 @@ namespace Mikodev.Binary.Internal.Contexts
                 throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' for '{nameof(NamedObjectAttribute)}', type: {type}");
             if (propertyWithTupleKeyAttributes.Count == 0 && attribute is TupleObjectAttribute)
                 throw new ArgumentException($"Require '{nameof(TupleKeyAttribute)}' for '{nameof(TupleObjectAttribute)}', type: {type}");
-            if (propertyWithNamedKeyAttributes.Count != 0 && !(attribute is NamedObjectAttribute))
+            if (propertyWithNamedKeyAttributes.Count != 0 && (attribute is NamedObjectAttribute) is false)
                 throw new ArgumentException($"Require '{nameof(NamedObjectAttribute)}' for '{nameof(NamedKeyAttribute)}', property name: {propertyWithNamedKeyAttributes.First().Property.Name}, type: {type}");
-            if (propertyWithTupleKeyAttributes.Count != 0 && !(attribute is TupleObjectAttribute))
+            if (propertyWithTupleKeyAttributes.Count != 0 && (attribute is TupleObjectAttribute) is false)
                 throw new ArgumentException($"Require '{nameof(TupleObjectAttribute)}' for '{nameof(TupleKeyAttribute)}', property name: {propertyWithTupleKeyAttributes.First().Property.Name}, type: {type}");
 
             if (attribute is ConverterAttribute || attribute is ConverterCreatorAttribute)
@@ -48,17 +49,17 @@ namespace Mikodev.Binary.Internal.Contexts
             else
                 sortedProperties = properties.Select(x => x.Property).ToList();
 
-            var constructor = GetConstructor(type, sortedProperties, out var indexes);
+            var functor = GetConstructorFunctor(type, sortedProperties);
             var propertyWithConverters = properties.ToDictionary(x => x.Property, x => GetConverter(context, x.Property.PropertyType, x.ConverterOrCreator));
             var sortedConverters = sortedProperties.Select(x => propertyWithConverters[x]).ToList();
 
             if (attribute is TupleObjectAttribute)
-                return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, indexes, sortedConverters, sortedProperties, null, null);
+                return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, functor, sortedConverters, sortedProperties);
 
             var encoder = (Converter<string>)context.GetConverter(typeof(string));
             if (names is null)
                 names = sortedProperties.ToDictionary(x => x, x => x.Name);
-            return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, indexes, sortedConverters, sortedProperties, names, encoder);
+            return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, functor, sortedConverters, sortedProperties, names, encoder);
         }
 
         private static Exception GetInstance<T>(Type type, out T result) where T : class
@@ -137,12 +138,29 @@ namespace Mikodev.Binary.Internal.Contexts
             return map.Values.ToList();
         }
 
-        private static ConstructorInfo GetConstructor(Type type, IReadOnlyCollection<PropertyInfo> properties, out IReadOnlyList<int> indexes)
+        private static Func<Type, Func<ParameterExpression, IReadOnlyList<Expression>>, Delegate> GetConstructorFunctor(Type type, IReadOnlyCollection<PropertyInfo> properties)
         {
             Debug.Assert(properties.Any());
-            indexes = null;
             if (type.IsAbstract || type.IsInterface)
                 return null;
+            return GetConstructorFunctorUseMembers(type, properties)
+                ?? GetConstructorFunctorUseConstructor(type, properties);
+        }
+
+        private static Func<Type, Func<ParameterExpression, IReadOnlyList<Expression>>, Delegate> GetConstructorFunctorUseMembers(Type type, IReadOnlyCollection<PropertyInfo> properties)
+        {
+            Debug.Assert(properties.Any());
+            Debug.Assert(type.IsAbstract is false && type.IsInterface is false);
+            if ((type.IsValueType is false && type.GetConstructor(Type.EmptyTypes) is null) || properties.Any(x => x.GetSetMethod() is null))
+                return null;
+            var members = properties.Select(x => new Func<Expression, Expression>(e => Expression.Property(e, x))).ToList();
+            return (delegateType, initializer) => ContextMethods.GetDecodeDelegateUseMembers(delegateType, initializer, members);
+        }
+
+        private static Func<Type, Func<ParameterExpression, IReadOnlyList<Expression>>, Delegate> GetConstructorFunctorUseConstructor(Type type, IReadOnlyCollection<PropertyInfo> properties)
+        {
+            Debug.Assert(properties.Any());
+            Debug.Assert(type.IsAbstract is false && type.IsInterface is false);
             var selector = new Func<PropertyInfo, string>(x => x.Name.ToUpperInvariant());
             if (properties.Select(selector).Distinct().Count() != properties.Count)
                 return null;
@@ -169,9 +187,9 @@ namespace Mikodev.Binary.Internal.Contexts
                 throw new ArgumentException($"Multiple suitable constructors found, type: {type}");
             var (constructor, second) = collection.Single();
             var orders = properties.Select((x, i) => (Key: x, Value: i)).ToDictionary(x => x.Key, x => x.Value);
-            indexes = second.Select(x => orders[x]).ToArray();
+            var indexes = second.Select(x => orders[x]).ToList();
             Debug.Assert(properties.Count == indexes.Count);
-            return constructor;
+            return (delegateType, initializer) => ContextMethods.GetDecodeDelegateUseConstructor(delegateType, initializer, indexes, constructor);
         }
     }
 }

@@ -10,18 +10,21 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class ContextMethodsOfTupleObject
     {
-        internal static IConverter GetConverterAsTupleObject(Type type, ConstructorInfo constructor, IReadOnlyList<int> indexes, IReadOnlyList<IConverter> converters, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<Type> types, IReadOnlyList<Func<Expression, Expression>> members)
+        internal static IConverter GetConverterAsTupleObject(Type type, Func<Type, Func<ParameterExpression, IReadOnlyList<Expression>>, Delegate> functor, IReadOnlyList<IConverter> converters, IReadOnlyList<PropertyInfo> properties)
         {
-            Debug.Assert(properties != null || types != null);
-            Debug.Assert(properties != null || members != null);
-            types ??= properties.Select(x => x.PropertyType).ToList();
-            members ??= properties.Select(x => new Func<Expression, Expression>(e => Expression.Property(e, x))).ToList();
+            var types = properties.Select(x => x.PropertyType).ToList();
+            var members = properties.Select(x => new Func<Expression, Expression>(e => Expression.Property(e, x))).ToList();
+            return GetConverterAsTupleObject(type, functor, converters, types, members);
+        }
+
+        internal static IConverter GetConverterAsTupleObject(Type type, Func<Type, Func<ParameterExpression, IReadOnlyList<Expression>>, Delegate> functor, IReadOnlyList<IConverter> converters, IReadOnlyList<Type> types, IReadOnlyList<Func<Expression, Expression>> members)
+        {
             Debug.Assert(converters.Count == types.Count);
             Debug.Assert(converters.Count == members.Count);
             var encode = GetEncodeDelegateAsTupleObject(type, types, converters, members, auto: false);
             var encodeAuto = GetEncodeDelegateAsTupleObject(type, types, converters, members, auto: true);
-            var decode = GetDecodeDelegateAsTupleObject(type, types, converters, members, properties, constructor, indexes, auto: false);
-            var decodeAuto = GetDecodeDelegateAsTupleObject(type, types, converters, members, properties, constructor, indexes, auto: true);
+            var decode = GetDecodeDelegateAsTupleObject(type, types, converters, functor, auto: false);
+            var decodeAuto = GetDecodeDelegateAsTupleObject(type, types, converters, functor, auto: true);
             var itemLength = ContextMethods.GetItemLength(converters);
             var converterArguments = new object[] { encode, encodeAuto, decode, decodeAuto, itemLength };
             var converterType = typeof(TupleObjectConverter<>).MakeGenericType(type);
@@ -55,11 +58,11 @@ namespace Mikodev.Binary.Internal.Contexts
             var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
             var expressions = new List<Expression>();
 
-            for (var i = 0; i < members.Count; i++)
+            for (var i = 0; i < types.Count; i++)
             {
                 var itemType = types[i];
                 var converter = converters[i];
-                var method = GetEncodeMethodInfo(itemType, auto || i != members.Count - 1);
+                var method = GetEncodeMethodInfo(itemType, auto || i != types.Count - 1);
                 var invoke = Expression.Call(Expression.Constant(converter), method, allocator, members[i].Invoke(item));
                 expressions.Add(invoke);
             }
@@ -68,31 +71,23 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        private static Delegate GetDecodeDelegateAsTupleObject(Type type, IReadOnlyList<Type> types, IReadOnlyList<IConverter> converters, IReadOnlyList<Func<Expression, Expression>> members, IReadOnlyList<PropertyInfo> properties, ConstructorInfo constructor, IReadOnlyList<int> indexes, bool auto)
+        private static Delegate GetDecodeDelegateAsTupleObject(Type type, IReadOnlyList<Type> types, IReadOnlyList<IConverter> converters, Func<Type, Func<ParameterExpression, IReadOnlyList<Expression>>, Delegate> functor, bool auto)
         {
             IReadOnlyList<Expression> Initialize(ParameterExpression span)
             {
-                var values = new Expression[members.Count];
-                for (var i = 0; i < members.Count; i++)
+                var values = new Expression[types.Count];
+                for (var i = 0; i < types.Count; i++)
                 {
                     var itemType = types[i];
                     var converter = converters[i];
-                    var method = GetDecodeMethodInfo(itemType, auto || i != members.Count - 1);
+                    var method = GetDecodeMethodInfo(itemType, auto || i != types.Count - 1);
                     var invoke = Expression.Call(Expression.Constant(converter), method, span);
                     values[i] = invoke;
                 }
                 return values;
             }
 
-            Debug.Assert(converters.Count == types.Count);
-            Debug.Assert(converters.Count == members.Count);
-            if (properties != null && !ContextMethods.CanCreateInstance(type, properties, constructor))
-                return null;
-            var delegateType = typeof(TupleObjectDecoder<>).MakeGenericType(type);
-            var parameterType = typeof(ReadOnlySpan<byte>).MakeByRefType();
-            return constructor is null
-                ? ContextMethods.GetDecodeDelegateUseMembers(delegateType, parameterType, Initialize, members)
-                : ContextMethods.GetDecodeDelegateUseConstructor(delegateType, parameterType, Initialize, indexes, constructor);
+            return functor?.Invoke(typeof(TupleObjectDecoder<>).MakeGenericType(type), Initialize);
         }
     }
 }

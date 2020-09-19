@@ -32,7 +32,7 @@ namespace Mikodev.Binary.Internal.Sequence.Adapters
         {
             var body = span;
             var item = new HashSet<E>();
-            while (!body.IsEmpty)
+            while (body.IsEmpty is false)
                 _ = item.Add(converter.DecodeAuto(ref body));
             return item;
         }

@@ -21,7 +21,7 @@ namespace Mikodev.Binary.Internal.Sequence.Adapters
         {
             var body = span;
             var list = new LinkedList<E>();
-            while (!body.IsEmpty)
+            while (body.IsEmpty is false)
                 _ = list.AddLast(converter.DecodeAuto(ref body));
             return list;
         }

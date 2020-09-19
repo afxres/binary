@@ -8,13 +8,13 @@ namespace Mikodev.Binary.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void EncodeLittleEndian<T>(ref byte location, T item) where T : unmanaged
         {
-            Unsafe.WriteUnaligned(ref location, EnsureHandleEndian(item, !BitConverter.IsLittleEndian));
+            Unsafe.WriteUnaligned(ref location, EnsureHandleEndian(item, BitConverter.IsLittleEndian is false));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static T DecodeLittleEndian<T>(ref byte location) where T : unmanaged
         {
-            return EnsureHandleEndian(Unsafe.ReadUnaligned<T>(ref location), !BitConverter.IsLittleEndian);
+            return EnsureHandleEndian(Unsafe.ReadUnaligned<T>(ref location), BitConverter.IsLittleEndian is false);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

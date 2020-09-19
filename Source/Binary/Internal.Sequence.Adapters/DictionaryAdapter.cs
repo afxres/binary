@@ -62,7 +62,7 @@ namespace Mikodev.Binary.Internal.Sequence.Adapters
             var capacity = itemLength > 0 ? SequenceMethods.GetCapacity<KeyValuePair<K, V>>(byteLength, itemLength) : Initial;
             var collection = new Dictionary<K, V>(capacity);
             var body = span;
-            while (!body.IsEmpty)
+            while (body.IsEmpty is false)
                 DecodeAutoInternal(ref body, collection);
             return collection;
         }

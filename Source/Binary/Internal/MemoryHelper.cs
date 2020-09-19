@@ -29,11 +29,11 @@ namespace Mikodev.Binary.Internal
         internal static T EnsureHandleEndian<T>(T item, bool swap) where T : unmanaged
         {
             if (typeof(T) == typeof(short))
-                return !swap ? item : (T)(object)BinaryPrimitives.ReverseEndianness((short)(object)item);
+                return swap is false ? item : (T)(object)BinaryPrimitives.ReverseEndianness((short)(object)item);
             else if (typeof(T) == typeof(int))
-                return !swap ? item : (T)(object)BinaryPrimitives.ReverseEndianness((int)(object)item);
+                return swap is false ? item : (T)(object)BinaryPrimitives.ReverseEndianness((int)(object)item);
             else if (typeof(T) == typeof(long))
-                return !swap ? item : (T)(object)BinaryPrimitives.ReverseEndianness((long)(object)item);
+                return swap is false ? item : (T)(object)BinaryPrimitives.ReverseEndianness((long)(object)item);
             else
                 throw new NotSupportedException();
         }

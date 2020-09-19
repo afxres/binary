@@ -10,7 +10,7 @@ namespace Mikodev.Binary.Creators
     {
         public IConverter GetConverter(IGeneratorContext context, Type type)
         {
-            if (!CommonHelper.TryGetGenericArguments(type, typeof(KeyValuePair<,>), out var arguments))
+            if (CommonHelper.TryGetGenericArguments(type, typeof(KeyValuePair<,>), out var arguments) is false)
                 return null;
             var itemConverters = arguments.Select(context.GetConverter).ToList();
             var itemLength = ContextMethods.GetItemLength(itemConverters);

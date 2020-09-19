@@ -21,7 +21,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         internal static IConverter GetConverter(Type type)
         {
-            if (!Types.TryGetValue(type, out var converterType))
+            if (Types.TryGetValue(type, out var converterType) is false)
                 return null;
             var converter = Activator.CreateInstance(converterType);
             return (IConverter)converter;

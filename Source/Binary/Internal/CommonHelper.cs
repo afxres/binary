@@ -17,7 +17,7 @@ namespace Mikodev.Binary.Internal
 
         internal static bool IsByRefLike(Type type)
         {
-            if (!type.IsValueType)
+            if (type.IsValueType is false)
                 return false;
             var attributes = type.GetCustomAttributes();
             return attributes.Select(x => x.GetType()).Any(x => x.FullName == "System.Runtime.CompilerServices.IsByRefLikeAttribute");

@@ -17,7 +17,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static readonly ConstructorInfo ReadOnlySpanByteConstructorInfo = typeof(ReadOnlySpan<byte>).GetConstructor(new[] { typeof(byte[]) });
 
-        internal static IConverter GetConverterAsNamedObject(Type type, ConstructorInfo constructor, IReadOnlyList<int> indexes, IReadOnlyList<IConverter> converters, IReadOnlyList<PropertyInfo> properties, IReadOnlyDictionary<PropertyInfo, string> dictionary, Converter<string> encoder)
+        internal static IConverter GetConverterAsNamedObject(Type type, Func<Type, Func<ParameterExpression, IReadOnlyList<Expression>>, Delegate> functor, IReadOnlyList<IConverter> converters, IReadOnlyList<PropertyInfo> properties, IReadOnlyDictionary<PropertyInfo, string> dictionary, Converter<string> encoder)
         {
             var memories = dictionary.ToDictionary(x => x.Key, x => new ReadOnlyMemory<byte>(encoder.Encode(x.Value)));
             Debug.Assert(dictionary.Count == memories.Count);
@@ -28,7 +28,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (nodeTree is null)
                 throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {type}, string converter type: {encoder.GetType()}");
             var encode = GetEncodeDelegateAsNamedObject(type, converters, properties, memories);
-            var decode = GetDecodeDelegateAsNamedObject(type, converters, properties, constructor, indexes);
+            var decode = GetDecodeDelegateAsNamedObject(type, converters, properties, functor);
             var converterArguments = new object[] { encode, decode, nodeTree, nameList };
             var converterType = typeof(NamedObjectConverter<>).MakeGenericType(type);
             var converter = Activator.CreateInstance(converterType, converterArguments);
@@ -66,7 +66,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        private static Delegate GetDecodeDelegateAsNamedObject(Type type, IReadOnlyList<IConverter> converters, IReadOnlyList<PropertyInfo> properties, ConstructorInfo constructor, IReadOnlyList<int> indexes)
+        private static Delegate GetDecodeDelegateAsNamedObject(Type type, IReadOnlyList<IConverter> converters, IReadOnlyList<PropertyInfo> properties, Func<Type, Func<ParameterExpression, IReadOnlyList<Expression>>, Delegate> functor)
         {
             IReadOnlyList<Expression> Initialize(ParameterExpression slices)
             {
@@ -82,13 +82,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 return values;
             }
 
-            if (!ContextMethods.CanCreateInstance(type, properties, constructor))
-                return null;
-            var delegateType = typeof(NamedObjectDecoder<>).MakeGenericType(type);
-            var parameterType = typeof(MemorySlices).MakeByRefType();
-            return constructor is null
-                ? ContextMethods.GetDecodeDelegateUseMembers(delegateType, parameterType, Initialize, properties.Select(x => new Func<Expression, Expression>(e => Expression.Property(e, x))).ToList())
-                : ContextMethods.GetDecodeDelegateUseConstructor(delegateType, parameterType, Initialize, indexes, constructor);
+            return functor?.Invoke(typeof(NamedObjectDecoder<>).MakeGenericType(type), Initialize);
         }
     }
 }
