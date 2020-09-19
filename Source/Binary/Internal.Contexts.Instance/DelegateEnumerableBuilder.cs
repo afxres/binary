@@ -1,7 +1,7 @@
 ﻿using Mikodev.Binary.Internal.Sequence;
 using System;
 
-namespace Mikodev.Binary.Internal.Contexts.Models
+namespace Mikodev.Binary.Internal.Contexts.Instance
 {
     internal sealed class DelegateEnumerableBuilder<T, R> : SequenceBuilder<T, R>
     {

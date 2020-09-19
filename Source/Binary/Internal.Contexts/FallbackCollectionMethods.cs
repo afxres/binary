@@ -1,4 +1,4 @@
-﻿using Mikodev.Binary.Internal.Contexts.Models;
+﻿using Mikodev.Binary.Internal.Contexts.Instance;
 using Mikodev.Binary.Internal.Sequence;
 using Mikodev.Binary.Internal.Sequence.Adapters;
 using Mikodev.Binary.Internal.Sequence.Counters;

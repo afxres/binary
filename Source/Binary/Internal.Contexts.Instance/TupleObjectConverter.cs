@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Mikodev.Binary.Internal.Contexts.Models
+namespace Mikodev.Binary.Internal.Contexts.Instance
 {
     internal delegate void TupleObjectEncoder<in T>(ref Allocator allocator, T item);
 

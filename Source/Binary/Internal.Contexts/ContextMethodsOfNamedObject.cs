@@ -1,5 +1,5 @@
 ﻿using Mikodev.Binary.External;
-using Mikodev.Binary.Internal.Contexts.Models;
+using Mikodev.Binary.Internal.Contexts.Instance;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

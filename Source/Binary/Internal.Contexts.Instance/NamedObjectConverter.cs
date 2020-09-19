@@ -7,7 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Mikodev.Binary.Internal.Contexts.Models
+namespace Mikodev.Binary.Internal.Contexts.Instance
 {
     internal delegate void NamedObjectEncoder<in T>(ref Allocator allocator, T item);
 
