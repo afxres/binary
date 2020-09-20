@@ -18,7 +18,7 @@ namespace Mikodev.Binary.Internal.Sequence.Adapters
             this.itemLength = itemLength;
             this.initConverter = initConverter;
             this.tailConverter = tailConverter;
-            Debug.Assert(itemLength > 0 || (itemLength == 0 && (initConverter.Length == 0 || tailConverter.Length == 0)));
+            Debug.Assert(itemLength > 0 || initConverter.Length == 0 || tailConverter.Length == 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

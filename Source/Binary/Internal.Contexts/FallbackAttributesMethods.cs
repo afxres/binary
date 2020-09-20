@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Mikodev.Binary.Internal.Contexts
@@ -12,54 +11,54 @@ namespace Mikodev.Binary.Internal.Contexts
     {
         internal static IConverter GetConverter(IGeneratorContext context, Type type)
         {
-            var properties = new List<(PropertyInfo Property, Attribute Key, Attribute ConverterOrCreator)>();
+            var propertyWithAttributes = new List<(PropertyInfo Property, Attribute Key, Attribute ConverterOrCreator)>();
             foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(x => x.GetGetMethod()?.GetParameters().Length == 0).OrderBy(x => x.Name))
             {
                 var key = GetAttribute(property, a => a is NamedKeyAttribute || a is TupleKeyAttribute);
                 var any = GetAttribute(property, a => a is ConverterAttribute || a is ConverterCreatorAttribute);
                 if (key is null && any != null)
                     throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' for '{any.GetType().Name}', property name: {property.Name}, type: {type}");
-                properties.Add((property, key, any));
+                propertyWithAttributes.Add((property, key, any));
             }
 
             var attribute = GetAttribute(type, a => a is NamedObjectAttribute || a is TupleObjectAttribute || a is ConverterAttribute || a is ConverterCreatorAttribute);
-            if (properties.Any() is false && (attribute is ConverterAttribute || attribute is ConverterCreatorAttribute) is false)
+            if (propertyWithAttributes.Count == 0 && (attribute is ConverterAttribute || attribute is ConverterCreatorAttribute) is false)
                 throw new ArgumentException($"No available property found, type: {type}");
 
-            var propertyWithNamedKeyAttributes = properties.Where(x => x.Key is NamedKeyAttribute).Select(x => (x.Property, Key: (NamedKeyAttribute)x.Key, x.ConverterOrCreator)).ToList();
-            var propertyWithTupleKeyAttributes = properties.Where(x => x.Key is TupleKeyAttribute).Select(x => (x.Property, Key: (TupleKeyAttribute)x.Key, x.ConverterOrCreator)).ToList();
+            var propertyWithNamedKeyAttributes = propertyWithAttributes.Where(x => x.Key is NamedKeyAttribute).Select(x => (x.Property, Key: (NamedKeyAttribute)x.Key, x.ConverterOrCreator)).ToList();
+            var propertyWithTupleKeyAttributes = propertyWithAttributes.Where(x => x.Key is TupleKeyAttribute).Select(x => (x.Property, Key: (TupleKeyAttribute)x.Key, x.ConverterOrCreator)).ToList();
             if (propertyWithNamedKeyAttributes.Count == 0 && attribute is NamedObjectAttribute)
                 throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' for '{nameof(NamedObjectAttribute)}', type: {type}");
             if (propertyWithTupleKeyAttributes.Count == 0 && attribute is TupleObjectAttribute)
                 throw new ArgumentException($"Require '{nameof(TupleKeyAttribute)}' for '{nameof(TupleObjectAttribute)}', type: {type}");
-            if (propertyWithNamedKeyAttributes.Count != 0 && (attribute is NamedObjectAttribute) is false)
+            if (propertyWithNamedKeyAttributes.Count != 0 && attribute is NamedObjectAttribute is false)
                 throw new ArgumentException($"Require '{nameof(NamedObjectAttribute)}' for '{nameof(NamedKeyAttribute)}', property name: {propertyWithNamedKeyAttributes.First().Property.Name}, type: {type}");
-            if (propertyWithTupleKeyAttributes.Count != 0 && (attribute is TupleObjectAttribute) is false)
+            if (propertyWithTupleKeyAttributes.Count != 0 && attribute is TupleObjectAttribute is false)
                 throw new ArgumentException($"Require '{nameof(TupleObjectAttribute)}' for '{nameof(TupleKeyAttribute)}', property name: {propertyWithTupleKeyAttributes.First().Property.Name}, type: {type}");
 
             if (attribute is ConverterAttribute || attribute is ConverterCreatorAttribute)
                 return GetConverter(context, type, attribute);
 
-            var names = default(IReadOnlyDictionary<PropertyInfo, string>);
-            var sortedProperties = default(IReadOnlyList<PropertyInfo>);
+            var names = default(IReadOnlyList<string>);
+            var properties = default(IReadOnlyList<PropertyInfo>);
             if (attribute is NamedObjectAttribute)
-                sortedProperties = GetSortedProperties(type, propertyWithNamedKeyAttributes.Select(x => (x.Property, x.Key)).ToList(), out names);
+                properties = GetSortedProperties(type, propertyWithNamedKeyAttributes.Select(x => (x.Property, x.Key)).ToList(), out names);
             else if (attribute is TupleObjectAttribute)
-                sortedProperties = GetSortedProperties(type, propertyWithTupleKeyAttributes.Select(x => (x.Property, x.Key)).ToList());
+                properties = GetSortedProperties(type, propertyWithTupleKeyAttributes.Select(x => (x.Property, x.Key)).ToList());
             else
-                sortedProperties = properties.Select(x => x.Property).ToList();
+                properties = propertyWithAttributes.Select(x => x.Property).ToList();
 
-            var functor = GetConstructorFunctor(type, sortedProperties);
-            var propertyWithConverters = properties.ToDictionary(x => x.Property, x => GetConverter(context, x.Property.PropertyType, x.ConverterOrCreator));
-            var sortedConverters = sortedProperties.Select(x => propertyWithConverters[x]).ToList();
+            var constructor = GetConstructor(type, properties);
+            var propertyWithConverters = propertyWithAttributes.ToDictionary(x => x.Property, x => GetConverter(context, x.Property.PropertyType, x.ConverterOrCreator));
+            var converters = properties.Select(x => propertyWithConverters[x]).ToList();
 
             if (attribute is TupleObjectAttribute)
-                return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, functor, sortedConverters, sortedProperties);
+                return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, properties.Select(x => x.PropertyType).ToList(), ContextMethods.GetMemberInitializers(properties));
 
             var encoder = (Converter<string>)context.GetConverter(typeof(string));
             if (names is null)
-                names = sortedProperties.ToDictionary(x => x, x => x.Name);
-            return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, functor, sortedConverters, sortedProperties, names, encoder);
+                names = properties.Select(x => x.Name).ToList();
+            return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, properties, names, encoder);
         }
 
         private static Exception GetInstance<T>(Type type, out T result) where T : class
@@ -104,7 +103,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return context.GetConverter(type);
         }
 
-        private static IReadOnlyList<PropertyInfo> GetSortedProperties(Type type, IReadOnlyCollection<(PropertyInfo, NamedKeyAttribute)> collection, out IReadOnlyDictionary<PropertyInfo, string> dictionary)
+        private static IReadOnlyList<PropertyInfo> GetSortedProperties(Type type, IReadOnlyCollection<(PropertyInfo, NamedKeyAttribute)> collection, out IReadOnlyList<string> names)
         {
             Debug.Assert(collection.Any());
             var map = new SortedDictionary<string, PropertyInfo>();
@@ -117,7 +116,7 @@ namespace Mikodev.Binary.Internal.Contexts
                     throw new ArgumentException($"Named key '{key}' already exists, property name: {property.Name}, type: {type}");
                 map.Add(key, property);
             }
-            dictionary = map.ToDictionary(x => x.Value, x => x.Key);
+            names = map.Keys.ToList();
             return map.Values.ToList();
         }
 
@@ -138,58 +137,49 @@ namespace Mikodev.Binary.Internal.Contexts
             return map.Values.ToList();
         }
 
-        private static Func<Type, Func<ParameterExpression, IReadOnlyList<Expression>>, Delegate> GetConstructorFunctor(Type type, IReadOnlyCollection<PropertyInfo> properties)
+        private static ContextObjectConstructor GetConstructor(Type type, IReadOnlyList<PropertyInfo> properties)
         {
             Debug.Assert(properties.Any());
             if (type.IsAbstract || type.IsInterface)
                 return null;
-            return GetConstructorFunctorUseMembers(type, properties)
-                ?? GetConstructorFunctorUseConstructor(type, properties);
-        }
+            if ((type.IsValueType || type.GetConstructor(Type.EmptyTypes) != null) && properties.All(x => x.GetSetMethod() != null))
+                return (delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, ContextMethods.GetMemberInitializers(properties));
 
-        private static Func<Type, Func<ParameterExpression, IReadOnlyList<Expression>>, Delegate> GetConstructorFunctorUseMembers(Type type, IReadOnlyCollection<PropertyInfo> properties)
-        {
-            Debug.Assert(properties.Any());
-            Debug.Assert(type.IsAbstract is false && type.IsInterface is false);
-            if ((type.IsValueType is false && type.GetConstructor(Type.EmptyTypes) is null) || properties.Any(x => x.GetSetMethod() is null))
-                return null;
-            var members = properties.Select(x => new Func<Expression, Expression>(e => Expression.Property(e, x))).ToList();
-            return (delegateType, initializer) => ContextMethods.GetDecodeDelegateUseMembers(delegateType, initializer, members);
-        }
-
-        private static Func<Type, Func<ParameterExpression, IReadOnlyList<Expression>>, Delegate> GetConstructorFunctorUseConstructor(Type type, IReadOnlyCollection<PropertyInfo> properties)
-        {
-            Debug.Assert(properties.Any());
-            Debug.Assert(type.IsAbstract is false && type.IsInterface is false);
             var selector = new Func<PropertyInfo, string>(x => x.Name.ToUpperInvariant());
             if (properties.Select(selector).Distinct().Count() != properties.Count)
                 return null;
 
             var dictionary = properties.ToDictionary(selector);
-            var collection = new List<(ConstructorInfo, IReadOnlyList<PropertyInfo>)>();
+            var collection = new List<(ConstructorInfo, IReadOnlyList<PropertyInfo>, IReadOnlyList<PropertyInfo> Properties)>();
             foreach (var i in type.GetConstructors())
             {
                 var parameters = (IReadOnlyList<ParameterInfo>)i.GetParameters();
-                if (parameters.Count != dictionary.Count)
-                    continue;
                 var result = parameters
                     .Select(x => dictionary.TryGetValue(x.Name.ToUpperInvariant(), out var property) && property.PropertyType == x.ParameterType ? property : null)
                     .Where(x => x != null)
                     .ToList();
-                if (parameters.Count != result.Count)
+                if (result.Count == 0 || result.Count != parameters.Count)
                     continue;
-                collection.Add((i, result));
+                var except = properties.Except(result).ToList();
+                if (except.Any(x => x.GetSetMethod() is null))
+                    continue;
+                collection.Add((i, result, except));
             }
 
             if (collection.Count == 0)
                 return null;
-            if (collection.Count != 1)
+            var constructorOnlyResults = collection.Where(x => x.Properties.Count == 0).ToList();
+            var constructorWithMembers = collection.Where(x => x.Properties.Count != 0).ToList();
+            if (constructorOnlyResults.Count > 1 || (constructorOnlyResults.Count == 0 && constructorWithMembers.Count > 1))
                 throw new ArgumentException($"Multiple suitable constructors found, type: {type}");
-            var (constructor, second) = collection.Single();
-            var orders = properties.Select((x, i) => (Key: x, Value: i)).ToDictionary(x => x.Key, x => x.Value);
-            var indexes = second.Select(x => orders[x]).ToList();
-            Debug.Assert(properties.Count == indexes.Count);
-            return (delegateType, initializer) => ContextMethods.GetDecodeDelegateUseConstructor(delegateType, initializer, indexes, constructor);
+            var (constructor, objectProperties, memberProperties) = constructorOnlyResults.Any()
+                ? constructorOnlyResults.Single()
+                : constructorWithMembers.Single();
+            var content = properties.Select((x, i) => (Key: x, Value: i)).ToDictionary(x => x.Key, x => x.Value);
+            var objectIndexes = objectProperties.Select(x => content[x]).ToList();
+            var memberIndexes = memberProperties.Select(x => content[x]).ToList();
+            Debug.Assert(properties.Count == objectIndexes.Count + memberIndexes.Count);
+            return (delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, constructor, objectIndexes, ContextMethods.GetMemberInitializers(memberProperties), memberIndexes);
         }
     }
 }

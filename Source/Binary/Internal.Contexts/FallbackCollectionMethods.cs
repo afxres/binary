@@ -42,7 +42,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (CommonHelper.IsImplementationOf(type, typeof(Stack<>)) || CommonHelper.IsImplementationOf(type, typeof(ConcurrentStack<>)))
                 throw new ArgumentException($"Invalid collection type: {type}");
             var methodInfo = Method(arguments.Single(), out var itemTypes);
-            var converters = itemTypes.Select(context.GetConverter).ToArray();
+            var converters = itemTypes.Select(context.GetConverter).ToList();
             var method = methodInfo.MakeGenericMethod(CommonHelper.Concat(type, itemTypes));
             var source = Expression.Parameter(typeof(IReadOnlyList<IConverter>), "source");
             var lambda = Expression.Lambda<Func<IReadOnlyList<IConverter>, IConverter>>(Expression.Call(method, source), source);

@@ -138,7 +138,8 @@ let ``Class Via Constructor Ordered`` () =
 [<Fact>]
 let ``Class Via Constructor With Multiple Suitable Constructors`` () =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter<AlphaMultipleConstructors>() |> ignore)
-    Assert.Equal(sprintf "Multiple suitable constructors found, type: %O" typeof<AlphaMultipleConstructors>, error.Message)
+    let message = sprintf "Multiple suitable constructors found, type: %O" typeof<AlphaMultipleConstructors>
+    Assert.Equal(message, error.Message)
     ()
 
 [<Fact>]
@@ -150,4 +151,130 @@ let ``Class Via Constructor With Type Mismatch Properties`` () =
     let error = Assert.Throws<NotSupportedException>(fun () -> converter.Decode buffer |> ignore)
     let message = sprintf "No suitable constructor found, type: %O" typeof<NamedTypeMismatch>
     Assert.Equal(message, error.Message)
+    ()
+
+type ClassViaConstructorThenMembers(three : string, one : int) =
+    member val Two = 0.0 with get, set
+
+    member __.One = one
+
+    member __.Three = three
+
+[<Fact>]
+let ``Class Via Constructor Then Members`` () =
+    let source = ClassViaConstructorThenMembers("23", 21, Two = 22.2)
+    let converter = generator.GetConverter(anonymous = source)
+    let buffer = converter.Encode source
+    let result = converter.Decode buffer
+    Assert.Equal(source.One, result.One)
+    Assert.Equal(source.Two, result.Two)
+    Assert.Equal(source.Three, result.Three)
+    ()
+
+type ClassMultipleConstructorThenMembers private(first : single, second : double, third : string, fourth : Guid) =
+    member __.First = first
+
+    member val Second = second with get, set
+
+    member val Third = third with get, set
+
+    member val Fourth = fourth with get, set
+
+    new (first) = ClassMultipleConstructorThenMembers(first, 0.0, String.Empty, Guid())
+
+    new (first, second) = ClassMultipleConstructorThenMembers(first, second, String.Empty, Guid())
+
+    new (first, second, third) = ClassMultipleConstructorThenMembers(first, second, third, Guid())
+
+[<Fact>]
+let ``Class Via Constructor Then Members With Multiple Suitable Constructors`` () =
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter<ClassMultipleConstructorThenMembers>() |> ignore)
+    let message = sprintf "Multiple suitable constructors found, type: %O" typeof<ClassMultipleConstructorThenMembers>
+    Assert.Equal(message, error.Message)
+    ()
+
+type ClassSingleFullConstructorMultipleConstructorThenMembers(first : single, second : double, third : string, fourth : Guid) =
+    member __.First = first
+
+    member val Second = second with get, set
+
+    member val Third = third with get, set
+
+    member val Fourth = fourth with get, set
+
+    new (first) = ClassSingleFullConstructorMultipleConstructorThenMembers(first, 0.0, String.Empty, Guid())
+
+    new (first, second) = ClassSingleFullConstructorMultipleConstructorThenMembers(first, second, String.Empty, Guid())
+
+    new (first, second, third) = ClassSingleFullConstructorMultipleConstructorThenMembers(first, second, third, Guid())
+
+[<Fact>]
+let ``Class Via Constructor Or Constructor Then Members Valid Via Constructor`` () =
+    let source = ClassSingleFullConstructorMultipleConstructorThenMembers(single 1.1, 2.2, "3.3", Guid.NewGuid())
+    let converter = generator.GetConverter(anonymous = source)
+    let buffer = converter.Encode source
+    let result = converter.Decode buffer
+    Assert.Equal(source.First, result.First)
+    Assert.Equal(source.Second, result.Second)
+    Assert.Equal(source.Third, result.Third)
+    Assert.Equal(source.Fourth, result.Fourth)
+    ()
+
+type ClassMultipleFullConstructorMultipleConstructorThenMembers(first : single, second : double, third : string, fourth : Guid) =
+    member __.First = first
+
+    member val Second = second with get, set
+
+    member val Third = third with get, set
+
+    member val Fourth = fourth with get, set
+
+    new (first : single) = ClassMultipleFullConstructorMultipleConstructorThenMembers(first, 0.0, String.Empty, Guid())
+
+    new (first : single, second) = ClassMultipleFullConstructorMultipleConstructorThenMembers(first, second, String.Empty, Guid())
+
+    new (first : single, second, third) = ClassMultipleFullConstructorMultipleConstructorThenMembers(first, second, third, Guid())
+
+    new (fourth : Guid, third : string, second : double, first : single) = ClassMultipleFullConstructorMultipleConstructorThenMembers(first, second, third, fourth)
+
+    new (fourth : Guid, second : double, third : string, first : single) = ClassMultipleFullConstructorMultipleConstructorThenMembers(first, second, third, fourth)
+
+[<Fact>]
+let ``Class Via Constructor Or Constructor Then Members All Invalid`` () =
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter<ClassMultipleFullConstructorMultipleConstructorThenMembers>() |> ignore)
+    let message = sprintf "Multiple suitable constructors found, type: %O" typeof<ClassMultipleFullConstructorMultipleConstructorThenMembers>
+    Assert.Equal(message, error.Message)
+    ()
+
+type ClassMultipleFullConstructorMultipleConstructorThenMembersValidViaMembers(first : single, second : double, third : string, fourth : Guid) =
+    member val First = first with get, set
+
+    member val Second = second with get, set
+
+    member val Third = third with get, set
+
+    member val Fourth = fourth with get, set
+
+    new () = ClassMultipleFullConstructorMultipleConstructorThenMembersValidViaMembers(single 0, 0.0, String.Empty, Guid())
+
+    new (first : single) = ClassMultipleFullConstructorMultipleConstructorThenMembersValidViaMembers(first, 0.0, String.Empty, Guid())
+
+    new (first : single, second) = ClassMultipleFullConstructorMultipleConstructorThenMembersValidViaMembers(first, second, String.Empty, Guid())
+
+    new (first : single, second, third) = ClassMultipleFullConstructorMultipleConstructorThenMembersValidViaMembers(first, second, third, Guid())
+
+    new (fourth : Guid, third : string, second : double, first : single) = ClassMultipleFullConstructorMultipleConstructorThenMembersValidViaMembers(first, second, third, fourth)
+
+    new (fourth : Guid, second : double, third : string, first : single) = ClassMultipleFullConstructorMultipleConstructorThenMembersValidViaMembers(first, second, third, fourth)
+
+[<Fact>]
+let ``Class Via Members Or Constructor Or Constructor Then Members Valid Via Members`` () =
+    let source = ClassMultipleFullConstructorMultipleConstructorThenMembersValidViaMembers(single 3.1, 3.2, "3.3", Guid.NewGuid())
+    let converter = generator.GetConverter(anonymous = source)
+    let buffer = converter.Encode source
+    let result = converter.Decode buffer
+    Assert.Equal(source.First, result.First)
+    Assert.Equal(source.Second, result.Second)
+    Assert.Equal(source.Third, result.Third)
+    Assert.Equal(source.Fourth, result.Fourth)
     ()

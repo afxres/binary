@@ -8,7 +8,7 @@ namespace Mikodev.Binary.Internal
 {
     internal static class CommonHelper
     {
-        internal static T[] Concat<T>(T item, T[] values)
+        internal static T[] Concat<T>(T item, IReadOnlyList<T> values)
         {
             var result = new List<T> { item };
             result.AddRange(values);

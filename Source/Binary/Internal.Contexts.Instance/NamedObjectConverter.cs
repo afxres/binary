@@ -28,7 +28,7 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
         public NamedObjectConverter(NamedObjectEncoder<T> encode, NamedObjectDecoder<T> decode, Node<int> nodeTree, IReadOnlyCollection<string> nameList)
         {
             Debug.Assert(nodeTree != null);
-            Debug.Assert(nameList != null && nameList.Any());
+            Debug.Assert(nameList.Any());
             this.encode = encode;
             this.decode = decode;
             this.nodeTree = nodeTree;
