@@ -2,6 +2,7 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary
 {
@@ -39,6 +40,9 @@ namespace Mikodev.Binary
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly ReadOnlySpan<byte> AsSpan() => buffer.Slice(0, offset);
+
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public readonly ref readonly byte GetPinnableReference() => ref MemoryMarshal.GetReference(buffer);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override readonly bool Equals(object obj) => throw new NotSupportedException();

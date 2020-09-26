@@ -10,9 +10,9 @@ namespace Mikodev.Binary.Tests
     {
         private delegate int Anchor(ref Allocator allocator, int length);
 
-        private delegate int Ensure(ref Allocator allocator, int expand);
+        private delegate void Ensure(ref Allocator allocator, int expand);
 
-        private delegate void Expand(ref Allocator allocator, int expand);
+        private delegate void Resize(ref Allocator allocator, int expand);
 
         private delegate void AppendLengthPrefix(ref Allocator allocator, int anchor);
 
@@ -44,8 +44,8 @@ namespace Mikodev.Binary.Tests
             Assert.StartsWith(outofrange, error.Message);
         }
 
-        [Fact(DisplayName = "Expand Capacity (hack)")]
-        public unsafe void ExpandCapacity()
+        [Fact(DisplayName = "Resize Capacity (hack)")]
+        public unsafe void ResizeCapacity()
         {
             var buffer = new byte[256];
             buffer.AsSpan().Fill(0x80);
@@ -75,15 +75,15 @@ namespace Mikodev.Binary.Tests
             Assert.All(tail.ToArray(), x => Assert.Equal((byte)0x00, x));
         }
 
-        [Theory(DisplayName = "Expand Capacity (hack, invalid)")]
+        [Theory(DisplayName = "Resize Capacity (hack, invalid)")]
         [InlineData(0)]
         [InlineData(-1)]
         [InlineData(-16)]
         [InlineData(int.MinValue)]
-        public void ExpandCapacityInvalid(int expand)
+        public void ResizeCapacityInvalid(int expand)
         {
-            var methodInfo = typeof(Allocator).GetMethod("Expand", BindingFlags.Static | BindingFlags.NonPublic);
-            var method = (Expand)Delegate.CreateDelegate(typeof(Expand), methodInfo);
+            var methodInfo = typeof(Allocator).GetMethod("Resize", BindingFlags.Static | BindingFlags.NonPublic);
+            var method = (Resize)Delegate.CreateDelegate(typeof(Resize), methodInfo);
             var error = Assert.Throws<ArgumentOutOfRangeException>(() =>
             {
                 var allocator = new Allocator();
@@ -101,9 +101,9 @@ namespace Mikodev.Binary.Tests
             var buffer = new byte[capacity];
             var allocator = new Allocator(buffer);
             Assert.Equal(capacity, allocator.Capacity);
-            var result = ensure.Invoke(ref allocator, 0);
+            ensure.Invoke(ref allocator, 0);
             Assert.Equal(capacity, allocator.Capacity);
-            Assert.Equal(0, result);
+            Assert.Equal(0, allocator.Length);
         }
 
         [Theory(DisplayName = "Ensure Capacity (hack, invalid)")]
@@ -116,7 +116,7 @@ namespace Mikodev.Binary.Tests
             var error = Assert.Throws<ArgumentOutOfRangeException>(() =>
             {
                 var allocator = new Allocator();
-                _ = ensure.Invoke(ref allocator, expand);
+                ensure.Invoke(ref allocator, expand);
             });
             Assert.Equal("length", error.ParamName);
         }
@@ -135,9 +135,9 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(0, allocator.Length);
             AllocatorHelper.Append(ref allocator, offset, 0, (a, b) => { });
             Assert.Equal(offset, allocator.Length);
-            var result = ensure.Invoke(ref allocator, expand);
+            ensure.Invoke(ref allocator, expand);
             Assert.Equal(capacity, allocator.Capacity);
-            Assert.Equal(offset, result);
+            Assert.Equal(offset, allocator.Length);
         }
 
         [Fact(DisplayName = "Anchor (hack, zero)")]

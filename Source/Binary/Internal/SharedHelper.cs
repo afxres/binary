@@ -23,7 +23,7 @@ namespace Mikodev.Binary.Internal
         {
             Debug.Assert(item != null);
 #if NETOLD
-            Allocator.AppendBuffer(ref allocator, item.GetAddressBytes());
+            Allocator.Append(ref allocator, item.GetAddressBytes());
 #else
             var size = SizeOfIPAddress(item);
             ref var target = ref Allocator.Assign(ref allocator, size);

@@ -26,8 +26,6 @@ namespace Mikodev.Binary.Tests
 
             private int InvalidG { get; set; }
 
-            public int InvalidH { set => throw new NotSupportedException(); }
-
             public int this[string i] => throw new NotImplementedException();
 
             public string this[int i] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
@@ -48,8 +46,6 @@ namespace Mikodev.Binary.Tests
             public string F { get; set; }
 
             private int InvalidG { get; set; }
-
-            public int InvalidH { set => throw new NotSupportedException(); }
 
             public int this[string i] => throw new NotImplementedException();
 

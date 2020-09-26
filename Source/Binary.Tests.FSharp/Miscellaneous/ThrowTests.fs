@@ -22,11 +22,19 @@ type BadValueTypeWithPrivateProperty =
 
 [<Class>]
 type BadClassTypeWithSetOnlyProperty() =
-    member __.Name with set (_ : string) = ()
+    member __.Haha with set (_ : string) = ()
 
 [<Struct>]
 type BadValueTypeWithSetOnlyProperty =
-    member __.Name with set (_ : string) = ()
+    member __.Lmao with set (_ : string) = ()
+
+[<Class>]
+type BadClassTypeWithPrivateGetter() =
+    member __.Source with private get () = 0 and set (_ : int) = ()
+
+[<Struct>]
+type BadValueTypeWithPrivateGetter =
+    member __.Target with private get () = 0 and set (_ : int) = ()
 
 [<Class>]
 type BadClassTypeWithOnlyIndexer() =
@@ -97,8 +105,6 @@ type ThrowTests() =
     static member ``Data Alpha`` = [|
         [| typeof<BadClassTypeWithPrivateProperty> |];
         [| typeof<BadValueTypeWithPrivateProperty> |];
-        [| typeof<BadClassTypeWithSetOnlyProperty> |];
-        [| typeof<BadValueTypeWithSetOnlyProperty> |];
         [| typeof<BadClassTypeWithOnlyIndexer> |];
         [| typeof<BadValueTypeWithOnlyIndexer> |];
     |]
@@ -108,6 +114,20 @@ type ThrowTests() =
     member __.``No Available Property``(t : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
         Assert.Equal(sprintf "No available property found, type: %O" t, error.Message)
+        ()
+
+    static member ``Data No Public Getter`` = [|
+        [| box typeof<BadClassTypeWithSetOnlyProperty>; box "Haha" |];
+        [| box typeof<BadValueTypeWithSetOnlyProperty>; box "Lmao" |];
+        [| box typeof<BadClassTypeWithPrivateGetter>; box "Source" |];
+        [| box typeof<BadValueTypeWithPrivateGetter>; box "Target" |];
+    |]
+
+    [<Theory>]
+    [<MemberData("Data No Public Getter")>]
+    member __.``No Available Getter`` (t : Type, name : string) =
+        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
+        Assert.Equal(sprintf "No available getter found, property name: %s, type: %O" name t, error.Message)
         ()
 
     static member ``Data Internal`` = [|

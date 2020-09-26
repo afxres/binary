@@ -3,6 +3,7 @@
 open Mikodev.Binary
 open System
 open System.Reflection
+open System.Runtime.CompilerServices
 open Xunit
 
 let random = Random()
@@ -142,18 +143,6 @@ let ``Append (default constructor, action null)`` (length : int) =
     let parameter = methodInfo.GetParameters() |> Array.last
     Assert.Equal("action", parameter.Name)
     Assert.Equal("action", error.ParamName)
-    ()
-
-[<Fact>]
-let ``Append (exception)`` () =
-    let mutable allocator = Allocator()
-    AllocatorHelper.Append(&allocator, 16, null :> obj, fun a b -> ())
-    Assert.Equal(16, allocator.Length)
-    try
-        AllocatorHelper.Append(&allocator, 32, null :> obj, fun a b -> raise (NotSupportedException()))
-    with
-    | :? NotSupportedException -> ()
-    Assert.Equal(16, allocator.Length)
     ()
 
 [<Theory>]
@@ -387,4 +376,92 @@ let ``Invoke (encode some string with length prefix)`` (text : string) =
     let result = PrimitiveHelper.DecodeStringWithLengthPrefix &span
     Assert.Equal(text, result)
     Assert.Equal(0, span.Length)
+    ()
+
+[<Theory>]
+[<InlineData(0, 0, 1)>]
+[<InlineData(16, 0, 17)>]
+[<InlineData(16, 12, 5)>]
+[<InlineData(16, 16, 1)>]
+[<InlineData(4096, 1024, 8192)>]
+[<InlineData(8192, 5120, 3840)>]
+let ``Ensure (invalid)`` (maxCapacity : int, offset : int, length : int) =
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable allocator = Allocator(Span(), maxCapacity)
+        AllocatorHelper.Append(&allocator, ReadOnlySpan(Array.zeroCreate offset))
+        Assert.Equal(offset, allocator.Length)
+        Assert.Equal(maxCapacity, allocator.MaxCapacity)
+        AllocatorHelper.Ensure(&allocator, length))
+    let message = "Maximum capacity has been reached."
+    Assert.Null error.ParamName
+    Assert.Equal(message, error.Message)
+    ()
+
+[<Theory>]
+[<InlineData(0, 0, 0)>]
+[<InlineData(16, 0, 0)>]
+[<InlineData(16, 12, 0)>]
+[<InlineData(16, 16, 0)>]
+[<InlineData(16, 12, 4)>]
+[<InlineData(4096, 0, 2048)>]
+[<InlineData(4096, 1024, 2048)>]
+[<InlineData(4096, 2048, 2048)>]
+let ``Ensure (no resize)`` (capacity : int, offset : int, length : int) =
+    let mutable allocator = Allocator(Span(Array.zeroCreate capacity), capacity)
+    let origin = &Unsafe.AsRef(&allocator.GetPinnableReference())
+    AllocatorHelper.Append(&allocator, ReadOnlySpan(Array.zeroCreate offset))
+    Assert.Equal(capacity, allocator.MaxCapacity)
+    Assert.Equal(capacity, allocator.Capacity)
+    Assert.Equal(offset, allocator.Length)
+    Assert.True(Unsafe.AreSame(&origin, &Unsafe.AsRef(&allocator.GetPinnableReference())))
+
+    AllocatorHelper.Ensure(&allocator, length)
+    Assert.Equal(capacity, allocator.MaxCapacity)
+    Assert.Equal(capacity, allocator.Capacity)
+    Assert.Equal(offset, allocator.Length)
+    Assert.True(Unsafe.AreSame(&origin, &Unsafe.AsRef(&allocator.GetPinnableReference())))
+    ()
+
+[<Theory>]
+[<InlineData(0, 0, 1)>]
+[<InlineData(16, 0, 17)>]
+[<InlineData(16, 12, 5)>]
+[<InlineData(16, 16, 1)>]
+[<InlineData(4096, 1024, 8192)>]
+[<InlineData(8192, 5120, 3840)>]
+let ``Expand (invalid)`` (maxCapacity : int, offset : int, length : int) =
+    let error = Assert.Throws<ArgumentException>(fun () ->
+        let mutable allocator = Allocator(Span(), maxCapacity)
+        AllocatorHelper.Append(&allocator, ReadOnlySpan(Array.zeroCreate offset))
+        Assert.Equal(offset, allocator.Length)
+        Assert.Equal(maxCapacity, allocator.MaxCapacity)
+        AllocatorHelper.Expand(&allocator, length))
+    let message = "Maximum capacity has been reached."
+    Assert.Null error.ParamName
+    Assert.Equal(message, error.Message)
+    ()
+
+[<Theory>]
+[<InlineData(0, 0, 0)>]
+[<InlineData(16, 0, 0)>]
+[<InlineData(16, 12, 0)>]
+[<InlineData(16, 16, 0)>]
+[<InlineData(16, 12, 4)>]
+[<InlineData(4096, 0, 2048)>]
+[<InlineData(4096, 1024, 2048)>]
+[<InlineData(4096, 2048, 2048)>]
+let ``Expand (no resize)`` (capacity : int, offset : int, length : int) =
+    let mutable allocator = Allocator(Span(Array.zeroCreate capacity), capacity)
+    let origin = &Unsafe.AsRef(&allocator.GetPinnableReference())
+    AllocatorHelper.Append(&allocator, ReadOnlySpan(Array.zeroCreate offset))
+    Assert.Equal(capacity, allocator.MaxCapacity)
+    Assert.Equal(capacity, allocator.Capacity)
+    Assert.Equal(offset, allocator.Length)
+    Assert.True(Unsafe.AreSame(&origin, &Unsafe.AsRef(&allocator.GetPinnableReference())))
+
+    AllocatorHelper.Expand(&allocator, length)
+    Assert.Equal(capacity, allocator.MaxCapacity)
+    Assert.Equal(capacity, allocator.Capacity)
+    Assert.Equal(offset + length, allocator.Length)
+    Assert.True(Unsafe.AreSame(&origin, &Unsafe.AsRef(&allocator.GetPinnableReference())))
     ()

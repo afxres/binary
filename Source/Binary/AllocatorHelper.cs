@@ -16,17 +16,31 @@ namespace Mikodev.Binary
 
         public static void Append(ref Allocator allocator, ReadOnlySpan<byte> span)
         {
-            Allocator.AppendBuffer(ref allocator, span);
+            Allocator.Append(ref allocator, span);
         }
 
         public static void Append<T>(ref Allocator allocator, AllocatorAnchor anchor, T data, SpanAction<byte, T> action)
         {
-            Allocator.AppendAnchorAction(ref allocator, anchor.Offset, anchor.Length, data, action);
+            if (action is null)
+                ThrowHelper.ThrowActionNull();
+            var cursor = anchor.Offset;
+            var length = anchor.Length;
+            // check bounds via slice method
+            var target = Allocator.Target(ref allocator, cursor, length);
+            if (length == 0)
+                return;
+            action.Invoke(target, data);
         }
 
         public static void Append<T>(ref Allocator allocator, int length, T data, SpanAction<byte, T> action)
         {
-            Allocator.AppendLengthAction(ref allocator, length, data, action);
+            if (action is null)
+                ThrowHelper.ThrowActionNull();
+            if (length == 0)
+                return;
+            var offset = Allocator.Anchor(ref allocator, length);
+            var target = Allocator.Target(ref allocator, offset, length);
+            action.Invoke(target, data);
         }
 
         public static void AppendWithLengthPrefix<T>(ref Allocator allocator, T data, AllocatorAction<T> action)
@@ -36,6 +50,16 @@ namespace Mikodev.Binary
             var anchor = Allocator.Anchor(ref allocator, sizeof(int));
             action.Invoke(ref allocator, data);
             Allocator.AppendLengthPrefix(ref allocator, anchor);
+        }
+
+        public static void Ensure(ref Allocator allocator, int length)
+        {
+            Allocator.Ensure(ref allocator, length);
+        }
+
+        public static void Expand(ref Allocator allocator, int length)
+        {
+            Allocator.Expand(ref allocator, length);
         }
 
         public static byte[] Invoke<T>(T data, AllocatorAction<T> action)

@@ -13,7 +13,7 @@ namespace Mikodev.Binary.Internal.Contexts
     {
         private static readonly MethodInfo InvokeMethodInfo = typeof(MemorySlices).GetMethod(nameof(MemorySlices.Invoke), BindingFlags.Instance | BindingFlags.Public);
 
-        private static readonly MethodInfo AppendMethodInfo = typeof(Allocator).GetMethod(nameof(Allocator.AppendBuffer), BindingFlags.Static | BindingFlags.NonPublic);
+        private static readonly MethodInfo AppendMethodInfo = typeof(Allocator).GetMethod(nameof(Allocator.Append), BindingFlags.Static | BindingFlags.NonPublic);
 
         private static readonly ConstructorInfo ReadOnlySpanByteConstructorInfo = typeof(ReadOnlySpan<byte>).GetConstructor(new[] { typeof(byte[]) });
 

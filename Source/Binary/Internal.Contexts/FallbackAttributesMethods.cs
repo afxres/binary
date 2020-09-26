@@ -11,17 +11,32 @@ namespace Mikodev.Binary.Internal.Contexts
     {
         internal static IConverter GetConverter(IGeneratorContext context, Type type)
         {
+            var attributes = GetAttributes(type, a => a is NamedObjectAttribute || a is TupleObjectAttribute || a is ConverterAttribute || a is ConverterCreatorAttribute);
+            if (attributes.Count > 1)
+                throw new ArgumentException($"Multiple attributes found, type: {type}");
+
             var propertyWithAttributes = new List<(PropertyInfo Property, Attribute Key, Attribute ConverterOrCreator)>();
-            foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(x => x.GetGetMethod()?.GetParameters().Length == 0).OrderBy(x => x.Name))
+            foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public).OrderBy(x => x.Name))
             {
-                var key = GetAttribute(property, a => a is NamedKeyAttribute || a is TupleKeyAttribute);
-                var any = GetAttribute(property, a => a is ConverterAttribute || a is ConverterCreatorAttribute);
-                if (key is null && any != null)
-                    throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' for '{any.GetType().Name}', property name: {property.Name}, type: {type}");
-                propertyWithAttributes.Add((property, key, any));
+                var keys = GetAttributes(property, a => a is NamedKeyAttribute || a is TupleKeyAttribute);
+                var list = GetAttributes(property, a => a is ConverterAttribute || a is ConverterCreatorAttribute);
+                var head = keys.FirstOrDefault();
+                var tail = list.FirstOrDefault();
+                var indexer = property.GetIndexParameters().Any();
+                if (indexer && (head != null || tail != null))
+                    throw new ArgumentException($"Can not apply '{(head ?? tail).GetType().Name}' to an indexer, type: {type}");
+                if (indexer)
+                    continue;
+                if (property.GetGetMethod() is null)
+                    throw new ArgumentException($"No available getter found, property name: {property.Name}, type: {type}");
+                if (keys.Count > 1 || list.Count > 1)
+                    throw new ArgumentException($"Multiple attributes found, property name: {property.Name}, type: {type}");
+                if (head is null && tail != null)
+                    throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' for '{tail.GetType().Name}', property name: {property.Name}, type: {type}");
+                propertyWithAttributes.Add((property, head, tail));
             }
 
-            var attribute = GetAttribute(type, a => a is NamedObjectAttribute || a is TupleObjectAttribute || a is ConverterAttribute || a is ConverterCreatorAttribute);
+            var attribute = attributes.SingleOrDefault();
             if (propertyWithAttributes.Count == 0 && (attribute is ConverterAttribute || attribute is ConverterCreatorAttribute) is false)
                 throw new ArgumentException($"No available property found, type: {type}");
 
@@ -75,16 +90,11 @@ namespace Mikodev.Binary.Internal.Contexts
             }
         }
 
-        private static Attribute GetAttribute(MemberInfo member, Func<Attribute, bool> filter)
+        private static IReadOnlyList<Attribute> GetAttributes(MemberInfo member, Func<Attribute, bool> filter)
         {
             Debug.Assert(member is Type || member is PropertyInfo);
             var attributes = member.GetCustomAttributes(false).OfType<Attribute>().Where(filter).ToList();
-            if (attributes.Count <= 1)
-                return attributes.SingleOrDefault();
-            var message = member is PropertyInfo property
-                ? $"Multiple attributes found, property name: {property.Name}, type: {property.ReflectedType}"
-                : $"Multiple attributes found, type: {(Type)member}";
-            throw new ArgumentException(message);
+            return attributes;
         }
 
         private static IConverter GetConverter(IGeneratorContext context, Type type, Attribute attribute)

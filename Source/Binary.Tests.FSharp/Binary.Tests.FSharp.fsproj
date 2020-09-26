@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <Compile Include="Attributes\AttributeTests.fs" />
+    <Compile Include="Attributes\AttributeWithIndexerTests.fs" />
     <Compile Include="Attributes\InheritanceTests.fs" />
     <Compile Include="Contexts\AllocatorAnchorTests.fs" />
     <Compile Include="Contexts\AllocatorHelperTests.fs" />
@@ -38,9 +39,9 @@
     <Compile Include="Implementations\TupleObjectTests.fs" />
     <Compile Include="Internal\MemoryHelperTests.fs" />
     <Compile Include="Miscellaneous\CrossTests.fs" />
-    <Compile Include="Miscellaneous\ThrowTests.fs" />
     <Compile Include="Miscellaneous\ThrowDecodeTests.fs" />
     <Compile Include="Miscellaneous\ThrowObjectTests.fs" />
+    <Compile Include="Miscellaneous\ThrowTests.fs" />
     <Compile Include="Miscellaneous\ValueLayoutTests.fs" />
     <Compile Include="Sequence\CollectionLayoutTests.fs" />
     <Compile Include="Sequence\CollectionOverflowTests.fs" />

@@ -9,7 +9,7 @@ namespace Mikodev.Binary.Internal.SpanLike.Adapters
     {
         public override void Encode(ref Allocator allocator, ReadOnlySpan<T> item)
         {
-            Allocator.AppendBuffer(ref allocator, MemoryMarshal.AsBytes(item));
+            Allocator.Append(ref allocator, MemoryMarshal.AsBytes(item));
         }
 
         public override MemoryResult<T> Decode(ReadOnlySpan<byte> span)

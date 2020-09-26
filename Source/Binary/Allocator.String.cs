@@ -16,7 +16,8 @@ namespace Mikodev.Binary
             Debug.Assert(targetLimits <= encoding.GetMaxByteCount(span.Length));
             if (targetLimits == 0)
                 return;
-            var offset = Ensure(ref allocator, targetLimits);
+            Ensure(ref allocator, targetLimits);
+            var offset = allocator.offset;
             var buffer = allocator.buffer;
             ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
             var targetLength = SharedHelper.GetBytes(ref MemoryMarshal.GetReference(span), span.Length, ref target, targetLimits, encoding);
@@ -29,7 +30,8 @@ namespace Mikodev.Binary
             var targetLimits = SharedHelper.GetMaxByteCount(span, encoding);
             Debug.Assert(targetLimits <= encoding.GetMaxByteCount(span.Length));
             var prefixLength = MemoryHelper.EncodeNumberLength((uint)targetLimits);
-            var offset = Ensure(ref allocator, prefixLength + targetLimits);
+            Ensure(ref allocator, prefixLength + targetLimits);
+            var offset = allocator.offset;
             var buffer = allocator.buffer;
             ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
             var targetLength = targetLimits == 0 ? 0 : SharedHelper.GetBytes(ref MemoryMarshal.GetReference(span), span.Length, ref Unsafe.Add(ref target, prefixLength), targetLimits, encoding);

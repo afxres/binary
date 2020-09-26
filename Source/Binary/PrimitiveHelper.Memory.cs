@@ -10,7 +10,7 @@ namespace Mikodev.Binary
             var length = span.Length;
             var numberLength = MemoryHelper.EncodeNumberLength((uint)length);
             MemoryHelper.EncodeNumber(ref Allocator.Assign(ref allocator, numberLength), (uint)length, numberLength);
-            Allocator.AppendBuffer(ref allocator, span);
+            Allocator.Append(ref allocator, span);
         }
 
         public static ReadOnlySpan<byte> DecodeBufferWithLengthPrefix(ref ReadOnlySpan<byte> span)
