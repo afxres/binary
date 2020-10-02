@@ -24,9 +24,9 @@ type ArrayTests () =
         ()
 
     [<Fact>]
-    member __.``Array Of String (from 0 to 4096)`` () =
+    member __.``Array Of String (from 0 to 1024)`` () =
         let converter = generator.GetConverter<string array>()
-        for i = 0 to 4096 do
+        for i = 0 to 1024 do
             let source = Enumerable.Range(0, i) |> Seq.map string |> Seq.toArray
             let buffer = converter.Encode source
             let result = converter.Decode buffer

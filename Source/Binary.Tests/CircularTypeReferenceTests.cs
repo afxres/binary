@@ -37,8 +37,8 @@ namespace Mikodev.Binary.Tests
 
         private readonly IGenerator generator = Generator.CreateDefault();
 
-        [Fact(DisplayName = "Linked List")]
-        public void GetConverterForLinkedList()
+        [Fact(DisplayName = "Circular Type Reference (custom linked list)")]
+        public void CircularTypeReferenceLinkedList()
         {
             var list = new LinkedList<int>(2, null).Add(4).Add(6);
             var error = Assert.Throws<ArgumentException>(() => generator.GetConverter(list));

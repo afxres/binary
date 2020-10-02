@@ -178,32 +178,3 @@ let ``IPAddress Null`` () =
     Assert.Empty(buffer)
     Assert.Equal(address, result)
     ()
-
-[<Theory>]
-[<InlineData("127.0.0.1", 12345)>]
-[<InlineData("::1", 54321)>]
-let ``IPEndPoint Instance`` (address : string, port : int) =
-    let value = new IPEndPoint(IPAddress.Parse(address), port)
-    test value value
-    ()
-
-[<Fact>]
-let ``IPEndPoint All Port`` () =
-    for i = IPEndPoint.MinPort to IPEndPoint.MaxPort do
-        let value = IPEndPoint(IPAddress.Any, i)
-        test value value
-    ()
-
-[<Fact>]
-let ``IPEndPoint Null`` () =
-    let endpoint : IPEndPoint = null
-
-    test endpoint endpoint
-
-    let buffer = generator.Encode endpoint
-    let result : IPEndPoint = generator.Decode buffer
-
-    Assert.Null(result)
-    Assert.Empty(buffer)
-    Assert.Equal(endpoint, result)
-    ()

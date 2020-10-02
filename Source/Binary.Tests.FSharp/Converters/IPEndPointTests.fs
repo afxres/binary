@@ -168,3 +168,12 @@ type IPEndPointTests() =
             Assert.Equal(expected.ParamName, error.ParamName)
             ()
         ()
+
+    [<Fact>]
+    member __.``Port (no overflow)`` () =
+        let converter = GetConverter()
+        let source = IPEndPoint(IPAddress.Any, IPEndPoint.MaxPort)
+        let buffer = converter.Encode source
+        let result = converter.Decode buffer
+        Assert.Equal(IPEndPoint.MaxPort, result.Port)
+        ()

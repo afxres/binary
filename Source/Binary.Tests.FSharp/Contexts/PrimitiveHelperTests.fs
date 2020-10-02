@@ -223,10 +223,10 @@ let ``Encode String With Length Prefix (unicode, null)`` () =
     ()
 
 [<Fact>]
-let ``Encode String (random, from 0 to 4096)`` () =
+let ``Encode String (random, from 0 to 1024)`` () =
     let encoding = Encoding.UTF8
 
-    for i = 0 to 4096 do
+    for i = 0 to 1024 do
         let data = [| for k = 0 to (i - 1) do yield char (random.Next(32, 127)) |]
         let text = String data
         Assert.Equal(i, text.Length)
@@ -240,10 +240,10 @@ let ``Encode String (random, from 0 to 4096)`` () =
     ()
 
 [<Fact>]
-let ``Decode String (random, from 0 to 4096)`` () =
+let ``Decode String (random, from 0 to 1024)`` () =
     let encoding = Encoding.UTF8
 
-    for i = 0 to 4096 do
+    for i = 0 to 1024 do
         let data = [| for k = 0 to (i - 1) do yield byte (random.Next(32, 127)) |]
         Assert.Equal(i, data.Length)
 
@@ -253,10 +253,10 @@ let ``Decode String (random, from 0 to 4096)`` () =
     ()
 
 [<Fact>]
-let ``Encode String With Length Prefix (random, from 0 to 4096)`` () =
+let ``Encode String With Length Prefix (random, from 0 to 1024)`` () =
     let encoding = Encoding.UTF8
 
-    for i = 0 to 4096 do
+    for i = 0 to 1024 do
         let data = [| for k = 0 to (i - 1) do yield char (random.Next(32, 127)) |]
         let text = String data
         Assert.Equal(i, text.Length)
@@ -276,10 +276,10 @@ let ``Encode String With Length Prefix (random, from 0 to 4096)`` () =
     ()
 
 [<Fact>]
-let ``Decode String With Length Prefix (random, from 0 to 4096)`` () =
+let ``Decode String With Length Prefix (random, from 0 to 1024)`` () =
     let encoding = Encoding.UTF8
 
-    for i = 0 to 4096 do
+    for i = 0 to 1024 do
         let data = [| for k = 0 to (i - 1) do yield byte (random.Next(32, 127)) |]
         Assert.Equal(i, data.Length)
 

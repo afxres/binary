@@ -153,7 +153,7 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(buffer.Length, allocator.Capacity);
         }
 
-        [Theory(DisplayName = "Anchor & Append Length Prefix")]
+        [Theory(DisplayName = "Anchor Then Append Length Prefix")]
         [InlineData(0, 4, 1)]
         [InlineData(1, 5, 5)]
         [InlineData(1, 6, 5)]
@@ -211,7 +211,7 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(message, error.Message);
         }
 
-        [Fact(DisplayName = "Anchor & Append Length Prefix (for loop all conditions)")]
+        [Fact(DisplayName = "Anchor Then Append Length Prefix (for loop all conditions)")]
         public void AnchorAppendRange()
         {
             const int Limits = 16;

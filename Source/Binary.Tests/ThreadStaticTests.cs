@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -22,15 +23,16 @@ namespace Mikodev.Binary.Tests
         }
 
         [Fact(DisplayName = "Multi Threads (encode, thread static)")]
-        public async Task MultiThreadsTestAsync()
+        public async Task MultiThreadsEncodeAsync()
         {
-            const int TaskCount = 16;
-            const int LoopCount = 4096;
+            const int TaskCount = 8;
+            const int GuidCount = 1024;
+            var source = new CancellationTokenSource(TimeSpan.FromSeconds(4));
             var generator = Generator.CreateDefault();
             var funcs = Enumerable.Range(0, TaskCount).Select(x => new Action(() =>
             {
-                var model = Enumerable.Range(0, 1024).Select(_ => Guid.NewGuid().ToString()).ToArray();
-                for (var i = 0; i < LoopCount; i++)
+                var model = Enumerable.Range(0, GuidCount).Select(_ => Guid.NewGuid().ToString()).ToArray();
+                while (source.IsCancellationRequested == false)
                 {
                     var bytes = generator.Encode(model);
                     Assert.True(bytes.Length < (1 << 16));
@@ -45,14 +47,15 @@ namespace Mikodev.Binary.Tests
         [Fact(DisplayName = "Multi Threads (invoke, thread static)")]
         public async Task MultiThreadsInvokeAsync()
         {
-            const int TaskCount = 16;
-            const int LoopCount = 4096;
+            const int TaskCount = 8;
+            const int GuidCount = 1024;
+            var source = new CancellationTokenSource(TimeSpan.FromSeconds(4));
             var generator = Generator.CreateDefault();
             var converter = generator.GetConverter<string[]>();
             var funcs = Enumerable.Range(0, TaskCount).Select(x => new Action(() =>
             {
-                var model = Enumerable.Range(0, 1024).Select(_ => Guid.NewGuid().ToString()).ToArray();
-                for (var i = 0; i < LoopCount; i++)
+                var model = Enumerable.Range(0, GuidCount).Select(_ => Guid.NewGuid().ToString()).ToArray();
+                while (source.IsCancellationRequested == false)
                 {
                     var bytes = AllocatorHelper.Invoke(model, converter.Encode);
                     Assert.True(bytes.Length < (1 << 16));
@@ -65,7 +68,7 @@ namespace Mikodev.Binary.Tests
         }
 
         [Fact(DisplayName = "Nested Call (invoke)")]
-        public void Nested()
+        public void NestedInvoke()
         {
             static IEnumerable<bool> TestGroup()
             {
@@ -113,7 +116,7 @@ namespace Mikodev.Binary.Tests
         }
 
         [Fact(DisplayName = "Nested Call (encode)")]
-        public void NestedV2()
+        public void NestedEncode()
         {
             static IEnumerable<bool> TestGroup()
             {
@@ -164,7 +167,7 @@ namespace Mikodev.Binary.Tests
         }
 
         [Fact(DisplayName = "Exception Call (invoke)")]
-        public void ExceptionCall()
+        public void ExceptionCallInvoke()
         {
             static IEnumerable<bool> TestGroup()
             {
@@ -197,7 +200,7 @@ namespace Mikodev.Binary.Tests
         }
 
         [Fact(DisplayName = "Exception Call (encode)")]
-        public void ExceptionCallV2()
+        public void ExceptionCallEncode()
         {
             static IEnumerable<bool> TestGroup()
             {
