@@ -40,8 +40,8 @@ namespace Mikodev.Binary.Internal.Contexts
             if (propertyWithAttributes.Count == 0 && (attribute is ConverterAttribute || attribute is ConverterCreatorAttribute) is false)
                 throw new ArgumentException($"No available property found, type: {type}");
 
-            var propertyWithNamedKeyAttributes = propertyWithAttributes.Where(x => x.Key is NamedKeyAttribute).Select(x => (x.Property, Key: (NamedKeyAttribute)x.Key, x.ConverterOrCreator)).ToList();
-            var propertyWithTupleKeyAttributes = propertyWithAttributes.Where(x => x.Key is TupleKeyAttribute).Select(x => (x.Property, Key: (TupleKeyAttribute)x.Key, x.ConverterOrCreator)).ToList();
+            var propertyWithNamedKeyAttributes = propertyWithAttributes.Select(x => (x.Property, Key: x.Key as NamedKeyAttribute, x.ConverterOrCreator)).Where(x => x.Key != null).ToList();
+            var propertyWithTupleKeyAttributes = propertyWithAttributes.Select(x => (x.Property, Key: x.Key as TupleKeyAttribute, x.ConverterOrCreator)).Where(x => x.Key != null).ToList();
             if (propertyWithNamedKeyAttributes.Count == 0 && attribute is NamedObjectAttribute)
                 throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' for '{nameof(NamedObjectAttribute)}', type: {type}");
             if (propertyWithTupleKeyAttributes.Count == 0 && attribute is TupleObjectAttribute)
