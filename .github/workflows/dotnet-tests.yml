@@ -1,0 +1,20 @@
+name: .NET Tests
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: code
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.301
+    - name: Test (Debug)
+      run: dotnet test --verbosity normal --framework netcoreapp3.1 -c Debug
+    - name: Test (Release)
+      run: dotnet test --verbosity normal --framework netcoreapp3.1 -c Release
