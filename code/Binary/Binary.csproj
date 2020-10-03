@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1</TargetFrameworks>
     <AssemblyName>Mikodev.Binary</AssemblyName>
     <RootNamespace>Mikodev.Binary</RootNamespace>
     <LangVersion>latest</LangVersion>
@@ -10,7 +10,7 @@
     <Company>Mikodev</Company>
     <Copyright>Mikodev 2020</Copyright>
     <Product>Mikodev.Binary</Product>
-    <Version>5.1.2</Version>
+    <Version>5.2.0</Version>
     <PackageTags>binary dynamic serialization</PackageTags>
     <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
@@ -21,16 +21,6 @@
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <DefineConstants>NETOLD</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="System.Memory" Version="4.5.4" />
-    <PackageReference Include="System.Reflection.Emit" Version="4.7.0" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" />

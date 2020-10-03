@@ -1,9 +1,6 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
-
-#if !NETOLD
 using System.Buffers;
-#endif
 
 namespace Mikodev.Binary
 {
