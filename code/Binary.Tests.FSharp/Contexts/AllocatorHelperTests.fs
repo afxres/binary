@@ -283,30 +283,6 @@ let ``Anchor Then Append (append some then)`` (prefix : int, length : int) =
     ()
 
 [<Fact>]
-let ``Append Action (contravariant)`` () =
-    let assembly = typeof<IConverter>.Assembly
-    let attribute = assembly.GetCustomAttributes() |> Seq.pick (fun x -> match x with :? System.Runtime.Versioning.TargetFrameworkAttribute as v -> Some v | _ -> None)
-    let frameworkName = attribute.FrameworkName
-    let methods = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4)
-    let parameters = methods |> Array.map (fun x -> x.GetParameters() |> Array.last)
-    let delegateTypes = assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SpanAction`2")
-    Assert.NotEmpty parameters
-    for i in parameters do
-        Assert.Equal("action", i.Name)
-        let parameterType = i.ParameterType
-        Assert.Equal("SpanAction`2", parameterType.Name)
-        if frameworkName = ".NETStandard,Version=v2.0" then
-            let delegateType = Assert.Single delegateTypes
-            Assert.Equal("Mikodev.Binary", parameterType.Namespace)
-            let genericParameter = delegateType.GetGenericArguments() |> Array.last
-            Assert.Equal(GenericParameterAttributes.Contravariant, genericParameter.GenericParameterAttributes)
-        else
-            Assert.Empty delegateTypes
-            Assert.Equal("System.Buffers", parameterType.Namespace)
-        ()
-    ()
-
-[<Fact>]
 let ``Append With Length Prefix (action null)`` () =
     let error = Assert.Throws<ArgumentNullException>(fun () ->
         let mutable allocator = new Allocator()
