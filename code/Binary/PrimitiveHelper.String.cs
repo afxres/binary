@@ -34,24 +34,24 @@ namespace Mikodev.Binary
         {
             if (encoding is null)
                 ThrowHelper.ThrowEncodingNull();
-            return SharedHelper.GetString(span, encoding);
+            return encoding.GetString(span);
         }
 
         public static string DecodeStringWithLengthPrefix(ref ReadOnlySpan<byte> span, Encoding encoding)
         {
             if (encoding is null)
                 ThrowHelper.ThrowEncodingNull();
-            return SharedHelper.GetString(DecodeBufferWithLengthPrefix(ref span), encoding);
+            return encoding.GetString(DecodeBufferWithLengthPrefix(ref span));
         }
 
         public static string DecodeString(ReadOnlySpan<byte> span)
         {
-            return SharedHelper.GetString(span, SharedHelper.Encoding);
+            return SharedHelper.Encoding.GetString(span);
         }
 
         public static string DecodeStringWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
-            return SharedHelper.GetString(DecodeBufferWithLengthPrefix(ref span), SharedHelper.Encoding);
+            return SharedHelper.Encoding.GetString(DecodeBufferWithLengthPrefix(ref span));
         }
     }
 }

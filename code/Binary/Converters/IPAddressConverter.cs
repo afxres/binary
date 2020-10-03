@@ -24,7 +24,7 @@ namespace Mikodev.Binary.Converters
         {
             if (span.IsEmpty)
                 return null;
-            return SharedHelper.DecodeIPAddress(span);
+            return new IPAddress(span);
         }
 
         private static IPAddress DecodeWithLengthPrefixInternal(ref ReadOnlySpan<byte> span)

@@ -1,6 +1,7 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
 using System.Buffers;
+using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary
 {
@@ -20,13 +21,12 @@ namespace Mikodev.Binary
         {
             if (action is null)
                 ThrowHelper.ThrowActionNull();
-            var cursor = anchor.Offset;
-            var length = anchor.Length;
             // check bounds via slice method
-            var target = Allocator.Target(ref allocator, cursor, length);
+            var target = allocator.AsSpan().Slice(anchor.Offset, anchor.Length);
+            var length = target.Length;
             if (length == 0)
                 return;
-            action.Invoke(target, data);
+            action.Invoke(MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(target), length), data);
         }
 
         public static void Append<T>(ref Allocator allocator, int length, T data, SpanAction<byte, T> action)
@@ -35,9 +35,7 @@ namespace Mikodev.Binary
                 ThrowHelper.ThrowActionNull();
             if (length == 0)
                 return;
-            var offset = Allocator.Anchor(ref allocator, length);
-            var target = Allocator.Target(ref allocator, offset, length);
-            action.Invoke(target, data);
+            action.Invoke(MemoryMarshal.CreateSpan(ref Allocator.Assign(ref allocator, length), length), data);
         }
 
         public static void AppendWithLengthPrefix<T>(ref Allocator allocator, T data, AllocatorAction<T> action)

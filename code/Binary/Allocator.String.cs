@@ -20,7 +20,7 @@ namespace Mikodev.Binary
             var offset = allocator.offset;
             var buffer = allocator.buffer;
             ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
-            var targetLength = SharedHelper.GetBytes(ref MemoryMarshal.GetReference(span), span.Length, ref target, targetLimits, encoding);
+            var targetLength = encoding.GetBytes(span, MemoryMarshal.CreateSpan(ref target, targetLimits));
             allocator.offset = offset + targetLength;
         }
 
@@ -34,7 +34,7 @@ namespace Mikodev.Binary
             var offset = allocator.offset;
             var buffer = allocator.buffer;
             ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
-            var targetLength = targetLimits == 0 ? 0 : SharedHelper.GetBytes(ref MemoryMarshal.GetReference(span), span.Length, ref Unsafe.Add(ref target, prefixLength), targetLimits, encoding);
+            var targetLength = targetLimits == 0 ? 0 : encoding.GetBytes(span, MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, prefixLength), targetLimits));
             MemoryHelper.EncodeNumber(ref target, (uint)targetLength, prefixLength);
             allocator.offset = offset + targetLength + prefixLength;
         }

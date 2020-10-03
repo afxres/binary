@@ -70,7 +70,7 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ref byte Assign(ref Allocator allocator, int length)
         {
-            Debug.Assert(length > 0);
+            Debug.Assert(length != 0);
             var offset = Anchor(ref allocator, length);
             var buffer = allocator.buffer;
             return ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
@@ -95,13 +95,6 @@ namespace Mikodev.Binary
             var buffer = allocator.buffer;
             Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetReference(new Span<byte>(result)), ref MemoryMarshal.GetReference(buffer), (uint)offset);
             return result;
-        }
-
-        internal static Span<byte> Target(ref Allocator allocator, int cursor, int length)
-        {
-            var offset = allocator.offset;
-            var buffer = allocator.buffer;
-            return buffer.Slice(0, offset).Slice(cursor, length);
         }
 
         internal static void AppendLengthPrefix(ref Allocator allocator, int anchor)

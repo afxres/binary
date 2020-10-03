@@ -23,33 +23,9 @@ namespace Mikodev.Binary.Internal
         {
             Debug.Assert(item != null);
             var size = SizeOfIPAddress(item);
-            ref var target = ref Allocator.Assign(ref allocator, size);
-            var flag = item.TryWriteBytes(MemoryMarshal.CreateSpan(ref target, size), out var actual);
+            var flag = item.TryWriteBytes(MemoryMarshal.CreateSpan(ref Allocator.Assign(ref allocator, size), size), out var actual);
             Debug.Assert(flag);
             Debug.Assert(size == actual);
-        }
-
-        internal static IPAddress DecodeIPAddress(ReadOnlySpan<byte> source)
-        {
-            return new IPAddress(source);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static string GetString(ReadOnlySpan<byte> source, Encoding encoding)
-        {
-            Debug.Assert(encoding != null);
-            return encoding.GetString(source);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int GetBytes(ref char source, int sourceLength, ref byte target, int targetLength, Encoding encoding)
-        {
-            Debug.Assert(encoding != null);
-            Debug.Assert(sourceLength > 0);
-            Debug.Assert(targetLength > 0);
-            var targetMemory = MemoryMarshal.CreateSpan(ref target, targetLength);
-            var sourceMemory = MemoryMarshal.CreateReadOnlySpan(ref source, sourceLength);
-            return encoding.GetBytes(sourceMemory, targetMemory);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

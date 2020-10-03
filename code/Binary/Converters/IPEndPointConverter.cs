@@ -26,8 +26,8 @@ namespace Mikodev.Binary.Converters
             if (span.IsEmpty)
                 return null;
             var size = span.Length - sizeof(ushort);
+            var data = new IPAddress(span.Slice(0, size));
             var port = MemoryHelper.DecodeLittleEndian<short>(span.Slice(size));
-            var data = SharedHelper.DecodeIPAddress(span.Slice(0, size));
             return new IPEndPoint(data, (ushort)port);
         }
 
