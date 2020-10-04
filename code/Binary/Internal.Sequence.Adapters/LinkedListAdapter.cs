@@ -13,7 +13,7 @@ namespace Mikodev.Binary.Internal.Sequence.Adapters
         {
             if (item is null)
                 return;
-            for (var i = item.First; i != null; i = i.Next)
+            for (var i = item.First; i is not null; i = i.Next)
                 converter.EncodeAuto(ref allocator, i.Value);
         }
 

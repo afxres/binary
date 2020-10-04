@@ -21,7 +21,7 @@ namespace Mikodev.Binary.Internal.SpanLike.Adapters
         {
             Debug.Assert(converter.Length > 0);
             var byteLength = span.Length;
-            if (byteLength == 0)
+            if (byteLength is 0)
                 return new MemoryResult<T>(Array.Empty<T>(), 0);
             var itemLength = converter.Length;
             var capacity = SequenceMethods.GetCapacity<T>(byteLength, itemLength);

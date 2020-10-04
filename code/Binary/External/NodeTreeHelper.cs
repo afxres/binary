@@ -16,7 +16,7 @@ namespace Mikodev.Binary.External
             Debug.Assert(length > 0);
             if (length >= 8)
                 return MemoryHelper.DecodeLittleEndian<long>(ref source);
-            var result = (length & 4) == 0 ? 0 : (ulong)(uint)MemoryHelper.DecodeLittleEndian<int>(ref Unsafe.Add(ref source, length & 3));
+            var result = (length & 4) is 0 ? 0 : (ulong)(uint)MemoryHelper.DecodeLittleEndian<int>(ref Unsafe.Add(ref source, length & 3));
             for (var i = (length & 3) - 1; i >= 0; i--)
                 result = (result << 8) | MemoryHelper.DecodeNativeEndian<byte>(ref Unsafe.Add(ref source, i));
             return (long)result;
@@ -25,7 +25,7 @@ namespace Mikodev.Binary.External
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Node<T> Find<T>(Node<T>[] values, long header)
         {
-            Debug.Assert(values != null);
+            Debug.Assert(values is not null);
             Debug.Assert(values.Count(x => x.Header == header) <= 1);
             foreach (var node in values)
                 if (node.Header == header)

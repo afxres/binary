@@ -24,7 +24,7 @@ namespace Mikodev.Binary
             Debug.Assert(cursor < amount);
             Debug.Assert(cursor <= limits);
             const int Initial = 64;
-            if (cursor == 0)
+            if (cursor is 0)
                 cursor = Initial;
             do
                 cursor <<= 2;
@@ -37,7 +37,7 @@ namespace Mikodev.Binary
             var target = new Span<byte>(new byte[(int)cursor]);
             Debug.Assert(offset <= source.Length);
             Debug.Assert(offset <= target.Length);
-            if (offset != 0)
+            if (offset is not 0)
                 Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetReference(target), ref MemoryMarshal.GetReference(source), (uint)offset);
             allocator.buffer = target;
         }
@@ -70,7 +70,7 @@ namespace Mikodev.Binary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ref byte Assign(ref Allocator allocator, int length)
         {
-            Debug.Assert(length != 0);
+            Debug.Assert(length is not 0);
             var offset = Anchor(ref allocator, length);
             var buffer = allocator.buffer;
             return ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
@@ -80,7 +80,7 @@ namespace Mikodev.Binary
         internal static void Append(ref Allocator allocator, ReadOnlySpan<byte> span)
         {
             var length = span.Length;
-            if (length == 0)
+            if (length is 0)
                 return;
             Unsafe.CopyBlockUnaligned(ref Assign(ref allocator, length), ref MemoryMarshal.GetReference(span), (uint)length);
         }
@@ -89,7 +89,7 @@ namespace Mikodev.Binary
         internal static byte[] Result(ref Allocator allocator)
         {
             var offset = allocator.offset;
-            if (offset == 0)
+            if (offset is 0)
                 return Array.Empty<byte>();
             var result = new byte[offset];
             var buffer = allocator.buffer;

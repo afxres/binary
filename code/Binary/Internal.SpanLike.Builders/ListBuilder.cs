@@ -18,7 +18,7 @@ namespace Mikodev.Binary.Internal.SpanLike.Builders
 
         public override ReadOnlySpan<T> Handle(List<T> item)
         {
-            if (item is { Count: var count } && count != 0)
+            if (item is { Count: var count } && count is not 0)
                 return new ReadOnlySpan<T>(ofList.Invoke(item), 0, count);
             return default;
         }

@@ -20,7 +20,7 @@ namespace Mikodev.Binary.Internal.Sequence.Adapters
         {
             static Func<T, E[]> Invoke()
             {
-                var method = typeof(T).GetMethods(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(x => x.Name == "ToArray" && x.ReturnType == typeof(E[]) && x.GetParameters().Length == 0);
+                var method = typeof(T).GetMethods(BindingFlags.Instance | BindingFlags.Public).FirstOrDefault(x => x.Name is "ToArray" && x.ReturnType == typeof(E[]) && x.GetParameters().Length is 0);
                 if (method is null)
                     return null;
                 var source = Expression.Parameter(typeof(T), "source");
@@ -39,7 +39,7 @@ namespace Mikodev.Binary.Internal.Sequence.Adapters
             {
                 if (item is E[] result)
                     return result;
-                if (func != null)
+                if (func is not null)
                     return func.Invoke(item);
                 if (item is ICollection<E> data)
                     return SequenceMethods.GetContents(data);

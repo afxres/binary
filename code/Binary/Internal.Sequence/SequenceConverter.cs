@@ -15,7 +15,7 @@ namespace Mikodev.Binary.Internal.Sequence
         {
             this.adapter = adapter;
             this.builder = builder;
-            this.encoder = itemLength > 0 && counter != null
+            this.encoder = itemLength > 0 && counter is not null
                 ? new SequenceConstantEncoder<T, R>(adapter, counter, itemLength)
                 : new SequenceVariableEncoder<T, R>(adapter) as SequenceAbstractEncoder<T>;
             Debug.Assert(itemLength >= 0);

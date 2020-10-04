@@ -11,8 +11,8 @@ namespace Mikodev.Binary.Creators
         public NativeEndianConverter() : base(Unsafe.SizeOf<T>())
         {
             Debug.Assert(BitConverter.IsLittleEndian);
-            Debug.Assert((uint)Unsafe.SizeOf<T>() <= 16);
-            Debug.Assert(MemoryHelper.EncodeNumberLength((uint)Unsafe.SizeOf<T>()) == 1);
+            Debug.Assert(Unsafe.SizeOf<T>() is 1 or 2 or 4 or 8 or 16);
+            Debug.Assert(MemoryHelper.EncodeNumberLength((uint)Unsafe.SizeOf<T>()) is 1);
         }
 
         public override void Encode(ref Allocator allocator, T item)

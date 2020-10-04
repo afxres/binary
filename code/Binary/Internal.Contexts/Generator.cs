@@ -16,8 +16,8 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             this.converters = new ConcurrentDictionary<Type, IConverter>(converters) { [typeof(object)] = new GeneratorObjectConverter(this) };
             this.creators = creators.ToArray();
-            Debug.Assert(this.converters.All(x => x.Value != null));
-            Debug.Assert(this.creators.Count == 0 || this.creators.All(x => x != null));
+            Debug.Assert(this.converters.All(x => x.Value is not null));
+            Debug.Assert(this.creators.Count is 0 || this.creators.All(x => x is not null));
         }
 
         public IConverter GetConverter(Type type)

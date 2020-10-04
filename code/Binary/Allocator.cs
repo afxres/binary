@@ -18,7 +18,7 @@ namespace Mikodev.Binary
 
         public readonly int Capacity => buffer.Length;
 
-        public readonly int MaxCapacity => limits == 0 ? int.MaxValue : ~limits;
+        public readonly int MaxCapacity => limits is 0 ? int.MaxValue : ~limits;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Allocator(Span<byte> span)

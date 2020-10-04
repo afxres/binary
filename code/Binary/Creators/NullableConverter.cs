@@ -17,7 +17,7 @@ namespace Mikodev.Binary.Creators
         {
             var head = item.HasValue ? Some : None;
             PrimitiveHelper.EncodeNumber(ref allocator, head);
-            if (head == None)
+            if (head is None)
                 return;
             converter.Encode(ref allocator, item.GetValueOrDefault());
         }
@@ -26,7 +26,7 @@ namespace Mikodev.Binary.Creators
         {
             var head = item.HasValue ? Some : None;
             PrimitiveHelper.EncodeNumber(ref allocator, head);
-            if (head == None)
+            if (head is None)
                 return;
             converter.EncodeAuto(ref allocator, item.GetValueOrDefault());
         }
@@ -35,17 +35,17 @@ namespace Mikodev.Binary.Creators
         {
             var body = span;
             var head = PrimitiveHelper.DecodeNumber(ref body);
-            if (head == Some)
+            if (head is Some)
                 return converter.Decode(in body);
-            return head == None ? null : ThrowHelper.ThrowNullableTagInvalid<T>(head);
+            return head is None ? null : ThrowHelper.ThrowNullableTagInvalid<T>(head);
         }
 
         public override T? DecodeAuto(ref ReadOnlySpan<byte> span)
         {
             var head = PrimitiveHelper.DecodeNumber(ref span);
-            if (head == Some)
+            if (head is Some)
                 return converter.DecodeAuto(ref span);
-            return head == None ? null : ThrowHelper.ThrowNullableTagInvalid<T>(head);
+            return head is None ? null : ThrowHelper.ThrowNullableTagInvalid<T>(head);
         }
     }
 }

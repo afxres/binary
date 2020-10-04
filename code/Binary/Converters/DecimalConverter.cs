@@ -25,7 +25,7 @@ namespace Mikodev.Binary.Converters
             var bravo = MemoryHelper.DecodeLittleEndian<int>(ref Unsafe.Add(ref source, sizeof(int) * 1));
             var delta = MemoryHelper.DecodeLittleEndian<int>(ref Unsafe.Add(ref source, sizeof(int) * 2));
             var flags = MemoryHelper.DecodeLittleEndian<int>(ref Unsafe.Add(ref source, sizeof(int) * 3));
-            return new decimal(alpha, bravo, delta, ((uint)flags & 0x8000_0000) != 0, (byte)(flags >> 16));
+            return new decimal(alpha, bravo, delta, ((uint)flags & 0x8000_0000) is not 0, (byte)(flags >> 16));
         }
     }
 }

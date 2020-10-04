@@ -27,7 +27,7 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
 
         public NamedObjectConverter(NamedObjectEncoder<T> encode, NamedObjectDecoder<T> decode, Node<int> nodeTree, IReadOnlyCollection<string> nameList)
         {
-            Debug.Assert(nodeTree != null);
+            Debug.Assert(nodeTree is not null);
             Debug.Assert(nameList.Any());
             this.encode = encode;
             this.decode = decode;
@@ -95,13 +95,13 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
                     continue;
                 var cursor = result.Intent;
                 ref var handle = ref values[cursor];
-                if (handle != 0)
+                if (handle is not 0)
                     return ExceptKeyFound(cursor);
                 handle = (long)(((ulong)(uint)offset << 32) | (uint)length);
                 remain--;
             }
 
-            if (remain != 0)
+            if (remain is not 0)
                 return ExceptNotFound(values.IndexOf(0));
             return decode.Invoke(new MemorySlices(span, values));
         }

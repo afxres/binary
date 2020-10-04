@@ -39,7 +39,7 @@ namespace Mikodev.Binary.Internal.Contexts
             var types = new[] { typeof(Allocator).MakeByRefType(), itemType };
             var name = nameof(IConverter.EncodeWithLengthPrefix);
             var method = typeof(Converter<>).MakeGenericType(itemType).GetMethod(name, types);
-            Debug.Assert(method != null);
+            Debug.Assert(method is not null);
             return method;
         }
 

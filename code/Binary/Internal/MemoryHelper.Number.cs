@@ -15,10 +15,10 @@ namespace Mikodev.Binary.Internal
         {
             Debug.Assert(number <= int.MaxValue);
             number >>= 6;
-            if (number == 0)
+            if (number is 0)
                 return 1;
             number >>= 8;
-            if (number == 0)
+            if (number is 0)
                 return 2;
             else
                 return 4;
@@ -49,10 +49,10 @@ namespace Mikodev.Binary.Internal
         internal static void EncodeNumber(ref byte location, uint number, int numberLength)
         {
             Debug.Assert(number <= int.MaxValue);
-            Debug.Assert(numberLength == 1 || numberLength == 2 || numberLength == 4);
-            if (numberLength == 1)
+            Debug.Assert(numberLength is 1 or 2 or 4);
+            if (numberLength is 1)
                 EncodeNativeEndian(ref location, (byte)number);
-            else if (numberLength == 2)
+            else if (numberLength is 2)
                 EncodeNumberEndian(ref location, (short)(ushort)(number | 0x4000));
             else
                 EncodeNumberEndian(ref location, (int)(number | 0x8000_0000));
@@ -61,10 +61,10 @@ namespace Mikodev.Binary.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int DecodeNumber(ref byte location, int numberLength)
         {
-            Debug.Assert(numberLength == 1 || numberLength == 2 || numberLength == 4);
-            if (numberLength == 1)
+            Debug.Assert(numberLength is 1 or 2 or 4);
+            if (numberLength is 1)
                 return DecodeNativeEndian<byte>(ref location) & 0x3F;
-            else if (numberLength == 2)
+            else if (numberLength is 2)
                 return DecodeNumberEndian<short>(ref location) & 0x3FFF;
             else
                 return DecodeNumberEndian<int>(ref location) & 0x7FFF_FFFF;

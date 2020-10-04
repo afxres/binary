@@ -18,7 +18,7 @@ namespace Mikodev.Binary.Internal.Sequence.Adapters
             this.itemLength = itemLength;
             this.initConverter = initConverter;
             this.tailConverter = tailConverter;
-            Debug.Assert(itemLength > 0 || initConverter.Length == 0 || tailConverter.Length == 0);
+            Debug.Assert(itemLength > 0 || initConverter.Length is 0 || tailConverter.Length is 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -55,7 +55,7 @@ namespace Mikodev.Binary.Internal.Sequence.Adapters
         public override Dictionary<K, V> Decode(ReadOnlySpan<byte> span)
         {
             var byteLength = span.Length;
-            if (byteLength == 0)
+            if (byteLength is 0)
                 return new Dictionary<K, V>();
             const int Initial = 8;
             var itemLength = this.itemLength;

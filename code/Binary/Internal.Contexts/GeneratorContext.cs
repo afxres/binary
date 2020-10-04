@@ -24,7 +24,7 @@ namespace Mikodev.Binary.Internal.Contexts
         public IConverter GetConverter(Type type)
         {
             var converter = GetOrCreateConverter(type);
-            Debug.Assert(converter != null);
+            Debug.Assert(converter is not null);
             Debug.Assert(ConverterHelper.GetGenericArgument(converter) == type);
             return converters.GetOrAdd(type, converter);
         }
@@ -43,14 +43,14 @@ namespace Mikodev.Binary.Internal.Contexts
             if (types.Add(type) is false)
                 throw new ArgumentException($"Circular type reference detected, type: {type}");
             foreach (var creator in creators)
-                if ((converter = creator.GetConverter(this, type)) != null)
+                if ((converter = creator.GetConverter(this, type)) is not null)
                     return ContextMethods.EnsureConverter(converter, type, creator.GetType());
 
-            if ((converter = FallbackConvertersMethods.GetConverter(type)) != null)
+            if ((converter = FallbackConvertersMethods.GetConverter(type)) is not null)
                 return converter;
-            if ((converter = FallbackPrimitivesMethods.GetConverter(this, type)) != null)
+            if ((converter = FallbackPrimitivesMethods.GetConverter(this, type)) is not null)
                 return converter;
-            if ((converter = FallbackSequentialMethods.GetConverter(this, type)) != null)
+            if ((converter = FallbackSequentialMethods.GetConverter(this, type)) is not null)
                 return converter;
 
             if (type.IsPointer)
@@ -58,7 +58,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (type.Assembly == typeof(IConverter).Assembly)
                 throw new ArgumentException($"Invalid internal type: {type}");
 
-            if ((converter = FallbackCollectionMethods.GetConverter(this, type)) != null)
+            if ((converter = FallbackCollectionMethods.GetConverter(this, type)) is not null)
                 return converter;
 
             if (type == typeof(IEnumerable) || typeof(IEnumerable).IsAssignableFrom(type))

@@ -13,16 +13,16 @@ namespace Mikodev.Binary.Internal.Sequence
             Debug.Assert(byteLength > 0);
             Debug.Assert(itemLength > 0);
             var quotient = Math.DivRem(byteLength, itemLength, out var remainder);
-            if (remainder != 0)
+            if (remainder is not 0)
                 ThrowHelper.ThrowNotEnoughBytesCollection<T>(byteLength);
             return quotient;
         }
 
         internal static T[] GetContents<T>(ICollection<T> collection)
         {
-            Debug.Assert(collection != null);
+            Debug.Assert(collection is not null);
             var length = collection.Count;
-            if (length == 0)
+            if (length is 0)
                 return Array.Empty<T>();
             var buffer = new T[length];
             collection.CopyTo(buffer, 0);

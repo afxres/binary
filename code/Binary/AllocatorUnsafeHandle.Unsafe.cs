@@ -28,7 +28,7 @@ namespace Mikodev.Binary
                 MakeHandleHelperMethod(typeBuilder, typeof(HandleHelper).GetMethod(nameof(HandleHelper.AsHandle)));
                 MakeHandleHelperMethod(typeBuilder, typeof(HandleHelper).GetMethod(nameof(HandleHelper.AsAllocator)));
                 var typeInfo = typeBuilder.CreateTypeInfo();
-                Debug.Assert(typeInfo != null);
+                Debug.Assert(typeInfo is not null);
                 return (HandleHelper)Activator.CreateInstance(typeInfo);
             }
 

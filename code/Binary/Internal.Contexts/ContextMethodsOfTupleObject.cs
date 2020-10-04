@@ -29,7 +29,7 @@ namespace Mikodev.Binary.Internal.Contexts
             var types = new[] { typeof(Allocator).MakeByRefType(), itemType };
             var name = auto ? nameof(IConverter.EncodeAuto) : nameof(IConverter.Encode);
             var method = typeof(Converter<>).MakeGenericType(itemType).GetMethod(name, types);
-            Debug.Assert(method != null);
+            Debug.Assert(method is not null);
             return method;
         }
 
@@ -38,7 +38,7 @@ namespace Mikodev.Binary.Internal.Contexts
             var types = new[] { typeof(ReadOnlySpan<byte>).MakeByRefType() };
             var name = auto ? nameof(IConverter.DecodeAuto) : nameof(IConverter.Decode);
             var method = typeof(Converter<>).MakeGenericType(itemType).GetMethod(name, types);
-            Debug.Assert(method != null);
+            Debug.Assert(method is not null);
             return method;
         }
 

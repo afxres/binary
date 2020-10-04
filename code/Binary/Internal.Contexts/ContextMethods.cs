@@ -45,7 +45,7 @@ namespace Mikodev.Binary.Internal.Contexts
         internal static Delegate GetDecodeDelegate(Type delegateType, ContextObjectInitializer initializer, ConstructorInfo constructor, IReadOnlyList<int> objectIndexes, IReadOnlyList<ContextMemberInitializer> members, IReadOnlyList<int> memberIndexes)
         {
             var delegateInvoke = delegateType.GetMethod("Invoke");
-            Debug.Assert(delegateInvoke.GetParameters().Length == 1);
+            Debug.Assert(delegateInvoke.GetParameters().Length is 1);
             var type = delegateInvoke.ReturnType;
             var parameterType = delegateInvoke.GetParameters().Single().ParameterType;
             var data = Expression.Parameter(parameterType, "parameter");
@@ -68,7 +68,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         internal static IConverter EnsureConverter(IConverter converter, Type type)
         {
-            Debug.Assert(converter != null);
+            Debug.Assert(converter is not null);
             var expectedType = typeof(Converter<>).MakeGenericType(type);
             var instanceType = converter.GetType();
             if (expectedType.IsAssignableFrom(instanceType) is false)

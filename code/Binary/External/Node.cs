@@ -15,7 +15,7 @@ namespace Mikodev.Binary.External
 
         public Node(Node<T>[] values, long header, bool exists, T intent)
         {
-            Debug.Assert(values != null);
+            Debug.Assert(values is not null);
             this.Values = values;
             this.Header = header;
             this.Exists = exists;
@@ -28,7 +28,7 @@ namespace Mikodev.Binary.External
             {
                 var span = (Span<char>)stackalloc char[sizeof(long)];
                 for (var i = 0; i < sizeof(long); i++, source >>= 8)
-                    span[i] = ((byte)source < ' ' || (byte)source > '~') ? '.' : (char)(byte)source;
+                    span[i] = ((char)(byte)source is < ' ' or > '~') ? '.' : (char)(byte)source;
                 return span.ToString();
             }
 

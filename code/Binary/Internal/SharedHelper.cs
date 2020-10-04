@@ -14,14 +14,14 @@ namespace Mikodev.Binary.Internal
 
         internal static int SizeOfIPAddress(IPAddress item)
         {
-            Debug.Assert(item != null);
+            Debug.Assert(item is not null);
             var family = item.AddressFamily;
-            return family == AddressFamily.InterNetwork ? 4 : 16;
+            return family is AddressFamily.InterNetwork ? 4 : 16;
         }
 
         internal static void EncodeIPAddress(ref Allocator allocator, IPAddress item)
         {
-            Debug.Assert(item != null);
+            Debug.Assert(item is not null);
             var size = SizeOfIPAddress(item);
             var flag = item.TryWriteBytes(MemoryMarshal.CreateSpan(ref Allocator.Assign(ref allocator, size), size), out var actual);
             Debug.Assert(flag);
@@ -31,9 +31,9 @@ namespace Mikodev.Binary.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int GetMaxByteCount(ReadOnlySpan<char> span, Encoding encoding)
         {
-            Debug.Assert(encoding != null);
+            Debug.Assert(encoding is not null);
             var length = span.Length;
-            if (length == 0)
+            if (length is 0)
                 return 0;
             const int Limits = 32;
             if ((uint)length <= Limits && ReferenceEquals(encoding, Encoding))

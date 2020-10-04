@@ -24,7 +24,7 @@ namespace Mikodev.Binary
             // check bounds via slice method
             var target = allocator.AsSpan().Slice(anchor.Offset, anchor.Length);
             var length = target.Length;
-            if (length == 0)
+            if (length is 0)
                 return;
             action.Invoke(MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(target), length), data);
         }
@@ -33,7 +33,7 @@ namespace Mikodev.Binary
         {
             if (action is null)
                 ThrowHelper.ThrowActionNull();
-            if (length == 0)
+            if (length is 0)
                 return;
             action.Invoke(MemoryMarshal.CreateSpan(ref Allocator.Assign(ref allocator, length), length), data);
         }
