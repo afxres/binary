@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Mikodev.Binary.Tests
@@ -10,6 +13,17 @@ namespace Mikodev.Binary.Tests
     public class ThreadStaticTests
     {
         private delegate void EncodeAction<T>(ref Allocator allocator, T item);
+
+        private sealed class ReferenceEqualityComparer<T> : IEqualityComparer<T> where T : class
+        {
+            public static readonly ReferenceEqualityComparer<T> Instance = new ReferenceEqualityComparer<T>();
+
+            private ReferenceEqualityComparer() { }
+
+            public bool Equals(T x, T y) => ReferenceEquals(x, y);
+
+            public int GetHashCode(T obj) => RuntimeHelpers.GetHashCode(obj);
+        }
 
         private sealed class FakeVariableConverter<T> : Converter<T>
         {
@@ -23,48 +37,92 @@ namespace Mikodev.Binary.Tests
         }
 
         [Fact(DisplayName = "Multi Threads (encode, thread static)")]
-        public async Task MultiThreadsEncodeAsync()
+        public void MultiThreadsEncodeAsync()
         {
-            const int TaskCount = 8;
-            const int GuidCount = 1024;
-            var source = new CancellationTokenSource(TimeSpan.FromSeconds(4));
-            var generator = Generator.CreateDefault();
-            var funcs = Enumerable.Range(0, TaskCount).Select(x => new Action(() =>
+            const int ThreadCount = 4;
+            var dictionary = new ConcurrentDictionary<int, byte[]>();
+            var handle = new ManualResetEvent(false);
+            var bufferHelperType = typeof(IConverter).Assembly.GetTypes().Where(x => x.Name == "BufferHelper").Single();
+            var threadStaticField = bufferHelperType.GetField("ThreadStaticInstance", BindingFlags.Static | BindingFlags.NonPublic);
+            var bufferField = bufferHelperType.GetField("buffer", BindingFlags.Instance | BindingFlags.NonPublic);
+            var attribute = threadStaticField.GetCustomAttributes(false).Where(x => x is ThreadStaticAttribute).SingleOrDefault();
+            Assert.NotNull(attribute);
+
+            var threads = Enumerable.Range(0, ThreadCount).Select(id => new Thread(() =>
             {
-                var model = Enumerable.Range(0, GuidCount).Select(_ => Guid.NewGuid().ToString()).ToArray();
-                while (source.IsCancellationRequested == false)
+                _ = handle.WaitOne();
+                _ = new FakeVariableConverter<int>((ref Allocator allocator, int item) =>
                 {
-                    var bytes = generator.Encode(model);
-                    Assert.True(bytes.Length < (1 << 16));
-                    var value = generator.Decode(bytes, anonymous: model);
-                    Assert.Equal<string>(model, value);
-                }
-            })).ToList();
-            var tasks = funcs.Select(Task.Run).ToList();
-            await Task.WhenAll(tasks);
+                    var bufferHelper = threadStaticField.GetValue(null);
+                    var buffer = (byte[])bufferField.GetValue(bufferHelper);
+                    ref var head = ref MemoryMarshal.GetReference(allocator.AsSpan());
+                    ref var data = ref MemoryMarshal.GetReference(new Span<byte>(buffer));
+                    Assert.True(Unsafe.AreSame(ref head, ref data));
+                    dictionary[id] = buffer;
+                    PrimitiveHelper.EncodeBufferWithLengthPrefix(ref allocator, BitConverter.GetBytes(id));
+                })
+                .Encode(0);
+            }))
+            .ToList();
+            threads.ForEach(x => x.Start());
+            _ = handle.Set();
+            threads.ForEach(x => x.Join());
+
+            var set = new HashSet<byte[]>(dictionary.Values, ReferenceEqualityComparer<byte[]>.Instance);
+            Assert.Equal(ThreadCount, set.Count);
+            Assert.Equal(ThreadCount, dictionary.Count);
+            Assert.All(dictionary, x =>
+            {
+                var buffer = x.Value;
+                Assert.Equal(65536, buffer.Length);
+                var span = new ReadOnlySpan<byte>(buffer);
+                var result = BitConverter.ToInt32(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
+                Assert.Equal(x.Key, result);
+            });
         }
 
         [Fact(DisplayName = "Multi Threads (invoke, thread static)")]
-        public async Task MultiThreadsInvokeAsync()
+        public void MultiThreadsInvokeAsync()
         {
-            const int TaskCount = 8;
-            const int GuidCount = 1024;
-            var source = new CancellationTokenSource(TimeSpan.FromSeconds(4));
-            var generator = Generator.CreateDefault();
-            var converter = generator.GetConverter<string[]>();
-            var funcs = Enumerable.Range(0, TaskCount).Select(x => new Action(() =>
+            const int ThreadCount = 4;
+            var dictionary = new ConcurrentDictionary<int, byte[]>();
+            var handle = new ManualResetEvent(false);
+            var bufferHelperType = typeof(IConverter).Assembly.GetTypes().Where(x => x.Name == "BufferHelper").Single();
+            var threadStaticField = bufferHelperType.GetField("ThreadStaticInstance", BindingFlags.Static | BindingFlags.NonPublic);
+            var bufferField = bufferHelperType.GetField("buffer", BindingFlags.Instance | BindingFlags.NonPublic);
+            var attribute = threadStaticField.GetCustomAttributes(false).Where(x => x is ThreadStaticAttribute).SingleOrDefault();
+            Assert.NotNull(attribute);
+
+            var threads = Enumerable.Range(0, ThreadCount).Select(id => new Thread(() =>
             {
-                var model = Enumerable.Range(0, GuidCount).Select(_ => Guid.NewGuid().ToString()).ToArray();
-                while (source.IsCancellationRequested == false)
+                _ = handle.WaitOne();
+                _ = AllocatorHelper.Invoke(-1, (ref Allocator allocator, int item) =>
                 {
-                    var bytes = AllocatorHelper.Invoke(model, converter.Encode);
-                    Assert.True(bytes.Length < (1 << 16));
-                    var value = converter.Decode(bytes);
-                    Assert.Equal<string>(model, value);
-                }
-            })).ToList();
-            var tasks = funcs.Select(Task.Run).ToList();
-            await Task.WhenAll(tasks);
+                    var bufferHelper = threadStaticField.GetValue(null);
+                    var buffer = (byte[])bufferField.GetValue(bufferHelper);
+                    ref var head = ref MemoryMarshal.GetReference(allocator.AsSpan());
+                    ref var data = ref MemoryMarshal.GetReference(new Span<byte>(buffer));
+                    Assert.True(Unsafe.AreSame(ref head, ref data));
+                    dictionary[id] = buffer;
+                    PrimitiveHelper.EncodeStringWithLengthPrefix(ref allocator, id.ToString());
+                });
+            }))
+            .ToList();
+            threads.ForEach(x => x.Start());
+            _ = handle.Set();
+            threads.ForEach(x => x.Join());
+
+            var set = new HashSet<byte[]>(dictionary.Values, ReferenceEqualityComparer<byte[]>.Instance);
+            Assert.Equal(ThreadCount, set.Count);
+            Assert.Equal(ThreadCount, dictionary.Count);
+            Assert.All(dictionary, x =>
+            {
+                var buffer = x.Value;
+                Assert.Equal(65536, buffer.Length);
+                var span = new ReadOnlySpan<byte>(buffer);
+                var result = PrimitiveHelper.DecodeStringWithLengthPrefix(ref span);
+                Assert.Equal(x.Key.ToString(), result);
+            });
         }
 
         [Fact(DisplayName = "Nested Call (invoke)")]
