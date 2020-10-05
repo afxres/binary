@@ -52,7 +52,7 @@ let generator = Generator.CreateDefault()
 
 [<Fact>]
 let ``Class Via Constructor`` () =
-    let a = new Alpha(3, Guid.NewGuid(), "three")
+    let a = Alpha(3, Guid.NewGuid(), "three")
     let bytes = generator.Encode a
     let value = generator.Decode<Alpha> bytes
     Assert.Equal(a.A, value.A)
@@ -62,7 +62,7 @@ let ``Class Via Constructor`` () =
 
 [<Fact>]
 let ``Struct Via Constructor`` () =
-    let a = new Bravo("four", byte 4, 4.4)
+    let a = Bravo("four", byte 4, 4.4)
     let bytes = generator.Encode a
     let value = generator.Decode<Bravo> bytes
     Assert.Equal(a.A, value.A)
@@ -72,7 +72,7 @@ let ``Struct Via Constructor`` () =
 
 [<Fact>]
 let ``Class Via Properties`` () =
-    let a = new Charlie()
+    let a = Charlie()
     a.A <- "charlie"; a.B <- -3; a.C <- -2.2
     let bytes = generator.Encode a
     Assert.NotEmpty bytes
@@ -85,7 +85,7 @@ let ``Class Via Properties`` () =
 
 [<Fact>]
 let ``Struct Via Properties`` () =
-    let mutable a = new Delta()
+    let mutable a = Delta()
     a.A <- byte -2; a.B <- -3; a.C <- "zero"
     let bytes = generator.Encode a
     Assert.NotEmpty bytes
@@ -110,7 +110,7 @@ type AlphaMultipleConstructors(a : int, bravo : string, charlie : Guid) =
 
     member __.Charlie = charlie
 
-    new (charlie : Guid, a : int, bravo : string) = new AlphaMultipleConstructors(a, bravo, charlie)
+    new (charlie : Guid, a : int, bravo : string) = AlphaMultipleConstructors(a, bravo, charlie)
 
 type NamedTypeMismatch(head : int, body : string) =
     member __.Head = head.ToString()
@@ -126,7 +126,7 @@ let ``Class Via Constructor Ordered`` () =
     let propertyNames = properties |> Array.map (fun x -> x.Name.ToUpperInvariant())
     Assert.NotEqual<string>(parameterNames, propertyNames)
     Assert.Equal<string>(parameterNames |> Set.ofArray, propertyNames |> Set.ofArray)
-    let source = new AlphaUnordered(100, "data source", 2.718)
+    let source = AlphaUnordered(100, "data source", 2.718)
     let buffer = generator.Encode source
     let result = generator.Decode<AlphaUnordered> buffer
     Assert.False(obj.ReferenceEquals(source, result))

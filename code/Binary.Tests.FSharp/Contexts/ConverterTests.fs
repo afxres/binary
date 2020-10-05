@@ -81,8 +81,8 @@ type ConverterTests () =
         ()
 
     member __.Test<'T> (item : 'T) =
-        let mutable aa = new Allocator()
-        let mutable ab = new Allocator()
+        let mutable aa = Allocator()
+        let mutable ab = Allocator()
         let ca = generator.GetConverter<'T>()
         let cb = ca :> IConverter
         ca.Encode(&aa, item)
@@ -98,8 +98,8 @@ type ConverterTests () =
         ()
 
     member __.TestAuto<'T> (item : 'T) =
-        let mutable aa = new Allocator()
-        let mutable ab = new Allocator()
+        let mutable aa = Allocator()
+        let mutable ab = Allocator()
         let ca = generator.GetConverter<'T>()
         let cb = ca :> IConverter
         ca.EncodeAuto(&aa, item)
@@ -117,8 +117,8 @@ type ConverterTests () =
         ()
 
     member __.TestWithLengthPrefix<'T> (item : 'T) =
-        let mutable aa = new Allocator()
-        let mutable ab = new Allocator()
+        let mutable aa = Allocator()
+        let mutable ab = Allocator()
         let ca = generator.GetConverter<'T>()
         let cb = ca :> IConverter
         ca.EncodeWithLengthPrefix(&aa, item)
@@ -165,7 +165,7 @@ type ConverterTests () =
     [<InlineData(127)>]
     [<InlineData(1024)>]
     member __.``Valid Converter Length`` (length : int) =
-        let converter = new CustomConverter<obj>(length)
+        let converter = CustomConverter<obj>(length)
         Assert.Equal(length, converter.Length)
         ()
 
@@ -175,7 +175,7 @@ type ConverterTests () =
     member __.``Invalid Converter Length`` (length : int) =
         let constructorInfo = typeof<Converter<int>>.GetConstructor(BindingFlags.Instance ||| BindingFlags.NonPublic, null, [| typeof<int> |], null)
         let parameter = constructorInfo.GetParameters() |> Array.exactlyOne
-        let error = Assert.Throws<ArgumentOutOfRangeException>(fun () -> new CustomConverter<obj>(length) |> ignore)
+        let error = Assert.Throws<ArgumentOutOfRangeException>(fun () -> CustomConverter<obj>(length) |> ignore)
         Assert.Equal("length", parameter.Name)
         Assert.Equal("length", error.ParamName)
         Assert.StartsWith("Argument length must be greater than or equal to zero!", error.Message)
@@ -185,7 +185,7 @@ type ConverterTests () =
     [<InlineData(1)>]
     [<InlineData(127)>]
     member __.``Invalid Converter Allocation`` (length : int) =
-        let converter = new CustomConverterWithInvalidAllocation<int>(length)
+        let converter = CustomConverterWithInvalidAllocation<int>(length)
         let error = Assert.Throws<ArgumentException>(fun () -> converter.Encode(Unchecked.defaultof<int>) |> ignore)
         Assert.Equal("Maximum capacity has been reached.", error.Message)
         ()
@@ -212,10 +212,10 @@ type ConverterTests () =
 
     [<Fact>]
     member __.``Interface Method All Forwarded`` () =
-        let converter = new CustomConverterAllOverride<obj>(0) :> IConverter
-        let e1 = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = new Allocator() in converter.Encode(&allocator, null) |> ignore)
-        let ea = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = new Allocator() in converter.EncodeAuto(&allocator, null) |> ignore)
-        let ew = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = new Allocator() in converter.EncodeWithLengthPrefix(&allocator, null) |> ignore)
+        let converter = CustomConverterAllOverride<obj>(0) :> IConverter
+        let e1 = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = Allocator() in converter.Encode(&allocator, null) |> ignore)
+        let ea = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = Allocator() in converter.EncodeAuto(&allocator, null) |> ignore)
+        let ew = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = Allocator() in converter.EncodeWithLengthPrefix(&allocator, null) |> ignore)
         let e2 = Assert.Throws<NotSupportedException>(fun () -> converter.Encode(null) |> ignore)
         let d1 = Assert.Throws<NotSupportedException>(fun () -> let span = ReadOnlySpan<byte>() in converter.Decode &span |> ignore)
         let da = Assert.Throws<NotSupportedException>(fun () -> let mutable span = ReadOnlySpan<byte>() in converter.DecodeAuto &span |> ignore)

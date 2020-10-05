@@ -16,7 +16,7 @@ let ``Type With Duplicate Property Names`` () =
     Assert.Equal(message, error.Message)
     ()
 
-let testNoConstructor (source : 'a) =
+let TestNoConstructor (source : 'a) =
     let converter = generator.GetConverter<'a>()
     let buffer = converter.Encode source
     let error = Assert.Throws<NotSupportedException>(fun () -> converter.Decode buffer |> ignore)
@@ -26,12 +26,12 @@ let testNoConstructor (source : 'a) =
 
 [<Fact>]
 let ``Anonymous Class Record (case sensitive)`` () =
-    testNoConstructor {| Alpha = "alpha"; alpha = 1 |}
+    TestNoConstructor {| Alpha = "alpha"; alpha = 1 |}
     ()
 
 [<Fact>]
 let ``Anonymous Value Record (case sensitive)`` () =
-    testNoConstructor struct {| bravo = 2; Bravo = "bravo" |}
+    TestNoConstructor struct {| bravo = 2; Bravo = "bravo" |}
     ()
 
 type Class01 (key : int, Key : string) =
@@ -41,7 +41,7 @@ type Class01 (key : int, Key : string) =
 
 [<Fact>]
 let ``Class Type With Same Name Properties (case sensitive, no suitable constructor)`` () =
-    testNoConstructor (Class01(-1, "zero - 1"))
+    TestNoConstructor (Class01(-1, "zero - 1"))
     ()
 
 type Class02 (key : int, Key : string) =

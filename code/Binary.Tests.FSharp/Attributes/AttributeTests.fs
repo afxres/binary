@@ -41,7 +41,7 @@ type Int64AsStringConverterCreator() =
             let converter = context.GetConverter(typeof<int64>)
             Assert.Equal(typeof<int64>, ConverterHelper.GetGenericArgument(converter))
             Assert.Equal(typeof<int64>, t)
-            new Int64AsStringConverter() :> IConverter
+            Int64AsStringConverter() :> IConverter
 
 type BadConverter<'T>() =
     inherit Converter<'T>()
@@ -63,7 +63,7 @@ type BadConverterCreatorWithoutPublicConstructor private() =
 
 type BadConverterCreator<'T>() =
     interface IConverterCreator with
-        member __.GetConverter(_, _) = new BadConverter<'T>() :> IConverter
+        member __.GetConverter(_, _) = BadConverter<'T>() :> IConverter
 
 type NullConverterCreator() =
     interface IConverterCreator with
@@ -525,17 +525,17 @@ type AttributeTests() =
         ()
 
     static member ``Data Alpha`` : (obj array) seq = seq {
-        yield [| new ClassAsNamedObjectWithKey(1.1, "second", 5.5m); [| "Last one", box 5.5m; "OneOfThree", box 1.1;  "2/3", box "second" |] |]
-        yield [| new ClassAsNamedObjectWithPartiallyKey("f", -0.2F, DayOfWeek.Sunday); [| "sec", box -0.2F; "day of WEEK", box DayOfWeek.Sunday; "1", box "f" |] |]
+        yield [| ClassAsNamedObjectWithKey(1.1, "second", 5.5m); [| "Last one", box 5.5m; "OneOfThree", box 1.1;  "2/3", box "second" |] |]
+        yield [| ClassAsNamedObjectWithPartiallyKey("f", -0.2F, DayOfWeek.Sunday); [| "sec", box -0.2F; "day of WEEK", box DayOfWeek.Sunday; "1", box "f" |] |]
     }
 
     static member ``Data Bravo`` : (obj array) seq = seq {
-        yield [| new ClassAsTupleObjectWithKey(513L, new Uri("ws://loopback")); (513L, new Uri("ws://loopback")); 0 |]
-        yield [| new ClassAsTupleObjectWithPartiallyKey(false, "debugging", -33); struct (-33, "debugging", false); 0 |]
-        yield [| new ClassAsTupleObjectWithUnorderedKey(Alpha = 257, Candidate = "overflow"); ("overflow", 257); 0 |]
-        yield [| new ClassAsTupleObjectWithCustomConverterOfProperty(X = 99, Y = 1080); (99, "1080"); 0 |]
-        yield [| new ValueAsTupleObject(X = 1.1, Y = 2.3); (1.1, 2.3); 16 |]
-        yield [| new ValueAsTupleObjectWithCustomConverterCreatorOfProperty(-2L, 333L); ("-2", 333L); 0 |]
+        yield [| ClassAsTupleObjectWithKey(513L, Uri("ws://loopback")); (513L, Uri("ws://loopback")); 0 |]
+        yield [| ClassAsTupleObjectWithPartiallyKey(false, "debugging", -33); struct (-33, "debugging", false); 0 |]
+        yield [| ClassAsTupleObjectWithUnorderedKey(Alpha = 257, Candidate = "overflow"); ("overflow", 257); 0 |]
+        yield [| ClassAsTupleObjectWithCustomConverterOfProperty(X = 99, Y = 1080); (99, "1080"); 0 |]
+        yield [| ValueAsTupleObject(X = 1.1, Y = 2.3); (1.1, 2.3); 16 |]
+        yield [| ValueAsTupleObjectWithCustomConverterCreatorOfProperty(-2L, 333L); ("-2", 333L); 0 |]
         yield [| Tuple01(Int32.MaxValue); Tuple.Create(Int32.MaxValue); 4 |]
         yield [| Tuple01("01"); Tuple.Create("01"); 0 |]
         yield [| Tuple02(1.0, 3M); struct (1.0, 3M); 24 |]
@@ -589,7 +589,7 @@ type AttributeTests() =
             let value = token.As(v.GetType())
             Assert.Equal(v, value)
 
-        let mutable span = new ReadOnlySpan<byte>(buffer);
+        let mutable span = ReadOnlySpan<byte>(buffer);
         let result = converter.DecodeAuto &span
         Assert.True(span.IsEmpty)
         Assert.Equal<'a>(source, result)
@@ -627,12 +627,12 @@ type AttributeTests() =
         let buffer = allocator.AsSpan().ToArray()
 
         let middleConverter = generator.GetConverter<'b>()
-        let mutable middleSpan = new ReadOnlySpan<byte>(buffer);
+        let mutable middleSpan = ReadOnlySpan<byte>(buffer);
         let middle = middleConverter.DecodeAuto &middleSpan
         Assert.True(middleSpan.IsEmpty)
         Assert.Equal<'b>(expected, middle)
 
-        let mutable span = new ReadOnlySpan<byte>(buffer);
+        let mutable span = ReadOnlySpan<byte>(buffer);
         let result = converter.DecodeAuto &span
         Assert.True(span.IsEmpty)
         Assert.Equal<'a>(source, result)

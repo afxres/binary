@@ -58,7 +58,7 @@ let ``Add Null Converter Creator`` () =
 
 [<Fact>]
 let ``Add Two Converters For One Type`` () =
-    let test a b =
+    let Test a b =
         let builder =
             GeneratorBuilder()
                 .AddConverter(a)
@@ -69,13 +69,13 @@ let ``Add Two Converters For One Type`` () =
         Assert.True(obj.ReferenceEquals(b, converter))
         ()
 
-    test (FakeConverterA<int>()) (FakeConverterB<int>())
-    test (FakeConverterB<int>()) (FakeConverterA<int>())
+    Test (FakeConverterA<int>()) (FakeConverterB<int>())
+    Test (FakeConverterB<int>()) (FakeConverterA<int>())
     ()
 
 [<Fact>]
 let ``Last Added Creator First Executed`` () =
-    let test a b message =
+    let Test a b message =
         let builder =
             GeneratorBuilder()
                 .AddConverterCreator(a)
@@ -86,8 +86,8 @@ let ``Last Added Creator First Executed`` () =
         Assert.Equal(message, error.Message)
         ()
 
-    test (FakeConverterCreatorA()) (FakeConverterCreatorB()) "Text bravo"
-    test (FakeConverterCreatorB()) (FakeConverterCreatorA()) "Text alpha"
+    Test (FakeConverterCreatorA()) (FakeConverterCreatorB()) "Text bravo"
+    Test (FakeConverterCreatorB()) (FakeConverterCreatorA()) "Text alpha"
     ()
 
 [<Fact>]

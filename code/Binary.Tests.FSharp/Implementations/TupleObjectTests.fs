@@ -28,7 +28,6 @@ type Two<'a, 'b>(a : 'a, b : 'b) =
 let ``Tuple Object Length (max value)`` () =
     let singleConverter = RawConverter<single>(0x3000_0000)
     let doubleConverter = RawConverter<double>(0x4FFF_FFFF)
-    //let generator = new Generator(converters = [| singleConverter; doubleConverter |])
     let generator = Generator.CreateDefaultBuilder()
                         .AddConverter(singleConverter)
                         .AddConverter(doubleConverter)
@@ -85,7 +84,7 @@ type Car(name : string, rank : int) =
 
         member me.Rank = me.Rank
 
-let test (instance : 'a) (anonymous : 'b) =
+let Test (instance : 'a) (anonymous : 'b) =
     let converter = generator.GetConverter<'a>()
     Assert.StartsWith("TupleObjectConverter`1", converter.GetType().Name)
     let buffer = converter.Encode instance
@@ -99,13 +98,13 @@ let test (instance : 'a) (anonymous : 'b) =
     ()
 
 [<Fact>]
-let ``No suitable constructor (interface)`` () = test (Car("Mini", 90) :> ICar) ("Mini", 90)
+let ``No suitable constructor (interface)`` () = Test (Car("Mini", 90) :> ICar) ("Mini", 90)
 
 [<Fact>]
-let ``No suitable constructor (abstract class with single pattern-constructors)`` () = test (Car("Horse", 95) :> BasicCar) (95, "Horse")
+let ``No suitable constructor (abstract class with single pattern-constructors)`` () = Test (Car("Horse", 95) :> BasicCar) (95, "Horse")
 
 [<Fact>]
-let ``No suitable constructor (abstract class with multiple pattern-constructors)`` () = test (Car("16", 90) :> AbstractCar) (90, "16")
+let ``No suitable constructor (abstract class with multiple pattern-constructors)`` () = Test (Car("16", 90) :> AbstractCar) (90, "16")
 
 [<Fact>]
-let ``No suitable constructor (class with some get-only property)`` () = test (Car("Toy", 70)) (70, "Toy", "Toy - 70")
+let ``No suitable constructor (class with some get-only property)`` () = Test (Car("Toy", 70)) (70, "Toy", "Toy - 70")

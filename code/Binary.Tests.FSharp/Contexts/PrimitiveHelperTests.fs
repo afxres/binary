@@ -92,14 +92,14 @@ let ``Decode Number (empty bytes)`` () =
 
 [<Fact>]
 let ``Decode Number (not enough bytes)`` () =
-    let test (bytes : byte array) =
+    let Test (bytes : byte array) =
         let error = Assert.Throws<ArgumentOutOfRangeException>(fun () -> let mutable span = ReadOnlySpan<byte> bytes in PrimitiveHelper.DecodeNumber(&span) |> ignore)
         Assert.StartsWith(outofrange, error.Message)
         ()
 
-    test [| 64uy |]
-    test [| 128uy; 0uy |]
-    test [| 128uy; 0uy; 0uy |]
+    Test [| 64uy |]
+    Test [| 128uy; 0uy |]
+    Test [| 128uy; 0uy; 0uy |]
     ()
 
 // string methods ↓↓↓
@@ -109,7 +109,7 @@ let ``Decode Number (not enough bytes)`` () =
 [<InlineData("Hello, 世界")>]
 [<InlineData("今日はいい天気ですね")>]
 let ``Encode String Then Decode`` (text : string) =
-    let mutable allocator = new Allocator()
+    let mutable allocator = Allocator()
     let span = text.AsSpan()
     PrimitiveHelper.EncodeString(&allocator, span)
     let buffer = allocator.AsSpan().ToArray()
@@ -126,7 +126,7 @@ let ``Encode String Then Decode`` (text : string) =
 [<InlineData("one two three four five")>]
 [<InlineData("今晚打老虎")>]
 let ``Encode String Then Decode (unicode)`` (text : string) =
-    let mutable allocator = new Allocator()
+    let mutable allocator = Allocator()
     let span = text.AsSpan()
     PrimitiveHelper.EncodeString(&allocator, span, Encoding.Unicode)
     let buffer = allocator.AsSpan().ToArray()
@@ -231,7 +231,7 @@ let ``Encode String (random, from 0 to 1024)`` () =
         let text = String data
         Assert.Equal(i, text.Length)
 
-        let mutable allocator = new Allocator()
+        let mutable allocator = Allocator()
         let span = text.AsSpan()
         PrimitiveHelper.EncodeString(&allocator, span)
         let buffer = allocator.AsSpan().ToArray()
@@ -261,7 +261,7 @@ let ``Encode String With Length Prefix (random, from 0 to 1024)`` () =
         let text = String data
         Assert.Equal(i, text.Length)
 
-        let mutable allocator = new Allocator()
+        let mutable allocator = Allocator()
         let span = text.AsSpan()
         PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, span)
         let buffer = allocator.AsSpan().ToArray()
@@ -295,7 +295,7 @@ let ``Decode String With Length Prefix (random, from 0 to 1024)`` () =
 [<Fact>]
 let ``Encode String (encoding null)`` () =
     let error = Assert.Throws<ArgumentNullException>(fun () ->
-        let mutable allocator = new Allocator()
+        let mutable allocator = Allocator()
         let span = String.Empty.AsSpan()
         PrimitiveHelper.EncodeString(&allocator, span, null)
         ())
@@ -305,7 +305,7 @@ let ``Encode String (encoding null)`` () =
 [<Fact>]
 let ``Encode String (with length prefix, encoding null)`` () =
     let error = Assert.Throws<ArgumentNullException>(fun () ->
-        let mutable allocator = new Allocator()
+        let mutable allocator = Allocator()
         let span = String.Empty.AsSpan()
         PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, span, null)
         ())

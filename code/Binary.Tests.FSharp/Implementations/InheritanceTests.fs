@@ -41,7 +41,7 @@ let generator = Generator.CreateDefault()
 
 [<Fact>]
 let ``Interface`` () =
-    let a = new Person(Guid.NewGuid(), "Tom") :> IPerson
+    let a = Person(Guid.NewGuid(), "Tom") :> IPerson
     let bytes = generator.Encode a
     Assert.NotEmpty bytes
     let token = Token(generator, bytes |> ReadOnlyMemory)
@@ -55,7 +55,7 @@ let ``Interface`` () =
 
 [<Fact>]
 let ``Interface Decode`` () =
-    let a = new Person(Guid.NewGuid(), "Bob") :> IPerson
+    let a = Person(Guid.NewGuid(), "Bob") :> IPerson
     let bytes = generator.Encode a
     let error = Assert.Throws<NotSupportedException>(fun () -> generator.Decode<IPerson> bytes |> ignore)
     Assert.Equal(sprintf "No suitable constructor found, type: %O" typeof<IPerson>, error.Message)
@@ -63,7 +63,7 @@ let ``Interface Decode`` () =
 
 [<Fact>]
 let ``Abstract Class`` () =
-    let a = new SomeBook("C# To F# ...", 1024, decimal 54.3) :> Book
+    let a = SomeBook("C# To F# ...", 1024, decimal 54.3) :> Book
     let bytes = generator.Encode a
     Assert.NotEmpty bytes
     let token = Token(generator, bytes |> ReadOnlyMemory)
@@ -78,7 +78,7 @@ let ``Abstract Class`` () =
 
 [<Fact>]
 let ``Abstract Class Decode`` () =
-    let a = new SomeBook("C# To F# ...", 1024, decimal 54.3) :> Book
+    let a = SomeBook("C# To F# ...", 1024, decimal 54.3) :> Book
     let bytes = generator.Encode a
     let error = Assert.Throws<NotSupportedException>(fun () -> generator.Decode<Book> bytes |> ignore)
     Assert.Equal(sprintf "No suitable constructor found, type: %O" typeof<Book>, error.Message)
@@ -86,7 +86,7 @@ let ``Abstract Class Decode`` () =
 
 [<Fact>]
 let ``Sub Bytes To Base Value`` () =
-    let a = new MiscBook(321, "ABC ...", 987, decimal 6.54)
+    let a = MiscBook(321, "ABC ...", 987, decimal 6.54)
     let bytes = generator.Encode a
     Assert.NotEmpty bytes
     let value = generator.Decode<SomeBook> bytes
@@ -101,7 +101,7 @@ let ``Sub Bytes To Base Value`` () =
 
 [<Fact>]
 let ``Base Bytes To Sub Value`` () =
-    let a = new SomeBook("Overflow", 357, decimal 26.8)
+    let a = SomeBook("Overflow", 357, decimal 26.8)
     let bytes = generator.Encode a
     Assert.NotEmpty bytes
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode<MiscBook> bytes |> ignore)

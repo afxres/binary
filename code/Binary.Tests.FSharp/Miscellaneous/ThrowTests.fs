@@ -8,7 +8,7 @@ open Xunit
 type BadConverter<'T>() =
     inherit Converter<'T>()
 
-    override __.Encode(allocator, item) = allocator <- new Allocator()
+    override __.Encode(allocator, item) = allocator <- Allocator()
 
     override __.Decode (span : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 
@@ -94,9 +94,9 @@ type ThrowTests() =
 
     [<Fact>]
     member __.``Allocator Modified`` () =
-        let converter = new BadConverter<string>()
+        let converter = BadConverter<string>()
         let error = Assert.Throws<InvalidOperationException>(fun () ->
-            let mutable allocator = new Allocator()
+            let mutable allocator = Allocator()
             converter.EncodeWithLengthPrefix(&allocator, null))
         let message = "Allocator or internal anchor has been modified unexpectedly!"
         Assert.Equal(message, error.Message)

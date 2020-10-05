@@ -149,7 +149,7 @@ type TokenTests() =
     [<Fact>]
     member __.``As Memory`` () =
         let buffer = [| 32uy..128uy |]
-        let origin = new ReadOnlyMemory<byte>(buffer, 8, 48)
+        let origin = ReadOnlyMemory<byte>(buffer, 8, 48)
         let source = Token(generator, origin)
         let memory = source.AsMemory()
         Assert.Equal<byte>(origin.ToArray(), memory.ToArray())

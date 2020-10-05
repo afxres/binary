@@ -28,7 +28,7 @@ let ``Get Hash Code (not supported)`` () =
 
 [<Fact>]
 let ``To String (debug)`` () =
-    let mutable allocator = new Allocator()
+    let mutable allocator = Allocator()
     let anchor = AllocatorHelper.Anchor(&allocator, 4)
     Assert.Equal("AllocatorAnchor(Offset: 0, Length: 4)", anchor.ToString())
     ()

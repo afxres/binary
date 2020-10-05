@@ -51,7 +51,7 @@ type ConverterHelperTests() =
         ()
 
     static member ``Data Invalid Converter`` : (obj array) seq = seq {
-        yield [| new FakeConverter() |]
+        yield [| FakeConverter() |]
     }
 
     [<Theory>]
@@ -80,8 +80,8 @@ type ConverterHelperTests() =
         ()
 
     static member ``Data Converter`` : (obj array) seq = seq {
-        yield [| new GoodConverter<int>(); box typeof<int> |]
-        yield [| new GoodConverter<obj>(); box typeof<obj> |]
+        yield [| GoodConverter<int>(); box typeof<int> |]
+        yield [| GoodConverter<obj>(); box typeof<obj> |]
     }
 
     [<Theory>]

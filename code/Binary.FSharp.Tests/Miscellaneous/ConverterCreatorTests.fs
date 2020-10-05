@@ -7,32 +7,23 @@ open Xunit
 
 type FakeIConverterImplementation() =
     interface IConverter with
-        member __.Decode(span: inref<System.ReadOnlySpan<byte>>): obj =
-            raise (NotSupportedException())
+        member __.Decode(span: inref<System.ReadOnlySpan<byte>>): obj = raise (NotSupportedException())
 
-        member __.Decode(buffer: byte []): obj =
-            raise (NotSupportedException())
+        member __.Decode(buffer: byte []): obj = raise (NotSupportedException())
 
-        member __.DecodeAuto(span: byref<System.ReadOnlySpan<byte>>): obj =
-            raise (NotSupportedException())
+        member __.DecodeAuto(span: byref<System.ReadOnlySpan<byte>>): obj = raise (NotSupportedException())
 
-        member __.DecodeWithLengthPrefix(span: byref<System.ReadOnlySpan<byte>>): obj =
-            raise (NotSupportedException())
+        member __.DecodeWithLengthPrefix(span: byref<System.ReadOnlySpan<byte>>): obj = raise (NotSupportedException())
 
-        member __.Encode(item: obj): byte [] =
-            raise (NotSupportedException())
+        member __.Encode(item: obj): byte [] = raise (NotSupportedException())
 
-        member __.Encode(allocator: byref<Allocator>, item: obj): unit =
-            raise (NotSupportedException())
+        member __.Encode(allocator: byref<Allocator>, item: obj): unit = raise (NotSupportedException())
 
-        member __.EncodeAuto(allocator: byref<Allocator>, item: obj): unit =
-            raise (NotSupportedException())
+        member __.EncodeAuto(allocator: byref<Allocator>, item: obj): unit = raise (NotSupportedException())
 
-        member __.EncodeWithLengthPrefix(allocator: byref<Allocator>, item: obj): unit =
-            raise (NotSupportedException())
+        member __.EncodeWithLengthPrefix(allocator: byref<Allocator>, item: obj): unit = raise (NotSupportedException())
 
-        member __.Length: int =
-            raise (NotSupportedException())
+        member __.Length: int = raise (NotSupportedException())
 
 type FakeIGeneratorContextImplementation(converters : IReadOnlyDictionary<Type, IConverter>) =
     interface IGeneratorContext with
@@ -63,7 +54,7 @@ type ConverterCreatorTests() =
     member __.``Invalid IConverter Implementation`` (creatorName : string, itemType : Type) =
         let creatorType = typeof<GeneratorBuilderFSharpExtensions>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = creatorName) |> Array.exactlyOne
         let creator = Activator.CreateInstance creatorType :?> IConverterCreator
-        let context = [| typeof<int>, new FakeIConverterImplementation() :> IConverter |] |> readOnlyDict |> FakeIGeneratorContextImplementation :> IGeneratorContext
+        let context = [| typeof<int>, FakeIConverterImplementation() :> IConverter |] |> readOnlyDict |> FakeIGeneratorContextImplementation :> IGeneratorContext
         let error = Assert.Throws<ArgumentException>(fun () -> creator.GetConverter(context, itemType) |> ignore)
         let message = sprintf "Can not convert '%O' to '%O'" typeof<FakeIConverterImplementation> typeof<Converter<int>>
         Assert.Equal(message, error.Message)
@@ -74,7 +65,7 @@ type ConverterCreatorTests() =
     member __.``Invalid Converter Instance`` (creatorName : string, itemType : Type) =
         let creatorType = typeof<GeneratorBuilderFSharpExtensions>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = creatorName) |> Array.exactlyOne
         let creator = Activator.CreateInstance creatorType :?> IConverterCreator
-        let context = [| typeof<int>, new FakeGenericConverterImplementation<string>() :> IConverter |] |> readOnlyDict |> FakeIGeneratorContextImplementation :> IGeneratorContext
+        let context = [| typeof<int>, FakeGenericConverterImplementation<string>() :> IConverter |] |> readOnlyDict |> FakeIGeneratorContextImplementation :> IGeneratorContext
         let error = Assert.Throws<ArgumentException>(fun () -> creator.GetConverter(context, itemType) |> ignore)
         let message = sprintf "Can not convert '%O' to '%O'" typeof<FakeGenericConverterImplementation<string>> typeof<Converter<int>>
         Assert.Equal(message, error.Message)

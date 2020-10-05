@@ -10,17 +10,17 @@ let generator =
         .AddFSharpConverterCreators()
         .Build();
 
-let test (ls : int) (ll : int) (value : 'T) =
+let Test (ls : int) (ll : int) (value : 'T) =
     let c = generator.GetConverter<'T> ()
-    let mutable allocator = new Allocator()
+    let mutable allocator = Allocator()
     c.Encode(&allocator, value)
     let ba = allocator.AsSpan().ToArray()
     let ra = c.Decode ba
 
-    let mutable allocator = new Allocator()
+    let mutable allocator = Allocator()
     c.EncodeAuto(&allocator, value)
     let bb = allocator.AsSpan().ToArray()
-    let mutable span = new ReadOnlySpan<byte>(bb)
+    let mutable span = ReadOnlySpan<byte>(bb)
     let rb = c.DecodeAuto(&span)
 
     Assert.Equal<'T>(value, ra)
@@ -29,56 +29,56 @@ let test (ls : int) (ll : int) (value : 'T) =
     Assert.Equal(ll, Array.length bb)
     ()
 
-let testNull<'T> () =
+let TestNull<'T> () =
     let value = Unchecked.defaultof<'T>
     let converter = generator.GetConverter<'T> ()
     let message = sprintf "Tuple can not be null, type: %O" typeof<'T>
-    let alpha = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = new Allocator() in converter.Encode(&allocator, value))
+    let alpha = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = Allocator() in converter.Encode(&allocator, value))
     Assert.Equal("item", alpha.ParamName)
     Assert.StartsWith(message, alpha.Message)
-    let bravo = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = new Allocator() in converter.EncodeAuto(&allocator, value))
+    let bravo = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = Allocator() in converter.EncodeAuto(&allocator, value))
     Assert.Equal("item", bravo.ParamName)
     Assert.StartsWith(message, bravo.Message)
     ()
 
 [<Fact>]
 let ``Tuple Null 1`` () =
-    testNull<Tuple<int>> ()
+    TestNull<Tuple<int>> ()
     ()
 
 [<Fact>]
 let ``Tuple Null 2`` () =
-    testNull<string * string> ()
+    TestNull<string * string> ()
     ()
 
 [<Fact>]
 let ``Tuple Null 3`` () =
-    testNull<int * double * string> ()
+    TestNull<int * double * string> ()
     ()
 
 [<Fact>]
 let ``Tuple Null 4`` () =
-    testNull<int * double * Guid * string> ()
+    TestNull<int * double * Guid * string> ()
     ()
 
 [<Fact>]
 let ``Tuple Null 5`` () =
-    testNull<int16 * int * double * Guid * string> ()
+    TestNull<int16 * int * double * Guid * string> ()
     ()
 
 [<Fact>]
 let ``Tuple Null 6`` () =
-    testNull<byte * int16 * int * double * Guid * string> ()
+    TestNull<byte * int16 * int * double * Guid * string> ()
     ()
 
 [<Fact>]
 let ``Tuple Null 7`` () =
-    testNull<byte * int16 * int * double * Guid * string * IPAddress> ()
+    TestNull<byte * int16 * int * double * Guid * string * IPAddress> ()
     ()
 
 [<Fact>]
 let ``Tuple Null 8`` () =
-    testNull<byte * int16 * int * double * Guid * string * IPAddress * IPEndPoint> ()
+    TestNull<byte * int16 * int * double * Guid * string * IPAddress * IPEndPoint> ()
     ()
 
 [<Fact>]
@@ -88,8 +88,8 @@ let ``Value Tuple Empty Bytes`` () =
 
 [<Fact>]
 let ``Tuple Array`` () =
-    [ 1, "one"; 2, "two"; 3, "three" ] |> test 26 30
-    [ struct (4, "four"); struct (5, "five") ] |> test 18 22
+    [ 1, "one"; 2, "two"; 3, "three" ] |> Test 26 30
+    [ struct (4, "four"); struct (5, "five") ] |> Test 18 22
     ()
 
 [<Fact>]
@@ -102,66 +102,66 @@ let ``Tuple 0`` () =
 
 [<Fact>]
 let ``Tuple 1`` () =
-    Tuple.Create<int> 1 |> test 4 4
-    ValueTuple.Create 2.0 |> test 8 8
-    Tuple.Create<string> "three" |> test 5 6
-    ValueTuple.Create<string> "four" |> test 4 5
+    Tuple.Create<int> 1 |> Test 4 4
+    ValueTuple.Create 2.0 |> Test 8 8
+    Tuple.Create<string> "three" |> Test 5 6
+    ValueTuple.Create<string> "four" |> Test 4 5
     ()
 
 [<Fact>]
 let ``Tuple 2`` () =
-    (5, 6) |> test 8 8
-    (struct (7, 8)) |> test 8 8
-    (9, "zero") |> test 8 9
-    (struct ("ten", 11)) |> test 8 8
+    (5, 6) |> Test 8 8
+    (struct (7, 8)) |> Test 8 8
+    (9, "zero") |> Test 8 9
+    (struct ("ten", 11)) |> Test 8 8
     ()
 
 [<Fact>]
 let ``Tuple 3`` () =
-    (1, 3, 5) |> test 12 12
-    (struct (2.2, 4.8, 6.12)) |> test 24 24
-    ("a", 22, "ccc") |> test 9 10
-    (struct (4, "ee", 666)) |> test 11 11
+    (1, 3, 5) |> Test 12 12
+    (struct (2.2, 4.8, 6.12)) |> Test 24 24
+    ("a", 22, "ccc") |> Test 9 10
+    (struct (4, "ee", 666)) |> Test 11 11
     ()
 
 [<Fact>]
 let ``Tuple 4`` () =
-    (9, 8, 7, 6) |> test 16 16
-    (struct (5, 4, 3, 2)) |> test 16 16
-    ("x", -1, "z", -2) |> test 12 12
-    (struct (-2, "y", 3, "w")) |> test 11 12
+    (9, 8, 7, 6) |> Test 16 16
+    (struct (5, 4, 3, 2)) |> Test 16 16
+    ("x", -1, "z", -2) |> Test 12 12
+    (struct (-2, "y", 3, "w")) |> Test 11 12
     ()
 
 [<Fact>]
 let ``Tuple 5`` () =
-    (2, 4, 6, 8, 0) |> test 20 20
-    (struct (9, 7, 5, 3, 1)) |> test 20 20
-    ("x", "y", "z", "w", -1) |> test 12 12
-    (struct (16, "i", "j", "m", "n")) |> test 11 12
+    (2, 4, 6, 8, 0) |> Test 20 20
+    (struct (9, 7, 5, 3, 1)) |> Test 20 20
+    ("x", "y", "z", "w", -1) |> Test 12 12
+    (struct (16, "i", "j", "m", "n")) |> Test 11 12
     ()
 
 [<Fact>]
 let ``Tuple 6`` () =
-    (1, 2, 4, 8, 16, 32) |> test 24 24
-    (struct (0, 1, 3, 7, 15, 31)) |> test 24 24
-    ("t", "U", "p", "L", "e", 6) |> test 14 14
-    (struct (8, "s", "h", "a", "r", "p")) |> test 13 14
+    (1, 2, 4, 8, 16, 32) |> Test 24 24
+    (struct (0, 1, 3, 7, 15, 31)) |> Test 24 24
+    ("t", "U", "p", "L", "e", 6) |> Test 14 14
+    (struct (8, "s", "h", "a", "r", "p")) |> Test 13 14
     ()
 
 [<Fact>]
 let ``Tuple 7`` () =
-    (9, 11, 13, 15, 17, 19, 21) |> test 28 28
-    (struct (-2, 3, -5, 7, -11, 13, -17)) |> test 28 28
-    ("alpha", 1024, "bravo", -65536, "charlie", 33, "delta") |> test 37 38
-    (struct (7, "echo", "foxtrot", "golf", "hotel", 17, 19)) |> test 36 36
+    (9, 11, 13, 15, 17, 19, 21) |> Test 28 28
+    (struct (-2, 3, -5, 7, -11, 13, -17)) |> Test 28 28
+    ("alpha", 1024, "bravo", -65536, "charlie", 33, "delta") |> Test 37 38
+    (struct (7, "echo", "foxtrot", "golf", "hotel", 17, 19)) |> Test 36 36
     ()
 
 [<Fact>]
 let ``Tuple 8`` () =
-    (3, 4, 5, 6, 7, 8, 9, 0) |> test 32 32
-    (struct (8, 7, 6, 5, 4, 3, 2, 1)) |> test 32 32
-    ("v", 8, "a", 6, "l", 4, "u", "e") |> test 21 22
-    (struct (-3, 6, -9, 12, -15, "no", "yes", "fine")) |> test 31 32
+    (3, 4, 5, 6, 7, 8, 9, 0) |> Test 32 32
+    (struct (8, 7, 6, 5, 4, 3, 2, 1)) |> Test 32 32
+    ("v", 8, "a", 6, "l", 4, "u", "e") |> Test 21 22
+    (struct (-3, 6, -9, 12, -15, "no", "yes", "fine")) |> Test 31 32
     ()
 
 [<Fact>]
@@ -174,25 +174,25 @@ let ``Tuple N`` () =
     Assert.Equal("ValueTuple`8", typeB.Name)
     Assert.True(typeA.GetProperties() |> Seq.exists (fun x -> x.Name = "Rest"))
     Assert.True(typeB.GetFields() |> Seq.exists (fun x -> x.Name = "Rest"))
-    test 48 48 a
-    test 39 39 b
+    Test 48 48 a
+    Test 39 39 b
     ()
 
-let testSize<'T> size =
+let TestSize<'T> size =
     let converter = generator.GetConverter<'T> ()
     Assert.Equal(size, converter.Length)
     ()
 
 [<Fact>]
 let ``Tuple Length`` () =
-    testSize<int * int64> 12
-    testSize<Tuple<string>> 0
-    testSize<ValueTuple<string>> 0
-    testSize<ValueTuple<int>> 4
-    testSize<int * string> 0
-    testSize<int * double * Guid> 28
-    testSize<byte * int16 * int32 * uint64> 15
-    testSize<int * int * int * int * int * int * int * int * int> 36
+    TestSize<int * int64> 12
+    TestSize<Tuple<string>> 0
+    TestSize<ValueTuple<string>> 0
+    TestSize<ValueTuple<int>> 4
+    TestSize<int * string> 0
+    TestSize<int * double * Guid> 28
+    TestSize<byte * int16 * int32 * uint64> 15
+    TestSize<int * int * int * int * int * int * int * int * int> 36
     ()
 
 type Fix = { some : obj }

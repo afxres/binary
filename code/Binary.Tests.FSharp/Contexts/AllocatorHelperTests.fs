@@ -199,7 +199,7 @@ let ``Anchor (length invalid)`` (length : int) =
 [<InlineData(4)>]
 let ``Anchor Then Append (action null)`` (length : int) =
     let error = Assert.Throws<ArgumentNullException>(fun () ->
-        let mutable allocator = new Allocator()
+        let mutable allocator = Allocator()
         let anchor = AllocatorHelper.Anchor(&allocator, length)
         AllocatorHelper.Append(&allocator, anchor, null :> obj, null)
         ())
@@ -285,7 +285,7 @@ let ``Anchor Then Append (append some then)`` (prefix : int, length : int) =
 [<Fact>]
 let ``Append With Length Prefix (action null)`` () =
     let error = Assert.Throws<ArgumentNullException>(fun () ->
-        let mutable allocator = new Allocator()
+        let mutable allocator = Allocator()
         AllocatorHelper.AppendWithLengthPrefix(&allocator, Array.empty<byte>, null)
         ())
     let methodInfo = typeof<AllocatorHelper>.GetMethods() |> Array.filter (fun x -> x.Name = "AppendWithLengthPrefix") |> Array.exactlyOne
@@ -302,7 +302,7 @@ let ``Append With Length Prefix (action null)`` () =
 let ``Append With Length Prefix`` (length : int) =
     let source = Array.zeroCreate length
     random.NextBytes source
-    let mutable allocator = new Allocator()
+    let mutable allocator = Allocator()
     AllocatorHelper.AppendWithLengthPrefix(&allocator, source, fun a b -> AllocatorHelper.Append(&a, ReadOnlySpan b))
     let mutable span = allocator.AsSpan()
     let result = PrimitiveHelper.DecodeBufferWithLengthPrefix &span
@@ -348,7 +348,7 @@ let ``Invoke (empty action)`` () =
 [<InlineData("一二三四五六七八九十")>]
 let ``Invoke (encode some string with length prefix)`` (text : string) =
     let buffer = AllocatorHelper.Invoke(text, fun allocator item -> PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, item.AsSpan()))
-    let mutable span = new ReadOnlySpan<byte>(buffer)
+    let mutable span = ReadOnlySpan<byte>(buffer)
     let result = PrimitiveHelper.DecodeStringWithLengthPrefix &span
     Assert.Equal(text, result)
     Assert.Equal(0, span.Length)

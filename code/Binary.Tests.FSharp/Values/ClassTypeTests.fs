@@ -7,11 +7,11 @@ open Xunit
 
 let generator = Generator.CreateDefault()
 
-let testWithSpan (value : 'a) (expected : 'a) =
+let TestWithSpan (value : 'a) (expected : 'a) =
     let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
-    let mutable allocator = new Allocator()
+    let mutable allocator = Allocator()
     converter.Encode(&allocator, value)
     let buffer = allocator.AsSpan().ToArray()
     Assert.Equal<byte>(bufferOrigin, buffer)
@@ -21,7 +21,7 @@ let testWithSpan (value : 'a) (expected : 'a) =
     Assert.Equal<'a>(expected, result)
     ()
 
-let testWithBytes (value : 'a) (expected : 'a) =
+let TestWithBytes (value : 'a) (expected : 'a) =
     let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
@@ -32,7 +32,7 @@ let testWithBytes (value : 'a) (expected : 'a) =
     Assert.Equal<'a>(expected, result)
     ()
 
-let testAuto (value : 'a) (expected : 'a) =
+let TestAuto (value : 'a) (expected : 'a) =
     let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
@@ -52,7 +52,7 @@ let testAuto (value : 'a) (expected : 'a) =
     Assert.Equal(bufferOrigin.Length + 1, buffer.Length)
     ()
 
-let testWithLengthPrefix (value : 'a) (expected : 'a) =
+let TestWithLengthPrefix (value : 'a) (expected : 'a) =
     let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
@@ -72,39 +72,39 @@ let testWithLengthPrefix (value : 'a) (expected : 'a) =
     Assert.Equal(bufferOrigin.Length + 1, buffer.Length)
     ()
 
-let test (value : 'a) (expected : 'a) =
+let Test (value : 'a) (expected : 'a) =
     let buffer = generator.Encode value
     let result : 'a = generator.Decode buffer
     Assert.Equal<'a>(expected, result)
 
     // convert via Converter
-    testWithSpan value expected
+    TestWithSpan value expected
     // converter via bytes methods
-    testWithBytes value expected
+    TestWithBytes value expected
     // convert via 'auto' methods
-    testAuto value expected
+    TestAuto value expected
     // convert with length prefix
-    testWithLengthPrefix value expected
+    TestWithLengthPrefix value expected
     ()
 
 [<Theory>]
 [<InlineData("sharp")>]
 [<InlineData("上山打老虎")>]
 let ``String Instance`` (text : string) =
-    test text text
+    Test text text
     ()
 
 [<Theory>]
 [<InlineData("")>]
 [<InlineData(null)>]
 let ``String Empty Or Null`` (text : string) =
-    test text String.Empty
+    Test text String.Empty
     ()
 
 [<Fact>]
 let ``String From Default Value Of Span`` () =
     let converter = generator.GetConverter<string>()
-    let span = new ReadOnlySpan<byte>()
+    let span = ReadOnlySpan<byte>()
     let result = converter.Decode(&span)
     Assert.Equal(String.Empty, result)
     ()
@@ -115,9 +115,9 @@ let ``String From Default Value Of Span`` () =
 [<InlineData("tcp://loop/q?=some")>]
 [<InlineData("HTTP://bing.com")>]
 let ``Uri Instance`` (data : string) =
-    let item = new Uri(data)
+    let item = Uri(data)
 
-    test item item
+    Test item item
 
     let bufferAlpha = generator.Encode item
     let bufferBravo = generator.Encode data
@@ -131,12 +131,12 @@ let ``Uri Instance`` (data : string) =
 let ``Uri Null`` () =
     let item : Uri = null
 
-    test item item
+    Test item item
 
     let buffer = generator.Encode item
     let result = generator.Decode<Uri> buffer
 
-    let _ = Assert.Throws<UriFormatException> (fun () -> new Uri(String.Empty) |> ignore)
+    let _ = Assert.Throws<UriFormatException> (fun () -> Uri(String.Empty) |> ignore)
     Assert.Null(result)
     Assert.Empty(buffer)
     Assert.Equal(item, result)
@@ -162,14 +162,14 @@ let ``Uri Null With Length Prefix`` () =
 [<InlineData("fe80::3c03:feef:ec25:e40d")>]
 let ``IPAddress Instance`` (address : string) =
     let value = IPAddress.Parse address
-    test value value
+    Test value value
     ()
 
 [<Fact>]
 let ``IPAddress Null`` () =
     let address : IPAddress = null
 
-    test address address
+    Test address address
 
     let buffer = generator.Encode address
     let result : IPAddress = generator.Decode buffer

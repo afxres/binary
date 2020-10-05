@@ -141,7 +141,7 @@ type DictionaryD<'K, 'V>(item : KeyValuePair<'K, 'V> ResizeArray) =
 
         member __.Values: IEnumerable<'V> = raise (System.NotImplementedException())
 
-let test (enumerable : 'a) (expected : 'b) (adaptedType : Type) =
+let Test (enumerable : 'a) (expected : 'b) (adaptedType : Type) =
     let converter = generator.GetConverter<'a>()
     Assert.Equal("SequenceConverter`2", converter.GetType().Name)
 
@@ -162,35 +162,35 @@ let test (enumerable : 'a) (expected : 'b) (adaptedType : Type) =
 
 [<Fact>]
 let ``No suitable constructor (enumerable, constructor not match)`` () =
-    test (CollectionT [ 1; 2; 3 ]) [ 1; 2; 3 ] typeof<ArraySegment<int>>
+    Test (CollectionT [ 1; 2; 3 ]) [ 1; 2; 3 ] typeof<ArraySegment<int>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (enumerable, abstract)`` () =
-    test ((CollectionI [ 1; 2; 3 ]) :> CollectionA<_>) [ 1; 2; 3 ] typeof<ArraySegment<int>>
+    Test ((CollectionI [ 1; 2; 3 ]) :> CollectionA<_>) [ 1; 2; 3 ] typeof<ArraySegment<int>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (enumerable with 'KeyValuePair' sequence constructor, constructor not match)`` () =
-    test (DictionaryP ((dict [ 1, "one"; 0, "ZERO" ]) |> Seq.toList)) [ 1, "one"; 0, "ZERO" ] typeof<ArraySegment<KeyValuePair<int, string>>>
+    Test (DictionaryP ((dict [ 1, "one"; 0, "ZERO" ]) |> Seq.toList)) [ 1, "one"; 0, "ZERO" ] typeof<ArraySegment<KeyValuePair<int, string>>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (enumerable with 'KeyValuePair' sequence constructor, abstract)`` () =
-    test ((DictionaryI(dict [ 1, "one"; 0, "ZERO" ])) :> DictionaryA<_, _>) [ 1, "one"; 0, "ZERO" ] typeof<ArraySegment<KeyValuePair<int, string>>>
+    Test ((DictionaryI(dict [ 1, "one"; 0, "ZERO" ])) :> DictionaryA<_, _>) [ 1, "one"; 0, "ZERO" ] typeof<ArraySegment<KeyValuePair<int, string>>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary of 'IDictionary', constructor not match)`` () =
-    test ((DictionaryR(dict [ 1, "one"; 0, "ZERO" ] |> Queue<_>))) [ 1, "one"; 0, "ZERO" ] typeof<Dictionary<int, string>>
+    Test ((DictionaryR(dict [ 1, "one"; 0, "ZERO" ] |> Queue<_>))) [ 1, "one"; 0, "ZERO" ] typeof<Dictionary<int, string>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary of 'IReadOnlyDictionary', constructor not match)`` () =
-    test ((DictionaryO(dict [ 1, "one"; 0, "ZERO" ] |> Seq.toArray))) [ 1, "one"; 0, "ZERO" ] typeof<Dictionary<int, string>>
+    Test ((DictionaryO(dict [ 1, "one"; 0, "ZERO" ] |> Seq.toArray))) [ 1, "one"; 0, "ZERO" ] typeof<Dictionary<int, string>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary of 'IDictionary' and 'IReadOnlyDictionary', constructor not match)`` () =
-    test ((DictionaryD(dict [ 1, "one"; 0, "ZERO" ] |> ResizeArray))) [ 1, "one"; 0, "ZERO" ] typeof<Dictionary<int, string>>
+    Test ((DictionaryD(dict [ 1, "one"; 0, "ZERO" ] |> ResizeArray))) [ 1, "one"; 0, "ZERO" ] typeof<Dictionary<int, string>>
     ()

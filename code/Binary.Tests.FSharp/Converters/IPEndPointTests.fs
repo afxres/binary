@@ -80,7 +80,7 @@ type IPEndPointTests() =
                 Array.empty<byte>
             else
                 let generator = Generator.CreateDefault()
-                let mutable allocator = new Allocator()
+                let mutable allocator = Allocator()
                 generator.GetConverter<IPAddress>().Encode(&allocator, item.Address)
                 generator.GetConverter<uint16>().Encode(&allocator, item.Port |> uint16)
                 allocator.AsSpan().ToArray()
@@ -103,7 +103,7 @@ type IPEndPointTests() =
                     | x when x.AddressFamily = AddressFamily.InterNetworkV6 -> 18
                     | _ -> raise (NotSupportedException())
                 let generator = Generator.CreateDefault()
-                let mutable allocator = new Allocator()
+                let mutable allocator = Allocator()
                 PrimitiveHelper.EncodeNumber(&allocator, byteLength)
                 generator.GetConverter<IPAddress>().Encode(&allocator, item.Address)
                 generator.GetConverter<uint16>().Encode(&allocator, item.Port |> uint16)
@@ -163,7 +163,7 @@ type IPEndPointTests() =
         for i in parameters do
             let buffer = Array.zeroCreate<byte> i
             let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode buffer |> ignore)
-            let expected = Assert.Throws<ArgumentException>(fun () -> new IPAddress(Array.empty) |> ignore)
+            let expected = Assert.Throws<ArgumentException>(fun () -> IPAddress(Array.empty) |> ignore)
             Assert.Equal(expected.Message, error.Message)
             Assert.Equal(expected.ParamName, error.ParamName)
             ()

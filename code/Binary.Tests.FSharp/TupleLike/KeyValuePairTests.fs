@@ -7,22 +7,22 @@ open Xunit
 
 let generator = Generator.CreateDefault()
 
-let encode<'a> (c : Converter<'a>) v =
-    let mutable allocator = new Allocator()
+let Encode<'a> (c : Converter<'a>) v =
+    let mutable allocator = Allocator()
     c.Encode(&allocator, v)
     allocator.AsSpan().ToArray()
 
-let encodeAuto<'a> (c : Converter<'a>) v =
-    let mutable allocator = new Allocator()
+let EncodeAuto<'a> (c : Converter<'a>) v =
+    let mutable allocator = Allocator()
     c.EncodeAuto(&allocator, v)
     allocator.AsSpan().ToArray()
 
-let decode<'a> (c : Converter<'a>) buffer =
-    let span = new ReadOnlySpan<byte>(buffer)
+let Decode<'a> (c : Converter<'a>) buffer =
+    let span = ReadOnlySpan<byte>(buffer)
     c.Decode &span
 
-let decodeAuto<'a> (c : Converter<'a>) buffer =
-    let mutable span = new ReadOnlySpan<byte>(buffer)
+let DecodeAuto<'a> (c : Converter<'a>) buffer =
+    let mutable span = ReadOnlySpan<byte>(buffer)
     c.DecodeAuto &span
 
 [<Theory>]
@@ -36,17 +36,17 @@ let ``Key-Value Pair`` (k : 'K) (v : 'V) define normal headed =
     let alpha = generator.GetConverter<KeyValuePair<'K, 'V>> ()
     let tuple = generator.GetConverter<'K * 'V> ()
 
-    let bka = encode alpha i
-    let rka = decode alpha bka
+    let bka = Encode alpha i
+    let rka = Decode alpha bka
 
-    let bkb = encodeAuto alpha i
-    let rkb = decodeAuto alpha bkb
+    let bkb = EncodeAuto alpha i
+    let rkb = DecodeAuto alpha bkb
 
-    let bta = encode tuple t
-    let rta = decode tuple bta
+    let bta = Encode tuple t
+    let rta = Decode tuple bta
 
-    let btb = encodeAuto tuple t
-    let rtb = decodeAuto tuple btb
+    let btb = EncodeAuto tuple t
+    let rtb = DecodeAuto tuple btb
 
     Assert.Equal(define, alpha.Length)
     Assert.Equal(define, tuple.Length)
@@ -64,8 +64,8 @@ let ``Key-Value Pair`` (k : 'K) (v : 'V) define normal headed =
 
 [<Fact>]
 let ``Key-Value Pair List`` () =
-    let a = [ new KeyValuePair<int, string>(1, "two"); new KeyValuePair<int, string>(3, "four") ]
-    let b = [ new KeyValuePair<int16, int64>(int16 -1, int64 2); new KeyValuePair<int16, int64>(int16 3, int64 -4) ]
+    let a = [ KeyValuePair<int, string>(1, "two"); KeyValuePair<int, string>(3, "four") ]
+    let b = [ KeyValuePair<int16, int64>(int16 -1, int64 2); KeyValuePair<int16, int64>(int16 3, int64 -4) ]
     let bytesA = generator.Encode a
     let bytesB = generator.Encode b
     let seqA = generator.Decode<seq<int * string>> bytesA
@@ -77,7 +77,7 @@ let ``Key-Value Pair List`` () =
 
 [<Fact>]
 let ``Key-Value Pair Array`` () =
-    let alpha = [| new KeyValuePair<byte, uint32>(byte 3, uint32 5); new KeyValuePair<byte, uint32>(byte 7, uint32 9) |]
+    let alpha = [| KeyValuePair<byte, uint32>(byte 3, uint32 5); KeyValuePair<byte, uint32>(byte 7, uint32 9) |]
     let bytes = generator.Encode alpha
     let array = generator.Decode<array<byte * uint32>> bytes
     Assert.Equal<byte * uint32>(array, (alpha |> Array.map (|KeyValue|)))

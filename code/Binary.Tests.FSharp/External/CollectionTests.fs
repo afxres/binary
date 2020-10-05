@@ -10,7 +10,7 @@ let generator =
         .AddFSharpConverterCreators()
         .Build();
 
-let test (value : 'a when 'a :> 'e seq) =
+let Test (value : 'a when 'a :> 'e seq) =
     let buffer = generator.Encode value
     let result : 'a = generator.Decode buffer
     Assert.Equal<'e seq>(value, result)
@@ -21,8 +21,8 @@ let ``Array Instance`` () =
     let alpha = [| 1; 2; 4 |]
     let bravo = [| "one"; "three"; "ten" |]
 
-    test alpha
-    test bravo
+    Test alpha
+    Test bravo
     ()
 
 [<Fact>]
@@ -40,8 +40,8 @@ let ``List Instance`` () =
     let alpha = [ 9; 8; 4; 3 ]
     let bravo = [ IPAddress.Loopback; IPAddress.IPv6Loopback ]
 
-    test alpha
-    test bravo
+    Test alpha
+    Test bravo
     ()
 
 [<Fact>]
@@ -108,8 +108,8 @@ let ``Sequence`` () =
     let alpha = seq { for i in 3..9 do yield i * 3 }
     let bravo = Seq.empty<string>
 
-    test alpha
-    test bravo
+    Test alpha
+    Test bravo
     ()
 
 [<Fact>]
@@ -117,8 +117,9 @@ let ``Set`` () =
     let alpha = [ 2..6 ] |> List.map ((*) 2) |> List.map (sprintf "%d") |> Set
     let bravo = Set.empty<double>
 
-    test alpha
-    test bravo
+    Test alpha
+    Test bravo
+    ()
 
 [<Fact>]
 let ``Set (null)`` () =
@@ -133,7 +134,7 @@ let ``Set (null)`` () =
 [<Fact>]
 let ``Map`` () =
     let value = [ 1, "one"; 2, "two"; -1, "minus one" ] |> Map
-    test value
+    Test value
     ()
 
 [<Fact>]

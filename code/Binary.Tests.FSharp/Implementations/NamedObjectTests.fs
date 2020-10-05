@@ -27,7 +27,7 @@ let ``Anonymous Class Record Encode (from null value)`` () =
     let template = {| id = 1024; data = "data" |}
     let converter = generator.GetConverter(template)
     Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
-    let mutable allocator = new Allocator()
+    let mutable allocator = Allocator()
     converter.Encode(&allocator, null |> Unchecked.unbox)
     Assert.Equal(0, allocator.Length)
     converter.EncodeWithLengthPrefix(&allocator, null |> Unchecked.unbox)
@@ -158,7 +158,7 @@ let ``Type With 32 Properties (via constructor)`` () =
         X18 = 0x18; X19 = 0x19; X1A = 0x1A; X1B = 0x1B; X1C = 0x1C; X1D = 0x1D; X1E = 0x1E; X1F = 0x1F; |}
     let converter = generator.GetConverter(source)
     Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
-    let mutable allocator = new Allocator()
+    let mutable allocator = Allocator()
     converter.Encode(&allocator, source)
     let buffer = allocator.AsSpan().ToArray()
     let result = converter.Decode buffer
@@ -168,10 +168,10 @@ let ``Type With 32 Properties (via constructor)`` () =
 
 [<Fact>]
 let ``Type With 48 Properties (via properties)`` () =
-    let source = new ``Item 48``()
+    let source = ``Item 48``()
     let converter = generator.GetConverter(source)
     Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
-    let mutable allocator = new Allocator()
+    let mutable allocator = Allocator()
     converter.Encode(&allocator, source)
     let buffer = allocator.AsSpan().ToArray()
     let result = converter.Decode buffer
@@ -213,7 +213,7 @@ type BadType(key : int, Key : string) =
 
     member __.Key = Key
 
-let test (instance : 'a) (anonymous : 'b) =
+let Test (instance : 'a) (anonymous : 'b) =
     let converter = generator.GetConverter<'a>()
     Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
     let buffer = converter.Encode instance
@@ -225,19 +225,19 @@ let test (instance : 'a) (anonymous : 'b) =
     ()
 
 [<Fact>]
-let ``No Suitable Constructor (interface)`` () = test (Student("Tom", 18) :> IPerson) ({| Name = "Tom"; Age = 18 |})
+let ``No Suitable Constructor (interface)`` () = Test (Student("Tom", 18) :> IPerson) ({| Name = "Tom"; Age = 18 |})
 
 [<Fact>]
-let ``No Suitable Constructor (abstract class with single pattern-constructors)`` () = test (Student("Bob", 24) :> BasicPerson) ({| Name = "Bob"; Age = 24 |})
+let ``No Suitable Constructor (abstract class with single pattern-constructors)`` () = Test (Student("Bob", 24) :> BasicPerson) ({| Name = "Bob"; Age = 24 |})
 
 [<Fact>]
-let ``No Suitable Constructor (abstract class with multiple pattern-constructors)`` () = test (Student("Alice", 20) :> AbstractPerson) ({| Name = "Alice"; Age = 20 |})
+let ``No Suitable Constructor (abstract class with multiple pattern-constructors)`` () = Test (Student("Alice", 20) :> AbstractPerson) ({| Name = "Alice"; Age = 20 |})
 
 [<Fact>]
-let ``No Suitable Constructor (class with some get-only property)`` () = test (Student("Ann", 22)) ({| Name = "Ann"; Age = 22; View = "Ann, 22" |})
+let ``No Suitable Constructor (class with some get-only property)`` () = Test (Student("Ann", 22)) ({| Name = "Ann"; Age = 22; View = "Ann, 22" |})
 
 [<Fact>]
-let ``No Suitable Constructor (case sensitive)`` () = test (BadType(18, "Fox")) ({| key = 18; Key = "Fox" |})
+let ``No Suitable Constructor (case sensitive)`` () = Test (BadType(18, "Fox")) ({| key = 18; Key = "Fox" |})
 
 type TypeWithLongNameMember = {
     LongName : string;

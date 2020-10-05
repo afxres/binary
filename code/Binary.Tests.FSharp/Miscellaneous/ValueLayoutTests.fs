@@ -7,7 +7,7 @@ open Xunit
 
 let generator = Generator.CreateDefault()
 
-let encode (item : 'a) =
+let Encode (item : 'a) =
     let converter = generator.GetConverter<'a>()
     Assert.StartsWith("NativeEndianConverter`1", converter.GetType().Name)
     converter.Encode item
@@ -18,7 +18,7 @@ let encode (item : 'a) =
 let ``Int16 Layout`` (item : Int16) =
     let origin = Array.zeroCreate<byte> sizeof<Int16>
     BinaryPrimitives.WriteInt16LittleEndian(origin.AsSpan(), item)
-    let buffer = encode item
+    let buffer = Encode item
     Assert.Equal<byte>(origin, buffer)
     ()
 
@@ -28,7 +28,7 @@ let ``Int16 Layout`` (item : Int16) =
 let ``UInt16 Layout`` (item : UInt16) =
     let origin = Array.zeroCreate<byte> sizeof<UInt16>
     BinaryPrimitives.WriteUInt16LittleEndian(origin.AsSpan(), item)
-    let buffer = encode item
+    let buffer = Encode item
     Assert.Equal<byte>(origin, buffer)
     ()
 
@@ -38,7 +38,7 @@ let ``UInt16 Layout`` (item : UInt16) =
 let ``Int32 Layout`` (item : Int32) =
     let origin = Array.zeroCreate<byte> sizeof<Int32>
     BinaryPrimitives.WriteInt32LittleEndian(origin.AsSpan(), item)
-    let buffer = encode item
+    let buffer = Encode item
     Assert.Equal<byte>(origin, buffer)
     ()
 
@@ -48,7 +48,7 @@ let ``Int32 Layout`` (item : Int32) =
 let ``UInt32 Layout`` (item : UInt32) =
     let origin = Array.zeroCreate<byte> sizeof<UInt32>
     BinaryPrimitives.WriteUInt32LittleEndian(origin.AsSpan(), item)
-    let buffer = encode item
+    let buffer = Encode item
     Assert.Equal<byte>(origin, buffer)
     ()
 
@@ -58,7 +58,7 @@ let ``UInt32 Layout`` (item : UInt32) =
 let ``Int64 Layout`` (item : Int64) =
     let origin = Array.zeroCreate<byte> sizeof<Int64>
     BinaryPrimitives.WriteInt64LittleEndian(origin.AsSpan(), item)
-    let buffer = encode item
+    let buffer = Encode item
     Assert.Equal<byte>(origin, buffer)
     ()
 
@@ -68,7 +68,7 @@ let ``Int64 Layout`` (item : Int64) =
 let ``UInt64 Layout`` (item : UInt64) =
     let origin = Array.zeroCreate<byte> sizeof<UInt64>
     BinaryPrimitives.WriteUInt64LittleEndian(origin.AsSpan(), item)
-    let buffer = encode item
+    let buffer = Encode item
     Assert.Equal<byte>(origin, buffer)
     ()
 
@@ -78,6 +78,6 @@ let ``UInt64 Layout`` (item : UInt64) =
 let ``Guid Layout`` (text : string) =
     let item = Guid.Parse text
     let origin = item.ToByteArray()
-    let buffer = encode item
+    let buffer = Encode item
     Assert.Equal<byte>(origin, buffer)
     ()

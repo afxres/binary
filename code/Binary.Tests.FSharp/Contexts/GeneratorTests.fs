@@ -103,7 +103,7 @@ let ``Get Converter (non-generic collection)`` () =
 
 [<Fact>]
 let ``Encode (obj, instance)`` () =
-    let source = new obj()
+    let source = obj()
     let error = Assert.Throws<NotSupportedException>(fun () -> generator.Encode source |> ignore)
     Assert.Equal("Can not encode object, type: System.Object", error.Message)
     ()
@@ -212,12 +212,12 @@ type BadConverterCreatorInterfaceImplementation () =
     interface IConverterCreator with
         member __.GetConverter(context, ``type``) =
             if ``type`` = typeof<BadType> then
-                new BadConverterInterfaceImplementation() :> IConverter // bad return value
+                BadConverterInterfaceImplementation() :> IConverter // bad return value
             else null
 
 [<Fact>]
 let ``Bad Creator (item type mismatch)`` () =
-    let generator = Generator.CreateDefaultBuilder().AddConverterCreator(new BadConverterCreator()).Build()
+    let generator = Generator.CreateDefaultBuilder().AddConverterCreator(BadConverterCreator()).Build()
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter typeof<BadType> |> ignore)
     let message = sprintf "Can not convert '%O' to '%O', converter creator type: %O" (generator.GetConverter<int>().GetType()) typeof<Converter<BadType>> typeof<BadConverterCreator>
     Assert.Null(error.ParamName)
@@ -226,7 +226,7 @@ let ``Bad Creator (item type mismatch)`` () =
 
 [<Fact>]
 let ``Bad Creator (not a subclass)`` () =
-    let generator = Generator.CreateDefaultBuilder().AddConverterCreator(new BadConverterCreatorInterfaceImplementation()).Build()
+    let generator = Generator.CreateDefaultBuilder().AddConverterCreator(BadConverterCreatorInterfaceImplementation()).Build()
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter typeof<BadType> |> ignore)
     let message = sprintf "Can not convert '%O' to '%O', converter creator type: %O" typeof<BadConverterInterfaceImplementation> typeof<Converter<BadType>> typeof<BadConverterCreatorInterfaceImplementation>
     Assert.Null(error.ParamName)

@@ -8,11 +8,11 @@ open Xunit
 let generator = Generator.CreateDefault()
 
 [<Fact>]
-let ``Dictionary`` () =
-    let a = new Dictionary<int, double>()
+let ``Dictionary Test`` () =
+    let a = Dictionary<int, double>()
     a.Add(1, 1.1)
     a.Add(2, 2.2)
-    let b = new Dictionary<string, Guid>()
+    let b = Dictionary<string, Guid>()
     b.Add("one", Guid.NewGuid())
     b.Add("zero", Guid.NewGuid())
     let bytesA = generator.Encode a
@@ -28,7 +28,7 @@ let ``Dictionary`` () =
 
 [<Fact>]
 let ``IDictionary`` () =
-    let a = new Dictionary<string, Guid>()
+    let a = Dictionary<string, Guid>()
     a.Add("head", Guid.NewGuid())
     a.Add("last", Guid.NewGuid())
     let a = a :> IDictionary<string, Guid>
@@ -41,7 +41,7 @@ let ``IDictionary`` () =
 
 [<Fact>]
 let ``IReadOnlyDictionary`` () =
-    let a = new Dictionary<int, decimal>()
+    let a = Dictionary<int, decimal>()
     a.Add(-1, decimal 1.1)
     a.Add(-3, decimal 3.3)
     a.Add(Int32.MaxValue, decimal UInt32.MaxValue)

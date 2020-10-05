@@ -4,23 +4,23 @@ open Mikodev.Binary
 open System
 open Xunit
 
-let random = new Random()
+let random = Random()
 
 let generator = Generator.CreateDefault()
 
 let randomCount = 64
 
-let randomNumber () : uint64 =
+let RandomNumber () : uint64 =
     let buffer = Array.zeroCreate<byte>(sizeof<uint64>)
     random.NextBytes buffer
     let number = BitConverter.ToUInt64(buffer, 0)
     number
 
-let testWithSpan (value : 'a) (size : int) =
+let TestWithSpan (value : 'a) (size : int) =
     let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
-    let mutable allocator = new Allocator()
+    let mutable allocator = Allocator()
     converter.Encode(&allocator, value)
     let buffer = allocator.AsSpan().ToArray()
     Assert.Equal<byte>(bufferOrigin, buffer)
@@ -31,7 +31,7 @@ let testWithSpan (value : 'a) (size : int) =
     Assert.Equal<'a>(value, result)
     ()
 
-let testWithBytes (value : 'a) (size : int) =
+let TestWithBytes (value : 'a) (size : int) =
     let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
@@ -43,7 +43,7 @@ let testWithBytes (value : 'a) (size : int) =
     Assert.Equal<'a>(value, result)
     ()
 
-let testAuto (value : 'a) (size : int) =
+let TestAuto (value : 'a) (size : int) =
     let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
@@ -59,11 +59,11 @@ let testAuto (value : 'a) (size : int) =
     Assert.Equal<'a>(value, result)
     ()
 
-let testWithLengthPrefix (value : 'a) (size : int) =
+let TestWithLengthPrefix (value : 'a) (size : int) =
     let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
-    let mutable allocator = new Allocator()
+    let mutable allocator = Allocator()
     converter.EncodeWithLengthPrefix(&allocator, value)
     let buffer = allocator.AsSpan().ToArray()
 
@@ -79,7 +79,7 @@ let testWithLengthPrefix (value : 'a) (size : int) =
     Assert.Equal<'a>(value, result)
     ()
 
-let testExplicit (value : 'a) (size : int) =
+let TestExplicit (value : 'a) (size : int) =
     // convert via Generator
     let buffer = generator.Encode value
     Assert.Equal(size, buffer.Length)
@@ -91,33 +91,33 @@ let testExplicit (value : 'a) (size : int) =
     Assert.Equal(size, converter.Length)
 
     // convert via Converter
-    testWithSpan value size
+    TestWithSpan value size
     // convert via bytes methods
-    testWithBytes value size
+    TestWithBytes value size
     // convert via 'auto' methods
-    testAuto value size
+    TestAuto value size
     // convert with length prefix
-    testWithLengthPrefix value size
+    TestWithLengthPrefix value size
     ()
 
-let test (value : 'a when 'a : unmanaged) = testExplicit value sizeof<'a>
+let Test (value : 'a when 'a : unmanaged) = TestExplicit value sizeof<'a>
 
 [<Fact>]
 let ``Int & UInit 16, 32, 64`` () =
     for i = 1 to randomCount do
-        let i16 : int16 = int16(randomNumber())
-        let i32 : int32 = int32(randomNumber())
-        let i64 : int64 = int64(randomNumber())
-        let u16 : uint16 = uint16(randomNumber())
-        let u32 : uint32 = uint32(randomNumber())
-        let u64 : uint64 = uint64(randomNumber())
+        let i16 : int16 = int16(RandomNumber())
+        let i32 : int32 = int32(RandomNumber())
+        let i64 : int64 = int64(RandomNumber())
+        let u16 : uint16 = uint16(RandomNumber())
+        let u32 : uint32 = uint32(RandomNumber())
+        let u64 : uint64 = uint64(RandomNumber())
 
-        test i16
-        test i32
-        test i64
-        test u16
-        test u32
-        test u64
+        Test i16
+        Test i32
+        Test i64
+        Test u16
+        Test u32
+        Test u64
     ()
 
 [<Fact>]
@@ -126,22 +126,22 @@ let ``Single Double`` () =
         let single : single = single(random.NextDouble())
         let double : double = double(random.NextDouble())
 
-        test single
-        test double
+        Test single
+        Test double
     ()
 
 [<Fact>]
 let ``Bool Char Byte SByte`` () =
     for i = 0 to randomCount do
-        let u8 : byte = byte(randomNumber())
-        let i8 : sbyte = sbyte(randomNumber())
-        let char : char = char(randomNumber())
-        let bool : bool = int(randomNumber()) &&& 1 = 0
+        let u8 : byte = byte(RandomNumber())
+        let i8 : sbyte = sbyte(RandomNumber())
+        let char : char = char(RandomNumber())
+        let bool : bool = int(RandomNumber()) &&& 1 = 0
 
-        test u8
-        test i8
-        test char
-        test bool
+        Test u8
+        Test i8
+        Test char
+        Test bool
     ()
 
 [<Fact>]
@@ -152,7 +152,7 @@ let ``Decimal`` () =
         let alpha = converter.Encode number
         let bravo = Decimal.GetBits(number) |> Array.map (fun x -> BitConverter.GetBytes x) |> Array.concat
         Assert.Equal<byte>(alpha, bravo)
-        test number
+        Test number
     ()
 
 [<Fact>]
@@ -161,7 +161,7 @@ let ``Guid`` () =
         let guid : Guid = Guid.NewGuid()
         let bytes = generator.Encode<Guid> guid
 
-        test guid
+        Test guid
 
         let hex = guid.ToString("N")
         let items = [ 0..2..(hex.Length - 1) ] |> Seq.map (fun x -> Convert.ToByte(hex.Substring(x, 2), 16))
@@ -173,34 +173,34 @@ let ``Guid`` () =
 
 [<Fact>]
 let ``TimeSpan Instance`` () =
-    test (DateTime.Now - DateTime.MinValue)
-    test (DateTime.MaxValue - DateTime.Now)
-    test TimeSpan.MaxValue
-    test TimeSpan.MinValue
+    Test (DateTime.Now - DateTime.MinValue)
+    Test (DateTime.MaxValue - DateTime.Now)
+    Test TimeSpan.MaxValue
+    Test TimeSpan.MinValue
     ()
 
 [<Fact>]
 let ``DateTime Instance`` () =
-    let check item =
-        test item
+    let Ensure item =
+        Test item
         let buffer = generator.Encode item
         let result = generator.Decode<DateTime> buffer
         Assert.Equal(item, result)
         Assert.Equal(item.Kind, result.Kind)
         ()
 
-    check DateTime.Now
-    check DateTime.UtcNow
-    check DateTime.MaxValue
-    check DateTime.MinValue
-    check (DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified))
-    check (DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified))
+    Ensure DateTime.Now
+    Ensure DateTime.UtcNow
+    Ensure DateTime.MaxValue
+    Ensure DateTime.MinValue
+    Ensure (DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified))
+    Ensure (DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified))
     ()
 
 [<Fact>]
 let ``DateTimeOffset Instance`` () =
-    let check item =
-        testExplicit item 10
+    let Ensure item =
+        TestExplicit item 10
 
         let buffer = generator.Encode item
         let result = generator.Decode<DateTimeOffset> buffer
@@ -217,14 +217,14 @@ let ``DateTimeOffset Instance`` () =
         Assert.Equal(item.Offset.TotalMinutes |> int64, offset |> int64)
         ()
 
-    check DateTimeOffset.Now
-    check DateTimeOffset.UtcNow
-    check DateTimeOffset.MaxValue
-    check DateTimeOffset.MinValue
-    check (new DateTimeOffset(DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified), TimeSpan.FromMinutes(float 180)))
-    check (new DateTimeOffset(DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified), TimeSpan.FromMinutes(float -300)))
-    check (new DateTimeOffset(DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified), TimeSpan.FromMinutes(float 30)))
-    check (new DateTimeOffset(DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified), TimeSpan.FromMinutes(float -90)))
+    Ensure DateTimeOffset.Now
+    Ensure DateTimeOffset.UtcNow
+    Ensure DateTimeOffset.MaxValue
+    Ensure DateTimeOffset.MinValue
+    Ensure (DateTimeOffset(DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified), TimeSpan.FromMinutes(float 180)))
+    Ensure (DateTimeOffset(DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified), TimeSpan.FromMinutes(float -300)))
+    Ensure (DateTimeOffset(DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified), TimeSpan.FromMinutes(float 30)))
+    Ensure (DateTimeOffset(DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified), TimeSpan.FromMinutes(float -90)))
     ()
 
 [<Fact>]
@@ -232,14 +232,14 @@ let ``DateTimeOffset Offset Ranged`` () =
     for i = -14 to 14 do
         let value = DateTimeOffset(DateTime(1970, 1, 1), TimeSpan.FromHours(float i))
         Assert.Equal(float i, value.Offset.TotalHours)
-        testExplicit value 10
+        TestExplicit value 10
     ()
 
 [<Fact>]
 let ``Enum`` () =
-    test DayOfWeek.Sunday
-    test ConsoleColor.Cyan
-    test ConsoleKey.Escape
+    Test DayOfWeek.Sunday
+    Test ConsoleColor.Cyan
+    Test ConsoleKey.Escape
     ()
 
 [<Fact>]

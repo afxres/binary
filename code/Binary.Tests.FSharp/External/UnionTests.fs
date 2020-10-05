@@ -16,21 +16,21 @@ let GetConverter<'a>() =
     value :?> Converter<'a>
 
 let Encode<'a> (c : Converter<'a>) v =
-    let mutable allocator = new Allocator()
+    let mutable allocator = Allocator()
     c.Encode(&allocator, v)
     allocator.AsSpan().ToArray()
 
 let EncodeAuto<'a> (c : Converter<'a>) v =
-    let mutable allocator = new Allocator()
+    let mutable allocator = Allocator()
     c.EncodeAuto(&allocator, v)
     allocator.AsSpan().ToArray()
 
 let Decode<'a> (c : Converter<'a>) buffer =
-    let span = new ReadOnlySpan<byte>(buffer)
+    let span = ReadOnlySpan<byte>(buffer)
     c.Decode &span
 
 let DecodeAuto<'a> (c : Converter<'a>) buffer =
-    let mutable span = new ReadOnlySpan<byte>(buffer)
+    let mutable span = ReadOnlySpan<byte>(buffer)
     c.DecodeAuto &span
 
 let Test<'a> ls ll (v : 'a) =

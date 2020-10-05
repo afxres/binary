@@ -13,7 +13,7 @@ let generator = Generator.CreateDefault()
 
 [<Fact>]
 let ``Constructor (default)`` () =
-    let allocator = new Allocator()
+    let allocator = Allocator()
     Assert.Equal(0, allocator.Length);
     Assert.Equal(0, allocator.Capacity);
     Assert.Equal(Int32.MaxValue, allocator.MaxCapacity);
@@ -24,7 +24,7 @@ let ``Constructor (default)`` () =
 [<InlineData(-255)>]
 let ``Constructor (argument out of range)`` (limits : int) =
     let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
-        let _ = new Allocator(Span(), limits)
+        let _ = Allocator(Span(), limits)
         ())
     let allocatorType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "Allocator") |> Array.exactlyOne
     let constructor = allocatorType.GetConstructors() |> Array.filter (fun x -> x.GetParameters().Length = 2) |> Array.exactlyOne
@@ -38,7 +38,7 @@ let ``Constructor (argument out of range)`` (limits : int) =
 [<InlineData(128, 127)>]
 [<InlineData(32, 0)>]
 let ``Constructor (buffer size greater than max capacity)`` (size : int, limits : int) =
-    let allocator = new Allocator(Span (Array.zeroCreate size), limits)
+    let allocator = Allocator(Span (Array.zeroCreate size), limits)
     Assert.Equal(limits, allocator.Capacity)
     Assert.Equal(limits, allocator.MaxCapacity)
     ()
@@ -50,7 +50,7 @@ let ``Constructor (buffer size greater than max capacity)`` (size : int, limits 
 [<InlineData(4097)>]
 let ``Constructor (byte array)`` (length : int) =
     let array = Array.zeroCreate<byte> length
-    let mutable allocator = new Allocator(Span array)
+    let mutable allocator = Allocator(Span array)
     Assert.Equal(length, allocator.Capacity)
     Assert.Equal(Int32.MaxValue, allocator.MaxCapacity);
     AllocatorHelper.Append(&allocator, 256, null :> obj, fun a b -> ())
@@ -62,7 +62,7 @@ let ``Constructor (byte array)`` (length : int) =
 [<InlineData(1, 1)>]
 [<InlineData(128, 192)>]
 let ``Constructor (limitation)`` (size : int, limitation : int) =
-    let allocator = new Allocator(Span (Array.zeroCreate size), limitation)
+    let allocator = Allocator(Span (Array.zeroCreate size), limitation)
     Assert.Equal(0, allocator.Length)
     Assert.Equal(size, allocator.Capacity)
     Assert.Equal(limitation, allocator.MaxCapacity)
@@ -73,8 +73,8 @@ let ``Constructor (limitation)`` (size : int, limitation : int) =
 [<InlineData(257)>]
 let ``As Span`` (length : int) =
     let source = Array.zeroCreate<byte> length
-    let mutable allocator = new Allocator()
-    let span = new ReadOnlySpan<byte>(source)
+    let mutable allocator = Allocator()
+    let span = ReadOnlySpan<byte>(source)
     AllocatorHelper.Append(&allocator, span)
 
     let span = allocator.AsSpan()
@@ -136,7 +136,7 @@ let ``Get Hash Code (not supported)`` () =
 
 [<Fact>]
 let ``To String (debug)`` () =
-    let mutable allocator = new Allocator(Span (Array.zeroCreate 64), 32)
+    let mutable allocator = Allocator(Span (Array.zeroCreate 64), 32)
     AllocatorHelper.Append(&allocator, 4, null :> obj, fun a b -> ())
     Assert.Equal("Allocator(Length: 4, Capacity: 32, MaxCapacity: 32)", allocator.ToString())
     ()
