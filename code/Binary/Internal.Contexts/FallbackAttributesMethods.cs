@@ -37,7 +37,7 @@ namespace Mikodev.Binary.Internal.Contexts
             }
 
             var attribute = attributes.SingleOrDefault();
-            if (propertyWithAttributes.Count is 0 && (attribute is ConverterAttribute || attribute is ConverterCreatorAttribute) is false)
+            if (propertyWithAttributes.Count is 0 && attribute is not ConverterAttribute && attribute is not ConverterCreatorAttribute)
                 throw new ArgumentException($"No available property found, type: {type}");
 
             var propertyWithNamedKeyAttributes = propertyWithAttributes.Select(x => (x.Property, Key: x.Key as NamedKeyAttribute, x.ConverterOrCreator)).Where(x => x.Key is not null).ToList();
@@ -46,10 +46,10 @@ namespace Mikodev.Binary.Internal.Contexts
                 throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' for '{nameof(NamedObjectAttribute)}', type: {type}");
             if (propertyWithTupleKeyAttributes.Count is 0 && attribute is TupleObjectAttribute)
                 throw new ArgumentException($"Require '{nameof(TupleKeyAttribute)}' for '{nameof(TupleObjectAttribute)}', type: {type}");
-            if (propertyWithNamedKeyAttributes.Count is not 0 && attribute is NamedObjectAttribute is false)
-                throw new ArgumentException($"Require '{nameof(NamedObjectAttribute)}' for '{nameof(NamedKeyAttribute)}', property name: {propertyWithNamedKeyAttributes.First().Property.Name}, type: {type}");
-            if (propertyWithTupleKeyAttributes.Count is not 0 && attribute is TupleObjectAttribute is false)
-                throw new ArgumentException($"Require '{nameof(TupleObjectAttribute)}' for '{nameof(TupleKeyAttribute)}', property name: {propertyWithTupleKeyAttributes.First().Property.Name}, type: {type}");
+            if (propertyWithNamedKeyAttributes.FirstOrDefault().Property is { } alpha && attribute is NamedObjectAttribute is false)
+                throw new ArgumentException($"Require '{nameof(NamedObjectAttribute)}' for '{nameof(NamedKeyAttribute)}', property name: {alpha.Name}, type: {type}");
+            if (propertyWithTupleKeyAttributes.FirstOrDefault().Property is { } bravo && attribute is TupleObjectAttribute is false)
+                throw new ArgumentException($"Require '{nameof(TupleObjectAttribute)}' for '{nameof(TupleKeyAttribute)}', property name: {bravo.Name}, type: {type}");
 
             if (attribute is ConverterAttribute or ConverterCreatorAttribute)
                 return GetConverter(context, type, attribute);
