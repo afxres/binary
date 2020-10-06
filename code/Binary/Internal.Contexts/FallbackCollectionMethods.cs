@@ -67,17 +67,25 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static SequenceBuilder<T, R> CreateCollectionBuilder<T, R, I>()
         {
-            static Func<R, T> Invoke()
+            static Func<Expression, Expression> Method()
             {
                 var type = typeof(T);
-                var enumerableType = typeof(I);
                 if (type.IsAbstract || type.IsInterface)
                     return null;
-                var constructor = type.GetConstructor(new[] { enumerableType });
-                if (constructor is null)
+                var types = new[] { typeof(I) };
+                if (type.GetConstructor(types) is { } constructor)
+                    return x => Expression.New(constructor, x);
+                if (type.Namespace is "System.Collections.Immutable")
+                    return x => Expression.Call(Expression.Field(null, type, "Empty"), "AddRange", null, x);
+                return null;
+            }
+
+            static Func<R, T> Invoke()
+            {
+                if (Method() is not { } method)
                     return null;
                 var source = Expression.Parameter(typeof(R), "source");
-                var invoke = Expression.New(constructor, Expression.Convert(source, enumerableType));
+                var invoke = method.Invoke(Expression.Convert(source, typeof(I)));
                 var lambda = Expression.Lambda<Func<R, T>>(invoke, source);
                 return lambda.Compile();
             }
