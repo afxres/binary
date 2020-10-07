@@ -31,7 +31,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private IConverter GetOrCreateConverter(Type type)
         {
-            if (CommonHelper.IsByRefLike(type))
+            if (type.IsByRefLike)
                 throw new ArgumentException($"Invalid byref-like type: {type}");
             if (type.IsAbstract && type.IsSealed)
                 throw new ArgumentException($"Invalid static type: {type}");

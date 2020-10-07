@@ -4,6 +4,7 @@ open Mikodev.Binary
 open System
 open System.Collections.Generic
 open System.Collections.Immutable
+open System.Reflection
 open Xunit
 
 type ImmutableCollectionTests() =
@@ -17,15 +18,25 @@ type ImmutableCollectionTests() =
 
     let TestStringNumberPairArray = [| KeyValuePair("Epsilon", Double.Epsilon); KeyValuePair("NaN", Double.NaN) |]
 
-    let Test (item : 'T when 'T :> 'E seq) =
+    let TestConverter (item : 'T when 'T :> 'E seq) =
+        Assert.NotNull item
         let converter = generator.GetConverter<'T>()
+        let converterType = converter.GetType()
+        Assert.Equal("SequenceConverter`2", converterType.Name)
+        let adapter = converterType.GetField("adapter", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter
+        let adapterType = adapter.GetType()
+        Assert.Equal("EnumerableAdapter`2", adapterType.Name)
+        converter
+
+    let Test (item : 'T when 'T :> 'E seq) =
+        let converter = TestConverter item
         let buffer = converter.Encode item
         let result = converter.Decode buffer
         Assert.Equal<'E>(item, result)
         ()
 
     let TestInterface (item : 'T when 'T :> 'E seq) =
-        let converter = generator.GetConverter<'T>()
+        let converter = TestConverter item
         let buffer = converter.Encode item
         let result = converter.Decode buffer
         Assert.True(typeof<'T>.IsInterface)
@@ -40,6 +51,7 @@ type ImmutableCollectionTests() =
         ()
 
     let TestInvalid (item : 'T when 'T :> 'E seq) =
+        Assert.Empty item
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter<'T>() |> ignore)
         let message = sprintf "Invalid collection type: %O" typeof<'T>
         Assert.Null error.ParamName

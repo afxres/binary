@@ -59,14 +59,10 @@ namespace Mikodev.Binary.Internal.Contexts
             {
                 if (type.IsArray && type.GetElementType() is { } elementType)
                     return CreateArrayBuilder(type, elementType);
-                if (type.IsGenericType is false)
-                    return null;
-                var types = type.GetGenericArguments();
-                var definition = type.GetGenericTypeDefinition();
-                if (definition == typeof(List<>))
-                    return CreateListBuilder(type, types.Single());
-                if (Types.TryGetValue(definition, out var result))
-                    return Activator.CreateInstance(result.MakeGenericType(types.Single()));
+                if (CommonHelper.SelectGenericTypeDefinitionOrDefault(type, x => x == typeof(List<>)))
+                    return CreateListBuilder(type, type.GetGenericArguments().Single());
+                if (CommonHelper.SelectGenericTypeDefinitionOrDefault(type, Types.GetValueOrDefault) is { } result)
+                    return Activator.CreateInstance(result.MakeGenericType(type.GetGenericArguments()));
                 return null;
             }
 

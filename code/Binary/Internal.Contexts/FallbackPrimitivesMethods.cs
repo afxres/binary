@@ -45,7 +45,7 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             if (type == typeof(ValueTuple))
                 throw new ArgumentException($"Invalid type: {typeof(ValueTuple)}");
-            return type.IsGenericType && Types.Contains(type.GetGenericTypeDefinition());
+            return CommonHelper.SelectGenericTypeDefinitionOrDefault(type, Types.Contains);
         }
 
         private static IConverter GetTupleConverter(IGeneratorContext context, Type type)

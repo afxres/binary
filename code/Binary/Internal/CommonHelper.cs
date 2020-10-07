@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 
 namespace Mikodev.Binary.Internal
 {
@@ -15,12 +14,9 @@ namespace Mikodev.Binary.Internal
             return result.ToArray();
         }
 
-        internal static bool IsByRefLike(Type type)
+        internal static T SelectGenericTypeDefinitionOrDefault<T>(Type type, Func<Type, T> func)
         {
-            if (type.IsValueType is false)
-                return false;
-            var attributes = type.GetCustomAttributes();
-            return attributes.Select(x => x.GetType()).Any(x => x.FullName is "System.Runtime.CompilerServices.IsByRefLikeAttribute");
+            return type.IsGenericType ? func.Invoke(type.GetGenericTypeDefinition()) : default;
         }
 
         internal static bool TryGetGenericArguments(Type type, Type definition, out Type[] arguments)
