@@ -41,6 +41,7 @@ let ``Queue`` () =
 let ``Stack (not supported)`` () =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter<Stack<int>>() |> ignore)
     let message = sprintf "Invalid collection type: %O" typeof<Stack<int>>
+    Assert.Null error.ParamName
     Assert.Equal(message, error.Message)
     ()
 
@@ -48,6 +49,7 @@ let ``Stack (not supported)`` () =
 let ``ConcurrentStack (not supported)`` () =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter<ConcurrentStack<string>>() |> ignore)
     let message = sprintf "Invalid collection type: %O" typeof<ConcurrentStack<string>>
+    Assert.Null error.ParamName
     Assert.Equal(message, error.Message)
     ()
 

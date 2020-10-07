@@ -25,7 +25,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static readonly MethodInfo GetDictionaryConverterMethodInfo = GetMethodInfo(GetDictionaryConverter<IEnumerable<KeyValuePair<Placeholder, Placeholder>>, Placeholder, Placeholder>);
 
-        private static readonly IReadOnlyDictionary<Type, MethodInfo> ImmutableCollectionConstructors = new Dictionary<Type, MethodInfo>
+        private static readonly IReadOnlyDictionary<Type, MethodInfo> CreateMethods = new Dictionary<Type, MethodInfo>
         {
             [typeof(IImmutableDictionary<,>)] = GetMethodInfo(ImmutableDictionary.CreateRange),
             [typeof(IImmutableList<>)] = GetMethodInfo(ImmutableList.CreateRange),
@@ -40,6 +40,14 @@ namespace Mikodev.Binary.Internal.Contexts
             [typeof(ImmutableSortedSet<>)] = GetMethodInfo(ImmutableSortedSet.CreateRange),
         };
 
+        private static readonly IReadOnlyList<Type> InvalidTypes = new[]
+        {
+            typeof(IImmutableStack<>),
+            typeof(ImmutableStack<>),
+            typeof(Stack<>),
+            typeof(ConcurrentStack<>),
+        };
+
         internal static IConverter GetConverter(IGeneratorContext context, Type type)
         {
             MethodInfo Method(Type argument, out Type[] arguments)
@@ -47,17 +55,21 @@ namespace Mikodev.Binary.Internal.Contexts
                 if (CommonHelper.TryGetInterfaceArguments(type, typeof(IDictionary<,>), out arguments) || CommonHelper.TryGetInterfaceArguments(type, typeof(IReadOnlyDictionary<,>), out arguments))
                     return GetDictionaryConverterMethodInfo;
                 arguments = new[] { argument };
-                if (typeof(ISet<>).MakeGenericType(argument).IsAssignableFrom(type))
-                    return GetSetConverterMethodInfo;
-                else if (type == typeof(LinkedList<>).MakeGenericType(argument))
+                if (type == typeof(LinkedList<>).MakeGenericType(argument))
                     return GetLinkedListConverterMethodInfo;
+                if (type == typeof(HashSet<>).MakeGenericType(argument))
+                    return GetSetConverterMethodInfo;
+                if (type.IsInterface && type.IsAssignableFrom(typeof(ArraySegment<>).MakeGenericType(argument)))
+                    return GetEnumerableConverterMethodInfo;
+                if (type.IsInterface && type.IsAssignableFrom(typeof(HashSet<>).MakeGenericType(argument)))
+                    return GetSetConverterMethodInfo;
                 else
                     return GetEnumerableConverterMethodInfo;
             }
 
             if (CommonHelper.TryGetInterfaceArguments(type, typeof(IEnumerable<>), out var arguments) is false)
                 return null;
-            if (CommonHelper.IsImplementationOf(type, typeof(Stack<>)) || CommonHelper.IsImplementationOf(type, typeof(ConcurrentStack<>)))
+            if (type.IsGenericType && InvalidTypes.Contains(type.GetGenericTypeDefinition()))
                 throw new ArgumentException($"Invalid collection type: {type}");
             var methodInfo = Method(arguments.Single(), out var itemTypes);
             var converters = itemTypes.Select(context.GetConverter).ToList();
@@ -98,7 +110,7 @@ namespace Mikodev.Binary.Internal.Contexts
             static Func<Expression, Expression> Method()
             {
                 var type = typeof(T);
-                if (type.IsGenericType && ImmutableCollectionConstructors.TryGetValue(type.GetGenericTypeDefinition(), out var method))
+                if (type.IsGenericType && CreateMethods.TryGetValue(type.GetGenericTypeDefinition(), out var method))
                     return x => Expression.Call(method.MakeGenericMethod(type.GetGenericArguments()), x);
                 if (type.IsAbstract || type.IsInterface)
                     return null;

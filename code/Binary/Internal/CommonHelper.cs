@@ -23,15 +23,10 @@ namespace Mikodev.Binary.Internal
             return attributes.Select(x => x.GetType()).Any(x => x.FullName is "System.Runtime.CompilerServices.IsByRefLikeAttribute");
         }
 
-        internal static bool IsImplementationOf(Type type, Type definition)
-        {
-            return type.IsGenericType && type.GetGenericTypeDefinition() == definition;
-        }
-
         internal static bool TryGetGenericArguments(Type type, Type definition, out Type[] arguments)
         {
             Debug.Assert(definition.IsGenericTypeDefinition);
-            arguments = IsImplementationOf(type, definition) ? type.GetGenericArguments() : null;
+            arguments = type.IsGenericType && type.GetGenericTypeDefinition() == definition ? type.GetGenericArguments() : null;
             return arguments is not null;
         }
 
@@ -40,7 +35,7 @@ namespace Mikodev.Binary.Internal
             Debug.Assert(definition.IsInterface);
             Debug.Assert(definition.IsGenericTypeDefinition);
             var interfaces = type.IsInterface ? Concat(type, type.GetInterfaces()) : type.GetInterfaces();
-            var types = interfaces.Where(x => IsImplementationOf(x, definition)).ToList();
+            var types = interfaces.Where(x => x.IsGenericType && x.GetGenericTypeDefinition() == definition).ToList();
             var count = types.Count;
             if (count > 1)
                 throw new ArgumentException($"Multiple interface implementations detected, type: {type}, interface type: {definition}");
