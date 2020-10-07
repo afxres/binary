@@ -118,7 +118,7 @@ namespace Mikodev.Binary.Tests
                 for (var k = (int)byte.MinValue; k < byte.MaxValue; k++)
                 {
                     var node = helper.Node.Invoke(helper.EmptyNodes, (long)((ulong)k << (i * 8)), false, null);
-                    var text = k >= 32 && k <= 126
+                    var text = k is >= 32 and <= 126
                         ? Enumerable.Repeat('.', i).Concat(new[] { (char)k }).Concat(Enumerable.Repeat('.', 8 - 1 - i)).Aggregate(new StringBuilder(), (a, b) => a.Append(b)).ToString()
                         : "........";
                     var view = node.ToString();

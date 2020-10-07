@@ -36,7 +36,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 propertyWithAttributes.Add((property, head, tail));
             }
 
-            var attribute = attributes.SingleOrDefault();
+            var attribute = attributes.FirstOrDefault();
             if (propertyWithAttributes.Count is 0 && attribute is not ConverterAttribute && attribute is not ConverterCreatorAttribute)
                 throw new ArgumentException($"No available property found, type: {type}");
 

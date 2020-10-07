@@ -5,6 +5,7 @@ using Mikodev.Binary.Internal.Sequence.Counters;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -14,27 +15,44 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class FallbackCollectionMethods
     {
-        private static readonly MethodInfo CreateSetConverterMethodInfo = typeof(FallbackCollectionMethods).GetMethod(nameof(CreateSetConverter), BindingFlags.Static | BindingFlags.NonPublic);
+        private sealed class Placeholder { }
 
-        private static readonly MethodInfo CreateLinkedListConverterMethodInfo = typeof(FallbackCollectionMethods).GetMethod(nameof(CreateLinkedListConverter), BindingFlags.Static | BindingFlags.NonPublic);
+        private static readonly MethodInfo GetSetConverterMethodInfo = GetMethodInfo(GetSetConverter<ISet<Placeholder>, Placeholder>);
 
-        private static readonly MethodInfo CreateEnumerableConverterMethodInfo = typeof(FallbackCollectionMethods).GetMethod(nameof(CreateEnumerableConverter), BindingFlags.Static | BindingFlags.NonPublic);
+        private static readonly MethodInfo GetLinkedListConverterMethodInfo = GetMethodInfo(GetLinkedListConverter<LinkedList<Placeholder>, Placeholder>);
 
-        private static readonly MethodInfo CreateDictionaryConverterMethodInfo = typeof(FallbackCollectionMethods).GetMethod(nameof(CreateDictionaryConverter), BindingFlags.Static | BindingFlags.NonPublic);
+        private static readonly MethodInfo GetEnumerableConverterMethodInfo = GetMethodInfo(GetEnumerableConverter<IEnumerable<Placeholder>, Placeholder>);
+
+        private static readonly MethodInfo GetDictionaryConverterMethodInfo = GetMethodInfo(GetDictionaryConverter<IEnumerable<KeyValuePair<Placeholder, Placeholder>>, Placeholder, Placeholder>);
+
+        private static readonly IReadOnlyDictionary<Type, MethodInfo> ImmutableCollectionConstructors = new Dictionary<Type, MethodInfo>
+        {
+            [typeof(IImmutableDictionary<,>)] = GetMethodInfo(ImmutableDictionary.CreateRange),
+            [typeof(IImmutableList<>)] = GetMethodInfo(ImmutableList.CreateRange),
+            [typeof(IImmutableQueue<>)] = GetMethodInfo(ImmutableQueue.CreateRange),
+            [typeof(IImmutableSet<>)] = GetMethodInfo(ImmutableHashSet.CreateRange),
+            [typeof(ImmutableArray<>)] = GetMethodInfo(ImmutableArray.CreateRange),
+            [typeof(ImmutableDictionary<,>)] = GetMethodInfo(ImmutableDictionary.CreateRange),
+            [typeof(ImmutableHashSet<>)] = GetMethodInfo(ImmutableHashSet.CreateRange),
+            [typeof(ImmutableList<>)] = GetMethodInfo(ImmutableList.CreateRange),
+            [typeof(ImmutableQueue<>)] = GetMethodInfo(ImmutableQueue.CreateRange),
+            [typeof(ImmutableSortedDictionary<,>)] = GetMethodInfo(ImmutableSortedDictionary.CreateRange),
+            [typeof(ImmutableSortedSet<>)] = GetMethodInfo(ImmutableSortedSet.CreateRange),
+        };
 
         internal static IConverter GetConverter(IGeneratorContext context, Type type)
         {
             MethodInfo Method(Type argument, out Type[] arguments)
             {
                 if (CommonHelper.TryGetInterfaceArguments(type, typeof(IDictionary<,>), out arguments) || CommonHelper.TryGetInterfaceArguments(type, typeof(IReadOnlyDictionary<,>), out arguments))
-                    return CreateDictionaryConverterMethodInfo;
+                    return GetDictionaryConverterMethodInfo;
                 arguments = new[] { argument };
                 if (typeof(ISet<>).MakeGenericType(argument).IsAssignableFrom(type))
-                    return CreateSetConverterMethodInfo;
+                    return GetSetConverterMethodInfo;
                 else if (type == typeof(LinkedList<>).MakeGenericType(argument))
-                    return CreateLinkedListConverterMethodInfo;
+                    return GetLinkedListConverterMethodInfo;
                 else
-                    return CreateEnumerableConverterMethodInfo;
+                    return GetEnumerableConverterMethodInfo;
             }
 
             if (CommonHelper.TryGetInterfaceArguments(type, typeof(IEnumerable<>), out var arguments) is false)
@@ -49,7 +67,17 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile().Invoke(converters);
         }
 
-        private static SequenceBuilder<T, R> CreateCollectionBuilder<T, R>()
+        private static MethodInfo GetMethodInfo<T>(Func<IEnumerable<KeyValuePair<Placeholder, Placeholder>>, T> func) where T : IEnumerable<KeyValuePair<Placeholder, Placeholder>>
+        {
+            return func.Method.GetGenericMethodDefinition();
+        }
+
+        private static MethodInfo GetMethodInfo(Func<IReadOnlyList<IConverter>, IConverter> func)
+        {
+            return func.Method.GetGenericMethodDefinition();
+        }
+
+        private static SequenceBuilder<T, R> GetAssignableBuilder<T, R>()
         {
             static Func<R, T> Invoke()
             {
@@ -65,18 +93,18 @@ namespace Mikodev.Binary.Internal.Contexts
             return new DelegateEnumerableBuilder<T, R>(constructor);
         }
 
-        private static SequenceBuilder<T, R> CreateCollectionBuilder<T, R, I>()
+        private static SequenceBuilder<T, R> GetBuilder<T, R, I>()
         {
             static Func<Expression, Expression> Method()
             {
                 var type = typeof(T);
+                if (type.IsGenericType && ImmutableCollectionConstructors.TryGetValue(type.GetGenericTypeDefinition(), out var method))
+                    return x => Expression.Call(method.MakeGenericMethod(type.GetGenericArguments()), x);
                 if (type.IsAbstract || type.IsInterface)
                     return null;
                 var types = new[] { typeof(I) };
                 if (type.GetConstructor(types) is { } constructor)
                     return x => Expression.New(constructor, x);
-                if (type.Namespace is "System.Collections.Immutable")
-                    return x => Expression.Call(Expression.Field(null, type, "Empty"), "AddRange", null, x);
                 return null;
             }
 
@@ -91,12 +119,12 @@ namespace Mikodev.Binary.Internal.Contexts
             }
 
             if (typeof(T).IsAssignableFrom(typeof(R)))
-                return CreateCollectionBuilder<T, R>();
+                return GetAssignableBuilder<T, R>();
             var constructor = Invoke();
             return new DelegateEnumerableBuilder<T, R>(constructor);
         }
 
-        private static SequenceCounter<T> CreateCollectionCounter<T, E>()
+        private static SequenceCounter<T> GetCounter<T, E>()
         {
             static Type Invoke()
             {
@@ -111,16 +139,16 @@ namespace Mikodev.Binary.Internal.Contexts
             return Invoke() is { } type ? (SequenceCounter<T>)Activator.CreateInstance(type.MakeGenericType(typeof(T), typeof(E))) : null;
         }
 
-        private static IConverter CreateSetConverter<T, E>(IReadOnlyList<IConverter> converters) where T : ISet<E>
+        private static IConverter GetSetConverter<T, E>(IReadOnlyList<IConverter> converters) where T : ISet<E>
         {
             var converter = (Converter<E>)converters.Single();
             var adapter = new SetAdapter<T, E>(converter);
-            var builder = CreateCollectionBuilder<T, HashSet<E>>();
+            var builder = GetAssignableBuilder<T, HashSet<E>>();
             var counter = typeof(T) == typeof(HashSet<E>) ? (SequenceCounter<T>)(object)new HashSetCounter<E>() : new CollectionCounter<T, E>();
             return new SequenceConverter<T, HashSet<E>>(adapter, builder, counter, converter.Length);
         }
 
-        private static IConverter CreateLinkedListConverter<T, E>(IReadOnlyList<IConverter> converters)
+        private static IConverter GetLinkedListConverter<T, E>(IReadOnlyList<IConverter> converters)
         {
             Debug.Assert(typeof(T) == typeof(LinkedList<E>));
             var converter = (Converter<E>)converters.Single();
@@ -130,21 +158,21 @@ namespace Mikodev.Binary.Internal.Contexts
             return new SequenceConverter<LinkedList<E>, LinkedList<E>>(adapter, builder, counter, converter.Length);
         }
 
-        private static IConverter CreateEnumerableConverter<T, E>(IReadOnlyList<IConverter> converters) where T : IEnumerable<E>
+        private static IConverter GetEnumerableConverter<T, E>(IReadOnlyList<IConverter> converters) where T : IEnumerable<E>
         {
             var converter = (Converter<E>)converters.Single();
-            var builder = CreateCollectionBuilder<T, ArraySegment<E>, IEnumerable<E>>();
+            var builder = GetBuilder<T, ArraySegment<E>, IEnumerable<E>>();
             var adapter = new EnumerableAdapter<T, E>(converter);
-            var counter = CreateCollectionCounter<T, E>();
+            var counter = GetCounter<T, E>();
             return new SequenceConverter<T, ArraySegment<E>>(adapter, builder, counter, converter.Length);
         }
 
-        private static IConverter CreateDictionaryConverter<T, K, V>(IReadOnlyList<IConverter> converters) where T : IEnumerable<KeyValuePair<K, V>>
+        private static IConverter GetDictionaryConverter<T, K, V>(IReadOnlyList<IConverter> converters) where T : IEnumerable<KeyValuePair<K, V>>
         {
             var itemLength = ContextMethods.GetItemLength(converters);
             var adapter = new DictionaryAdapter<T, K, V>((Converter<K>)converters[0], (Converter<V>)converters[1], itemLength);
-            var builder = CreateCollectionBuilder<T, Dictionary<K, V>, IDictionary<K, V>>();
-            var counter = typeof(T) == typeof(Dictionary<K, V>) ? (SequenceCounter<T>)(object)new DictionaryCounter<K, V>() : CreateCollectionCounter<T, KeyValuePair<K, V>>();
+            var builder = GetBuilder<T, Dictionary<K, V>, IDictionary<K, V>>();
+            var counter = typeof(T) == typeof(Dictionary<K, V>) ? (SequenceCounter<T>)(object)new DictionaryCounter<K, V>() : GetCounter<T, KeyValuePair<K, V>>();
             return new SequenceConverter<T, Dictionary<K, V>>(adapter, builder, counter, itemLength);
         }
     }
