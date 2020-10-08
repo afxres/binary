@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Mikodev.Binary.Internal.Sequence.Adapters
 {
-    internal sealed class SetAdapter<T, E> : SequenceAdapter<T, HashSet<E>> where T : ISet<E>
+    internal sealed class SetAdapter<T, E> : SequenceAdapter<T, HashSet<E>> where T : IEnumerable<E>
     {
         private readonly Converter<E> converter;
 
@@ -24,8 +24,11 @@ namespace Mikodev.Binary.Internal.Sequence.Adapters
             if (item is HashSet<E> { Count: var count } set && count < Limits)
                 foreach (var i in set)
                     converter.EncodeAuto(ref allocator, i);
+            else if (item is ICollection<E> collection)
+                adapter.Encode(ref allocator, SequenceMethods.GetContents(collection));
             else
-                adapter.Encode(ref allocator, SequenceMethods.GetContents(item));
+                foreach (var i in item)
+                    converter.EncodeAuto(ref allocator, i);
         }
 
         public override HashSet<E> Decode(ReadOnlySpan<byte> span)

@@ -9,21 +9,21 @@ open Xunit
 
 let generator = Generator.CreateDefault()
 
-type CollectionT<'T>(item : 'T list) =
+type FakeEnumerable<'T>(item : 'T list) =
     interface IEnumerable<'T> with
         member __.GetEnumerator(): IEnumerator = (item :> seq<_>).GetEnumerator() :> IEnumerator
 
         member __.GetEnumerator(): IEnumerator<'T> = (item :> seq<_>).GetEnumerator()
 
 [<AbstractClass>]
-type CollectionA<'T>(item : 'T seq) =
+type FakeEnumerableAbstract<'T>(item : 'T seq) =
     interface IEnumerable<'T> with
         member __.GetEnumerator(): IEnumerator = item.GetEnumerator() :> IEnumerator
 
         member __.GetEnumerator(): IEnumerator<'T> = item.GetEnumerator()
 
-type CollectionI<'T>(item : 'T seq) =
-    inherit CollectionA<'T>(item)
+type FakeEnumerableImplementation<'T>(item : 'T seq) =
+    inherit FakeEnumerableAbstract<'T>(item)
 
 type DictionaryP<'K, 'V>(item : KeyValuePair<'K, 'V> list) =
     interface IEnumerable<KeyValuePair<'K, 'V>> with
@@ -32,16 +32,16 @@ type DictionaryP<'K, 'V>(item : KeyValuePair<'K, 'V> list) =
         member __.GetEnumerator(): IEnumerator<KeyValuePair<'K, 'V>> = (item :> seq<_>).GetEnumerator()
 
 [<AbstractClass>]
-type DictionaryA<'K, 'V>(item : IDictionary<'K, 'V>) =
+type FakeEnumerableKeyValuePairAbstract<'K, 'V>(item : IDictionary<'K, 'V>) =
     interface IEnumerable<KeyValuePair<'K, 'V>> with
         member __.GetEnumerator(): IEnumerator = item.GetEnumerator() :> IEnumerator
 
         member __.GetEnumerator(): IEnumerator<KeyValuePair<'K, 'V>> = item.GetEnumerator()
 
-type DictionaryI<'K, 'V>(item : IDictionary<'K, 'V>) =
-    inherit DictionaryA<'K, 'V>(item)
+type FakeEnumerableKeyValuePairImplementation<'K, 'V>(item : IDictionary<'K, 'V>) =
+    inherit FakeEnumerableKeyValuePairAbstract<'K, 'V>(item)
 
-type DictionaryR<'K, 'V>(item : Queue<KeyValuePair<'K, 'V>>) =
+type FakeDictionary<'K, 'V>(item : Queue<KeyValuePair<'K, 'V>>) =
     interface IDictionary<'K, 'V> with
         member __.Add(key: 'K, value: 'V): unit = raise (System.NotImplementedException())
 
@@ -75,7 +75,7 @@ type DictionaryR<'K, 'V>(item : Queue<KeyValuePair<'K, 'V>>) =
 
         member __.Values: ICollection<'V> = raise (System.NotImplementedException())
 
-type DictionaryO<'K, 'V>(item : KeyValuePair<'K, 'V> array) =
+type FakeReadOnlyDictionary<'K, 'V>(item : KeyValuePair<'K, 'V> array) =
     interface IReadOnlyDictionary<'K, 'V> with
         member __.ContainsKey(key: 'K): bool = raise (System.NotImplementedException())
 
@@ -93,7 +93,7 @@ type DictionaryO<'K, 'V>(item : KeyValuePair<'K, 'V> array) =
 
         member __.Values: IEnumerable<'V> = raise (System.NotImplementedException())
 
-type DictionaryD<'K, 'V>(item : KeyValuePair<'K, 'V> ResizeArray) =
+type FakeDictionaryReadOnlyDictionary<'K, 'V>(item : KeyValuePair<'K, 'V> ResizeArray) =
     interface IEnumerable<KeyValuePair<'K, 'V>> with
         member __.GetEnumerator(): IEnumerator = (item :> seq<_>).GetEnumerator() :> IEnumerator
 
@@ -148,7 +148,7 @@ let Test (enumerable : 'a) (expected : 'b) (adaptedType : Type) =
     // test internal builder name
     let builderField = converter.GetType().GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic)
     let builder = builderField.GetValue(converter)
-    Assert.Equal("DelegateEnumerableBuilder`2", builder.GetType().Name)
+    Assert.Equal("DelegateBuilder`2", builder.GetType().Name)
     let builderGenericArguments = builder.GetType().GetGenericArguments()
     Assert.Equal(adaptedType, builderGenericArguments |> Array.last)
 
@@ -162,12 +162,12 @@ let Test (enumerable : 'a) (expected : 'b) (adaptedType : Type) =
 
 [<Fact>]
 let ``No suitable constructor (enumerable, constructor not match)`` () =
-    Test (CollectionT [ 1; 2; 3 ]) [ 1; 2; 3 ] typeof<ArraySegment<int>>
+    Test (FakeEnumerable [ 1; 2; 3 ]) [ 1; 2; 3 ] typeof<ArraySegment<int>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (enumerable, abstract)`` () =
-    Test ((CollectionI [ 1; 2; 3 ]) :> CollectionA<_>) [ 1; 2; 3 ] typeof<ArraySegment<int>>
+    Test ((FakeEnumerableImplementation [ 1; 2; 3 ]) :> FakeEnumerableAbstract<_>) [ 1; 2; 3 ] typeof<ArraySegment<int>>
     ()
 
 [<Fact>]
@@ -177,20 +177,20 @@ let ``No suitable constructor (enumerable with 'KeyValuePair' sequence construct
 
 [<Fact>]
 let ``No suitable constructor (enumerable with 'KeyValuePair' sequence constructor, abstract)`` () =
-    Test ((DictionaryI(dict [ 1, "one"; 0, "ZERO" ])) :> DictionaryA<_, _>) [ 1, "one"; 0, "ZERO" ] typeof<ArraySegment<KeyValuePair<int, string>>>
+    Test ((FakeEnumerableKeyValuePairImplementation(dict [ 1, "one"; 0, "ZERO" ])) :> FakeEnumerableKeyValuePairAbstract<_, _>) [ 1, "one"; 0, "ZERO" ] typeof<ArraySegment<KeyValuePair<int, string>>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary of 'IDictionary', constructor not match)`` () =
-    Test ((DictionaryR(dict [ 1, "one"; 0, "ZERO" ] |> Queue<_>))) [ 1, "one"; 0, "ZERO" ] typeof<Dictionary<int, string>>
+    Test ((FakeDictionary(dict [ 1, "one"; 0, "ZERO" ] |> Queue<_>))) [ 1, "one"; 0, "ZERO" ] typeof<ArraySegment<KeyValuePair<int, string>>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary of 'IReadOnlyDictionary', constructor not match)`` () =
-    Test ((DictionaryO(dict [ 1, "one"; 0, "ZERO" ] |> Seq.toArray))) [ 1, "one"; 0, "ZERO" ] typeof<Dictionary<int, string>>
+    Test ((FakeReadOnlyDictionary(dict [ 1, "one"; 0, "ZERO" ] |> Seq.toArray))) [ 1, "one"; 0, "ZERO" ] typeof<ArraySegment<KeyValuePair<int, string>>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary of 'IDictionary' and 'IReadOnlyDictionary', constructor not match)`` () =
-    Test ((DictionaryD(dict [ 1, "one"; 0, "ZERO" ] |> ResizeArray))) [ 1, "one"; 0, "ZERO" ] typeof<Dictionary<int, string>>
+    Test ((FakeDictionaryReadOnlyDictionary(dict [ 1, "one"; 0, "ZERO" ] |> ResizeArray))) [ 1, "one"; 0, "ZERO" ] typeof<ArraySegment<KeyValuePair<int, string>>>
     ()

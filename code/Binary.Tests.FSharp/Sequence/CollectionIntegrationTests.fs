@@ -1,10 +1,19 @@
-﻿module Sequence.CollectionLayoutTests
+﻿module Sequence.CollectionIntegrationTests
 
 open Mikodev.Binary
 open System
+open System.Collections.Concurrent
 open System.Collections.Generic
+open System.Collections.Immutable
 open System.Reflection
 open Xunit
+
+type TestConverter<'a> (length : int) =
+    inherit Converter<'a>(length)
+
+    override __.Encode(_, _) = raise (NotSupportedException())
+
+    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : 'a = raise (NotSupportedException())
 
 let generator = Generator.CreateDefault()
 
@@ -93,43 +102,39 @@ let TestNull<'a when 'a : null> (adapterName : string) (builderName : string) (c
     ()
 
 [<Fact>]
-let ``Collection Layout Integration Test (adapter type test, builder type test, null or empty collection test, default interface implementation test)`` () =
+let ``Collection Integration Test (adapter type test, builder type test, null or empty collection test, default interface implementation test)`` () =
     Test generator "SpanLikeVariableAdapter`1" "ArraySegmentBuilder`1" (ArraySegment<string>())
     Test generator "SpanLikeConstantAdapter`1" "MemoryBuilder`1" (Memory<TimeSpan>())
     Test generator "SpanLikeNativeEndianAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<int>())
     TestNull "SpanLikeNativeEndianAdapter`1" "ArrayBuilder`1" (Array.zeroCreate<int> 0)
     TestNull "SpanLikeVariableAdapter`1" "ListBuilder`1" (ResizeArray<string>())
 
-    TestNull<IEnumerable<_>> "EnumerableAdapter`2" "DelegateEnumerableBuilder`2" (ResizeArray<string>())
-    TestNull<IList<_>> "EnumerableAdapter`2" "DelegateEnumerableBuilder`2" (Array.zeroCreate<int> 0)
-    TestNull<IReadOnlyList<_>> "EnumerableAdapter`2" "DelegateEnumerableBuilder`2" (ResizeArray<string>())
-    TestNull<ICollection<_>> "EnumerableAdapter`2" "DelegateEnumerableBuilder`2" (Array.zeroCreate<int> 0)
-    TestNull<IReadOnlyCollection<_>> "EnumerableAdapter`2" "DelegateEnumerableBuilder`2" (Array.zeroCreate<int> 0)
-    TestNull<Queue<_>> "EnumerableAdapter`2" "DelegateEnumerableBuilder`2" (Queue<int> 0)
+    TestNull<IEnumerable<_>> "EnumerableAdapter`2" "DelegateBuilder`2" (ResizeArray<string>())
+    TestNull<IList<_>> "EnumerableAdapter`2" "DelegateBuilder`2" (Array.zeroCreate<int> 0)
+    TestNull<IReadOnlyList<_>> "EnumerableAdapter`2" "DelegateBuilder`2" (ResizeArray<string>())
+    TestNull<ICollection<_>> "EnumerableAdapter`2" "DelegateBuilder`2" (Array.zeroCreate<int> 0)
+    TestNull<IReadOnlyCollection<_>> "EnumerableAdapter`2" "DelegateBuilder`2" (Array.zeroCreate<int> 0)
+    TestNull<Queue<_>> "EnumerableAdapter`2" "DelegateBuilder`2" (Queue<int> 0)
 
-    TestNull<ISet<_>> "SetAdapter`2" "DelegateEnumerableBuilder`2" (HashSet<TimeSpan>())
-    TestNull<HashSet<_>> "SetAdapter`2" "FallbackEnumerableBuilder`1" (HashSet<int64>())
-    TestNull<HashSet<_>> "SetAdapter`2" "FallbackEnumerableBuilder`1" (HashSet<string>())
-    TestNull<LinkedList<_>> "LinkedListAdapter`1" "FallbackEnumerableBuilder`1" (LinkedList<double>())
-    TestNull<LinkedList<_>> "LinkedListAdapter`1" "FallbackEnumerableBuilder`1" (LinkedList<string>())
+    TestNull<ISet<_>> "SetAdapter`2" "DelegateBuilder`2" (HashSet<TimeSpan>())
+    TestNull<HashSet<_>> "SetAdapter`2" "FallbackBuilder`1" (HashSet<int64>())
+    TestNull<HashSet<_>> "SetAdapter`2" "FallbackBuilder`1" (HashSet<string>())
+    TestNull<LinkedList<_>> "LinkedListAdapter`1" "FallbackBuilder`1" (LinkedList<double>())
+    TestNull<LinkedList<_>> "LinkedListAdapter`1" "FallbackBuilder`1" (LinkedList<string>())
 
-    TestNull<Dictionary<_, _>> "DictionaryAdapter`3" "FallbackEnumerableBuilder`1" (Dictionary<int16, int64>())
-    TestNull<Dictionary<_, _>> "DictionaryAdapter`3" "FallbackEnumerableBuilder`1" (Dictionary<string, int>())
-    TestNull<IDictionary<_, _>> "DictionaryAdapter`3" "DelegateEnumerableBuilder`2" (Dictionary<int, string>())
-    TestNull<IReadOnlyDictionary<_, _>> "DictionaryAdapter`3" "DelegateEnumerableBuilder`2" (Dictionary<string, int>())
-    TestNull<SortedList<_, _>> "DictionaryAdapter`3" "DelegateEnumerableBuilder`2" (SortedList<string, int>())
-    TestNull<SortedDictionary<_, _>> "DictionaryAdapter`3" "DelegateEnumerableBuilder`2" (SortedDictionary<TimeSpan, DateTime>())
+    TestNull<Dictionary<_, _>> "DictionaryAdapter`3" "FallbackBuilder`1" (Dictionary<int16, int64>())
+    TestNull<Dictionary<_, _>> "DictionaryAdapter`3" "FallbackBuilder`1" (Dictionary<string, int>())
+    TestNull<IDictionary<_, _>> "DictionaryAdapter`3" "DelegateBuilder`2" (Dictionary<int, string>())
+    TestNull<IReadOnlyDictionary<_, _>> "DictionaryAdapter`3" "DelegateBuilder`2" (Dictionary<string, int>())
+    TestNull<SortedList<_, _>> "DictionaryAdapter`3" "DelegateBuilder`2" (SortedList<string, int>())
+    TestNull<SortedDictionary<_, _>> "DictionaryAdapter`3" "DelegateBuilder`2" (SortedDictionary<TimeSpan, DateTime>())
+
+    TestNull<ConcurrentDictionary<_, _>> "EnumerableAdapter`2" "DelegateBuilder`2" (ConcurrentDictionary<TimeSpan, DateTime>())
+    TestNull<ImmutableDictionary<_, _>> "EnumerableAdapter`2" "DelegateBuilder`2" (ImmutableDictionary.Create<TimeSpan, DateTime>())
     ()
 
-type TestConverter<'a> (length : int) =
-    inherit Converter<'a>(length)
-
-    override __.Encode(_, _) = raise (NotSupportedException())
-
-    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : 'a = raise (NotSupportedException())
-
 [<Fact>]
-let ``Collection Layout Integration Test (span-like collection)`` () =
+let ``Collection Integration Test (span-like collection)`` () =
     Test (Generator.CreateDefault()) "SpanLikeNativeEndianAdapter`1" "MemoryBuilder`1" (Memory<single>())
     Test (Generator.CreateDefaultBuilder().Build()) "SpanLikeNativeEndianAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<double>())
     Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<int32>(4)).Build()) "SpanLikeConstantAdapter`1" "MemoryBuilder`1" (Memory<int32>())

@@ -1,6 +1,7 @@
 ﻿namespace Creators
 
 open Mikodev.Binary
+open System
 open System.Reflection
 open Xunit
 
@@ -50,11 +51,11 @@ type ListTests () =
         let context = { new IGeneratorContext with member __.GetConverter t = types.[t] }
 
         let methodType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "FallbackCollectionMethods") |> Array.exactlyOne
-        let method = methodType.GetMethod("GetConverter", BindingFlags.Static ||| BindingFlags.NonPublic)
+        let method = methodType.GetMethod("GetConverter", BindingFlags.Static ||| BindingFlags.NonPublic, null, [| typeof<IGeneratorContext>; typeof<Type> |], null)
 
         let alpha = method.Invoke(null, [| box context; typeof<'a vlist> |]) :?> Converter<'a vlist>
         let alphaBuilder = alpha.GetType().GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(alpha)
-        Assert.Equal("DelegateEnumerableBuilder`2", alphaBuilder.GetType().Name)
+        Assert.Equal("DelegateBuilder`2", alphaBuilder.GetType().Name)
         let bravo = generator.GetConverter<'a vlist>()
         let bravoBuilder = bravo.GetType().GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(bravo)
         Assert.Equal("ListBuilder`1", bravoBuilder.GetType().Name)
