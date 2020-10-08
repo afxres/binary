@@ -8,6 +8,14 @@ namespace Mikodev.Binary.Internal.Sequence
     internal static class SequenceMethods
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static int GetCapacity<T>(int byteLength, int itemLength, int fallbackCapacity)
+        {
+            Debug.Assert(byteLength > 0);
+            Debug.Assert(fallbackCapacity > 0);
+            return itemLength > 0 ? GetCapacity<T>(byteLength, itemLength) : fallbackCapacity;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int GetCapacity<T>(int byteLength, int itemLength)
         {
             Debug.Assert(byteLength > 0);

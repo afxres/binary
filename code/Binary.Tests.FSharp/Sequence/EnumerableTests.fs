@@ -182,15 +182,15 @@ let ``No suitable constructor (enumerable with 'KeyValuePair' sequence construct
 
 [<Fact>]
 let ``No suitable constructor (dictionary of 'IDictionary', constructor not match)`` () =
-    Test ((FakeDictionary(dict [ 1, "one"; 0, "ZERO" ] |> Queue<_>))) [ 1, "one"; 0, "ZERO" ] typeof<ArraySegment<KeyValuePair<int, string>>>
+    Test ((FakeDictionary(dict [ 1, "one"; 0, "ZERO" ] |> Queue<_>))) [ 1, "one"; 0, "ZERO" ] typeof<Dictionary<int, string>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary of 'IReadOnlyDictionary', constructor not match)`` () =
-    Test ((FakeReadOnlyDictionary(dict [ 1, "one"; 0, "ZERO" ] |> Seq.toArray))) [ 1, "one"; 0, "ZERO" ] typeof<ArraySegment<KeyValuePair<int, string>>>
+    Test ((FakeReadOnlyDictionary(dict [ 1, "one"; 0, "ZERO" ] |> Seq.toArray))) [ 1, "one"; 0, "ZERO" ] typeof<Dictionary<int, string>>
     ()
 
 [<Fact>]
 let ``No suitable constructor (dictionary of 'IDictionary' and 'IReadOnlyDictionary', constructor not match)`` () =
-    Test ((FakeDictionaryReadOnlyDictionary(dict [ 1, "one"; 0, "ZERO" ] |> ResizeArray))) [ 1, "one"; 0, "ZERO" ] typeof<ArraySegment<KeyValuePair<int, string>>>
+    Test ((FakeDictionaryReadOnlyDictionary(dict [ 1, "one"; 0, "ZERO" ] |> ResizeArray))) [ 1, "one"; 0, "ZERO" ] typeof<Dictionary<int, string>>
     ()

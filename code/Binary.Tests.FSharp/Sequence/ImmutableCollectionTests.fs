@@ -25,7 +25,8 @@ type ImmutableCollectionTests() =
         Assert.Equal("SequenceConverter`2", converterType.Name)
         let adapter = converterType.GetField("adapter", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter
         let adapterType = adapter.GetType()
-        Assert.Equal("EnumerableAdapter`2", adapterType.Name)
+        let adapterName = if typeof<'T>.GetGenericArguments().Length = 1 then "EnumerableAdapter`2" else "KeyValueEnumerableAdapter`3"
+        Assert.Equal(adapterName, adapterType.Name)
         converter
 
     let Test (item : 'T when 'T :> 'E seq) =

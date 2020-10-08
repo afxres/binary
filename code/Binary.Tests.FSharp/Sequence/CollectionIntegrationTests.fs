@@ -129,8 +129,8 @@ let ``Collection Integration Test (adapter type test, builder type test, null or
     TestNull<SortedList<_, _>> "DictionaryAdapter`3" "DelegateBuilder`2" (SortedList<string, int>())
     TestNull<SortedDictionary<_, _>> "DictionaryAdapter`3" "DelegateBuilder`2" (SortedDictionary<TimeSpan, DateTime>())
 
-    TestNull<ConcurrentDictionary<_, _>> "EnumerableAdapter`2" "DelegateBuilder`2" (ConcurrentDictionary<TimeSpan, DateTime>())
-    TestNull<ImmutableDictionary<_, _>> "EnumerableAdapter`2" "DelegateBuilder`2" (ImmutableDictionary.Create<TimeSpan, DateTime>())
+    TestNull<ConcurrentDictionary<_, _>> "KeyValueEnumerableAdapter`3" "DelegateBuilder`2" (ConcurrentDictionary<TimeSpan, DateTime>())
+    TestNull<ImmutableDictionary<_, _>> "KeyValueEnumerableAdapter`3" "DelegateBuilder`2" (ImmutableDictionary.Create<TimeSpan, DateTime>())
     ()
 
 [<Fact>]

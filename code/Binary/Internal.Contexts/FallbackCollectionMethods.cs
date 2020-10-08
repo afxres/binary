@@ -124,22 +124,20 @@ namespace Mikodev.Binary.Internal.Contexts
                 return GetEnumerableInterfaceAssignableConverter<T, E>(context);
             if (typeof(T).IsInterface && typeof(T).IsAssignableFrom(typeof(HashSet<E>)))
                 return GetHashSetInterfaceAssignableConverter<T, E>(context);
-            var func = GetNewFuncOrDefault(typeof(T), typeof(IEnumerable<E>));
-            return GetEnumerableConverter<T, E>(context, func);
+            return GetEnumerableConverter<T, E>(context, GetNewFuncOrDefault(typeof(T), typeof(IEnumerable<E>)));
         }
 
         private static IConverter GetConverter<T, K, V>(IGeneratorContext context) where T : IEnumerable<KeyValuePair<K, V>>
         {
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } method)
-                return GetEnumerableConverter<T, KeyValuePair<K, V>>(context, x => Expression.Call(method.MakeGenericMethod(typeof(K), typeof(V)), x));
+                return GetKeyValueEnumerableConverter<T, K, V>(context, x => Expression.Call(method.MakeGenericMethod(typeof(K), typeof(V)), x));
             if (typeof(T) == typeof(Dictionary<K, V>))
                 return GetDictionaryConverter<K, V>(context);
             if (typeof(T).IsInterface && typeof(T).IsAssignableFrom(typeof(Dictionary<K, V>)))
                 return GetDictionaryInterfaceAssignableConverter<T, K, V>(context);
-            var func = GetNewFuncOrDefault(typeof(T), typeof(IDictionary<K, V>));
-            if (func is null)
-                return GetConverter<T, KeyValuePair<K, V>>(context);
-            return GetDictionaryConverter<T, K, V>(context, func);
+            if (GetNewFuncOrDefault(typeof(T), typeof(IEnumerable<KeyValuePair<K, V>>)) is { } result)
+                return GetKeyValueEnumerableConverter<T, K, V>(context, result);
+            return GetDictionaryConverter<T, K, V>(context, GetNewFuncOrDefault(typeof(T), typeof(IDictionary<K, V>)));
         }
 
         private static IConverter GetHashSetConverter<E>(IGeneratorContext context)
@@ -213,6 +211,17 @@ namespace Mikodev.Binary.Internal.Contexts
                 var builder = new DelegateBuilder<T, Dictionary<K, V>>(x => (T)(object)x);
                 var counter = GetCounter<T, KeyValuePair<K, V>>();
                 return new SequenceConverter<T, Dictionary<K, V>>(adapter, builder, counter, itemLength);
+            });
+        }
+
+        private static IConverter GetKeyValueEnumerableConverter<T, K, V>(IGeneratorContext context, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
+        {
+            return Invoke<K, V>(context, (initConverter, tailConverter, itemLength) =>
+            {
+                var adapter = new KeyValueEnumerableAdapter<T, K, V>(initConverter, tailConverter, itemLength);
+                var builder = GetBuilder<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(method);
+                var counter = GetCounter<T, KeyValuePair<K, V>>();
+                return new SequenceConverter<T, IEnumerable<KeyValuePair<K, V>>>(adapter, builder, counter, itemLength);
             });
         }
     }
