@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Mikodev.Binary.Internal.Sequence.Adapters
 {
@@ -8,21 +7,20 @@ namespace Mikodev.Binary.Internal.Sequence.Adapters
     {
         private readonly int itemLength;
 
-        private readonly Converter<K> initConverter;
+        private readonly Converter<K> init;
 
-        private readonly Converter<V> tailConverter;
+        private readonly Converter<V> tail;
 
-        public KeyValueEnumerableAdapter(Converter<K> initConverter, Converter<V> tailConverter, int itemLength)
+        public KeyValueEnumerableAdapter(Converter<K> init, Converter<V> tail, int itemLength)
         {
+            this.init = init;
+            this.tail = tail;
             this.itemLength = itemLength;
-            this.initConverter = initConverter;
-            this.tailConverter = tailConverter;
-            Debug.Assert(itemLength > 0 || initConverter.Length is 0 || tailConverter.Length is 0);
         }
 
         public override void Encode(ref Allocator allocator, T item)
         {
-            SequenceKeyValueHelper.Encode(ref allocator, initConverter, tailConverter, item);
+            SequenceKeyValueHelper.Encode(ref allocator, this.init, this.tail, item);
         }
 
         public override IEnumerable<KeyValuePair<K, V>> Decode(ReadOnlySpan<byte> span)
@@ -31,11 +29,11 @@ namespace Mikodev.Binary.Internal.Sequence.Adapters
             if (byteLength is 0)
                 return Array.Empty<KeyValuePair<K, V>>();
             const int Initial = 8;
-            var capacity = SequenceMethods.GetCapacity<KeyValuePair<K, V>>(byteLength, itemLength, Initial);
+            var capacity = SequenceMethods.GetCapacity<KeyValuePair<K, V>>(byteLength, this.itemLength, Initial);
             var item = new List<KeyValuePair<K, V>>(capacity);
             var body = span;
-            var init = initConverter;
-            var tail = tailConverter;
+            var init = this.init;
+            var tail = this.tail;
             while (body.IsEmpty is false)
             {
                 var head = init.DecodeAuto(ref body);

@@ -46,9 +46,9 @@ namespace Mikodev.Binary.Internal.Contexts
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(type, InvalidTypeDefinitions.Contains))
                 throw new ArgumentException($"Invalid collection type: {type}");
             if (CommonHelper.TryGetInterfaceArguments(type, typeof(IDictionary<,>), out var types) || CommonHelper.TryGetInterfaceArguments(type, typeof(IReadOnlyDictionary<,>), out types))
-                return Invoke(GetConverter<IDictionary<It, It>, It, It>, context, CommonHelper.Concat(type, types));
+                return GetConverter(context, GetConverter<IEnumerable<KeyValuePair<It, It>>, It, It>, CommonHelper.Concat(type, types));
             else
-                return Invoke(GetConverter<IEnumerable<It>, It>, context, CommonHelper.Concat(type, arguments));
+                return GetConverter(context, GetConverter<IEnumerable<It>, It>, CommonHelper.Concat(type, arguments));
         }
 
         private static MethodInfo GetMethodInfo<T>(Func<IEnumerable<KeyValuePair<It, It>>, T> func) where T : IEnumerable<KeyValuePair<It, It>>
@@ -56,20 +56,12 @@ namespace Mikodev.Binary.Internal.Contexts
             return func.Method.GetGenericMethodDefinition();
         }
 
-        private static U Invoke<T, U>(Func<T, U> func, T context, params Type[] types)
+        private static IConverter GetConverter(IGeneratorContext context, Func<IGeneratorContext, IConverter> func, params Type[] types)
         {
-            var source = Expression.Parameter(typeof(T), "context");
+            var source = Expression.Parameter(typeof(IGeneratorContext), "context");
             var method = func.Method.GetGenericMethodDefinition().MakeGenericMethod(types);
-            var lambda = Expression.Lambda<Func<T, U>>(Expression.Call(method, source), source);
+            var lambda = Expression.Lambda<Func<IGeneratorContext, IConverter>>(Expression.Call(method, source), source);
             return lambda.Compile().Invoke(context);
-        }
-
-        private static IConverter Invoke<K, V>(IGeneratorContext context, Func<Converter<K>, Converter<V>, int, IConverter> func)
-        {
-            var initConverter = (Converter<K>)context.GetConverter(typeof(K));
-            var tailConverter = (Converter<V>)context.GetConverter(typeof(V));
-            var itemLength = ContextMethods.GetItemLength(new IConverter[] { initConverter, tailConverter });
-            return func.Invoke(initConverter, tailConverter, itemLength);
         }
 
         private static Func<Expression, Expression> GetNewFuncOrDefault(Type type, Type enumerable)
@@ -114,115 +106,106 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static IConverter GetConverter<T, E>(IGeneratorContext context) where T : IEnumerable<E>
         {
+            var converter = (Converter<E>)context.GetConverter(typeof(E));
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } method)
-                return GetEnumerableConverter<T, E>(context, x => Expression.Call(method.MakeGenericMethod(typeof(E)), x));
+                return GetEnumerableConverter<T, E>(converter, x => Expression.Call(method.MakeGenericMethod(typeof(E)), x));
             if (typeof(T) == typeof(HashSet<E>))
-                return GetHashSetConverter<E>(context);
+                return GetHashSetConverter(converter);
             if (typeof(T) == typeof(LinkedList<E>))
-                return GetLinkedListConverter<E>(context);
+                return GetLinkedListConverter(converter);
             if (typeof(T).IsInterface && typeof(T).IsAssignableFrom(typeof(ArraySegment<E>)))
-                return GetEnumerableInterfaceAssignableConverter<T, E>(context);
+                return GetEnumerableInterfaceAssignableConverter<T, E>(converter);
             if (typeof(T).IsInterface && typeof(T).IsAssignableFrom(typeof(HashSet<E>)))
-                return GetHashSetInterfaceAssignableConverter<T, E>(context);
-            return GetEnumerableConverter<T, E>(context, GetNewFuncOrDefault(typeof(T), typeof(IEnumerable<E>)));
+                return GetHashSetInterfaceAssignableConverter<T, E>(converter);
+            return GetEnumerableConverter<T, E>(converter, GetNewFuncOrDefault(typeof(T), typeof(IEnumerable<E>)));
         }
 
         private static IConverter GetConverter<T, K, V>(IGeneratorContext context) where T : IEnumerable<KeyValuePair<K, V>>
         {
+            var init = (Converter<K>)context.GetConverter(typeof(K));
+            var tail = (Converter<V>)context.GetConverter(typeof(V));
+            var itemLength = ContextMethods.GetItemLength(new IConverter[] { init, tail });
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } method)
-                return GetKeyValueEnumerableConverter<T, K, V>(context, x => Expression.Call(method.MakeGenericMethod(typeof(K), typeof(V)), x));
+                return GetKeyValueEnumerableConverter<T, K, V>(init, tail, itemLength, x => Expression.Call(method.MakeGenericMethod(typeof(K), typeof(V)), x));
             if (typeof(T) == typeof(Dictionary<K, V>))
-                return GetDictionaryConverter<K, V>(context);
+                return GetDictionaryConverter(init, tail, itemLength);
             if (typeof(T).IsInterface && typeof(T).IsAssignableFrom(typeof(Dictionary<K, V>)))
-                return GetDictionaryInterfaceAssignableConverter<T, K, V>(context);
-            if (GetNewFuncOrDefault(typeof(T), typeof(IEnumerable<KeyValuePair<K, V>>)) is { } result)
-                return GetKeyValueEnumerableConverter<T, K, V>(context, result);
-            return GetDictionaryConverter<T, K, V>(context, GetNewFuncOrDefault(typeof(T), typeof(IDictionary<K, V>)));
+                return GetDictionaryInterfaceAssignableConverter<T, K, V>(init, tail, itemLength);
+            if (GetNewFuncOrDefault(typeof(T), typeof(IDictionary<K, V>)) is { } result)
+                return GetDictionaryConverter<T, K, V>(init, tail, itemLength, result);
+            return GetKeyValueEnumerableConverter<T, K, V>(init, tail, itemLength, GetNewFuncOrDefault(typeof(T), typeof(IEnumerable<KeyValuePair<K, V>>)));
         }
 
-        private static IConverter GetHashSetConverter<E>(IGeneratorContext context)
+        private static IConverter GetHashSetConverter<E>(Converter<E> converter)
         {
-            var converter = (Converter<E>)context.GetConverter(typeof(E));
             var adapter = new SetAdapter<HashSet<E>, E>(converter);
-            return new SequenceConverter<HashSet<E>, HashSet<E>>(adapter, new FallbackBuilder<HashSet<E>>(), new HashSetCounter<E>(), converter.Length);
+            var builder = new FallbackBuilder<HashSet<E>>();
+            var counter = new HashSetCounter<E>();
+            return new SequenceConverter<HashSet<E>, HashSet<E>>(adapter, builder, counter, converter.Length);
         }
 
-        private static IConverter GetHashSetInterfaceAssignableConverter<T, E>(IGeneratorContext context) where T : IEnumerable<E>
+        private static IConverter GetHashSetInterfaceAssignableConverter<T, E>(Converter<E> converter) where T : IEnumerable<E>
         {
-            var converter = (Converter<E>)context.GetConverter(typeof(E));
             var adapter = new SetAdapter<T, E>(converter);
             var builder = new DelegateBuilder<T, HashSet<E>>(x => (T)(object)x);
             var counter = GetCounter<T, E>();
             return new SequenceConverter<T, HashSet<E>>(adapter, builder, counter, converter.Length);
         }
 
-        private static IConverter GetLinkedListConverter<E>(IGeneratorContext context)
+        private static IConverter GetLinkedListConverter<E>(Converter<E> converter)
         {
-            var converter = (Converter<E>)context.GetConverter(typeof(E));
             var adapter = new LinkedListAdapter<E>(converter);
-            return new SequenceConverter<LinkedList<E>, LinkedList<E>>(adapter, new FallbackBuilder<LinkedList<E>>(), new LinkedListCounter<E>(), converter.Length);
+            var builder = new FallbackBuilder<LinkedList<E>>();
+            var counter = new LinkedListCounter<E>();
+            return new SequenceConverter<LinkedList<E>, LinkedList<E>>(adapter, builder, counter, converter.Length);
         }
 
-        private static IConverter GetEnumerableConverter<T, E>(IGeneratorContext context, Func<Expression, Expression> method) where T : IEnumerable<E>
+        private static IConverter GetEnumerableConverter<T, E>(Converter<E> converter, Func<Expression, Expression> method) where T : IEnumerable<E>
         {
-            var converter = (Converter<E>)context.GetConverter(typeof(E));
             var adapter = new EnumerableAdapter<T, E>(converter);
             var builder = GetBuilder<T, ArraySegment<E>, IEnumerable<E>>(method);
             var counter = GetCounter<T, E>();
             return new SequenceConverter<T, ArraySegment<E>>(adapter, builder, counter, converter.Length);
         }
 
-        private static IConverter GetEnumerableInterfaceAssignableConverter<T, E>(IGeneratorContext context) where T : IEnumerable<E>
+        private static IConverter GetEnumerableInterfaceAssignableConverter<T, E>(Converter<E> converter) where T : IEnumerable<E>
         {
-            var converter = (Converter<E>)context.GetConverter(typeof(E));
             var adapter = new EnumerableAdapter<T, E>(converter);
             var builder = new DelegateBuilder<T, ArraySegment<E>>(x => (T)(object)x);
             var counter = GetCounter<T, E>();
             return new SequenceConverter<T, ArraySegment<E>>(adapter, builder, counter, converter.Length);
         }
 
-        private static IConverter GetDictionaryConverter<K, V>(IGeneratorContext context)
+        private static IConverter GetDictionaryConverter<K, V>(Converter<K> init, Converter<V> tail, int itemLength)
         {
-            return Invoke<K, V>(context, (initConverter, tailConverter, itemLength) =>
-            {
-                var adapter = new DictionaryAdapter<Dictionary<K, V>, K, V>(initConverter, tailConverter, itemLength);
-                var builder = new FallbackBuilder<Dictionary<K, V>>();
-                var counter = new DictionaryCounter<K, V>();
-                return new SequenceConverter<Dictionary<K, V>, Dictionary<K, V>>(adapter, builder, counter, itemLength);
-            });
+            var adapter = new DictionaryAdapter<Dictionary<K, V>, K, V>(init, tail, itemLength);
+            var builder = new FallbackBuilder<Dictionary<K, V>>();
+            var counter = new DictionaryCounter<K, V>();
+            return new SequenceConverter<Dictionary<K, V>, Dictionary<K, V>>(adapter, builder, counter, itemLength);
         }
 
-        private static IConverter GetDictionaryConverter<T, K, V>(IGeneratorContext context, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
+        private static IConverter GetDictionaryConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
         {
-            return Invoke<K, V>(context, (initConverter, tailConverter, itemLength) =>
-            {
-                var adapter = new DictionaryAdapter<T, K, V>(initConverter, tailConverter, itemLength);
-                var builder = GetBuilder<T, Dictionary<K, V>, IDictionary<K, V>>(method);
-                var counter = GetCounter<T, KeyValuePair<K, V>>();
-                return new SequenceConverter<T, Dictionary<K, V>>(adapter, builder, counter, itemLength);
-            });
+            var adapter = new DictionaryAdapter<T, K, V>(init, tail, itemLength);
+            var builder = GetBuilder<T, Dictionary<K, V>, IDictionary<K, V>>(method);
+            var counter = GetCounter<T, KeyValuePair<K, V>>();
+            return new SequenceConverter<T, Dictionary<K, V>>(adapter, builder, counter, itemLength);
         }
 
-        private static IConverter GetDictionaryInterfaceAssignableConverter<T, K, V>(IGeneratorContext context) where T : IEnumerable<KeyValuePair<K, V>>
+        private static IConverter GetDictionaryInterfaceAssignableConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength) where T : IEnumerable<KeyValuePair<K, V>>
         {
-            return Invoke<K, V>(context, (initConverter, tailConverter, itemLength) =>
-            {
-                var adapter = new DictionaryAdapter<T, K, V>(initConverter, tailConverter, itemLength);
-                var builder = new DelegateBuilder<T, Dictionary<K, V>>(x => (T)(object)x);
-                var counter = GetCounter<T, KeyValuePair<K, V>>();
-                return new SequenceConverter<T, Dictionary<K, V>>(adapter, builder, counter, itemLength);
-            });
+            var adapter = new DictionaryAdapter<T, K, V>(init, tail, itemLength);
+            var builder = new DelegateBuilder<T, Dictionary<K, V>>(x => (T)(object)x);
+            var counter = GetCounter<T, KeyValuePair<K, V>>();
+            return new SequenceConverter<T, Dictionary<K, V>>(adapter, builder, counter, itemLength);
         }
 
-        private static IConverter GetKeyValueEnumerableConverter<T, K, V>(IGeneratorContext context, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
+        private static IConverter GetKeyValueEnumerableConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
         {
-            return Invoke<K, V>(context, (initConverter, tailConverter, itemLength) =>
-            {
-                var adapter = new KeyValueEnumerableAdapter<T, K, V>(initConverter, tailConverter, itemLength);
-                var builder = GetBuilder<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(method);
-                var counter = GetCounter<T, KeyValuePair<K, V>>();
-                return new SequenceConverter<T, IEnumerable<KeyValuePair<K, V>>>(adapter, builder, counter, itemLength);
-            });
+            var adapter = new KeyValueEnumerableAdapter<T, K, V>(init, tail, itemLength);
+            var builder = GetBuilder<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(method);
+            var counter = GetCounter<T, KeyValuePair<K, V>>();
+            return new SequenceConverter<T, IEnumerable<KeyValuePair<K, V>>>(adapter, builder, counter, itemLength);
         }
     }
 }
