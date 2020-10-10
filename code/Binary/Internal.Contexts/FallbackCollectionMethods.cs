@@ -66,7 +66,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static Func<Expression, Expression> GetNewFuncOrDefault(Type type, Type enumerable)
         {
-            if (type.IsInterface || type.IsAbstract)
+            if (type.IsAbstract || type.IsInterface)
                 return null;
             var constructor = type.GetConstructors().FirstOrDefault(x => x.GetParameters() is { Length: 1 } data && data.Single().ParameterType == enumerable);
             if (constructor is null)

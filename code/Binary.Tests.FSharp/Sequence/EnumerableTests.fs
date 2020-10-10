@@ -9,7 +9,15 @@ open Xunit
 
 let generator = Generator.CreateDefault()
 
+type IFakeEnumerableInterface<'T> =
+    inherit IEnumerable<'T>
+
+type IFakeDictionaryInterface<'K, 'V> =
+    inherit IDictionary<'K, 'V>
+
 type FakeEnumerable<'T>(item : 'T list) =
+    interface IFakeEnumerableInterface<'T>
+
     interface IEnumerable<'T> with
         member __.GetEnumerator(): IEnumerator = (item :> seq<_>).GetEnumerator() :> IEnumerator
 
@@ -42,6 +50,8 @@ type FakeEnumerableKeyValuePairImplementation<'K, 'V>(item : IDictionary<'K, 'V>
     inherit FakeEnumerableKeyValuePairAbstract<'K, 'V>(item)
 
 type FakeDictionary<'K, 'V>(item : Queue<KeyValuePair<'K, 'V>>) =
+    interface IFakeDictionaryInterface<'K, 'V>
+
     interface IDictionary<'K, 'V> with
         member __.Add(key: 'K, value: 'V): unit = raise (System.NotImplementedException())
 
@@ -165,8 +175,13 @@ let Test (enumerable : 'a) (expected : 'b) (adaptedType : Type) (adapterName : s
     ()
 
 [<Fact>]
+let ``No suitable constructor (enumerable, custom interface)`` () =
+    Test ((FakeEnumerable [ 1; 2; 3 ]) :> IFakeEnumerableInterface<_>) [ 1; 2; 3 ] typeof<ArraySegment<int>> "EnumerableAdapter`2"
+    ()
+
+[<Fact>]
 let ``No suitable constructor (enumerable, constructor not match)`` () =
-    Test (FakeEnumerable [ 1; 2; 3 ]) [ 1; 2; 3 ] typeof<ArraySegment<int>> "EnumerableAdapter`2"
+    Test ((FakeEnumerable [ 1; 2; 3 ])) [ 1; 2; 3 ] typeof<ArraySegment<int>> "EnumerableAdapter`2"
     ()
 
 [<Fact>]
@@ -176,12 +191,17 @@ let ``No suitable constructor (enumerable, abstract)`` () =
 
 [<Fact>]
 let ``No suitable constructor (enumerable with 'KeyValuePair' sequence constructor, constructor not match)`` () =
-    Test (FakeEnumerableKeyValuePair ((dict [ 1, "one"; 0, "ZERO" ]) |> Seq.toList)) [ 1, "one"; 0, "ZERO" ] typeof<ArraySegment<KeyValuePair<int, string>>> "EnumerableAdapter`2"
+    Test ((FakeEnumerableKeyValuePair ((dict [ 1, "one"; 0, "ZERO" ]) |> Seq.toList))) [ 1, "one"; 0, "ZERO" ] typeof<ArraySegment<KeyValuePair<int, string>>> "EnumerableAdapter`2"
     ()
 
 [<Fact>]
 let ``No suitable constructor (enumerable with 'KeyValuePair' sequence constructor, abstract)`` () =
     Test ((FakeEnumerableKeyValuePairImplementation(dict [ 1, "one"; 0, "ZERO" ])) :> FakeEnumerableKeyValuePairAbstract<_, _>) [ 1, "one"; 0, "ZERO" ] typeof<ArraySegment<KeyValuePair<int, string>>> "EnumerableAdapter`2"
+    ()
+
+[<Fact>]
+let ``No suitable constructor (dictionary of 'IDictionary', custom interface)`` () =
+    Test ((FakeDictionary(dict [ 1, "one"; 0, "ZERO" ] |> Queue<_>)) :> IFakeDictionaryInterface<_, _>) [ 1, "one"; 0, "ZERO" ] typeof<IEnumerable<KeyValuePair<int, string>>> "KeyValueEnumerableAdapter`3"
     ()
 
 [<Fact>]
