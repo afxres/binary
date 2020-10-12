@@ -48,13 +48,9 @@
     <Compile Include="Sequence\CollectionOverflowTests.fs" />
     <Compile Include="Sequence\CollectionTests.fs" />
     <Compile Include="Sequence\CompatibleCollectionTests.fs" />
-    <Compile Include="Sequence\DictionaryAdapterIntegrationTests.fs" />
-    <Compile Include="Sequence\EnumerableAdapterIntegrationTests.fs" />
-    <Compile Include="Sequence\EnumerableAdapterTests.fs" />
     <Compile Include="Sequence\EnumerableCounterTests.fs" />
     <Compile Include="Sequence\EnumerableTests.fs" />
     <Compile Include="Sequence\ImmutableCollectionTests.fs" />
-    <Compile Include="Sequence\SetAdapterIntegrationTests.fs" />
     <Compile Include="SpanLike\SpanLikeTests.fs" />
     <Compile Include="TupleLike\KeyValuePairTests.fs" />
     <Compile Include="TupleLike\TupleTests.fs" />

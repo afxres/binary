@@ -7,9 +7,11 @@ using System.Reflection;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
-    internal delegate Expression ContextMemberInitializer(Expression expression);
+    internal delegate void ContextCollectionEncoder<T>(ref Allocator allocator, T item);
 
     internal delegate Delegate ContextObjectConstructor(Type delegateType, ContextObjectInitializer initializer);
+
+    internal delegate Expression ContextMemberInitializer(Expression expression);
 
     internal delegate IReadOnlyList<Expression> ContextObjectInitializer(ParameterExpression parameter);
 
@@ -64,6 +66,33 @@ namespace Mikodev.Binary.Internal.Contexts
             expressions.Add(item);
             var lambda = Expression.Lambda(delegateType, Expression.Block(CommonHelper.Concat(item, targets), expressions), data);
             return lambda.Compile();
+        }
+
+        internal static MethodInfo GetDecodeMethodInfo(Type itemType, bool auto)
+        {
+            var types = new[] { typeof(ReadOnlySpan<byte>).MakeByRefType() };
+            var name = auto ? nameof(IConverter.DecodeAuto) : nameof(IConverter.Decode);
+            var method = typeof(Converter<>).MakeGenericType(itemType).GetMethod(name, types);
+            Debug.Assert(method is not null);
+            return method;
+        }
+
+        internal static MethodInfo GetEncodeMethodInfo(Type itemType, bool auto)
+        {
+            var types = new[] { typeof(Allocator).MakeByRefType(), itemType };
+            var name = auto ? nameof(IConverter.EncodeAuto) : nameof(IConverter.Encode);
+            var method = typeof(Converter<>).MakeGenericType(itemType).GetMethod(name, types);
+            Debug.Assert(method is not null);
+            return method;
+        }
+
+        internal static MethodInfo GetEncodeWithLengthPrefixMethodInfo(Type itemType)
+        {
+            var types = new[] { typeof(Allocator).MakeByRefType(), itemType };
+            var name = nameof(IConverter.EncodeWithLengthPrefix);
+            var method = typeof(Converter<>).MakeGenericType(itemType).GetMethod(name, types);
+            Debug.Assert(method is not null);
+            return method;
         }
 
         internal static IConverter EnsureConverter(IConverter converter, Type type)

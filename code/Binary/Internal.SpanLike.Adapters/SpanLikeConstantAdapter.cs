@@ -1,6 +1,5 @@
 ﻿using Mikodev.Binary.Internal.Sequence;
 using System;
-using System.Diagnostics;
 
 namespace Mikodev.Binary.Internal.SpanLike.Adapters
 {
@@ -12,17 +11,17 @@ namespace Mikodev.Binary.Internal.SpanLike.Adapters
 
         public override void Encode(ref Allocator allocator, ReadOnlySpan<T> item)
         {
+            var converter = this.converter;
             foreach (var i in item)
                 converter.Encode(ref allocator, i);
-            Debug.Assert(converter.Length > 0);
         }
 
         public override MemoryResult<T> Decode(ReadOnlySpan<byte> span)
         {
-            Debug.Assert(converter.Length > 0);
             var byteLength = span.Length;
             if (byteLength is 0)
                 return new MemoryResult<T>(Array.Empty<T>(), 0);
+            var converter = this.converter;
             var itemLength = converter.Length;
             var capacity = SequenceMethods.GetCapacity<T>(byteLength, itemLength);
             var collection = new T[capacity];

@@ -1,30 +1,26 @@
-﻿using System.Diagnostics;
-
-namespace Mikodev.Binary.Internal.Sequence
+﻿namespace Mikodev.Binary.Internal.Sequence
 {
-    internal sealed class SequenceConstantEncoder<T, R> : SequenceAbstractEncoder<T>
+    internal sealed class SequenceConstantEncoder<T> : SequenceAbstractEncoder<T>
     {
         private readonly int itemLength;
 
-        private readonly SequenceAdapter<T, R> adapter;
-
         private readonly SequenceCounter<T> counter;
 
-        public SequenceConstantEncoder(SequenceAdapter<T, R> adapter, SequenceCounter<T> counter, int itemLength)
+        private readonly SequenceEncoder<T> encoder;
+
+        public SequenceConstantEncoder(SequenceEncoder<T> encoder, SequenceCounter<T> counter, int itemLength)
         {
-            this.adapter = adapter;
             this.counter = counter;
+            this.encoder = encoder;
             this.itemLength = itemLength;
-            Debug.Assert(itemLength > 0);
         }
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
-            var size = item is null ? 0 : counter.Invoke(item);
-            var number = checked(itemLength * size);
+            var number = item is null ? 0 : checked(this.itemLength * this.counter.Invoke(item));
             var numberLength = MemoryHelper.EncodeNumberLength((uint)number);
             MemoryHelper.EncodeNumber(ref Allocator.Assign(ref allocator, numberLength), (uint)number, numberLength);
-            adapter.Encode(ref allocator, item);
+            this.encoder.Encode(ref allocator, item);
         }
     }
 }

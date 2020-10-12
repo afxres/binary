@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -24,17 +23,6 @@ namespace Mikodev.Binary.Internal.Sequence
             if (remainder is not 0)
                 ThrowHelper.ThrowNotEnoughBytesCollection<T>(byteLength);
             return quotient;
-        }
-
-        internal static T[] GetContents<T>(ICollection<T> collection)
-        {
-            Debug.Assert(collection is not null);
-            var length = collection.Count;
-            if (length is 0)
-                return Array.Empty<T>();
-            var buffer = new T[length];
-            collection.CopyTo(buffer, 0);
-            return buffer;
         }
     }
 }

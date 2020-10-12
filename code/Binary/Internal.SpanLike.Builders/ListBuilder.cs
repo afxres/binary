@@ -19,7 +19,7 @@ namespace Mikodev.Binary.Internal.SpanLike.Builders
         public override ReadOnlySpan<T> Handle(List<T> item)
         {
             if (item is { Count: var count } && count is not 0)
-                return new ReadOnlySpan<T>(ofList.Invoke(item), 0, count);
+                return new ReadOnlySpan<T>(this.ofList.Invoke(item), 0, count);
             return default;
         }
 
@@ -27,7 +27,7 @@ namespace Mikodev.Binary.Internal.SpanLike.Builders
         {
             var data = adapter.Decode(span);
             Debug.Assert((uint)data.Length <= (uint)data.Memory.Length);
-            return toList.Invoke(data.Memory, data.Length);
+            return this.toList.Invoke(data.Memory, data.Length);
         }
     }
 }

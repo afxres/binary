@@ -22,11 +22,17 @@ type ImmutableCollectionTests() =
         Assert.NotNull item
         let converter = generator.GetConverter<'T>()
         let converterType = converter.GetType()
-        Assert.Equal("SequenceConverter`2", converterType.Name)
-        let adapter = converterType.GetField("adapter", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter
-        let adapterType = adapter.GetType()
-        let adapterName = if typeof<'T>.GetGenericArguments().Length = 1 then "EnumerableAdapter`2" else "KeyValueEnumerableAdapter`3"
-        Assert.Equal(adapterName, adapterType.Name)
+        Assert.Equal("SequenceConverter`1", converterType.Name)
+        let encoder = converterType.GetField("encoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter
+        let encoderType = encoder.GetType()
+        let encoderName =
+            if typeof<'T>.IsInterface then
+                if typeof<'T>.GetGenericArguments().Length = 1 then "EnumerableEncoder`2" else "KeyValueEnumerableEncoder`3"
+            else
+                "DelegateEncoder`1"
+        Assert.Equal(encoderName, encoderType.Name)
+        let decoder = converterType.GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter
+        Assert.Equal("DelegateDecoder`2", decoder.GetType().Name)
         converter
 
     let Test (item : 'T when 'T :> 'E seq) =

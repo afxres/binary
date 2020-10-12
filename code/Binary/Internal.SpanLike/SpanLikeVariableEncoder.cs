@@ -14,9 +14,9 @@
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
-            var data = builder.Handle(item);
+            var result = this.builder.Handle(item);
             var anchor = Allocator.Anchor(ref allocator, sizeof(int));
-            adapter.Encode(ref allocator, data);
+            this.adapter.Encode(ref allocator, result);
             Allocator.AppendLengthPrefix(ref allocator, anchor);
         }
     }

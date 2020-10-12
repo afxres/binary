@@ -34,15 +34,6 @@ namespace Mikodev.Binary.Internal.Contexts
             return (IConverter)converter;
         }
 
-        private static MethodInfo GetEncodeWithLengthPrefixMethodInfo(Type itemType)
-        {
-            var types = new[] { typeof(Allocator).MakeByRefType(), itemType };
-            var name = nameof(IConverter.EncodeWithLengthPrefix);
-            var method = typeof(Converter<>).MakeGenericType(itemType).GetMethod(name, types);
-            Debug.Assert(method is not null);
-            return method;
-        }
-
         private static Delegate GetEncodeDelegateAsNamedObject(Type type, IReadOnlyList<IConverter> converters, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<ReadOnlyMemory<byte>> memories)
         {
             var item = Expression.Parameter(type, "item");
@@ -54,7 +45,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 var property = properties[i];
                 var converter = converters[i];
                 var buffer = AllocatorHelper.Invoke(memories[i], (ref Allocator allocator, ReadOnlyMemory<byte> data) => PrimitiveHelper.EncodeBufferWithLengthPrefix(ref allocator, data.Span));
-                var methodInfo = GetEncodeWithLengthPrefixMethodInfo(property.PropertyType);
+                var methodInfo = ContextMethods.GetEncodeWithLengthPrefixMethodInfo(property.PropertyType);
                 // append named key with length prefix (cached), then append value with length prefix
                 expressions.Add(Expression.Call(AppendMethodInfo, allocator, Expression.New(ReadOnlySpanByteConstructorInfo, Expression.Constant(buffer))));
                 expressions.Add(Expression.Call(Expression.Constant(converter), methodInfo, allocator, Expression.Property(item, property)));

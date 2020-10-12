@@ -20,11 +20,11 @@ namespace Mikodev.Binary.Internal.SpanLike
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
-            var data = builder.Handle(item);
-            var number = checked(itemLength * data.Length);
+            var result = this.builder.Handle(item);
+            var number = checked(this.itemLength * result.Length);
             var numberLength = MemoryHelper.EncodeNumberLength((uint)number);
             MemoryHelper.EncodeNumber(ref Allocator.Assign(ref allocator, numberLength), (uint)number, numberLength);
-            adapter.Encode(ref allocator, data);
+            this.adapter.Encode(ref allocator, result);
         }
     }
 }

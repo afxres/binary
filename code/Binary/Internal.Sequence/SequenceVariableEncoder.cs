@@ -1,18 +1,15 @@
 ﻿namespace Mikodev.Binary.Internal.Sequence
 {
-    internal sealed class SequenceVariableEncoder<T, R> : SequenceAbstractEncoder<T>
+    internal sealed class SequenceVariableEncoder<T> : SequenceAbstractEncoder<T>
     {
-        private readonly SequenceAdapter<T, R> adapter;
+        private readonly SequenceEncoder<T> encoder;
 
-        public SequenceVariableEncoder(SequenceAdapter<T, R> adapter)
-        {
-            this.adapter = adapter;
-        }
+        public SequenceVariableEncoder(SequenceEncoder<T> encoder) => this.encoder = encoder;
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
             var anchor = Allocator.Anchor(ref allocator, sizeof(int));
-            adapter.Encode(ref allocator, item);
+            this.encoder.Encode(ref allocator, item);
             Allocator.AppendLengthPrefix(ref allocator, anchor);
         }
     }

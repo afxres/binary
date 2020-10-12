@@ -1,36 +1,34 @@
 ﻿using System;
-using System.Diagnostics;
 
 namespace Mikodev.Binary.Internal.Sequence
 {
-    internal sealed class SequenceConverter<T, R> : Converter<T>
+    internal sealed class SequenceConverter<T> : Converter<T>
     {
-        private readonly SequenceAdapter<T, R> adapter;
+        private readonly SequenceDecoder<T> decoder;
 
-        private readonly SequenceBuilder<T, R> builder;
+        private readonly SequenceEncoder<T> encoder;
 
-        private readonly SequenceAbstractEncoder<T> encoder;
+        private readonly SequenceAbstractEncoder<T> functor;
 
-        public SequenceConverter(SequenceAdapter<T, R> adapter, SequenceBuilder<T, R> builder, SequenceCounter<T> counter, int itemLength)
+        public SequenceConverter(SequenceEncoder<T> encoder, SequenceDecoder<T> decoder, SequenceCounter<T> counter, int itemLength)
         {
-            this.adapter = adapter;
-            this.builder = builder;
-            this.encoder = itemLength > 0 && counter is not null
-                ? new SequenceConstantEncoder<T, R>(adapter, counter, itemLength)
-                : new SequenceVariableEncoder<T, R>(adapter) as SequenceAbstractEncoder<T>;
-            Debug.Assert(itemLength >= 0);
+            this.decoder = decoder;
+            this.encoder = encoder;
+            this.functor = itemLength > 0 && counter is not null
+                ? new SequenceConstantEncoder<T>(encoder, counter, itemLength)
+                : new SequenceVariableEncoder<T>(encoder) as SequenceAbstractEncoder<T>;
         }
 
-        public override void Encode(ref Allocator allocator, T item) => adapter.Encode(ref allocator, item);
+        public override void Encode(ref Allocator allocator, T item) => this.encoder.Encode(ref allocator, item);
 
-        public override void EncodeAuto(ref Allocator allocator, T item) => encoder.EncodeWithLengthPrefix(ref allocator, item);
+        public override void EncodeAuto(ref Allocator allocator, T item) => this.functor.EncodeWithLengthPrefix(ref allocator, item);
 
-        public override void EncodeWithLengthPrefix(ref Allocator allocator, T item) => encoder.EncodeWithLengthPrefix(ref allocator, item);
+        public override void EncodeWithLengthPrefix(ref Allocator allocator, T item) => this.functor.EncodeWithLengthPrefix(ref allocator, item);
 
-        public override T Decode(in ReadOnlySpan<byte> span) => builder.Invoke(span, adapter);
+        public override T Decode(in ReadOnlySpan<byte> span) => this.decoder.Decode(span);
 
-        public override T DecodeAuto(ref ReadOnlySpan<byte> span) => builder.Invoke(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span), adapter);
+        public override T DecodeAuto(ref ReadOnlySpan<byte> span) => this.decoder.Decode(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
 
-        public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => builder.Invoke(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span), adapter);
+        public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => this.decoder.Decode(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
     }
 }

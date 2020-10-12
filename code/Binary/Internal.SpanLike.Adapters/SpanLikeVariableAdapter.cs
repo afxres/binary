@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 
 namespace Mikodev.Binary.Internal.SpanLike.Adapters
 {
@@ -11,9 +10,9 @@ namespace Mikodev.Binary.Internal.SpanLike.Adapters
 
         public override void Encode(ref Allocator allocator, ReadOnlySpan<T> item)
         {
+            var converter = this.converter;
             foreach (var i in item)
                 converter.EncodeAuto(ref allocator, i);
-            Debug.Assert(converter.Length is 0);
         }
 
         public override MemoryResult<T> Decode(ReadOnlySpan<byte> span)
@@ -27,13 +26,13 @@ namespace Mikodev.Binary.Internal.SpanLike.Adapters
                 buffer[cursor] = item;
             }
 
-            Debug.Assert(converter.Length is 0);
             if (span.IsEmpty)
                 return new MemoryResult<T>(Array.Empty<T>(), 0);
             const int Initial = 8;
             var buffer = new T[Initial];
             var cursor = 0;
             var body = span;
+            var converter = this.converter;
             while (body.IsEmpty is false)
             {
                 var item = converter.DecodeAuto(ref body);

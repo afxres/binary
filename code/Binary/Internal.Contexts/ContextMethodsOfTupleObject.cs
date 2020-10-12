@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
@@ -24,24 +23,6 @@ namespace Mikodev.Binary.Internal.Contexts
             return (IConverter)converter;
         }
 
-        private static MethodInfo GetEncodeMethodInfo(Type itemType, bool auto)
-        {
-            var types = new[] { typeof(Allocator).MakeByRefType(), itemType };
-            var name = auto ? nameof(IConverter.EncodeAuto) : nameof(IConverter.Encode);
-            var method = typeof(Converter<>).MakeGenericType(itemType).GetMethod(name, types);
-            Debug.Assert(method is not null);
-            return method;
-        }
-
-        private static MethodInfo GetDecodeMethodInfo(Type itemType, bool auto)
-        {
-            var types = new[] { typeof(ReadOnlySpan<byte>).MakeByRefType() };
-            var name = auto ? nameof(IConverter.DecodeAuto) : nameof(IConverter.Decode);
-            var method = typeof(Converter<>).MakeGenericType(itemType).GetMethod(name, types);
-            Debug.Assert(method is not null);
-            return method;
-        }
-
         private static Delegate GetEncodeDelegateAsTupleObject(Type type, IReadOnlyList<Type> types, IReadOnlyList<IConverter> converters, IReadOnlyList<ContextMemberInitializer> members, bool auto)
         {
             Debug.Assert(converters.Count == types.Count);
@@ -54,7 +35,7 @@ namespace Mikodev.Binary.Internal.Contexts
             {
                 var itemType = types[i];
                 var converter = converters[i];
-                var method = GetEncodeMethodInfo(itemType, auto || i != types.Count - 1);
+                var method = ContextMethods.GetEncodeMethodInfo(itemType, auto || i != types.Count - 1);
                 var invoke = Expression.Call(Expression.Constant(converter), method, allocator, members[i].Invoke(item));
                 expressions.Add(invoke);
             }
@@ -72,7 +53,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 {
                     var itemType = types[i];
                     var converter = converters[i];
-                    var method = GetDecodeMethodInfo(itemType, auto || i != types.Count - 1);
+                    var method = ContextMethods.GetDecodeMethodInfo(itemType, auto || i != types.Count - 1);
                     var invoke = Expression.Call(Expression.Constant(converter), method, span);
                     values[i] = invoke;
                 }

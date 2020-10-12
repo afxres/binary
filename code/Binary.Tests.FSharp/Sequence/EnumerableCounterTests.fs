@@ -10,23 +10,23 @@ let generator = Generator.CreateDefault()
 let TestVariable<'a> () =
     let converter = generator.GetConverter<'a>()
     let converterType = converter.GetType()
-    Assert.Equal("SequenceConverter`2", converterType.Name)
-    let encoderField = converterType.GetField("encoder", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    let encoder = encoderField.GetValue(converter)
-    let encoderType = encoder.GetType()
-    Assert.Equal("SequenceVariableEncoder`2", encoderType.Name)
+    Assert.Equal("SequenceConverter`1", converterType.Name)
+    let functorField = converterType.GetField("functor", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    let functor = functorField.GetValue converter
+    let functorType = functor.GetType()
+    Assert.Equal("SequenceVariableEncoder`1", functorType.Name)
     ()
 
 let TestConstant<'a> (collection : 'a) (counterName : string) (count : int) =
     let converter = generator.GetConverter<'a>()
     let converterType = converter.GetType()
-    Assert.Equal("SequenceConverter`2", converterType.Name)
-    let encoderField = converterType.GetField("encoder", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    let encoder = encoderField.GetValue(converter)
-    let encoderType = encoder.GetType()
-    Assert.Equal("SequenceConstantEncoder`2", encoderType.Name)
-    let counterField = encoderType.GetField("counter", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    let counter = counterField.GetValue(encoder)
+    Assert.Equal("SequenceConverter`1", converterType.Name)
+    let functorField = converterType.GetField("functor", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    let functor = functorField.GetValue converter
+    let functorType = functor.GetType()
+    Assert.Equal("SequenceConstantEncoder`1", functorType.Name)
+    let counterField = functorType.GetField("counter", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    let counter = counterField.GetValue functor
     Assert.NotNull counter
     let counterType = counter.GetType()
     Assert.Equal(counterName, counterType.Name)

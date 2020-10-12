@@ -2,7 +2,6 @@
 
 open Mikodev.Binary
 open System
-open System.Collections.Generic
 open System.Reflection
 open Xunit
 
@@ -30,35 +29,4 @@ type CollectionTests() =
         let message = sprintf "Not enough bytes for collection element, byte length: %d, element type: %O" byteLength typeof<int>
         Assert.Null error.ParamName
         Assert.Equal(message, error.Message)
-        ()
-
-    static member ``Data Empty`` : (obj array) seq = seq {
-        yield [| Array.empty<int> |]
-        yield [| Array.empty<string> |]
-    }
-
-    [<Theory>]
-    [<MemberData("Data Empty")>]
-    member __.``Contents (empty)`` (collection : ICollection<'a>) =
-        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SequenceMethods") |> Array.exactlyOne
-        let m = t.GetMethod("GetContents", BindingFlags.Static ||| BindingFlags.NonPublic).MakeGenericMethod(typeof<'a>)
-        let f = Delegate.CreateDelegate(typeof<Func<ICollection<'a>, 'a array>>, m) :?> Func<ICollection<'a>, 'a array>
-        let result = f.Invoke collection
-        Assert.True(obj.ReferenceEquals(Array.Empty<'a>(), result))
-        ()
-
-    static member ``Data Alpha`` : (obj array) seq = seq {
-        yield [| [| 1; 2; 8 |] |]
-        yield [| [| "e"; "r"; "r"; "o"; "r" |] |]
-    }
-
-    [<Theory>]
-    [<MemberData("Data Alpha")>]
-    member __.``Contents (not empty)`` (collection : ICollection<'a>) =
-        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "SequenceMethods") |> Array.exactlyOne
-        let m = t.GetMethod("GetContents", BindingFlags.Static ||| BindingFlags.NonPublic).MakeGenericMethod(typeof<'a>)
-        let f = Delegate.CreateDelegate(typeof<Func<ICollection<'a>, 'a array>>, m) :?> Func<ICollection<'a>, 'a array>
-        let result = f.Invoke collection
-        Assert.NotEqual(0, result.Length)
-        Assert.Equal<'a>(collection, result)
         ()
