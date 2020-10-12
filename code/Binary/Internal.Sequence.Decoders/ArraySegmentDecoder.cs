@@ -10,6 +10,8 @@ namespace Mikodev.Binary.Internal.Sequence.Decoders
 
         public ArraySegmentDecoder(Converter<E> converter)
         {
+            Debug.Assert(converter is not null);
+            Debug.Assert(converter.Length >= 0);
             this.adapter = SpanLikeAdapterHelper.Create(converter);
         }
 

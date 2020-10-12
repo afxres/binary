@@ -110,7 +110,9 @@ let TestSequence<'a when 'a : null> (encoderName : string) (decoderName : string
     Assert.Equal(encoderName, encoder.GetType().Name)
     let mutable decoderField = converter.GetType().GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic)
     let mutable decoder = decoderField.GetValue converter
-    if (decoder.GetType().Name) = "DelegateDecoder`2" then
+    if typeof<'a>.IsInterface then
+        Assert.Equal("AssignableDecoder`2", decoder.GetType().Name)
+    if typeof<'a>.IsInterface || decoder.GetType().Name = "DelegateDecoder`2" then
         decoderField <- decoder.GetType().GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic)
         decoder <- decoderField.GetValue decoder
     Assert.Equal(decoderName, decoder.GetType().Name)
@@ -135,7 +137,7 @@ let TestSequence<'a when 'a : null> (encoderName : string) (decoderName : string
     ()
 
 [<Fact>]
-let ``Collection Integration Test (adapter type test, builder type test, null or empty collection test, default interface implementation test)`` () =
+let ``Collection Integration Test (span-like collection, null or empty collection test)`` () =
     Test generator "SpanLikeVariableAdapter`1" "ArraySegmentBuilder`1" (ArraySegment<string>())
     Test generator "SpanLikeConstantAdapter`1" "MemoryBuilder`1" (Memory<TimeSpan>())
     Test generator "SpanLikeNativeEndianAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<int>())
@@ -144,7 +146,7 @@ let ``Collection Integration Test (adapter type test, builder type test, null or
     ()
 
 [<Fact>]
-let ``Collection Integration Test (encoder type test, decoder type test, null or empty collection test, default interface implementation test)`` () =
+let ``Collection Integration Test (collection, null or empty collection test, default interface implementation test)`` () =
     TestSequence<IEnumerable<_>> "EnumerableEncoder`2" "ArraySegmentDecoder`1" (ResizeArray<string>())
     TestSequence<IList<_>> "EnumerableEncoder`2" "ArraySegmentDecoder`1" (Array.zeroCreate<int> 0)
     TestSequence<IReadOnlyList<_>> "EnumerableEncoder`2" "ArraySegmentDecoder`1" (ResizeArray<string>())
@@ -157,7 +159,10 @@ let ``Collection Integration Test (encoder type test, decoder type test, null or
     TestSequence<HashSet<_>> "DelegateEncoder`1" "HashSetDecoder`1" (HashSet<string>())
     TestSequence<LinkedList<_>> "LinkedListEncoder`1" "LinkedListDecoder`1" (LinkedList<double>())
     TestSequence<LinkedList<_>> "LinkedListEncoder`1" "LinkedListDecoder`1" (LinkedList<string>())
+    ()
 
+[<Fact>]
+let ``Collection Integration Test (dictionary, null or empty collection test, default interface implementation test)`` () =
     TestSequence<Dictionary<_, _>> "DelegateEncoder`1" "DictionaryDecoder`2" (Dictionary<int16, int64>())
     TestSequence<Dictionary<_, _>> "DelegateEncoder`1" "DictionaryDecoder`2" (Dictionary<string, int>())
     TestSequence<IDictionary<_, _>> "KeyValueEnumerableEncoder`3" "DictionaryDecoder`2" (Dictionary<int, string>())

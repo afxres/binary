@@ -74,11 +74,6 @@ namespace Mikodev.Binary.Internal.Contexts
             return x => Expression.New(constructor, x);
         }
 
-        private static SequenceDecoder<T> GetDecoder<T, R>(SequenceDecoder<R> decoder)
-        {
-            return new DelegateDecoder<T, R>(decoder, x => (T)(object)x);
-        }
-
         private static SequenceDecoder<T> GetDecoder<T, R, I>(SequenceDecoder<R> decoder, Func<Expression, Expression> method)
         {
             static Func<R, T> Invoke(Func<Expression, Expression> method)
@@ -211,7 +206,7 @@ namespace Mikodev.Binary.Internal.Contexts
         private static IConverter GetHashSetInterfaceAssignableConverter<T, E>(Converter<E> converter) where T : IEnumerable<E>
         {
             var encoder = GetEncoder<T, E>(converter);
-            var decoder = GetDecoder<T, HashSet<E>>(new HashSetDecoder<E>(converter));
+            var decoder = new AssignableDecoder<T, HashSet<E>>(new HashSetDecoder<E>(converter));
             var counter = GetCounter<T, E>();
             return new SequenceConverter<T>(encoder, decoder, counter, converter.Length);
         }
@@ -235,7 +230,7 @@ namespace Mikodev.Binary.Internal.Contexts
         private static IConverter GetEnumerableInterfaceAssignableConverter<T, E>(Converter<E> converter) where T : IEnumerable<E>
         {
             var encoder = GetEncoder<T, E>(converter);
-            var decoder = GetDecoder<T, ArraySegment<E>>(new ArraySegmentDecoder<E>(converter));
+            var decoder = new AssignableDecoder<T, ArraySegment<E>>(new ArraySegmentDecoder<E>(converter));
             var counter = GetCounter<T, E>();
             return new SequenceConverter<T>(encoder, decoder, counter, converter.Length);
         }
@@ -259,7 +254,7 @@ namespace Mikodev.Binary.Internal.Contexts
         private static IConverter GetDictionaryInterfaceAssignableConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength) where T : IEnumerable<KeyValuePair<K, V>>
         {
             var encoder = GetEncoder<T, K, V>(init, tail);
-            var decoder = GetDecoder<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength));
+            var decoder = new AssignableDecoder<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength));
             var counter = GetCounter<T, KeyValuePair<K, V>>();
             return new SequenceConverter<T>(encoder, decoder, counter, itemLength);
         }
