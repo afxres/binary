@@ -7,19 +7,21 @@ using System.Linq;
 namespace Mikodev.Binary.Benchmarks.EnumerationTests
 {
     [MemoryDiagnoser]
-    public class EnumerationBenchmarks
+    [GenericTypeArguments(typeof(int))]
+    [GenericTypeArguments(typeof(string))]
+    public class EnumerationBenchmarks<T>
     {
         private byte[] buffer;
 
-        private Converter<int> converter;
+        private Converter<T> converter;
 
-        private HashSet<int> collection;
+        private HashSet<T> collection;
 
-        private Dictionary<int, int> dictionary;
+        private Dictionary<T, T> dictionary;
 
-        private Converter<HashSet<int>> collectionConverter;
+        private Converter<HashSet<T>> collectionConverter;
 
-        private Converter<Dictionary<int, int>> dictionaryConverter;
+        private Converter<Dictionary<T, T>> dictionaryConverter;
 
         [Params(0, 1 << 4, 1 << 8, 1 << 12, 1 << 16, 1 << 20)]
         public int Count;
@@ -27,14 +29,14 @@ namespace Mikodev.Binary.Benchmarks.EnumerationTests
         [GlobalSetup]
         public void Setup()
         {
-            var source = Enumerable.Range(0, this.Count).ToList();
+            var source = ((IEnumerable<T>)(typeof(T) == typeof(int) ? (object)Enumerable.Range(0, this.Count) : Enumerable.Range(0, this.Count).Select(x => x.ToString()))).ToList();
             var generator = Generator.CreateDefault();
             this.buffer = new byte[1 << 24];
-            this.converter = generator.GetConverter<int>();
+            this.converter = generator.GetConverter<T>();
             this.collection = source.ToHashSet();
             this.dictionary = source.ToDictionary(x => x);
-            this.collectionConverter = generator.GetConverter<HashSet<int>>();
-            this.dictionaryConverter = generator.GetConverter<Dictionary<int, int>>();
+            this.collectionConverter = generator.GetConverter<HashSet<T>>();
+            this.dictionaryConverter = generator.GetConverter<Dictionary<T, T>>();
         }
 
         [Benchmark(Description = "Encode HashSet (foreach interface)")]

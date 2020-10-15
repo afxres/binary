@@ -10,8 +10,8 @@ namespace Mikodev.Binary.Benchmarks.EnumerationTests
         private static void Main()
         {
             var config = ManualConfig.Create(DefaultConfig.Instance);
-            _ = config.AddJob(Job.ShortRun.WithToolchain(InProcessEmitToolchain.Instance));
-            _ = BenchmarkRunner.Run<EnumerationBenchmarks>(config);
+            _ = config.AddJob(Job.ShortRun.WithToolchain(InProcessEmitToolchain.Instance)).WithOptions(ConfigOptions.JoinSummary);
+            _ = BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).RunAll(config);
         }
     }
 }
