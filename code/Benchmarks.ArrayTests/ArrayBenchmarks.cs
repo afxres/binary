@@ -32,7 +32,7 @@ namespace Mikodev.Binary.Benchmarks.ArrayTests
         [GlobalSetup]
         public void Setup()
         {
-            var converter = Flag == "constant"
+            var converter = this.Flag == "constant"
                 ? new ConstantNativeConverter<int>()
                 : new VariableNativeConverter<int>() as Converter<int>;
             var generator = Generator.CreateDefaultBuilder().AddConverter(converter).Build();

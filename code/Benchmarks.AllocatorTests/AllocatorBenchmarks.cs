@@ -23,13 +23,13 @@ namespace Mikodev.Binary.Benchmarks.AllocatorTests
         [GlobalSetup]
         public void Setup()
         {
-            buffer0 = Array.Empty<byte>();
-            buffer1 = new byte[] { 0x7F };
-            buffer1024 = new byte[1024];
-            maxCapacity512 = 512;
-            maxCapacity2048 = 2048;
-            ignoreAction = new AllocatorAction<byte[]>((ref Allocator allocator, byte[] data) => { });
-            appendAction = new AllocatorAction<byte[]>((ref Allocator allocator, byte[] data) => AllocatorHelper.Append(ref allocator, data));
+            this.buffer0 = Array.Empty<byte>();
+            this.buffer1 = new byte[] { 0x7F };
+            this.buffer1024 = new byte[1024];
+            this.maxCapacity512 = 512;
+            this.maxCapacity2048 = 2048;
+            this.ignoreAction = new AllocatorAction<byte[]>((ref Allocator allocator, byte[] data) => { });
+            this.appendAction = new AllocatorAction<byte[]>((ref Allocator allocator, byte[] data) => AllocatorHelper.Append(ref allocator, data));
         }
 
         [Benchmark(Description = "Append (from bytes 1024, length: 0)")]

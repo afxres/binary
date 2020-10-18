@@ -27,7 +27,7 @@ namespace Mikodev.Binary.Benchmarks.ConverterTests
         {
             this.buffer = new byte[65536];
             this.number = 31415926;
-            this.converter = Flag switch
+            this.converter = this.Flag switch
             {
                 "constant" => new ConstantNativeConverter<int>(),
                 "variable" => new VariableNativeConverter<int>(),
@@ -69,27 +69,27 @@ namespace Mikodev.Binary.Benchmarks.ConverterTests
         [Benchmark(Description = "Decode (by bytes)")]
         public int C04()
         {
-            return converter.Decode(this.encodeBytes);
+            return this.converter.Decode(this.encodeBytes);
         }
 
         [Benchmark(Description = "Decode (by span)")]
         public int C03()
         {
-            return converter.Decode(new ReadOnlySpan<byte>(this.encodeBytes));
+            return this.converter.Decode(new ReadOnlySpan<byte>(this.encodeBytes));
         }
 
         [Benchmark(Description = "Decode Auto (by span)")]
         public int C07()
         {
             var span = new ReadOnlySpan<byte>(this.encodeAutoBytes);
-            return converter.DecodeAuto(ref span);
+            return this.converter.DecodeAuto(ref span);
         }
 
         [Benchmark(Description = "Decode With Length Prefix (by span)")]
         public int C08()
         {
             var span = new ReadOnlySpan<byte>(this.encodeWithLengthPrefixBytes);
-            return converter.DecodeWithLengthPrefix(ref span);
+            return this.converter.DecodeWithLengthPrefix(ref span);
         }
     }
 }

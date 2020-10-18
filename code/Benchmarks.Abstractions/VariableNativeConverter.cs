@@ -18,7 +18,7 @@ namespace Mikodev.Binary.Benchmarks.Abstractions
         public override T Decode(in ReadOnlySpan<byte> span)
         {
             if (span.Length < Unsafe.SizeOf<T>())
-                throw new ArgumentException();
+                throw new ArgumentException("Not enough bytes.");
             return Unsafe.ReadUnaligned<T>(ref MemoryMarshal.GetReference(span));
         }
     }

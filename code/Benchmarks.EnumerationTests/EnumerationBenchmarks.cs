@@ -23,7 +23,7 @@ namespace Mikodev.Binary.Benchmarks.EnumerationTests
 
         private Converter<Dictionary<T, T>> dictionaryConverter;
 
-        [Params(0, 1 << 4, 1 << 8, 1 << 12, 1 << 16, 1 << 20)]
+        [Params(0, 1 << 4, 1 << 8, 1 << 20)]
         public int Count;
 
         [GlobalSetup]

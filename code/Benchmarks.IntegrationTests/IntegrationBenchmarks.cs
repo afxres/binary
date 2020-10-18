@@ -43,10 +43,10 @@ namespace Mikodev.Binary.Benchmarks.IntegrationTests
             };
             this.tuple = (1024, "csharp", new[] { 7, 11, 555, 1313 }, (2.2D, new List<string> { "one", "two", "three" }));
 
-            this.valueBytes = generator.Encode(this.value);
-            this.tupleBytes = generator.Encode(this.tuple);
-            this.valueConverter = generator.GetConverter<Type01>();
-            this.tupleConverter = generator.GetConverter<TypeX1>();
+            this.valueBytes = this.generator.Encode(this.value);
+            this.tupleBytes = this.generator.Encode(this.tuple);
+            this.valueConverter = this.generator.GetConverter<Type01>();
+            this.tupleConverter = this.generator.GetConverter<TypeX1>();
         }
 
         [Benchmark(Description = "Encode Named Object (use generator)")]

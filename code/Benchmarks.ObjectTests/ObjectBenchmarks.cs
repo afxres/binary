@@ -29,8 +29,8 @@ namespace Mikodev.Binary.Benchmarks.ObjectTests
             this.class01 = new ClassNamedObject<int> { Item1 = 1024 };
             this.value01 = new ValueNamedObject<int> { Item1 = 1024 };
 
-            this.classBytes = generator.Encode(class01);
-            this.valueBytes = generator.Encode(value01);
+            this.classBytes = generator.Encode(this.class01);
+            this.valueBytes = generator.Encode(this.value01);
             this.classConverter = generator.GetConverter<ClassNamedObject<int>>();
             this.valueConverter = generator.GetConverter<ValueNamedObject<int>>();
         }
@@ -39,14 +39,14 @@ namespace Mikodev.Binary.Benchmarks.ObjectTests
         public void C01()
         {
             var allocator = new Allocator(this.buffer);
-            this.classConverter.Encode(ref allocator, class01);
+            this.classConverter.Encode(ref allocator, this.class01);
         }
 
         [Benchmark(Description = "Encode Value Object")]
         public void V01()
         {
             var allocator = new Allocator(this.buffer);
-            this.valueConverter.Encode(ref allocator, value01);
+            this.valueConverter.Encode(ref allocator, this.value01);
         }
 
         [Benchmark(Description = "Decode Class Object")]

@@ -16,9 +16,9 @@ namespace Mikodev.Binary.Benchmarks.ObjectConverterTests
         [GlobalSetup]
         public void Setup()
         {
-            buffer = new byte[65536];
-            generator = Generator.CreateDefault();
-            objectConverter = generator.GetConverter<object>();
+            this.buffer = new byte[65536];
+            this.generator = Generator.CreateDefault();
+            this.objectConverter = this.generator.GetConverter<object>();
         }
 
         [Benchmark(Description = "Encode (object converter)")]
