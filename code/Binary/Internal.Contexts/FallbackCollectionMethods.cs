@@ -222,7 +222,7 @@ namespace Mikodev.Binary.Internal.Contexts
         private static IConverter GetEnumerableConverter<T, E>(Converter<E> converter, Func<Expression, Expression> method) where T : IEnumerable<E>
         {
             var encoder = GetEncoder<T, E>(converter);
-            var decoder = GetDecoder<T, ArraySegment<E>, IEnumerable<E>>(new ArraySegmentDecoder<E>(converter), method);
+            var decoder = GetDecoder<T, IEnumerable<E>, IEnumerable<E>>(new EnumerableDecoder<E>(converter), method);
             var counter = GetCounter<T, E>();
             return new SequenceConverter<T>(encoder, decoder, counter, converter.Length);
         }

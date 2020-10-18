@@ -110,7 +110,7 @@ let TestSequence<'a when 'a : null> (encoderName : string) (decoderName : string
     Assert.Equal(encoderName, encoder.GetType().Name)
     let mutable decoderField = converter.GetType().GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic)
     let mutable decoder = decoderField.GetValue converter
-    if typeof<'a>.IsInterface then
+    if typeof<'a>.IsInterface && typeof<'a>.Namespace <> "System.Collections.Immutable" then
         Assert.Equal("AssignableDecoder`2", decoder.GetType().Name)
     if typeof<'a>.IsInterface || decoder.GetType().Name = "DelegateDecoder`2" then
         decoderField <- decoder.GetType().GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic)
@@ -152,7 +152,12 @@ let ``Collection Integration Test (collection, null or empty collection test, de
     TestSequence<IReadOnlyList<_>> "EnumerableEncoder`2" "ArraySegmentDecoder`1" (ResizeArray<string>())
     TestSequence<ICollection<_>> "EnumerableEncoder`2" "ArraySegmentDecoder`1" (Array.zeroCreate<int> 0)
     TestSequence<IReadOnlyCollection<_>> "EnumerableEncoder`2" "ArraySegmentDecoder`1" (Array.zeroCreate<int> 0)
-    TestSequence<Queue<_>> "DelegateEncoder`1" "ArraySegmentDecoder`1" (Queue<int> 0)
+
+    TestSequence<Queue<_>> "DelegateEncoder`1" "EnumerableDecoder`1" (Queue<int> 0)
+    TestSequence<ImmutableList<_>> "DelegateEncoder`1" "EnumerableDecoder`1" (ImmutableList.Create<string>())
+
+    TestSequence<IImmutableList<_>> "EnumerableEncoder`2" "EnumerableDecoder`1" (ImmutableList.Create<int>())
+    TestSequence<IImmutableQueue<_>> "EnumerableEncoder`2" "EnumerableDecoder`1" (ImmutableQueue.Create<string>())
 
     TestSequence<ISet<_>> "EnumerableEncoder`2" "HashSetDecoder`1" (HashSet<TimeSpan>())
     TestSequence<HashSet<_>> "DelegateEncoder`1" "HashSetDecoder`1" (HashSet<int64>())
