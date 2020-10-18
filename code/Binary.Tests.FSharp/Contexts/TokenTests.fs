@@ -61,55 +61,13 @@ type TokenTests() =
         ()
 
     [<Fact>]
-    member __.``Index (nothrow true, match)`` () =
-        let source = { id = 5; data = { name = "echo"; age = 24 }}
-        let buffer = generator.Encode source
-        let token = Token(generator, buffer |> ReadOnlyMemory)
-        let id = token.["id", nothrow = true]
-        let name = token.["data"].["name", nothrow = true]
-        Assert.Equal(source.id, id.As<int>())
-        Assert.Equal(source.data.name, name.As<string>())
-        ()
-
-    [<Fact>]
-    member __.``Index (nothrow false, match)`` () =
-        let source = { id = 5; data = { name = "echo"; age = 24 }}
-        let buffer = generator.Encode source
-        let token = Token(generator, buffer |> ReadOnlyMemory)
-        let id = token.["id", nothrow = false]
-        let name = token.["data"].["name", nothrow = false]
-        Assert.Equal(source.id, id.As<int>())
-        Assert.Equal(source.data.name, name.As<string>())
-        ()
-
-    [<Fact>]
     member __.``Index (mismatch)`` () =
         let source = { id = 6; data = { name = "golf"; age = 18 }}
         let buffer = generator.Encode source
         let token = Token(generator, buffer |> ReadOnlyMemory)
         Assert.Equal(source.data, token.["data"].As<Person>())
         let error = Assert.Throws<KeyNotFoundException>(fun () -> token.["item"] |> ignore)
-        Assert.Equal("Key 'item' not found.", error.Message)
-        ()
-
-    [<Fact>]
-    member __.``Index (nothrow true, mismatch)`` () =
-        let source = { id = 6; data = { name = "golf"; age = 18 }}
-        let buffer = generator.Encode source
-        let token = Token(generator, buffer |> ReadOnlyMemory)
-        Assert.Equal(source.data, token.["data"].As<Person>())
-        let item = token.["item", nothrow = true]
-        Assert.Null(item)
-        ()
-
-    [<Fact>]
-    member __.``Index (nothrow false, mismatch)`` () =
-        let source = { id = 6; data = { name = "golf"; age = 18 }}
-        let buffer = generator.Encode source
-        let token = Token(generator, buffer |> ReadOnlyMemory)
-        Assert.Equal(source.data, token.["data"].As<Person>())
-        let error = Assert.Throws<KeyNotFoundException>(fun () -> token.["empty", nothrow = false] |> ignore)
-        Assert.Equal("Key 'empty' not found.", error.Message)
+        Assert.Contains("'item'", error.Message)
         ()
 
     [<Fact>]
@@ -123,27 +81,15 @@ type TokenTests() =
         ()
 
     [<Fact>]
-    member __.``Index (nothrow true, null)`` () =
-        let token = Token(generator, ReadOnlyMemory())
-        let error = Assert.Throws<ArgumentNullException>(fun () -> token.[null, nothrow = true] |> ignore)
-        let property = typeof<Token>.GetProperties() |> Array.filter (fun x -> x.GetIndexParameters().Length = 2) |> Array.exactlyOne
-        let parameter = property.GetIndexParameters() |> Array.head
-        let last = property.GetIndexParameters() |> Array.last
-        Assert.Equal("key", error.ParamName)
-        Assert.Equal("key", parameter.Name)
-        Assert.Equal("nothrow", last.Name)
-        ()
-
-    [<Fact>]
-    member __.``Index (nothrow false, null)`` () =
-        let token = Token(generator, ReadOnlyMemory())
-        let error = Assert.Throws<ArgumentNullException>(fun () -> token.[null, nothrow = false] |> ignore)
-        let property = typeof<Token>.GetProperties() |> Array.filter (fun x -> x.GetIndexParameters().Length = 2) |> Array.exactlyOne
-        let parameter = property.GetIndexParameters() |> Array.head
-        let last = property.GetIndexParameters() |> Array.last
-        Assert.Equal("key", error.ParamName)
-        Assert.Equal("key", parameter.Name)
-        Assert.Equal("nothrow", last.Name)
+    member __.``Index Property`` () =
+        let indexes = typeof<Token>.GetProperties() |> Array.filter (fun x -> x.GetIndexParameters().Length <> 0)
+        let indexer = Assert.Single indexes
+        Assert.Equal("Item", indexer.Name)
+        let method = indexer.GetGetMethod()
+        Assert.NotNull method
+        Assert.Equal("get_Item", method.Name)
+        Assert.Equal<Type>([| typeof<string> |], method.GetParameters() |> Array.map (fun x -> x.ParameterType))
+        Assert.Equal(typeof<Token>, method.ReturnType)
         ()
 
     [<Fact>]
@@ -194,7 +140,7 @@ type TokenTests() =
         let token = Token(generator, ReadOnlyMemory())
         let d = token :> IReadOnlyDictionary<string, Token>
         let error = Assert.Throws<KeyNotFoundException>(fun () -> d.[""] |> ignore)
-        Assert.Equal("Key '' not found.", error.Message)
+        Assert.Contains("''", error.Message)
         ()
 
     [<Fact>]
@@ -327,7 +273,7 @@ type TokenTests() =
         let token = Token(generator, ReadOnlyMemory())
         let dictionary = token :> IReadOnlyDictionary<string, Token>
         Assert.Equal(0, dictionary.Count)
-        let tokens = typeof<Token>.GetField("tokens", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(token) :?> Lazy<Dictionary<string, Token>>
+        let tokens = typeof<Token>.GetField("lazy", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(token) :?> Lazy<Dictionary<string, Token>>
         Assert.Equal(0, tokens.Value.Count)
         let buckets = typeof<Dictionary<string, Token>>.GetFields(BindingFlags.Instance ||| BindingFlags.NonPublic).Single(fun x -> x.FieldType = typeof<int array>).GetValue(tokens.Value) :?> int array
         Assert.Null buckets
@@ -339,7 +285,7 @@ type TokenTests() =
         let token = Token(generator, ReadOnlyMemory buffer)
         let dictionary = token :> IReadOnlyDictionary<string, Token>
         Assert.Equal(0, dictionary.Count)
-        let tokens = typeof<Token>.GetField("tokens", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(token) :?> Lazy<Dictionary<string, Token>>
+        let tokens = typeof<Token>.GetField("lazy", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(token) :?> Lazy<Dictionary<string, Token>>
         Assert.Equal(0, tokens.Value.Count)
         let dictionary = tokens.Value;
         let buckets = typeof<Dictionary<string, Token>>.GetFields(BindingFlags.Instance ||| BindingFlags.NonPublic).Single(fun x -> x.FieldType = typeof<int array>).GetValue(dictionary) :?> int array

@@ -10,7 +10,7 @@ namespace Mikodev.Binary.Internal
     {
         private static readonly MethodInfo ConvertMethodInfo = typeof(Token).GetMethod(nameof(Token.As), Type.EmptyTypes);
 
-        private static readonly MethodInfo IndexerMethodInfo = typeof(Token).GetMethod("GetToken", BindingFlags.Instance | BindingFlags.NonPublic);
+        private static readonly MethodInfo IndexerMethodInfo = typeof(Token).GetProperty("Item", new[] { typeof(string) }).GetGetMethod();
 
         public TokenDynamicMetaObject(Expression parameter, object value) : base(parameter, BindingRestrictions.Empty, value) { }
 
@@ -26,7 +26,7 @@ namespace Mikodev.Binary.Internal
         public override DynamicMetaObject BindGetMember(GetMemberBinder binder)
         {
             var self = Expression.Convert(Expression, typeof(Token));
-            var body = Expression.Call(self, IndexerMethodInfo, Expression.Constant(binder.Name), Expression.Constant(false));
+            var body = Expression.Call(self, IndexerMethodInfo, Expression.Constant(binder.Name));
             return new DynamicMetaObject(body, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
         }
 

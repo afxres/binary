@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq.Expressions;
 using System.Threading;
@@ -19,7 +18,7 @@ namespace Mikodev.Binary
 
         private readonly Converter<string> encoder;
 
-        private readonly Lazy<Dictionary<string, Token>> tokens;
+        private readonly Lazy<Dictionary<string, Token>> lazy;
 
         private Token(IGenerator generator, ReadOnlyMemory<byte> memory, Converter<string> encoder)
         {
@@ -31,7 +30,7 @@ namespace Mikodev.Binary
             this.memory = memory;
             this.generator = generator;
             this.encoder = encoder;
-            this.tokens = new Lazy<Dictionary<string, Token>>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
+            this.lazy = new Lazy<Dictionary<string, Token>>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
         private static Dictionary<string, Token> GetTokens(Token instance)
@@ -61,36 +60,19 @@ namespace Mikodev.Binary
             }
         }
 
-        [DebuggerStepThrough, DoesNotReturn]
-        private static Token ExceptKeyNull() => throw new ArgumentNullException("key");
-
-        [DebuggerStepThrough, DoesNotReturn]
-        private static Token ExceptKeyNotFound(string key) => throw new KeyNotFoundException($"Key '{key}' not found.");
-
-        private Token GetToken(string key, bool nothrow)
-        {
-            if (key is null)
-                return ExceptKeyNull();
-            if (tokens.Value.TryGetValue(key, out var value))
-                return value;
-            return nothrow ? null : ExceptKeyNotFound(key);
-        }
-
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => new TokenDynamicMetaObject(parameter, this);
 
         public Token(IGenerator generator, ReadOnlyMemory<byte> memory) : this(generator, memory, null) { }
 
-        public Token this[string key] => GetToken(key, nothrow: false);
+        public Token this[string key] => this.lazy.Value[key];
 
-        public Token this[string key, bool nothrow] => GetToken(key, nothrow);
+        public object As(Type type) => this.generator.GetConverter(type).Decode(this.memory.Span);
 
-        public object As(Type type) => generator.GetConverter(type).Decode(memory.Span);
-
-        public T As<T>() => ((Converter<T>)generator.GetConverter(typeof(T))).Decode(memory.Span);
+        public T As<T>() => ((Converter<T>)this.generator.GetConverter(typeof(T))).Decode(this.memory.Span);
 
         public T As<T>(T anonymous) => As<T>();
 
-        public ReadOnlyMemory<byte> AsMemory() => memory;
+        public ReadOnlyMemory<byte> AsMemory() => this.memory;
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override bool Equals(object obj) => throw new NotSupportedException();
@@ -99,6 +81,6 @@ namespace Mikodev.Binary
         public override int GetHashCode() => throw new NotSupportedException();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => $"{nameof(Token)}(Items: {tokens.Value.Count}, Bytes: {memory.Length})";
+        public override string ToString() => $"{nameof(Token)}(Items: {this.lazy.Value.Count}, Bytes: {this.memory.Length})";
     }
 }
