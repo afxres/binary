@@ -3,6 +3,7 @@
 open Mikodev.Binary
 open System
 open System.Reflection
+open System.Runtime.CompilerServices
 open Xunit
 
 type CustomConverter<'T>(length : int) =
@@ -63,13 +64,20 @@ type ConverterTests () =
     }
 
     [<Fact>]
-    member __.``Equals (not supported)`` () =
-        Assert.Throws<NotSupportedException>(fun () -> CustomConverter<obj>(0).Equals null |> ignore) |> ignore
+    member __.``Equals (reference equals)`` () =
+        let a = CustomConverter<obj>(0)
+        let b = CustomConverter<obj>(0)
+        Assert.True(a.Equals a)
+        Assert.False(a.Equals b)
+        Assert.False(b.Equals a)
         ()
 
     [<Fact>]
-    member __.``Get Hash Code (not supported)`` () =
-        Assert.Throws<NotSupportedException>(fun () -> CustomConverter<obj>(0).GetHashCode() |> ignore) |> ignore
+    member __.``Get Hash Code (runtime hash code)`` () =
+        let a = CustomConverter<obj>(0)
+        let b = CustomConverter<obj>(0)
+        Assert.Equal(RuntimeHelpers.GetHashCode a, a.GetHashCode())
+        Assert.Equal(RuntimeHelpers.GetHashCode b, b.GetHashCode())
         ()
 
     [<Theory>]

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Xunit;
 
 namespace Mikodev.Binary.Tests
@@ -55,20 +54,20 @@ namespace Mikodev.Binary.Tests
         [Fact(DisplayName = "Class Type Properties")]
         public void ClassTypeProperties()
         {
-            var a = random.Next();
-            var b = random.Next().ToString();
+            var a = this.random.Next();
+            var b = this.random.Next().ToString();
             Class.StaticA = a;
             Class.StaticB = b;
 
             var source = new Class() { E = 172, F = "internal" };
-            var buffer = generator.Encode(source);
-            var result = generator.Decode<Class>(buffer);
+            var buffer = this.generator.Encode(source);
+            var result = this.generator.Decode<Class>(buffer);
             Assert.False(ReferenceEquals(source, result));
             Assert.Equal(source.E, result.E);
             Assert.Equal(source.F, result.F);
 
-            var token = new Token(generator, buffer);
-            var dictionary = (IReadOnlyDictionary<string, Token>)token;
+            var token = new Token(this.generator, buffer);
+            var dictionary = token.Children;
             Assert.Equal(2, dictionary.Count);
 
             Assert.Equal(a, Class.StaticA);
@@ -78,20 +77,20 @@ namespace Mikodev.Binary.Tests
         [Fact(DisplayName = "Value Type Properties")]
         public void ValueTypeProperties()
         {
-            var a = random.Next();
-            var b = random.Next().ToString();
+            var a = this.random.Next();
+            var b = this.random.Next().ToString();
             Value.StaticA = a;
             Value.StaticB = b;
 
             var source = new Value() { E = 256, F = "protected" };
-            var buffer = generator.Encode(source);
-            var result = generator.Decode<Value>(buffer);
+            var buffer = this.generator.Encode(source);
+            var result = this.generator.Decode<Value>(buffer);
 
             Assert.Equal(source.E, result.E);
             Assert.Equal(source.F, result.F);
 
-            var token = new Token(generator, buffer);
-            var dictionary = (IReadOnlyDictionary<string, Token>)token;
+            var token = new Token(this.generator, buffer);
+            var dictionary = token.Children;
             Assert.Equal(2, dictionary.Count);
 
             Assert.Equal(a, Value.StaticA);

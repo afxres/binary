@@ -22,15 +22,15 @@ namespace Mikodev.Binary.Tests
             a.head = head;
             a.middle = middle;
             a.last = last;
-            var bytes = generator.Encode((object)a);
+            var bytes = this.generator.Encode((object)a);
             Assert.NotEmpty(bytes);
-            var token = new Token(generator, bytes);
+            var token = new Token(this.generator, bytes);
             var d = (dynamic)token;
             Assert.Equal(last, (Guid)d.last);
             Assert.Equal(middle, (string)d.middle);
             Assert.Equal(head, (double)d.head);
 
-            var dictionary = (IReadOnlyDictionary<string, Token>)token;
+            var dictionary = token.Children;
             Assert.Equal(3, dictionary.Count);
             _ = Assert.Throws<KeyNotFoundException>(() => { _ = d.none; });
         }
@@ -48,8 +48,8 @@ namespace Mikodev.Binary.Tests
                 }
             };
 
-            var bytes = generator.Encode(value);
-            var token = new Token(generator, bytes);
+            var bytes = this.generator.Encode(value);
+            var token = new Token(this.generator, bytes);
             var d = (dynamic)token;
             Assert.Equal(value.a, (int)d.a);
             Assert.Equal(value.b, (string)d.b);
@@ -60,7 +60,7 @@ namespace Mikodev.Binary.Tests
         public void Collection()
         {
             var values = Enumerable.Range(0, 10).Select(x => new { id = x, text = $"{x:d2}" }).ToArray();
-            var tokens = values.Select(x => new Token(generator, generator.Encode(x))).ToArray();
+            var tokens = values.Select(x => new Token(this.generator, this.generator.Encode(x))).ToArray();
             var ds = tokens.Select(x => (dynamic)x).ToArray();
 
             for (var i = 0; i < values.Length; i++)
@@ -79,8 +79,8 @@ namespace Mikodev.Binary.Tests
             {
                 ip = (IPAddress)null,
             };
-            var bytes = generator.Encode(value);
-            var token = new Token(generator, bytes);
+            var bytes = this.generator.Encode(value);
+            var token = new Token(this.generator, bytes);
             var d = (dynamic)token;
             var ip = d.ip;
             Assert.NotNull((object)ip);
@@ -94,8 +94,8 @@ namespace Mikodev.Binary.Tests
             {
                 some = 1,
             };
-            var bytes = generator.Encode(value);
-            var token = new Token(generator, bytes);
+            var bytes = this.generator.Encode(value);
+            var token = new Token(this.generator, bytes);
             var d = (dynamic)token;
             Assert.Equal(1, (int)d.some);
             _ = Assert.Throws<KeyNotFoundException>(() => (string)d.none);
@@ -108,13 +108,12 @@ namespace Mikodev.Binary.Tests
             {
                 some = 1,
             };
-            var bytes = generator.Encode(value);
-            var token = new Token(generator, bytes);
+            var bytes = this.generator.Encode(value);
+            var token = new Token(this.generator, bytes);
             var d = (dynamic)token;
 
             Assert.True(ReferenceEquals(token, (object)d));
             Assert.True(ReferenceEquals(token, (Token)d));
-            Assert.True(ReferenceEquals(token, (IReadOnlyDictionary<string, Token>)d));
             Assert.True(ReferenceEquals(token, (IDynamicMetaObjectProvider)d));
         }
 
@@ -131,8 +130,8 @@ namespace Mikodev.Binary.Tests
                 }
             };
 
-            var bytes = generator.Encode(value);
-            var token = new Token(generator, bytes);
+            var bytes = this.generator.Encode(value);
+            var token = new Token(this.generator, bytes);
             var d = (dynamic)token;
 
             Assert.True(ReferenceEquals(token["a"], (object)d.a));
@@ -145,10 +144,10 @@ namespace Mikodev.Binary.Tests
         {
             void Test<T>(T value)
             {
-                var bytes = generator.Encode(value);
-                var token = new Token(generator, bytes);
+                var bytes = this.generator.Encode(value);
+                var token = new Token(this.generator, bytes);
                 var keys = ((IDynamicMetaObjectProvider)token).GetMetaObject(Expression.Empty()).GetDynamicMemberNames();
-                var dictionaryKeys = ((IReadOnlyDictionary<string, Token>)token).Keys;
+                var dictionaryKeys = token.Children.Keys;
                 Assert.Equal(dictionaryKeys, keys);
             }
 

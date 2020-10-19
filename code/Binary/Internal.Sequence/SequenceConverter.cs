@@ -16,7 +16,7 @@ namespace Mikodev.Binary.Internal.Sequence
             this.encoder = encoder;
             this.functor = itemLength > 0 && counter is not null
                 ? new SequenceConstantEncoder<T>(encoder, counter, itemLength)
-                : new SequenceVariableEncoder<T>(encoder) as SequenceAbstractEncoder<T>;
+                : new SequenceVariableEncoder<T>(encoder);
         }
 
         public override void Encode(ref Allocator allocator, T item) => this.encoder.Encode(ref allocator, item);

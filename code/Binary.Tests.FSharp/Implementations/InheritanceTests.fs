@@ -2,7 +2,6 @@
 
 open Mikodev.Binary
 open System
-open System.Collections.Generic
 open Xunit
 
 [<Interface>]
@@ -45,7 +44,7 @@ let ``Interface`` () =
     let bytes = generator.Encode a
     Assert.NotEmpty bytes
     let token = Token(generator, bytes |> ReadOnlyMemory)
-    let dictionary = token :> IReadOnlyDictionary<string, Token>
+    let dictionary = token.Children
     Assert.Equal(2, dictionary.Count)
     let id = token.["Id"].As<Guid>()
     let name = token.["Name"].As<string>()
@@ -67,7 +66,7 @@ let ``Abstract Class`` () =
     let bytes = generator.Encode a
     Assert.NotEmpty bytes
     let token = Token(generator, bytes |> ReadOnlyMemory)
-    let dictionary = token :> IReadOnlyDictionary<string, Token>
+    let dictionary = token.Children
     Assert.Equal(2, dictionary.Count)
     Assert.False(dictionary.ContainsKey("Price"))
     let name = dictionary.["Name"].As<string>()
@@ -93,7 +92,8 @@ let ``Sub Bytes To Base Value`` () =
     Assert.Equal(a.Name, value.Name)
     Assert.Equal(a.Pages, value.Pages)
     Assert.Equal(a.Price, value.Price)
-    let dictionary = Token(generator, bytes |> ReadOnlyMemory) :> IReadOnlyDictionary<string, Token>
+    let token = Token(generator, bytes |> ReadOnlyMemory)
+    let dictionary = token.Children
     Assert.Equal(4, dictionary.Count)
     let count = dictionary.["Count"].As<int>()
     Assert.Equal(a.Count, count)
@@ -107,6 +107,7 @@ let ``Base Bytes To Sub Value`` () =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Decode<MiscBook> bytes |> ignore)
     let message = sprintf "Named key '%s' does not exist, type: %O" "Count" typeof<MiscBook>
     Assert.Equal(message, error.Message)
-    let dictionary = Token(generator, bytes |> ReadOnlyMemory) :> IReadOnlyDictionary<string, Token>
+    let token = Token(generator, bytes |> ReadOnlyMemory)
+    let dictionary = token.Children
     Assert.Equal(3, dictionary.Count)
     ()

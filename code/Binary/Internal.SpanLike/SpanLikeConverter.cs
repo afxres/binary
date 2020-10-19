@@ -16,7 +16,7 @@ namespace Mikodev.Binary.Internal.SpanLike
             this.builder = builder;
             this.functor = converter.Length > 0
                 ? new SpanLikeConstantEncoder<T, E>(this.adapter, builder, converter.Length)
-                : new SpanLikeVariableEncoder<T, E>(this.adapter, builder) as SpanLikeAbstractEncoder<T>;
+                : new SpanLikeVariableEncoder<T, E>(this.adapter, builder);
         }
 
         public override void Encode(ref Allocator allocator, T item) => this.adapter.Encode(ref allocator, this.builder.Handle(item));

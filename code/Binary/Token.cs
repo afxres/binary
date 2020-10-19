@@ -1,39 +1,51 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Dynamic;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace Mikodev.Binary
 {
     [DebuggerTypeProxy(typeof(TokenDebuggerTypeProxy))]
-    public sealed partial class Token : IDynamicMetaObjectProvider
+    public sealed class Token : IDynamicMetaObjectProvider
     {
+        private readonly IGenerator generator;
+
         private readonly ReadOnlyMemory<byte> memory;
 
-        private readonly IGenerator generator;
+        private readonly Token parent;
 
         private readonly Converter<string> encoder;
 
-        private readonly Lazy<Dictionary<string, Token>> lazy;
+        private readonly Lazy<ImmutableDictionary<string, Token>> lazy;
 
-        private Token(IGenerator generator, ReadOnlyMemory<byte> memory, Converter<string> encoder)
+        public IReadOnlyDictionary<string, Token> Children => this.lazy.Value;
+
+        public ReadOnlyMemory<byte> Memory => this.memory;
+
+        public Token Parent => this.parent;
+
+        private Token(IGenerator generator, ReadOnlyMemory<byte> memory, Token parent, Converter<string> encoder)
         {
             if (generator is null)
                 throw new ArgumentNullException(nameof(generator));
-            encoder ??= generator.GetConverter<string>();
+            if (encoder is null)
+                encoder = generator.GetConverter<string>();
             if (encoder is null)
                 throw new ArgumentException("No available string converter found.");
+            this.parent = parent;
             this.memory = memory;
             this.generator = generator;
             this.encoder = encoder;
-            this.lazy = new Lazy<Dictionary<string, Token>>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
+            this.lazy = new Lazy<ImmutableDictionary<string, Token>>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        private static Dictionary<string, Token> GetTokens(Token instance)
+        private static ImmutableDictionary<string, Token> GetTokens(Token instance)
         {
             var memory = instance.memory;
             var generator = instance.generator;
@@ -42,27 +54,27 @@ namespace Mikodev.Binary
 
             try
             {
-                var dictionary = new Dictionary<string, Token>();
+                var builder = ImmutableDictionary.CreateBuilder<string, Token>();
                 while (body.IsEmpty is false)
                 {
                     var header = encoder.DecodeWithLengthPrefix(ref body);
                     var buffer = PrimitiveHelper.DecodeBufferWithLengthPrefix(ref body);
                     var offset = memory.Length - buffer.Length - body.Length;
                     var target = memory.Slice(offset, buffer.Length);
-                    var result = new Token(generator, target, encoder);
-                    dictionary.Add(header, result);
+                    var result = new Token(generator, target, instance, encoder);
+                    builder.Add(header, result);
                 }
-                return dictionary;
+                return builder.ToImmutable();
             }
             catch (Exception)
             {
-                return new Dictionary<string, Token>(capacity: 0);
+                return ImmutableDictionary.Create<string, Token>();
             }
         }
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => new TokenDynamicMetaObject(parameter, this);
 
-        public Token(IGenerator generator, ReadOnlyMemory<byte> memory) : this(generator, memory, null) { }
+        public Token(IGenerator generator, ReadOnlyMemory<byte> memory) : this(generator, memory, null, null) { }
 
         public Token this[string key] => this.lazy.Value[key];
 
@@ -72,15 +84,13 @@ namespace Mikodev.Binary
 
         public T As<T>(T anonymous) => As<T>();
 
-        public ReadOnlyMemory<byte> AsMemory() => this.memory;
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public override bool Equals(object obj) => ReferenceEquals(this, obj);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override bool Equals(object obj) => throw new NotSupportedException();
+        public override int GetHashCode() => RuntimeHelpers.GetHashCode(this);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public override int GetHashCode() => throw new NotSupportedException();
-
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public override string ToString() => $"{nameof(Token)}(Items: {this.lazy.Value.Count}, Bytes: {this.memory.Length})";
+        public override string ToString() => $"{nameof(Token)}({nameof(Children)}: {Children.Count}, {nameof(Memory)}: {Memory.Length})";
     }
 }

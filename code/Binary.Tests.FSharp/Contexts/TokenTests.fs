@@ -2,11 +2,10 @@
 
 open Mikodev.Binary
 open System
-open System.Collections
 open System.Collections.Generic
 open System.Diagnostics
-open System.Linq
 open System.Reflection
+open System.Runtime.CompilerServices
 open System.Threading
 open Xunit
 
@@ -66,8 +65,7 @@ type TokenTests() =
         let buffer = generator.Encode source
         let token = Token(generator, buffer |> ReadOnlyMemory)
         Assert.Equal(source.data, token.["data"].As<Person>())
-        let error = Assert.Throws<KeyNotFoundException>(fun () -> token.["item"] |> ignore)
-        Assert.Contains("'item'", error.Message)
+        Assert.Throws<KeyNotFoundException>(fun () -> token.["item"] |> ignore) |> ignore
         ()
 
     [<Fact>]
@@ -93,11 +91,11 @@ type TokenTests() =
         ()
 
     [<Fact>]
-    member __.``As Memory`` () =
+    member __.``Memory`` () =
         let buffer = [| 32uy..128uy |]
         let origin = ReadOnlyMemory<byte>(buffer, 8, 48)
         let source = Token(generator, origin)
-        let memory = source.AsMemory()
+        let memory = source.Memory
         Assert.Equal<byte>(origin.ToArray(), memory.ToArray())
         ()
 
@@ -105,7 +103,7 @@ type TokenTests() =
     member __.``Empty Key Only`` () =
         let buffer = generator.Encode (dict [ "", box 1.41 ])
         let token = Token(generator, buffer |> ReadOnlyMemory)
-        let dictionary = token :> IReadOnlyDictionary<string, Token>
+        let dictionary = token.Children
         Assert.Equal(1, dictionary.Count)
         Assert.Equal(1.41, token.[""].As<double>())
         ()
@@ -114,97 +112,47 @@ type TokenTests() =
     member __.``Empty Key`` () =
         let buffer = generator.Encode (dict [ "a", box 'a'; "", box 2048; "data", box "value" ])
         let token = Token(generator, buffer |> ReadOnlyMemory)
-        let dictionary = token :> IReadOnlyDictionary<string, Token>
+        let dictionary = token.Children
         Assert.Equal(3, dictionary.Count)
         Assert.Equal(2048, token.[""].As<int>())
         ()
 
     [<Fact>]
-    member __.``Equals (not supported)`` () =
-        Assert.Throws<NotSupportedException>(fun () -> Token(generator, ReadOnlyMemory()).Equals null |> ignore) |> ignore
+    member __.``Equals (reference equals)`` () =
+        let ga = Generator.CreateDefault()
+        let gb = Generator.CreateDefault()
+        let a = Token(ga, ReadOnlyMemory())
+        let b = Token(ga, ReadOnlyMemory())
+        let c = Token(gb, ReadOnlyMemory())
+        let d = Token(gb, ReadOnlyMemory())
+        Assert.True(a.Equals a)
+        Assert.True(b.Equals b)
+        Assert.True(c.Equals c)
+        Assert.True(d.Equals d)
+        Assert.False(a.Equals b)
+        Assert.False(b.Equals c)
+        Assert.False(c.Equals b)
+        Assert.False(d.Equals c)
         ()
 
     [<Fact>]
-    member __.``Get Hash Code (not supported)`` () =
-        Assert.Throws<NotSupportedException>(fun () -> Token(generator, ReadOnlyMemory()).GetHashCode() |> ignore) |> ignore
+    member __.``Get Hash Code (runtime hash code)`` () =
+        let ga = Generator.CreateDefault()
+        let gb = Generator.CreateDefault()
+        let a = Token(ga, ReadOnlyMemory())
+        let b = Token(ga, ReadOnlyMemory())
+        let c = Token(gb, ReadOnlyMemory())
+        let d = Token(gb, ReadOnlyMemory())
+        Assert.Equal(RuntimeHelpers.GetHashCode a, a.GetHashCode())
+        Assert.Equal(RuntimeHelpers.GetHashCode b, b.GetHashCode())
+        Assert.Equal(RuntimeHelpers.GetHashCode c, c.GetHashCode())
+        Assert.Equal(RuntimeHelpers.GetHashCode d, d.GetHashCode())
         ()
 
     [<Fact>]
     member __.``To String (debug)`` () =
         let token = Token(generator, ReadOnlyMemory())
-        Assert.Equal("Token(Items: 0, Bytes: 0)", token.ToString())
-        ()
-
-    [<Fact>]
-    member __.``Interface Index (mismatch)`` () =
-        let token = Token(generator, ReadOnlyMemory())
-        let d = token :> IReadOnlyDictionary<string, Token>
-        let error = Assert.Throws<KeyNotFoundException>(fun () -> d.[""] |> ignore)
-        Assert.Contains("''", error.Message)
-        ()
-
-    [<Fact>]
-    member __.``Interface (integration, empty)`` () =
-        let token = Token(generator, ReadOnlyMemory())
-        let d = token :> IReadOnlyDictionary<string, Token>
-
-        Assert.Equal(0, d.Count)
-        Assert.False(d.ContainsKey(""))
-        let (flag, data) = d.TryGetValue("")
-        Assert.False flag
-        Assert.Null data
-        Assert.NotNull d.Keys
-        Assert.Empty d.Keys
-        Assert.NotNull d.Values
-        Assert.Empty d.Values
-
-        let a = (token :> IEnumerable).GetEnumerator()
-        Assert.NotNull a
-        Assert.False(a.MoveNext())
-        let b = d.GetEnumerator()
-        Assert.NotNull b
-        Assert.False(b.MoveNext())
-        ()
-
-    [<Fact>]
-    member __.``Interface (integration, with data)`` () =
-        let source = {| id = 1024; data = "sharp" |}
-        let buffer = generator.Encode source
-        let token = Token(generator, buffer |> ReadOnlyMemory)
-        let d = token :> IReadOnlyDictionary<string, Token>
-
-        Assert.Equal(2, d.Count)
-        Assert.True(d.ContainsKey("id"))
-        Assert.True(d.ContainsKey("data"))
-        Assert.False(d.ContainsKey(""))
-
-        let (flag, data) = d.TryGetValue("")
-        Assert.False flag
-        Assert.Null data
-
-        let (flag, data) = d.TryGetValue("id")
-        Assert.True flag
-        Assert.NotNull data
-
-        let (flag, data) = d.TryGetValue("data")
-        Assert.True flag
-        Assert.NotNull data
-
-        Assert.NotNull d.Keys
-        Assert.Equal(2, d.Keys |> Seq.length)
-        Assert.NotNull d.Values
-        Assert.Equal(2, d.Values |> Seq.length)
-
-        let a = (token :> IEnumerable).GetEnumerator()
-        Assert.NotNull a
-        Assert.True(a.MoveNext())
-        Assert.True(a.MoveNext())
-        Assert.False(a.MoveNext())
-        let b = d.GetEnumerator()
-        Assert.NotNull b
-        Assert.True(b.MoveNext())
-        Assert.True(b.MoveNext())
-        Assert.False(b.MoveNext())
+        Assert.Equal("Token(Children: 0, Memory: 0)", token.ToString())
         ()
 
     [<Fact>]
@@ -262,7 +210,7 @@ type TokenTests() =
                 member __.GetConverter t =
                     raise (NotSupportedException(sprintf "Invalid type '%O'" t))
         }
-        let error = Assert.Throws<TargetInvocationException>(fun () -> constructor.Invoke([| box generator; box (ReadOnlyMemory<byte>()); null |]))
+        let error = Assert.Throws<TargetInvocationException>(fun () -> constructor.Invoke([| box generator; box (ReadOnlyMemory<byte>()); null; null |]))
         let inner = Assert.IsType<NotSupportedException>(error.InnerException)
         let message = sprintf "Invalid type '%O'" typeof<string>
         Assert.Equal(message, inner.Message)
@@ -271,25 +219,16 @@ type TokenTests() =
     [<Fact>]
     member __.``From Empty Bytes`` () =
         let token = Token(generator, ReadOnlyMemory())
-        let dictionary = token :> IReadOnlyDictionary<string, Token>
+        let dictionary = token.Children
         Assert.Equal(0, dictionary.Count)
-        let tokens = typeof<Token>.GetField("lazy", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(token) :?> Lazy<Dictionary<string, Token>>
-        Assert.Equal(0, tokens.Value.Count)
-        let buckets = typeof<Dictionary<string, Token>>.GetFields(BindingFlags.Instance ||| BindingFlags.NonPublic).Single(fun x -> x.FieldType = typeof<int array>).GetValue(tokens.Value) :?> int array
-        Assert.Null buckets
         ()
 
     [<Fact>]
     member __.``From Invalid Bytes`` () =
         let buffer = generator.Encode [ "alpha"; "value"; "empty" ]
         let token = Token(generator, ReadOnlyMemory buffer)
-        let dictionary = token :> IReadOnlyDictionary<string, Token>
+        let dictionary = token.Children
         Assert.Equal(0, dictionary.Count)
-        let tokens = typeof<Token>.GetField("lazy", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(token) :?> Lazy<Dictionary<string, Token>>
-        Assert.Equal(0, tokens.Value.Count)
-        let dictionary = tokens.Value;
-        let buckets = typeof<Dictionary<string, Token>>.GetFields(BindingFlags.Instance ||| BindingFlags.NonPublic).Single(fun x -> x.FieldType = typeof<int array>).GetValue(dictionary) :?> int array
-        Assert.Null buckets
         ()
 
     [<Fact>]
@@ -333,7 +272,7 @@ type TokenTests() =
         let proxy = Activator.CreateInstance(t, [| box token |])
         let items = t.GetProperty("Items").GetValue(proxy) :?> KeyValuePair<string, Token>[]
         let r = items |> Array.map (|KeyValue|) |> dict
-        let d = token :> IReadOnlyDictionary<_, _>
+        let d = token.Children
         Assert.Equal(d.Count, items.Length)
         Assert.Equal(d.Count, r.Count)
         Assert.Equal<string>(d.Keys |> HashSet, r.Keys |> HashSet)

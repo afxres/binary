@@ -30,6 +30,6 @@ namespace Mikodev.Binary.Internal
             return new DynamicMetaObject(body, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
         }
 
-        public override IEnumerable<string> GetDynamicMemberNames() => ((IReadOnlyDictionary<string, Token>)Value).Keys;
+        public override IEnumerable<string> GetDynamicMemberNames() => ((Token)Value).Children.Keys;
     }
 }

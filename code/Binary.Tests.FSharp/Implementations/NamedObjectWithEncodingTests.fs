@@ -46,7 +46,7 @@ let ``Named Object As Token (default generator)`` () =
     let alpha = generator.Encode dictionary
     Assert.Equal(8 + 10, alpha.Length)
     let token = Token(generator, ReadOnlyMemory<byte> alpha)
-    Assert.Equal(2, (token :> IReadOnlyDictionary<string, Token>).Count)
+    Assert.Equal(2, token.Children.Count)
     Assert.Equal(4, token.["id"].As<int>())
     Assert.Equal("name", token.["name"].As<string>())
     ()
@@ -80,7 +80,7 @@ let ``Named Object As Token (utf32 string converter)`` () =
     let alpha = generator.Encode dictionary
     Assert.Equal(14 + 34, alpha.Length)
     let token = Token(generator, ReadOnlyMemory<byte> alpha)
-    Assert.Equal(2, (token :> IReadOnlyDictionary<string, Token>).Count)
+    Assert.Equal(2, token.Children.Count)
     Assert.Equal(4, token.["id"].As<int>())
     Assert.Equal("name", token.["name"].As<string>())
     ()
@@ -88,11 +88,11 @@ let ``Named Object As Token (utf32 string converter)`` () =
 type BadStringConverter() =
     inherit Converter<string> ()
 
-    override __.Encode(allocator, item) =
+    override __.Encode(_, _) =
         // do nothing (append empty string)
         ()
 
-    override __.Decode(span : inref<ReadOnlySpan<byte>>) : string =
+    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : string =
         raise (NotSupportedException())
 
 [<Fact>]

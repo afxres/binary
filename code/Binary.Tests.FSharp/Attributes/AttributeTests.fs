@@ -556,7 +556,7 @@ type AttributeTests() =
         let buffer = allocator.AsSpan().ToArray()
 
         let token = Token(generator, buffer |> ReadOnlyMemory)
-        let dictionary = token :> IReadOnlyDictionary<string, Token>
+        let dictionary = token.Children
         Assert.Equal(expected.Length, dictionary.Count)
         for (k, v) in expected do
             let token = dictionary.[k]
@@ -582,7 +582,7 @@ type AttributeTests() =
         let data = PrimitiveHelper.DecodeBufferWithLengthPrefix &data
 
         let token = Token(generator, data.ToArray() |> ReadOnlyMemory)
-        let dictionary = token :> IReadOnlyDictionary<string, Token>
+        let dictionary = token.Children
         Assert.Equal(expected.Length, dictionary.Count)
         for (k, v) in expected do
             let token = dictionary.[k]

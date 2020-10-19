@@ -42,11 +42,11 @@ type Delta =
 
     val mutable private b : int
 
-    member this.C with get () = this.c and set value = this.c <- value
+    member me.C with get () = me.c and set value = me.c <- value
 
-    member this.A with get () = this.a and set value = this.a <- value
+    member me.A with get () = me.a and set value = me.a <- value
 
-    member this.B with get () = this.b and set value = this.b <- value
+    member me.B with get () = me.b and set value = me.b <- value
 
 let generator = Generator.CreateDefault()
 
