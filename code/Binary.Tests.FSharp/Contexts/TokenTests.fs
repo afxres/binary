@@ -4,6 +4,8 @@ open Mikodev.Binary
 open System
 open System.Collections.Generic
 open System.Diagnostics
+open System.Dynamic
+open System.Linq.Expressions
 open System.Reflection
 open System.Runtime.CompilerServices
 open System.Threading
@@ -97,6 +99,36 @@ type TokenTests() =
         let source = Token(generator, origin)
         let memory = source.Memory
         Assert.Equal<byte>(origin.ToArray(), memory.ToArray())
+        ()
+
+    [<Fact>]
+    member __.``Parent (null)`` () =
+        let source = {| id = 1 |}
+        let buffer = generator.Encode source
+        let token = Token(generator, ReadOnlyMemory buffer)
+        Assert.Null token.Parent
+        ()
+
+    [<Fact>]
+    member __.``Parent (children)`` () =
+        let source = {| id = 1; name = "fsharp" |}
+        let buffer = generator.Encode source
+        let token = Token(generator, ReadOnlyMemory buffer)
+        Assert.Null token.Parent
+        let children = token.Children
+        Assert.Equal(2, children.Count)
+        Assert.All(children.Values, fun x -> Assert.True(obj.ReferenceEquals(token, x.Parent)))
+        ()
+
+    [<Fact>]
+    member __.``Children`` () =
+        let source = {| id = 1; name = "fsharp" |}
+        let buffer = generator.Encode source
+        let token = Token(generator, ReadOnlyMemory buffer)
+        Assert.Null token.Parent
+        let children = token.Children
+        Assert.Equal(2, children.Count)
+        Assert.Equal<string>([| "id"; "name" |] |> SortedSet, children.Keys |> SortedSet)
         ()
 
     [<Fact>]
@@ -275,6 +307,16 @@ type TokenTests() =
         let d = token.Children
         Assert.Equal(d.Count, items.Length)
         Assert.Equal(d.Count, r.Count)
-        Assert.Equal<string>(d.Keys |> HashSet, r.Keys |> HashSet)
+        Assert.Equal<string>(d.Keys |> SortedSet, r.Keys |> SortedSet)
         Assert.All(d.Keys, fun x -> Assert.True(obj.ReferenceEquals(d.[x], r.[x])))
+        ()
+
+    [<Theory>]
+    [<MemberData("Anonymous Objects")>]
+    member __.``Dynamic Member Names`` (item : obj) =
+        let buffer = generator.Encode item
+        let token = Token(generator, ReadOnlyMemory buffer)
+        let meta = (token :> IDynamicMetaObjectProvider).GetMetaObject(Expression.Parameter(typeof<Token>))
+        let names = meta.GetDynamicMemberNames()
+        Assert.Equal<string>(names |> SortedSet, token.Children.Keys |> SortedSet)
         ()
