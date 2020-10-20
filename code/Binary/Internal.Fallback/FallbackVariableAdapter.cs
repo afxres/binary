@@ -10,13 +10,13 @@ namespace Mikodev.Binary.Internal.Fallback
 
         public override void EncodeAuto(ref Allocator allocator, T item)
         {
-            converter.EncodeWithLengthPrefix(ref allocator, item);
+            this.converter.EncodeWithLengthPrefix(ref allocator, item);
         }
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
             var anchor = Allocator.Anchor(ref allocator, sizeof(int));
-            converter.Encode(ref allocator, item);
+            this.converter.Encode(ref allocator, item);
             Allocator.AppendLengthPrefix(ref allocator, anchor);
         }
 
@@ -26,8 +26,8 @@ namespace Mikodev.Binary.Internal.Fallback
             try
             {
                 var allocator = new Allocator(BufferHelper.Result(handle));
-                converter.Encode(ref allocator, item);
-                return Allocator.Result(ref allocator);
+                this.converter.Encode(ref allocator, item);
+                return allocator.ToArray();
             }
             finally
             {
@@ -37,7 +37,7 @@ namespace Mikodev.Binary.Internal.Fallback
 
         public override T DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            return converter.DecodeWithLengthPrefix(ref span);
+            return this.converter.DecodeWithLengthPrefix(ref span);
         }
     }
 }

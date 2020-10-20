@@ -66,7 +66,7 @@ namespace Mikodev.Binary
             {
                 var allocator = new Allocator(BufferHelper.Result(handle));
                 action.Invoke(ref allocator, data);
-                return Allocator.Result(ref allocator);
+                return allocator.ToArray();
             }
             finally
             {

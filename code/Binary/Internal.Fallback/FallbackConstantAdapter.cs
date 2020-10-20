@@ -10,7 +10,7 @@ namespace Mikodev.Binary.Internal.Fallback
 
         public override void EncodeAuto(ref Allocator allocator, T item)
         {
-            converter.Encode(ref allocator, item);
+            this.converter.Encode(ref allocator, item);
         }
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)

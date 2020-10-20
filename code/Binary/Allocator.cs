@@ -14,18 +14,18 @@ namespace Mikodev.Binary
 
         private readonly int limits;
 
-        public readonly int Length => offset;
+        public readonly int Length => this.offset;
 
-        public readonly int Capacity => buffer.Length;
+        public readonly int Capacity => this.buffer.Length;
 
-        public readonly int MaxCapacity => limits is 0 ? int.MaxValue : ~limits;
+        public readonly int MaxCapacity => this.limits is 0 ? int.MaxValue : ~this.limits;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Allocator(Span<byte> span)
         {
-            limits = 0;
-            offset = 0;
-            buffer = span;
+            this.limits = 0;
+            this.offset = 0;
+            this.buffer = span;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -33,16 +33,28 @@ namespace Mikodev.Binary
         {
             if (maxCapacity < 0)
                 ThrowHelper.ThrowMaxCapacityNegative();
-            limits = ~maxCapacity;
-            offset = 0;
-            buffer = span.Slice(0, Math.Min(span.Length, maxCapacity));
+            this.limits = ~maxCapacity;
+            this.offset = 0;
+            this.buffer = span.Slice(0, Math.Min(span.Length, maxCapacity));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReadOnlySpan<byte> AsSpan() => buffer.Slice(0, offset);
+        public readonly byte[] ToArray()
+        {
+            var offset = this.offset;
+            if (offset is 0)
+                return Array.Empty<byte>();
+            var buffer = this.buffer;
+            var result = new byte[offset];
+            Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetReference(new Span<byte>(result)), ref MemoryMarshal.GetReference(buffer), (uint)offset);
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly ReadOnlySpan<byte> AsSpan() => this.buffer.Slice(0, this.offset);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public readonly ref readonly byte GetPinnableReference() => ref MemoryMarshal.GetReference(buffer);
+        public readonly ref readonly byte GetPinnableReference() => ref MemoryMarshal.GetReference(this.buffer);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override readonly bool Equals(object obj) => throw new NotSupportedException();

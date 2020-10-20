@@ -85,18 +85,6 @@ namespace Mikodev.Binary
             Unsafe.CopyBlockUnaligned(ref Assign(ref allocator, length), ref MemoryMarshal.GetReference(span), (uint)length);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static byte[] Result(ref Allocator allocator)
-        {
-            var offset = allocator.offset;
-            if (offset is 0)
-                return Array.Empty<byte>();
-            var result = new byte[offset];
-            var buffer = allocator.buffer;
-            Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetReference(new Span<byte>(result)), ref MemoryMarshal.GetReference(buffer), (uint)offset);
-            return result;
-        }
-
         internal static void AppendLengthPrefix(ref Allocator allocator, int anchor)
         {
             const int Limits = 16;
