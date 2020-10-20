@@ -73,6 +73,7 @@ let ``Constructor (limitation)`` (size : int, limitation : int) =
 [<InlineData(257)>]
 let ``As Span`` (length : int) =
     let source = Array.zeroCreate<byte> length
+    random.NextBytes source
     let mutable allocator = Allocator()
     let span = ReadOnlySpan<byte>(source)
     AllocatorHelper.Append(&allocator, span)
@@ -122,6 +123,27 @@ let ``Get Pinnable Reference (attribute)`` () =
     let returnReadOnlyAttributes = method.ReturnTypeCustomAttributes.GetCustomAttributes(false) |> Array.filter (fun x -> x.GetType().FullName = attributeName)
     Assert.Single methodReadOnlyAttributes |> ignore
     Assert.Single returnReadOnlyAttributes |> ignore
+    ()
+
+[<Fact>]
+let ``To Array (empty)`` () =
+    let mutable allocator = Allocator()
+    let buffer = allocator.ToArray()
+    Assert.True(obj.ReferenceEquals(Array.Empty<byte>(), buffer))
+    ()
+
+[<Theory>]
+[<InlineData(1)>]
+[<InlineData(257)>]
+let ``To Array`` (length : int) =
+    let source = Array.zeroCreate<byte> length
+    random.NextBytes source
+    let mutable allocator = Allocator()
+    let span = ReadOnlySpan<byte>(source)
+    AllocatorHelper.Append(&allocator, span)
+
+    let result = allocator.ToArray()
+    Assert.Equal<byte>(source, result)
     ()
 
 [<Fact>]
