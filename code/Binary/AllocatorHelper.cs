@@ -7,26 +7,9 @@ namespace Mikodev.Binary
 {
     public static class AllocatorHelper
     {
-        public static AllocatorAnchor Anchor(ref Allocator allocator, int length)
-        {
-            return new AllocatorAnchor(Allocator.Anchor(ref allocator, length), length);
-        }
-
         public static void Append(ref Allocator allocator, ReadOnlySpan<byte> span)
         {
             Allocator.Append(ref allocator, span);
-        }
-
-        public static void Append<T>(ref Allocator allocator, AllocatorAnchor anchor, T data, SpanAction<byte, T> action)
-        {
-            if (action is null)
-                ThrowHelper.ThrowActionNull();
-            // check bounds via slice method
-            var target = allocator.AsSpan().Slice(anchor.Offset, anchor.Length);
-            var length = target.Length;
-            if (length is 0)
-                return;
-            action.Invoke(MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(target), length), data);
         }
 
         public static void Append<T>(ref Allocator allocator, int length, T data, SpanAction<byte, T> action)

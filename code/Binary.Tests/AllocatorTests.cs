@@ -16,34 +16,6 @@ namespace Mikodev.Binary.Tests
 
         private delegate void AppendLengthPrefix(ref Allocator allocator, int anchor);
 
-        private static readonly string outofrange = new ArgumentOutOfRangeException().Message;
-
-        [Theory(DisplayName = "Fake Anchor (hack, invalid)")]
-        [InlineData(0, -1)]
-        [InlineData(-1, 0)]
-        [InlineData(510, 4)]
-        [InlineData(768, 32)]
-        public unsafe void FakeAnchorThenAppend(int offset, int length)
-        {
-            const int Limits = 512;
-
-            void Test()
-            {
-                var anchor = new AllocatorAnchor();
-                ((int*)&anchor)[0] = offset;
-                ((int*)&anchor)[1] = length;
-                Assert.Equal($"AllocatorAnchor(Offset: {offset}, Length: {length})", anchor.ToString());
-                var allocator = new Allocator();
-                AllocatorHelper.Append(ref allocator, new byte[Limits]);
-                Assert.Equal(Limits, allocator.Length);
-                Assert.Equal(1024, allocator.Capacity);
-                AllocatorHelper.Append(ref allocator, anchor, default(object), (a, b) => throw new NotSupportedException());
-            }
-
-            var error = Assert.Throws<ArgumentOutOfRangeException>(() => Test());
-            Assert.StartsWith(outofrange, error.Message);
-        }
-
         [Fact(DisplayName = "Resize Capacity (hack)")]
         public unsafe void ResizeCapacity()
         {

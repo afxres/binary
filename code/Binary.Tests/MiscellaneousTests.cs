@@ -92,7 +92,7 @@ namespace Mikodev.Binary.Tests
             var types = typeof(IConverter).Assembly.GetTypes()
                 .Where(x => (x.IsPublic || x.IsNestedPublic) && !(x.IsAbstract && x.IsSealed) && !typeof(Delegate).IsAssignableFrom(x) && !x.IsInterface && x.Namespace == "Mikodev.Binary")
                 .ToList();
-            Assert.Equal(4, types.Count);
+            Assert.Equal(3, types.Count);
             foreach (var t in types)
             {
                 var equalMethod = t.GetMethod("Equals", new[] { typeof(object) });
@@ -119,7 +119,7 @@ namespace Mikodev.Binary.Tests
             var attributes = remainMembers.Select(x => (x, Flag: HasReadOnlyAttribute(x))).ToList();
 
             _ = Assert.Single(otherTypes);
-            Assert.Equal(new HashSet<Type> { typeof(AllocatorAnchor) }, new HashSet<Type>(readonlyTypes));
+            Assert.Empty(readonlyTypes);
             Assert.Equal(3, ignoreMembers.Count);
             Assert.All(attributes, x => Assert.True(x.Flag));
         }
@@ -154,7 +154,6 @@ namespace Mikodev.Binary.Tests
             var types = typeof(IConverter).Assembly.GetTypes();
             var byRefTypes = (from t in types let attributes = t.GetCustomAttributes() where attributes.Any(x => x.GetType().FullName == attributeName) select t).ToList();
             Assert.Contains(typeof(Allocator), byRefTypes);
-            Assert.Contains(typeof(AllocatorAnchor), byRefTypes);
         }
 
         [Fact(DisplayName = "Method With 'DoesNotReturnAttribute'")]
