@@ -23,9 +23,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Internal\UnionEncoder.fs" />
-    <Compile Include="Internal\UnionDecoder.fs" />
-    <Compile Include="Internal.Contexts\Validate.fs" />
+    <Compile Include="Internal\EnsureHelper.fs" />
+    <Compile Include="Internal\ModuleHelper.fs" />
     <Compile Include="Creators.Fallback\UnionConverter.fs" />
     <Compile Include="Creators.Fallback\UnionConverterCreator.fs" />
     <Compile Include="Creators.Sequence\ListConverter.fs" />

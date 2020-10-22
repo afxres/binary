@@ -1,6 +1,7 @@
-﻿module Miscellaneous.MiscellaneousTests
+﻿module Miscellaneous.AccessibilityTests
 
 open Mikodev.Binary
+open System
 open System.Collections.Generic
 open System.Reflection
 open Xunit
@@ -10,8 +11,8 @@ let ``Public Types`` () =
     let types = typeof<GeneratorBuilderFSharpExtensions>.Assembly.GetTypes()
     let myTypes = types |> Array.filter (fun x -> x.IsPublic)
     let myTypeNames = myTypes |> Array.map (fun x -> x.Name)
-    let names = [| "UnionEncoder`1"; "UnionDecoder`1"; "GeneratorBuilderFSharpExtensions" |] |> HashSet
-    Assert.Equal(3, myTypeNames.Length)
+    let names = [| "GeneratorBuilderFSharpExtensions" |] |> HashSet
+    Assert.Equal(1, myTypeNames.Length)
     Assert.Equal<string>(names, myTypeNames |> HashSet)
     ()
 
@@ -19,8 +20,10 @@ let ``Public Types`` () =
 let ``Public Members`` () =
     let types = typeof<GeneratorBuilderFSharpExtensions>.Assembly.GetTypes()
     let myNonPublicTypes = types |> Array.filter (fun x -> x.Namespace.StartsWith "Mikodev.Binary.Creators" && not x.IsPublic)
-    Assert.Equal(8, myNonPublicTypes.Length)
-    for t in myNonPublicTypes do
+    Assert.Equal(10, myNonPublicTypes.Length)
+    let myNonPublicNonDelegateTypes = myNonPublicTypes |> Array.filter (fun x -> not (x.IsSubclassOf typeof<Delegate>))
+    Assert.Equal(8, myNonPublicNonDelegateTypes.Length)
+    for t in myNonPublicNonDelegateTypes do
         let members = t.GetMembers()
         let constructor = members |> Array.choose (fun x -> match x with | :? ConstructorInfo as info -> Some info | _ -> None) |> Array.exactlyOne
         let otherMembers = members |> Array.except [| constructor :> MemberInfo |]

@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary.Creators.Sequence
 
 open Mikodev.Binary
+open Mikodev.Binary.Internal
 open System
 
 [<CompiledName("FSharpMapConverter`2")>]
@@ -11,9 +12,9 @@ type internal MapConverter<'K, 'V when 'K : comparison>(init : Converter<'K>, ta
         if isNull (box item) = false then
             let init = init
             let tail = tail
-            let handle = AllocatorUnsafeHandle &allocator
+            let handle = ModuleHelper.Handle.AsHandle &allocator
             item |> Map.iter (fun k v ->
-                let allocator = &handle.AsAllocator()
+                let allocator = &(ModuleHelper.Handle.AsAllocator handle)
                 init.EncodeAuto(&allocator, k)
                 tail.EncodeAuto(&allocator, v))
         ()

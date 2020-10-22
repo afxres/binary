@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary.Creators.Sequence
 
 open Mikodev.Binary
+open Mikodev.Binary.Internal
 open System
 
 [<CompiledName("FSharpSetConverter`1")>]
@@ -10,8 +11,10 @@ type internal SetConverter<'T when 'T : comparison>(converter : Converter<'T>) =
     override __.Encode(allocator, item) =
         if isNull (box item) = false then
             let converter = converter
-            let handle = AllocatorUnsafeHandle &allocator
-            item |> Set.iter (fun x -> let allocator = &handle.AsAllocator() in converter.EncodeAuto(&allocator, x))
+            let handle = ModuleHelper.Handle.AsHandle &allocator
+            item |> Set.iter (fun x ->
+                let allocator = &(ModuleHelper.Handle.AsAllocator handle)
+                converter.EncodeAuto(&allocator, x))
         ()
 
     override __.Decode(span : inref<ReadOnlySpan<byte>>) : Set<'T> =

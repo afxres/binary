@@ -1,10 +1,9 @@
-﻿[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
-module internal Mikodev.Binary.Internal.Contexts.Validate
+﻿module internal Mikodev.Binary.Internal.EnsureHelper
 
 open Mikodev.Binary
 open System
 
-let GetConverter (context : IGeneratorContext) (t : Type) =
+let EnsureConverter (context : IGeneratorContext) (t : Type) =
     let converter = context.GetConverter t
     let expectedType = typedefof<Converter<_>>.MakeGenericType t
     if isNull (box converter) then

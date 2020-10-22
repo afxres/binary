@@ -9,7 +9,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
 
     let constant = converter.Length > 0
 
-    member private __.NotifyConstant(length : int) : unit =
+    member private __.ExceptConstant(length : int) : unit =
         raise (ArgumentException(sprintf "Not enough bytes for collection element, byte length: %d, element type: %O" length typeof<'T>))
 
     member private me.DecodeConstant(span : ReadOnlySpan<byte>) : List<'T> =
@@ -18,7 +18,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
         let spanLength = span.Length;
         let quotient, remainder = Math.DivRem(spanLength, itemLength)
         if remainder <> 0 then
-            me.NotifyConstant spanLength
+            me.ExceptConstant spanLength
         let mutable list = []
         let mutable i = quotient - 1
         while i >= 0 do
