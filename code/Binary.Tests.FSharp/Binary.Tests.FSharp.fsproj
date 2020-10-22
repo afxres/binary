@@ -13,7 +13,6 @@
     <Compile Include="Contexts\AllocatorAnchorTests.fs" />
     <Compile Include="Contexts\AllocatorHelperTests.fs" />
     <Compile Include="Contexts\AllocatorTests.fs" />
-    <Compile Include="Contexts\AllocatorUnsafeHandleTests.fs" />
     <Compile Include="Contexts\AllocatorConverterTests.fs" />
     <Compile Include="Contexts\ConverterExtensionsTests.fs" />
     <Compile Include="Contexts\ConverterHelperTests.fs" />
