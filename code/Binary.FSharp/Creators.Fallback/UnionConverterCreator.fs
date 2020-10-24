@@ -42,7 +42,7 @@ type internal UnionConverterCreator() =
                 let converter = converters.[propertyType]
                 let method = GetEncodeMethodInfo propertyType (auto || i <> properties.Length - 1)
                 let invoke = Expression.Call(Expression.Constant(converter), method, allocator, Expression.Property(instance, property))
-                yield invoke
+                invoke
         |]
 
         let MakeCase (info : UnionCaseInfo) : Expression =
@@ -57,7 +57,11 @@ type internal UnionConverterCreator() =
             if properties |> Array.isEmpty then
                 Expression.Empty() :> Expression
             else
-                let dataType = properties |> Array.map (fun x -> x.DeclaringType) |> Array.distinct |> Array.exactlyOne
+                let dataType =
+                    properties
+                    |> Array.map (fun x -> x.DeclaringType)
+                    |> Array.distinct
+                    |> Array.exactlyOne
                 if t = dataType then
                     Expression.Block(MakeBody item properties) :> Expression
                 else
@@ -128,16 +132,25 @@ type internal UnionConverterCreator() =
     interface IConverterCreator with
         member __.GetConverter(context, t) =
             let Make (cases : UnionCaseInfo array) =
-                let caseInfos = cases |> Array.map (fun x -> x.Tag, x) |> Map.ofArray
-                let constructorInfos = cases |> Array.map (fun x -> x.Tag, FSharpValue.PreComputeUnionConstructorInfo(x)) |> Map.ofArray
+                let caseInfos =
+                    cases
+                    |> Array.map (fun x -> x.Tag, x)
+                    |> Map.ofArray
+                let constructorInfos =
+                    cases
+                    |> Array.map (fun x -> x.Tag, FSharpValue.PreComputeUnionConstructorInfo(x))
+                    |> Map.ofArray
                 let memberTypes = seq {
                     for i in caseInfos do
-                        for f in i.Value.GetFields() do
-                            yield f.PropertyType
+                        for f in i.Value.GetFields() -> f.PropertyType
                     for i in constructorInfos do
-                        for p in i.Value.GetParameters() do
-                            yield p.ParameterType } |> Seq.distinct |> Seq.toArray
-                let converters = memberTypes |> Array.map (fun x -> x, (EnsureHelper.EnsureConverter context x)) |> readOnlyDict
+                        for p in i.Value.GetParameters() -> p.ParameterType
+                }
+                let converters =
+                    memberTypes
+                    |> Seq.distinct
+                    |> Seq.map (fun x -> x, (EnsureHelper.EnsureConverter context x))
+                    |> readOnlyDict
                 let tagMember = FSharpValue.PreComputeUnionTagMemberInfo(t)
                 let noNull = not t.IsValueType && not (tagMember :? MethodInfo)
                 let encode = GetEncodeExpression t converters caseInfos tagMember false
@@ -146,7 +159,7 @@ type internal UnionConverterCreator() =
                 let decodeAuto = GetDecodeExpression t converters constructorInfos true
                 let converterType = typedefof<UnionConverter<_>>.MakeGenericType t
                 let delegates = [| encode; encodeAuto; decode; decodeAuto |] |> Array.map (fun x -> x.Compile())
-                let converterArguments = Array.append (delegates |> Seq.cast<obj> |> Seq.toArray) [| box noNull |]
+                let converterArguments = Array.append (delegates |> Array.map box) [| box noNull |]
                 let converter = Activator.CreateInstance(converterType, converterArguments)
                 converter :?> IConverter
 
@@ -156,7 +169,11 @@ type internal UnionConverterCreator() =
                 let cases = FSharpType.GetUnionCases(t)
                 if (cases |> Array.isEmpty) then
                     raise (ArgumentException(sprintf "No available union case found, type: %O" t))
-                let unionType = cases |> Array.map (fun x -> x.DeclaringType) |> Array.distinct |> Array.exactlyOne
+                let unionType =
+                    cases
+                    |> Array.map (fun x -> x.DeclaringType)
+                    |> Array.distinct
+                    |> Array.exactlyOne
                 if (unionType <> t) then
                     raise (ArgumentException(sprintf "Invalid union type, you may have to use union type '%O' instead of case type '%O'" unionType t))
                 Make cases
