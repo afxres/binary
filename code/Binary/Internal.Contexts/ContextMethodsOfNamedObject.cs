@@ -60,16 +60,17 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             IReadOnlyList<Expression> Initialize(ParameterExpression slices)
             {
-                var values = new Expression[properties.Count];
+                var results = new Expression[properties.Count];
                 for (var i = 0; i < properties.Count; i++)
                 {
                     var property = properties[i];
                     var converter = converters[i];
-                    var method = InvokeMethodInfo.MakeGenericMethod(property.PropertyType);
-                    var invoke = Expression.Call(slices, method, Expression.Constant(converter), Expression.Constant(i));
-                    values[i] = invoke;
+                    var method = ContextMethods.GetDecodeMethodInfo(property.PropertyType, auto: false);
+                    var invoke = Expression.Call(slices, InvokeMethodInfo, Expression.Constant(i));
+                    var decode = Expression.Call(Expression.Constant(converter), method, invoke);
+                    results[i] = decode;
                 }
-                return values;
+                return results;
             }
 
             return constructor?.Invoke(typeof(NamedObjectDecoder<>).MakeGenericType(type), Initialize);

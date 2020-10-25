@@ -48,16 +48,16 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             IReadOnlyList<Expression> Initialize(ParameterExpression span)
             {
-                var values = new Expression[types.Count];
+                var results = new Expression[types.Count];
                 for (var i = 0; i < types.Count; i++)
                 {
                     var itemType = types[i];
                     var converter = converters[i];
                     var method = ContextMethods.GetDecodeMethodInfo(itemType, auto || i != types.Count - 1);
-                    var invoke = Expression.Call(Expression.Constant(converter), method, span);
-                    values[i] = invoke;
+                    var decode = Expression.Call(Expression.Constant(converter), method, span);
+                    results[i] = decode;
                 }
-                return values;
+                return results;
             }
 
             return constructor?.Invoke(typeof(TupleObjectDecoder<>).MakeGenericType(type), Initialize);

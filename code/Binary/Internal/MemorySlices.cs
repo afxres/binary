@@ -10,6 +10,7 @@ namespace Mikodev.Binary.Internal
 
         private readonly Span<long> data;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public MemorySlices(ReadOnlySpan<byte> span, Span<long> data)
         {
             Debug.Assert(span.Length > 0);
@@ -19,11 +20,11 @@ namespace Mikodev.Binary.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T Invoke<T>(Converter<T> converter, int index)
+        public ReadOnlySpan<byte> Invoke(int index)
         {
-            var item = data[index];
-            var body = span.Slice((int)(item >> 32), (int)item);
-            return converter.Decode(in body);
+            var item = this.data[index];
+            var body = this.span.Slice((int)(item >> 32), (int)item);
+            return body;
         }
     }
 }
