@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Mikodev.Binary.Tests
 {
-    public class MiscellaneousTests
+    public class CodeContractsTests
     {
         [Fact(DisplayName = "Public Class Methods With ByRef Type")]
         public void Argument()

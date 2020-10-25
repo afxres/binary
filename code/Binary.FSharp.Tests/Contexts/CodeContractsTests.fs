@@ -1,4 +1,4 @@
-﻿module Miscellaneous.AccessibilityTests
+﻿module Contexts.CodeContractsTests
 
 open Mikodev.Binary
 open System
