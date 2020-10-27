@@ -1,5 +1,6 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary.Converters
 {
@@ -9,15 +10,17 @@ namespace Mikodev.Binary.Converters
 
         public override void Encode(ref Allocator allocator, DateTimeOffset item)
         {
-            MemoryHelper.EncodeLittleEndian(ref allocator, item.Ticks);
-            MemoryHelper.EncodeLittleEndian(ref allocator, (short)(item.Offset.Ticks / TimeSpan.TicksPerMinute));
+            ref var target = ref Allocator.Assign(ref allocator, sizeof(long) + sizeof(short));
+            MemoryHelper.EncodeLittleEndian(ref target, item.Ticks);
+            MemoryHelper.EncodeLittleEndian(ref Unsafe.Add(ref target, sizeof(long)), (short)(item.Offset.Ticks / TimeSpan.TicksPerMinute));
         }
 
         public override DateTimeOffset Decode(in ReadOnlySpan<byte> span)
         {
-            var head = MemoryHelper.DecodeLittleEndian<long>(span);
-            var tail = MemoryHelper.DecodeLittleEndian<short>(span.Slice(sizeof(long)));
-            return new DateTimeOffset(head, new TimeSpan(tail * TimeSpan.TicksPerMinute));
+            ref var source = ref MemoryHelper.EnsureLength(span, sizeof(long) + sizeof(short));
+            var origin = MemoryHelper.DecodeLittleEndian<long>(ref source);
+            var offset = MemoryHelper.DecodeLittleEndian<short>(ref Unsafe.Add(ref source, sizeof(long)));
+            return new DateTimeOffset(origin, new TimeSpan(offset * TimeSpan.TicksPerMinute));
         }
     }
 }

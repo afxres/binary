@@ -10,7 +10,7 @@ namespace Mikodev.Binary.Converters
 
         public override void Encode(ref Allocator allocator, decimal item)
         {
-            ref var target = ref Allocator.Assign(ref allocator, 16);
+            ref var target = ref Allocator.Assign(ref allocator, sizeof(int) * 4);
             ref var source = ref Unsafe.As<decimal, int>(ref item);
             MemoryHelper.EncodeLittleEndian(ref Unsafe.Add(ref target, sizeof(int) * 0), Unsafe.Add(ref source, 2));
             MemoryHelper.EncodeLittleEndian(ref Unsafe.Add(ref target, sizeof(int) * 1), Unsafe.Add(ref source, 3));
@@ -20,7 +20,7 @@ namespace Mikodev.Binary.Converters
 
         public override decimal Decode(in ReadOnlySpan<byte> span)
         {
-            ref var source = ref MemoryHelper.EnsureLength(span, 16);
+            ref var source = ref MemoryHelper.EnsureLength(span, sizeof(int) * 4);
             var alpha = MemoryHelper.DecodeLittleEndian<int>(ref Unsafe.Add(ref source, sizeof(int) * 0));
             var bravo = MemoryHelper.DecodeLittleEndian<int>(ref Unsafe.Add(ref source, sizeof(int) * 1));
             var delta = MemoryHelper.DecodeLittleEndian<int>(ref Unsafe.Add(ref source, sizeof(int) * 2));
