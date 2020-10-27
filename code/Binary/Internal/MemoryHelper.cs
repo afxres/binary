@@ -19,10 +19,19 @@ namespace Mikodev.Binary.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ref byte EnsureLength(ReadOnlySpan<byte> span, int length)
         {
-            Debug.Assert((uint)length <= 16);
+            Debug.Assert(length is not 0 && (uint)length <= 16);
             if (span.Length < length)
                 ThrowHelper.ThrowNotEnoughBytes();
             return ref MemoryMarshal.GetReference(span);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ref byte EnsureLength(ref ReadOnlySpan<byte> span, int length)
+        {
+            Debug.Assert(length is not 0 && (uint)length <= 16);
+            ref var result = ref MemoryMarshal.GetReference(span);
+            span = span.Slice(length);
+            return ref result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

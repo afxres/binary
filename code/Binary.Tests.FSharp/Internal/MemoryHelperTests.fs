@@ -2,7 +2,9 @@
 
 open Mikodev.Binary
 open System
+open System.Linq
 open System.Reflection
+open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
 open Xunit
 
@@ -12,17 +14,28 @@ type Encode<'T> = delegate of location : byref<byte> * item : 'T -> unit
 
 type Decode<'T> = delegate of location : byref<byte> -> 'T
 
+type EnsureLengthNotEmpty = delegate of span : ReadOnlySpan<byte> -> byref<byte>
+
+type EnsureLength = delegate of span : ReadOnlySpan<byte> * length : int -> byref<byte>
+
+type EnsureLengthReference = delegate of span : byref<ReadOnlySpan<byte>> * length : int -> byref<byte>
+
 type MemoryHelperTests () =
     member private __.MakeDelegate<'T when 'T :> Delegate> (method : string) =
         let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "MemoryHelper") |> Array.exactlyOne
         let a = t.GetMethods(BindingFlags.Static ||| BindingFlags.NonPublic) |> Array.filter (fun x -> x.Name = method)
-        let m =
-            match a with
-            | [| x |] -> x
-            | _ -> a |> Array.filter (fun x -> let p = x.GetParameters() in p.Length > 0 && p.[0].ParameterType = typeof<byte>.MakeByRefType()) |> Array.exactlyOne
-        Assert.NotNull m
-        let d = Delegate.CreateDelegate(typeof<'T>, m.MakeGenericMethod(typeof<'T>.GetGenericArguments()))
-        d :?> 'T
+        if not typeof<'T>.IsGenericType then
+            let m = a |> Array.filter (fun x -> let p = [| for i in x.GetParameters() -> i.ParameterType |] in let v = [| for i in (typeof<'T>.GetMethod("Invoke").GetParameters()) -> i.ParameterType |] in p.SequenceEqual(v)) |> Seq.exactlyOne
+            let d = Delegate.CreateDelegate(typeof<'T>, m)
+            d :?> 'T
+        else
+            let m =
+                match a with
+                | [| x |] -> x
+                | _ -> a |> Array.filter (fun x -> let p = x.GetParameters() in p.Length > 0 && p.[0].ParameterType = typeof<byte>.MakeByRefType()) |> Array.exactlyOne
+            Assert.NotNull m
+            let d = Delegate.CreateDelegate(typeof<'T>, m.MakeGenericMethod(typeof<'T>.GetGenericArguments()))
+            d :?> 'T
 
     static member ``Data Alpha`` : (obj array) seq = seq {
         yield [| int16 0x3389 |]
@@ -104,4 +117,71 @@ type MemoryHelperTests () =
         let numberResult = detachNumberEndian.Invoke(&location)
         Assert.Equal<'a>(item, numberResult)
         Assert.Equal<byte>(numberEndian, span.Slice(0, numberEndian.Length).ToArray())
+        ()
+
+    [<Fact>]
+    member me.``Ensure Length (not empty, error)`` () =
+        let ensure = me.MakeDelegate<EnsureLengthNotEmpty> "EnsureLength"
+        let error = Assert.Throws<ArgumentException>(fun () -> ensure.Invoke(ReadOnlySpan<byte>()) |> ignore)
+        let message = "Not enough bytes or byte sequence invalid."
+        Assert.Equal(message, error.Message)
+        ()
+
+    [<Fact>]
+    member me.``Ensure Length (not empty, from 1 to 16)`` () =
+        let ensure = me.MakeDelegate<EnsureLengthNotEmpty> "EnsureLength"
+        let random = Random()
+        for i = 1 to 16 do
+            let buffer = Array.zeroCreate i
+            random.NextBytes buffer
+            let location = &ensure.Invoke(ReadOnlySpan buffer)
+            Assert.True(Unsafe.AreSame(&location, &buffer.[0]))
+        ()
+
+    [<Theory>]
+    [<InlineData(0, 1)>]
+    [<InlineData(15, 16)>]
+    member me.``Ensure Length (enough, error)`` (actual : int, required : int) =
+        let ensure = me.MakeDelegate<EnsureLength> "EnsureLength"
+        let error = Assert.Throws<ArgumentException>(fun () ->
+            let buffer = Array.zeroCreate actual
+            ensure.Invoke(ReadOnlySpan buffer, required) |> ignore)
+        let message = "Not enough bytes or byte sequence invalid."
+        Assert.Equal(message, error.Message)
+        ()
+
+    [<Theory>]
+    [<InlineData(1, 1)>]
+    [<InlineData(16, 16)>]
+    member me.``Ensure Length (enough)`` (actual : int, required : int) =
+        let ensure = me.MakeDelegate<EnsureLength> "EnsureLength"
+        let buffer = Array.zeroCreate actual
+        let location = &ensure.Invoke(ReadOnlySpan buffer, required)
+        Assert.True(Unsafe.AreSame(&location, &buffer.[0]))
+        ()
+
+    [<Theory>]
+    [<InlineData(0, 1)>]
+    [<InlineData(15, 16)>]
+    member me.``Ensure Length (reference, error)`` (actual : int, required : int) =
+        let ensure = me.MakeDelegate<EnsureLengthReference> "EnsureLength"
+        let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
+            let buffer = Array.zeroCreate actual
+            let mutable span = ReadOnlySpan buffer
+            ensure.Invoke(&span, required) |> ignore)
+        Assert.StartsWith(ArgumentOutOfRangeException().Message, error.Message)
+        ()
+
+    [<Theory>]
+    [<InlineData(1, 1, 0)>]
+    [<InlineData(8, 5, 3)>]
+    [<InlineData(16, 16, 0)>]
+    [<InlineData(64, 16, 48)>]
+    member me.``Ensure Length (reference)`` (actual : int, required : int, remain : int) =
+        let ensure = me.MakeDelegate<EnsureLengthReference> "EnsureLength"
+        let buffer = Array.zeroCreate actual
+        let mutable span = ReadOnlySpan buffer
+        let location = &ensure.Invoke(&span, required)
+        Assert.True(Unsafe.AreSame(&location, &buffer.[0]))
+        Assert.Equal(remain, span.Length)
         ()

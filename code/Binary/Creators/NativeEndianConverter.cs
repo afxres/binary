@@ -46,10 +46,7 @@ namespace Mikodev.Binary.Creators
 
         public override T DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            // check bounds via slice method
-            ref var source = ref MemoryMarshal.GetReference(span);
-            span = span.Slice(Unsafe.SizeOf<T>());
-            return MemoryHelper.DecodeNativeEndian<T>(ref source);
+            return MemoryHelper.DecodeNativeEndian<T>(ref MemoryHelper.EnsureLength(ref span, Unsafe.SizeOf<T>()));
         }
 
         public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)

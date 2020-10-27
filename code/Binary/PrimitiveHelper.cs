@@ -32,15 +32,14 @@ namespace Mikodev.Binary
 
         public static ReadOnlySpan<byte> DecodeBufferWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
-            var data = span;
-            ref var source = ref MemoryHelper.EnsureLength(data);
+            ref var source = ref MemoryHelper.EnsureLength(span);
             var numberLength = MemoryHelper.DecodeNumberLength(source);
             // check bounds via slice method
-            data = data.Slice(numberLength);
+            var target = span.Slice(numberLength);
             var length = MemoryHelper.DecodeNumber(ref source, numberLength);
             // check bounds via slice method
-            span = data.Slice(length);
-            return data.Slice(0, length);
+            span = target.Slice(length);
+            return target.Slice(0, length);
         }
 
         public static void EncodeString(ref Allocator allocator, ReadOnlySpan<char> span)
