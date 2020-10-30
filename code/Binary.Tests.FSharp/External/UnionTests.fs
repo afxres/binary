@@ -185,8 +185,8 @@ type X257 =
 [<Fact>]
 let ``Union With 257 Cases`` () =
     Test 1 1 X257.X00
-    Test 2 2 X257.XFF
-    Test 2 2 X257.XWhat
-    Test 2 2 X257.X80
-    Test 1 1 X257.X3F
+    Test 4 4 X257.XFF
+    Test 4 4 X257.XWhat
+    Test 4 4 X257.X80
+    Test 1 1 X257.X7F
     ()

@@ -10,9 +10,9 @@ let random = Random()
 let generator = Generator.CreateDefault()
 
 [<Fact>]
-let ``Encode Number From 0 To 63`` () =
+let ``Encode Number From 0 To 127`` () =
     let buffer = Array.zeroCreate<byte> 1
-    for i = 0 to 63 do
+    for i = 0 to 127 do
         let mutable allocator = Allocator(Span buffer)
         PrimitiveHelper.EncodeNumber(&allocator, i)
         let span = allocator.AsSpan()
@@ -20,24 +20,12 @@ let ``Encode Number From 0 To 63`` () =
         Assert.Equal(i, int span.[0])
     ()
 
-[<Fact>]
-let ``Encode Number From 64 To 16383`` () =
-    let buffer = Array.zeroCreate<byte> 2
-    for i = 64 to 16383 do
-        let mutable allocator = Allocator(Span buffer)
-        PrimitiveHelper.EncodeNumber(&allocator, i)
-        let span = allocator.AsSpan()
-        Assert.Equal(2, span.Length)
-        Assert.Equal((i >>> 8) ||| 0x40, int span.[0])
-        Assert.Equal(byte i, span.[1])
-    ()
-
 [<Theory>]
-[<InlineData(0x0000_4000)>]
+[<InlineData(0x0000_0080)>]
 [<InlineData(0x0000_8642)>]
 [<InlineData(0x00AB_CDEF)>]
 [<InlineData(0x7FFF_FFFF)>]
-let ``Encode Number From 16384`` (i : int) =
+let ``Encode Number From 128`` (i : int) =
     let buffer = Array.zeroCreate<byte> 4
     let mutable allocator = Allocator(Span buffer)
     PrimitiveHelper.EncodeNumber(&allocator, i)
@@ -51,10 +39,8 @@ let ``Encode Number From 16384`` (i : int) =
 
 [<Theory>]
 [<InlineData(0, 1)>]
-[<InlineData(63, 1)>]
-[<InlineData(64, 2)>]
-[<InlineData(16383, 2)>]
-[<InlineData(16384, 4)>]
+[<InlineData(127, 1)>]
+[<InlineData(128, 4)>]
 [<InlineData(Int32.MaxValue, 4)>]
 let ``Encode Number Then Decode`` (number : int, length : int) =
     let mutable allocator = Allocator()
@@ -91,11 +77,12 @@ let ``Decode Number (empty bytes)`` () =
 [<Fact>]
 let ``Decode Number (not enough bytes)`` () =
     let Test (bytes : byte array) =
-        let error = Assert.Throws<ArgumentOutOfRangeException>(fun () -> let mutable span = ReadOnlySpan<byte> bytes in PrimitiveHelper.DecodeNumber(&span) |> ignore)
-        Assert.StartsWith(ArgumentOutOfRangeException().Message, error.Message)
+        let error = Assert.Throws<ArgumentException>(fun () -> let mutable span = ReadOnlySpan<byte> bytes in PrimitiveHelper.DecodeNumber(&span) |> ignore)
+        let message = "Not enough bytes or byte sequence invalid."
+        Assert.Equal(message, error.Message)
         ()
 
-    Test [| 64uy |]
+    Test Array.empty<byte>
     Test [| 128uy; 0uy |]
     Test [| 128uy; 0uy; 0uy |]
     ()

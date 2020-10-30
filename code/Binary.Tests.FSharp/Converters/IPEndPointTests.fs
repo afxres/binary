@@ -124,7 +124,6 @@ type IPEndPointTests() =
             | _ -> raise (NotSupportedException())
 
         let b1 = Array.concat [| [| byte byteLength |]; buffer |]
-        let b2 = Array.concat [| [| 0x40uy; byte byteLength |]; buffer |]
         let b4 = Array.concat [| [| 0x80uy; 0x00uy; 0x00uy; byte byteLength |]; buffer |]
 
         let DecodeAuto (buffer : byte array) =
@@ -139,8 +138,8 @@ type IPEndPointTests() =
             Assert.True span.IsEmpty
             result
 
-        let alpha = [| b1; b2; b4 |] |> Array.map DecodeAuto
-        let bravo = [| b1; b2; b4 |] |> Array.map DecodeWithLengthPrefix
+        let alpha = [| b1; b4 |] |> Array.map DecodeAuto
+        let bravo = [| b1; b4 |] |> Array.map DecodeWithLengthPrefix
         let value = Array.concat [| alpha; bravo |] |> Array.distinct |> Assert.Single
         Assert.Equal(item, value)
         ()

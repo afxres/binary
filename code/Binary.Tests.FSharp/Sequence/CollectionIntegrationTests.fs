@@ -40,7 +40,6 @@ let TestDecode (converter : Converter<'a>) =
 let TestDecodeAuto (converter : Converter<'a>) =
     let buffers = [|
         [| 0uy |]
-        [| 0x40uy; 0uy |]
         [| 0x80uy; 0uy; 0uy; 0uy |]
     |]
     for i in buffers do
@@ -53,7 +52,6 @@ let TestDecodeAuto (converter : Converter<'a>) =
 let TestDecodeWithLengthPrefix (converter : Converter<'a>) =
     let buffers = [|
         [| 0uy |]
-        [| 0x40uy; 0uy |]
         [| 0x80uy; 0uy; 0uy; 0uy |]
     |]
     for i in buffers do

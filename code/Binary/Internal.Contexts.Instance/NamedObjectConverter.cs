@@ -37,36 +37,16 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
         }
 
         [DebuggerStepThrough, DoesNotReturn]
-        private T ExceptKeyFound(int i) => throw new ArgumentException($"Named key '{nameList[i]}' already exists, type: {typeof(T)}");
+        private T ExceptKeyFound(int i) => throw new ArgumentException($"Named key '{this.nameList[i]}' already exists, type: {typeof(T)}");
 
         [DebuggerStepThrough, DoesNotReturn]
-        private T ExceptNotFound(int i) => throw new ArgumentException($"Named key '{nameList[i]}' does not exist, type: {typeof(T)}");
-
-        private static void DecodeBuffer(ref byte origin, ref int offset, ref int length, int limits)
-        {
-            Debug.Assert((uint)(limits - offset) >= (uint)length);
-            offset += length;
-            if (limits == offset)
-                goto fail;
-            ref var source = ref Unsafe.Add(ref origin, offset);
-            var numberLength = MemoryHelper.DecodeNumberLength(source);
-            if ((uint)(limits - offset) < (uint)numberLength)
-                goto fail;
-            length = MemoryHelper.DecodeNumber(ref source, numberLength);
-            offset += numberLength;
-            if ((uint)(limits - offset) < (uint)length)
-                goto fail;
-            return;
-
-        fail:
-            ThrowHelper.ThrowNotEnoughBytes();
-        }
+        private T ExceptNotFound(int i) => throw new ArgumentException($"Named key '{this.nameList[i]}' does not exist, type: {typeof(T)}");
 
         public override void Encode(ref Allocator allocator, T item)
         {
             if (item is null)
                 return;
-            encode.Invoke(ref allocator, item);
+            this.encode.Invoke(ref allocator, item);
         }
 
         public override T Decode(in ReadOnlySpan<byte> span)
@@ -88,9 +68,11 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
             var length = 0;
             while (limits - offset != length)
             {
-                DecodeBuffer(ref source, ref offset, ref length, limits);
+                offset += length;
+                length = MemoryHelper.DecodeNumberEnsureBuffer(ref source, ref offset, limits);
                 var result = NodeTreeHelper.NodeOrNull(record, ref Unsafe.Add(ref source, offset), length);
-                DecodeBuffer(ref source, ref offset, ref length, limits);
+                offset += length;
+                length = MemoryHelper.DecodeNumberEnsureBuffer(ref source, ref offset, limits);
                 if (result is null)
                     continue;
                 var cursor = result.Intent;
