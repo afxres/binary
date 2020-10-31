@@ -90,20 +90,29 @@ let ``Get Pinnable Reference (default value)`` () =
     let result = &allocator.GetPinnableReference()
     let expect = &MemoryMarshal.GetReference(ReadOnlySpan())
     Assert.True(Unsafe.AreSame(&expect, &Unsafe.AsRef(&result)))
+    Assert.True(Unsafe.AreSame(&expect, &Unsafe.AsRef(&allocator.AsSpan().GetPinnableReference())))
     Assert.True(Unsafe.AreSame(&expect, &MemoryMarshal.GetReference(allocator.AsSpan())))
     ()
 
-[<Theory>]
-[<InlineData(0)>]
-[<InlineData(1)>]
-[<InlineData(1024)>]
-[<InlineData(65536)>]
-let ``Get Pinnable Reference (construct from byte array)`` (length : int) =
-    let buffer = Array.zeroCreate<byte> length
-    let allocator = Allocator(Span buffer)
+[<Fact>]
+let ``Get Pinnable Reference (length is 0)`` () =
+    let array = Array.zeroCreate<byte> 1024
+    let allocator = Allocator(Span array)
+    let result = &allocator.GetPinnableReference()
+    let expect = &MemoryMarshal.GetReference(ReadOnlySpan())
+    Assert.True(Unsafe.AreSame(&expect, &Unsafe.AsRef(&result)))
+    Assert.True(Unsafe.AreSame(&expect, &Unsafe.AsRef(&allocator.AsSpan().GetPinnableReference())))
+    ()
+
+[<Fact>]
+let ``Get Pinnable Reference (length is not 0)`` () =
+    let buffer = Array.zeroCreate<byte> 1024
+    let mutable allocator = Allocator(Span buffer)
+    AllocatorHelper.Append(&allocator, ReadOnlySpan (Array.zeroCreate<byte> 16))
     let result = &allocator.GetPinnableReference()
     let expect = &MemoryMarshal.GetReference(Span buffer)
     Assert.True(Unsafe.AreSame(&expect, &Unsafe.AsRef(&result)))
+    Assert.True(Unsafe.AreSame(&expect, &Unsafe.AsRef(&allocator.AsSpan().GetPinnableReference())))
     Assert.True(Unsafe.AreSame(&expect, &MemoryMarshal.GetReference(allocator.AsSpan())))
     ()
 

@@ -21,7 +21,7 @@ namespace Mikodev.Binary
             var limits = span.Length;
             var offset = 0;
             var length = MemoryHelper.DecodeNumber(ref source, ref offset, limits);
-            span = MemoryMarshal.CreateSpan(ref Unsafe.Add(ref source, offset), limits - offset);
+            span = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref source, offset), limits - offset);
             return length;
         }
 
@@ -40,8 +40,8 @@ namespace Mikodev.Binary
             var offset = 0;
             var length = MemoryHelper.DecodeNumberEnsureBuffer(ref source, ref offset, limits);
             var cursor = offset + length;
-            span = MemoryMarshal.CreateSpan(ref Unsafe.Add(ref source, cursor), limits - cursor);
-            return MemoryMarshal.CreateSpan(ref Unsafe.Add(ref source, offset), length);
+            span = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref source, cursor), limits - cursor);
+            return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref source, offset), length);
         }
 
         public static void EncodeString(ref Allocator allocator, ReadOnlySpan<char> span)

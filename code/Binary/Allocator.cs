@@ -35,7 +35,7 @@ namespace Mikodev.Binary
                 ThrowHelper.ThrowMaxCapacityNegative();
             this.limits = ~maxCapacity;
             this.offset = 0;
-            this.buffer = span.Slice(0, Math.Min(span.Length, maxCapacity));
+            this.buffer = MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(span), Math.Min(span.Length, maxCapacity));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -51,10 +51,10 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly ReadOnlySpan<byte> AsSpan() => this.buffer.Slice(0, this.offset);
+        public readonly ReadOnlySpan<byte> AsSpan() => MemoryMarshal.CreateReadOnlySpan(ref MemoryMarshal.GetReference(this.buffer), this.offset);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public readonly ref readonly byte GetPinnableReference() => ref MemoryMarshal.GetReference(this.buffer);
+        public readonly ref readonly byte GetPinnableReference() => ref AsSpan().GetPinnableReference();
 
         [EditorBrowsable(EditorBrowsableState.Never)]
         public override readonly bool Equals(object obj) => throw new NotSupportedException();

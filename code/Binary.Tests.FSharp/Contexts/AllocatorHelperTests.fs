@@ -4,6 +4,7 @@ open Mikodev.Binary
 open System
 open System.Reflection
 open System.Runtime.CompilerServices
+open System.Runtime.InteropServices
 open Xunit
 
 let random = Random()
@@ -279,18 +280,18 @@ let ``Ensure (invalid)`` (maxCapacity : int, offset : int, length : int) =
 [<InlineData(4096, 2048, 2048)>]
 let ``Ensure (no resize)`` (capacity : int, offset : int, length : int) =
     let mutable allocator = Allocator(Span(Array.zeroCreate capacity), capacity)
-    let origin = &Unsafe.AsRef(&allocator.GetPinnableReference())
+    let origin = &MemoryMarshal.GetReference(allocator.AsSpan())
     AllocatorHelper.Append(&allocator, ReadOnlySpan(Array.zeroCreate offset))
     Assert.Equal(capacity, allocator.MaxCapacity)
     Assert.Equal(capacity, allocator.Capacity)
     Assert.Equal(offset, allocator.Length)
-    Assert.True(Unsafe.AreSame(&origin, &Unsafe.AsRef(&allocator.GetPinnableReference())))
+    Assert.True(Unsafe.AreSame(&origin, &MemoryMarshal.GetReference(allocator.AsSpan())))
 
     AllocatorHelper.Ensure(&allocator, length)
     Assert.Equal(capacity, allocator.MaxCapacity)
     Assert.Equal(capacity, allocator.Capacity)
     Assert.Equal(offset, allocator.Length)
-    Assert.True(Unsafe.AreSame(&origin, &Unsafe.AsRef(&allocator.GetPinnableReference())))
+    Assert.True(Unsafe.AreSame(&origin, &MemoryMarshal.GetReference(allocator.AsSpan())))
     ()
 
 [<Theory>]
@@ -323,16 +324,16 @@ let ``Expand (invalid)`` (maxCapacity : int, offset : int, length : int) =
 [<InlineData(4096, 2048, 2048)>]
 let ``Expand (no resize)`` (capacity : int, offset : int, length : int) =
     let mutable allocator = Allocator(Span(Array.zeroCreate capacity), capacity)
-    let origin = &Unsafe.AsRef(&allocator.GetPinnableReference())
+    let origin = &MemoryMarshal.GetReference(allocator.AsSpan())
     AllocatorHelper.Append(&allocator, ReadOnlySpan(Array.zeroCreate offset))
     Assert.Equal(capacity, allocator.MaxCapacity)
     Assert.Equal(capacity, allocator.Capacity)
     Assert.Equal(offset, allocator.Length)
-    Assert.True(Unsafe.AreSame(&origin, &Unsafe.AsRef(&allocator.GetPinnableReference())))
+    Assert.True(Unsafe.AreSame(&origin, &MemoryMarshal.GetReference(allocator.AsSpan())))
 
     AllocatorHelper.Expand(&allocator, length)
     Assert.Equal(capacity, allocator.MaxCapacity)
     Assert.Equal(capacity, allocator.Capacity)
     Assert.Equal(offset + length, allocator.Length)
-    Assert.True(Unsafe.AreSame(&origin, &Unsafe.AsRef(&allocator.GetPinnableReference())))
+    Assert.True(Unsafe.AreSame(&origin, &MemoryMarshal.GetReference(allocator.AsSpan())))
     ()
