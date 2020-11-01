@@ -14,7 +14,7 @@ namespace Mikodev.Binary.Internal.Sequence.Decoders
             var body = span;
             var list = new LinkedList<E>();
             var converter = this.converter;
-            while (body.IsEmpty is false)
+            while (body.Length is not 0)
                 _ = list.AddLast(converter.DecodeAuto(ref body));
             return list;
         }

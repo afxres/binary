@@ -204,7 +204,7 @@ type ConverterTests () =
     member __.``Auto Method For Constant Length Converter`` (length : int) =
         let converter = CustomConverterWithLength<int> length
         let alpha = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = Allocator() in converter.EncodeAuto(&allocator, 0))
-        let bravo = Assert.Throws<NotSupportedException>(fun () -> let mutable span = ReadOnlySpan (Array.empty<byte>) in converter.DecodeAuto &span |> ignore)
+        let bravo = Assert.Throws<NotSupportedException>(fun () -> let mutable span = ReadOnlySpan (Array.zeroCreate length) in converter.DecodeAuto &span |> ignore)
         Assert.Equal("Text a", alpha.Message)
         Assert.Equal("Text b", bravo.Message)
         ()

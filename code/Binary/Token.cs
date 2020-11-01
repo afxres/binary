@@ -55,7 +55,7 @@ namespace Mikodev.Binary
             try
             {
                 var builder = ImmutableDictionary.CreateBuilder<string, Token>();
-                while (body.IsEmpty is false)
+                while (body.Length is not 0)
                 {
                     var header = encoder.DecodeWithLengthPrefix(ref body);
                     var buffer = PrimitiveHelper.DecodeBufferWithLengthPrefix(ref body);

@@ -26,14 +26,14 @@ namespace Mikodev.Binary.Internal.SpanLike.Adapters
                 buffer[cursor] = item;
             }
 
-            if (span.IsEmpty)
+            if (span.Length is 0)
                 return new MemoryResult<T>(Array.Empty<T>(), 0);
             const int Initial = 8;
             var buffer = new T[Initial];
             var cursor = 0;
             var body = span;
             var converter = this.converter;
-            while (body.IsEmpty is false)
+            while (body.Length is not 0)
             {
                 var item = converter.DecodeAuto(ref body);
                 if ((uint)cursor < (uint)buffer.Length)

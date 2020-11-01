@@ -29,7 +29,7 @@ namespace Mikodev.Binary.Internal.Sequence.Decoders
             var body = span;
             var init = this.init;
             var tail = this.tail;
-            while (body.IsEmpty is false)
+            while (body.Length is not 0)
             {
                 var head = init.DecodeAuto(ref body);
                 var next = tail.DecodeAuto(ref body);

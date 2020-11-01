@@ -22,7 +22,7 @@ namespace Mikodev.Binary.Converters
 
         private static IPAddress DecodeInternal(ReadOnlySpan<byte> span)
         {
-            if (span.IsEmpty)
+            if (span.Length is 0)
                 return null;
             return new IPAddress(span);
         }

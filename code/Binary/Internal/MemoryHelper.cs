@@ -11,7 +11,7 @@ namespace Mikodev.Binary.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ref byte EnsureLength(ReadOnlySpan<byte> span)
         {
-            if (span.IsEmpty)
+            if (span.Length is 0)
                 ThrowHelper.ThrowNotEnoughBytes();
             return ref MemoryMarshal.GetReference(span);
         }
@@ -19,8 +19,8 @@ namespace Mikodev.Binary.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ref byte EnsureLength(ReadOnlySpan<byte> span, int length)
         {
-            Debug.Assert(length is not 0 && (uint)length <= 16);
-            if (span.Length < length)
+            Debug.Assert(length is not 0);
+            if ((uint)span.Length < (uint)length)
                 ThrowHelper.ThrowNotEnoughBytes();
             return ref MemoryMarshal.GetReference(span);
         }
@@ -28,10 +28,25 @@ namespace Mikodev.Binary.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ref byte EnsureLength(ref ReadOnlySpan<byte> span, int length)
         {
-            Debug.Assert(length is not 0 && (uint)length <= 16);
-            ref var result = ref MemoryMarshal.GetReference(span);
-            span = span.Slice(length);
-            return ref result;
+            Debug.Assert(length is not 0);
+            ref var source = ref MemoryMarshal.GetReference(span);
+            var limits = span.Length;
+            if ((uint)limits < (uint)length)
+                ThrowHelper.ThrowNotEnoughBytes();
+            span = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref source, length), limits - length);
+            return ref source;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ReadOnlySpan<byte> EnsureLengthReturnBuffer(ref ReadOnlySpan<byte> span, int length)
+        {
+            Debug.Assert(length is not 0);
+            ref var source = ref MemoryMarshal.GetReference(span);
+            var limits = span.Length;
+            if ((uint)limits < (uint)length)
+                ThrowHelper.ThrowNotEnoughBytes();
+            span = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref source, length), limits - length);
+            return MemoryMarshal.CreateReadOnlySpan(ref source, length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

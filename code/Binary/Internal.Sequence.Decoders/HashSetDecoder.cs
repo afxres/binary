@@ -14,7 +14,7 @@ namespace Mikodev.Binary.Internal.Sequence.Decoders
             var body = span;
             var item = new HashSet<E>();
             var converter = this.converter;
-            while (body.IsEmpty is false)
+            while (body.Length is not 0)
                 _ = item.Add(converter.DecodeAuto(ref body));
             return item;
         }

@@ -23,7 +23,7 @@ namespace Mikodev.Binary.Converters
 
         private static IPEndPoint DecodeInternal(ReadOnlySpan<byte> span)
         {
-            if (span.IsEmpty)
+            if (span.Length is 0)
                 return null;
             var size = span.Length - sizeof(ushort);
             var data = new IPAddress(span.Slice(0, size));

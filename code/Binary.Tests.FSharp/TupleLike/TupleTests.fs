@@ -83,7 +83,7 @@ let ``Tuple Null 8`` () =
 
 [<Fact>]
 let ``Value Tuple Empty Bytes`` () =
-    Assert.Throws<ArgumentOutOfRangeException>(fun () -> generator.Decode<struct (int * int)> Array.empty |> ignore) |> ignore
+    Assert.Throws<ArgumentException>(fun () -> generator.Decode<struct (int * int)> Array.empty |> ignore) |> ignore
     ()
 
 [<Fact>]

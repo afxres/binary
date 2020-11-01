@@ -20,6 +20,8 @@ type EnsureLength = delegate of span : ReadOnlySpan<byte> * length : int -> byre
 
 type EnsureLengthReference = delegate of span : byref<ReadOnlySpan<byte>> * length : int -> byref<byte>
 
+type EnsureLengthReturnSpan = delegate of span : byref<ReadOnlySpan<byte>> * length : int -> ReadOnlySpan<byte>
+
 type MemoryHelperTests () =
     member private __.MakeDelegate<'T when 'T :> Delegate> (method : string) =
         let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "MemoryHelper") |> Array.exactlyOne
@@ -140,7 +142,9 @@ type MemoryHelperTests () =
 
     [<Theory>]
     [<InlineData(0, 1)>]
+    [<InlineData(0, -1)>]
     [<InlineData(15, 16)>]
+    [<InlineData(127, -16)>]
     member me.``Ensure Length (enough, error)`` (actual : int, required : int) =
         let ensure = me.MakeDelegate<EnsureLength> "EnsureLength"
         let error = Assert.Throws<ArgumentException>(fun () ->
@@ -162,14 +166,17 @@ type MemoryHelperTests () =
 
     [<Theory>]
     [<InlineData(0, 1)>]
+    [<InlineData(0, -1)>]
     [<InlineData(15, 16)>]
+    [<InlineData(127, -16)>]
     member me.``Ensure Length (reference, error)`` (actual : int, required : int) =
         let ensure = me.MakeDelegate<EnsureLengthReference> "EnsureLength"
-        let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
+        let error = Assert.Throws<ArgumentException>(fun () ->
             let buffer = Array.zeroCreate actual
             let mutable span = ReadOnlySpan buffer
             ensure.Invoke(&span, required) |> ignore)
-        Assert.StartsWith(ArgumentOutOfRangeException().Message, error.Message)
+        let message = "Not enough bytes or byte sequence invalid."
+        Assert.StartsWith(message, error.Message)
         ()
 
     [<Theory>]
@@ -183,5 +190,36 @@ type MemoryHelperTests () =
         let mutable span = ReadOnlySpan buffer
         let location = &ensure.Invoke(&span, required)
         Assert.True(Unsafe.AreSame(&location, &buffer.[0]))
+        Assert.Equal(remain, span.Length)
+        ()
+
+    [<Theory>]
+    [<InlineData(0, 1)>]
+    [<InlineData(0, -1)>]
+    [<InlineData(15, 16)>]
+    [<InlineData(127, -16)>]
+    member me.``Ensure Length (return span, error)`` (actual : int, required : int) =
+        let ensure = me.MakeDelegate<EnsureLengthReturnSpan> "EnsureLengthReturnBuffer"
+        let error = Assert.Throws<ArgumentException>(fun () ->
+            let buffer = Array.zeroCreate actual
+            let mutable span = ReadOnlySpan buffer
+            let _ = ensure.Invoke(&span, required)
+            ())
+        let message = "Not enough bytes or byte sequence invalid."
+        Assert.StartsWith(message, error.Message)
+        ()
+
+    [<Theory>]
+    [<InlineData(1, 1, 0)>]
+    [<InlineData(8, 5, 3)>]
+    [<InlineData(16, 16, 0)>]
+    [<InlineData(64, 16, 48)>]
+    member me.``Ensure Length (return span)`` (actual : int, required : int, remain : int) =
+        let ensure = me.MakeDelegate<EnsureLengthReturnSpan> "EnsureLengthReturnBuffer"
+        let buffer = Array.zeroCreate actual
+        let mutable span = ReadOnlySpan buffer
+        let result = ensure.Invoke(&span, required)
+        Assert.True(Unsafe.AreSame(&MemoryMarshal.GetReference(result), &buffer.[0]))
+        Assert.Equal(required, result.Length)
         Assert.Equal(remain, span.Length)
         ()

@@ -36,9 +36,9 @@ namespace Mikodev.Binary.Internal.Fallback
         {
             var converter = this.converter;
             var length = converter.Length;
-            var item = converter.Decode(in span);
-            span = span.Slice(length);
-            return item;
+            var buffer = MemoryHelper.EnsureLengthReturnBuffer(ref span, length);
+            var result = converter.Decode(in buffer);
+            return result;
         }
     }
 }
