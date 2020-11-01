@@ -20,11 +20,11 @@ namespace Mikodev.Binary.Internal.Sequence.Decoders
 
         public override Dictionary<K, V> Decode(ReadOnlySpan<byte> span)
         {
-            var byteLength = span.Length;
-            if (byteLength is 0)
+            var limits = span.Length;
+            if (limits is 0)
                 return new Dictionary<K, V>();
             const int Initial = 8;
-            var capacity = SequenceMethods.GetCapacity<KeyValuePair<K, V>>(byteLength, this.itemLength, Initial);
+            var capacity = SequenceMethods.GetCapacity<KeyValuePair<K, V>>(limits, this.itemLength, Initial);
             var item = new Dictionary<K, V>(capacity);
             var body = span;
             var init = this.init;

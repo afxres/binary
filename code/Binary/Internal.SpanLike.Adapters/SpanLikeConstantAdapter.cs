@@ -1,5 +1,7 @@
 ﻿using Mikodev.Binary.Internal.Sequence;
 using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Internal.SpanLike.Adapters
 {
@@ -18,16 +20,17 @@ namespace Mikodev.Binary.Internal.SpanLike.Adapters
 
         public override MemoryResult<T> Decode(ReadOnlySpan<byte> span)
         {
-            var byteLength = span.Length;
-            if (byteLength is 0)
+            var limits = span.Length;
+            if (limits is 0)
                 return new MemoryResult<T>(Array.Empty<T>(), 0);
             var converter = this.converter;
-            var itemLength = converter.Length;
-            var capacity = SequenceMethods.GetCapacity<T>(byteLength, itemLength);
-            var collection = new T[capacity];
+            var length = converter.Length;
+            var capacity = SequenceMethods.GetCapacity<T>(limits, length);
+            var result = new T[capacity];
+            ref var source = ref MemoryMarshal.GetReference(span);
             for (var i = 0; i < capacity; i++)
-                collection[i] = converter.Decode(span.Slice(i * itemLength, itemLength));
-            return new MemoryResult<T>(collection, capacity);
+                result[i] = converter.Decode(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref source, length * i), length));
+            return new MemoryResult<T>(result, capacity);
         }
     }
 }

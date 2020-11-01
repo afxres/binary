@@ -14,14 +14,13 @@ namespace Mikodev.Binary.Internal.SpanLike.Adapters
 
         public override MemoryResult<T> Decode(ReadOnlySpan<byte> span)
         {
-            var byteLength = span.Length;
-            if (byteLength is 0)
+            var limits = span.Length;
+            if (limits is 0)
                 return new MemoryResult<T>(Array.Empty<T>(), 0);
-            var itemLength = Unsafe.SizeOf<T>();
-            var capacity = SequenceMethods.GetCapacity<T>(byteLength, itemLength);
-            var collection = new T[capacity];
-            Unsafe.CopyBlockUnaligned(ref Unsafe.As<T, byte>(ref MemoryMarshal.GetReference(new Span<T>(collection))), ref MemoryMarshal.GetReference(span), (uint)byteLength);
-            return new MemoryResult<T>(collection, capacity);
+            var capacity = SequenceMethods.GetCapacity<T>(limits, Unsafe.SizeOf<T>());
+            var result = new T[capacity];
+            Unsafe.CopyBlockUnaligned(ref Unsafe.As<T, byte>(ref MemoryMarshal.GetReference(new Span<T>(result))), ref MemoryMarshal.GetReference(span), (uint)limits);
+            return new MemoryResult<T>(result, capacity);
         }
     }
 }
