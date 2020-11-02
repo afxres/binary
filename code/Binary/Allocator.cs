@@ -54,9 +54,6 @@ namespace Mikodev.Binary
         public readonly ReadOnlySpan<byte> AsSpan() => MemoryMarshal.CreateReadOnlySpan(ref MemoryMarshal.GetReference(this.buffer), this.offset);
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public readonly ref readonly byte GetPinnableReference() => ref AsSpan().GetPinnableReference();
-
-        [EditorBrowsable(EditorBrowsableState.Never)]
         public override readonly bool Equals(object obj) => throw new NotSupportedException();
 
         [EditorBrowsable(EditorBrowsableState.Never)]

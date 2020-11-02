@@ -2,9 +2,6 @@
 
 open Mikodev.Binary
 open System
-open System.ComponentModel
-open System.Runtime.CompilerServices
-open System.Runtime.InteropServices
 open Xunit
 
 let random = Random();
@@ -82,56 +79,6 @@ let ``As Span`` (length : int) =
     Assert.Equal(span.Length, length)
     let result = span.ToArray()
     Assert.Equal<byte>(source, result)
-    ()
-
-[<Fact>]
-let ``Get Pinnable Reference (default value)`` () =
-    let allocator = Allocator()
-    let result = &allocator.GetPinnableReference()
-    let expect = &MemoryMarshal.GetReference(ReadOnlySpan())
-    Assert.True(Unsafe.AreSame(&expect, &Unsafe.AsRef(&result)))
-    Assert.True(Unsafe.AreSame(&expect, &Unsafe.AsRef(&allocator.AsSpan().GetPinnableReference())))
-    Assert.True(Unsafe.AreSame(&expect, &MemoryMarshal.GetReference(allocator.AsSpan())))
-    ()
-
-[<Fact>]
-let ``Get Pinnable Reference (length is 0)`` () =
-    let array = Array.zeroCreate<byte> 1024
-    let allocator = Allocator(Span array)
-    let result = &allocator.GetPinnableReference()
-    let expect = &MemoryMarshal.GetReference(ReadOnlySpan())
-    Assert.True(Unsafe.AreSame(&expect, &Unsafe.AsRef(&result)))
-    Assert.True(Unsafe.AreSame(&expect, &Unsafe.AsRef(&allocator.AsSpan().GetPinnableReference())))
-    ()
-
-[<Fact>]
-let ``Get Pinnable Reference (length is not 0)`` () =
-    let buffer = Array.zeroCreate<byte> 1024
-    let mutable allocator = Allocator(Span buffer)
-    AllocatorHelper.Append(&allocator, ReadOnlySpan (Array.zeroCreate<byte> 16))
-    let result = &allocator.GetPinnableReference()
-    let expect = &MemoryMarshal.GetReference(Span buffer)
-    Assert.True(Unsafe.AreSame(&expect, &Unsafe.AsRef(&result)))
-    Assert.True(Unsafe.AreSame(&expect, &Unsafe.AsRef(&allocator.AsSpan().GetPinnableReference())))
-    Assert.True(Unsafe.AreSame(&expect, &MemoryMarshal.GetReference(allocator.AsSpan())))
-    ()
-
-[<Fact>]
-let ``Get Pinnable Reference (attribute)`` () =
-    let methodName = "GetPinnableReference"
-    let allocatorType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "Allocator") |> Array.exactlyOne
-    let method = allocatorType.GetMethod(methodName)
-    let methodOfSpan = typeof<Memory<byte>>.GetProperty("Span").PropertyType.GetMethod("GetPinnableReference")
-    Assert.Equal(methodOfSpan.Name, method.Name)
-    let attribute = method.GetCustomAttributes(typeof<EditorBrowsableAttribute>, false) |> Array.exactlyOne :?> EditorBrowsableAttribute
-    Assert.Equal(EditorBrowsableState.Never, attribute.State)
-    Assert.Equal(methodOfSpan.ReturnType, method.ReturnType)
-
-    let attributeName = "System.Runtime.CompilerServices.IsReadOnlyAttribute";
-    let methodReadOnlyAttributes = method.GetCustomAttributes(false) |> Array.filter (fun x -> x.GetType().FullName = attributeName)
-    let returnReadOnlyAttributes = method.ReturnTypeCustomAttributes.GetCustomAttributes(false) |> Array.filter (fun x -> x.GetType().FullName = attributeName)
-    Assert.Single methodReadOnlyAttributes |> ignore
-    Assert.Single returnReadOnlyAttributes |> ignore
     ()
 
 [<Fact>]
