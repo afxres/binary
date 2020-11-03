@@ -20,6 +20,8 @@
             var number = item is null ? 0 : checked(this.itemLength * this.counter.Invoke(item));
             var numberLength = MemoryHelper.EncodeNumberLength((uint)number);
             MemoryHelper.EncodeNumber(ref Allocator.Assign(ref allocator, numberLength), (uint)number, numberLength);
+            if (number is 0)
+                return;
             this.encoder.Encode(ref allocator, item);
         }
     }

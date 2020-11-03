@@ -169,6 +169,10 @@ namespace Mikodev.Binary.Tests
         [InlineData(-1, 4)]
         [InlineData(16, 15)]
         [InlineData(16, 19)]
+        [InlineData(-32, 0)]
+        [InlineData(-32, 4)]
+        [InlineData(int.MaxValue, 0)]
+        [InlineData(int.MaxValue, 16)]
         public void AnchorAppendInvalid(int anchor, int allocatorLength)
         {
             var appendMethod = (AppendLengthPrefix)Delegate.CreateDelegate(typeof(AppendLengthPrefix), typeof(Allocator).GetMethod("AppendLengthPrefix", BindingFlags.Static | BindingFlags.NonPublic));
