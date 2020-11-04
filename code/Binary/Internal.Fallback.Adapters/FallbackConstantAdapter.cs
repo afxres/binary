@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
-namespace Mikodev.Binary.Internal.Fallback
+namespace Mikodev.Binary.Internal.Fallback.Adapters
 {
-    internal sealed class FallbackConstantAdapter<T> : FallbackAbstractAdapter<T>
+    internal sealed class FallbackConstantAdapter<T, U> : FallbackAdapter<T> where U : unmanaged
     {
         private readonly Converter<T> converter;
 
@@ -16,9 +18,8 @@ namespace Mikodev.Binary.Internal.Fallback
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
             var converter = this.converter;
-            var length = converter.Length;
-            var numberLength = MemoryHelper.EncodeNumberLength((uint)length);
-            MemoryHelper.EncodeNumber(ref Allocator.Assign(ref allocator, numberLength), (uint)length, numberLength);
+            Debug.Assert(MemoryHelper.EncodeNumberLength((uint)converter.Length) == Unsafe.SizeOf<U>());
+            MemoryHelper.EncodeNumber(ref Allocator.Assign(ref allocator, Unsafe.SizeOf<U>()), (uint)converter.Length, numberLength: Unsafe.SizeOf<U>());
             converter.Encode(ref allocator, item);
         }
 

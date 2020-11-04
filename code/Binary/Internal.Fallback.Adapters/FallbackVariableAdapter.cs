@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Mikodev.Binary.Internal.Fallback
+namespace Mikodev.Binary.Internal.Fallback.Adapters
 {
-    internal sealed class FallbackVariableAdapter<T> : FallbackAbstractAdapter<T>
+    internal sealed class FallbackVariableAdapter<T> : FallbackAdapter<T>
     {
         private readonly Converter<T> converter;
 

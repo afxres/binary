@@ -10,7 +10,7 @@ namespace Mikodev.Binary
     {
         private readonly int length;
 
-        private readonly FallbackAbstractAdapter<T> adapter;
+        private readonly FallbackAdapter<T> adapter;
 
         public int Length => this.length;
 
@@ -21,9 +21,7 @@ namespace Mikodev.Binary
             if (length < 0)
                 ThrowHelper.ThrowLengthNegative();
             this.length = length;
-            this.adapter = length > 0
-                ? new FallbackConstantAdapter<T>(this)
-                : new FallbackVariableAdapter<T>(this);
+            this.adapter = FallbackAdapterHelper.Create(this);
         }
 
         public abstract void Encode(ref Allocator allocator, T item);
