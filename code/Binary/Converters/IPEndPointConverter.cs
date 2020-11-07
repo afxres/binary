@@ -23,11 +23,14 @@ namespace Mikodev.Binary.Converters
 
         private static IPEndPoint DecodeInternal(ReadOnlySpan<byte> span)
         {
-            if (span.Length is 0)
+            var limits = span.Length;
+            if (limits is 0)
                 return null;
-            var size = span.Length - sizeof(ushort);
-            var data = new IPAddress(span.Slice(0, size));
-            var port = MemoryHelper.DecodeLittleEndian<short>(span.Slice(size));
+            var size = limits - sizeof(ushort);
+            var body = span;
+            var head = MemoryHelper.EnsureLengthReturnBuffer(ref body, size);
+            var data = new IPAddress(head);
+            var port = MemoryHelper.DecodeLittleEndian<short>(body);
             return new IPEndPoint(data, (ushort)port);
         }
 

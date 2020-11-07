@@ -210,6 +210,8 @@ type MemoryHelperTests () =
         ()
 
     [<Theory>]
+    [<InlineData(0, 0, 0)>]
+    [<InlineData(1, 0, 1)>]
     [<InlineData(1, 1, 0)>]
     [<InlineData(8, 5, 3)>]
     [<InlineData(16, 16, 0)>]
@@ -219,7 +221,7 @@ type MemoryHelperTests () =
         let buffer = Array.zeroCreate actual
         let mutable span = ReadOnlySpan buffer
         let result = ensure.Invoke(&span, required)
-        Assert.True(Unsafe.AreSame(&MemoryMarshal.GetReference(result), &buffer.[0]))
+        Assert.True(Unsafe.AreSame(&MemoryMarshal.GetReference(result), &MemoryMarshal.GetReference(Span buffer)))
         Assert.Equal(required, result.Length)
         Assert.Equal(remain, span.Length)
         ()

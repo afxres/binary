@@ -148,8 +148,9 @@ type IPEndPointTests() =
     member __.``Not Enough Bytes (length 1)`` () =
         let converter = GetConverter()
         let buffer = Array.zeroCreate<byte> 1
-        let error = Assert.Throws<ArgumentOutOfRangeException>(fun () -> converter.Decode buffer |> ignore)
-        Assert.StartsWith(ArgumentOutOfRangeException().Message, error.Message)
+        let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode buffer |> ignore)
+        let message = "Not enough bytes or byte sequence invalid."
+        Assert.Equal(message, error.Message)
         ()
 
     [<Fact>]

@@ -40,7 +40,6 @@ namespace Mikodev.Binary.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ReadOnlySpan<byte> EnsureLengthReturnBuffer(ref ReadOnlySpan<byte> span, int length)
         {
-            Debug.Assert(length is not 0);
             ref var source = ref MemoryMarshal.GetReference(span);
             var limits = span.Length;
             if ((uint)limits < (uint)length)
