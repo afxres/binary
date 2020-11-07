@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Internal.SpanLike.Adapters
 {
-    internal sealed class SpanLikeNativeEndianAdapter<T> : SpanLikeAdapter<T> where T : unmanaged
+    internal sealed class NativeEndianAdapter<T> : SpanLikeAdapter<T> where T : unmanaged
     {
         public override void Encode(ref Allocator allocator, ReadOnlySpan<T> item)
         {

@@ -54,19 +54,19 @@ type SpanLikeTests () =
         ()
 
     static member ``Data Bravo`` : (obj array) seq = seq {
-        yield [| typeof<ArraySegment<int>> |]
-        yield [| typeof<Memory<int>> |]
-        yield [| typeof<ReadOnlyMemory<string>> |]
+        yield [| typeof<ArraySegment<int>>; "NativeEndianAdapter`1" |]
+        yield [| typeof<Memory<TimeSpan>>; "ConstantAdapter`1" |]
+        yield [| typeof<ReadOnlyMemory<string>>; "VariableAdapter`1" |]
     }
 
     [<Theory(DisplayName = "Validate Adapter Type")>]
     [<MemberData("Data Bravo")>]
-    member __.``Validate Adapter Type`` (t : Type) =
+    member __.``Validate Adapter Type`` (t : Type, name : string) =
         let converter = generator.GetConverter t
         let adapterField = converter.GetType().GetField("adapter", BindingFlags.Instance ||| BindingFlags.NonPublic)
         let adapter = adapterField.GetValue(converter)
         let adapterTypeName = adapter.GetType().Name
-        Assert.StartsWith("SpanLike", adapterTypeName)
+        Assert.StartsWith(name, adapterTypeName)
         ()
 
     static member ``Data Slice`` : (obj array) seq = seq {

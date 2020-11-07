@@ -2,11 +2,11 @@
 
 namespace Mikodev.Binary.Internal.SpanLike.Adapters
 {
-    internal sealed class SpanLikeVariableAdapter<T> : SpanLikeAdapter<T>
+    internal sealed class VariableAdapter<T> : SpanLikeAdapter<T>
     {
         private readonly Converter<T> converter;
 
-        public SpanLikeVariableAdapter(Converter<T> converter) => this.converter = converter;
+        public VariableAdapter(Converter<T> converter) => this.converter = converter;
 
         public override void Encode(ref Allocator allocator, ReadOnlySpan<T> item)
         {

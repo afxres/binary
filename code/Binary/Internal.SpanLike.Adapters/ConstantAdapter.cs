@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Internal.SpanLike.Adapters
 {
-    internal sealed class SpanLikeConstantAdapter<T> : SpanLikeAdapter<T>
+    internal sealed class ConstantAdapter<T> : SpanLikeAdapter<T>
     {
         private readonly Converter<T> converter;
 
-        public SpanLikeConstantAdapter(Converter<T> converter) => this.converter = converter;
+        public ConstantAdapter(Converter<T> converter) => this.converter = converter;
 
         public override void Encode(ref Allocator allocator, ReadOnlySpan<T> item)
         {

@@ -136,11 +136,11 @@ let TestSequence<'a when 'a : null> (encoderName : string) (decoderName : string
 
 [<Fact>]
 let ``Collection Integration Test (span-like collection, null or empty collection test)`` () =
-    Test generator "SpanLikeVariableAdapter`1" "ArraySegmentBuilder`1" (ArraySegment<string>())
-    Test generator "SpanLikeConstantAdapter`1" "MemoryBuilder`1" (Memory<TimeSpan>())
-    Test generator "SpanLikeNativeEndianAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<int>())
-    TestNull "SpanLikeNativeEndianAdapter`1" "ArrayBuilder`1" (Array.zeroCreate<int> 0)
-    TestNull "SpanLikeVariableAdapter`1" "ListBuilder`1" (ResizeArray<string>())
+    Test generator "VariableAdapter`1" "ArraySegmentBuilder`1" (ArraySegment<string>())
+    Test generator "ConstantAdapter`1" "MemoryBuilder`1" (Memory<TimeSpan>())
+    Test generator "NativeEndianAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<int>())
+    TestNull "NativeEndianAdapter`1" "ArrayBuilder`1" (Array.zeroCreate<int> 0)
+    TestNull "VariableAdapter`1" "ListBuilder`1" (ResizeArray<string>())
     ()
 
 [<Fact>]
@@ -179,10 +179,10 @@ let ``Collection Integration Test (dictionary, null or empty collection test, de
 
 [<Fact>]
 let ``Collection Integration Test (span-like collection)`` () =
-    Test (Generator.CreateDefault()) "SpanLikeNativeEndianAdapter`1" "MemoryBuilder`1" (Memory<single>())
-    Test (Generator.CreateDefaultBuilder().Build()) "SpanLikeNativeEndianAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<double>())
-    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<int32>(4)).Build()) "SpanLikeConstantAdapter`1" "MemoryBuilder`1" (Memory<int32>())
-    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<int64>(8)).Build()) "SpanLikeConstantAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<int64>())
-    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<uint32>(0)).Build()) "SpanLikeVariableAdapter`1" "MemoryBuilder`1" (Memory<uint32>())
-    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<uint64>(0)).Build()) "SpanLikeVariableAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<uint64>())
+    Test (Generator.CreateDefault()) "NativeEndianAdapter`1" "MemoryBuilder`1" (Memory<single>())
+    Test (Generator.CreateDefaultBuilder().Build()) "NativeEndianAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<double>())
+    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<int32>(4)).Build()) "ConstantAdapter`1" "MemoryBuilder`1" (Memory<int32>())
+    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<int64>(8)).Build()) "ConstantAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<int64>())
+    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<uint32>(0)).Build()) "VariableAdapter`1" "MemoryBuilder`1" (Memory<uint32>())
+    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<uint64>(0)).Build()) "VariableAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<uint64>())
     ()
