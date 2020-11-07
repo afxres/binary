@@ -12,6 +12,10 @@ namespace Mikodev.Binary
 
         private readonly FallbackAdapter<T> adapter;
 
+        private readonly FallbackDecoder<T> decoder;
+
+        private readonly FallbackEncoder<T> encoder;
+
         public int Length => this.length;
 
         protected Converter() : this(0) { }
@@ -22,11 +26,13 @@ namespace Mikodev.Binary
                 ThrowHelper.ThrowLengthNegative();
             this.length = length;
             this.adapter = FallbackAdapterHelper.Create(this);
+            this.decoder = FallbackDecoderHelper.Create(this);
+            this.encoder = FallbackEncoderHelper.Create(this);
         }
 
         public abstract void Encode(ref Allocator allocator, T item);
 
-        public virtual void EncodeAuto(ref Allocator allocator, T item) => this.adapter.EncodeAuto(ref allocator, item);
+        public virtual void EncodeAuto(ref Allocator allocator, T item) => this.encoder.EncodeAuto(ref allocator, item);
 
         public virtual void EncodeWithLengthPrefix(ref Allocator allocator, T item) => this.adapter.EncodeWithLengthPrefix(ref allocator, item);
 
@@ -34,7 +40,7 @@ namespace Mikodev.Binary
 
         public abstract T Decode(in ReadOnlySpan<byte> span);
 
-        public virtual T DecodeAuto(ref ReadOnlySpan<byte> span) => this.adapter.DecodeAuto(ref span);
+        public virtual T DecodeAuto(ref ReadOnlySpan<byte> span) => this.decoder.DecodeAuto(ref span);
 
         public virtual T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => Decode(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
 

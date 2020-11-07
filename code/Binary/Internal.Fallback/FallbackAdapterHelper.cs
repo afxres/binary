@@ -8,11 +8,11 @@ namespace Mikodev.Binary.Internal.Fallback
         {
             var length = converter.Length;
             if (length is 0)
-                return new FallbackVariableAdapter<T>(converter);
+                return new VariableAdapter<T>(converter);
             if (MemoryHelper.EncodeNumberLength((uint)length) is 1)
-                return new FallbackConstantAdapter<T, byte>(converter);
+                return new ConstantAdapter<T, byte>(converter);
             else
-                return new FallbackConstantAdapter<T, uint>(converter);
+                return new ConstantAdapter<T, uint>(converter);
         }
     }
 }
