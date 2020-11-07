@@ -40,20 +40,6 @@ namespace Mikodev.Binary.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool EncodeNumberReduceBuffer(ref byte location, int remain, int length)
-        {
-            Debug.Assert(remain >= 0);
-            Debug.Assert(length >= 0);
-            const int Limits = 16;
-            if (length > Limits || remain < ((-length) & 7))
-                return false;
-            for (var i = 0; i < length; i += 8)
-                EncodeNativeEndian(ref Unsafe.Add(ref location, i + 1), DecodeNativeEndian<long>(ref Unsafe.Add(ref location, i + 4)));
-            EncodeNumber(ref location, (uint)length, numberLength: 1);
-            return true;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int DecodeNumber(ref byte location, ref int offset, int limits)
         {
             Debug.Assert(offset >= 0);

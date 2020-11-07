@@ -87,19 +87,29 @@ namespace Mikodev.Binary
 
         internal static void AppendLengthPrefix(ref Allocator allocator, int anchor)
         {
+            const int Limits = 16;
             var offset = allocator.offset;
             var result = (long)(uint)offset - (uint)anchor - sizeof(int);
             if (result < 0)
                 ThrowHelper.ThrowAllocatorOrAnchorInvalid();
-            Debug.Assert(allocator.offset >= sizeof(int));
-            Debug.Assert(allocator.offset <= allocator.buffer.Length);
             var length = (int)result;
             var buffer = allocator.buffer;
             ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), anchor);
-            if (MemoryHelper.EncodeNumberReduceBuffer(ref target, buffer.Length - offset, length))
+            if (length <= Limits && buffer.Length - offset >= ((-length) & 7))
+            {
                 allocator.offset = offset - 3;
+                MemoryHelper.EncodeNumber(ref target, (uint)length, numberLength: 1);
+                for (var i = 0; i < length; i += 8)
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref target, i + 1), Unsafe.ReadUnaligned<long>(ref Unsafe.Add(ref target, i + 4)));
+                Debug.Assert(allocator.offset >= 1);
+                Debug.Assert(allocator.offset <= allocator.buffer.Length);
+            }
             else
+            {
                 MemoryHelper.EncodeNumber(ref target, (uint)length, numberLength: 4);
+                Debug.Assert(allocator.offset >= 4);
+                Debug.Assert(allocator.offset <= allocator.buffer.Length);
+            }
         }
     }
 }
