@@ -35,11 +35,32 @@ type ImmutableCollectionTests() =
         Assert.Equal("DelegateDecoder`2", decoder.GetType().Name)
         converter
 
+    let TestAutoAndLengthPrefix (item : 'T when 'T :> 'E seq) (converter : Converter<'T>) =
+        let mutable allocatorAuto = Allocator()
+        let mutable allocatorLengthPrefix = Allocator()
+        converter.EncodeAuto(&allocatorAuto, item)
+        converter.EncodeWithLengthPrefix(&allocatorLengthPrefix, item)
+        let bufferAuto = allocatorAuto.ToArray()
+        let bufferLengthPrefix = allocatorLengthPrefix.ToArray()
+        Assert.Equal<byte>(bufferAuto, bufferLengthPrefix)
+
+        let mutable spanAuto = ReadOnlySpan bufferAuto
+        let mutable spanLengthPrefix = ReadOnlySpan bufferLengthPrefix
+        let resultAuto = converter.DecodeAuto &spanAuto
+        let resultLengthPrefix = converter.DecodeWithLengthPrefix &spanLengthPrefix
+        Assert.Equal<'E>(item, resultAuto)
+        Assert.Equal<'E>(item, resultLengthPrefix)
+        Assert.Equal(0, spanAuto.Length)
+        Assert.Equal(0, spanLengthPrefix.Length)
+        ()
+
     let Test (item : 'T when 'T :> 'E seq) =
         let converter = TestConverter item
         let buffer = converter.Encode item
         let result = converter.Decode buffer
         Assert.Equal<'E>(item, result)
+
+        TestAutoAndLengthPrefix item converter
         ()
 
     let TestInterface (item : 'T when 'T :> 'E seq) =
@@ -50,11 +71,15 @@ type ImmutableCollectionTests() =
         Assert.Equal<'E>(item, result)
         Assert.Equal(item.GetType(), result.GetType())
 
+        TestAutoAndLengthPrefix item converter
+
         let bufferDefault = converter.Encode null
         let resultDefault = converter.Decode bufferDefault
         Assert.Empty bufferDefault
         Assert.Empty resultDefault
         Assert.Equal(item.GetType(), resultDefault.GetType())
+
+        TestAutoAndLengthPrefix resultDefault converter
         ()
 
     let TestInvalid (item : 'T when 'T :> 'E seq) =
