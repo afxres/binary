@@ -11,9 +11,9 @@ namespace Mikodev.Binary.Internal.Fallback
             var length = converter.Length;
             if (length is not 0)
                 return new ConstantDecoder<T>(converter);
-            var method = ContextMethods.GetDecodeMethodInfo(typeof(T), auto: true);
+            var method = ContextMethods.GetDecodeMethodInfo(typeof(T), nameof(IConverter.DecodeWithLengthPrefix));
             var result = converter.GetType().GetMethods().Single(x => x.GetBaseDefinition() == method);
-            if (result == method)
+            if (result.DeclaringType == typeof(Converter<T>))
                 return new VariableDecoder<T>(converter);
             else
                 return new VariableOverriddenDecoder<T>(converter);

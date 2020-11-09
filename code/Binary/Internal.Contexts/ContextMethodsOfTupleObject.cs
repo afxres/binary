@@ -35,7 +35,7 @@ namespace Mikodev.Binary.Internal.Contexts
             {
                 var itemType = types[i];
                 var converter = converters[i];
-                var method = ContextMethods.GetEncodeMethodInfo(itemType, auto || i != types.Count - 1);
+                var method = ContextMethods.GetEncodeMethodInfo(itemType, (auto || i != types.Count - 1) ? nameof(IConverter.EncodeAuto) : nameof(IConverter.Encode));
                 var invoke = Expression.Call(Expression.Constant(converter), method, allocator, members[i].Invoke(item));
                 expressions.Add(invoke);
             }
@@ -53,7 +53,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 {
                     var itemType = types[i];
                     var converter = converters[i];
-                    var method = ContextMethods.GetDecodeMethodInfo(itemType, auto || i != types.Count - 1);
+                    var method = ContextMethods.GetDecodeMethodInfo(itemType, (auto || i != types.Count - 1) ? nameof(IConverter.DecodeAuto) : nameof(IConverter.Decode));
                     var decode = Expression.Call(Expression.Constant(converter), method, span);
                     results[i] = decode;
                 }

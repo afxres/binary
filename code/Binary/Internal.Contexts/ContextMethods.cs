@@ -68,29 +68,20 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        internal static MethodInfo GetDecodeMethodInfo(Type itemType, bool auto)
+        internal static MethodInfo GetDecodeMethodInfo(Type itemType, string methodName)
         {
+            Debug.Assert(methodName is nameof(IConverter.Decode) or nameof(IConverter.DecodeAuto) or nameof(IConverter.DecodeWithLengthPrefix));
             var types = new[] { typeof(ReadOnlySpan<byte>).MakeByRefType() };
-            var name = auto ? nameof(IConverter.DecodeAuto) : nameof(IConverter.Decode);
-            var method = typeof(Converter<>).MakeGenericType(itemType).GetMethod(name, types);
+            var method = typeof(Converter<>).MakeGenericType(itemType).GetMethod(methodName, types);
             Debug.Assert(method is not null);
             return method;
         }
 
-        internal static MethodInfo GetEncodeMethodInfo(Type itemType, bool auto)
+        internal static MethodInfo GetEncodeMethodInfo(Type itemType, string methodName)
         {
+            Debug.Assert(methodName is nameof(IConverter.Encode) or nameof(IConverter.EncodeAuto) or nameof(IConverter.EncodeWithLengthPrefix));
             var types = new[] { typeof(Allocator).MakeByRefType(), itemType };
-            var name = auto ? nameof(IConverter.EncodeAuto) : nameof(IConverter.Encode);
-            var method = typeof(Converter<>).MakeGenericType(itemType).GetMethod(name, types);
-            Debug.Assert(method is not null);
-            return method;
-        }
-
-        internal static MethodInfo GetEncodeWithLengthPrefixMethodInfo(Type itemType)
-        {
-            var types = new[] { typeof(Allocator).MakeByRefType(), itemType };
-            var name = nameof(IConverter.EncodeWithLengthPrefix);
-            var method = typeof(Converter<>).MakeGenericType(itemType).GetMethod(name, types);
+            var method = typeof(Converter<>).MakeGenericType(itemType).GetMethod(methodName, types);
             Debug.Assert(method is not null);
             return method;
         }

@@ -107,7 +107,7 @@ namespace Mikodev.Binary.Internal.Contexts
         private static SequenceEncoder<T> GetEncoder<T, E>(Converter<E> converter) where T : IEnumerable<E>
         {
             var member = Expression.Constant(converter);
-            var method = ContextMethods.GetEncodeMethodInfo(typeof(E), auto: true);
+            var method = ContextMethods.GetEncodeMethodInfo(typeof(E), nameof(IConverter.EncodeAuto));
             var result = GetEncoder<T>(typeof(E), (allocator, current) => Expression.Call(member, method, allocator, current));
             return result is null ? new EnumerableEncoder<T, E>(converter) : new DelegateEncoder<T>(result);
         }
@@ -116,8 +116,8 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             var initMember = Expression.Constant(init);
             var tailMember = Expression.Constant(tail);
-            var initMethod = ContextMethods.GetEncodeMethodInfo(typeof(K), auto: true);
-            var tailMethod = ContextMethods.GetEncodeMethodInfo(typeof(V), auto: true);
+            var initMethod = ContextMethods.GetEncodeMethodInfo(typeof(K), nameof(IConverter.EncodeAuto));
+            var tailMethod = ContextMethods.GetEncodeMethodInfo(typeof(V), nameof(IConverter.EncodeAuto));
             var initProperty = typeof(KeyValuePair<K, V>).GetProperty(nameof(KeyValuePair<K, V>.Key));
             var tailProperty = typeof(KeyValuePair<K, V>).GetProperty(nameof(KeyValuePair<K, V>.Value));
             var assign = Expression.Variable(typeof(KeyValuePair<K, V>), "current");

@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Mikodev.Binary.Tests
 {
-    public class GeneratorTests
+    public class ConverterNewMemberTests
     {
         private class FakeConverterInstance<T> : Converter<T>
         {
@@ -23,17 +23,17 @@ namespace Mikodev.Binary.Tests
 
         private class FakeConverterHideAllMembers<T> : FakeConverterInstance<T>
         {
-            public new void Encode(ref Allocator allocator, T item) => throw new NotSupportedException("New 'Encode'");
+            public new virtual void Encode(ref Allocator allocator, T item) => throw new NotSupportedException("New 'Encode'");
 
-            public new T Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException("New 'Decode'");
+            public new virtual T Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException("New 'Decode'");
 
-            public new void EncodeAuto(ref Allocator allocator, T item) => throw new NotSupportedException("New 'EncodeAuto'");
+            public new virtual void EncodeAuto(ref Allocator allocator, T item) => throw new NotSupportedException("New 'EncodeAuto'");
 
-            public new T DecodeAuto(ref ReadOnlySpan<byte> span) => throw new NotSupportedException("New 'DecodeAuto'");
+            public new virtual T DecodeAuto(ref ReadOnlySpan<byte> span) => throw new NotSupportedException("New 'DecodeAuto'");
 
-            public new void EncodeWithLengthPrefix(ref Allocator allocator, T item) => throw new NotSupportedException("New 'EncodeWithLengthPrefix'");
+            public new virtual void EncodeWithLengthPrefix(ref Allocator allocator, T item) => throw new NotSupportedException("New 'EncodeWithLengthPrefix'");
 
-            public new T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => throw new NotSupportedException("New 'DecodeWithLengthPrefix'");
+            public new virtual T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => throw new NotSupportedException("New 'DecodeWithLengthPrefix'");
         }
 
         [Fact(DisplayName = "Encode With New 'Encode' Method")]
