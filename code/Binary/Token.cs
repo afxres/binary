@@ -57,12 +57,13 @@ namespace Mikodev.Binary
                 var builder = ImmutableDictionary.CreateBuilder<string, Token>();
                 while (body.Length is not 0)
                 {
-                    var header = encoder.DecodeWithLengthPrefix(ref body);
+                    var header = PrimitiveHelper.DecodeBufferWithLengthPrefix(ref body);
                     var buffer = PrimitiveHelper.DecodeBufferWithLengthPrefix(ref body);
                     var offset = memory.Length - buffer.Length - body.Length;
                     var target = memory.Slice(offset, buffer.Length);
+                    var source = encoder.Decode(header);
                     var result = new Token(generator, target, instance, encoder);
-                    builder.Add(header, result);
+                    builder.Add(source, result);
                 }
                 return builder.ToImmutable();
             }
