@@ -19,14 +19,14 @@ let generator = Generator.CreateDefault()
 
 let TestEncode<'a> (converter : Converter<'a>) (collection : 'a) =
     let alpha = converter.Encode collection
-    let bravo = AllocatorHelper.Invoke(collection, fun allocator item -> converter.Encode(&allocator, item))
+    let bravo = Allocator.Invoke(collection, fun allocator item -> converter.Encode(&allocator, item))
     Assert.Empty alpha
     Assert.Empty bravo
     ()
 
 let TestEncodeAutoAndEncodeWithLengthPrefix (converter : Converter<'a>) (collection : 'a) =
-    let alpha = AllocatorHelper.Invoke(collection, fun allocator item -> converter.EncodeAuto(&allocator, item))
-    let bravo = AllocatorHelper.Invoke(collection, fun allocator item -> converter.EncodeWithLengthPrefix(&allocator, item))
+    let alpha = Allocator.Invoke(collection, fun allocator item -> converter.EncodeAuto(&allocator, item))
+    let bravo = Allocator.Invoke(collection, fun allocator item -> converter.EncodeWithLengthPrefix(&allocator, item))
     Assert.Equal<byte>([| 0uy |], alpha)
     Assert.Equal<byte>([| 0uy |], bravo)
     ()

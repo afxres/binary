@@ -46,12 +46,12 @@ namespace Mikodev.Binary
 
         public static void EncodeString(ref Allocator allocator, ReadOnlySpan<char> span)
         {
-            Allocator.AppendString(ref allocator, span);
+            Allocator.Append(ref allocator, span, SharedHelper.Encoding);
         }
 
         public static void EncodeStringWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<char> span)
         {
-            Allocator.AppendStringWithLengthPrefix(ref allocator, span);
+            Allocator.AppendWithLengthPrefix(ref allocator, span, SharedHelper.Encoding);
         }
 
         public static string DecodeString(ReadOnlySpan<byte> span)

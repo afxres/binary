@@ -10,7 +10,7 @@
     <Compile Include="Attributes\AttributeTests.fs" />
     <Compile Include="Attributes\AttributeWithIndexerTests.fs" />
     <Compile Include="Attributes\InheritanceTests.fs" />
-    <Compile Include="Contexts\AllocatorHelperTests.fs" />
+    <Compile Include="Contexts\AllocatorModuleTests.fs" />
     <Compile Include="Contexts\AllocatorTests.fs" />
     <Compile Include="Contexts\AllocatorConverterTests.fs" />
     <Compile Include="Contexts\ConverterExtensionsTests.fs" />

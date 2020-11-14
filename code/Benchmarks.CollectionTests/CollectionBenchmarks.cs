@@ -51,9 +51,9 @@ namespace Mikodev.Binary.Benchmarks.CollectionTests
 
             this.buffer = new byte[65536];
             this.encodeBytes = this.linkedListConverter.Encode(this.linkedList);
-            this.encodeWithLengthPrefixBytes = AllocatorHelper.Invoke(this.linkedList, this.linkedListConverter.EncodeWithLengthPrefix);
+            this.encodeWithLengthPrefixBytes = Allocator.Invoke(this.linkedList, this.linkedListConverter.EncodeWithLengthPrefix);
             this.encodeBytesOfPair = this.dictionaryConverter.Encode(this.dictionary);
-            this.encodeWithLengthPrefixBytesOfPair = AllocatorHelper.Invoke(this.dictionary, this.dictionaryConverter.EncodeWithLengthPrefix);
+            this.encodeWithLengthPrefixBytesOfPair = Allocator.Invoke(this.dictionary, this.dictionaryConverter.EncodeWithLengthPrefix);
         }
 
         [Benchmark(Description = "Encode HashSet")]

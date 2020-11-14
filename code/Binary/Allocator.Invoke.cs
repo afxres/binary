@@ -43,22 +43,6 @@ namespace Mikodev.Binary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Ensure(ref Allocator allocator, int length)
-        {
-            if ((ulong)(uint)allocator.offset + (uint)length > (uint)allocator.buffer.Length)
-                Resize(ref allocator, length);
-            Debug.Assert(allocator.buffer.Length <= allocator.MaxCapacity);
-            Debug.Assert(allocator.buffer.Length >= allocator.offset + length);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Expand(ref Allocator allocator, int length)
-        {
-            Ensure(ref allocator, length);
-            allocator.offset += length;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int Anchor(ref Allocator allocator, int length)
         {
             Ensure(ref allocator, length);
@@ -74,15 +58,6 @@ namespace Mikodev.Binary
             var offset = Anchor(ref allocator, length);
             var buffer = allocator.buffer;
             return ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Append(ref Allocator allocator, ReadOnlySpan<byte> span)
-        {
-            var length = span.Length;
-            if (length is 0)
-                return;
-            Unsafe.CopyBlockUnaligned(ref Assign(ref allocator, length), ref MemoryMarshal.GetReference(span), (uint)length);
         }
 
         internal static void AppendLengthPrefix(ref Allocator allocator, int anchor)

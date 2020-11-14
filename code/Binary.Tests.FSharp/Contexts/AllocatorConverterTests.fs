@@ -13,7 +13,7 @@ type ArrayWrapperConverter<'T when 'T : struct and 'T :> ValueType and 'T : (new
 
     override __.Encode(allocator, item) =
         let span = MemoryMarshal.Cast<'T, byte>(ReadOnlySpan item.array)
-        AllocatorHelper.Append(&allocator, span)
+        Allocator.Append(&allocator, span)
         ()
 
     override __.Decode(span : inref<ReadOnlySpan<byte>>) : ArrayWrapper<'T> =
@@ -76,7 +76,7 @@ let ``Allocator Anchor Length Prefix`` () =
         random.NextBytes source
 
         let mutable allocator = Allocator()
-        AllocatorHelper.AppendWithLengthPrefix(&allocator, source, fun a b -> AllocatorHelper.Append(&a, ReadOnlySpan b))
+        Allocator.AppendWithLengthPrefix<byte array>(&allocator, source, fun a b -> Allocator.Append(&a, ReadOnlySpan b))
         let buffer = allocator.AsSpan().ToArray()
 
         if i <= 16 then

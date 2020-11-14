@@ -29,15 +29,16 @@ namespace Mikodev.Binary.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int GetMaxByteCount(ReadOnlySpan<char> span)
+        internal static int GetMaxByteCount(ReadOnlySpan<char> span, Encoding encoding)
         {
+            Debug.Assert(encoding is not null);
             var length = span.Length;
             if (length is 0)
                 return 0;
             const int Limits = 32;
-            if ((uint)length <= Limits)
+            if ((uint)length <= Limits && ReferenceEquals(encoding, Encoding))
                 return (length + 1) * 3;
-            return Encoding.GetByteCount(span);
+            return encoding.GetByteCount(span);
         }
     }
 }

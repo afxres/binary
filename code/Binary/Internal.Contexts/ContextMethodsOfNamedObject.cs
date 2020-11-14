@@ -13,7 +13,7 @@ namespace Mikodev.Binary.Internal.Contexts
     {
         private static readonly MethodInfo InvokeMethodInfo = typeof(MemorySlices).GetMethod(nameof(MemorySlices.Invoke), BindingFlags.Instance | BindingFlags.Public);
 
-        private static readonly MethodInfo AppendMethodInfo = typeof(Allocator).GetMethod(nameof(Allocator.Append), BindingFlags.Static | BindingFlags.NonPublic);
+        private static readonly MethodInfo AppendMethodInfo = typeof(Allocator).GetMethod(nameof(Allocator.Append), new[] { typeof(Allocator).MakeByRefType(), typeof(ReadOnlySpan<byte>) });
 
         private static readonly ConstructorInfo ReadOnlySpanByteConstructorInfo = typeof(ReadOnlySpan<byte>).GetConstructor(new[] { typeof(byte[]) });
 
@@ -44,7 +44,7 @@ namespace Mikodev.Binary.Internal.Contexts
             {
                 var property = properties[i];
                 var converter = converters[i];
-                var buffer = AllocatorHelper.Invoke(memories[i], (ref Allocator allocator, ReadOnlyMemory<byte> data) => PrimitiveHelper.EncodeBufferWithLengthPrefix(ref allocator, data.Span));
+                var buffer = Allocator.Invoke(memories[i], (ref Allocator allocator, ReadOnlyMemory<byte> data) => PrimitiveHelper.EncodeBufferWithLengthPrefix(ref allocator, data.Span));
                 var methodInfo = ContextMethods.GetEncodeMethodInfo(property.PropertyType, nameof(IConverter.EncodeWithLengthPrefix));
                 // append named key with length prefix (cached), then append value with length prefix
                 expressions.Add(Expression.Call(AppendMethodInfo, allocator, Expression.New(ReadOnlySpanByteConstructorInfo, Expression.Constant(buffer))));

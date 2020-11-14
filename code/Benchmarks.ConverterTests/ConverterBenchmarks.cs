@@ -35,8 +35,8 @@ namespace Mikodev.Binary.Benchmarks.ConverterTests
                 _ => throw new NotSupportedException(),
             };
             this.encodeBytes = this.converter.Encode(this.number);
-            this.encodeAutoBytes = AllocatorHelper.Invoke(this.number, this.converter.EncodeAuto);
-            this.encodeWithLengthPrefixBytes = AllocatorHelper.Invoke(this.number, this.converter.EncodeWithLengthPrefix);
+            this.encodeAutoBytes = Allocator.Invoke(this.number, this.converter.EncodeAuto);
+            this.encodeWithLengthPrefixBytes = Allocator.Invoke(this.number, this.converter.EncodeWithLengthPrefix);
         }
 
         [Benchmark(Description = "Encode")]

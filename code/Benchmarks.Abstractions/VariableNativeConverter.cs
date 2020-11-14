@@ -12,7 +12,7 @@ namespace Mikodev.Binary.Benchmarks.Abstractions
         {
             ref var source = ref Unsafe.As<T, byte>(ref item);
             var span = MemoryMarshal.CreateReadOnlySpan(ref source, Unsafe.SizeOf<T>());
-            AllocatorHelper.Append(ref allocator, span);
+            Allocator.Append(ref allocator, span);
         }
 
         public override T Decode(in ReadOnlySpan<byte> span)

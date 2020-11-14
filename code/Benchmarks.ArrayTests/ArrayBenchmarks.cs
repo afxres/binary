@@ -47,7 +47,7 @@ namespace Mikodev.Binary.Benchmarks.ArrayTests
 
             this.buffer = new byte[65536];
             this.encodeBytes = this.arrayConverter.Encode(this.array01);
-            this.encodeWithLengthPrefixBytes = AllocatorHelper.Invoke(this.array01, this.arrayConverter.EncodeWithLengthPrefix);
+            this.encodeWithLengthPrefixBytes = Allocator.Invoke(this.array01, this.arrayConverter.EncodeWithLengthPrefix);
         }
 
         [Benchmark(Description = "Encode Array")]

@@ -23,7 +23,7 @@ type IPEndPointTests() =
     [<MemberData("Data Alpha")>]
     member __.``Encode Then Decode (span methods & bytes methods)`` (item : IPEndPoint) =
         let converter = GetConverter()
-        let b1 = AllocatorHelper.Invoke((), fun allocator _ -> converter.Encode(&allocator, item))
+        let b1 = Allocator.Invoke((), fun allocator _ -> converter.Encode(&allocator, item))
         let b2 = converter.Encode item
         Assert.Equal<byte>(b1, b2)
 
@@ -47,8 +47,8 @@ type IPEndPointTests() =
     [<MemberData("Data Alpha")>]
     member __.``Encode Then Decode (auto methods & length prefix methods)`` (item : IPEndPoint) =
         let converter = GetConverter()
-        let b1 = AllocatorHelper.Invoke((), fun allocator _ -> converter.EncodeAuto(&allocator, item))
-        let b2 = AllocatorHelper.Invoke((), fun allocator _ -> converter.EncodeWithLengthPrefix(&allocator, item))
+        let b1 = Allocator.Invoke((), fun allocator _ -> converter.EncodeAuto(&allocator, item))
+        let b2 = Allocator.Invoke((), fun allocator _ -> converter.EncodeWithLengthPrefix(&allocator, item))
         Assert.Equal<byte>(b1, b2)
 
         let byteLength =
@@ -91,7 +91,7 @@ type IPEndPointTests() =
     [<MemberData("Data Alpha")>]
     member __.``Layout (with length prefix)`` (item : IPEndPoint) =
         let converter = GetConverter()
-        let b1 = AllocatorHelper.Invoke((), fun allocator _ -> converter.EncodeWithLengthPrefix(&allocator, item))
+        let b1 = Allocator.Invoke((), fun allocator _ -> converter.EncodeWithLengthPrefix(&allocator, item))
         let b2 =
             if isNull item then
                 [| 0uy |]

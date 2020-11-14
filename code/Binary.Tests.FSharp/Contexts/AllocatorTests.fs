@@ -50,7 +50,7 @@ let ``Constructor (byte array)`` (length : int) =
     let mutable allocator = Allocator(Span array)
     Assert.Equal(length, allocator.Capacity)
     Assert.Equal(Int32.MaxValue, allocator.MaxCapacity);
-    AllocatorHelper.Append(&allocator, 256, null :> obj, fun a b -> ())
+    Allocator.Append(&allocator, 256, null :> obj, fun a b -> ())
     Assert.Equal(allocator.Length, 256)
     ()
 
@@ -73,7 +73,7 @@ let ``As Span`` (length : int) =
     random.NextBytes source
     let mutable allocator = Allocator()
     let span = ReadOnlySpan<byte>(source)
-    AllocatorHelper.Append(&allocator, span)
+    Allocator.Append(&allocator, span)
 
     let span = allocator.AsSpan()
     Assert.Equal(span.Length, length)
@@ -96,7 +96,7 @@ let ``To Array`` (length : int) =
     random.NextBytes source
     let mutable allocator = Allocator()
     let span = ReadOnlySpan<byte>(source)
-    AllocatorHelper.Append(&allocator, span)
+    Allocator.Append(&allocator, span)
 
     let result = allocator.ToArray()
     Assert.Equal<byte>(source, result)
@@ -115,6 +115,6 @@ let ``Get Hash Code (not supported)`` () =
 [<Fact>]
 let ``To String (debug)`` () =
     let mutable allocator = Allocator(Span (Array.zeroCreate 64), 32)
-    AllocatorHelper.Append(&allocator, 4, null :> obj, fun a b -> ())
+    Allocator.Append(&allocator, 4, null :> obj, fun a b -> ())
     Assert.Equal("Allocator(Length: 4, Capacity: 32, MaxCapacity: 32)", allocator.ToString())
     ()

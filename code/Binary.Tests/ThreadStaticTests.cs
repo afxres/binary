@@ -31,7 +31,7 @@ namespace Mikodev.Binary.Tests
 
             public FakeVariableConverter(EncodeAction<T> encodeAction) : base(0) => this.encodeAction = encodeAction;
 
-            public override void Encode(ref Allocator allocator, T item) => encodeAction.Invoke(ref allocator, item);
+            public override void Encode(ref Allocator allocator, T item) => this.encodeAction.Invoke(ref allocator, item);
 
             public override T Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException();
         }
@@ -96,7 +96,7 @@ namespace Mikodev.Binary.Tests
             var threads = Enumerable.Range(0, ThreadCount).Select(id => new Thread(() =>
             {
                 _ = handle.WaitOne();
-                _ = AllocatorHelper.Invoke(-1, (ref Allocator allocator, int item) =>
+                _ = Allocator.Invoke(-1, (ref Allocator allocator, int item) =>
                 {
                     var bufferHelper = threadStaticField.GetValue(null);
                     var buffer = (byte[])bufferField.GetValue(bufferHelper);
@@ -134,26 +134,26 @@ namespace Mikodev.Binary.Tests
                 var buffer02 = default(byte[]);
                 var buffer03 = default(byte[]);
 
-                buffer01 = AllocatorHelper.Invoke(0x11223344, (ref Allocator allocator01, int item) =>
+                buffer01 = Allocator.Invoke(0x11223344, (ref Allocator allocator01, int item) =>
                 {
                     Assert.Equal(0, allocator01.Length);
                     Assert.Equal(65536, allocator01.Capacity);
                     Assert.Equal(int.MaxValue, allocator01.MaxCapacity);
-                    AllocatorHelper.Append(ref allocator01, BitConverter.GetBytes(item));
+                    Allocator.Append(ref allocator01, BitConverter.GetBytes(item));
 
-                    buffer02 = AllocatorHelper.Invoke(0x33445566, (ref Allocator allocator02, int item) =>
+                    buffer02 = Allocator.Invoke(0x33445566, (ref Allocator allocator02, int item) =>
                     {
                         Assert.Equal(0, allocator02.Length);
                         Assert.Equal(0, allocator02.Capacity);
                         Assert.Equal(int.MaxValue, allocator02.MaxCapacity);
-                        AllocatorHelper.Append(ref allocator02, BitConverter.GetBytes(item));
+                        Allocator.Append(ref allocator02, BitConverter.GetBytes(item));
 
-                        buffer03 = AllocatorHelper.Invoke(0x55667788, (ref Allocator allocator03, int item) =>
+                        buffer03 = Allocator.Invoke(0x55667788, (ref Allocator allocator03, int item) =>
                         {
                             Assert.Equal(0, allocator03.Length);
                             Assert.Equal(0, allocator03.Capacity);
                             Assert.Equal(int.MaxValue, allocator03.MaxCapacity);
-                            AllocatorHelper.Append(ref allocator03, BitConverter.GetBytes(item));
+                            Allocator.Append(ref allocator03, BitConverter.GetBytes(item));
                         });
                     });
                 });
@@ -187,21 +187,21 @@ namespace Mikodev.Binary.Tests
                     Assert.Equal(0, allocator01.Length);
                     Assert.Equal(65536, allocator01.Capacity);
                     Assert.Equal(int.MaxValue, allocator01.MaxCapacity);
-                    AllocatorHelper.Append(ref allocator01, BitConverter.GetBytes(item01));
+                    Allocator.Append(ref allocator01, BitConverter.GetBytes(item01));
 
                     buffer02 = new FakeVariableConverter<uint>((ref Allocator allocator02, uint item02) =>
                     {
                         Assert.Equal(0, allocator02.Length);
                         Assert.Equal(0, allocator02.Capacity);
                         Assert.Equal(int.MaxValue, allocator02.MaxCapacity);
-                        AllocatorHelper.Append(ref allocator02, BitConverter.GetBytes(item02));
+                        Allocator.Append(ref allocator02, BitConverter.GetBytes(item02));
 
                         buffer03 = new FakeVariableConverter<uint>((ref Allocator allocator03, uint item03) =>
                         {
                             Assert.Equal(0, allocator03.Length);
                             Assert.Equal(0, allocator03.Capacity);
                             Assert.Equal(int.MaxValue, allocator03.MaxCapacity);
-                            AllocatorHelper.Append(ref allocator03, BitConverter.GetBytes(item03));
+                            Allocator.Append(ref allocator03, BitConverter.GetBytes(item03));
                         })
                         .Encode(0xDDEEFF00);
                     })
@@ -229,7 +229,7 @@ namespace Mikodev.Binary.Tests
         {
             static IEnumerable<bool> TestGroup()
             {
-                var error = Assert.Throws<NotSupportedException>(() => AllocatorHelper.Invoke(0U, (ref Allocator allocator01, uint _) =>
+                var error = Assert.Throws<NotSupportedException>(() => Allocator.Invoke(0U, (ref Allocator allocator01, uint _) =>
                 {
                     Assert.Equal(0, allocator01.Length);
                     Assert.Equal(65536, allocator01.Capacity);
@@ -237,12 +237,12 @@ namespace Mikodev.Binary.Tests
                     throw new NotSupportedException("Test Message Alpha");
                 }));
 
-                var buffer = AllocatorHelper.Invoke(0x778899AAU, (ref Allocator allocator02, uint item) =>
+                var buffer = Allocator.Invoke(0x778899AAU, (ref Allocator allocator02, uint item) =>
                 {
                     Assert.Equal(0, allocator02.Length);
                     Assert.Equal(65536, allocator02.Capacity);
                     Assert.Equal(int.MaxValue, allocator02.MaxCapacity);
-                    AllocatorHelper.Append(ref allocator02, BitConverter.GetBytes(item));
+                    Allocator.Append(ref allocator02, BitConverter.GetBytes(item));
                 });
 
                 var message = error.Message;
@@ -276,7 +276,7 @@ namespace Mikodev.Binary.Tests
                     Assert.Equal(0, allocator02.Length);
                     Assert.Equal(65536, allocator02.Capacity);
                     Assert.Equal(int.MaxValue, allocator02.MaxCapacity);
-                    AllocatorHelper.Append(ref allocator02, BitConverter.GetBytes(item02));
+                    Allocator.Append(ref allocator02, BitConverter.GetBytes(item02));
                 })
                 .Encode(0xBBAA9988);
 

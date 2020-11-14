@@ -24,7 +24,7 @@ namespace Mikodev.Binary.Tests
             var allocator = new Allocator(buffer);
             Assert.Equal(0, allocator.Length);
             Assert.Equal(256, allocator.Capacity);
-            AllocatorHelper.Append(ref allocator, Enumerable.Repeat((byte)0x7F, 128).ToArray());
+            Allocator.Append(ref allocator, Enumerable.Repeat((byte)0x7F, 128).ToArray());
             Assert.Equal(128, allocator.Length);
             Assert.Equal(256, allocator.Capacity);
             var source = allocator.AsSpan();
@@ -35,7 +35,7 @@ namespace Mikodev.Binary.Tests
                 for (var i = 128; i < 256; i++)
                     Assert.Equal((byte)0x80, srcptr[i]);
             }
-            AllocatorHelper.Append(ref allocator, 512, default(object), (a, b) => { });
+            Allocator.Append(ref allocator, 512, default(object), (a, b) => { });
             Assert.Equal(640, allocator.Length);
             Assert.Equal(1024, allocator.Capacity);
             var target = allocator.AsSpan();
@@ -67,7 +67,7 @@ namespace Mikodev.Binary.Tests
         [Fact(DisplayName = "Ensure Capacity (hack, zero)")]
         public void EnsureCapacityZero()
         {
-            var methodInfo = typeof(Allocator).GetMethod("Ensure", BindingFlags.Static | BindingFlags.NonPublic);
+            var methodInfo = typeof(Allocator).GetMethod("Ensure", BindingFlags.Static | BindingFlags.Public);
             var ensure = (Ensure)Delegate.CreateDelegate(typeof(Ensure), methodInfo);
             var capacity = 14;
             var buffer = new byte[capacity];
@@ -83,7 +83,7 @@ namespace Mikodev.Binary.Tests
         [InlineData(int.MinValue)]
         public void EnsureCapacityInvalid(int expand)
         {
-            var methodInfo = typeof(Allocator).GetMethod("Ensure", BindingFlags.Static | BindingFlags.NonPublic);
+            var methodInfo = typeof(Allocator).GetMethod("Ensure", BindingFlags.Static | BindingFlags.Public);
             var ensure = (Ensure)Delegate.CreateDelegate(typeof(Ensure), methodInfo);
             var error = Assert.Throws<ArgumentOutOfRangeException>(() =>
             {
@@ -98,14 +98,14 @@ namespace Mikodev.Binary.Tests
         [InlineData(2, 8, 10)]
         public void EnsureCapacityExactly(int offset, int expand, int capacity)
         {
-            var methodInfo = typeof(Allocator).GetMethod("Ensure", BindingFlags.Static | BindingFlags.NonPublic);
+            var methodInfo = typeof(Allocator).GetMethod("Ensure", BindingFlags.Static | BindingFlags.Public);
             var ensure = (Ensure)Delegate.CreateDelegate(typeof(Ensure), methodInfo);
             Assert.Equal(capacity, offset + expand);
             var buffer = new byte[capacity];
             var allocator = new Allocator(buffer);
             Assert.Equal(capacity, allocator.Capacity);
             Assert.Equal(0, allocator.Length);
-            AllocatorHelper.Append(ref allocator, offset, 0, (a, b) => { });
+            Allocator.Append(ref allocator, offset, 0, (a, b) => { });
             Assert.Equal(offset, allocator.Length);
             ensure.Invoke(ref allocator, expand);
             Assert.Equal(capacity, allocator.Capacity);
@@ -151,7 +151,7 @@ namespace Mikodev.Binary.Tests
             var anchor = anchorMethod.Invoke(ref allocator, 4);
             Assert.Equal(4, allocator.Length);
             Assert.Equal(allocatorCapacity, allocator.Capacity);
-            AllocatorHelper.Append(ref allocator, buffer);
+            Allocator.Append(ref allocator, buffer);
             appendMethod.Invoke(ref allocator, anchor);
             Assert.Equal(allocatorLength, allocator.Length);
             Assert.Equal(allocatorCapacity, allocator.Capacity);
@@ -179,7 +179,7 @@ namespace Mikodev.Binary.Tests
             var error = Assert.Throws<InvalidOperationException>(() =>
             {
                 var allocator = new Allocator();
-                AllocatorHelper.Append(ref allocator, allocatorLength, 0, (_a, _b) => { });
+                Allocator.Append(ref allocator, allocatorLength, 0, (_a, _b) => { });
                 Assert.Equal(allocatorLength, allocator.Length);
                 appendMethod.Invoke(ref allocator, anchor);
             });
@@ -204,7 +204,7 @@ namespace Mikodev.Binary.Tests
                     var allocator = new Allocator(new byte[capacity], maxCapacity: capacity);
                     var anchor = anchorMethod.Invoke(ref allocator, 4);
                     Assert.Equal(4, allocator.Length);
-                    AllocatorHelper.Append(ref allocator, buffer);
+                    Allocator.Append(ref allocator, buffer);
                     Assert.Equal(length + 4, allocator.Length);
                     appendMethod.Invoke(ref allocator, anchor);
                     var lengthAlign8 = (length % 8) == 0 ? length : ((length >> 3) + 1) << 3;

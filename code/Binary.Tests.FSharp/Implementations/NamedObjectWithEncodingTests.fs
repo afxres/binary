@@ -11,7 +11,7 @@ type EncodingStringConverter(encoding : Encoding) =
 
     override __.Encode(allocator, item) =
         let bytes = encoding.GetBytes item
-        AllocatorHelper.Append(&allocator, ReadOnlySpan<byte> bytes)
+        Allocator.Append(&allocator, ReadOnlySpan<byte> bytes)
         ()
 
     override __.Decode(span : inref<ReadOnlySpan<byte>>) : string =
