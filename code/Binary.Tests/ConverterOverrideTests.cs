@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 using Xunit;
 
 namespace Mikodev.Binary.Tests
@@ -103,13 +104,13 @@ namespace Mikodev.Binary.Tests
             public override void EncodeWithLengthPrefix(ref Allocator allocator, string item)
             {
                 var span = item.AsSpan();
-                PrimitiveHelper.EncodeStringWithLengthPrefix(ref allocator, span);
+                Allocator.AppendWithLengthPrefix(ref allocator, span, Encoding.UTF8);
                 CallList.Add($"EncodeWithLengthPrefix {item}");
             }
 
             public override string DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
             {
-                var result = PrimitiveHelper.DecodeStringWithLengthPrefix(ref span);
+                var result = Encoding.UTF8.GetString(Converter.DecodeWithLengthPrefix(ref span));
                 CallList.Add($"DecodeWithLengthPrefix {result}");
                 return result;
             }

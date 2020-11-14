@@ -11,6 +11,7 @@
     <Compile Include="Attributes\AttributeWithIndexerTests.fs" />
     <Compile Include="Attributes\InheritanceTests.fs" />
     <Compile Include="Contexts\AllocatorModuleTests.fs" />
+    <Compile Include="Contexts\AllocatorStringTests.fs" />
     <Compile Include="Contexts\AllocatorTests.fs" />
     <Compile Include="Contexts\AllocatorConverterTests.fs" />
     <Compile Include="Contexts\ConverterExtensionsTests.fs" />
@@ -21,7 +22,6 @@
     <Compile Include="Contexts\GeneratorExtensionsTests.fs" />
     <Compile Include="Contexts\GeneratorObjectConverterTests.fs" />
     <Compile Include="Contexts\GeneratorTests.fs" />
-    <Compile Include="Contexts\PrimitiveHelperTests.fs" />
     <Compile Include="Contexts\TokenTests.fs" />
     <Compile Include="Converters\IPEndPointTests.fs" />
     <Compile Include="Creators\ArrayTests.fs" />

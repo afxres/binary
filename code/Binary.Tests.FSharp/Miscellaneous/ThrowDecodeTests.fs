@@ -55,35 +55,6 @@ let ``Decode Buffer With Length Prefix (not enough bytes)`` () =
     ()
 
 [<Fact>]
-let ``Decode String With Length Prefix (empty span)`` () =
-    let error = Assert.Throws<ArgumentException>(fun () ->
-        let mutable span = ReadOnlySpan<byte>()
-        let _ = PrimitiveHelper.DecodeStringWithLengthPrefix &span
-        ())
-    Assert.Equal(message, error.Message)
-    ()
-
-[<Fact>]
-let ``Decode String With Length Prefix (invalid header)`` () =
-    let buffer = [| 0x40uy |]
-    let error = Assert.Throws<ArgumentException>(fun () ->
-        let mutable span = ReadOnlySpan buffer
-        let _ = PrimitiveHelper.DecodeStringWithLengthPrefix &span
-        ())
-    Assert.Equal(message, error.Message)
-    ()
-
-[<Fact>]
-let ``Decode String With Length Prefix (not enough bytes)`` () =
-    let buffer = [| 0x01uy |]
-    let error = Assert.Throws<ArgumentException>(fun () ->
-        let mutable span = ReadOnlySpan buffer
-        let _ = PrimitiveHelper.DecodeStringWithLengthPrefix &span
-        ())
-    Assert.Equal(message, error.Message)
-    ()
-
-[<Fact>]
 let ``Decode UInt32 With Length Prefix (empty span)`` () =
     let converter = generator.GetConverter<uint32>()
     let error = Assert.Throws<ArgumentException>(fun () ->

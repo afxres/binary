@@ -5,6 +5,7 @@ open System
 open System.Reflection
 open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
+open System.Text
 open Xunit
 
 let random = Random()
@@ -245,9 +246,9 @@ let ``Invoke (empty action)`` () =
 [<InlineData("Hello, 世界")>]
 [<InlineData("一二三四五六七八九十")>]
 let ``Invoke (encode some string with length prefix)`` (text : string) =
-    let buffer = Allocator.Invoke(text, fun allocator item -> PrimitiveHelper.EncodeStringWithLengthPrefix(&allocator, item.AsSpan()))
+    let buffer = Allocator.Invoke(text, fun allocator item -> Allocator.AppendWithLengthPrefix(&allocator, item.AsSpan(), Encoding.UTF32))
     let mutable span = ReadOnlySpan<byte>(buffer)
-    let result = PrimitiveHelper.DecodeStringWithLengthPrefix &span
+    let result = Encoding.UTF32.GetString(Converter.DecodeWithLengthPrefix &span)
     Assert.Equal(text, result)
     Assert.Equal(0, span.Length)
     ()

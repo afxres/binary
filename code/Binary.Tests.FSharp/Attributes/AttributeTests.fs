@@ -14,10 +14,11 @@ type Int32AsStringConverter() =
     override __.Encode(allocator, item) =
         let text = string item
         let span = text.AsSpan()
-        PrimitiveHelper.EncodeString(&allocator, span)
+        Allocator.Append(&allocator, span, Encoding.UTF32)
+        ()
 
     override __.Decode (span : inref<ReadOnlySpan<byte>>) =
-        let text = Encoding.UTF8.GetString(span.ToArray())
+        let text = Encoding.UTF32.GetString(span.ToArray())
         let item = Int32.Parse(text)
         item
 
@@ -27,10 +28,11 @@ type Int64AsStringConverter() =
     override __.Encode(allocator, item) =
         let text = string item
         let span = text.AsSpan()
-        PrimitiveHelper.EncodeString(&allocator, span)
+        Allocator.Append(&allocator, span, Encoding.UTF32)
+        ()
 
     override __.Decode (span : inref<ReadOnlySpan<byte>>) =
-        let text = Encoding.UTF8.GetString(span.ToArray())
+        let text = Encoding.UTF32.GetString(span.ToArray())
         let item = Int64.Parse(text)
         item
 

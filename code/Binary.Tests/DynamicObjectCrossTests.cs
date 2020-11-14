@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Xunit;
 
 namespace Mikodev.Binary.Tests
@@ -11,12 +12,12 @@ namespace Mikodev.Binary.Tests
 
             public override void Encode(ref Allocator allocator, string item)
             {
-                PrimitiveHelper.EncodeString(ref allocator, item.AsSpan());
+                Allocator.Append(ref allocator, item.AsSpan(), Encoding.UTF8);
             }
 
             public override string Decode(in ReadOnlySpan<byte> span)
             {
-                var result = PrimitiveHelper.DecodeString(span);
+                var result = Encoding.UTF8.GetString(span);
                 result = OnDecode?.Invoke(result) ?? result;
                 return result;
             }

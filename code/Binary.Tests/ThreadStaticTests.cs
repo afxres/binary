@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using Xunit;
 
@@ -104,7 +105,7 @@ namespace Mikodev.Binary.Tests
                     ref var data = ref MemoryMarshal.GetReference(new Span<byte>(buffer));
                     Assert.True(Unsafe.AreSame(ref head, ref data));
                     dictionary[id] = buffer;
-                    PrimitiveHelper.EncodeStringWithLengthPrefix(ref allocator, id.ToString());
+                    Allocator.AppendWithLengthPrefix(ref allocator, id.ToString(), Encoding.UTF8);
                 });
             }))
             .ToList();
@@ -120,7 +121,7 @@ namespace Mikodev.Binary.Tests
                 var buffer = x.Value;
                 Assert.Equal(65536, buffer.Length);
                 var span = new ReadOnlySpan<byte>(buffer);
-                var result = PrimitiveHelper.DecodeStringWithLengthPrefix(ref span);
+                var result = Encoding.UTF8.GetString(Converter.DecodeWithLengthPrefix(ref span));
                 Assert.Equal(x.Key.ToString(), result);
             });
         }
