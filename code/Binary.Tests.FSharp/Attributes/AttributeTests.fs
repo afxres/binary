@@ -39,7 +39,7 @@ type Int64AsStringConverterCreator() =
         member __.GetConverter(context, t) =
             Assert.NotNull(context)
             let converter = context.GetConverter(typeof<int64>)
-            Assert.Equal(typeof<int64>, ConverterHelper.GetGenericArgument(converter))
+            Assert.Equal(typeof<int64>, Converter.GetGenericArgument(converter))
             Assert.Equal(typeof<int64>, t)
             Int64AsStringConverter() :> IConverter
 

@@ -25,8 +25,8 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             var converter = GetOrCreateConverter(type);
             Debug.Assert(converter is not null);
-            Debug.Assert(ConverterHelper.GetGenericArgument(converter) == type);
-            return converters.GetOrAdd(type, converter);
+            Debug.Assert(Converter.GetGenericArgument(converter) == type);
+            return this.converters.GetOrAdd(type, converter);
         }
 
         private IConverter GetOrCreateConverter(Type type)
@@ -38,11 +38,11 @@ namespace Mikodev.Binary.Internal.Contexts
             if (type.IsGenericTypeDefinition || type.IsGenericParameter)
                 throw new ArgumentException($"Invalid generic type definition: {type}");
 
-            if (converters.TryGetValue(type, out var converter))
+            if (this.converters.TryGetValue(type, out var converter))
                 return converter;
-            if (types.Add(type) is false)
+            if (this.types.Add(type) is false)
                 throw new ArgumentException($"Circular type reference detected, type: {type}");
-            foreach (var creator in creators)
+            foreach (var creator in this.creators)
                 if ((converter = creator.GetConverter(this, type)) is not null)
                     return ContextMethods.EnsureConverter(converter, type, creator.GetType());
 

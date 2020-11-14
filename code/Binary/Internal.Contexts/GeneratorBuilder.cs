@@ -13,10 +13,10 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             if (converter is null)
                 throw new ArgumentNullException(nameof(converter));
-            var itemType = ConverterHelper.GetGenericArgument(converter);
+            var itemType = Converter.GetGenericArgument(converter);
             if (itemType == typeof(object))
                 throw new ArgumentException($"Can not add converter for '{typeof(object)}'");
-            converters[itemType] = converter;
+            this.converters[itemType] = converter;
             return this;
         }
 
@@ -24,12 +24,12 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             if (creator is null)
                 throw new ArgumentNullException(nameof(creator));
-            _ = creators.AddFirst(creator);
+            _ = this.creators.AddFirst(creator);
             return this;
         }
 
-        public IGenerator Build() => new Generator(converters, creators);
+        public IGenerator Build() => new Generator(this.converters, this.creators);
 
-        public override string ToString() => $"{nameof(GeneratorBuilder)}(Converters: {converters.Count}, Creators: {creators.Count})";
+        public override string ToString() => $"{nameof(GeneratorBuilder)}(Converters: {this.converters.Count}, Creators: {this.creators.Count})";
     }
 }

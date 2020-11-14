@@ -14,7 +14,7 @@
     <Compile Include="Contexts\AllocatorTests.fs" />
     <Compile Include="Contexts\AllocatorConverterTests.fs" />
     <Compile Include="Contexts\ConverterExtensionsTests.fs" />
-    <Compile Include="Contexts\ConverterHelperTests.fs" />
+    <Compile Include="Contexts\ConverterModuleTests.fs" />
     <Compile Include="Contexts\ConverterTests.fs" />
     <Compile Include="Contexts\GeneratorBuilderTests.fs" />
     <Compile Include="Contexts\GeneratorExtensionsTests.fs" />

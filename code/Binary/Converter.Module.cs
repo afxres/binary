@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Mikodev.Binary
 {
-    public static class ConverterHelper
+    public static class Converter
     {
         public static Type GetGenericArgument(IConverter converter)
         {
