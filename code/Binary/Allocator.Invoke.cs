@@ -60,7 +60,7 @@ namespace Mikodev.Binary
             return ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
         }
 
-        internal static void AppendLengthPrefix(ref Allocator allocator, int anchor)
+        internal static void FinishAnchor(ref Allocator allocator, int anchor)
         {
             const int Limits = 16;
             var offset = allocator.offset;

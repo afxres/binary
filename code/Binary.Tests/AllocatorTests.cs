@@ -14,7 +14,7 @@ namespace Mikodev.Binary.Tests
 
         private delegate void Resize(ref Allocator allocator, int expand);
 
-        private delegate void AppendLengthPrefix(ref Allocator allocator, int anchor);
+        private delegate void FinishAnchor(ref Allocator allocator, int anchor);
 
         [Fact(DisplayName = "Resize Capacity (hack)")]
         public unsafe void ResizeCapacity()
@@ -143,7 +143,7 @@ namespace Mikodev.Binary.Tests
         public void AnchorAppend(int length, int allocatorCapacity, int allocatorLength)
         {
             var anchorMethod = (Anchor)Delegate.CreateDelegate(typeof(Anchor), typeof(Allocator).GetMethod("Anchor", BindingFlags.Static | BindingFlags.NonPublic));
-            var appendMethod = (AppendLengthPrefix)Delegate.CreateDelegate(typeof(AppendLengthPrefix), typeof(Allocator).GetMethod("AppendLengthPrefix", BindingFlags.Static | BindingFlags.NonPublic));
+            var appendMethod = (FinishAnchor)Delegate.CreateDelegate(typeof(FinishAnchor), typeof(Allocator).GetMethod("FinishAnchor", BindingFlags.Static | BindingFlags.NonPublic));
             var buffer = new byte[length];
             var random = new Random();
             random.NextBytes(buffer);
@@ -175,7 +175,7 @@ namespace Mikodev.Binary.Tests
         [InlineData(int.MaxValue, 16)]
         public void AnchorAppendInvalid(int anchor, int allocatorLength)
         {
-            var appendMethod = (AppendLengthPrefix)Delegate.CreateDelegate(typeof(AppendLengthPrefix), typeof(Allocator).GetMethod("AppendLengthPrefix", BindingFlags.Static | BindingFlags.NonPublic));
+            var appendMethod = (FinishAnchor)Delegate.CreateDelegate(typeof(FinishAnchor), typeof(Allocator).GetMethod("FinishAnchor", BindingFlags.Static | BindingFlags.NonPublic));
             var error = Assert.Throws<InvalidOperationException>(() =>
             {
                 var allocator = new Allocator();
@@ -192,7 +192,7 @@ namespace Mikodev.Binary.Tests
         {
             const int Limits = 16;
             var anchorMethod = (Anchor)Delegate.CreateDelegate(typeof(Anchor), typeof(Allocator).GetMethod("Anchor", BindingFlags.Static | BindingFlags.NonPublic));
-            var appendMethod = (AppendLengthPrefix)Delegate.CreateDelegate(typeof(AppendLengthPrefix), typeof(Allocator).GetMethod("AppendLengthPrefix", BindingFlags.Static | BindingFlags.NonPublic));
+            var appendMethod = (FinishAnchor)Delegate.CreateDelegate(typeof(FinishAnchor), typeof(Allocator).GetMethod("FinishAnchor", BindingFlags.Static | BindingFlags.NonPublic));
             var random = new Random();
             for (var length = 0; length <= 64; length++)
             {

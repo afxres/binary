@@ -33,7 +33,7 @@ namespace Mikodev.Binary
                 ThrowHelper.ThrowActionNull();
             var anchor = Anchor(ref allocator, sizeof(int));
             action.Invoke(ref allocator, data);
-            AppendLengthPrefix(ref allocator, anchor);
+            FinishAnchor(ref allocator, anchor);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
