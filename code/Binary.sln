@@ -23,8 +23,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.ConverterTests",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.AllocatorTests", "Benchmarks.AllocatorTests\Benchmarks.AllocatorTests.csproj", "{231F03FF-3612-408E-9A19-1CABE42D4B66}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.PrimitiveTests", "Benchmarks.PrimitiveTests\Benchmarks.PrimitiveTests.csproj", "{8896B79C-B915-476D-894B-CEFCF340E234}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.Abstractions", "Benchmarks.Abstractions\Benchmarks.Abstractions.csproj", "{048446C2-B894-4E4B-ABFB-CF280913A38A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.ArrayTests", "Benchmarks.ArrayTests\Benchmarks.ArrayTests.csproj", "{070F7C44-BE0D-471A-9608-F392DA09479A}"
@@ -39,7 +37,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.ObjectConverterT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.EnumerationTests", "Benchmarks.EnumerationTests\Benchmarks.EnumerationTests.csproj", "{F21E9E6F-9DA3-4110-A677-4EE1448C70F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks.LengthPrefixEncodeTests", "Benchmarks.LengthPrefixEncodeTests\Benchmarks.LengthPrefixEncodeTests.csproj", "{DAF16E70-0BB0-488B-8A13-E609ECC3F0EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.LengthPrefixEncodeTests", "Benchmarks.LengthPrefixEncodeTests\Benchmarks.LengthPrefixEncodeTests.csproj", "{DAF16E70-0BB0-488B-8A13-E609ECC3F0EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -83,10 +81,6 @@ Global
 		{231F03FF-3612-408E-9A19-1CABE42D4B66}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{231F03FF-3612-408E-9A19-1CABE42D4B66}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{231F03FF-3612-408E-9A19-1CABE42D4B66}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8896B79C-B915-476D-894B-CEFCF340E234}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8896B79C-B915-476D-894B-CEFCF340E234}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8896B79C-B915-476D-894B-CEFCF340E234}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8896B79C-B915-476D-894B-CEFCF340E234}.Release|Any CPU.Build.0 = Release|Any CPU
 		{048446C2-B894-4E4B-ABFB-CF280913A38A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{048446C2-B894-4E4B-ABFB-CF280913A38A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{048446C2-B894-4E4B-ABFB-CF280913A38A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -128,7 +122,6 @@ Global
 		{037707A3-F062-410B-882C-3735B705459C} = {969F75DF-879E-42A1-8FA2-C049EAFFE30C}
 		{15AD345C-AD71-4F97-BF93-02C9BD47C134} = {969F75DF-879E-42A1-8FA2-C049EAFFE30C}
 		{231F03FF-3612-408E-9A19-1CABE42D4B66} = {969F75DF-879E-42A1-8FA2-C049EAFFE30C}
-		{8896B79C-B915-476D-894B-CEFCF340E234} = {969F75DF-879E-42A1-8FA2-C049EAFFE30C}
 		{048446C2-B894-4E4B-ABFB-CF280913A38A} = {969F75DF-879E-42A1-8FA2-C049EAFFE30C}
 		{070F7C44-BE0D-471A-9608-F392DA09479A} = {969F75DF-879E-42A1-8FA2-C049EAFFE30C}
 		{35BDF348-7773-401E-9F92-B9B3C0A58989} = {969F75DF-879E-42A1-8FA2-C049EAFFE30C}
