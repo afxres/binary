@@ -51,7 +51,7 @@ namespace Mikodev.Binary.Creators
 
         public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
-            return MemoryHelper.DecodeNativeEndian<T>(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
+            return MemoryHelper.DecodeNativeEndian<T>(Converter.DecodeWithLengthPrefix(ref span));
         }
 
         public override T Decode(byte[] buffer)

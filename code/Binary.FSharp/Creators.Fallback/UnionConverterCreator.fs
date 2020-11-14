@@ -9,13 +9,15 @@ open System.Linq.Expressions
 open System.Reflection
 
 type internal UnionConverterCreator() =
-    static let AllocatorByRefType = typeof<UnionEncoder<obj>>.GetMethod("Invoke", BindingFlags.Instance ||| BindingFlags.NonPublic).GetParameters().[0].ParameterType
+    static let AllocatorType = typeof<Converter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Namespace = "Mikodev.Binary" && x.Name = "Allocator") |> Array.exactlyOne
 
-    static let ReadOnlySpanByteByRefType = typeof<UnionDecoder<obj>>.GetMethod("Invoke", BindingFlags.Instance ||| BindingFlags.NonPublic).GetParameters().[0].ParameterType
+    static let AllocatorByRefType = AllocatorType.MakeByRefType()
 
-    static let EncodeNumberMethodInfo = typeof<PrimitiveHelper>.GetMethod("EncodeNumber", [| AllocatorByRefType; typeof<int> |])
+    static let ReadOnlySpanByteByRefType = AllocatorType.GetMethod("AsSpan", Type.EmptyTypes).ReturnType.MakeByRefType()
 
-    static let DecodeNumberMethodInfo = typeof<PrimitiveHelper>.GetMethod("DecodeNumber", [| ReadOnlySpanByteByRefType |])
+    static let EncodeNumberMethodInfo = typeof<Converter>.GetMethod("Encode", [| AllocatorByRefType; typeof<int> |])
+
+    static let DecodeNumberMethodInfo = typeof<Converter>.GetMethod("Decode", [| ReadOnlySpanByteByRefType |])
 
     static let GetEncodeMethodInfo (t : Type) (auto : bool) =
         let converterType = typedefof<Converter<_>>.MakeGenericType t

@@ -27,8 +27,8 @@ namespace Mikodev.Binary.Internal.Sequence
 
         public override T Decode(in ReadOnlySpan<byte> span) => this.decoder.Decode(span);
 
-        public override T DecodeAuto(ref ReadOnlySpan<byte> span) => this.decoder.Decode(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
+        public override T DecodeAuto(ref ReadOnlySpan<byte> span) => this.decoder.Decode(Converter.DecodeWithLengthPrefix(ref span));
 
-        public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => this.decoder.Decode(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
+        public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => this.decoder.Decode(Converter.DecodeWithLengthPrefix(ref span));
     }
 }

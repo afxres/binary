@@ -203,7 +203,7 @@ let ``Append With Length Prefix`` (length : int) =
     let mutable allocator = Allocator()
     Allocator.AppendWithLengthPrefix<byte array>(&allocator, source, fun a b -> Allocator.Append(&a, ReadOnlySpan b))
     let mutable span = allocator.AsSpan()
-    let result = PrimitiveHelper.DecodeBufferWithLengthPrefix &span
+    let result = Converter.DecodeWithLengthPrefix &span
     Assert.True(span.IsEmpty)
     Assert.Equal<byte>(source, result.ToArray())
     ()

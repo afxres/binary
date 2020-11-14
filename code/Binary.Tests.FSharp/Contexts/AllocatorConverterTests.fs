@@ -39,7 +39,7 @@ let ``Variable Converter Length Prefix`` () =
             Assert.Equal(i + 4, buffer.Length)
 
         let mutable span = ReadOnlySpan buffer
-        let result = PrimitiveHelper.DecodeBufferWithLengthPrefix &span
+        let result = Converter.DecodeWithLengthPrefix &span
         Assert.Equal(0, span.Length)
         Assert.Equal<byte>(source.array, result.ToArray())
     ()
@@ -64,7 +64,7 @@ let ``Uncountable Collection Length Prefix`` () =
             Assert.Equal(i + 4, buffer.Length)
 
         let mutable span = ReadOnlySpan buffer
-        let result = PrimitiveHelper.DecodeBufferWithLengthPrefix &span
+        let result = Converter.DecodeWithLengthPrefix &span
         Assert.Equal(0, span.Length)
         Assert.Equal<byte>(source, result.ToArray())
     ()
@@ -86,7 +86,7 @@ let ``Allocator Anchor Length Prefix`` () =
             Assert.Equal(i + 4, buffer.Length)
 
         let mutable span = ReadOnlySpan buffer
-        let result = PrimitiveHelper.DecodeBufferWithLengthPrefix &span
+        let result = Converter.DecodeWithLengthPrefix &span
         Assert.Equal(0, span.Length)
         Assert.Equal<byte>(source, result.ToArray())
     ()

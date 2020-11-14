@@ -579,7 +579,7 @@ type AttributeTests() =
         converter.EncodeAuto(&allocator, source)
         let buffer = allocator.AsSpan().ToArray()
         let mutable data = ReadOnlySpan buffer
-        let data = PrimitiveHelper.DecodeBufferWithLengthPrefix &data
+        let data = Converter.DecodeWithLengthPrefix &data
 
         let token = Token(generator, data.ToArray() |> ReadOnlyMemory)
         let dictionary = token.Children

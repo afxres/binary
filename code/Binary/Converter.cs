@@ -42,7 +42,7 @@ namespace Mikodev.Binary
 
         public virtual T DecodeAuto(ref ReadOnlySpan<byte> span) => this.decoder.DecodeAuto(ref span);
 
-        public virtual T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => Decode(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
+        public virtual T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => Decode(Converter.DecodeWithLengthPrefix(ref span));
 
         public virtual T Decode(byte[] buffer) => Decode(new ReadOnlySpan<byte>(buffer));
 

@@ -10,7 +10,7 @@ namespace Mikodev.Binary.Internal.Fallback.Decoders
 
         public override T DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            return this.converter.Decode(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
+            return this.converter.Decode(Converter.DecodeWithLengthPrefix(ref span));
         }
     }
 }

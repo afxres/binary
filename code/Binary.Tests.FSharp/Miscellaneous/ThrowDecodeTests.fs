@@ -12,7 +12,7 @@ let generator = Generator.CreateDefault()
 let ``Decode Number (empty span)`` () =
     let error = Assert.Throws<ArgumentException>(fun () ->
         let mutable span = ReadOnlySpan<byte>()
-        PrimitiveHelper.DecodeNumber &span |> ignore)
+        Converter.Decode &span |> ignore)
     Assert.Equal(message, error.Message)
     ()
 
@@ -21,7 +21,7 @@ let ``Decode Number (invalid header)`` () =
     let buffer = [| 0x80uy |]
     let error = Assert.Throws<ArgumentException>(fun () ->
         let mutable span = ReadOnlySpan buffer
-        PrimitiveHelper.DecodeNumber &span |> ignore)
+        Converter.Decode &span |> ignore)
     Assert.Equal(message, error.Message)
     ()
 
@@ -29,7 +29,7 @@ let ``Decode Number (invalid header)`` () =
 let ``Decode Buffer With Length Prefix (empty span)`` () =
     let error = Assert.Throws<ArgumentException>(fun () ->
         let mutable span = ReadOnlySpan<byte>()
-        let _ = PrimitiveHelper.DecodeBufferWithLengthPrefix &span
+        let _ = Converter.DecodeWithLengthPrefix &span
         ())
     Assert.Equal(message, error.Message)
     ()
@@ -39,7 +39,7 @@ let ``Decode Buffer With Length Prefix (invalid header)`` () =
     let buffer = [| 0x40uy |]
     let error = Assert.Throws<ArgumentException>(fun () ->
         let mutable span = ReadOnlySpan buffer
-        let _ = PrimitiveHelper.DecodeBufferWithLengthPrefix &span
+        let _ = Converter.DecodeWithLengthPrefix &span
         ())
     Assert.Equal(message, error.Message)
     ()
@@ -49,7 +49,7 @@ let ``Decode Buffer With Length Prefix (not enough bytes)`` () =
     let buffer = [| 0x01uy |]
     let error = Assert.Throws<ArgumentException>(fun () ->
         let mutable span = ReadOnlySpan buffer
-        let _ = PrimitiveHelper.DecodeBufferWithLengthPrefix &span
+        let _ = Converter.DecodeWithLengthPrefix &span
         ())
     Assert.Equal(message, error.Message)
     ()

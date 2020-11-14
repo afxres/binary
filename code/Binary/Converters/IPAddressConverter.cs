@@ -16,7 +16,7 @@ namespace Mikodev.Binary.Converters
         private static void EncodeWithLengthPrefixInternal(ref Allocator allocator, IPAddress item)
         {
             var size = item is null ? 0 : SharedHelper.SizeOfIPAddress(item);
-            PrimitiveHelper.EncodeNumber(ref allocator, size);
+            Converter.Encode(ref allocator, size);
             EncodeInternal(ref allocator, item);
         }
 
@@ -29,7 +29,7 @@ namespace Mikodev.Binary.Converters
 
         private static IPAddress DecodeWithLengthPrefixInternal(ref ReadOnlySpan<byte> span)
         {
-            return DecodeInternal(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
+            return DecodeInternal(Converter.DecodeWithLengthPrefix(ref span));
         }
 
         public override void Encode(ref Allocator allocator, IPAddress item) => EncodeInternal(ref allocator, item);

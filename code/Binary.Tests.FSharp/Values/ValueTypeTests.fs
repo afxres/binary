@@ -68,7 +68,7 @@ let TestWithLengthPrefix (value : 'a) (size : int) =
     let buffer = allocator.AsSpan().ToArray()
 
     let mutable span = ReadOnlySpan buffer
-    let length = PrimitiveHelper.DecodeNumber &span
+    let length = Converter.Decode &span
     Assert.Equal(size, length)
     Assert.Equal(size, span.Length)
     Assert.Equal<byte>(bufferOrigin, span.ToArray())

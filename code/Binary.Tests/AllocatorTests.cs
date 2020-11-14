@@ -156,7 +156,7 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(allocatorLength, allocator.Length);
             Assert.Equal(allocatorCapacity, allocator.Capacity);
             var span = allocator.AsSpan();
-            var number = PrimitiveHelper.DecodeNumber(ref span);
+            var number = Converter.Decode(ref span);
             Assert.Equal(length, number);
             Assert.Equal(length, span.Length);
             Assert.Equal(buffer, span.ToArray());
@@ -213,7 +213,7 @@ namespace Mikodev.Binary.Tests
                     var actualReduce = length <= Limits && capacity - 4 - lengthAlign8 >= 0;
                     Assert.Equal(length + (actualReduce ? 1 : 4), allocator.Length);
                     var span = allocator.AsSpan();
-                    var actualLength = PrimitiveHelper.DecodeNumber(ref span);
+                    var actualLength = Converter.Decode(ref span);
                     Assert.Equal(length, actualLength);
                     Assert.Equal(buffer, span.ToArray());
                 }

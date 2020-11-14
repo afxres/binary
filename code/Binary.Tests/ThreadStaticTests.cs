@@ -59,7 +59,7 @@ namespace Mikodev.Binary.Tests
                     ref var data = ref MemoryMarshal.GetReference(new Span<byte>(buffer));
                     Assert.True(Unsafe.AreSame(ref head, ref data));
                     dictionary[id] = buffer;
-                    PrimitiveHelper.EncodeBufferWithLengthPrefix(ref allocator, BitConverter.GetBytes(id));
+                    Converter.EncodeWithLengthPrefix(ref allocator, BitConverter.GetBytes(id));
                 })
                 .Encode(0);
             }))
@@ -76,7 +76,7 @@ namespace Mikodev.Binary.Tests
                 var buffer = x.Value;
                 Assert.Equal(65536, buffer.Length);
                 var span = new ReadOnlySpan<byte>(buffer);
-                var result = BitConverter.ToInt32(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span));
+                var result = BitConverter.ToInt32(Converter.DecodeWithLengthPrefix(ref span));
                 Assert.Equal(x.Key, result);
             });
         }

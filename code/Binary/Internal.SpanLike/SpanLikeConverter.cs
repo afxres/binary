@@ -27,8 +27,8 @@ namespace Mikodev.Binary.Internal.SpanLike
 
         public override T Decode(in ReadOnlySpan<byte> span) => this.builder.Invoke(span, this.adapter);
 
-        public override T DecodeAuto(ref ReadOnlySpan<byte> span) => this.builder.Invoke(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span), this.adapter);
+        public override T DecodeAuto(ref ReadOnlySpan<byte> span) => this.builder.Invoke(Converter.DecodeWithLengthPrefix(ref span), this.adapter);
 
-        public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => this.builder.Invoke(PrimitiveHelper.DecodeBufferWithLengthPrefix(ref span), this.adapter);
+        public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => this.builder.Invoke(Converter.DecodeWithLengthPrefix(ref span), this.adapter);
     }
 }

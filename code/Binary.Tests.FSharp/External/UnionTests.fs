@@ -94,7 +94,7 @@ let ``Invalid Tag (decode & decode auto)`` (tag : int) =
     Assert.StartsWith("UnionConverter`1", converter.GetType().Name)
 
     let mutable allocator = Allocator()
-    PrimitiveHelper.EncodeNumber(&allocator, tag)
+    Converter.Encode(&allocator, tag)
     let bytes = allocator.AsSpan().ToArray()
 
     let message = sprintf "Invalid union tag '%d', type: %O" (int tag) typeof<int option>

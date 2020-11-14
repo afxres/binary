@@ -46,7 +46,7 @@ let TestAuto (value : 'a) (expected : 'a) =
     Assert.Equal<'a>(expected, result)
 
     let mutable anotherSpan = ReadOnlySpan buffer
-    let length = PrimitiveHelper.DecodeNumber &anotherSpan
+    let length = Converter.Decode &anotherSpan
     Assert.Equal(bufferOrigin.Length, length)
     Assert.Equal<byte>(bufferOrigin, anotherSpan.ToArray())
     Assert.Equal(bufferOrigin.Length + 1, buffer.Length)
@@ -66,7 +66,7 @@ let TestWithLengthPrefix (value : 'a) (expected : 'a) =
     Assert.Equal<'a>(expected, result)
 
     let mutable anotherSpan = ReadOnlySpan buffer
-    let length = PrimitiveHelper.DecodeNumber &anotherSpan
+    let length = Converter.Decode &anotherSpan
     Assert.Equal(bufferOrigin.Length, length)
     Assert.Equal<byte>(bufferOrigin, anotherSpan.ToArray())
     Assert.Equal(bufferOrigin.Length + 1, buffer.Length)

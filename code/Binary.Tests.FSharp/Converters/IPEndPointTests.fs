@@ -104,7 +104,7 @@ type IPEndPointTests() =
                     | _ -> raise (NotSupportedException())
                 let generator = Generator.CreateDefault()
                 let mutable allocator = Allocator()
-                PrimitiveHelper.EncodeNumber(&allocator, byteLength)
+                Converter.Encode(&allocator, byteLength)
                 generator.GetConverter<IPAddress>().Encode(&allocator, item.Address)
                 generator.GetConverter<uint16>().Encode(&allocator, item.Port |> uint16)
                 allocator.AsSpan().ToArray()

@@ -57,8 +57,8 @@ namespace Mikodev.Binary
                 var builder = ImmutableDictionary.CreateBuilder<string, Token>();
                 while (body.Length is not 0)
                 {
-                    var header = PrimitiveHelper.DecodeBufferWithLengthPrefix(ref body);
-                    var buffer = PrimitiveHelper.DecodeBufferWithLengthPrefix(ref body);
+                    var header = Converter.DecodeWithLengthPrefix(ref body);
+                    var buffer = Converter.DecodeWithLengthPrefix(ref body);
                     var offset = memory.Length - buffer.Length - body.Length;
                     var target = memory.Slice(offset, buffer.Length);
                     var source = encoder.Decode(header);

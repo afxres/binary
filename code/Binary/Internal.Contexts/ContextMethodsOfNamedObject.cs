@@ -44,7 +44,7 @@ namespace Mikodev.Binary.Internal.Contexts
             {
                 var property = properties[i];
                 var converter = converters[i];
-                var buffer = Allocator.Invoke(memories[i], (ref Allocator allocator, ReadOnlyMemory<byte> data) => PrimitiveHelper.EncodeBufferWithLengthPrefix(ref allocator, data.Span));
+                var buffer = Allocator.Invoke(memories[i], (ref Allocator allocator, ReadOnlyMemory<byte> data) => Converter.EncodeWithLengthPrefix(ref allocator, data.Span));
                 var methodInfo = ContextMethods.GetEncodeMethodInfo(property.PropertyType, nameof(IConverter.EncodeWithLengthPrefix));
                 // append named key with length prefix (cached), then append value with length prefix
                 expressions.Add(Expression.Call(AppendMethodInfo, allocator, Expression.New(ReadOnlySpanByteConstructorInfo, Expression.Constant(buffer))));
