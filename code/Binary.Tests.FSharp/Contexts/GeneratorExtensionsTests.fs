@@ -106,8 +106,7 @@ type GeneratorExtensionsTests() =
         ()
 
     static member ``Data Bravo`` : (obj array) seq = seq {
-        yield [| typeof<int>; typeof<int> |]
-        yield [| typeof<char[]>; typeof<char> |]
+        yield [| typeof<Action>; typeof<Action> |]
         yield [| typeof<Nullable<double>>; typeof<Nullable<double>> |]
     }
 

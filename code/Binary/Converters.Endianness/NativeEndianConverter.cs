@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Mikodev.Binary.Creators
+namespace Mikodev.Binary.Converters.Endianness
 {
     internal sealed class NativeEndianConverter<T> : Converter<T> where T : unmanaged
     {

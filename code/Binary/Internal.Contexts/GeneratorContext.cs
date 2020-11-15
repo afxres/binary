@@ -46,6 +46,8 @@ namespace Mikodev.Binary.Internal.Contexts
                 if ((converter = creator.GetConverter(this, type)) is not null)
                     return ContextMethods.EnsureConverter(converter, type, creator.GetType());
 
+            if ((converter = FallbackEndiannessMethods.GetConverter(type)) is not null)
+                return converter;
             if ((converter = FallbackConvertersMethods.GetConverter(type)) is not null)
                 return converter;
             if ((converter = FallbackPrimitivesMethods.GetConverter(this, type)) is not null)

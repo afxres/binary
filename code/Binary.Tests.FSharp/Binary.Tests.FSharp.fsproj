@@ -25,6 +25,7 @@
     <Compile Include="Contexts\GeneratorTests.fs" />
     <Compile Include="Contexts\TokenTests.fs" />
     <Compile Include="Converters\IPEndPointTests.fs" />
+    <Compile Include="Endianness\ConverterTests.fs" />
     <Compile Include="Creators\ArrayTests.fs" />
     <Compile Include="Creators\DictionaryTests.fs" />
     <Compile Include="Creators\EnumerableTests.fs" />
