@@ -25,7 +25,7 @@ namespace Mikodev.Binary.Converters.Endianness
             static Span<byte> MakeSpan(ref byte location) => MemoryMarshal.CreateSpan(ref location, Unsafe.SizeOf<T>());
 
             if (typeof(T) == typeof(Guid))
-                _ = MakeCast<Guid>(item).TryWriteBytes(MakeSpan(ref location));
+                _ = ((Guid)(object)item).TryWriteBytes(MakeSpan(ref location));
             else if (Unsafe.SizeOf<T>() == 1)
                 Unsafe.WriteUnaligned(ref location, MakeCast<byte>(item));
             else if (Unsafe.SizeOf<T>() == 2)
@@ -47,7 +47,7 @@ namespace Mikodev.Binary.Converters.Endianness
             static ReadOnlySpan<byte> MakeSpan(ref byte location) => MemoryMarshal.CreateReadOnlySpan(ref location, Unsafe.SizeOf<T>());
 
             if (typeof(T) == typeof(Guid))
-                return MakeCast(new Guid(MakeSpan(ref location)));
+                return (T)(object)new Guid(MakeSpan(ref location));
             else if (Unsafe.SizeOf<T>() == 1)
                 return MakeCast(Unsafe.ReadUnaligned<byte>(ref location));
             else if (Unsafe.SizeOf<T>() == 2)

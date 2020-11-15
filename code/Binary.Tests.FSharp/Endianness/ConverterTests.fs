@@ -2,6 +2,7 @@
 
 open Mikodev.Binary
 open System
+open System.Drawing
 open System.Reflection
 open System.Runtime.CompilerServices
 open Xunit
@@ -29,6 +30,10 @@ type EnumInt64 =
 
 type EnumUInt64 =
     | Data = 0xEEDDCCBBAA998877UL
+
+type EncodeInternal<'T> = delegate of location : byref<byte> * item : 'T -> unit
+
+type DecodeInternal<'T> = delegate of location : byref<byte> -> 'T
 
 type ConverterTests() =
     static let EnsureEnumName (t : Type) =
@@ -110,7 +115,7 @@ type ConverterTests() =
         [| box LittleEndianConverter; box EnumUInt64.Data |]
     }
 
-    [<Theory()>]
+    [<Theory>]
     [<MemberData("Data Alpha")>]
     [<MemberData("Data Enum")>]
     member __.``Encode Then Decode`` (f : Func<Type, IConverter>, item : 'T) =
@@ -125,7 +130,7 @@ type ConverterTests() =
         Assert.Equal<'T>(item, result)
         ()
 
-    [<Theory()>]
+    [<Theory>]
     [<MemberData("Data Alpha")>]
     [<MemberData("Data Enum")>]
     member __.``Decode (not enough bytes)`` (f : Func<Type, IConverter>, item : 'T) =
@@ -146,7 +151,7 @@ type ConverterTests() =
         Assert.All(list, fun x -> Assert.Equal(message, x.Message))
         ()
 
-    [<Theory()>]
+    [<Theory>]
     [<MemberData("Data Alpha")>]
     [<MemberData("Data Enum")>]
     member __.``Decode Auto (not enough bytes)`` (f : Func<Type, IConverter>, item : 'T) =
@@ -167,7 +172,7 @@ type ConverterTests() =
         Assert.All(list, fun x -> Assert.Equal(message, x.Message))
         ()
 
-    [<Theory()>]
+    [<Theory>]
     [<MemberData("Data Alpha")>]
     [<MemberData("Data Enum")>]
     member __.``Decode (enough bytes)`` (f : Func<Type, IConverter>, item : 'T) =
@@ -184,7 +189,7 @@ type ConverterTests() =
             Assert.Equal<'T>(item, result)
         ()
 
-    [<Theory()>]
+    [<Theory>]
     [<MemberData("Data Alpha")>]
     [<MemberData("Data Enum")>]
     member __.``Decode Auto (enough bytes)`` (f : Func<Type, IConverter>, item : 'T) =
@@ -200,4 +205,29 @@ type ConverterTests() =
             let result = converter.DecodeAuto &span
             Assert.Equal<'T>(item, result)
             Assert.Equal(i, span.Length)
+        ()
+
+    static member ``Data Not Supported`` : (obj array) seq = seq {
+        [| box (Rectangle(1, 1, 3, 4)) |]
+        [| box DateTimeOffset.MinValue |]
+    }
+
+    [<Theory>]
+    [<MemberData("Data Not Supported")>]
+    member __.``Encode Not Supported (little endian converter)`` (item : 'T) =
+        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "LittleEndianConverter`1") |> Array.exactlyOne
+        let method = t.MakeGenericType(typeof<'T>).GetMethod("EncodeInternal", BindingFlags.Static ||| BindingFlags.NonPublic)
+        let f = Delegate.CreateDelegate(typeof<EncodeInternal<'T>>, method) :?> EncodeInternal<'T>
+        let buffer = Array.zeroCreate (Unsafe.SizeOf<'T>())
+        Assert.Throws<NotSupportedException>(fun () -> f.Invoke(&buffer.[0], item)) |> ignore
+        ()
+
+    [<Theory>]
+    [<MemberData("Data Not Supported")>]
+    member __.``Decode Not Supported (little endian converter)`` (_ : 'T) =
+        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "LittleEndianConverter`1") |> Array.exactlyOne
+        let method = t.MakeGenericType(typeof<'T>).GetMethod("DecodeInternal", BindingFlags.Static ||| BindingFlags.NonPublic)
+        let f = Delegate.CreateDelegate(typeof<DecodeInternal<'T>>, method) :?> DecodeInternal<'T>
+        let buffer = Array.zeroCreate (Unsafe.SizeOf<'T>())
+        Assert.Throws<NotSupportedException>(fun () -> f.Invoke &buffer.[0] |> ignore) |> ignore
         ()
