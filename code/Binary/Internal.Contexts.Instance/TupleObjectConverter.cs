@@ -28,14 +28,14 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
         {
             if (item is null)
                 ThrowHelper.ThrowTupleNull<T>();
-            encode.Invoke(ref allocator, item);
+            this.encode.Invoke(ref allocator, item);
         }
 
         public override void EncodeAuto(ref Allocator allocator, T item)
         {
             if (item is null)
                 ThrowHelper.ThrowTupleNull<T>();
-            encodeAuto.Invoke(ref allocator, item);
+            this.encodeAuto.Invoke(ref allocator, item);
         }
 
         public override T Decode(in ReadOnlySpan<byte> span)

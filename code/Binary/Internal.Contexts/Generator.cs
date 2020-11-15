@@ -24,12 +24,12 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             if (type is null)
                 ThrowHelper.ThrowTypeNull();
-            if (converters.TryGetValue(type, out var result))
+            if (this.converters.TryGetValue(type, out var result))
                 return result;
-            var context = new GeneratorContext(converters, creators);
+            var context = new GeneratorContext(this.converters, this.creators);
             return context.GetConverter(type);
         }
 
-        public override string ToString() => $"{nameof(Generator)}(Converters: {converters.Count}, Creators: {creators.Count})";
+        public override string ToString() => $"{nameof(Generator)}(Converters: {this.converters.Count}, Creators: {this.creators.Count})";
     }
 }

@@ -32,9 +32,9 @@ namespace Mikodev.Binary.External
                 return span.ToString();
             }
 
-            var view = View((ulong)Header);
-            var data = Exists ? $", {nameof(Intent)}: '{Intent}'" : string.Empty;
-            var head = $"{nameof(Node<T>)}({nameof(Header)}: '{view}', {nameof(Values)}: {Values.Length}";
+            var view = View((ulong)this.Header);
+            var data = this.Exists ? $", {nameof(this.Intent)}: '{this.Intent}'" : string.Empty;
+            var head = $"{nameof(Node<T>)}({nameof(this.Header)}: '{view}', {nameof(this.Values)}: {this.Values.Length}";
             return string.Concat(head, data, ")");
         }
     }

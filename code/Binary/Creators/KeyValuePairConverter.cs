@@ -17,28 +17,28 @@ namespace Mikodev.Binary.Creators
 
         public override void Encode(ref Allocator allocator, KeyValuePair<K, V> item)
         {
-            init.EncodeAuto(ref allocator, item.Key);
-            tail.Encode(ref allocator, item.Value);
+            this.init.EncodeAuto(ref allocator, item.Key);
+            this.tail.Encode(ref allocator, item.Value);
         }
 
         public override void EncodeAuto(ref Allocator allocator, KeyValuePair<K, V> item)
         {
-            init.EncodeAuto(ref allocator, item.Key);
-            tail.EncodeAuto(ref allocator, item.Value);
+            this.init.EncodeAuto(ref allocator, item.Key);
+            this.tail.EncodeAuto(ref allocator, item.Value);
         }
 
         public override KeyValuePair<K, V> Decode(in ReadOnlySpan<byte> span)
         {
             var body = span;
-            var head = init.DecodeAuto(ref body);
-            var next = tail.Decode(in body);
+            var head = this.init.DecodeAuto(ref body);
+            var next = this.tail.Decode(in body);
             return new KeyValuePair<K, V>(head, next);
         }
 
         public override KeyValuePair<K, V> DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var head = init.DecodeAuto(ref span);
-            var next = tail.DecodeAuto(ref span);
+            var head = this.init.DecodeAuto(ref span);
+            var next = this.tail.DecodeAuto(ref span);
             return new KeyValuePair<K, V>(head, next);
         }
     }

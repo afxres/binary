@@ -28,7 +28,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (type == typeof(object))
                 ExceptEncode();
             RuntimeHelpers.EnsureSufficientExecutionStack();
-            return generator.GetConverter(type);
+            return this.generator.GetConverter(type);
         }
 
         public override void Encode(ref Allocator allocator, object item) => Ensure(item).Encode(ref allocator, item);
