@@ -98,7 +98,7 @@ type ThrowTests() =
         let error = Assert.Throws<InvalidOperationException>(fun () ->
             let mutable allocator = Allocator()
             converter.EncodeWithLengthPrefix(&allocator, null))
-        let message = "Allocator or internal anchor has been modified unexpectedly!"
+        let message = "Allocator has been modified unexpectedly!"
         Assert.Equal(message, error.Message)
         ()
 

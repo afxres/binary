@@ -17,7 +17,7 @@ namespace Mikodev.Binary.Internal
         internal static void ThrowTypeNull() => throw new ArgumentNullException("type");
 
         [DoesNotReturn]
-        internal static void ThrowAllocatorOrAnchorInvalid() => throw new InvalidOperationException("Allocator or internal anchor has been modified unexpectedly!");
+        internal static void ThrowAllocatorInvalid() => throw new InvalidOperationException("Allocator has been modified unexpectedly!");
 
         [DoesNotReturn]
         internal static void ThrowLengthNegative() => throw new ArgumentOutOfRangeException("length", "Argument length must be greater than or equal to zero!");

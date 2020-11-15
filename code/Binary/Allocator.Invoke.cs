@@ -66,7 +66,7 @@ namespace Mikodev.Binary
             var offset = allocator.offset;
             var result = (long)(uint)offset - (uint)anchor - sizeof(int);
             if (result < 0)
-                ThrowHelper.ThrowAllocatorOrAnchorInvalid();
+                ThrowHelper.ThrowAllocatorInvalid();
             var length = (int)result;
             var buffer = allocator.buffer;
             ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), anchor);

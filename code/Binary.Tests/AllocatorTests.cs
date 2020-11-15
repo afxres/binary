@@ -183,7 +183,7 @@ namespace Mikodev.Binary.Tests
                 Assert.Equal(allocatorLength, allocator.Length);
                 appendMethod.Invoke(ref allocator, anchor);
             });
-            var message = "Allocator or internal anchor has been modified unexpectedly!";
+            var message = "Allocator has been modified unexpectedly!";
             Assert.Equal(message, error.Message);
         }
 
