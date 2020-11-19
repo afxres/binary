@@ -57,6 +57,14 @@ let ``Get Converter (pointer type)`` () =
     ()
 
 [<Fact>]
+let ``Get Converter (byref type)`` () =
+    let t = typeof<int>.MakeByRefType()
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t |> ignore)
+    Assert.Null(error.ParamName)
+    Assert.Equal(sprintf "Invalid byref type: %O" t, error.Message)
+    ()
+
+[<Fact>]
 let ``Get Converter (byref-like type)`` () =
     let t = typedefof<Memory<_>>.Assembly.GetType("System.Span`1").MakeGenericType(typeof<int>)
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t |> ignore)
