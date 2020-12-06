@@ -20,6 +20,7 @@
     <Compile Include="Contexts\ConverterNumberTests.fs" />
     <Compile Include="Contexts\ConverterTests.fs" />
     <Compile Include="Contexts\GeneratorBuilderTests.fs" />
+    <Compile Include="Contexts\GeneratorContextTests.fs" />
     <Compile Include="Contexts\GeneratorExtensionsTests.fs" />
     <Compile Include="Contexts\GeneratorObjectConverterTests.fs" />
     <Compile Include="Contexts\GeneratorTests.fs" />

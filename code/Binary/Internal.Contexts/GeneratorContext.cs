@@ -8,6 +8,8 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal sealed class GeneratorContext : IGeneratorContext
     {
+        private bool destroyed = false;
+
         private readonly HashSet<Type> types = new HashSet<Type>();
 
         private readonly ConcurrentDictionary<Type, IConverter> converters;
@@ -21,8 +23,15 @@ namespace Mikodev.Binary.Internal.Contexts
             Debug.Assert(creators is IConverterCreator[]);
         }
 
+        public void Destroy()
+        {
+            this.destroyed = true;
+        }
+
         public IConverter GetConverter(Type type)
         {
+            if (this.destroyed)
+                throw new InvalidOperationException("Generator context has been destroyed!");
             var converter = GetOrCreateConverter(type);
             Debug.Assert(converter is not null);
             Debug.Assert(Converter.GetGenericArgument(converter) == type);

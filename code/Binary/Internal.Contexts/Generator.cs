@@ -27,7 +27,14 @@ namespace Mikodev.Binary.Internal.Contexts
             if (this.converters.TryGetValue(type, out var result))
                 return result;
             var context = new GeneratorContext(this.converters, this.creators);
-            return context.GetConverter(type);
+            try
+            {
+                return context.GetConverter(type);
+            }
+            finally
+            {
+                context.Destroy();
+            }
         }
 
         public override string ToString() => $"{nameof(Generator)}(Converters: {this.converters.Count}, Creators: {this.creators.Count})";
