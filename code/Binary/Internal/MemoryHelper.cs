@@ -9,14 +9,6 @@ namespace Mikodev.Binary.Internal
     internal static partial class MemoryHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static ref byte EnsureLength(ReadOnlySpan<byte> span)
-        {
-            if (span.Length is 0)
-                ThrowHelper.ThrowNotEnoughBytes();
-            return ref MemoryMarshal.GetReference(span);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ref byte EnsureLength(ReadOnlySpan<byte> span, int length)
         {
             Debug.Assert(length is not 0);

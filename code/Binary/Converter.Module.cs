@@ -36,7 +36,7 @@ namespace Mikodev.Binary
 
         public static int Decode(ref ReadOnlySpan<byte> span)
         {
-            ref var source = ref MemoryHelper.EnsureLength(span);
+            ref var source = ref MemoryMarshal.GetReference(span);
             var limits = span.Length;
             var offset = 0;
             var length = MemoryHelper.DecodeNumber(ref source, ref offset, limits);
@@ -57,7 +57,7 @@ namespace Mikodev.Binary
 
         public static ReadOnlySpan<byte> DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
-            ref var source = ref MemoryHelper.EnsureLength(span);
+            ref var source = ref MemoryMarshal.GetReference(span);
             var limits = span.Length;
             var offset = 0;
             var length = MemoryHelper.DecodeNumberEnsureBuffer(ref source, ref offset, limits);

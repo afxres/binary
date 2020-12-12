@@ -14,8 +14,6 @@ type Encode<'T> = delegate of location : byref<byte> * item : 'T -> unit
 
 type Decode<'T> = delegate of location : byref<byte> -> 'T
 
-type EnsureLengthNotEmpty = delegate of span : ReadOnlySpan<byte> -> byref<byte>
-
 type EnsureLength = delegate of span : ReadOnlySpan<byte> * length : int -> byref<byte>
 
 type EnsureLengthReference = delegate of span : byref<ReadOnlySpan<byte>> * length : int -> byref<byte>
@@ -119,25 +117,6 @@ type MemoryHelperTests () =
         let numberResult = detachNumberEndian.Invoke(&location)
         Assert.Equal<'a>(item, numberResult)
         Assert.Equal<byte>(numberEndian, span.Slice(0, numberEndian.Length).ToArray())
-        ()
-
-    [<Fact>]
-    member me.``Ensure Length (not empty, error)`` () =
-        let ensure = me.MakeDelegate<EnsureLengthNotEmpty> "EnsureLength"
-        let error = Assert.Throws<ArgumentException>(fun () -> ensure.Invoke(ReadOnlySpan<byte>()) |> ignore)
-        let message = "Not enough bytes or byte sequence invalid."
-        Assert.Equal(message, error.Message)
-        ()
-
-    [<Fact>]
-    member me.``Ensure Length (not empty, from 1 to 16)`` () =
-        let ensure = me.MakeDelegate<EnsureLengthNotEmpty> "EnsureLength"
-        let random = Random()
-        for i = 1 to 16 do
-            let buffer = Array.zeroCreate i
-            random.NextBytes buffer
-            let location = &ensure.Invoke(ReadOnlySpan buffer)
-            Assert.True(Unsafe.AreSame(&location, &buffer.[0]))
         ()
 
     [<Theory>]
