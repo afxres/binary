@@ -39,6 +39,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.EnumerationTests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.LengthPrefixEncodeTests", "Benchmarks.LengthPrefixEncodeTests\Benchmarks.LengthPrefixEncodeTests.csproj", "{DAF16E70-0BB0-488B-8A13-E609ECC3F0EB}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Binary.Tests.FSharp.New", "Binary.Tests.FSharp.New\Binary.Tests.FSharp.New.fsproj", "{9C9D5612-FAD3-449F-8CAD-02B4EEAE6B73}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -113,6 +115,10 @@ Global
 		{DAF16E70-0BB0-488B-8A13-E609ECC3F0EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DAF16E70-0BB0-488B-8A13-E609ECC3F0EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DAF16E70-0BB0-488B-8A13-E609ECC3F0EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C9D5612-FAD3-449F-8CAD-02B4EEAE6B73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C9D5612-FAD3-449F-8CAD-02B4EEAE6B73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C9D5612-FAD3-449F-8CAD-02B4EEAE6B73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C9D5612-FAD3-449F-8CAD-02B4EEAE6B73}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
