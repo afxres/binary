@@ -10,7 +10,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
     let constant = converter.Length > 0
 
     member private __.ExceptConstant(length : int) : unit =
-        raise (ArgumentException(sprintf "Not enough bytes for collection element, byte length: %d, element type: %O" length typeof<'T>))
+        raise (ArgumentException $"Not enough bytes for collection element, byte length: {length}, element type: {typeof<'T>}")
 
     member private me.DecodeConstant(span : ReadOnlySpan<byte>) : List<'T> =
         let converter = converter

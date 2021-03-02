@@ -15,10 +15,10 @@ type internal UnionConverter<'T>(encode : UnionEncoder<'T>, encodeAuto : UnionEn
     let MarkNone = 0
 
     member private __.ExceptNull() : unit =
-        raise (ArgumentNullException("item", sprintf "Union can not be null, type: %O" typeof<'T>))
+        raise (ArgumentNullException("item", $"Union can not be null, type: {typeof<'T>}"))
 
     member private __.ExceptMark(mark : int) : unit =
-        raise (ArgumentException(sprintf "Invalid union tag '%d', type: %O" mark typeof<'T>))
+        raise (ArgumentException $"Invalid union tag '{mark}', type: {typeof<'T>}")
 
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
     member private me.HandleNull(item : 'T) : unit =

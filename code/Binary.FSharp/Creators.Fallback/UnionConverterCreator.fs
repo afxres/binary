@@ -102,7 +102,7 @@ type internal UnionConverterCreator() =
                         let parameterType = parameters.[i].ParameterType
                         let converter = converters.[parameterType]
                         let method = GetDecodeMethodInfo parameterType (auto || i <> parameters.Length - 1)
-                        let variable = Expression.Variable(parameterType, sprintf "%d" i)
+                        let variable = Expression.Variable(parameterType, string i)
                         let invoke = Expression.Call(Expression.Constant(converter), method, span)
                         let assign = Expression.Assign(variable, invoke)
                         assign :> Expression, variable
@@ -170,12 +170,12 @@ type internal UnionConverterCreator() =
             else
                 let cases = FSharpType.GetUnionCases(t)
                 if (cases |> Array.isEmpty) then
-                    raise (ArgumentException(sprintf "No available union case found, type: %O" t))
+                    raise (ArgumentException $"No available union case found, type: {t}")
                 let unionType =
                     cases
                     |> Array.map (fun x -> x.DeclaringType)
                     |> Array.distinct
                     |> Array.exactlyOne
                 if (unionType <> t) then
-                    raise (ArgumentException(sprintf "Invalid union type, you may have to use union type '%O' instead of case type '%O'" unionType t))
+                    raise (ArgumentException $"Invalid union type, you may have to use union type '{unionType}' instead of case type '{t}'")
                 Make cases
