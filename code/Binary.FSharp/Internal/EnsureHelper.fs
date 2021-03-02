@@ -7,7 +7,7 @@ let EnsureConverter (context : IGeneratorContext) (t : Type) =
     let converter = context.GetConverter t
     let expectedType = typedefof<Converter<_>>.MakeGenericType t
     if isNull (box converter) then
-        raise (ArgumentException $"Can not convert 'null' to '{expectedType}'")
+        raise (ArgumentException $"Can not convert null to '{expectedType}'")
     let instanceType = converter.GetType()
     if not (expectedType.IsAssignableFrom instanceType) then
         raise (ArgumentException $"Can not convert '{instanceType}' to '{expectedType}'")

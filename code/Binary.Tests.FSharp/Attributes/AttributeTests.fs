@@ -674,7 +674,7 @@ type AttributeTests() =
     [<InlineData(typeof<ClassAsTupleObjectWithNullConverterCreatorOnProperty>, typeof<Converter<int64>>, typeof<AnotherNullConverterCreator>)>]
     member __.``Converter Creator Attribute With Null Converter`` (t : Type, expectedType : Type, creatorType : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Can not convert 'null' to '%O', converter creator type: %O" expectedType creatorType
+        let message = sprintf "Can not convert null to '%O', converter creator type: %O" expectedType creatorType
         Assert.Equal(message, error.Message)
         ()
 

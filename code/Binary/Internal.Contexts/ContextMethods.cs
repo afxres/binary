@@ -100,7 +100,7 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             var expectedType = typeof(Converter<>).MakeGenericType(type);
             if (converter is null)
-                throw new ArgumentException($"Can not convert 'null' to '{expectedType}', converter creator type: {creatorType}");
+                throw new ArgumentException($"Can not convert null to '{expectedType}', converter creator type: {creatorType}");
             var instanceType = converter.GetType();
             if (expectedType.IsAssignableFrom(instanceType) is false)
                 throw new ArgumentException($"Can not convert '{instanceType}' to '{expectedType}', converter creator type: {creatorType}");
