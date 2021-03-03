@@ -16,16 +16,15 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
         let converter = converter
         let itemLength = converter.Length
         let spanLength = span.Length;
-        let quotient, remainder = Math.DivRem(spanLength, itemLength)
-        if remainder <> 0 then
+        if (spanLength % itemLength) <> 0 then
             me.ExceptConstant spanLength
         let mutable list = []
-        let mutable i = quotient - 1
+        let mutable i = spanLength - itemLength
         while i >= 0 do
-            let data = span.Slice(i * itemLength, itemLength)
+            let data = span.Slice(i, itemLength)
             let head = converter.Decode &data
             list <- head :: list
-            i <- i - 1
+            i <- i - itemLength
         list
 
     member private __.SelectVariable(span : byref<ReadOnlySpan<byte>>) : List<'T> =
