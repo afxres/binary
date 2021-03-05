@@ -26,13 +26,13 @@ namespace Mikodev.Binary.Converters.Endianness
 
             if (typeof(T) == typeof(Guid))
                 _ = ((Guid)(object)item).TryWriteBytes(MakeSpan(ref location));
-            else if (Unsafe.SizeOf<T>() == 1)
+            else if (Unsafe.SizeOf<T>() is 1)
                 Unsafe.WriteUnaligned(ref location, MakeCast<byte>(item));
-            else if (Unsafe.SizeOf<T>() == 2)
+            else if (Unsafe.SizeOf<T>() is 2)
                 BinaryPrimitives.WriteInt16LittleEndian(MakeSpan(ref location), MakeCast<short>(item));
-            else if (Unsafe.SizeOf<T>() == 4)
+            else if (Unsafe.SizeOf<T>() is 4)
                 BinaryPrimitives.WriteInt32LittleEndian(MakeSpan(ref location), MakeCast<int>(item));
-            else if (Unsafe.SizeOf<T>() == 8)
+            else if (Unsafe.SizeOf<T>() is 8)
                 BinaryPrimitives.WriteInt64LittleEndian(MakeSpan(ref location), MakeCast<long>(item));
             else
                 throw new NotSupportedException();
@@ -48,13 +48,13 @@ namespace Mikodev.Binary.Converters.Endianness
 
             if (typeof(T) == typeof(Guid))
                 return (T)(object)new Guid(MakeSpan(ref location));
-            else if (Unsafe.SizeOf<T>() == 1)
+            else if (Unsafe.SizeOf<T>() is 1)
                 return MakeCast(Unsafe.ReadUnaligned<byte>(ref location));
-            else if (Unsafe.SizeOf<T>() == 2)
+            else if (Unsafe.SizeOf<T>() is 2)
                 return MakeCast(BinaryPrimitives.ReadInt16LittleEndian(MakeSpan(ref location)));
-            else if (Unsafe.SizeOf<T>() == 4)
+            else if (Unsafe.SizeOf<T>() is 4)
                 return MakeCast(BinaryPrimitives.ReadInt32LittleEndian(MakeSpan(ref location)));
-            else if (Unsafe.SizeOf<T>() == 8)
+            else if (Unsafe.SizeOf<T>() is 8)
                 return MakeCast(BinaryPrimitives.ReadInt64LittleEndian(MakeSpan(ref location)));
             else
                 throw new NotSupportedException();
