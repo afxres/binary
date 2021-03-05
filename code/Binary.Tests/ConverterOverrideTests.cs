@@ -8,26 +8,20 @@ namespace Mikodev.Binary.Tests
 {
     public class ConverterOverrideTests
     {
-        private Encode<T> TestEncoder<T>(Converter<T> converter, string encoderName)
+        private void TestEncode<T>(Converter<T> converter, string option)
         {
             var type = typeof(Converter<T>);
-            var encoderField = type.GetField("encoder", BindingFlags.Instance | BindingFlags.NonPublic);
-            var encoder = encoderField.GetValue(converter);
-            var encoderType = encoder.GetType();
-            Assert.Equal(encoderName, encoderType.Name);
-            var methodInfo = encoderType.GetMethod("EncodeAuto", BindingFlags.Instance | BindingFlags.Public);
-            return (Encode<T>)Delegate.CreateDelegate(typeof(Encode<T>), encoder, methodInfo);
+            var encodeField = type.GetField("encode", BindingFlags.Instance | BindingFlags.NonPublic);
+            var encode = encodeField.GetValue(converter);
+            Assert.Equal(option, encode.ToString());
         }
 
-        private Decode<T> TestDecoder<T>(Converter<T> converter, string decoderName)
+        private void TestDecode<T>(Converter<T> converter, string option)
         {
             var type = typeof(Converter<T>);
-            var decoderField = type.GetField("decoder", BindingFlags.Instance | BindingFlags.NonPublic);
-            var decoder = decoderField.GetValue(converter);
-            var decoderType = decoder.GetType();
-            Assert.Equal(decoderName, decoderType.Name);
-            var methodInfo = decoderType.GetMethod("DecodeAuto", BindingFlags.Instance | BindingFlags.Public);
-            return (Decode<T>)Delegate.CreateDelegate(typeof(Decode<T>), decoder, methodInfo);
+            var decodeField = type.GetField("decode", BindingFlags.Instance | BindingFlags.NonPublic);
+            var decode = decodeField.GetValue(converter);
+            Assert.Equal(option, decode.ToString());
         }
 
         private class FakeConverter<T> : Converter<T>
@@ -39,12 +33,12 @@ namespace Mikodev.Binary.Tests
             public override T Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException();
         }
 
-        [Theory(DisplayName = "Converter")]
-        [InlineData(0, "VariableEncoder`1")]
-        [InlineData(4, "ConstantEncoder`1")]
-        public void Encoder(int length, string encoder)
+        [Theory(DisplayName = "Encode Option")]
+        [InlineData(0, "Variable")]
+        [InlineData(4, "Constant")]
+        public void Encode(int length, string option)
         {
-            _ = TestEncoder(new FakeConverter<int>(length), encoder);
+            TestEncode(new FakeConverter<int>(length), option);
         }
 
         private class FakeConverterOverrideEncodeWithLengthPrefixMethod<T> : Converter<T>
@@ -58,20 +52,20 @@ namespace Mikodev.Binary.Tests
             public override void EncodeWithLengthPrefix(ref Allocator allocator, T item) => throw new NotSupportedException();
         }
 
-        [Theory(DisplayName = "Converter Overridden 'EncodeWithLengthPrefix'")]
-        [InlineData(0, "VariableOverriddenEncoder`1")]
-        [InlineData(4, "ConstantEncoder`1")]
-        public void OverrideEncodeWithLengthPrefixMethod(int length, string encoder)
+        [Theory(DisplayName = "Override 'EncodeWithLengthPrefix'")]
+        [InlineData(0, "VariableOverride")]
+        [InlineData(4, "Constant")]
+        public void OverrideEncodeWithLengthPrefixMethod(int length, string option)
         {
-            _ = TestEncoder(new FakeConverterOverrideEncodeWithLengthPrefixMethod<int>(length), encoder);
+            TestEncode(new FakeConverterOverrideEncodeWithLengthPrefixMethod<int>(length), option);
         }
 
-        [Theory(DisplayName = "Converter")]
-        [InlineData(0, "VariableDecoder`1")]
-        [InlineData(4, "ConstantDecoder`1")]
-        public void Decoder(int length, string decoder)
+        [Theory(DisplayName = "Decode Option")]
+        [InlineData(0, "Variable")]
+        [InlineData(4, "Constant")]
+        public void Decode(int length, string option)
         {
-            _ = TestDecoder(new FakeConverter<int>(length), decoder);
+            TestDecode(new FakeConverter<int>(length), option);
         }
 
         private class FakeConverterOverrideDecodeWithLengthPrefixMethod<T> : Converter<T>
@@ -85,12 +79,12 @@ namespace Mikodev.Binary.Tests
             public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => throw new NotSupportedException();
         }
 
-        [Theory(DisplayName = "Converter Overridden 'DecodeWithLengthPrefix'")]
-        [InlineData(0, "VariableOverriddenDecoder`1")]
-        [InlineData(4, "ConstantDecoder`1")]
-        public void OverrideDecodeWithLengthPrefixMethod(int length, string decoder)
+        [Theory(DisplayName = "Override 'DecodeWithLengthPrefix'")]
+        [InlineData(0, "VariableOverride")]
+        [InlineData(4, "Constant")]
+        public void OverrideDecodeWithLengthPrefixMethod(int length, string option)
         {
-            _ = TestDecoder(new FakeConverterOverrideDecodeWithLengthPrefixMethod<int>(length), decoder);
+            TestDecode(new FakeConverterOverrideDecodeWithLengthPrefixMethod<int>(length), option);
         }
 
         private class StringConverterOverrideBothLengthPrefixMethods : Converter<string>
@@ -116,23 +110,19 @@ namespace Mikodev.Binary.Tests
             }
         }
 
-        private delegate void Encode<in T>(ref Allocator allocator, T item);
-
-        private delegate T Decode<out T>(ref ReadOnlySpan<byte> span);
-
-        [Theory(DisplayName = "String Converter Overridden '{*}WithLengthPrefix'")]
+        [Theory(DisplayName = "String Converter Override '{*}WithLengthPrefix'")]
         [InlineData("alpha")]
         [InlineData("Hello, 世界!")]
         public void StringConverterOverrideLengthPrefixMethods(string item)
         {
             var converter = new StringConverterOverrideBothLengthPrefixMethods();
-            var encoder = TestEncoder(converter, "VariableOverriddenEncoder`1");
-            var decoder = TestDecoder(converter, "VariableOverriddenDecoder`1");
+            TestEncode(converter, "VariableOverride");
+            TestDecode(converter, "VariableOverride");
             Assert.Empty(converter.CallList);
             var allocator = new Allocator();
-            encoder.Invoke(ref allocator, item);
+            converter.EncodeAuto(ref allocator, item);
             var span = new ReadOnlySpan<byte>(allocator.ToArray());
-            var result = decoder.Invoke(ref span);
+            var result = converter.DecodeAuto(ref span);
             Assert.Equal(0, span.Length);
             Assert.Equal(item, result);
             var list = new[] { $"EncodeWithLengthPrefix {item}", $"DecodeWithLengthPrefix {item}" };

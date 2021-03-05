@@ -1,5 +1,4 @@
 ﻿using Mikodev.Binary.Internal;
-using Mikodev.Binary.Internal.Fallback;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -10,11 +9,9 @@ namespace Mikodev.Binary
     {
         private readonly int length;
 
-        private readonly FallbackAdapter<T> adapter;
+        private readonly EncodeOption encode;
 
-        private readonly FallbackDecoder<T> decoder;
-
-        private readonly FallbackEncoder<T> encoder;
+        private readonly DecodeOption decode;
 
         public int Length => this.length;
 
@@ -25,22 +22,21 @@ namespace Mikodev.Binary
             if (length < 0)
                 ThrowHelper.ThrowLengthNegative();
             this.length = length;
-            this.adapter = FallbackAdapterHelper.Create(this);
-            this.decoder = FallbackDecoderHelper.Create(this);
-            this.encoder = FallbackEncoderHelper.Create(this);
+            this.encode = EncodeOptionInternal();
+            this.decode = DecodeOptionInternal();
         }
 
         public abstract void Encode(ref Allocator allocator, T item);
 
-        public virtual void EncodeAuto(ref Allocator allocator, T item) => this.encoder.EncodeAuto(ref allocator, item);
+        public virtual void EncodeAuto(ref Allocator allocator, T item) => EncodeAutoInternal(ref allocator, item);
 
-        public virtual void EncodeWithLengthPrefix(ref Allocator allocator, T item) => this.adapter.EncodeWithLengthPrefix(ref allocator, item);
+        public virtual void EncodeWithLengthPrefix(ref Allocator allocator, T item) => EncodeWithLengthPrefixInternal(ref allocator, item);
 
-        public virtual byte[] Encode(T item) => this.adapter.Encode(item);
+        public virtual byte[] Encode(T item) => EncodeInternal(item);
 
         public abstract T Decode(in ReadOnlySpan<byte> span);
 
-        public virtual T DecodeAuto(ref ReadOnlySpan<byte> span) => this.decoder.DecodeAuto(ref span);
+        public virtual T DecodeAuto(ref ReadOnlySpan<byte> span) => DecodeAutoInternal(ref span);
 
         public virtual T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => Decode(Converter.DecodeWithLengthPrefix(ref span));
 
