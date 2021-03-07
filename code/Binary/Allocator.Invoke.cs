@@ -74,8 +74,11 @@ namespace Mikodev.Binary
             {
                 allocator.offset = offset - 3;
                 MemoryHelper.EncodeNumber(ref target, (uint)length, numberLength: 1);
-                for (var i = 0; i < length; i += 8)
-                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref target, i + 1), Unsafe.ReadUnaligned<long>(ref Unsafe.Add(ref target, i + 4)));
+                var header = (length + 7) >> 3;
+                if (header is not 0)
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref target, 0 + 1), Unsafe.ReadUnaligned<long>(ref Unsafe.Add(ref target, 0 + 4)));
+                if (header is 2)
+                    Unsafe.WriteUnaligned(ref Unsafe.Add(ref target, 8 + 1), Unsafe.ReadUnaligned<long>(ref Unsafe.Add(ref target, 8 + 4)));
                 Debug.Assert(allocator.offset >= 1);
                 Debug.Assert(allocator.offset <= allocator.buffer.Length);
             }

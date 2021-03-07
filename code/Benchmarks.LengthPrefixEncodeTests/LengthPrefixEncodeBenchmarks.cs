@@ -10,7 +10,7 @@ namespace Mikodev.Binary.Benchmarks.LengthPrefixEncodeTests
 
         private Converter<int> converter;
 
-        [Params(0, 16, 32)]
+        [Params(0, 4, 8, 12, 16, 32)]
         public int Count;
 
         [GlobalSetup]
