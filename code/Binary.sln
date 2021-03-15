@@ -29,7 +29,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.ArrayTests", "Be
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.CollectionTests", "Benchmarks.CollectionTests\Benchmarks.CollectionTests.csproj", "{35BDF348-7773-401E-9F92-B9B3C0A58989}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Benchmarks.FSharpCollectionTests", "Benchmarks.FSharpCollectionTests\Benchmarks.FSharpCollectionTests.fsproj", "{5E8B1607-D9E1-4E23-89FC-AC56D449CE7B}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Benchmarks.FSharpListTests", "Benchmarks.FSharpListTests\Benchmarks.FSharpListTests.fsproj", "{5E8B1607-D9E1-4E23-89FC-AC56D449CE7B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.GeneratorTests", "Benchmarks.GeneratorTests\Benchmarks.GeneratorTests.csproj", "{E669AE99-6D33-4873-B812-7803A8050B88}"
 EndProject

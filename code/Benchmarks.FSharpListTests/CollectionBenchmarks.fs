@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.FSharpCollectionTests
+﻿namespace Mikodev.Binary.Benchmarks.FSharpListTests
 
 open BenchmarkDotNet.Attributes
 open Mikodev.Binary
