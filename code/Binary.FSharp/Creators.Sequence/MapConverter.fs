@@ -9,12 +9,12 @@ type internal MapConverter<'K, 'V when 'K : comparison>(init : Converter<'K>, ta
     inherit Converter<Map<'K, 'V>>(0)
 
     override __.Encode(allocator, item) =
-        if isNull (box item) = false then
+        if isNull (box item) = false && Map.isEmpty item = false then
             let init = init
             let tail = tail
-            let handle = ModuleHelper.Handle.AsHandle &allocator
+            let handle = ModuleHelper.AllocatorToHandle &allocator
             item |> Map.iter (fun k v ->
-                let allocator = &(ModuleHelper.Handle.AsAllocator handle)
+                let allocator = &(ModuleHelper.HandleToAllocator handle)
                 init.EncodeAuto(&allocator, k)
                 tail.EncodeAuto(&allocator, v))
         ()

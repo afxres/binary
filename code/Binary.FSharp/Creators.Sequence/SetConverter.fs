@@ -9,11 +9,11 @@ type internal SetConverter<'T when 'T : comparison>(converter : Converter<'T>) =
     inherit Converter<Set<'T>>(0)
 
     override __.Encode(allocator, item) =
-        if isNull (box item) = false then
+        if isNull (box item) = false && Set.isEmpty item = false then
             let converter = converter
-            let handle = ModuleHelper.Handle.AsHandle &allocator
+            let handle = ModuleHelper.AllocatorToHandle &allocator
             item |> Set.iter (fun x ->
-                let allocator = &(ModuleHelper.Handle.AsAllocator handle)
+                let allocator = &(ModuleHelper.HandleToAllocator handle)
                 converter.EncodeAuto(&allocator, x))
         ()
 

@@ -3,35 +3,37 @@
 open Mikodev.Binary
 open System
 open System.Reflection
-open System.Reflection.Emit
-open System.Runtime.CompilerServices
+open System.Runtime.InteropServices
 
-[<Literal>]
-let UnsafeHandleAssemblyName = "Mikodev.Binary.FSharp.Unsafe.Handle"
+type private DefineAllocatorToHandle = delegate of byref<Allocator> -> IntPtr
 
-[<assembly : InternalsVisibleTo(UnsafeHandleAssemblyName)>]
-do()
+type private Define() =
+    static member Allocator(_ : byref<Allocator>) = raise null
 
-[<AbstractClass>]
-type internal HandleHelper() =
-    abstract AsHandle : allocator : byref<Allocator> -> IntPtr
+    static member ReadOnlySpan(_ : byref<ReadOnlySpan<byte>>) = raise null
 
-    abstract AsAllocator : handle : IntPtr -> byref<Allocator>
+    static member Identity(data : IntPtr) = data
 
-let Handle : HandleHelper =
-    let Make (t : TypeBuilder) (f : MethodInfo) =
-        let b = t.DefineMethod(f.Name, MethodAttributes.Public ||| MethodAttributes.Virtual, f.ReturnType, f.GetParameters() |> Array.map (fun x -> x.ParameterType))
-        let g = b.GetILGenerator()
-        g.Emit OpCodes.Ldarg_1
-        g.Emit OpCodes.Ret
-        t.DefineMethodOverride(b, f)
-        ()
+#nowarn "42" // This construct is deprecated: it is only for use in the F# library
 
-    let a = AssemblyBuilder.DefineDynamicAssembly(AssemblyName UnsafeHandleAssemblyName, AssemblyBuilderAccess.Run)
-    let m = a.DefineDynamicModule "InMemoryModule"
-    let t = m.DefineType(typeof<HandleHelper>.Name, TypeAttributes.Public ||| TypeAttributes.Sealed, typeof<HandleHelper>)
-    Make t (typeof<HandleHelper>.GetMethod "AsHandle")
-    Make t (typeof<HandleHelper>.GetMethod "AsAllocator")
-    let i = t.CreateType()
-    let h = Activator.CreateInstance i
-    h :?> HandleHelper
+let private GetMethod name = typeof<Define>.GetMethod(name, BindingFlags.Static ||| BindingFlags.NonPublic)
+
+let private GetParameterType name = let m = GetMethod name in let p = m.GetParameters() |> Array.exactlyOne in p.ParameterType
+
+let private Identity = GetMethod (nameof Define.Identity)
+
+let private IdentityDelegate<'T> () = Marshal.GetDelegateForFunctionPointer<'T>(Identity.MethodHandle.GetFunctionPointer())
+
+let private AllocatorToHandleDelegate = IdentityDelegate<DefineAllocatorToHandle> ()
+
+let AllocatorByRefType = GetParameterType (nameof Define.Allocator)
+
+let ReadOnlySpanByteByRefType = GetParameterType (nameof Define.ReadOnlySpan)
+
+let EncodeNumberMethodInfo = typeof<Converter>.GetMethod(nameof Converter.Encode, [| AllocatorByRefType; typeof<int> |])
+
+let DecodeNumberMethodInfo = typeof<Converter>.GetMethod(nameof Converter.Decode, [| ReadOnlySpanByteByRefType |])
+
+let inline HandleToAllocator (data : IntPtr) = (# "" data : byref<Allocator> #)
+
+let inline AllocatorToHandle (data : byref<Allocator>) = AllocatorToHandleDelegate.Invoke &data
