@@ -8,7 +8,7 @@ open System.Linq
 open System.Runtime.InteropServices
 
 [<MemoryDiagnoser>]
-type CollectionBenchmarks() =
+type ListBenchmarks() =
     let mutable buffer : byte array = null
 
     let mutable intConverter : Converter<int> = null
@@ -103,7 +103,7 @@ type CollectionBenchmarks() =
     static member private Decode(converter : Converter<_>, span : byref<ReadOnlySpan<byte>>) : List<_> =
         if not span.IsEmpty then
             let head = converter.DecodeAuto &span
-            let tail = CollectionBenchmarks.Decode(converter, &span)
+            let tail = ListBenchmarks.Decode(converter, &span)
             head :: tail
         else
             []
@@ -112,4 +112,4 @@ type CollectionBenchmarks() =
     member __.LD14() : List<string> =
         let converter = stringConverter
         let mutable span = ReadOnlySpan stringListBuffer
-        CollectionBenchmarks.Decode(converter, &span)
+        ListBenchmarks.Decode(converter, &span)

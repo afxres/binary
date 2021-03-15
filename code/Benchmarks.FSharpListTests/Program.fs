@@ -10,5 +10,5 @@ module Program =
     let Main _ =
         let config = ManualConfig.Create(DefaultConfig.Instance)
         config.AddJob(Job.ShortRun.WithToolchain(InProcessEmitToolchain.Instance)) |> ignore
-        BenchmarkRunner.Run<CollectionBenchmarks>(config) |> ignore
+        BenchmarkRunner.Run<ListBenchmarks>(config) |> ignore
         0

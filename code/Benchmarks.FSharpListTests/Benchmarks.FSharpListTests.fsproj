@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="CollectionBenchmarks.fs" />
+    <Compile Include="ListBenchmarks.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
