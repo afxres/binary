@@ -2,6 +2,7 @@
 
 open Mikodev.Binary
 open System
+open System.Linq
 open System.Net
 open Xunit
 
@@ -112,10 +113,13 @@ let ``Sequence`` () =
     Test bravo
     ()
 
-[<Fact>]
-let ``Set`` () =
-    let alpha = [ 2..6 ] |> List.map ((*) 2) |> List.map (sprintf "%d") |> Set
-    let bravo = Set.empty<double>
+[<Theory>]
+[<InlineData(0)>]
+[<InlineData(1)>]
+[<InlineData(32768)>]
+let ``Set`` (count : int) =
+    let alpha = Enumerable.Range(0, count) |> Set
+    let bravo = alpha |> Seq.map string |> Set
 
     Test alpha
     Test bravo
@@ -131,10 +135,16 @@ let ``Set (null)`` () =
     Assert.Empty(result)
     ()
 
-[<Fact>]
-let ``Map`` () =
-    let value = [ 1, "one"; 2, "two"; -1, "minus one" ] |> Map
-    Test value
+[<Theory>]
+[<InlineData(0)>]
+[<InlineData(1)>]
+[<InlineData(32768)>]
+let ``Map`` (count : int) =
+    let alpha = Enumerable.Range(0, count) |> Seq.map (fun a -> a, string a) |> Map
+    let bravo = Enumerable.Range(0, count) |> Seq.map (fun a -> string a, a) |> Map
+
+    Test alpha
+    Test bravo
     ()
 
 [<Fact>]
