@@ -3,7 +3,7 @@
 open Mikodev.Binary
 open System
 open System.Reflection
-open System.Runtime.InteropServices
+open System.Reflection.Emit
 
 type private DefineAllocatorToHandle = delegate of byref<Allocator> -> IntPtr
 
@@ -12,19 +12,19 @@ type private Define() =
 
     static member ReadOnlySpan(_ : byref<ReadOnlySpan<byte>>) = raise null
 
-    static member Identity(data : IntPtr) = data
+let private GetParameterType name =
+    let m = typeof<Define>.GetMethod(name, BindingFlags.Static ||| BindingFlags.NonPublic)
+    let p = m.GetParameters() |> Array.exactlyOne
+    p.ParameterType
 
-#nowarn "42" // This construct is deprecated: it is only for use in the F# library
-
-let private GetMethod name = typeof<Define>.GetMethod(name, BindingFlags.Static ||| BindingFlags.NonPublic)
-
-let private GetParameterType name = let m = GetMethod name in let p = m.GetParameters() |> Array.exactlyOne in p.ParameterType
-
-let private Identity = GetMethod (nameof Define.Identity)
-
-let private IdentityDelegate<'T> () = Marshal.GetDelegateForFunctionPointer<'T>(Identity.MethodHandle.GetFunctionPointer())
-
-let private AllocatorToHandleDelegate = IdentityDelegate<DefineAllocatorToHandle> ()
+let private AllocatorToHandleDelegate =
+    let a = [| GetParameterType (nameof Define.Allocator) |]
+    let b = DynamicMethod("AllocatorToHandle", typeof<IntPtr>, a)
+    let g = b.GetILGenerator()
+    g.Emit OpCodes.Ldarg_0
+    g.Emit OpCodes.Ret
+    let f = b.CreateDelegate typeof<DefineAllocatorToHandle>
+    f :?> DefineAllocatorToHandle
 
 let AllocatorByRefType = GetParameterType (nameof Define.Allocator)
 
@@ -33,6 +33,8 @@ let ReadOnlySpanByteByRefType = GetParameterType (nameof Define.ReadOnlySpan)
 let EncodeNumberMethodInfo = typeof<Converter>.GetMethod(nameof Converter.Encode, [| AllocatorByRefType; typeof<int> |])
 
 let DecodeNumberMethodInfo = typeof<Converter>.GetMethod(nameof Converter.Decode, [| ReadOnlySpanByteByRefType |])
+
+#nowarn "42" // This construct is deprecated: it is only for use in the F# library
 
 let inline HandleToAllocator (data : IntPtr) = (# "" data : byref<Allocator> #)
 
