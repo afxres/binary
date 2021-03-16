@@ -8,10 +8,10 @@ open System
 type internal MapConverterCreator() =
     interface IConverterCreator with
         member __.GetConverter(context, t) =
-            if t.IsGenericType && t.GetGenericTypeDefinition() = typedefof<Map<_, _>> then
+            if IsImplementationOf<Map<_, _>> t then
                 let itemTypes = t.GetGenericArguments()
                 let itemConverters = itemTypes |> Array.map (EnsureHelper.EnsureConverter context)
-                let converterType = typedefof<MapConverter<_, _>>.MakeGenericType itemTypes
+                let converterType = typeof<MapConverter<_, _>>.GetGenericTypeDefinition().MakeGenericType itemTypes
                 let converterArguments = itemConverters |> Array.map box
                 let converter = Activator.CreateInstance(converterType, converterArguments)
                 converter :?> IConverter

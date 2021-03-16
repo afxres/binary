@@ -10,13 +10,13 @@ open System.Reflection
 
 type internal UnionConverterCreator() =
     static let GetEncodeMethodInfo (t : Type) (auto : bool) =
-        let converterType = typedefof<Converter<_>>.MakeGenericType t
+        let converterType = MakeGenericType<Converter<_>> t
         let methodName = if auto then "EncodeAuto" else "Encode"
         let method = converterType.GetMethod(methodName, [| ModuleHelper.AllocatorByRefType; t |])
         method
 
     static let GetDecodeMethodInfo (t : Type) (auto : bool) =
-        let converterType = typedefof<Converter<_>>.MakeGenericType t
+        let converterType = MakeGenericType<Converter<_>> t
         let methodName = if auto then "DecodeAuto" else "Decode"
         let method = converterType.GetMethod(methodName, [| ModuleHelper.ReadOnlySpanByteByRefType |])
         method
@@ -74,7 +74,7 @@ type internal UnionConverterCreator() =
                 Expression.Assign(flag, tagExpression),
                 Expression.Call(ModuleHelper.EncodeNumberMethodInfo, allocator, flag),
                 Expression.Switch(flag, defaultBlock, switchCases))
-        let delegateType = typedefof<UnionEncoder<_>>.MakeGenericType t
+        let delegateType = MakeGenericType<UnionEncoder<_>> t
         let lambda = Expression.Lambda(delegateType, block, allocator, item, mark)
         lambda
 
@@ -117,7 +117,7 @@ type internal UnionConverterCreator() =
                 Seq.singleton flag,
                 Expression.Assign(flag, Expression.Call(ModuleHelper.DecodeNumberMethodInfo, span)),
                 Expression.Switch(flag, defaultBlock, switchCases))
-        let delegateType = typedefof<UnionDecoder<_>>.MakeGenericType t
+        let delegateType = MakeGenericType<UnionDecoder<_>> t
         let lambda = Expression.Lambda(delegateType, block, span, mark)
         lambda
 
@@ -149,13 +149,13 @@ type internal UnionConverterCreator() =
                 let encodeAuto = GetEncodeExpression t converters caseInfos tagMember true
                 let decode = GetDecodeExpression t converters constructorInfos false
                 let decodeAuto = GetDecodeExpression t converters constructorInfos true
-                let converterType = typedefof<UnionConverter<_>>.MakeGenericType t
+                let converterType = MakeGenericType<UnionConverter<_>> t
                 let delegates = [| encode; encodeAuto; decode; decodeAuto |] |> Array.map (fun x -> x.Compile())
                 let converterArguments = Array.append (delegates |> Array.map box) [| box noNull |]
                 let converter = Activator.CreateInstance(converterType, converterArguments)
                 converter :?> IConverter
 
-            if not (FSharpType.IsUnion(t)) || (t.IsGenericType && t.GetGenericTypeDefinition() = typedefof<List<_>>) then
+            if not (FSharpType.IsUnion(t)) || IsImplementationOf<List<_>> t then
                 null
             else
                 let cases = FSharpType.GetUnionCases(t)

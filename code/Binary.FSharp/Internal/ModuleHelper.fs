@@ -8,9 +8,9 @@ open System.Reflection.Emit
 type private DefineAllocatorToHandle = delegate of byref<Allocator> -> IntPtr
 
 type private Define() =
-    static member Allocator(_ : byref<Allocator>) = raise null
+    static member Allocator(_ : byref<Allocator>) = ()
 
-    static member ReadOnlySpan(_ : byref<ReadOnlySpan<byte>>) = raise null
+    static member ReadOnlySpan(_ : byref<ReadOnlySpan<byte>>) = ()
 
 let private GetParameterType name =
     let m = typeof<Define>.GetMethod(name, BindingFlags.Static ||| BindingFlags.NonPublic)

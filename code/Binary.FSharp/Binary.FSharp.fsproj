@@ -23,6 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Internal\CommonHelper.fs" />
     <Compile Include="Internal\EnsureHelper.fs" />
     <Compile Include="Internal\ModuleHelper.fs" />
     <Compile Include="Creators.Fallback\UnionConverter.fs" />
