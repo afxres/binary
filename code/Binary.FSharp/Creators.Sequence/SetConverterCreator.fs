@@ -10,9 +10,8 @@ type internal SetConverterCreator() =
         member __.GetConverter(context, t) =
             if IsImplementationOf<Set<_>> t then
                 let itemType = t.GetGenericArguments() |> Array.exactlyOne
-                let itemConverter = EnsureHelper.EnsureConverter context itemType
                 let converterType = MakeGenericType<SetConverter<_>> itemType
-                let converterArguments = [| box itemConverter |]
+                let converterArguments = [| EnsureHelper.EnsureConverter context itemType |> box |]
                 let converter = Activator.CreateInstance(converterType, converterArguments)
                 converter :?> IConverter
             else

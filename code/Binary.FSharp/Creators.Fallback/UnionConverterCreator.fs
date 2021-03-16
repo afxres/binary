@@ -51,9 +51,9 @@ type internal UnionConverterCreator() =
             else
                 let dataType =
                     properties
-                    |> Array.map (fun x -> x.DeclaringType)
-                    |> Array.distinct
-                    |> Array.exactlyOne
+                    |> Seq.map (fun x -> x.DeclaringType)
+                    |> Seq.distinct
+                    |> Seq.exactlyOne
                 if t = dataType then
                     Expression.Block(MakeBody item properties) :> Expression
                 else
@@ -126,12 +126,12 @@ type internal UnionConverterCreator() =
             let Make (cases : UnionCaseInfo array) =
                 let caseInfos =
                     cases
-                    |> Array.map (fun x -> x.Tag, x)
-                    |> Map.ofArray
+                    |> Seq.map (fun x -> x.Tag, x)
+                    |> Map.ofSeq
                 let constructorInfos =
                     cases
-                    |> Array.map (fun x -> x.Tag, FSharpValue.PreComputeUnionConstructorInfo(x))
-                    |> Map.ofArray
+                    |> Seq.map (fun x -> x.Tag, FSharpValue.PreComputeUnionConstructorInfo(x))
+                    |> Map.ofSeq
                 let memberTypes = seq {
                     for i in caseInfos do
                         for f in i.Value.GetFields() -> f.PropertyType
@@ -163,9 +163,9 @@ type internal UnionConverterCreator() =
                     raise (ArgumentException $"No available union case found, type: {t}")
                 let unionType =
                     cases
-                    |> Array.map (fun x -> x.DeclaringType)
-                    |> Array.distinct
-                    |> Array.exactlyOne
+                    |> Seq.map (fun x -> x.DeclaringType)
+                    |> Seq.distinct
+                    |> Seq.exactlyOne
                 if (unionType <> t) then
                     raise (ArgumentException $"Invalid union type, you may have to use union type '{unionType}' instead of case type '{t}'")
                 Make cases

@@ -10,9 +10,8 @@ type internal MapConverterCreator() =
         member __.GetConverter(context, t) =
             if IsImplementationOf<Map<_, _>> t then
                 let itemTypes = t.GetGenericArguments()
-                let itemConverters = itemTypes |> Array.map (EnsureHelper.EnsureConverter context)
                 let converterType = typeof<MapConverter<_, _>>.GetGenericTypeDefinition().MakeGenericType itemTypes
-                let converterArguments = itemConverters |> Array.map box
+                let converterArguments = itemTypes |> Seq.map (EnsureHelper.EnsureConverter context >> box) |> Seq.toArray
                 let converter = Activator.CreateInstance(converterType, converterArguments)
                 converter :?> IConverter
             else

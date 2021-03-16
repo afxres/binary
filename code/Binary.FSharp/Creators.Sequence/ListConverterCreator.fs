@@ -10,9 +10,8 @@ type internal ListConverterCreator() =
         member __.GetConverter(context, t) =
             if IsImplementationOf<List<_>> t then
                 let itemType = t.GetGenericArguments() |> Array.exactlyOne
-                let itemConverter = EnsureHelper.EnsureConverter context itemType
                 let converterType = MakeGenericType<ListConverter<_>> itemType
-                let converterArguments = [| box itemConverter |]
+                let converterArguments = [| EnsureHelper.EnsureConverter context itemType |> box |]
                 let converter = Activator.CreateInstance(converterType, converterArguments)
                 converter :?> IConverter
             else
