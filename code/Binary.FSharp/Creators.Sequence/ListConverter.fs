@@ -51,7 +51,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
             me.SelectVariable &span
 
     override __.Encode(allocator, item) =
-        if isNull (box item) = false then
+        if isNull (box item) = false && List.isEmpty item = false then
             let converter = converter
             for i in item do
                 converter.EncodeAuto(&allocator, i)

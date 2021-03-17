@@ -29,7 +29,7 @@ type ListBenchmarks() =
 
     let mutable stringMemoryConverter : Converter<Memory<string>> = null
 
-    [<Params(1, 4, 16, 128, 1024)>]
+    [<Params(0, 1, 16, 1024)>]
     member val public Count = 0 with get, set
 
     [<GlobalSetup>]
