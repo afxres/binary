@@ -2,6 +2,7 @@
 
 open Mikodev.Binary
 open System
+open System.Runtime.CompilerServices
 
 [<CompiledName("FSharpListConverter`1")>]
 type internal ListConverter<'T>(converter : Converter<'T>) =
@@ -43,10 +44,12 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
     member private me.DecodeVariable(span : byref<ReadOnlySpan<byte>>, loop : int) : List<'T> =
         if span.IsEmpty then
             []
-        elif loop < 64 then
+        elif loop > 0 then
             let head = converter.DecodeAuto &span
-            let tail = me.DecodeVariable(&span, loop + 1)
+            let tail = me.DecodeVariable(&span, loop - 1)
             head :: tail
+        elif RuntimeHelpers.TryEnsureSufficientExecutionStack() then
+            me.DecodeVariable(&span, 64)
         else
             me.SelectVariable &span
 
