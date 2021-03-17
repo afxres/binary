@@ -2,40 +2,32 @@
 
 open Mikodev.Binary
 open System
-open System.Reflection
 open System.Reflection.Emit
+open System.Runtime.CompilerServices
 
-type private DefineAllocatorToHandle = delegate of byref<Allocator> -> IntPtr
+type AllocatorToHandleDefinition = delegate of byref<Allocator> -> IntPtr
 
-type private Define() =
-    static member Allocator(_ : byref<Allocator>) = ()
+let EncodeNumberMethodInfo = typeof<Converter>.GetMethod(nameof Converter.Encode)
 
-    static member ReadOnlySpan(_ : byref<ReadOnlySpan<byte>>) = ()
+let DecodeNumberMethodInfo = typeof<Converter>.GetMethod(nameof Converter.Decode)
 
-let private GetParameterType name =
-    let m = typeof<Define>.GetMethod(name, BindingFlags.Static ||| BindingFlags.NonPublic)
-    let p = m.GetParameters() |> Array.exactlyOne
-    p.ParameterType
+let AllocatorByRefType = (EncodeNumberMethodInfo.GetParameters() |> Array.head).ParameterType
 
-let private AllocatorToHandleDelegate =
-    let a = [| GetParameterType (nameof Define.Allocator) |]
+let ReadOnlySpanByteByRefType = (DecodeNumberMethodInfo.GetParameters() |> Array.head).ParameterType
+
+let AllocatorToHandleDelegate =
+    let a = [| AllocatorByRefType |]
     let b = DynamicMethod("AllocatorToHandle", typeof<IntPtr>, a)
     let g = b.GetILGenerator()
     g.Emit OpCodes.Ldarg_0
     g.Emit OpCodes.Ret
-    let f = b.CreateDelegate typeof<DefineAllocatorToHandle>
-    f :?> DefineAllocatorToHandle
-
-let AllocatorByRefType = GetParameterType (nameof Define.Allocator)
-
-let ReadOnlySpanByteByRefType = GetParameterType (nameof Define.ReadOnlySpan)
-
-let EncodeNumberMethodInfo = typeof<Converter>.GetMethod(nameof Converter.Encode, [| AllocatorByRefType; typeof<int> |])
-
-let DecodeNumberMethodInfo = typeof<Converter>.GetMethod(nameof Converter.Decode, [| ReadOnlySpanByteByRefType |])
+    let f = b.CreateDelegate typeof<AllocatorToHandleDefinition>
+    f :?> AllocatorToHandleDefinition
 
 #nowarn "42" // This construct is deprecated: it is only for use in the F# library
 
-let inline HandleToAllocator (data : IntPtr) = (# "" data : byref<Allocator> #)
+[<MethodImpl(MethodImplOptions.AggressiveInlining)>]
+let HandleToAllocator (data : IntPtr) = (# "" data : byref<Allocator> #)
 
-let inline AllocatorToHandle (data : byref<Allocator>) = AllocatorToHandleDelegate.Invoke &data
+[<MethodImpl(MethodImplOptions.AggressiveInlining)>]
+let AllocatorToHandle (data : byref<Allocator>) = AllocatorToHandleDelegate.Invoke &data
