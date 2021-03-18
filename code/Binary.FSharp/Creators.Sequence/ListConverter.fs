@@ -49,7 +49,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
             let tail = me.DecodeVariable(&span, loop - 1)
             head :: tail
         elif RuntimeHelpers.TryEnsureSufficientExecutionStack() then
-            me.DecodeVariable(&span, 64)
+            me.DecodeVariable(&span, 16)
         else
             me.SelectVariable &span
 
