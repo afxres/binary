@@ -27,9 +27,7 @@ type ListBenchmarks() =
 
     let mutable stringListBuffer : byte array = null
 
-    let mutable stringMemoryConverter : Converter<Memory<string>> = null
-
-    [<Params(0, 1, 16, 1024)>]
+    [<Params(0, 1, 4, 16, 1024)>]
     member val public Count = 0 with get, set
 
     [<GlobalSetup>]
@@ -48,7 +46,6 @@ type ListBenchmarks() =
         stringListConverter <- generator.GetConverter<_>()
         stringList <- intList |> List.map string
         stringListBuffer <- stringListConverter.Encode stringList
-        stringMemoryConverter <- generator.GetConverter<_>()
         ()
 
     [<Benchmark(Description = "Decode List Of Int (converter)")>]
@@ -88,15 +85,6 @@ type ListBenchmarks() =
             data.Add(converter.DecodeAuto &span)
         let mutable list = []
         for i = data.Count - 1 downto 0 do
-            list <- data.[i] :: list
-        list
-
-    [<Benchmark(Description = "Decode List Of String (memory converter)")>]
-    member __.LD13() : List<string> =
-        let mutable span = ReadOnlySpan stringListBuffer
-        let data = (stringMemoryConverter.Decode &span).Span
-        let mutable list = []
-        for i = data.Length - 1 downto 0 do
             list <- data.[i] :: list
         list
 

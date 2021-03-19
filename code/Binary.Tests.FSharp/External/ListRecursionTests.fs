@@ -1,12 +1,14 @@
 ﻿module External.ListRecursionTests
 
+open Microsoft.FSharp.NativeInterop
 open Mikodev.Binary
 open System
 open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
 open Xunit
 
-#nowarn "9" // Uses of this construct may result in the generation of unverifiable .NET IL code.
+#nowarn "9" // Uses of this construct may result in the generation of unverifiable .NET IL code
+#nowarn "51" // The use of native pointers may result in unverifiable .NET IL code
 
 [<StructLayout(LayoutKind.Explicit, Size = 1024)>]
 type LargeBlock = struct end
@@ -47,4 +49,30 @@ let ``List Decode With Large Value Type`` (count : int) =
     let target = List.toArray result
     let equals = MemoryExtensions.SequenceEqual(span, MemoryMarshal.AsBytes(ReadOnlySpan target))
     Assert.True equals
+    ()
+
+[<Theory>]
+[<InlineData(8192)>]
+[<InlineData(32768)>]
+let ``List Decode Recursion With Large Value Type`` (count : int) =
+    let rec DetectStackSize () =
+        let mutable i = 0
+        let address = &&i |> NativePtr.toVoidPtr |> IntPtr
+        if not (RuntimeHelpers.TryEnsureSufficientExecutionStack()) then
+            address |> List.singleton
+        else
+            address :: DetectStackSize ()
+
+    let Detect () =
+        let list = DetectStackSize ()
+        let head = list |> List.head
+        let last = list |> List.last
+        head - last
+
+    let length = Detect ()
+    let buffer = NativePtr.stackalloc<byte> (int length + 1024)
+    Assert.NotEqual(IntPtr.Zero, buffer |> NativePtr.toVoidPtr |> IntPtr)
+    Assert.False(RuntimeHelpers.TryEnsureSufficientExecutionStack())
+
+    ``List Decode With Large Value Type`` count
     ()

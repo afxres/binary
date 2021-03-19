@@ -2,11 +2,13 @@
 
 open Mikodev.Binary
 open System
-open System.Runtime.CompilerServices
 
 [<CompiledName("FSharpListConverter`1")>]
 type internal ListConverter<'T>(converter : Converter<'T>) =
     inherit Converter<List<'T>>(0)
+
+    [<Literal>]
+    let capacity = 4
 
     let constant = converter.Length > 0
 
@@ -30,7 +32,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
 
     member private __.SelectVariable(span : byref<ReadOnlySpan<byte>>) : List<'T> =
         let converter = converter
-        let data = ResizeArray<'T>()
+        let data = ResizeArray<'T> capacity
         while not span.IsEmpty do
             data.Add(converter.DecodeAuto &span)
         let mutable list = []
@@ -48,8 +50,6 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
             let head = converter.DecodeAuto &span
             let tail = me.DecodeVariable(&span, loop - 1)
             head :: tail
-        elif RuntimeHelpers.TryEnsureSufficientExecutionStack() then
-            me.DecodeVariable(&span, 16)
         else
             me.SelectVariable &span
 
@@ -61,8 +61,10 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
         ()
 
     override me.Decode(span : inref<ReadOnlySpan<byte>>) : List<'T> =
-        if constant then
+        if span.IsEmpty then
+            []
+        elif constant then
             me.DecodeConstant span
         else
             let mutable body = span
-            me.DecodeVariable(&body, 0)
+            me.DecodeVariable(&body, capacity)
