@@ -14,6 +14,8 @@ type SetBenchmarks() =
 
     let mutable intSet = Set.empty<int>
 
+    let mutable intSetBuffer : byte array = null
+
     [<Params(0, 1, 1024)>]
     member val public Count = 0 with get, set
 
@@ -27,6 +29,7 @@ type SetBenchmarks() =
                 .Build()
         intSetConverter <- generator.GetConverter<_>()
         intSet <- Enumerable.Range(0, me.Count) |> Set
+        intSetBuffer <- intSetConverter.Encode intSet
         ()
 
     [<Benchmark(Description = "Encode Set Of Int (converter)")>]
@@ -34,3 +37,7 @@ type SetBenchmarks() =
         let mutable allocator = Allocator(Span buffer)
         intSetConverter.Encode(&allocator, intSet)
         ()
+
+    [<Benchmark(Description = "Decode Set Of Int (converter)")>]
+    member __.SD01() : Set<int> =
+        intSetConverter.Decode intSetBuffer
