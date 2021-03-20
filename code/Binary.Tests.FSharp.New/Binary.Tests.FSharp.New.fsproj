@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Compile Include="Endianness\ConverterTests.fs" />
+    <Compile Include="Sequence\CollectionInterfaceTests.fs" />
     <Compile Include="Values\ValueTypeTests.fs" />
   </ItemGroup>
 
