@@ -2,6 +2,7 @@
 
 open Mikodev.Binary
 open System
+open System.Collections.Specialized
 open System.Drawing
 open System.Reflection
 open System.Runtime.CompilerServices
@@ -78,6 +79,8 @@ type ConverterTests() =
         [| box NativeEndianConverter; box (single Math.E) |]
         [| box NativeEndianConverter; box (double Math.PI) |]
         [| box NativeEndianConverter; box (Guid.Parse("22F79334-CBB9-4437-A7A5-16797DB431C9")) |]
+        [| box NativeEndianConverter; box (BitVector32(0x11223344)) |]
+        [| box NativeEndianConverter; box (BitVector32(0xAABBCCDD)) |]
 
         [| box LittleEndianConverter; box true |]
         [| box LittleEndianConverter; box false |]
@@ -93,6 +96,8 @@ type ConverterTests() =
         [| box LittleEndianConverter; box (single Math.E) |]
         [| box LittleEndianConverter; box (double Math.PI) |]
         [| box LittleEndianConverter; box (Guid.Parse("22F79334-CBB9-4437-A7A5-16797DB431C9")) |]
+        [| box LittleEndianConverter; box (BitVector32(0x11223344)) |]
+        [| box LittleEndianConverter; box (BitVector32(0xAABBCCDD)) |]
     }
 
     static member ``Data Enum`` : (obj array) seq = seq {

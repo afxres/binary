@@ -2,6 +2,7 @@ module Values.ValueTypeTests
 
 open Mikodev.Binary
 open System
+open System.Collections.Specialized
 open Xunit
 
 let random = Random()
@@ -246,4 +247,13 @@ let ``Enum`` () =
 let ``Enum Converter`` () =
     let value = generator.GetConverter typeof<DayOfWeek>
     Assert.StartsWith("NativeEndianConverter", value.GetType().Name)
+    ()
+
+[<Fact>]
+let ``BitVector32`` () =
+    for i = 0 to randomCount do
+        Test (RandomNumber() |> int |> BitVector32)
+
+    Test (BitVector32 0x11223344)
+    Test (BitVector32 0xAABBCCDD)
     ()

@@ -1,6 +1,7 @@
 ﻿using Mikodev.Binary.Converters.Endianness;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 
 namespace Mikodev.Binary.Internal.Contexts
@@ -22,7 +23,8 @@ namespace Mikodev.Binary.Internal.Contexts
             typeof(float),
             typeof(double),
             typeof(Guid),
-#if NETNEW
+            typeof(BitVector32),
+#if NET5_0_OR_GREATER
             typeof(Half),
 #endif
         };

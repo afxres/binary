@@ -17,6 +17,9 @@ namespace Mikodev.Binary.Internal.Contexts
             [typeof(IPAddress)] = typeof(IPAddressConverter),
             [typeof(IPEndPoint)] = typeof(IPEndPointConverter),
             [typeof(DateTimeOffset)] = typeof(DateTimeOffsetConverter),
+#if NET5_0_OR_GREATER
+            [typeof(System.Text.Rune)] = typeof(RuneConverter),
+#endif
         };
 
         internal static IConverter GetConverter(Type type)
