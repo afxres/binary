@@ -52,7 +52,7 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             var names = Names.Take(type.GetGenericArguments().Length);
             var types = type.GetGenericArguments();
-            var constructorInfo = type.GetConstructor(types);
+            var constructorInfo = CommonHelper.GetConstructor(type, types);
             var converters = types.Select(context.GetConverter).ToList();
             var properties = names.Select(x => CommonHelper.GetProperty(type, x, BindingFlags.Instance | BindingFlags.Public)).ToList();
             var constructor = new ContextObjectConstructor((delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, constructorInfo));

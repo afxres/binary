@@ -44,7 +44,7 @@ namespace Mikodev.Binary.Internal
         {
             var result = type.GetMethod(methodName, types);
             if (result is null)
-                throw new MissingMethodException(type.Name, methodName);
+                throw new MissingMethodException($"Method not found, method name: {methodName}, type: {type}");
             return result;
         }
 
@@ -52,7 +52,7 @@ namespace Mikodev.Binary.Internal
         {
             var result = type.GetMethod(methodName, flags);
             if (result is null)
-                throw new MissingMethodException(type.Name, methodName);
+                throw new MissingMethodException($"Method not found, method name: {methodName}, type: {type}");
             return result;
         }
 
@@ -60,7 +60,7 @@ namespace Mikodev.Binary.Internal
         {
             var result = type.GetField(fieldName, flags);
             if (result is null)
-                throw new MissingFieldException(type.Name, fieldName);
+                throw new MissingFieldException($"Field not found, field name: {fieldName}, type: {type}");
             return result;
         }
 
@@ -68,7 +68,15 @@ namespace Mikodev.Binary.Internal
         {
             var result = type.GetProperty(propertyName, flags);
             if (result is null)
-                throw new MissingMemberException(type.Name, propertyName);
+                throw new MissingMemberException($"Property not found, property name: {propertyName}, type: {type}");
+            return result;
+        }
+
+        internal static ConstructorInfo GetConstructor(Type type, Type[] types)
+        {
+            var result = type.GetConstructor(types);
+            if (result is null)
+                throw new MissingMethodException($"Constructor not found, type: {type}");
             return result;
         }
     }

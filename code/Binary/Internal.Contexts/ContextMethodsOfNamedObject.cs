@@ -15,7 +15,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static readonly MethodInfo AppendMethodInfo = CommonHelper.GetMethod(typeof(Allocator), nameof(Allocator.Append), new[] { typeof(Allocator).MakeByRefType(), typeof(ReadOnlySpan<byte>) });
 
-        private static readonly ConstructorInfo ReadOnlySpanByteConstructorInfo = typeof(ReadOnlySpan<byte>).GetConstructor(new[] { typeof(byte[]) });
+        private static readonly ConstructorInfo ReadOnlySpanByteConstructorInfo = CommonHelper.GetConstructor(typeof(ReadOnlySpan<byte>), new[] { typeof(byte[]) });
 
         internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor constructor, IReadOnlyList<IConverter> converters, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<string> names, Converter<string> encoder)
         {

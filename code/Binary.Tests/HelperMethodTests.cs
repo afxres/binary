@@ -24,6 +24,8 @@ namespace Mikodev.Binary.Tests
         {
             var invoke = GetCommonHelperMethod<Func<Type, string, BindingFlags, MethodInfo>>("GetMethod");
             var error = Assert.Throws<MissingMethodException>(() => invoke.Invoke(type, methodName, flags));
+            var message = $"Method not found, method name: {methodName}, type: {type}";
+            Assert.Equal(message, error.Message);
             Assert.Contains(type.Name, error.Message);
             Assert.Contains(methodName, error.Message);
         }
@@ -35,6 +37,8 @@ namespace Mikodev.Binary.Tests
         {
             var invoke = GetCommonHelperMethod<Func<Type, string, Type[], MethodInfo>>("GetMethod");
             var error = Assert.Throws<MissingMethodException>(() => invoke.Invoke(type, methodName, types));
+            var message = $"Method not found, method name: {methodName}, type: {type}";
+            Assert.Equal(message, error.Message);
             Assert.Contains(type.Name, error.Message);
             Assert.Contains(methodName, error.Message);
         }
@@ -46,6 +50,8 @@ namespace Mikodev.Binary.Tests
         {
             var invoke = GetCommonHelperMethod<Func<Type, string, BindingFlags, FieldInfo>>("GetField");
             var error = Assert.Throws<MissingFieldException>(() => invoke.Invoke(type, fieldName, flags));
+            var message = $"Field not found, field name: {fieldName}, type: {type}";
+            Assert.Equal(message, error.Message);
             Assert.Contains(type.Name, error.Message);
             Assert.Contains(fieldName, error.Message);
         }
@@ -57,8 +63,22 @@ namespace Mikodev.Binary.Tests
         {
             var invoke = GetCommonHelperMethod<Func<Type, string, BindingFlags, PropertyInfo>>("GetProperty");
             var error = Assert.Throws<MissingMemberException>(() => invoke.Invoke(type, propertyName, flags));
+            var message = $"Property not found, property name: {propertyName}, type: {type}";
+            Assert.Equal(message, error.Message);
             Assert.Contains(type.Name, error.Message);
             Assert.Contains(propertyName, error.Message);
+        }
+
+        [Theory(DisplayName = "Get Constructor With Types Error")]
+        [InlineData(typeof(HelperMethodTests), new[] { typeof(int) })]
+        [InlineData(typeof(HelperMethodTests), new[] { typeof(string) })]
+        public void GetConstructorWithTypesError(Type type, Type[] types)
+        {
+            var invoke = GetCommonHelperMethod<Func<Type, Type[], ConstructorInfo>>("GetConstructor");
+            var error = Assert.Throws<MissingMethodException>(() => invoke.Invoke(type, types));
+            var message = $"Constructor not found, type: {type}";
+            Assert.Equal(message, error.Message);
+            Assert.Contains(type.Name, error.Message);
         }
 
         [Theory(DisplayName = "Make Upper Case Invariant")]
