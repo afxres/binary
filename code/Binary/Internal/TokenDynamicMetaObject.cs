@@ -8,9 +8,9 @@ namespace Mikodev.Binary.Internal
 {
     internal sealed class TokenDynamicMetaObject : DynamicMetaObject
     {
-        private static readonly MethodInfo ConvertMethodInfo = typeof(Token).GetMethod(nameof(Token.As), Type.EmptyTypes);
+        private static readonly MethodInfo ConvertMethodInfo = ((MethodCallExpression)((Expression<Func<Token, object>>)(a => a.As<object>())).Body).Method.GetGenericMethodDefinition();
 
-        private static readonly MethodInfo IndexerMethodInfo = typeof(Token).GetProperty("Item", new[] { typeof(string) }).GetGetMethod();
+        private static readonly MethodInfo IndexerMethodInfo = ((MethodCallExpression)((Expression<Func<Token, string, Token>>)((a, b) => a[b])).Body).Method;
 
         public TokenDynamicMetaObject(Expression parameter, object value) : base(parameter, BindingRestrictions.Empty, value) { }
 
@@ -30,6 +30,6 @@ namespace Mikodev.Binary.Internal
             return new DynamicMetaObject(body, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
         }
 
-        public override IEnumerable<string> GetDynamicMemberNames() => ((Token)Value).Children.Keys;
+        public override IEnumerable<string> GetDynamicMemberNames() => ((Token)Value)?.Children.Keys ?? Array.Empty<string>();
     }
 }

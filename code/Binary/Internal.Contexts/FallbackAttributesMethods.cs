@@ -23,8 +23,8 @@ namespace Mikodev.Binary.Internal.Contexts
                 var head = keys.FirstOrDefault();
                 var tail = list.FirstOrDefault();
                 var indexer = property.GetIndexParameters().Any();
-                if (indexer && (head is not null || tail is not null))
-                    throw new ArgumentException($"Can not apply '{(head ?? tail).GetType().Name}' to an indexer, type: {type}");
+                if (indexer && (head ?? tail) is { } result)
+                    throw new ArgumentException($"Can not apply '{result.GetType().Name}' to an indexer, type: {type}");
                 if (indexer)
                     continue;
                 if (property.GetGetMethod() is null)
@@ -149,13 +149,15 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static ContextObjectConstructor GetConstructor(Type type, IReadOnlyList<PropertyInfo> properties)
         {
+            static string MakeUpperCaseInvariant(string text) => string.IsNullOrEmpty(text) ? string.Empty : text.ToUpperInvariant();
+
             Debug.Assert(properties.Any());
             if (type.IsAbstract || type.IsInterface)
                 return null;
             if ((type.IsValueType || type.GetConstructor(Type.EmptyTypes) is not null) && properties.All(x => x.GetSetMethod() is not null))
                 return (delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, ContextMethods.GetMemberInitializers(properties));
 
-            var selector = new Func<PropertyInfo, string>(x => x.Name.ToUpperInvariant());
+            var selector = new Func<PropertyInfo, string>(x => MakeUpperCaseInvariant(x.Name));
             if (properties.Select(selector).Distinct().Count() != properties.Count)
                 return null;
 
@@ -165,7 +167,7 @@ namespace Mikodev.Binary.Internal.Contexts
             {
                 var parameters = (IReadOnlyList<ParameterInfo>)i.GetParameters();
                 var result = parameters
-                    .Select(x => dictionary.TryGetValue(x.Name.ToUpperInvariant(), out var property) && property.PropertyType == x.ParameterType ? property : null)
+                    .Select(x => dictionary.TryGetValue(MakeUpperCaseInvariant(x.Name), out var property) && property.PropertyType == x.ParameterType ? property : null)
                     .Where(x => x is not null)
                     .ToList();
                 if (result.Count is 0 || result.Count != parameters.Count)

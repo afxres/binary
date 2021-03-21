@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 
 namespace Mikodev.Binary.Internal
 {
@@ -37,6 +38,38 @@ namespace Mikodev.Binary.Internal
                 throw new ArgumentException($"Multiple interface implementations detected, type: {type}, interface type: {definition}");
             arguments = count is 0 ? null : types.Single().GetGenericArguments();
             return arguments is not null;
+        }
+
+        internal static MethodInfo GetMethod(Type type, string methodName, Type[] types)
+        {
+            var result = type.GetMethod(methodName, types);
+            if (result is null)
+                throw new MissingMethodException(type.Name, methodName);
+            return result;
+        }
+
+        internal static MethodInfo GetMethod(Type type, string methodName, BindingFlags flags)
+        {
+            var result = type.GetMethod(methodName, flags);
+            if (result is null)
+                throw new MissingMethodException(type.Name, methodName);
+            return result;
+        }
+
+        internal static FieldInfo GetField(Type type, string fieldName, BindingFlags flags)
+        {
+            var result = type.GetField(fieldName, flags);
+            if (result is null)
+                throw new MissingFieldException(type.Name, fieldName);
+            return result;
+        }
+
+        internal static PropertyInfo GetProperty(Type type, string propertyName, BindingFlags flags)
+        {
+            var result = type.GetProperty(propertyName, flags);
+            if (result is null)
+                throw new MissingMemberException(type.Name, propertyName);
+            return result;
         }
     }
 }

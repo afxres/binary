@@ -11,9 +11,9 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class ContextMethodsOfNamedObject
     {
-        private static readonly MethodInfo InvokeMethodInfo = typeof(MemorySlices).GetMethod(nameof(MemorySlices.Invoke), BindingFlags.Instance | BindingFlags.Public);
+        private static readonly MethodInfo InvokeMethodInfo = CommonHelper.GetMethod(typeof(MemorySlices), nameof(MemorySlices.Invoke), BindingFlags.Instance | BindingFlags.Public);
 
-        private static readonly MethodInfo AppendMethodInfo = typeof(Allocator).GetMethod(nameof(Allocator.Append), new[] { typeof(Allocator).MakeByRefType(), typeof(ReadOnlySpan<byte>) });
+        private static readonly MethodInfo AppendMethodInfo = CommonHelper.GetMethod(typeof(Allocator), nameof(Allocator.Append), new[] { typeof(Allocator).MakeByRefType(), typeof(ReadOnlySpan<byte>) });
 
         private static readonly ConstructorInfo ReadOnlySpanByteConstructorInfo = typeof(ReadOnlySpan<byte>).GetConstructor(new[] { typeof(byte[]) });
 

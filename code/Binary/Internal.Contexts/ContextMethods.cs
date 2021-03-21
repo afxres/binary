@@ -46,7 +46,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         internal static Delegate GetDecodeDelegate(Type delegateType, ContextObjectInitializer initializer, ConstructorInfo constructor, IReadOnlyList<int> objectIndexes, IReadOnlyList<ContextMemberInitializer> members, IReadOnlyList<int> memberIndexes)
         {
-            var delegateInvoke = delegateType.GetMethod("Invoke");
+            var delegateInvoke = CommonHelper.GetMethod(delegateType, "Invoke", BindingFlags.Public | BindingFlags.Instance);
             Debug.Assert(delegateInvoke.GetParameters().Length is 1);
             var type = delegateInvoke.ReturnType;
             var parameterType = delegateInvoke.GetParameters().Single().ParameterType;
@@ -72,7 +72,7 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             Debug.Assert(methodName is nameof(IConverter.Decode) or nameof(IConverter.DecodeAuto) or nameof(IConverter.DecodeWithLengthPrefix));
             var types = new[] { typeof(ReadOnlySpan<byte>).MakeByRefType() };
-            var method = typeof(Converter<>).MakeGenericType(itemType).GetMethod(methodName, types);
+            var method = CommonHelper.GetMethod(typeof(Converter<>).MakeGenericType(itemType), methodName, types);
             Debug.Assert(method is not null);
             return method;
         }
@@ -81,7 +81,7 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             Debug.Assert(methodName is nameof(IConverter.Encode) or nameof(IConverter.EncodeAuto) or nameof(IConverter.EncodeWithLengthPrefix));
             var types = new[] { typeof(Allocator).MakeByRefType(), itemType };
-            var method = typeof(Converter<>).MakeGenericType(itemType).GetMethod(methodName, types);
+            var method = CommonHelper.GetMethod(typeof(Converter<>).MakeGenericType(itemType), methodName, types);
             Debug.Assert(method is not null);
             return method;
         }

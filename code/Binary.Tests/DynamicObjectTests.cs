@@ -164,5 +164,16 @@ namespace Mikodev.Binary.Tests
                 name = string.Empty,
             });
         }
+
+        [Fact(DisplayName = "Dynamic Keys (null instance)")]
+        public void DynamicKeysNullValue()
+        {
+            var type = typeof(Converter).Assembly.GetTypes().Single(x => x.Name is "TokenDynamicMetaObject");
+            var instance = (DynamicMetaObject)Activator.CreateInstance(type, new object[] { Expression.Parameter(typeof(Token)), null });
+            var keys = instance.GetDynamicMemberNames();
+            Assert.Equal(Array.Empty<string>(), keys);
+            Assert.Null(instance.Value);
+            Assert.True(ReferenceEquals(keys, Array.Empty<string>()));
+        }
     }
 }

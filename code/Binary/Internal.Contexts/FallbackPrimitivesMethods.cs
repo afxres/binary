@@ -54,7 +54,7 @@ namespace Mikodev.Binary.Internal.Contexts
             var types = type.GetGenericArguments();
             var constructorInfo = type.GetConstructor(types);
             var converters = types.Select(context.GetConverter).ToList();
-            var properties = names.Select(x => type.GetProperty(x, BindingFlags.Instance | BindingFlags.Public)).ToList();
+            var properties = names.Select(x => CommonHelper.GetProperty(type, x, BindingFlags.Instance | BindingFlags.Public)).ToList();
             var constructor = new ContextObjectConstructor((delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, constructorInfo));
             return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, types, ContextMethods.GetMemberInitializers(properties));
         }
@@ -64,7 +64,7 @@ namespace Mikodev.Binary.Internal.Contexts
             static void Fields(Type type, Action<FieldInfo> action)
             {
                 var names = Names.Take(type.GetGenericArguments().Length);
-                var fields = names.Select(x => type.GetField(x, BindingFlags.Instance | BindingFlags.Public)).ToList();
+                var fields = names.Select(x => CommonHelper.GetField(type, x, BindingFlags.Instance | BindingFlags.Public)).ToList();
                 fields.ForEach(action);
             }
 
