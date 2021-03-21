@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mikodev.Binary.Tests.Internal;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -15,10 +16,7 @@ namespace Mikodev.Binary.Tests
         {
             static bool Equals(string name, params string[] patterns)
             {
-                foreach (var i in patterns)
-                    if (name == i || name == (i + "&"))
-                        return true;
-                return false;
+                return patterns.Any(i => name == i || name == (i + "&"));
             }
 
             var names = new[]
@@ -33,13 +31,10 @@ namespace Mikodev.Binary.Tests
             var types = typeof(IConverter).Assembly.GetTypes();
             var members = types.SelectMany(x => x.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static)).ToList();
             var methodBases = members.OfType<MethodBase>().ToList();
-            var otherMembers = members.Except(methodBases).ToList();
             var parameters = methodBases.SelectMany(x => x.GetParameters()).ToList();
 
             var AttributeName = "System.Runtime.CompilerServices.IsReadOnlyAttribute";
-            var inRefParameters = parameters.Where(x => x.GetCustomAttributes().Where(x => x.GetType().FullName == AttributeName).Any()).ToList();
-            var isRefParameters = parameters.Where(x => x.ParameterType.IsByRef).ToList();
-            var byRefParameters = isRefParameters.Except(inRefParameters).ToList();
+            var inRefParameters = parameters.Where(x => x.GetCustomAttributes().Any(a => a.GetType().FullName == AttributeName)).ToList();
             var inRefExpected = inRefParameters.Where(x => typeof(IConverter).IsAssignableFrom(x.Member.DeclaringType)).ToList();
             var inRefUnexpected = inRefParameters.Except(inRefExpected).Select(x => x.Member).ToList();
 
@@ -95,9 +90,9 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(3, types.Count);
             foreach (var t in types)
             {
-                var equalMethod = t.GetMethod("Equals", new[] { typeof(object) });
-                var hashMethod = t.GetMethod("GetHashCode", Type.EmptyTypes);
-                var stringMethod = t.GetMethod("ToString", Type.EmptyTypes);
+                var equalMethod = t.GetMethodNotNull("Equals", new[] { typeof(object) });
+                var hashMethod = t.GetMethodNotNull("GetHashCode", Type.EmptyTypes);
+                var stringMethod = t.GetMethodNotNull("ToString", Type.EmptyTypes);
                 var attributes = new[] { equalMethod, hashMethod, stringMethod }.Select(x => x.GetCustomAttribute<EditorBrowsableAttribute>()).ToList();
                 Assert.Equal(3, attributes.Count);
                 Assert.All(attributes, Assert.NotNull);
@@ -162,7 +157,7 @@ namespace Mikodev.Binary.Tests
             const string AttributeName = "System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute";
             var types = typeof(IConverter).Assembly.GetTypes();
             var methods = types.SelectMany(x => x.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)).ToList();
-            var attributedMethods = methods.Where(x => x.GetCustomAttributes().SingleOrDefault(x => x.GetType().FullName == AttributeName) != null).ToList();
+            var attributedMethods = methods.Where(x => x.GetCustomAttributes().SingleOrDefault(a => a.GetType().FullName == AttributeName) != null).ToList();
             Assert.All(attributedMethods, x => Assert.True((x.DeclaringType.Name == "ThrowHelper" && x.Name.StartsWith("Throw")) || x.Name.StartsWith("Except")));
 
             var expectedMethods = methods.Where(x => x.Name.Contains("Throw") || x.Name.Contains("Except")).ToList();

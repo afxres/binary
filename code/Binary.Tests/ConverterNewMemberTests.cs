@@ -107,7 +107,6 @@ namespace Mikodev.Binary.Tests
             var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().AddConverter(new FakeConverterHideAllMembers<int>()).Build();
             var converter = generator.GetConverter<FSharpOption<int>>();
             Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
-            var value = FSharpChoice<int, string>.NewChoice1Of2(0);
             var error = Assert.Throws<NotSupportedException>(() =>
             {
                 var allocator = new Allocator();
@@ -122,7 +121,6 @@ namespace Mikodev.Binary.Tests
             var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().AddConverter(new FakeConverterHideAllMembers<int>()).Build();
             var converter = generator.GetConverter<FSharpOption<int>>();
             Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
-            var value = FSharpChoice<int, string>.NewChoice1Of2(0);
             var error = Assert.Throws<NotSupportedException>(() =>
             {
                 var allocator = new Allocator();
@@ -137,7 +135,6 @@ namespace Mikodev.Binary.Tests
             var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().AddConverter(new FakeConverterHideAllMembers<int>()).Build();
             var converter = generator.GetConverter<FSharpOption<int>>();
             Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
-            var value = FSharpChoice<int, string>.NewChoice1Of2(0);
             var error = Assert.Throws<NotSupportedException>(() =>
             {
                 var span = new ReadOnlySpan<byte>(new byte[] { FSharpOption<int>.Tags.Some });
@@ -152,7 +149,6 @@ namespace Mikodev.Binary.Tests
             var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().AddConverter(new FakeConverterHideAllMembers<int>()).Build();
             var converter = generator.GetConverter<FSharpOption<int>>();
             Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
-            var value = FSharpChoice<int, string>.NewChoice1Of2(0);
             var error = Assert.Throws<NotSupportedException>(() =>
             {
                 var span = new ReadOnlySpan<byte>(new byte[] { FSharpOption<int>.Tags.Some });

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mikodev.Binary.Tests.Internal;
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -54,7 +55,7 @@ namespace Mikodev.Binary.Tests
         [InlineData(int.MinValue)]
         public void ResizeCapacityInvalid(int expand)
         {
-            var methodInfo = typeof(Allocator).GetMethod("Resize", BindingFlags.Static | BindingFlags.NonPublic);
+            var methodInfo = typeof(Allocator).GetMethodNotNull("Resize", BindingFlags.Static | BindingFlags.NonPublic);
             var method = (Resize)Delegate.CreateDelegate(typeof(Resize), methodInfo);
             var error = Assert.Throws<ArgumentOutOfRangeException>(() =>
             {
@@ -67,7 +68,7 @@ namespace Mikodev.Binary.Tests
         [Fact(DisplayName = "Ensure Capacity (hack, zero)")]
         public void EnsureCapacityZero()
         {
-            var methodInfo = typeof(Allocator).GetMethod("Ensure", BindingFlags.Static | BindingFlags.Public);
+            var methodInfo = typeof(Allocator).GetMethodNotNull("Ensure", BindingFlags.Static | BindingFlags.Public);
             var ensure = (Ensure)Delegate.CreateDelegate(typeof(Ensure), methodInfo);
             var capacity = 14;
             var buffer = new byte[capacity];
@@ -83,7 +84,7 @@ namespace Mikodev.Binary.Tests
         [InlineData(int.MinValue)]
         public void EnsureCapacityInvalid(int expand)
         {
-            var methodInfo = typeof(Allocator).GetMethod("Ensure", BindingFlags.Static | BindingFlags.Public);
+            var methodInfo = typeof(Allocator).GetMethodNotNull("Ensure", BindingFlags.Static | BindingFlags.Public);
             var ensure = (Ensure)Delegate.CreateDelegate(typeof(Ensure), methodInfo);
             var error = Assert.Throws<ArgumentOutOfRangeException>(() =>
             {
@@ -98,7 +99,7 @@ namespace Mikodev.Binary.Tests
         [InlineData(2, 8, 10)]
         public void EnsureCapacityExactly(int offset, int expand, int capacity)
         {
-            var methodInfo = typeof(Allocator).GetMethod("Ensure", BindingFlags.Static | BindingFlags.Public);
+            var methodInfo = typeof(Allocator).GetMethodNotNull("Ensure", BindingFlags.Static | BindingFlags.Public);
             var ensure = (Ensure)Delegate.CreateDelegate(typeof(Ensure), methodInfo);
             Assert.Equal(capacity, offset + expand);
             var buffer = new byte[capacity];
@@ -115,7 +116,7 @@ namespace Mikodev.Binary.Tests
         [Fact(DisplayName = "Anchor (hack, zero)")]
         public void AnchorZero()
         {
-            var methodInfo = typeof(Allocator).GetMethod("Anchor", BindingFlags.Static | BindingFlags.NonPublic);
+            var methodInfo = typeof(Allocator).GetMethodNotNull("Anchor", BindingFlags.Static | BindingFlags.NonPublic);
             var anchor = (Anchor)Delegate.CreateDelegate(typeof(Anchor), methodInfo);
             var buffer = new byte[25];
             var allocator = new Allocator(buffer);
@@ -142,8 +143,8 @@ namespace Mikodev.Binary.Tests
         [InlineData(17, 21, 21)]
         public void AnchorAppend(int length, int allocatorCapacity, int allocatorLength)
         {
-            var anchorMethod = (Anchor)Delegate.CreateDelegate(typeof(Anchor), typeof(Allocator).GetMethod("Anchor", BindingFlags.Static | BindingFlags.NonPublic));
-            var appendMethod = (FinishAnchor)Delegate.CreateDelegate(typeof(FinishAnchor), typeof(Allocator).GetMethod("FinishAnchor", BindingFlags.Static | BindingFlags.NonPublic));
+            var anchorMethod = (Anchor)Delegate.CreateDelegate(typeof(Anchor), typeof(Allocator).GetMethodNotNull("Anchor", BindingFlags.Static | BindingFlags.NonPublic));
+            var appendMethod = (FinishAnchor)Delegate.CreateDelegate(typeof(FinishAnchor), typeof(Allocator).GetMethodNotNull("FinishAnchor", BindingFlags.Static | BindingFlags.NonPublic));
             var buffer = new byte[length];
             var random = new Random();
             random.NextBytes(buffer);
@@ -175,7 +176,7 @@ namespace Mikodev.Binary.Tests
         [InlineData(int.MaxValue, 16)]
         public void AnchorAppendInvalid(int anchor, int allocatorLength)
         {
-            var appendMethod = (FinishAnchor)Delegate.CreateDelegate(typeof(FinishAnchor), typeof(Allocator).GetMethod("FinishAnchor", BindingFlags.Static | BindingFlags.NonPublic));
+            var appendMethod = (FinishAnchor)Delegate.CreateDelegate(typeof(FinishAnchor), typeof(Allocator).GetMethodNotNull("FinishAnchor", BindingFlags.Static | BindingFlags.NonPublic));
             var error = Assert.Throws<InvalidOperationException>(() =>
             {
                 var allocator = new Allocator();
@@ -191,8 +192,8 @@ namespace Mikodev.Binary.Tests
         public void AnchorAppendRange()
         {
             const int Limits = 16;
-            var anchorMethod = (Anchor)Delegate.CreateDelegate(typeof(Anchor), typeof(Allocator).GetMethod("Anchor", BindingFlags.Static | BindingFlags.NonPublic));
-            var appendMethod = (FinishAnchor)Delegate.CreateDelegate(typeof(FinishAnchor), typeof(Allocator).GetMethod("FinishAnchor", BindingFlags.Static | BindingFlags.NonPublic));
+            var anchorMethod = (Anchor)Delegate.CreateDelegate(typeof(Anchor), typeof(Allocator).GetMethodNotNull("Anchor", BindingFlags.Static | BindingFlags.NonPublic));
+            var appendMethod = (FinishAnchor)Delegate.CreateDelegate(typeof(FinishAnchor), typeof(Allocator).GetMethodNotNull("FinishAnchor", BindingFlags.Static | BindingFlags.NonPublic));
             var random = new Random();
             for (var length = 0; length <= 64; length++)
             {

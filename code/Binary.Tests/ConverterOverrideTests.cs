@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mikodev.Binary.Tests.Internal;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
@@ -8,20 +9,20 @@ namespace Mikodev.Binary.Tests
 {
     public class ConverterOverrideTests
     {
-        private void TestEncode<T>(Converter<T> converter, string option)
+        private static void TestEncode<T>(Converter<T> converter, string option)
         {
             var type = typeof(Converter<T>);
-            var encodeField = type.GetField("encode", BindingFlags.Instance | BindingFlags.NonPublic);
+            var encodeField = type.GetFieldNotNull("encode", BindingFlags.Instance | BindingFlags.NonPublic);
             var encode = encodeField.GetValue(converter);
-            Assert.Equal(option, encode.ToString());
+            Assert.Equal(option, encode?.ToString());
         }
 
-        private void TestDecode<T>(Converter<T> converter, string option)
+        private static void TestDecode<T>(Converter<T> converter, string option)
         {
             var type = typeof(Converter<T>);
-            var decodeField = type.GetField("decode", BindingFlags.Instance | BindingFlags.NonPublic);
+            var decodeField = type.GetFieldNotNull("decode", BindingFlags.Instance | BindingFlags.NonPublic);
             var decode = decodeField.GetValue(converter);
-            Assert.Equal(option, decode.ToString());
+            Assert.Equal(option, decode?.ToString());
         }
 
         private class FakeConverter<T> : Converter<T>

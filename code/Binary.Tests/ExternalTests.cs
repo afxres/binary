@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mikodev.Binary.Tests.Internal;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace Mikodev.Binary.Tests
 {
     public class ExternalTests
     {
-        private delegate object NodeOrNull<T>(object root, ref byte source, int length);
+        private delegate object NodeOrNull(object root, ref byte source, int length);
 
         private delegate object MakeOrNull<T>(IReadOnlyCollection<KeyValuePair<ReadOnlyMemory<byte>, T>> enumerable);
 
@@ -26,7 +27,7 @@ namespace Mikodev.Binary.Tests
 
             public readonly NodeData<T> NodeData;
 
-            public readonly NodeOrNull<T> NodeOrNull;
+            public readonly NodeOrNull NodeOrNull;
 
             public readonly MakeOrNull<T> MakeOrNull;
 
@@ -42,7 +43,7 @@ namespace Mikodev.Binary.Tests
                 EmptyNodes = (IReadOnlyList<object>)Array.CreateInstance(nodeType, 0);
             }
 
-            private Node<T> CompileNode(Type nodeType)
+            private static Node<T> CompileNode(Type nodeType)
             {
                 var header = Expression.Parameter(typeof(long));
                 var exists = Expression.Parameter(typeof(bool));
@@ -53,7 +54,7 @@ namespace Mikodev.Binary.Tests
                 return lambda.Compile();
             }
 
-            private NodeData<T> CompileNodeData(Type nodeType)
+            private static NodeData<T> CompileNodeData(Type nodeType)
             {
                 var node = Expression.Parameter(typeof(object));
                 var header = Expression.Parameter(typeof(long).MakeByRefType());
@@ -63,7 +64,7 @@ namespace Mikodev.Binary.Tests
 
                 BinaryExpression MakeAssign(ParameterExpression leftValue, string fieldName)
                 {
-                    var fieldInfo = nodeType.GetField(fieldName);
+                    var fieldInfo = nodeType.GetFieldNotNull(fieldName, BindingFlags.Instance | BindingFlags.Public);
                     var cast = Expression.Convert(node, nodeType);
                     var info = Expression.Field(cast, fieldInfo);
                     return Expression.Assign(leftValue, info);
@@ -81,28 +82,28 @@ namespace Mikodev.Binary.Tests
                 return lambda.Compile();
             }
 
-            private NodeOrNull<T> CompileNodeOrNull(Type nodeType)
+            private static NodeOrNull CompileNodeOrNull(Type nodeType)
             {
                 var root = Expression.Parameter(typeof(object), "root");
                 var source = Expression.Parameter(typeof(byte).MakeByRefType(), "source");
                 var length = Expression.Parameter(typeof(int), "length");
                 var helperType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name == "NodeTreeHelper");
-                var method = helperType.GetMethod("NodeOrNull", BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(typeof(T));
-                var lambda = Expression.Lambda<NodeOrNull<T>>(Expression.Call(method, Expression.Convert(root, nodeType), source, length), root, source, length);
+                var method = helperType.GetMethodNotNull("NodeOrNull", BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(typeof(T));
+                var lambda = Expression.Lambda<NodeOrNull>(Expression.Call(method, Expression.Convert(root, nodeType), source, length), root, source, length);
                 return lambda.Compile();
             }
 
-            private MakeOrNull<T> CompileMakeOrNull()
+            private static MakeOrNull<T> CompileMakeOrNull()
             {
                 var helperType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name == "NodeTreeHelper");
-                var method = helperType.GetMethod("MakeOrNull", BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(typeof(T));
+                var method = helperType.GetMethodNotNull("MakeOrNull", BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(typeof(T));
                 return (MakeOrNull<T>)Delegate.CreateDelegate(typeof(MakeOrNull<T>), method);
             }
         }
 
-        private void AssertNode<T>(BinaryHelper<T> helper, object node, bool exists, T intent, int length, string view)
+        private static void AssertNode<T>(BinaryHelper<T> helper, object node, bool exists, T intent, int length, string view)
         {
-            helper.NodeData.Invoke(node, out var _, out var actualExists, out var actualIntent, out var actualValues);
+            helper.NodeData.Invoke(node, out _, out var actualExists, out var actualIntent, out var actualValues);
             Assert.Equal(view, node.ToString());
             Assert.Equal(exists, actualExists);
             Assert.Equal(intent, actualIntent);
@@ -174,8 +175,8 @@ namespace Mikodev.Binary.Tests
         {
             public IEnumerator<object[]> GetEnumerator()
             {
-                var alpha = new string[] { string.Empty, "Alpha", "LongLongLongName" };
-                var bravo = new string[] { "x", "The quick brown fox jumps over the lazy dog", string.Empty, "9876543", };
+                var alpha = new[] { string.Empty, "Alpha", "LongLongLongName" };
+                var bravo = new[] { "x", "The quick brown fox jumps over the lazy dog", string.Empty, "9876543", };
                 yield return new object[] { alpha };
                 yield return new object[] { bravo };
             }
@@ -207,8 +208,8 @@ namespace Mikodev.Binary.Tests
         {
             public IEnumerator<object[]> GetEnumerator()
             {
-                var alpha = new string[] { string.Empty, "Alpha", "LongLongLongName" };
-                var bravo = new string[] { "x", "The quick brown fox jumps over the lazy dog", string.Empty, "9876543", };
+                var alpha = new[] { string.Empty, "Alpha", "LongLongLongName" };
+                var bravo = new[] { "x", "The quick brown fox jumps over the lazy dog", string.Empty, "9876543", };
                 yield return new object[] { alpha, "alpha" };
                 yield return new object[] { bravo, "The quic" };
             }
@@ -234,8 +235,8 @@ namespace Mikodev.Binary.Tests
         {
             public IEnumerator<object[]> GetEnumerator()
             {
-                var alpha = new string[] { "alpha", "alpha" };
-                var bravo = new string[] { "LongLongName", "NameLong", "LongLongName" };
+                var alpha = new[] { "alpha", "alpha" };
+                var bravo = new[] { "LongLongName", "NameLong", "LongLongName" };
                 yield return new object[] { alpha };
                 yield return new object[] { bravo };
             }
@@ -265,14 +266,14 @@ namespace Mikodev.Binary.Tests
             Assert.NotEmpty(enumerable);
             var root = helper.MakeOrNull(enumerable);
             Assert.NotNull(root);
-            foreach (var i in enumerable)
+            foreach (var (key, value) in enumerable)
             {
-                var span = i.Key.Span;
+                var span = key.Span;
                 var node = helper.NodeOrNull.Invoke(root, ref MemoryMarshal.GetReference(span), span.Length);
                 Assert.NotNull(node);
                 helper.NodeData.Invoke(node, out _, out var exists, out var intent, out _);
                 Assert.True(exists);
-                Assert.Equal(i.Value, intent);
+                Assert.Equal(value, intent);
             }
         }
 

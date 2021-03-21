@@ -1,4 +1,5 @@
 ﻿using Microsoft.FSharp.Core;
+using Mikodev.Binary.Tests.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,14 +15,14 @@ namespace Mikodev.Binary.Tests
             .AddFSharpConverterCreators()
             .Build();
 
-        private byte[] Encode<T>(Converter<T> converter, T value)
+        private static byte[] Encode<T>(Converter<T> converter, T value)
         {
             var allocator = new Allocator();
             converter.Encode(ref allocator, value);
             return allocator.AsSpan().ToArray();
         }
 
-        private byte[] EncodeAuto<T>(Converter<T> converter, T value)
+        private static byte[] EncodeAuto<T>(Converter<T> converter, T value)
         {
             var allocator = new Allocator();
             converter.EncodeAuto(ref allocator, value);
@@ -84,7 +85,7 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(value, ra.Value);
         }
 
-        public static IEnumerable<object[]> CollectionData = new object[][]
+        public static IEnumerable<object[]> CollectionData = new[]
         {
             new object[] { new byte?[] { 2, 4, null, 8, null } },
             new object[] { new List<float?> { null, 2.71F, null } },
@@ -107,19 +108,19 @@ namespace Mikodev.Binary.Tests
         public unsafe void Collection<TCollection>(TCollection collection)
         {
             var collectionType = collection.GetType();
-            var nullableType = collectionType.GetInterfaces()
-                .Where(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IEnumerable<>))
-                .Single()
+            var nullableType = collectionType
+                .GetInterfaces()
+                .Single(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(IEnumerable<>))
                 .GetGenericArguments()
                 .Single();
             var elementType = nullableType.GetGenericArguments().Single();
             var method = GetType()
-                .GetMethod(nameof(CollectionFunction), BindingFlags.Instance | BindingFlags.NonPublic)
+                .GetMethodNotNull(nameof(CollectionFunction), BindingFlags.Instance | BindingFlags.NonPublic)
                 .MakeGenericMethod(collectionType, elementType);
             var _ = method.Invoke(this, new object[] { collection });
         }
 
-        public static IEnumerable<object[]> DictionaryData = new object[][]
+        public static IEnumerable<object[]> DictionaryData = new[]
         {
             new object[] { new Dictionary<int?, double?> { [0] = null, [1] = 1.1, [-2] = 2.2 } },
             new object[] { new Dictionary<float?, long?> { [0] = null, [-3.3F] = 6L, [4.4F] = 8 } },
@@ -194,7 +195,7 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(source, result);
         }
 
-        public static readonly IEnumerable<object[]> OptionData = new object[][]
+        public static readonly IEnumerable<object[]> OptionData = new[]
         {
             new object[] { 10 },
             new object[] { long.MaxValue },

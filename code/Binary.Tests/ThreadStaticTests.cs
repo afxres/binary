@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mikodev.Binary.Tests.Internal;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,10 +44,10 @@ namespace Mikodev.Binary.Tests
             const int ThreadCount = 4;
             var dictionary = new ConcurrentDictionary<int, byte[]>();
             var handle = new ManualResetEvent(false);
-            var bufferHelperType = typeof(IConverter).Assembly.GetTypes().Where(x => x.Name == "BufferHelper").Single();
-            var threadStaticField = bufferHelperType.GetField("ThreadStaticInstance", BindingFlags.Static | BindingFlags.NonPublic);
-            var bufferField = bufferHelperType.GetField("buffer", BindingFlags.Instance | BindingFlags.NonPublic);
-            var attribute = threadStaticField.GetCustomAttributes(false).Where(x => x is ThreadStaticAttribute).SingleOrDefault();
+            var bufferHelperType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name == "BufferHelper");
+            var threadStaticField = bufferHelperType.GetFieldNotNull("ThreadStaticInstance", BindingFlags.Static | BindingFlags.NonPublic);
+            var bufferField = bufferHelperType.GetFieldNotNull("buffer", BindingFlags.Instance | BindingFlags.NonPublic);
+            var attribute = threadStaticField.GetCustomAttributes(false).SingleOrDefault(x => x is ThreadStaticAttribute);
             Assert.NotNull(attribute);
 
             var threads = Enumerable.Range(0, ThreadCount).Select(id => new Thread(() =>
@@ -89,8 +90,8 @@ namespace Mikodev.Binary.Tests
             var dictionary = new ConcurrentDictionary<int, byte[]>();
             var handle = new ManualResetEvent(false);
             var bufferHelperType = typeof(IConverter).Assembly.GetTypes().Where(x => x.Name == "BufferHelper").Single();
-            var threadStaticField = bufferHelperType.GetField("ThreadStaticInstance", BindingFlags.Static | BindingFlags.NonPublic);
-            var bufferField = bufferHelperType.GetField("buffer", BindingFlags.Instance | BindingFlags.NonPublic);
+            var threadStaticField = bufferHelperType.GetFieldNotNull("ThreadStaticInstance", BindingFlags.Static | BindingFlags.NonPublic);
+            var bufferField = bufferHelperType.GetFieldNotNull("buffer", BindingFlags.Instance | BindingFlags.NonPublic);
             var attribute = threadStaticField.GetCustomAttributes(false).Where(x => x is ThreadStaticAttribute).SingleOrDefault();
             Assert.NotNull(attribute);
 
