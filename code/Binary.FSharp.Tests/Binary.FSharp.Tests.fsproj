@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Internal\HelperMethodTests.fs" />
     <Compile Include="Contexts\CodeContractsTests.fs" />
     <Compile Include="Contexts\ConverterCreatorTests.fs" />
   </ItemGroup>

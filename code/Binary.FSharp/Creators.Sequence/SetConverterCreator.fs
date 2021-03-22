@@ -11,7 +11,7 @@ type internal SetConverterCreator() =
             if IsImplementationOf<Set<_>> t then
                 let itemType = t.GetGenericArguments() |> Array.exactlyOne
                 let converterType = MakeGenericType<SetConverter<_>> itemType
-                let converterArguments = [| EnsureHelper.EnsureConverter context itemType |> box |]
+                let converterArguments = [| CommonHelper.GetConverter(context, itemType) |> box |]
                 let converter = Activator.CreateInstance(converterType, converterArguments)
                 converter :?> IConverter
             else

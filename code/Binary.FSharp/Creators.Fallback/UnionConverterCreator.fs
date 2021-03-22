@@ -12,13 +12,13 @@ type internal UnionConverterCreator() =
     static let GetEncodeMethodInfo (t : Type) (auto : bool) =
         let converterType = MakeGenericType<Converter<_>> t
         let methodName = if auto then "EncodeAuto" else "Encode"
-        let method = converterType.GetMethod(methodName, [| ModuleHelper.AllocatorByRefType; t |])
+        let method = CommonHelper.GetMethod(converterType, methodName, [| ModuleHelper.AllocatorByRefType; t |])
         method
 
     static let GetDecodeMethodInfo (t : Type) (auto : bool) =
         let converterType = MakeGenericType<Converter<_>> t
         let methodName = if auto then "DecodeAuto" else "Decode"
-        let method = converterType.GetMethod(methodName, [| ModuleHelper.ReadOnlySpanByteByRefType |])
+        let method = CommonHelper.GetMethod(converterType, methodName, [| ModuleHelper.ReadOnlySpanByteByRefType |])
         method
 
     static let GetEncodeExpression (t : Type) (converters : IReadOnlyDictionary<Type, IConverter>) (caseInfos : Map<int, UnionCaseInfo>) (tagMember : MemberInfo) (auto : bool) =
@@ -141,10 +141,10 @@ type internal UnionConverterCreator() =
                 let converters =
                     memberTypes
                     |> Seq.distinct
-                    |> Seq.map (fun x -> x, (EnsureHelper.EnsureConverter context x))
+                    |> Seq.map (fun x -> x, CommonHelper.GetConverter(context, x))
                     |> readOnlyDict
                 let tagMember = FSharpValue.PreComputeUnionTagMemberInfo(t)
-                let noNull = not t.IsValueType && not (tagMember :? MethodInfo)
+                let noNull = t.IsValueType = false && tagMember :? MethodInfo = false
                 let encode = GetEncodeExpression t converters caseInfos tagMember false
                 let encodeAuto = GetEncodeExpression t converters caseInfos tagMember true
                 let decode = GetDecodeExpression t converters constructorInfos false
@@ -155,7 +155,7 @@ type internal UnionConverterCreator() =
                 let converter = Activator.CreateInstance(converterType, converterArguments)
                 converter :?> IConverter
 
-            if not (FSharpType.IsUnion(t)) || IsImplementationOf<List<_>> t then
+            if FSharpType.IsUnion(t) = false || IsImplementationOf<List<_>> t then
                 null
             else
                 let cases = FSharpType.GetUnionCases(t)

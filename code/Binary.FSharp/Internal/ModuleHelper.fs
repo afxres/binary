@@ -7,9 +7,9 @@ open System.Runtime.CompilerServices
 
 type AllocatorToHandleDefinition = delegate of byref<Allocator> -> IntPtr
 
-let EncodeNumberMethodInfo = typeof<Converter>.GetMethod(nameof Converter.Encode)
+let EncodeNumberMethodInfo = CommonHelper.GetMethod(typeof<Converter>, nameof Converter.Encode)
 
-let DecodeNumberMethodInfo = typeof<Converter>.GetMethod(nameof Converter.Decode)
+let DecodeNumberMethodInfo = CommonHelper.GetMethod(typeof<Converter>, nameof Converter.Decode)
 
 let AllocatorByRefType = (EncodeNumberMethodInfo.GetParameters() |> Array.head).ParameterType
 

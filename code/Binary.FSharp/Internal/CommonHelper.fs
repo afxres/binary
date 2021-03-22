@@ -1,10 +1,29 @@
-﻿[<AutoOpen>]
-module internal Mikodev.Binary.Internal.CommonHelper
+﻿namespace Mikodev.Binary.Internal
 
+open Mikodev.Binary
 open System
 
-let IsImplementationOf<'T> (t : Type) =
-    t.IsGenericType && t.GetGenericTypeDefinition() = typeof<'T>.GetGenericTypeDefinition()
+[<Sealed>]
+[<AbstractClass>]
+type internal CommonHelper =
+    static member GetConverter(context : IGeneratorContext, t : Type) =
+        let converter = context.GetConverter t
+        let expectedType = MakeGenericType<Converter<_>> t
+        if isNull (box converter) then
+            raise (ArgumentException $"Can not convert null to '{expectedType}'")
+        let instanceType = converter.GetType()
+        if (expectedType.IsAssignableFrom instanceType = false) then
+            raise (ArgumentException $"Can not convert '{instanceType}' to '{expectedType}'")
+        converter
 
-let MakeGenericType<'T> t =
-    typeof<'T>.GetGenericTypeDefinition().MakeGenericType (Array.singleton t)
+    static member GetMethod(t : Type, name : string) =
+        let result = t.GetMethod name
+        if isNull (box result) then
+            raise (MissingMethodException $"Method not found, method name: {name}, type: {t}")
+        result
+
+    static member GetMethod(t : Type, name : string, types : Type array) =
+        let result = t.GetMethod(name, types)
+        if isNull (box result) then
+            raise (MissingMethodException $"Method not found, method name: {name}, type: {t}")
+        result

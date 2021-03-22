@@ -9,9 +9,9 @@ type GeneratorBuilderFSharpExtensions =
     static member AddFSharpConverterCreators(builder : IGeneratorBuilder) =
         let creators =
             typeof<GeneratorBuilderFSharpExtensions>.Assembly.GetTypes()
-                |> Seq.filter (fun x -> typeof<IConverterCreator>.IsAssignableFrom x)
-                |> Seq.map (fun x -> Activator.CreateInstance x :?> IConverterCreator)
-                |> Seq.toList
+            |> Seq.filter typeof<IConverterCreator>.IsAssignableFrom
+            |> Seq.map (fun x -> Activator.CreateInstance x :?> IConverterCreator)
+            |> Seq.toList
         for i in creators do
             builder.AddConverterCreator i |> ignore
         builder

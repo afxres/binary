@@ -11,7 +11,7 @@ type internal MapConverterCreator() =
             if IsImplementationOf<Map<_, _>> t then
                 let itemTypes = t.GetGenericArguments()
                 let converterType = typeof<MapConverter<_, _>>.GetGenericTypeDefinition().MakeGenericType itemTypes
-                let converterArguments = itemTypes |> Seq.map (EnsureHelper.EnsureConverter context >> box) |> Seq.toArray
+                let converterArguments = itemTypes |> Seq.map (fun x -> CommonHelper.GetConverter(context, x) |> box) |> Seq.toArray
                 let converter = Activator.CreateInstance(converterType, converterArguments)
                 converter :?> IConverter
             else
