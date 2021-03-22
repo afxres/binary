@@ -8,10 +8,7 @@ namespace Mikodev.Binary.Tests
 {
     public class CollectionReflectionTests
     {
-        private class FakeList<T>
-        {
-            public T Data;
-        }
+        private class FakeList<T> { }
 
         [Theory(DisplayName = "Get List Builder (fake invalid list type)")]
         [InlineData(typeof(FakeList<int>), typeof(int))]

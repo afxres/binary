@@ -12,7 +12,7 @@ type internal UnionConverter<'T>(encode : UnionEncoder<'T>, encodeAuto : UnionEn
     inherit Converter<'T>(0)
 
     [<Literal>]
-    let MarkNone = 0
+    let constant = 0
 
     member private __.ExceptNull() : unit =
         raise (ArgumentNullException("item", $"Union can not be null, type: {typeof<'T>}"))
@@ -28,33 +28,33 @@ type internal UnionConverter<'T>(encode : UnionEncoder<'T>, encodeAuto : UnionEn
 
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
     member private me.HandleMark(mark : int) : unit =
-        if mark <> MarkNone then
+        if mark <> constant then
             me.ExceptMark mark
         ()
 
     override me.Encode(allocator, item) =
         me.HandleNull item
-        let mutable mark = MarkNone
+        let mutable mark = constant
         encode.Invoke(&allocator, item, &mark)
         me.HandleMark mark
         ()
 
     override me.EncodeAuto(allocator, item) =
         me.HandleNull item
-        let mutable mark = MarkNone
+        let mutable mark = constant
         encodeAuto.Invoke(&allocator, item, &mark)
         me.HandleMark mark
         ()
 
     override me.Decode(span : inref<ReadOnlySpan<byte>>) : 'T =
         let mutable body = span
-        let mutable mark = MarkNone
+        let mutable mark = constant
         let item = decode.Invoke(&body, &mark)
         me.HandleMark mark
         item
 
     override me.DecodeAuto span =
-        let mutable mark = MarkNone
+        let mutable mark = constant
         let item = decodeAuto.Invoke(&span, &mark)
         me.HandleMark mark
         item
