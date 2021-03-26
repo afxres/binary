@@ -14,8 +14,6 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class FallbackCollectionMethods
     {
-        private sealed class It { }
-
         private static readonly IReadOnlyDictionary<Type, MethodInfo> ImmutableCollectionCreateMethods = new Dictionary<Type, MethodInfo>
         {
             [typeof(IImmutableDictionary<,>)] = GetMethod(ImmutableDictionary.CreateRange),
@@ -46,9 +44,9 @@ namespace Mikodev.Binary.Internal.Contexts
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(type, InvalidTypeDefinitions.Contains))
                 throw new ArgumentException($"Invalid collection type: {type}");
             if (CommonHelper.TryGetInterfaceArguments(type, typeof(IDictionary<,>), out var types) || CommonHelper.TryGetInterfaceArguments(type, typeof(IReadOnlyDictionary<,>), out types))
-                return GetConverter(context, GetConverter<IEnumerable<KeyValuePair<It, It>>, It, It>, CommonHelper.Concat(type, types));
+                return GetConverter(context, GetConverter<IEnumerable<KeyValuePair<object, object>>, object, object>, CommonHelper.Concat(type, types));
             else
-                return GetConverter(context, GetConverter<IEnumerable<It>, It>, CommonHelper.Concat(type, arguments));
+                return GetConverter(context, GetConverter<IEnumerable<object>, object>, CommonHelper.Concat(type, arguments));
         }
 
         private static IConverter GetConverter(IGeneratorContext context, Func<IGeneratorContext, IConverter> func, params Type[] types)
@@ -59,7 +57,7 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile().Invoke(context);
         }
 
-        private static MethodInfo GetMethod<T>(Func<IEnumerable<KeyValuePair<It, It>>, T> func) where T : IEnumerable<KeyValuePair<It, It>>
+        private static MethodInfo GetMethod<T>(Func<IEnumerable<KeyValuePair<object, object>>, T> func) where T : IEnumerable<KeyValuePair<object, object>>
         {
             return func.Method.GetGenericMethodDefinition();
         }
