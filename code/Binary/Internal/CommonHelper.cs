@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Mikodev.Binary.Internal
@@ -78,6 +79,16 @@ namespace Mikodev.Binary.Internal
             if (result is null)
                 throw new MissingMethodException($"Constructor not found, type: {type}");
             return result;
+        }
+
+        internal static MethodInfo GetMethod<T, E>(Expression<Func<T, E>> expression)
+        {
+            return ((MethodCallExpression)expression.Body).Method;
+        }
+
+        internal static PropertyInfo GetProperty<T, E>(Expression<Func<T, E>> expression)
+        {
+            return (PropertyInfo)((MemberExpression)expression.Body).Member;
         }
     }
 }

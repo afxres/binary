@@ -8,9 +8,9 @@ namespace Mikodev.Binary.Internal
 {
     internal sealed class TokenDynamicMetaObject : DynamicMetaObject
     {
-        private static readonly MethodInfo ConvertMethodInfo = ((MethodCallExpression)((Expression<Func<Token, object>>)(a => a.As<object>())).Body).Method.GetGenericMethodDefinition();
+        private static readonly MethodInfo IndexerMethodInfo = CommonHelper.GetMethod<Token, Token>(a => a[null]);
 
-        private static readonly MethodInfo IndexerMethodInfo = ((MethodCallExpression)((Expression<Func<Token, string, Token>>)((a, b) => a[b])).Body).Method;
+        private static readonly MethodInfo ConvertMethodInfo = CommonHelper.GetMethod<Token, object>(a => a.As<object>()).GetGenericMethodDefinition();
 
         public TokenDynamicMetaObject(Expression parameter, object value) : base(parameter, BindingRestrictions.Empty, value) { }
 

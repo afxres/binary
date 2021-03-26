@@ -114,14 +114,12 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static SequenceEncoder<T> GetEncoder<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
         {
-            static PropertyInfo GetProperty<I>(Expression<Func<KeyValuePair<K, V>, I>> expression) => (PropertyInfo)((MemberExpression)expression.Body).Member;
-
             var initMember = Expression.Constant(init);
             var tailMember = Expression.Constant(tail);
             var initMethod = ContextMethods.GetEncodeMethodInfo(typeof(K), nameof(IConverter.EncodeAuto));
             var tailMethod = ContextMethods.GetEncodeMethodInfo(typeof(V), nameof(IConverter.EncodeAuto));
-            var initProperty = GetProperty(x => x.Key);
-            var tailProperty = GetProperty(x => x.Value);
+            var initProperty = CommonHelper.GetProperty<KeyValuePair<K, V>, K>(x => x.Key);
+            var tailProperty = CommonHelper.GetProperty<KeyValuePair<K, V>, V>(x => x.Value);
             var assign = Expression.Variable(typeof(KeyValuePair<K, V>), "current");
             var result = GetEncoder<T>(typeof(KeyValuePair<K, V>), (allocator, current) => Expression.Block(
                 new[] { assign },
