@@ -2,7 +2,6 @@
 
 open Mikodev.Binary
 open System
-open System.Collections.Generic
 open System.Reflection
 open System.Runtime.InteropServices
 open Xunit
@@ -82,7 +81,4 @@ type CollectionOverflowTests () =
         Assert.Throws<OverflowException>(fun () ->
             let mutable allocator = Allocator()
             generator.GetConverter<Backup<int> array>().EncodeWithLengthPrefix(&allocator, Array.create 0x1000 backup) |> ignore) |> ignore
-        Assert.Throws<OverflowException>(fun () ->
-            let mutable allocator = Allocator()
-            generator.GetConverter<LinkedList<Backup<int>>>().EncodeWithLengthPrefix(&allocator, Array.create 0x1000 backup |> LinkedList<_>) |> ignore) |> ignore
         ()

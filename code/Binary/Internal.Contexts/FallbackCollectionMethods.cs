@@ -1,5 +1,4 @@
 ﻿using Mikodev.Binary.Internal.Sequence;
-using Mikodev.Binary.Internal.Sequence.Counters;
 using Mikodev.Binary.Internal.Sequence.Decoders;
 using Mikodev.Binary.Internal.Sequence.Encoders;
 using System;
@@ -83,23 +82,6 @@ namespace Mikodev.Binary.Internal.Contexts
             }
 
             return method is null ? new FallbackDecoder<T>() : new DelegateDecoder<T, R>(decoder, Invoke(method));
-        }
-
-        private static SequenceCounter<T> GetCounter<T, E>()
-        {
-            static Type Invoke()
-            {
-                if (typeof(ICollection<E>).IsAssignableFrom(typeof(T)))
-                    return typeof(CollectionCounter<,>);
-                if (typeof(IReadOnlyCollection<E>).IsAssignableFrom(typeof(T)))
-                    return typeof(ReadOnlyCollectionCounter<,>);
-                else
-                    return null;
-            }
-
-            if (Invoke() is not { } type)
-                return null;
-            return (SequenceCounter<T>)Activator.CreateInstance(type.MakeGenericType(typeof(T), typeof(E)));
         }
 
         private static SequenceEncoder<T> GetEncoder<T, E>(Converter<E> converter) where T : IEnumerable<E>
@@ -197,72 +179,63 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             var encoder = GetEncoder<HashSet<E>, E>(converter);
             var decoder = new HashSetDecoder<E>(converter);
-            var counter = new HashSetCounter<E>();
-            return new SequenceConverter<HashSet<E>>(encoder, decoder, counter, converter.Length);
+            return new SequenceConverter<HashSet<E>>(encoder, decoder);
         }
 
         private static IConverter GetHashSetInterfaceAssignableConverter<T, E>(Converter<E> converter) where T : IEnumerable<E>
         {
             var encoder = GetEncoder<T, E>(converter);
             var decoder = new AssignableDecoder<T, HashSet<E>>(new HashSetDecoder<E>(converter));
-            var counter = GetCounter<T, E>();
-            return new SequenceConverter<T>(encoder, decoder, counter, converter.Length);
+            return new SequenceConverter<T>(encoder, decoder);
         }
 
         private static IConverter GetLinkedListConverter<E>(Converter<E> converter)
         {
             var encoder = new LinkedListEncoder<E>(converter);
             var decoder = new LinkedListDecoder<E>(converter);
-            var counter = new LinkedListCounter<E>();
-            return new SequenceConverter<LinkedList<E>>(encoder, decoder, counter, converter.Length);
+            return new SequenceConverter<LinkedList<E>>(encoder, decoder);
         }
 
         private static IConverter GetEnumerableConverter<T, E>(Converter<E> converter, Func<Expression, Expression> method) where T : IEnumerable<E>
         {
             var encoder = GetEncoder<T, E>(converter);
             var decoder = GetDecoder<T, IEnumerable<E>, IEnumerable<E>>(new EnumerableDecoder<E>(converter), method);
-            var counter = GetCounter<T, E>();
-            return new SequenceConverter<T>(encoder, decoder, counter, converter.Length);
+            return new SequenceConverter<T>(encoder, decoder);
         }
 
         private static IConverter GetEnumerableInterfaceAssignableConverter<T, E>(Converter<E> converter) where T : IEnumerable<E>
         {
             var encoder = GetEncoder<T, E>(converter);
             var decoder = new AssignableDecoder<T, ArraySegment<E>>(new ArraySegmentDecoder<E>(converter));
-            var counter = GetCounter<T, E>();
-            return new SequenceConverter<T>(encoder, decoder, counter, converter.Length);
+            return new SequenceConverter<T>(encoder, decoder);
         }
 
         private static IConverter GetDictionaryConverter<K, V>(Converter<K> init, Converter<V> tail, int itemLength)
         {
             var encoder = GetEncoder<Dictionary<K, V>, K, V>(init, tail);
             var decoder = new DictionaryDecoder<K, V>(init, tail, itemLength);
-            var counter = new DictionaryCounter<K, V>();
-            return new SequenceConverter<Dictionary<K, V>>(encoder, decoder, counter, itemLength);
+            return new SequenceConverter<Dictionary<K, V>>(encoder, decoder);
         }
 
         private static IConverter GetDictionaryConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
         {
             var encoder = GetEncoder<T, K, V>(init, tail);
             var decoder = GetDecoder<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength), method);
-            var counter = GetCounter<T, KeyValuePair<K, V>>();
-            return new SequenceConverter<T>(encoder, decoder, counter, itemLength);
+            return new SequenceConverter<T>(encoder, decoder);
         }
 
         private static IConverter GetDictionaryInterfaceAssignableConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength) where T : IEnumerable<KeyValuePair<K, V>>
         {
             var encoder = GetEncoder<T, K, V>(init, tail);
             var decoder = new AssignableDecoder<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength));
-            var counter = GetCounter<T, KeyValuePair<K, V>>();
-            return new SequenceConverter<T>(encoder, decoder, counter, itemLength);
+            return new SequenceConverter<T>(encoder, decoder);
         }
 
         private static IConverter GetKeyValueEnumerableConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
         {
             var encoder = GetEncoder<T, K, V>(init, tail);
             var decoder = GetDecoder<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail, itemLength), method);
-            var counter = GetCounter<T, KeyValuePair<K, V>>();
-            return new SequenceConverter<T>(encoder, decoder, counter, itemLength);
+            return new SequenceConverter<T>(encoder, decoder);
         }
     }
 }
