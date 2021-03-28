@@ -145,11 +145,11 @@ let ``Collection Integration Test (span-like collection, null or empty collectio
 
 [<Fact>]
 let ``Collection Integration Test (collection, null or empty collection test, default interface implementation test)`` () =
-    TestSequence<IEnumerable<_>> "EnumerableEncoder`2" "ArraySegmentDecoder`1" (ResizeArray<string>())
-    TestSequence<IList<_>> "EnumerableEncoder`2" "ArraySegmentDecoder`1" (Array.zeroCreate<int> 0)
-    TestSequence<IReadOnlyList<_>> "EnumerableEncoder`2" "ArraySegmentDecoder`1" (ResizeArray<string>())
-    TestSequence<ICollection<_>> "EnumerableEncoder`2" "ArraySegmentDecoder`1" (Array.zeroCreate<int> 0)
-    TestSequence<IReadOnlyCollection<_>> "EnumerableEncoder`2" "ArraySegmentDecoder`1" (Array.zeroCreate<int> 0)
+    TestSequence<IEnumerable<_>> "EnumerableEncoder`2" "EnumerableDecoder`1" (ResizeArray<string>())
+    TestSequence<IList<_>> "EnumerableEncoder`2" "EnumerableDecoder`1" (Array.zeroCreate<int> 0)
+    TestSequence<IReadOnlyList<_>> "EnumerableEncoder`2" "EnumerableDecoder`1" (ResizeArray<string>())
+    TestSequence<ICollection<_>> "EnumerableEncoder`2" "EnumerableDecoder`1" (Array.zeroCreate<int> 0)
+    TestSequence<IReadOnlyCollection<_>> "EnumerableEncoder`2" "EnumerableDecoder`1" (Array.zeroCreate<int> 0)
 
     TestSequence<Queue<_>> "DelegateEncoder`1" "EnumerableDecoder`1" (Queue<int> 0)
     TestSequence<ImmutableList<_>> "DelegateEncoder`1" "EnumerableDecoder`1" (ImmutableList.Create<string>())

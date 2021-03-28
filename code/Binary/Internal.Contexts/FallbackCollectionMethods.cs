@@ -13,28 +13,47 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class FallbackCollectionMethods
     {
-        private static readonly IReadOnlyDictionary<Type, MethodInfo> ImmutableCollectionCreateMethods = new Dictionary<Type, MethodInfo>
-        {
-            [typeof(IImmutableDictionary<,>)] = GetMethod(ImmutableDictionary.CreateRange),
-            [typeof(IImmutableList<>)] = GetMethod(ImmutableList.CreateRange),
-            [typeof(IImmutableQueue<>)] = GetMethod(ImmutableQueue.CreateRange),
-            [typeof(IImmutableSet<>)] = GetMethod(ImmutableHashSet.CreateRange),
-            [typeof(ImmutableArray<>)] = GetMethod(ImmutableArray.CreateRange),
-            [typeof(ImmutableDictionary<,>)] = GetMethod(ImmutableDictionary.CreateRange),
-            [typeof(ImmutableHashSet<>)] = GetMethod(ImmutableHashSet.CreateRange),
-            [typeof(ImmutableList<>)] = GetMethod(ImmutableList.CreateRange),
-            [typeof(ImmutableQueue<>)] = GetMethod(ImmutableQueue.CreateRange),
-            [typeof(ImmutableSortedDictionary<,>)] = GetMethod(ImmutableSortedDictionary.CreateRange),
-            [typeof(ImmutableSortedSet<>)] = GetMethod(ImmutableSortedSet.CreateRange),
-        };
+        private static readonly IReadOnlyList<Type> InvalidTypeDefinitions;
 
-        private static readonly IReadOnlyList<Type> InvalidTypeDefinitions = new[]
+        private static readonly IReadOnlyList<Type> EnumerableInterfaceDefinitions;
+
+        private static readonly IReadOnlyDictionary<Type, MethodInfo> ImmutableCollectionCreateMethods;
+
+        static FallbackCollectionMethods()
         {
-            typeof(Stack<>),
-            typeof(ConcurrentStack<>),
-            typeof(ImmutableStack<>),
-            typeof(IImmutableStack<>),
-        };
+            static MethodInfo Info<T>(Func<IEnumerable<KeyValuePair<object, object>>, T> func) => func.Method.GetGenericMethodDefinition();
+
+            var immutable = new Dictionary<Type, MethodInfo>
+            {
+                [typeof(IImmutableDictionary<,>)] = Info(ImmutableDictionary.CreateRange),
+                [typeof(IImmutableList<>)] = Info(ImmutableList.CreateRange),
+                [typeof(IImmutableQueue<>)] = Info(ImmutableQueue.CreateRange),
+                [typeof(IImmutableSet<>)] = Info(ImmutableHashSet.CreateRange),
+                [typeof(ImmutableArray<>)] = Info(ImmutableArray.CreateRange),
+                [typeof(ImmutableDictionary<,>)] = Info(ImmutableDictionary.CreateRange),
+                [typeof(ImmutableHashSet<>)] = Info(ImmutableHashSet.CreateRange),
+                [typeof(ImmutableList<>)] = Info(ImmutableList.CreateRange),
+                [typeof(ImmutableQueue<>)] = Info(ImmutableQueue.CreateRange),
+                [typeof(ImmutableSortedDictionary<,>)] = Info(ImmutableSortedDictionary.CreateRange),
+                [typeof(ImmutableSortedSet<>)] = Info(ImmutableSortedSet.CreateRange),
+            };
+
+            var invalid = new[]
+            {
+                typeof(Stack<>),
+                typeof(ConcurrentStack<>),
+                typeof(ImmutableStack<>),
+                typeof(IImmutableStack<>),
+            };
+
+            var arrayInterfaces = typeof(object[]).GetInterfaces().Where(typeof(IEnumerable<object>).IsAssignableFrom).ToHashSet();
+            var arraySegmentInterfaces = typeof(ArraySegment<object>).GetInterfaces().Where(typeof(IEnumerable<object>).IsAssignableFrom).ToHashSet();
+            var interfaces = arrayInterfaces.Intersect(arraySegmentInterfaces).Select(x => x.GetGenericTypeDefinition()).ToArray();
+
+            InvalidTypeDefinitions = invalid;
+            EnumerableInterfaceDefinitions = interfaces;
+            ImmutableCollectionCreateMethods = immutable;
+        }
 
         internal static IConverter GetConverter(IGeneratorContext context, Type type)
         {
@@ -54,11 +73,6 @@ namespace Mikodev.Binary.Internal.Contexts
             var method = func.Method.GetGenericMethodDefinition().MakeGenericMethod(types);
             var lambda = Expression.Lambda<Func<IGeneratorContext, IConverter>>(Expression.Call(method, source), source);
             return lambda.Compile().Invoke(context);
-        }
-
-        private static MethodInfo GetMethod<T>(Func<IEnumerable<KeyValuePair<object, object>>, T> func) where T : IEnumerable<KeyValuePair<object, object>>
-        {
-            return func.Method.GetGenericMethodDefinition();
         }
 
         private static Func<Expression, Expression> GetConstructorOrDefault(Type type, Type enumerable)
@@ -152,7 +166,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 return GetHashSetConverter(converter);
             if (typeof(T) == typeof(LinkedList<E>))
                 return GetLinkedListConverter(converter);
-            if (typeof(T).IsInterface && typeof(T).IsAssignableFrom(typeof(ArraySegment<E>)))
+            if (typeof(T).IsInterface && CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), EnumerableInterfaceDefinitions.Contains))
                 return GetEnumerableInterfaceAssignableConverter<T, E>(converter);
             if (typeof(T).IsInterface && typeof(T).IsAssignableFrom(typeof(HashSet<E>)))
                 return GetHashSetInterfaceAssignableConverter<T, E>(converter);
@@ -206,7 +220,7 @@ namespace Mikodev.Binary.Internal.Contexts
         private static IConverter GetEnumerableInterfaceAssignableConverter<T, E>(Converter<E> converter) where T : IEnumerable<E>
         {
             var encoder = GetEncoder<T, E>(converter);
-            var decoder = new AssignableDecoder<T, ArraySegment<E>>(new ArraySegmentDecoder<E>(converter));
+            var decoder = new AssignableDecoder<T, IEnumerable<E>>(new EnumerableDecoder<E>(converter));
             return new SequenceConverter<T>(encoder, decoder);
         }
 

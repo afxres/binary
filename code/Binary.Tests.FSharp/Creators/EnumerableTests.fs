@@ -18,7 +18,7 @@ type EnumerableTests () =
         Assert.Equal(24, bytes |> Array.length)
         let value = generator.Decode<IList<float>> bytes
         Assert.Equal<float>(a, value)
-        Assert.IsType<float segment> value |> ignore
+        Assert.IsType<float array> value |> ignore
         ()
 
     [<Fact>]
@@ -28,7 +28,7 @@ type EnumerableTests () =
         Assert.Equal(12, bytes |> Array.length)
         let value = generator.Decode<IList<int>> bytes
         Assert.Equal<int>(a, value)
-        Assert.IsType<int segment> value |> ignore
+        Assert.IsType<int array> value |> ignore
         ()
 
     [<Fact>]
@@ -48,7 +48,7 @@ type EnumerableTests () =
         Assert.Equal(24, bytes |> Array.length)
         let value = generator.Decode<ICollection<float>> bytes
         Assert.Equal<float>(a, value)
-        Assert.IsType<float segment> value |> ignore
+        Assert.IsType<float array> value |> ignore
         ()
 
     [<Fact>]
@@ -58,12 +58,12 @@ type EnumerableTests () =
         Assert.Equal(16, bytes |> Array.length)
         let value = generator.Decode<IReadOnlyCollection<int>> bytes
         Assert.Equal<int>(a, value)
-        Assert.IsType<int segment> value |> ignore
+        Assert.IsType<int array> value |> ignore
         ()
 
     [<Fact>]
     member __.``IEnumerable`` () =
-        let a = seq { for i in 1..16 do yield sprintf "%x" i }
+        let a = seq { for i in 1..13 do yield sprintf "%x" i }
         let bytes = generator.Encode a
         let value = generator.Decode<string seq> bytes
         Assert.Equal<string>(a, value)
