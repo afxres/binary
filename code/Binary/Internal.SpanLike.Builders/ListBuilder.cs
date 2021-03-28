@@ -18,13 +18,19 @@ namespace Mikodev.Binary.Internal.SpanLike.Builders
 
         public override ReadOnlySpan<T> Handle(List<T> item)
         {
+            Debug.Assert(this.ofList is not null);
+#if NET5_0_OR_GREATER
+            return System.Runtime.InteropServices.CollectionsMarshal.AsSpan(item);
+#else
             if (item is { Count: var count } && count is not 0)
                 return new ReadOnlySpan<T>(this.ofList.Invoke(item), 0, count);
             return default;
+#endif
         }
 
         public override List<T> Invoke(ReadOnlySpan<byte> span, SpanLikeAdapter<T> adapter)
         {
+            Debug.Assert(this.toList is not null);
             var data = adapter.Decode(span);
             Debug.Assert((uint)data.Length <= (uint)data.Memory.Length);
             return this.toList.Invoke(data.Memory, data.Length);
