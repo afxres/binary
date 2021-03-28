@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Mikodev.Binary.Internal.Sequence.Encoders
 {
@@ -17,7 +16,8 @@ namespace Mikodev.Binary.Internal.Sequence.Encoders
 
         public void Encode(ref Allocator allocator, T item)
         {
-            Debug.Assert(item is not null);
+            if (item is null)
+                return;
             var init = this.init;
             var tail = this.tail;
             foreach (var i in item)

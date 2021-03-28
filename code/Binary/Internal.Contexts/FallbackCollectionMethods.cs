@@ -102,30 +102,44 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static SequenceEncoder<T> GetEncoder<T, E>(Converter<E> converter) where T : IEnumerable<E>
         {
-            var member = Expression.Constant(converter);
-            var method = ContextMethods.GetEncodeMethodInfo(typeof(E), nameof(IConverter.EncodeAuto));
-            var result = GetEncoder<T>(typeof(E), (allocator, current) => Expression.Call(member, method, allocator, current));
+            Func<Expression, Expression, Expression> Invoke()
+            {
+                var member = Expression.Constant(converter);
+                var method = ContextMethods.GetEncodeMethodInfo(typeof(E), nameof(IConverter.EncodeAuto));
+                var invoke = new Func<Expression, Expression, Expression>((allocator, current) => Expression.Call(member, method, allocator, current));
+                return invoke;
+            }
+
+            var handle = new Lazy<Func<Expression, Expression, Expression>>(Invoke);
+            var result = GetEncoder<T>(typeof(E), handle);
             return result ?? new EnumerableEncoder<T, E>(converter).Encode;
         }
 
         private static SequenceEncoder<T> GetEncoder<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
         {
-            var initMember = Expression.Constant(init);
-            var tailMember = Expression.Constant(tail);
-            var initMethod = ContextMethods.GetEncodeMethodInfo(typeof(K), nameof(IConverter.EncodeAuto));
-            var tailMethod = ContextMethods.GetEncodeMethodInfo(typeof(V), nameof(IConverter.EncodeAuto));
-            var initProperty = CommonHelper.GetProperty<KeyValuePair<K, V>, K>(x => x.Key);
-            var tailProperty = CommonHelper.GetProperty<KeyValuePair<K, V>, V>(x => x.Value);
-            var assign = Expression.Variable(typeof(KeyValuePair<K, V>), "current");
-            var result = GetEncoder<T>(typeof(KeyValuePair<K, V>), (allocator, current) => Expression.Block(
-                new[] { assign },
-                Expression.Assign(assign, current),
-                Expression.Call(initMember, initMethod, allocator, Expression.Property(assign, initProperty)),
-                Expression.Call(tailMember, tailMethod, allocator, Expression.Property(assign, tailProperty))));
+            Func<Expression, Expression, Expression> Invoke()
+            {
+                var initMember = Expression.Constant(init);
+                var tailMember = Expression.Constant(tail);
+                var initMethod = ContextMethods.GetEncodeMethodInfo(typeof(K), nameof(IConverter.EncodeAuto));
+                var tailMethod = ContextMethods.GetEncodeMethodInfo(typeof(V), nameof(IConverter.EncodeAuto));
+                var initProperty = CommonHelper.GetProperty<KeyValuePair<K, V>, K>(x => x.Key);
+                var tailProperty = CommonHelper.GetProperty<KeyValuePair<K, V>, V>(x => x.Value);
+                var assign = Expression.Variable(typeof(KeyValuePair<K, V>), "current");
+                var invoke = new Func<Expression, Expression, Expression>((allocator, current) => Expression.Block(
+                    new[] { assign },
+                    Expression.Assign(assign, current),
+                    Expression.Call(initMember, initMethod, allocator, Expression.Property(assign, initProperty)),
+                    Expression.Call(tailMember, tailMethod, allocator, Expression.Property(assign, tailProperty))));
+                return invoke;
+            }
+
+            var handle = new Lazy<Func<Expression, Expression, Expression>>(Invoke);
+            var result = GetEncoder<T>(typeof(KeyValuePair<K, V>), handle);
             return result ?? new KeyValueEnumerableEncoder<T, K, V>(init, tail).Encode;
         }
 
-        private static SequenceEncoder<T> GetEncoder<T>(Type elementType, Func<Expression, Expression, Expression> func)
+        private static SequenceEncoder<T> GetEncoder<T>(Type elementType, Lazy<Func<Expression, Expression, Expression>> handle)
         {
             const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public;
             var initial = typeof(T).GetMethods(Flags).FirstOrDefault(x => x.Name is "GetEnumerator" && x.GetParameters().Length is 0);
@@ -148,14 +162,17 @@ namespace Mikodev.Binary.Internal.Contexts
             var origin = Expression.Loop(
                 Expression.IfThenElse(
                     Expression.Call(enumerator, functor),
-                    func.Invoke(allocator, Expression.Property(enumerator, current)),
+                    handle.Value.Invoke(allocator, Expression.Property(enumerator, current)),
                     Expression.Break(target)),
                 target);
             var source = dispose is null
                 ? origin as Expression
                 : Expression.TryFinally(origin, Expression.Call(enumerator, dispose));
             var result = Expression.Block(new[] { enumerator }, assign, source);
-            var lambda = Expression.Lambda<SequenceEncoder<T>>(result, allocator, collection);
+            var ensure = typeof(T).IsValueType
+                ? result as Expression
+                : Expression.IfThen(Expression.NotEqual(collection, Expression.Constant(null, typeof(T))), result);
+            var lambda = Expression.Lambda<SequenceEncoder<T>>(ensure, allocator, collection);
             return lambda.Compile();
         }
 

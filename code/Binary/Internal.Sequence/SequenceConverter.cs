@@ -18,7 +18,7 @@ namespace Mikodev.Binary.Internal.Sequence
             this.encoder = encoder;
         }
 
-        public override void Encode(ref Allocator allocator, T item) => EncodeInternal(ref allocator, item);
+        public override void Encode(ref Allocator allocator, T item) => this.encoder.Invoke(ref allocator, item);
 
         public override void EncodeAuto(ref Allocator allocator, T item) => EncodeWithLengthPrefixInternal(ref allocator, item);
 

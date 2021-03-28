@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Mikodev.Binary.Internal.Sequence.Encoders
 {
@@ -11,7 +10,8 @@ namespace Mikodev.Binary.Internal.Sequence.Encoders
 
         public void Encode(ref Allocator allocator, LinkedList<E> item)
         {
-            Debug.Assert(item is not null);
+            if (item is null)
+                return;
             var converter = this.converter;
             for (var i = item.First; i is not null; i = i.Next)
                 converter.EncodeAuto(ref allocator, i.Value);
