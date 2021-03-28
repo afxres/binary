@@ -20,8 +20,9 @@ let Test (collection : 'T when 'T :> FakeEnumerable<'E>) (expected : string seq)
     let converter = generator.GetConverter<'T>()
     let converterType = converter.GetType()
     Assert.Equal("SequenceConverter`1", converterType.Name)
-    let encoder = converterType.GetField("encoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter
-    Assert.Equal("DelegateEncoder`1", encoder.GetType().Name)
+    let encoder = converterType.GetField("encoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
+    Assert.Null(encoder.Method.DeclaringType)
+    Assert.Contains("lambda", encoder.Method.Name)
 
     let steps = collection.Steps
     Assert.Empty steps
@@ -142,8 +143,8 @@ let TestInvalid (collection : 'T when 'T :> FakeEnumerable<'E>) =
     let converter = generator.GetConverter<'T>()
     let converterType = converter.GetType()
     Assert.Equal("SequenceConverter`1", converterType.Name)
-    let encoder = converterType.GetField("encoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter
-    Assert.Equal("EnumerableEncoder`2", encoder.GetType().Name)
+    let encoder = converterType.GetField("encoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
+    Assert.Equal("EnumerableEncoder`2", encoder.Method.DeclaringType.Name)
     Assert.Empty collection.Steps
     ()
 

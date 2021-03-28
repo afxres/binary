@@ -7,8 +7,6 @@ using System.Reflection;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
-    internal delegate void ContextCollectionEncoder<T>(ref Allocator allocator, T item);
-
     internal delegate Delegate ContextObjectConstructor(Type delegateType, ContextObjectInitializer initializer);
 
     internal delegate Expression ContextMemberInitializer(Expression expression);

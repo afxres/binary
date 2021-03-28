@@ -23,6 +23,8 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             static MethodInfo Info<T>(Func<IEnumerable<KeyValuePair<object, object>>, T> func) => func.Method.GetGenericMethodDefinition();
 
+            static List<Type> List<T>() => typeof(T).GetInterfaces().Where(typeof(IEnumerable<object>).IsAssignableFrom).Select(x => x.GetGenericTypeDefinition()).ToList();
+
             var immutable = new Dictionary<Type, MethodInfo>
             {
                 [typeof(IImmutableDictionary<,>)] = Info(ImmutableDictionary.CreateRange),
@@ -46,9 +48,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 typeof(IImmutableStack<>),
             };
 
-            var arrayInterfaces = typeof(object[]).GetInterfaces().Where(typeof(IEnumerable<object>).IsAssignableFrom).ToHashSet();
-            var arraySegmentInterfaces = typeof(ArraySegment<object>).GetInterfaces().Where(typeof(IEnumerable<object>).IsAssignableFrom).ToHashSet();
-            var interfaces = arrayInterfaces.Intersect(arraySegmentInterfaces).Select(x => x.GetGenericTypeDefinition()).ToArray();
+            var interfaces = List<object[]>().Intersect(List<ArraySegment<object>>()).ToArray();
 
             InvalidTypeDefinitions = invalid;
             EnumerableInterfaceDefinitions = interfaces;
@@ -85,17 +85,19 @@ namespace Mikodev.Binary.Internal.Contexts
             return x => Expression.New(constructor, x);
         }
 
+        private static SequenceDecoder<T> GetDecoder<T, R>(SequenceDecoder<R> decoder)
+        {
+            return (SequenceDecoder<T>)Delegate.CreateDelegate(typeof(SequenceDecoder<T>), decoder.Target, decoder.Method);
+        }
+
         private static SequenceDecoder<T> GetDecoder<T, R, I>(SequenceDecoder<R> decoder, Func<Expression, Expression> method)
         {
-            static Func<R, T> Invoke(Func<Expression, Expression> method)
-            {
-                var source = Expression.Parameter(typeof(R), "source");
-                var invoke = method.Invoke(Expression.Convert(source, typeof(I)));
-                var lambda = Expression.Lambda<Func<R, T>>(invoke, source);
-                return lambda.Compile();
-            }
-
-            return method is null ? new FallbackDecoder<T>() : new DelegateDecoder<T, R>(decoder, Invoke(method));
+            if (method is null)
+                return new SequenceDecoder<T>(ThrowHelper.ThrowNoSuitableConstructor<T>);
+            var source = Expression.Parameter(typeof(ReadOnlySpan<byte>), "source");
+            var invoke = method.Invoke(Expression.Convert(Expression.Call(Expression.Constant(decoder.Target), decoder.Method, source), typeof(I)));
+            var lambda = Expression.Lambda<SequenceDecoder<T>>(invoke, source);
+            return lambda.Compile();
         }
 
         private static SequenceEncoder<T> GetEncoder<T, E>(Converter<E> converter) where T : IEnumerable<E>
@@ -103,7 +105,7 @@ namespace Mikodev.Binary.Internal.Contexts
             var member = Expression.Constant(converter);
             var method = ContextMethods.GetEncodeMethodInfo(typeof(E), nameof(IConverter.EncodeAuto));
             var result = GetEncoder<T>(typeof(E), (allocator, current) => Expression.Call(member, method, allocator, current));
-            return result is null ? new EnumerableEncoder<T, E>(converter) : new DelegateEncoder<T>(result);
+            return result ?? new EnumerableEncoder<T, E>(converter).Encode;
         }
 
         private static SequenceEncoder<T> GetEncoder<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
@@ -120,10 +122,10 @@ namespace Mikodev.Binary.Internal.Contexts
                 Expression.Assign(assign, current),
                 Expression.Call(initMember, initMethod, allocator, Expression.Property(assign, initProperty)),
                 Expression.Call(tailMember, tailMethod, allocator, Expression.Property(assign, tailProperty))));
-            return result is null ? new KeyValueEnumerableEncoder<T, K, V>(init, tail) : new DelegateEncoder<T>(result);
+            return result ?? new KeyValueEnumerableEncoder<T, K, V>(init, tail).Encode;
         }
 
-        private static ContextCollectionEncoder<T> GetEncoder<T>(Type elementType, Func<Expression, Expression, Expression> func)
+        private static SequenceEncoder<T> GetEncoder<T>(Type elementType, Func<Expression, Expression, Expression> func)
         {
             const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public;
             var initial = typeof(T).GetMethods(Flags).FirstOrDefault(x => x.Name is "GetEnumerator" && x.GetParameters().Length is 0);
@@ -153,7 +155,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 ? origin as Expression
                 : Expression.TryFinally(origin, Expression.Call(enumerator, dispose));
             var result = Expression.Block(new[] { enumerator }, assign, source);
-            var lambda = Expression.Lambda<ContextCollectionEncoder<T>>(result, allocator, collection);
+            var lambda = Expression.Lambda<SequenceEncoder<T>>(result, allocator, collection);
             return lambda.Compile();
         }
 
@@ -192,63 +194,63 @@ namespace Mikodev.Binary.Internal.Contexts
         private static IConverter GetHashSetConverter<E>(Converter<E> converter)
         {
             var encoder = GetEncoder<HashSet<E>, E>(converter);
-            var decoder = new HashSetDecoder<E>(converter);
+            var decoder = new SequenceDecoder<HashSet<E>>(new HashSetDecoder<E>(converter).Decode);
             return new SequenceConverter<HashSet<E>>(encoder, decoder);
         }
 
         private static IConverter GetHashSetInterfaceAssignableConverter<T, E>(Converter<E> converter) where T : IEnumerable<E>
         {
             var encoder = GetEncoder<T, E>(converter);
-            var decoder = new AssignableDecoder<T, HashSet<E>>(new HashSetDecoder<E>(converter));
+            var decoder = GetDecoder<T, HashSet<E>>(new HashSetDecoder<E>(converter).Decode);
             return new SequenceConverter<T>(encoder, decoder);
         }
 
         private static IConverter GetLinkedListConverter<E>(Converter<E> converter)
         {
-            var encoder = new LinkedListEncoder<E>(converter);
-            var decoder = new LinkedListDecoder<E>(converter);
+            var encoder = new SequenceEncoder<LinkedList<E>>(new LinkedListEncoder<E>(converter).Encode);
+            var decoder = new SequenceDecoder<LinkedList<E>>(new LinkedListDecoder<E>(converter).Decode);
             return new SequenceConverter<LinkedList<E>>(encoder, decoder);
         }
 
         private static IConverter GetEnumerableConverter<T, E>(Converter<E> converter, Func<Expression, Expression> method) where T : IEnumerable<E>
         {
             var encoder = GetEncoder<T, E>(converter);
-            var decoder = GetDecoder<T, IEnumerable<E>, IEnumerable<E>>(new EnumerableDecoder<E>(converter), method);
+            var decoder = GetDecoder<T, IEnumerable<E>, IEnumerable<E>>(new EnumerableDecoder<IEnumerable<E>, E>(converter).Decode, method);
             return new SequenceConverter<T>(encoder, decoder);
         }
 
         private static IConverter GetEnumerableInterfaceAssignableConverter<T, E>(Converter<E> converter) where T : IEnumerable<E>
         {
             var encoder = GetEncoder<T, E>(converter);
-            var decoder = new AssignableDecoder<T, IEnumerable<E>>(new EnumerableDecoder<E>(converter));
+            var decoder = new SequenceDecoder<T>(new EnumerableDecoder<T, E>(converter).Decode);
             return new SequenceConverter<T>(encoder, decoder);
         }
 
         private static IConverter GetDictionaryConverter<K, V>(Converter<K> init, Converter<V> tail, int itemLength)
         {
             var encoder = GetEncoder<Dictionary<K, V>, K, V>(init, tail);
-            var decoder = new DictionaryDecoder<K, V>(init, tail, itemLength);
+            var decoder = new SequenceDecoder<Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode);
             return new SequenceConverter<Dictionary<K, V>>(encoder, decoder);
         }
 
         private static IConverter GetDictionaryConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
         {
             var encoder = GetEncoder<T, K, V>(init, tail);
-            var decoder = GetDecoder<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength), method);
+            var decoder = GetDecoder<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode, method);
             return new SequenceConverter<T>(encoder, decoder);
         }
 
         private static IConverter GetDictionaryInterfaceAssignableConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength) where T : IEnumerable<KeyValuePair<K, V>>
         {
             var encoder = GetEncoder<T, K, V>(init, tail);
-            var decoder = new AssignableDecoder<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength));
+            var decoder = GetDecoder<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode);
             return new SequenceConverter<T>(encoder, decoder);
         }
 
         private static IConverter GetKeyValueEnumerableConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
         {
             var encoder = GetEncoder<T, K, V>(init, tail);
-            var decoder = GetDecoder<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail, itemLength), method);
+            var decoder = GetDecoder<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail, itemLength).Decode, method);
             return new SequenceConverter<T>(encoder, decoder);
         }
     }

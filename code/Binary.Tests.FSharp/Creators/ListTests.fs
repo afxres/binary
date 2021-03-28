@@ -54,8 +54,8 @@ type ListTests () =
         let method = methodType.GetMethod("GetConverter", BindingFlags.Static ||| BindingFlags.NonPublic, null, [| typeof<IGeneratorContext>; typeof<Type> |], null)
 
         let alpha = method.Invoke(null, [| box context; typeof<'a vlist> |]) :?> Converter<'a vlist>
-        let alphaDecoder = alpha.GetType().GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(alpha)
-        Assert.Equal("DelegateDecoder`2", alphaDecoder.GetType().Name)
+        let alphaDecoder = alpha.GetType().GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(alpha) |> unbox<Delegate>
+        Assert.Contains("lambda", alphaDecoder.Method.Name)
         let bravo = generator.GetConverter<'a vlist>()
         let bravoBuilder = bravo.GetType().GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(bravo)
         Assert.Equal("ListBuilder`1", bravoBuilder.GetType().Name)

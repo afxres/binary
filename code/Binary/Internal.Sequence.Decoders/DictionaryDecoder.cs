@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Mikodev.Binary.Internal.Sequence.Decoders
 {
-    internal sealed class DictionaryDecoder<K, V> : SequenceDecoder<Dictionary<K, V>>
+    internal sealed class DictionaryDecoder<K, V>
     {
         private readonly int itemLength;
 
@@ -18,7 +18,7 @@ namespace Mikodev.Binary.Internal.Sequence.Decoders
             this.itemLength = itemLength;
         }
 
-        public override Dictionary<K, V> Decode(ReadOnlySpan<byte> span)
+        public Dictionary<K, V> Decode(ReadOnlySpan<byte> span)
         {
             var limits = span.Length;
             if (limits is 0)

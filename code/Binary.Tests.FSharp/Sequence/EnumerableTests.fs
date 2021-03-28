@@ -53,15 +53,15 @@ type FakeDictionary<'K, 'V>(item : Queue<KeyValuePair<'K, 'V>>) =
     interface IFakeDictionaryInterface<'K, 'V>
 
     interface IDictionary<'K, 'V> with
-        member __.Add(key: 'K, value: 'V): unit = raise (System.NotImplementedException())
+        member __.Add(key: 'K, value: 'V): unit = raise (NotImplementedException())
 
-        member __.Add(item: KeyValuePair<'K,'V>): unit = raise (System.NotImplementedException())
+        member __.Add(item: KeyValuePair<'K,'V>): unit = raise (NotImplementedException())
 
-        member __.Clear(): unit = raise (System.NotImplementedException())
+        member __.Clear(): unit = raise (NotImplementedException())
 
-        member __.Contains(item: KeyValuePair<'K,'V>): bool = raise (System.NotImplementedException())
+        member __.Contains(item: KeyValuePair<'K,'V>): bool = raise (NotImplementedException())
 
-        member __.ContainsKey(key: 'K): bool = raise (System.NotImplementedException())
+        member __.ContainsKey(key: 'K): bool = raise (NotImplementedException())
 
         member __.CopyTo(array: KeyValuePair<'K,'V> [], arrayIndex: int): unit = item.CopyTo(array, arrayIndex)
 
@@ -71,37 +71,37 @@ type FakeDictionary<'K, 'V>(item : Queue<KeyValuePair<'K, 'V>>) =
 
         member __.GetEnumerator(): IEnumerator<KeyValuePair<'K,'V>> = (item :> seq<_>).GetEnumerator()
 
-        member __.IsReadOnly: bool = raise (System.NotImplementedException())
+        member __.IsReadOnly: bool = raise (NotImplementedException())
 
-        member __.Item with get (key: 'K): 'V = raise (System.NotImplementedException()) and set (key: 'K) (v: 'V): unit = raise (System.NotImplementedException())
+        member __.Item with get (key: 'K): 'V = raise (NotImplementedException()) and set (key: 'K) (v: 'V): unit = raise (NotImplementedException())
 
-        member __.Keys: ICollection<'K> = raise (System.NotImplementedException())
+        member __.Keys: ICollection<'K> = raise (NotImplementedException())
 
-        member __.Remove(key: 'K): bool = raise (System.NotImplementedException())
+        member __.Remove(key: 'K): bool = raise (NotImplementedException())
 
-        member __.Remove(item: KeyValuePair<'K,'V>): bool = raise (System.NotImplementedException())
+        member __.Remove(item: KeyValuePair<'K,'V>): bool = raise (NotImplementedException())
 
-        member __.TryGetValue(key: 'K, value: byref<'V>): bool = raise (System.NotImplementedException())
+        member __.TryGetValue(key: 'K, value: byref<'V>): bool = raise (NotImplementedException())
 
-        member __.Values: ICollection<'V> = raise (System.NotImplementedException())
+        member __.Values: ICollection<'V> = raise (NotImplementedException())
 
 type FakeReadOnlyDictionary<'K, 'V>(item : KeyValuePair<'K, 'V> array) =
     interface IReadOnlyDictionary<'K, 'V> with
-        member __.ContainsKey(key: 'K): bool = raise (System.NotImplementedException())
+        member __.ContainsKey(key: 'K): bool = raise (NotImplementedException())
 
-        member __.Count: int = raise (System.NotImplementedException())
+        member __.Count: int = raise (NotImplementedException())
 
         member __.GetEnumerator(): IEnumerator = (item :> seq<_>).GetEnumerator() :> IEnumerator
 
         member __.GetEnumerator(): IEnumerator<KeyValuePair<'K,'V>> = (item :> seq<_>).GetEnumerator()
 
-        member __.Item with get (key: 'K): 'V = raise (System.NotImplementedException())
+        member __.Item with get (key: 'K): 'V = raise (NotImplementedException())
 
-        member __.Keys: IEnumerable<'K> = raise (System.NotImplementedException())
+        member __.Keys: IEnumerable<'K> = raise (NotImplementedException())
 
-        member __.TryGetValue(key: 'K, value: byref<'V>): bool = raise (System.NotImplementedException())
+        member __.TryGetValue(key: 'K, value: byref<'V>): bool = raise (NotImplementedException())
 
-        member __.Values: IEnumerable<'V> = raise (System.NotImplementedException())
+        member __.Values: IEnumerable<'V> = raise (NotImplementedException())
 
 type FakeDictionaryReadOnlyDictionary<'K, 'V>(item : KeyValuePair<'K, 'V> ResizeArray) =
     interface IEnumerable<KeyValuePair<'K, 'V>> with
@@ -110,56 +110,59 @@ type FakeDictionaryReadOnlyDictionary<'K, 'V>(item : KeyValuePair<'K, 'V> Resize
         member __.GetEnumerator(): IEnumerator<KeyValuePair<'K,'V>> = (item :> seq<_>).GetEnumerator()
 
     interface IDictionary<'K, 'V> with
-        member __.Add(key: 'K, value: 'V): unit = raise (System.NotImplementedException())
+        member __.Add(key: 'K, value: 'V): unit = raise (NotImplementedException())
 
-        member __.Add(item: KeyValuePair<'K,'V>): unit = raise (System.NotImplementedException())
+        member __.Add(item: KeyValuePair<'K,'V>): unit = raise (NotImplementedException())
 
-        member __.Clear(): unit = raise (System.NotImplementedException())
+        member __.Clear(): unit = raise (NotImplementedException())
 
-        member __.Contains(item: KeyValuePair<'K,'V>): bool = raise (System.NotImplementedException())
+        member __.Contains(item: KeyValuePair<'K,'V>): bool = raise (NotImplementedException())
 
-        member __.ContainsKey(key: 'K): bool = raise (System.NotImplementedException())
+        member __.ContainsKey(key: 'K): bool = raise (NotImplementedException())
 
         member __.CopyTo(array: KeyValuePair<'K,'V> [], arrayIndex: int): unit = item.CopyTo(array, arrayIndex)
 
         member __.Count: int = item.Count
 
-        member __.IsReadOnly: bool = raise (System.NotImplementedException())
+        member __.IsReadOnly: bool = raise (NotImplementedException())
 
-        member __.Item with get (key: 'K): 'V = raise (System.NotImplementedException()) and set (key: 'K) (v: 'V): unit = raise (System.NotImplementedException())
+        member __.Item with get (key: 'K): 'V = raise (NotImplementedException()) and set (key: 'K) (v: 'V): unit = raise (NotImplementedException())
 
-        member __.Keys: ICollection<'K> = raise (System.NotImplementedException())
+        member __.Keys: ICollection<'K> = raise (NotImplementedException())
 
-        member __.Remove(key: 'K): bool = raise (System.NotImplementedException())
+        member __.Remove(key: 'K): bool = raise (NotImplementedException())
 
-        member __.Remove(item: KeyValuePair<'K,'V>): bool = raise (System.NotImplementedException())
+        member __.Remove(item: KeyValuePair<'K,'V>): bool = raise (NotImplementedException())
 
-        member __.TryGetValue(key: 'K, value: byref<'V>): bool = raise (System.NotImplementedException())
+        member __.TryGetValue(key: 'K, value: byref<'V>): bool = raise (NotImplementedException())
 
-        member __.Values: ICollection<'V> = raise (System.NotImplementedException())
+        member __.Values: ICollection<'V> = raise (NotImplementedException())
 
     interface IReadOnlyDictionary<'K, 'V> with
-        member __.ContainsKey(key: 'K): bool = raise (System.NotImplementedException())
+        member __.ContainsKey(key: 'K): bool = raise (NotImplementedException())
 
-        member __.Count: int = raise (System.NotImplementedException())
+        member __.Count: int = raise (NotImplementedException())
 
-        member __.Item with get (key: 'K): 'V = raise (System.NotImplementedException())
+        member __.Item with get (key: 'K): 'V = raise (NotImplementedException())
 
-        member __.Keys: IEnumerable<'K> = raise (System.NotImplementedException())
+        member __.Keys: IEnumerable<'K> = raise (NotImplementedException())
 
-        member __.TryGetValue(key: 'K, value: byref<'V>): bool = raise (System.NotImplementedException())
+        member __.TryGetValue(key: 'K, value: byref<'V>): bool = raise (NotImplementedException())
 
-        member __.Values: IEnumerable<'V> = raise (System.NotImplementedException())
+        member __.Values: IEnumerable<'V> = raise (NotImplementedException())
 
 let Test (enumerable : 'a) (expected : 'b) (encoderName : string) =
     let converter = generator.GetConverter<'a>()
     let converterType = converter.GetType()
     Assert.Equal("SequenceConverter`1", converter.GetType().Name)
 
-    let encoder = converterType.GetField("encoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter
-    Assert.Equal(encoderName, encoder.GetType().Name)
-    let decoder = converterType.GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter
-    Assert.Equal("FallbackDecoder`1", decoder.GetType().Name)
+    let encoder = converterType.GetField("encoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
+    let encoderActualName = encoder.Method.DeclaringType.Name
+    Assert.Equal(encoderName, encoderActualName)
+    let decoder = converterType.GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
+    let decoderMethod = decoder.Method
+    Assert.Equal("ThrowHelper", decoderMethod.DeclaringType.Name)
+    Assert.Equal("ThrowNoSuitableConstructor", decoderMethod.Name)
 
     let buffer = converter.Encode enumerable
     let target = generator.Encode expected

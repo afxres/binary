@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace Mikodev.Binary.Internal.Sequence.Decoders
 {
-    internal sealed class LinkedListDecoder<E> : SequenceDecoder<LinkedList<E>>
+    internal sealed class LinkedListDecoder<E>
     {
         private readonly Converter<E> converter;
 
         public LinkedListDecoder(Converter<E> converter) => this.converter = converter;
 
-        public override LinkedList<E> Decode(ReadOnlySpan<byte> span)
+        public LinkedList<E> Decode(ReadOnlySpan<byte> span)
         {
             var body = span;
             var list = new LinkedList<E>();

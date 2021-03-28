@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Mikodev.Binary.Internal.Sequence.Encoders
 {
-    internal sealed class KeyValueEnumerableEncoder<T, K, V> : SequenceEncoder<T> where T : IEnumerable<KeyValuePair<K, V>>
+    internal sealed class KeyValueEnumerableEncoder<T, K, V> where T : IEnumerable<KeyValuePair<K, V>>
     {
         private readonly Converter<K> init;
 
@@ -14,10 +15,9 @@ namespace Mikodev.Binary.Internal.Sequence.Encoders
             this.tail = tail;
         }
 
-        public override void Encode(ref Allocator allocator, T item)
+        public void Encode(ref Allocator allocator, T item)
         {
-            if (item is null)
-                return;
+            Debug.Assert(item is not null);
             var init = this.init;
             var tail = this.tail;
             foreach (var i in item)

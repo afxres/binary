@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Mikodev.Binary.Internal.Sequence.Decoders
 {
-    internal sealed class EnumerableDecoder<E> : SequenceDecoder<IEnumerable<E>>
+    internal sealed class EnumerableDecoder<T, E> where T : IEnumerable<E>
     {
         private readonly SpanLikeAdapter<E> adapter;
 
@@ -16,15 +16,15 @@ namespace Mikodev.Binary.Internal.Sequence.Decoders
             this.adapter = SpanLikeAdapterHelper.Create(converter);
         }
 
-        public override IEnumerable<E> Decode(ReadOnlySpan<byte> span)
+        public T Decode(ReadOnlySpan<byte> span)
         {
             var data = this.adapter.Decode(span);
             Debug.Assert((uint)data.Length <= (uint)data.Memory.Length);
             var buffer = data.Memory;
             var length = data.Length;
             if (buffer.Length == length)
-                return buffer;
-            return new ArraySegment<E>(data.Memory, 0, data.Length);
+                return (T)(IEnumerable<E>)buffer;
+            return (T)(IEnumerable<E>)new ArraySegment<E>(data.Memory, 0, data.Length);
         }
     }
 }

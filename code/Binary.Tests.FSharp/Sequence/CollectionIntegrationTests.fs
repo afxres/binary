@@ -103,17 +103,16 @@ let TestSequence<'a when 'a : null> (encoderName : string) (decoderName : string
     Assert.Equal("SequenceConverter`1", converter.GetType().Name)
 
     // test internal builder name
-    let encoderField = converter.GetType().GetField("encoder", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    let encoder = encoderField.GetValue converter
-    Assert.Equal(encoderName, encoder.GetType().Name)
-    let mutable decoderField = converter.GetType().GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    let mutable decoder = decoderField.GetValue converter
-    if typeof<'a>.IsInterface && typeof<'a>.Namespace <> "System.Collections.Immutable" then
-        Assert.Equal("AssignableDecoder`2", decoder.GetType().Name)
-    if typeof<'a>.IsInterface || decoder.GetType().Name = "DelegateDecoder`2" then
-        decoderField <- decoder.GetType().GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic)
-        decoder <- decoderField.GetValue decoder
-    Assert.Equal(decoderName, decoder.GetType().Name)
+    let encoder = converter.GetType().GetField("encoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
+    let encoderMethod = encoder.Method
+    let encoderActualType = encoderMethod.DeclaringType
+    let encoderActualName = if isNull (box encoderActualType) then "<lambda-encoder>" else encoderActualType.Name
+    Assert.Equal(encoderName, encoderActualName)
+    let decoder = converter.GetType().GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
+    let decoderMethod = decoder.Method
+    let decoderActualType = decoderMethod.DeclaringType
+    let decoderActualName = if isNull (box decoderActualType) then "<lambda-decoder>" else decoderActualType.Name
+    Assert.Equal(decoderName, decoderActualName)
 
     // test encode empty
     TestEncode converter collection
@@ -145,36 +144,36 @@ let ``Collection Integration Test (span-like collection, null or empty collectio
 
 [<Fact>]
 let ``Collection Integration Test (collection, null or empty collection test, default interface implementation test)`` () =
-    TestSequence<IEnumerable<_>> "EnumerableEncoder`2" "EnumerableDecoder`1" (ResizeArray<string>())
-    TestSequence<IList<_>> "EnumerableEncoder`2" "EnumerableDecoder`1" (Array.zeroCreate<int> 0)
-    TestSequence<IReadOnlyList<_>> "EnumerableEncoder`2" "EnumerableDecoder`1" (ResizeArray<string>())
-    TestSequence<ICollection<_>> "EnumerableEncoder`2" "EnumerableDecoder`1" (Array.zeroCreate<int> 0)
-    TestSequence<IReadOnlyCollection<_>> "EnumerableEncoder`2" "EnumerableDecoder`1" (Array.zeroCreate<int> 0)
+    TestSequence<IEnumerable<_>> "EnumerableEncoder`2" "EnumerableDecoder`2" (ResizeArray<string>())
+    TestSequence<IList<_>> "EnumerableEncoder`2" "EnumerableDecoder`2" (Array.zeroCreate<int> 0)
+    TestSequence<IReadOnlyList<_>> "EnumerableEncoder`2" "EnumerableDecoder`2" (ResizeArray<string>())
+    TestSequence<ICollection<_>> "EnumerableEncoder`2" "EnumerableDecoder`2" (Array.zeroCreate<int> 0)
+    TestSequence<IReadOnlyCollection<_>> "EnumerableEncoder`2" "EnumerableDecoder`2" (Array.zeroCreate<int> 0)
 
-    TestSequence<Queue<_>> "DelegateEncoder`1" "EnumerableDecoder`1" (Queue<int> 0)
-    TestSequence<ImmutableList<_>> "DelegateEncoder`1" "EnumerableDecoder`1" (ImmutableList.Create<string>())
+    TestSequence<Queue<_>> "<lambda-encoder>" "<lambda-decoder>" (Queue<int> 0)
+    TestSequence<ImmutableList<_>> "<lambda-encoder>" "<lambda-decoder>" (ImmutableList.Create<string>())
 
-    TestSequence<IImmutableList<_>> "EnumerableEncoder`2" "EnumerableDecoder`1" (ImmutableList.Create<int>())
-    TestSequence<IImmutableQueue<_>> "EnumerableEncoder`2" "EnumerableDecoder`1" (ImmutableQueue.Create<string>())
+    TestSequence<IImmutableList<_>> "EnumerableEncoder`2" "<lambda-decoder>" (ImmutableList.Create<int>())
+    TestSequence<IImmutableQueue<_>> "EnumerableEncoder`2" "<lambda-decoder>" (ImmutableQueue.Create<string>())
 
     TestSequence<ISet<_>> "EnumerableEncoder`2" "HashSetDecoder`1" (HashSet<TimeSpan>())
-    TestSequence<HashSet<_>> "DelegateEncoder`1" "HashSetDecoder`1" (HashSet<int64>())
-    TestSequence<HashSet<_>> "DelegateEncoder`1" "HashSetDecoder`1" (HashSet<string>())
+    TestSequence<HashSet<_>> "<lambda-encoder>" "HashSetDecoder`1" (HashSet<int64>())
+    TestSequence<HashSet<_>> "<lambda-encoder>" "HashSetDecoder`1" (HashSet<string>())
     TestSequence<LinkedList<_>> "LinkedListEncoder`1" "LinkedListDecoder`1" (LinkedList<double>())
     TestSequence<LinkedList<_>> "LinkedListEncoder`1" "LinkedListDecoder`1" (LinkedList<string>())
     ()
 
 [<Fact>]
 let ``Collection Integration Test (dictionary, null or empty collection test, default interface implementation test)`` () =
-    TestSequence<Dictionary<_, _>> "DelegateEncoder`1" "DictionaryDecoder`2" (Dictionary<int16, int64>())
-    TestSequence<Dictionary<_, _>> "DelegateEncoder`1" "DictionaryDecoder`2" (Dictionary<string, int>())
+    TestSequence<Dictionary<_, _>> "<lambda-encoder>" "DictionaryDecoder`2" (Dictionary<int16, int64>())
+    TestSequence<Dictionary<_, _>> "<lambda-encoder>" "DictionaryDecoder`2" (Dictionary<string, int>())
     TestSequence<IDictionary<_, _>> "KeyValueEnumerableEncoder`3" "DictionaryDecoder`2" (Dictionary<int, string>())
     TestSequence<IReadOnlyDictionary<_, _>> "KeyValueEnumerableEncoder`3" "DictionaryDecoder`2" (Dictionary<string, int>())
-    TestSequence<SortedList<_, _>> "KeyValueEnumerableEncoder`3" "DictionaryDecoder`2" (SortedList<string, int>())
-    TestSequence<SortedDictionary<_, _>> "DelegateEncoder`1" "DictionaryDecoder`2" (SortedDictionary<TimeSpan, DateTime>())
+    TestSequence<SortedList<_, _>> "KeyValueEnumerableEncoder`3" "<lambda-decoder>" (SortedList<string, int>())
+    TestSequence<SortedDictionary<_, _>> "<lambda-encoder>" "<lambda-decoder>" (SortedDictionary<TimeSpan, DateTime>())
 
-    TestSequence<ConcurrentDictionary<_, _>> "KeyValueEnumerableEncoder`3" "KeyValueEnumerableDecoder`2" (ConcurrentDictionary<TimeSpan, DateTime>())
-    TestSequence<ImmutableDictionary<_, _>> "DelegateEncoder`1" "KeyValueEnumerableDecoder`2" (ImmutableDictionary.Create<TimeSpan, DateTime>())
+    TestSequence<ConcurrentDictionary<_, _>> "KeyValueEnumerableEncoder`3" "<lambda-decoder>" (ConcurrentDictionary<TimeSpan, DateTime>())
+    TestSequence<ImmutableDictionary<_, _>> "<lambda-encoder>" "<lambda-decoder>" (ImmutableDictionary.Create<TimeSpan, DateTime>())
     ()
 
 [<Fact>]

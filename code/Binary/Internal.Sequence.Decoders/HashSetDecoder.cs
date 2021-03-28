@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace Mikodev.Binary.Internal.Sequence.Decoders
 {
-    internal sealed class HashSetDecoder<E> : SequenceDecoder<HashSet<E>>
+    internal sealed class HashSetDecoder<E>
     {
         private readonly Converter<E> converter;
 
         public HashSetDecoder(Converter<E> converter) => this.converter = converter;
 
-        public override HashSet<E> Decode(ReadOnlySpan<byte> span)
+        public HashSet<E> Decode(ReadOnlySpan<byte> span)
         {
             var body = span;
             var item = new HashSet<E>();
