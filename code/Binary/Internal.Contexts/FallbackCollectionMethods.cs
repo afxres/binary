@@ -15,15 +15,30 @@ namespace Mikodev.Binary.Internal.Contexts
     {
         private static readonly IReadOnlyList<Type> InvalidTypeDefinitions;
 
-        private static readonly IReadOnlyList<Type> EnumerableInterfaceDefinitions;
+        private static readonly IReadOnlyList<Type> HashSetAssignableDefinitions;
+
+        private static readonly IReadOnlyList<Type> DictionaryAssignableDefinitions;
+
+        private static readonly IReadOnlyList<Type> ArrayOrArraySegmentAssignableDefinitions;
 
         private static readonly IReadOnlyDictionary<Type, MethodInfo> ImmutableCollectionCreateMethods;
 
         static FallbackCollectionMethods()
         {
-            static MethodInfo Info<T>(Func<IEnumerable<KeyValuePair<object, object>>, T> func) => func.Method.GetGenericMethodDefinition();
+            static MethodInfo Info<T>(Func<IEnumerable<KeyValuePair<object, object>>, T> func)
+            {
+                return func.Method.GetGenericMethodDefinition();
+            }
 
-            static List<Type> List<T>() => typeof(T).GetInterfaces().Where(typeof(IEnumerable<object>).IsAssignableFrom).Select(x => x.GetGenericTypeDefinition()).ToList();
+            static IEnumerable<Type> List<T>()
+            {
+                var enumerable = new[] { typeof(IEnumerable<object>), typeof(IEnumerable<KeyValuePair<object, object>>) };
+                var types = CommonHelper.Concat(typeof(T), typeof(T).GetInterfaces());
+                var generic = types.Where(x => x.IsGenericType);
+                var assignable = generic.Where(x => enumerable.Any(t => t.IsAssignableFrom(x)));
+                var definitions = assignable.Select(x => x.GetGenericTypeDefinition());
+                return definitions;
+            }
 
             var immutable = new Dictionary<Type, MethodInfo>
             {
@@ -48,10 +63,14 @@ namespace Mikodev.Binary.Internal.Contexts
                 typeof(IImmutableStack<>),
             };
 
-            var interfaces = List<object[]>().Intersect(List<ArraySegment<object>>()).ToArray();
+            var array = List<object[]>().Intersect(List<ArraySegment<object>>()).ToArray();
+            var set = List<HashSet<object>>().Except(array).ToArray();
+            var dictionary = List<Dictionary<object, object>>().Except(array).ToArray();
 
             InvalidTypeDefinitions = invalid;
-            EnumerableInterfaceDefinitions = interfaces;
+            HashSetAssignableDefinitions = set;
+            DictionaryAssignableDefinitions = dictionary;
+            ArrayOrArraySegmentAssignableDefinitions = array;
             ImmutableCollectionCreateMethods = immutable;
         }
 
@@ -179,17 +198,15 @@ namespace Mikodev.Binary.Internal.Contexts
         private static IConverter GetConverter<T, E>(IGeneratorContext context) where T : IEnumerable<E>
         {
             var converter = (Converter<E>)context.GetConverter(typeof(E));
-            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } method)
-                return GetEnumerableConverter<T, E>(converter, x => Expression.Call(method.MakeGenericMethod(typeof(E)), x));
-            if (typeof(T) == typeof(HashSet<E>))
-                return GetHashSetConverter(converter);
             if (typeof(T) == typeof(LinkedList<E>))
                 return GetLinkedListConverter(converter);
-            if (typeof(T).IsInterface && CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), EnumerableInterfaceDefinitions.Contains))
-                return GetEnumerableInterfaceAssignableConverter<T, E>(converter);
-            if (typeof(T).IsInterface && typeof(T).IsAssignableFrom(typeof(HashSet<E>)))
-                return GetHashSetInterfaceAssignableConverter<T, E>(converter);
-            return GetEnumerableConverter<T, E>(converter, GetConstructorOrDefault(typeof(T), typeof(IEnumerable<E>)));
+            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ArrayOrArraySegmentAssignableDefinitions.Contains))
+                return GetArrayOrArraySegmentAssignableConverter<T, E>(converter);
+            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), HashSetAssignableDefinitions.Contains))
+                return GetHashSetAssignableConverter<T, E>(converter);
+            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } method)
+                return GetEnumerableConstructorConverter<T, E>(converter, x => Expression.Call(method.MakeGenericMethod(typeof(E)), x));
+            return GetEnumerableConstructorConverter<T, E>(converter, GetConstructorOrDefault(typeof(T), typeof(IEnumerable<E>)));
         }
 
         private static IConverter GetConverter<T, K, V>(IGeneratorContext context) where T : IEnumerable<KeyValuePair<K, V>>
@@ -197,29 +214,13 @@ namespace Mikodev.Binary.Internal.Contexts
             var init = (Converter<K>)context.GetConverter(typeof(K));
             var tail = (Converter<V>)context.GetConverter(typeof(V));
             var itemLength = ContextMethods.GetItemLength(new IConverter[] { init, tail });
+            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), DictionaryAssignableDefinitions.Contains))
+                return GetDictionaryAssignableConverter<T, K, V>(init, tail, itemLength);
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } method)
-                return GetKeyValueEnumerableConverter<T, K, V>(init, tail, itemLength, x => Expression.Call(method.MakeGenericMethod(typeof(K), typeof(V)), x));
-            if (typeof(T) == typeof(Dictionary<K, V>))
-                return GetDictionaryConverter(init, tail, itemLength);
-            if (typeof(T).IsInterface && typeof(T).IsAssignableFrom(typeof(Dictionary<K, V>)))
-                return GetDictionaryInterfaceAssignableConverter<T, K, V>(init, tail, itemLength);
+                return GetKeyValueEnumerableConstructorConverter<T, K, V>(init, tail, itemLength, x => Expression.Call(method.MakeGenericMethod(typeof(K), typeof(V)), x));
             if (GetConstructorOrDefault(typeof(T), typeof(IDictionary<K, V>)) is { } result)
-                return GetDictionaryConverter<T, K, V>(init, tail, itemLength, result);
-            return GetKeyValueEnumerableConverter<T, K, V>(init, tail, itemLength, GetConstructorOrDefault(typeof(T), typeof(IEnumerable<KeyValuePair<K, V>>)));
-        }
-
-        private static IConverter GetHashSetConverter<E>(Converter<E> converter)
-        {
-            var encoder = GetEncoder<HashSet<E>, E>(converter);
-            var decoder = new SequenceDecoder<HashSet<E>>(new HashSetDecoder<E>(converter).Decode);
-            return new SequenceConverter<HashSet<E>>(encoder, decoder);
-        }
-
-        private static IConverter GetHashSetInterfaceAssignableConverter<T, E>(Converter<E> converter) where T : IEnumerable<E>
-        {
-            var encoder = GetEncoder<T, E>(converter);
-            var decoder = GetDecoder<T, HashSet<E>>(new HashSetDecoder<E>(converter).Decode);
-            return new SequenceConverter<T>(encoder, decoder);
+                return GetDictionaryConstructorConverter<T, K, V>(init, tail, itemLength, result);
+            return GetKeyValueEnumerableConstructorConverter<T, K, V>(init, tail, itemLength, GetConstructorOrDefault(typeof(T), typeof(IEnumerable<KeyValuePair<K, V>>)));
         }
 
         private static IConverter GetLinkedListConverter<E>(Converter<E> converter)
@@ -229,42 +230,42 @@ namespace Mikodev.Binary.Internal.Contexts
             return new SequenceConverter<LinkedList<E>>(encoder, decoder);
         }
 
-        private static IConverter GetEnumerableConverter<T, E>(Converter<E> converter, Func<Expression, Expression> method) where T : IEnumerable<E>
-        {
-            var encoder = GetEncoder<T, E>(converter);
-            var decoder = GetDecoder<T, IEnumerable<E>, IEnumerable<E>>(new EnumerableDecoder<IEnumerable<E>, E>(converter).Decode, method);
-            return new SequenceConverter<T>(encoder, decoder);
-        }
-
-        private static IConverter GetEnumerableInterfaceAssignableConverter<T, E>(Converter<E> converter) where T : IEnumerable<E>
+        private static IConverter GetArrayOrArraySegmentAssignableConverter<T, E>(Converter<E> converter) where T : IEnumerable<E>
         {
             var encoder = GetEncoder<T, E>(converter);
             var decoder = new SequenceDecoder<T>(new EnumerableDecoder<T, E>(converter).Decode);
             return new SequenceConverter<T>(encoder, decoder);
         }
 
-        private static IConverter GetDictionaryConverter<K, V>(Converter<K> init, Converter<V> tail, int itemLength)
+        private static IConverter GetHashSetAssignableConverter<T, E>(Converter<E> converter) where T : IEnumerable<E>
         {
-            var encoder = GetEncoder<Dictionary<K, V>, K, V>(init, tail);
-            var decoder = new SequenceDecoder<Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode);
-            return new SequenceConverter<Dictionary<K, V>>(encoder, decoder);
-        }
-
-        private static IConverter GetDictionaryConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
-        {
-            var encoder = GetEncoder<T, K, V>(init, tail);
-            var decoder = GetDecoder<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode, method);
+            var encoder = GetEncoder<T, E>(converter);
+            var decoder = GetDecoder<T, HashSet<E>>(new HashSetDecoder<E>(converter).Decode);
             return new SequenceConverter<T>(encoder, decoder);
         }
 
-        private static IConverter GetDictionaryInterfaceAssignableConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength) where T : IEnumerable<KeyValuePair<K, V>>
+        private static IConverter GetDictionaryAssignableConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength) where T : IEnumerable<KeyValuePair<K, V>>
         {
             var encoder = GetEncoder<T, K, V>(init, tail);
             var decoder = GetDecoder<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode);
             return new SequenceConverter<T>(encoder, decoder);
         }
 
-        private static IConverter GetKeyValueEnumerableConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
+        private static IConverter GetEnumerableConstructorConverter<T, E>(Converter<E> converter, Func<Expression, Expression> method) where T : IEnumerable<E>
+        {
+            var encoder = GetEncoder<T, E>(converter);
+            var decoder = GetDecoder<T, IEnumerable<E>, IEnumerable<E>>(new EnumerableDecoder<IEnumerable<E>, E>(converter).Decode, method);
+            return new SequenceConverter<T>(encoder, decoder);
+        }
+
+        private static IConverter GetDictionaryConstructorConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
+        {
+            var encoder = GetEncoder<T, K, V>(init, tail);
+            var decoder = GetDecoder<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode, method);
+            return new SequenceConverter<T>(encoder, decoder);
+        }
+
+        private static IConverter GetKeyValueEnumerableConstructorConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
         {
             var encoder = GetEncoder<T, K, V>(init, tail);
             var decoder = GetDecoder<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail, itemLength).Decode, method);
