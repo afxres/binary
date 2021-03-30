@@ -112,11 +112,46 @@ namespace Mikodev.Binary.Internal.Contexts
         private static SequenceDecoder<T> GetDecoder<T, R, I>(SequenceDecoder<R> decoder, Func<Expression, Expression> method)
         {
             if (method is null)
-                return new SequenceDecoder<T>(ThrowHelper.ThrowNoSuitableConstructor<T>);
+                return ThrowHelper.ThrowNoSuitableConstructor<T>;
             var source = Expression.Parameter(typeof(ReadOnlySpan<byte>), "source");
             var invoke = method.Invoke(Expression.Convert(Expression.Call(Expression.Constant(decoder.Target), decoder.Method, source), typeof(I)));
             var lambda = Expression.Lambda<SequenceDecoder<T>>(invoke, source);
             return lambda.Compile();
+        }
+
+        private static SequenceDecoder<T> GetDecoder<T, E>(Converter<E> converter, Func<Expression, Expression> method) where T : IEnumerable<E>
+        {
+            return GetDecoder<T, IEnumerable<E>, IEnumerable<E>>(new EnumerableDecoder<IEnumerable<E>, E>(converter).Decode, method);
+        }
+
+        private static SequenceDecoder<T> GetDecoder<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
+        {
+            return GetDecoder<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail, itemLength).Decode, method);
+        }
+
+        private static SequenceDecoder<T> GetDecoder<T, E>(Converter<E> converter) where T : IEnumerable<E>
+        {
+            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ArrayOrArraySegmentAssignableDefinitions.Contains))
+                return new EnumerableDecoder<T, E>(converter).Decode;
+            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), HashSetAssignableDefinitions.Contains))
+                return GetDecoder<T, HashSet<E>>(new HashSetDecoder<E>(converter).Decode);
+            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } result)
+                return GetDecoder<T, E>(converter, x => Expression.Call(result.MakeGenericMethod(typeof(E)), x));
+            else
+                return GetDecoder<T, E>(converter, GetConstructorOrDefault(typeof(T), typeof(IEnumerable<E>)));
+        }
+
+        private static SequenceDecoder<T> GetDecoder<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
+        {
+            var itemLength = ContextMethods.GetItemLength(new IConverter[] { init, tail });
+            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), DictionaryAssignableDefinitions.Contains))
+                return GetDecoder<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode);
+            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } result)
+                return GetDecoder<T, K, V>(init, tail, itemLength, x => Expression.Call(result.MakeGenericMethod(typeof(K), typeof(V)), x));
+            if (GetConstructorOrDefault(typeof(T), typeof(IDictionary<K, V>)) is { } target)
+                return GetDecoder<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode, target);
+            else
+                return GetDecoder<T, K, V>(init, tail, itemLength, GetConstructorOrDefault(typeof(T), typeof(IEnumerable<KeyValuePair<K, V>>)));
         }
 
         private static SequenceEncoder<T> GetEncoder<T, E>(Converter<E> converter) where T : IEnumerable<E>
@@ -199,76 +234,18 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             var converter = (Converter<E>)context.GetConverter(typeof(E));
             if (typeof(T) == typeof(LinkedList<E>))
-                return GetLinkedListConverter(converter);
-            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ArrayOrArraySegmentAssignableDefinitions.Contains))
-                return GetArrayOrArraySegmentAssignableConverter<T, E>(converter);
-            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), HashSetAssignableDefinitions.Contains))
-                return GetHashSetAssignableConverter<T, E>(converter);
-            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } method)
-                return GetEnumerableConstructorConverter<T, E>(converter, x => Expression.Call(method.MakeGenericMethod(typeof(E)), x));
-            return GetEnumerableConstructorConverter<T, E>(converter, GetConstructorOrDefault(typeof(T), typeof(IEnumerable<E>)));
+                return new SequenceConverter<LinkedList<E>>(new LinkedListEncoder<E>(converter).Encode, new LinkedListDecoder<E>(converter).Decode);
+            var encoder = GetEncoder<T, E>(converter);
+            var decoder = GetDecoder<T, E>(converter);
+            return new SequenceConverter<T>(encoder, decoder);
         }
 
         private static IConverter GetConverter<T, K, V>(IGeneratorContext context) where T : IEnumerable<KeyValuePair<K, V>>
         {
             var init = (Converter<K>)context.GetConverter(typeof(K));
             var tail = (Converter<V>)context.GetConverter(typeof(V));
-            var itemLength = ContextMethods.GetItemLength(new IConverter[] { init, tail });
-            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), DictionaryAssignableDefinitions.Contains))
-                return GetDictionaryAssignableConverter<T, K, V>(init, tail, itemLength);
-            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } method)
-                return GetKeyValueEnumerableConstructorConverter<T, K, V>(init, tail, itemLength, x => Expression.Call(method.MakeGenericMethod(typeof(K), typeof(V)), x));
-            if (GetConstructorOrDefault(typeof(T), typeof(IDictionary<K, V>)) is { } result)
-                return GetDictionaryConstructorConverter<T, K, V>(init, tail, itemLength, result);
-            return GetKeyValueEnumerableConstructorConverter<T, K, V>(init, tail, itemLength, GetConstructorOrDefault(typeof(T), typeof(IEnumerable<KeyValuePair<K, V>>)));
-        }
-
-        private static IConverter GetLinkedListConverter<E>(Converter<E> converter)
-        {
-            var encoder = new SequenceEncoder<LinkedList<E>>(new LinkedListEncoder<E>(converter).Encode);
-            var decoder = new SequenceDecoder<LinkedList<E>>(new LinkedListDecoder<E>(converter).Decode);
-            return new SequenceConverter<LinkedList<E>>(encoder, decoder);
-        }
-
-        private static IConverter GetArrayOrArraySegmentAssignableConverter<T, E>(Converter<E> converter) where T : IEnumerable<E>
-        {
-            var encoder = GetEncoder<T, E>(converter);
-            var decoder = new SequenceDecoder<T>(new EnumerableDecoder<T, E>(converter).Decode);
-            return new SequenceConverter<T>(encoder, decoder);
-        }
-
-        private static IConverter GetHashSetAssignableConverter<T, E>(Converter<E> converter) where T : IEnumerable<E>
-        {
-            var encoder = GetEncoder<T, E>(converter);
-            var decoder = GetDecoder<T, HashSet<E>>(new HashSetDecoder<E>(converter).Decode);
-            return new SequenceConverter<T>(encoder, decoder);
-        }
-
-        private static IConverter GetDictionaryAssignableConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength) where T : IEnumerable<KeyValuePair<K, V>>
-        {
             var encoder = GetEncoder<T, K, V>(init, tail);
-            var decoder = GetDecoder<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode);
-            return new SequenceConverter<T>(encoder, decoder);
-        }
-
-        private static IConverter GetEnumerableConstructorConverter<T, E>(Converter<E> converter, Func<Expression, Expression> method) where T : IEnumerable<E>
-        {
-            var encoder = GetEncoder<T, E>(converter);
-            var decoder = GetDecoder<T, IEnumerable<E>, IEnumerable<E>>(new EnumerableDecoder<IEnumerable<E>, E>(converter).Decode, method);
-            return new SequenceConverter<T>(encoder, decoder);
-        }
-
-        private static IConverter GetDictionaryConstructorConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
-        {
-            var encoder = GetEncoder<T, K, V>(init, tail);
-            var decoder = GetDecoder<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode, method);
-            return new SequenceConverter<T>(encoder, decoder);
-        }
-
-        private static IConverter GetKeyValueEnumerableConstructorConverter<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
-        {
-            var encoder = GetEncoder<T, K, V>(init, tail);
-            var decoder = GetDecoder<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail, itemLength).Decode, method);
+            var decoder = GetDecoder<T, K, V>(init, tail);
             return new SequenceConverter<T>(encoder, decoder);
         }
     }
