@@ -55,7 +55,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 throw new ArgumentException($"Circular type reference detected, type: {type}");
             foreach (var creator in this.creators)
                 if ((converter = creator.GetConverter(this, type)) is not null)
-                    return ContextMethods.EnsureConverter(converter, type, creator.GetType());
+                    return CommonHelper.GetConverter(converter, type, creator.GetType());
 
             if ((converter = FallbackEndiannessMethods.GetConverter(type)) is not null)
                 return converter;

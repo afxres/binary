@@ -104,12 +104,12 @@ namespace Mikodev.Binary.Internal.Contexts
                 if (GetInstance<IConverter>(alpha.Type, out var converter) is { } exception)
                     throw new ArgumentException($"Can not get custom converter via attribute, expected converter type: {typeof(Converter<>).MakeGenericType(type)}", exception);
                 else
-                    return ContextMethods.EnsureConverter(converter, type);
+                    return CommonHelper.GetConverter(converter, type);
             if (attribute is ConverterCreatorAttribute bravo)
                 if (GetInstance<IConverterCreator>(bravo.Type, out var creator) is { } exception)
                     throw new ArgumentException($"Can not get custom converter creator via attribute, expected converter type: {typeof(Converter<>).MakeGenericType(type)}", exception);
                 else
-                    return ContextMethods.EnsureConverter(creator.GetConverter(context, type), type, bravo.Type);
+                    return CommonHelper.GetConverter(creator.GetConverter(context, type), type, bravo.Type);
             return context.GetConverter(type);
         }
 

@@ -83,26 +83,5 @@ namespace Mikodev.Binary.Internal.Contexts
             Debug.Assert(method is not null);
             return method;
         }
-
-        internal static IConverter EnsureConverter(IConverter converter, Type type)
-        {
-            Debug.Assert(converter is not null);
-            var expectedType = typeof(Converter<>).MakeGenericType(type);
-            var instanceType = converter.GetType();
-            if (expectedType.IsAssignableFrom(instanceType) is false)
-                throw new ArgumentException($"Can not convert '{instanceType}' to '{expectedType}'");
-            return converter;
-        }
-
-        internal static IConverter EnsureConverter(IConverter converter, Type type, Type creatorType)
-        {
-            var expectedType = typeof(Converter<>).MakeGenericType(type);
-            if (converter is null)
-                throw new ArgumentException($"Can not convert null to '{expectedType}', converter creator type: {creatorType}");
-            var instanceType = converter.GetType();
-            if (expectedType.IsAssignableFrom(instanceType) is false)
-                throw new ArgumentException($"Can not convert '{instanceType}' to '{expectedType}', converter creator type: {creatorType}");
-            return converter;
-        }
     }
 }
