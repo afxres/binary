@@ -4,7 +4,7 @@ using Mikodev.Binary.Internal;
 using System;
 using System.Text;
 
-namespace Mikodev.Binary.Converters
+namespace Mikodev.Binary.Creators
 {
     internal sealed class RuneConverter : Converter<Rune>
     {
