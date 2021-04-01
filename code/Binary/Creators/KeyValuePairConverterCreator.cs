@@ -2,7 +2,6 @@
 using Mikodev.Binary.Internal.Contexts;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Mikodev.Binary.Creators
 {
@@ -10,14 +9,7 @@ namespace Mikodev.Binary.Creators
     {
         public IConverter GetConverter(IGeneratorContext context, Type type)
         {
-            if (CommonHelper.TryGetGenericArguments(type, typeof(KeyValuePair<,>), out var arguments) is false)
-                return null;
-            var itemConverters = arguments.Select(context.GetConverter).ToList();
-            var itemLength = ContextMethods.GetItemLength(itemConverters);
-            var converterArguments = new object[] { itemConverters[0], itemConverters[1], itemLength };
-            var converterType = typeof(KeyValuePairConverter<,>).MakeGenericType(arguments);
-            var converter = Activator.CreateInstance(converterType, converterArguments);
-            return (IConverter)converter;
+            return CommonHelper.GetConverter(context, type, typeof(KeyValuePair<,>), typeof(KeyValuePairConverter<,>), x => CommonHelper.Concat(x, (object)ContextMethods.GetItemLength(x)));
         }
     }
 }

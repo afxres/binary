@@ -1,6 +1,5 @@
 ﻿using Mikodev.Binary.Internal;
 using System;
-using System.Linq;
 
 namespace Mikodev.Binary.Creators
 {
@@ -8,14 +7,7 @@ namespace Mikodev.Binary.Creators
     {
         public IConverter GetConverter(IGeneratorContext context, Type type)
         {
-            if (CommonHelper.TryGetGenericArguments(type, typeof(Nullable<>), out var arguments) is false)
-                return null;
-            var itemType = arguments.Single();
-            var itemConverter = context.GetConverter(itemType);
-            var converterArguments = new object[] { itemConverter };
-            var converterType = typeof(NullableConverter<>).MakeGenericType(itemType);
-            var converter = Activator.CreateInstance(converterType, converterArguments);
-            return (IConverter)converter;
+            return CommonHelper.GetConverter(context, type, typeof(Nullable<>), typeof(NullableConverter<>), null);
         }
     }
 }
