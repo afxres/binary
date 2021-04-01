@@ -233,8 +233,6 @@ namespace Mikodev.Binary.Internal.Contexts
         private static IConverter GetConverter<T, E>(IGeneratorContext context) where T : IEnumerable<E>
         {
             var converter = (Converter<E>)context.GetConverter(typeof(E));
-            if (typeof(T) == typeof(LinkedList<E>))
-                return new SequenceConverter<LinkedList<E>>(new LinkedListEncoder<E>(converter).Encode, new LinkedListDecoder<E>(converter).Decode);
             var encoder = GetEncoder<T, E>(converter);
             var decoder = GetDecoder<T, E>(converter);
             return new SequenceConverter<T>(encoder, decoder);

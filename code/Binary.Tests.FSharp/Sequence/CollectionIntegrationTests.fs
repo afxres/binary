@@ -159,8 +159,6 @@ let ``Collection Integration Test (collection, null or empty collection test, de
     TestSequence<ISet<_>> "EnumerableEncoder`2" "HashSetDecoder`1" (HashSet<TimeSpan>())
     TestSequence<HashSet<_>> "<lambda-encoder>" "HashSetDecoder`1" (HashSet<int64>())
     TestSequence<HashSet<_>> "<lambda-encoder>" "HashSetDecoder`1" (HashSet<string>())
-    TestSequence<LinkedList<_>> "LinkedListEncoder`1" "LinkedListDecoder`1" (LinkedList<double>())
-    TestSequence<LinkedList<_>> "LinkedListEncoder`1" "LinkedListDecoder`1" (LinkedList<string>())
     ()
 
 [<Fact>]
