@@ -26,11 +26,21 @@ namespace Mikodev.Binary
         {
             var option = this.decode;
             if (option is DecodeOption.Constant)
-                return Decode(MemoryHelper.EnsureLengthReturnBuffer(ref span, Length));
+                return DecodeAutoConstant(ref span);
             else if (option is DecodeOption.Variable)
-                return Decode(Converter.DecodeWithLengthPrefix(ref span));
+                return DecodeAutoVariable(ref span);
             else
                 return DecodeWithLengthPrefix(ref span);
+        }
+
+        private T DecodeAutoConstant(ref ReadOnlySpan<byte> span)
+        {
+            return Decode(MemoryHelper.EnsureLengthReturnBuffer(ref span, this.length));
+        }
+
+        private T DecodeAutoVariable(ref ReadOnlySpan<byte> span)
+        {
+            return Decode(Converter.DecodeWithLengthPrefix(ref span));
         }
     }
 }
