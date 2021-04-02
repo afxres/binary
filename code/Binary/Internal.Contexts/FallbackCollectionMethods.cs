@@ -111,8 +111,6 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static SequenceDecoder<T> GetDecoder<T, R, I>(SequenceDecoder<R> decoder, Func<Expression, Expression> method)
         {
-            if (method is null)
-                return ThrowHelper.ThrowNoSuitableConstructor<T>;
             var source = Expression.Parameter(typeof(ReadOnlySpan<byte>), "source");
             var invoke = method.Invoke(Expression.Convert(Expression.Call(Expression.Constant(decoder.Target), decoder.Method, source), typeof(I)));
             var lambda = Expression.Lambda<SequenceDecoder<T>>(invoke, source);
@@ -137,8 +135,10 @@ namespace Mikodev.Binary.Internal.Contexts
                 return GetDecoder<T, HashSet<E>>(new HashSetDecoder<E>(converter).Decode);
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } result)
                 return GetDecoder<T, E>(converter, x => Expression.Call(result.MakeGenericMethod(typeof(E)), x));
+            if (GetConstructorOrDefault(typeof(T), typeof(IEnumerable<E>)) is { } method)
+                return GetDecoder<T, E>(converter, method);
             else
-                return GetDecoder<T, E>(converter, GetConstructorOrDefault(typeof(T), typeof(IEnumerable<E>)));
+                return ThrowHelper.ThrowNoSuitableConstructor<T>;
         }
 
         private static SequenceDecoder<T> GetDecoder<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
@@ -150,8 +150,10 @@ namespace Mikodev.Binary.Internal.Contexts
                 return GetDecoder<T, K, V>(init, tail, itemLength, x => Expression.Call(result.MakeGenericMethod(typeof(K), typeof(V)), x));
             if (GetConstructorOrDefault(typeof(T), typeof(IDictionary<K, V>)) is { } target)
                 return GetDecoder<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode, target);
+            if (GetConstructorOrDefault(typeof(T), typeof(IEnumerable<KeyValuePair<K, V>>)) is { } method)
+                return GetDecoder<T, K, V>(init, tail, itemLength, method);
             else
-                return GetDecoder<T, K, V>(init, tail, itemLength, GetConstructorOrDefault(typeof(T), typeof(IEnumerable<KeyValuePair<K, V>>)));
+                return ThrowHelper.ThrowNoSuitableConstructor<T>;
         }
 
         private static SequenceEncoder<T> GetEncoder<T, E>(Converter<E> converter) where T : IEnumerable<E>
