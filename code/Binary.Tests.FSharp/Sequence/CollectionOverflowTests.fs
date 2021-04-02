@@ -62,7 +62,7 @@ type CollectionOverflowTests () =
 
     [<Fact>]
     member __.``Large Collection Decode (array length overflow)`` () =
-        let adapterTypeDefinition = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Namespace = "Mikodev.Binary.Internal.SpanLike.Adapters" && x.Name = "VariableAdapter`1") |> Array.exactlyOne
+        let adapterTypeDefinition = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Namespace = "Mikodev.Binary.Internal" && x.Name = "MemoryBuffer`1") |> Array.exactlyOne
         let adapterType = adapterTypeDefinition.MakeGenericType typeof<byte>
 
         let methods = adapterType.GetMethods(BindingFlags.Static ||| BindingFlags.NonPublic)

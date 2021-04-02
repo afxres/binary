@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Mikodev.Binary.Internal.Sequence.Decoders
 {
@@ -25,7 +26,7 @@ namespace Mikodev.Binary.Internal.Sequence.Decoders
                 return Array.Empty<KeyValuePair<K, V>>();
             const int Initial = 8;
             var capacity = SequenceMethods.GetCapacity<KeyValuePair<K, V>>(limits, this.itemLength, Initial);
-            var item = new List<KeyValuePair<K, V>>(capacity);
+            var memory = new MemoryBuffer<KeyValuePair<K, V>>(capacity);
             var body = span;
             var init = this.init;
             var tail = this.tail;
@@ -33,9 +34,15 @@ namespace Mikodev.Binary.Internal.Sequence.Decoders
             {
                 var head = init.DecodeAuto(ref body);
                 var next = tail.DecodeAuto(ref body);
-                item.Add(new KeyValuePair<K, V>(head, next));
+                memory.Append(new KeyValuePair<K, V>(head, next));
             }
-            return item;
+            var result = memory.Result();
+            Debug.Assert((uint)result.Length <= (uint)result.Memory.Length);
+            var buffer = result.Memory;
+            var length = result.Length;
+            if (buffer.Length == length)
+                return buffer;
+            return new ArraySegment<KeyValuePair<K, V>>(result.Memory, 0, result.Length);
         }
     }
 }

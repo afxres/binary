@@ -18,13 +18,13 @@ namespace Mikodev.Binary.Internal.Sequence.Decoders
 
         public T Decode(ReadOnlySpan<byte> span)
         {
-            var data = this.adapter.Decode(span);
-            Debug.Assert((uint)data.Length <= (uint)data.Memory.Length);
-            var buffer = data.Memory;
-            var length = data.Length;
+            var result = this.adapter.Decode(span);
+            Debug.Assert((uint)result.Length <= (uint)result.Memory.Length);
+            var buffer = result.Memory;
+            var length = result.Length;
             if (buffer.Length == length)
                 return (T)(IEnumerable<E>)buffer;
-            return (T)(IEnumerable<E>)new ArraySegment<E>(data.Memory, 0, data.Length);
+            return (T)(IEnumerable<E>)new ArraySegment<E>(result.Memory, 0, result.Length);
         }
     }
 }

@@ -9,9 +9,9 @@ namespace Mikodev.Binary.Internal.SpanLike.Builders
 
         public override ArraySegment<T> Invoke(ReadOnlySpan<byte> span, SpanLikeAdapter<T> adapter)
         {
-            var data = adapter.Decode(span);
-            Debug.Assert((uint)data.Length <= (uint)data.Memory.Length);
-            return new ArraySegment<T>(data.Memory, 0, data.Length);
+            var result = adapter.Decode(span);
+            Debug.Assert((uint)result.Length <= (uint)result.Memory.Length);
+            return new ArraySegment<T>(result.Memory, 0, result.Length);
         }
     }
 }

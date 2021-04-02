@@ -31,9 +31,9 @@ namespace Mikodev.Binary.Internal.SpanLike.Builders
         public override List<T> Invoke(ReadOnlySpan<byte> span, SpanLikeAdapter<T> adapter)
         {
             Debug.Assert(this.toList is not null);
-            var data = adapter.Decode(span);
-            Debug.Assert((uint)data.Length <= (uint)data.Memory.Length);
-            return this.toList.Invoke(data.Memory, data.Length);
+            var result = adapter.Decode(span);
+            Debug.Assert((uint)result.Length <= (uint)result.Memory.Length);
+            return this.toList.Invoke(result.Memory, result.Length);
         }
     }
 }
