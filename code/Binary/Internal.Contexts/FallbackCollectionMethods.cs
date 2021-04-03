@@ -138,7 +138,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (GetConstructorOrDefault(typeof(T), typeof(IEnumerable<E>)) is { } method)
                 return GetDecoder<T, E>(converter, method);
             else
-                return ThrowHelper.ThrowNoSuitableConstructor<T>;
+                return null;
         }
 
         private static SequenceDecoder<T> GetDecoder<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
@@ -153,7 +153,7 @@ namespace Mikodev.Binary.Internal.Contexts
             if (GetConstructorOrDefault(typeof(T), typeof(IEnumerable<KeyValuePair<K, V>>)) is { } method)
                 return GetDecoder<T, K, V>(init, tail, itemLength, method);
             else
-                return ThrowHelper.ThrowNoSuitableConstructor<T>;
+                return null;
         }
 
         private static SequenceEncoder<T> GetEncoder<T, E>(Converter<E> converter) where T : IEnumerable<E>

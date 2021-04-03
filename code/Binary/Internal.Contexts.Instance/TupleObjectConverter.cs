@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Mikodev.Binary.Internal.Contexts.Instance
 {
@@ -20,8 +21,8 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
         {
             this.encode = encode;
             this.encodeAuto = encodeAuto;
-            this.decode = decode;
-            this.decodeAuto = decodeAuto;
+            this.decode = decode ?? ThrowHelper.ThrowNoSuitableConstructor<T>;
+            this.decodeAuto = decodeAuto ?? ThrowHelper.ThrowNoSuitableConstructor<T>;
         }
 
         public override void Encode(ref Allocator allocator, T item)
@@ -40,19 +41,14 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
 
         public override T Decode(in ReadOnlySpan<byte> span)
         {
-            var decode = this.decode;
-            if (decode is null)
-                return ThrowHelper.ThrowNoSuitableConstructor<T>();
+            Debug.Assert(this.decode is not null);
             var body = span;
-            return decode.Invoke(ref body);
+            return this.decode.Invoke(ref body);
         }
 
         public override T DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            var decodeAuto = this.decodeAuto;
-            if (decodeAuto is null)
-                return ThrowHelper.ThrowNoSuitableConstructor<T>();
-            return decodeAuto.Invoke(ref span);
+            return this.decodeAuto.Invoke(ref span);
         }
     }
 }
