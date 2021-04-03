@@ -15,7 +15,7 @@ namespace Mikodev.Binary.Internal.Sequence
         public SequenceConverter(SequenceEncoder<T> encoder, SequenceDecoder<T> decoder)
         {
             this.encoder = encoder;
-            this.decoder = decoder ?? ThrowHelper.ThrowNoSuitableConstructor<T>;
+            this.decoder = decoder ?? (_ => ThrowHelper.ThrowNoSuitableConstructor<T>());
         }
 
         public override void Encode(ref Allocator allocator, T item) => this.encoder.Invoke(ref allocator, item);

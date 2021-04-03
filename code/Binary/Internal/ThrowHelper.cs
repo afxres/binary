@@ -41,16 +41,7 @@ namespace Mikodev.Binary.Internal
         internal static void ThrowNotEnoughBytes() => throw new ArgumentException("Not enough bytes or byte sequence invalid.");
 
         [DoesNotReturn]
-        internal static T ThrowNotEnoughBytes<T>() => throw new ArgumentException("Not enough bytes or byte sequence invalid.");
-
-        [DoesNotReturn]
         internal static T ThrowNoSuitableConstructor<T>() => throw new NotSupportedException($"No suitable constructor found, type: {typeof(T)}");
-
-        [DoesNotReturn]
-        internal static T ThrowNoSuitableConstructor<T>(ReadOnlySpan<byte> _) => throw new NotSupportedException($"No suitable constructor found, type: {typeof(T)}");
-
-        [DoesNotReturn]
-        internal static T ThrowNoSuitableConstructor<T>(ref ReadOnlySpan<byte> _) => throw new NotSupportedException($"No suitable constructor found, type: {typeof(T)}");
 
         [DoesNotReturn]
         internal static T? ThrowNullableTagInvalid<T>(int tag) where T : struct => throw new ArgumentException($"Invalid nullable tag '{tag}', type: {typeof(T?)}");

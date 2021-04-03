@@ -54,8 +54,10 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
             var decode = this.decode;
             if (decode is null)
                 return ThrowHelper.ThrowNoSuitableConstructor<T>();
-            if (span.Length is 0)
-                return default(T) is null ? default : ThrowHelper.ThrowNotEnoughBytes<T>();
+            if (span.Length is 0 && default(T) is null)
+                return default;
+            if (span.Length is 0 && default(T) is not null)
+                ThrowHelper.ThrowNotEnoughBytes();
 
             // maybe 'StackOverflowException', just let it crash
             var record = this.nodeTree;

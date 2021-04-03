@@ -21,8 +21,8 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
         {
             this.encode = encode;
             this.encodeAuto = encodeAuto;
-            this.decode = decode ?? ThrowHelper.ThrowNoSuitableConstructor<T>;
-            this.decodeAuto = decodeAuto ?? ThrowHelper.ThrowNoSuitableConstructor<T>;
+            this.decode = decode ?? ((ref ReadOnlySpan<byte> _) => ThrowHelper.ThrowNoSuitableConstructor<T>());
+            this.decodeAuto = decodeAuto ?? ((ref ReadOnlySpan<byte> _) => ThrowHelper.ThrowNoSuitableConstructor<T>());
         }
 
         public override void Encode(ref Allocator allocator, T item)

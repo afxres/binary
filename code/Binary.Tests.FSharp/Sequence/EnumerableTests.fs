@@ -161,8 +161,11 @@ let Test (enumerable : 'a) (expected : 'b) (encoderName : string) =
     Assert.Equal(encoderName, encoderActualName)
     let decoder = converterType.GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
     let decoderMethod = decoder.Method
-    Assert.Equal("ThrowHelper", decoderMethod.DeclaringType.Name)
-    Assert.Equal("ThrowNoSuitableConstructor", decoderMethod.Name)
+    // anonymous type
+    Assert.Contains("<", decoderMethod.DeclaringType.Name)
+    Assert.Contains(">", decoderMethod.DeclaringType.Name)
+    Assert.Contains("<", decoderMethod.Name)
+    Assert.Contains(">", decoderMethod.Name)
 
     let buffer = converter.Encode enumerable
     let target = generator.Encode expected
