@@ -15,8 +15,8 @@
         {
             var result = this.builder.Handle(item);
             var number = checked(this.itemLength * result.Length);
-            var numberLength = MemoryHelper.EncodeNumberLength((uint)number);
-            MemoryHelper.EncodeNumber(ref Allocator.Assign(ref allocator, numberLength), (uint)number, numberLength);
+            var numberLength = NumberHelper.EncodeLength((uint)number);
+            NumberHelper.Encode(ref Allocator.Assign(ref allocator, numberLength), (uint)number, numberLength);
             if (number is 0)
                 return;
             this.adapter.Encode(ref allocator, result);

@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Internal
 {
-    internal static partial class MemoryHelper
+    internal static class MemoryHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ref byte EnsureLength(ReadOnlySpan<byte> span, int length)
@@ -41,7 +41,7 @@ namespace Mikodev.Binary.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static T EnsureHandleEndian<T>(T item, bool swap) where T : unmanaged
+        internal static T EnsureEndian<T>(T item, bool swap) where T : unmanaged
         {
             if (typeof(T) == typeof(short))
                 return swap is false ? item : (T)(object)BinaryPrimitives.ReverseEndianness((short)(object)item);

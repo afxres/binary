@@ -71,10 +71,10 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
             while (limits - offset != length)
             {
                 offset += length;
-                length = MemoryHelper.DecodeNumberEnsureBuffer(ref source, ref offset, limits);
+                length = NumberHelper.DecodeEnsureBuffer(ref source, ref offset, limits);
                 var result = NodeTreeHelper.NodeOrNull(record, ref Unsafe.Add(ref source, offset), length);
                 offset += length;
-                length = MemoryHelper.DecodeNumberEnsureBuffer(ref source, ref offset, limits);
+                length = NumberHelper.DecodeEnsureBuffer(ref source, ref offset, limits);
                 if (result is null)
                     continue;
                 var cursor = result.Intent;

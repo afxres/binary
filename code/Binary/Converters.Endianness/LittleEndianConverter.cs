@@ -13,7 +13,7 @@ namespace Mikodev.Binary.Converters.Endianness
         {
             Debug.Assert(Unsafe.SizeOf<T>() <= 8 || typeof(T) == typeof(Guid));
             Debug.Assert(Unsafe.SizeOf<T>() is 1 or 2 or 4 or 8 or 16);
-            Debug.Assert(MemoryHelper.EncodeNumberLength((uint)Unsafe.SizeOf<T>()) is 1);
+            Debug.Assert(NumberHelper.EncodeLength((uint)Unsafe.SizeOf<T>()) is 1);
         }
 
         private static void EncodeInternal(ref byte location, T item)

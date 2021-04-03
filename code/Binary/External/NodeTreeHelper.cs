@@ -15,10 +15,10 @@ namespace Mikodev.Binary.External
         {
             Debug.Assert(length > 0);
             if (length >= 8)
-                return MemoryHelper.DecodeLittleEndian<long>(ref source);
-            var result = (length & 4) is 0 ? 0 : (ulong)(uint)MemoryHelper.DecodeLittleEndian<int>(ref Unsafe.Add(ref source, length & 3));
+                return LittleEndian.Decode<long>(ref source);
+            var result = (length & 4) is 0 ? 0 : (ulong)(uint)LittleEndian.Decode<int>(ref Unsafe.Add(ref source, length & 3));
             for (var i = (length & 3) - 1; i >= 0; i--)
-                result = (result << 8) | MemoryHelper.DecodeNativeEndian<byte>(ref Unsafe.Add(ref source, i));
+                result = (result << 8) | Unsafe.ReadUnaligned<byte>(ref Unsafe.Add(ref source, i));
             return (long)result;
         }
 

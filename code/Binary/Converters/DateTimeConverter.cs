@@ -9,12 +9,12 @@ namespace Mikodev.Binary.Converters
 
         public override void Encode(ref Allocator allocator, DateTime item)
         {
-            MemoryHelper.EncodeLittleEndian(ref allocator, item.ToBinary());
+            LittleEndian.Encode(ref allocator, item.ToBinary());
         }
 
         public override DateTime Decode(in ReadOnlySpan<byte> span)
         {
-            return DateTime.FromBinary(MemoryHelper.DecodeLittleEndian<long>(span));
+            return DateTime.FromBinary(LittleEndian.Decode<long>(span));
         }
     }
 }

@@ -22,8 +22,10 @@ type EnsureLengthReturnSpan = delegate of span : byref<ReadOnlySpan<byte>> * len
 
 type MemoryHelperTests () =
     member private __.MakeDelegate<'T when 'T :> Delegate> (method : string) =
-        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "MemoryHelper") |> Array.exactlyOne
-        let a = t.GetMethods(BindingFlags.Static ||| BindingFlags.NonPublic) |> Array.filter (fun x -> x.Name = method)
+        let s = method.Split('.')
+        Assert.Equal(2, s.Length)
+        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = s.[0]) |> Array.exactlyOne
+        let a = t.GetMethods(BindingFlags.Static ||| BindingFlags.NonPublic) |> Array.filter (fun x -> x.Name = s.[1])
         if not typeof<'T>.IsGenericType then
             let m = a |> Array.filter (fun x -> let p = [| for i in x.GetParameters() -> i.ParameterType |] in let v = [| for i in (typeof<'T>.GetMethod("Invoke").GetParameters()) -> i.ParameterType |] in p.SequenceEqual(v)) |> Seq.exactlyOne
             let d = Delegate.CreateDelegate(typeof<'T>, m)
@@ -46,7 +48,7 @@ type MemoryHelperTests () =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     member me.``Ensure (origin)`` (item : 'a) =
-        let f = me.MakeDelegate<Ensure<'a>>("EnsureHandleEndian")
+        let f = me.MakeDelegate<Ensure<'a>>("MemoryHelper.EnsureEndian")
         let result = f.Invoke(item, false)
         Assert.Equal<'a>(item, result)
         ()
@@ -60,7 +62,7 @@ type MemoryHelperTests () =
     [<Theory>]
     [<MemberData("Data Bravo")>]
     member me.``Ensure (invert)`` (item : 'a, invert : 'a) =
-        let f = me.MakeDelegate<Ensure<'a>>("EnsureHandleEndian")
+        let f = me.MakeDelegate<Ensure<'a>>("MemoryHelper.EnsureEndian")
         let result = f.Invoke(item, true)
         Assert.Equal<'a>(invert, result)
         ()
@@ -79,7 +81,7 @@ type MemoryHelperTests () =
     [<Theory>]
     [<MemberData("Data Charlie")>]
     member me.``Ensure (invalid type)`` (item : 'a) =
-        let f = me.MakeDelegate<Ensure<'a>>("EnsureHandleEndian")
+        let f = me.MakeDelegate<Ensure<'a>>("MemoryHelper.EnsureEndian")
         let alpha = Assert.Throws<NotSupportedException>(fun () -> f.Invoke(item, true) |> ignore)
         let bravo = Assert.Throws<NotSupportedException>(fun () -> f.Invoke(item, false) |> ignore)
         let message = NotSupportedException().Message
@@ -96,10 +98,8 @@ type MemoryHelperTests () =
     [<Theory>]
     [<MemberData("Data Delta")>]
     member me.``Encode Then Decode (integration test)`` (item : 'a, littleEndian : byte array) =
-        let appendLittleEndian = me.MakeDelegate<Encode<'a>>("EncodeLittleEndian")
-        let appendNumberEndian = me.MakeDelegate<Encode<'a>>("EncodeNumberEndian")
-        let detachLittleEndian = me.MakeDelegate<Decode<'a>>("DecodeLittleEndian")
-        let detachNumberEndian = me.MakeDelegate<Decode<'a>>("DecodeNumberEndian")
+        let appendLittleEndian = me.MakeDelegate<Encode<'a>>("LittleEndian.Encode")
+        let detachLittleEndian = me.MakeDelegate<Decode<'a>>("LittleEndian.Decode")
 
         let buffer = Array.create 128 0uy
         let span = Span buffer
@@ -110,13 +110,6 @@ type MemoryHelperTests () =
         let littleResult = detachLittleEndian.Invoke(&location)
         Assert.Equal<'a>(item, littleResult)
         Assert.Equal<byte>(littleEndian, span.Slice(0, littleEndian.Length).ToArray())
-
-        let numberEndian = Array.rev littleEndian
-        span.Fill 0uy
-        appendNumberEndian.Invoke(&location, item)
-        let numberResult = detachNumberEndian.Invoke(&location)
-        Assert.Equal<'a>(item, numberResult)
-        Assert.Equal<byte>(numberEndian, span.Slice(0, numberEndian.Length).ToArray())
         ()
 
     [<Theory>]
@@ -125,7 +118,7 @@ type MemoryHelperTests () =
     [<InlineData(15, 16)>]
     [<InlineData(127, -16)>]
     member me.``Ensure Length (enough, error)`` (actual : int, required : int) =
-        let ensure = me.MakeDelegate<EnsureLength> "EnsureLength"
+        let ensure = me.MakeDelegate<EnsureLength> "MemoryHelper.EnsureLength"
         let error = Assert.Throws<ArgumentException>(fun () ->
             let buffer = Array.zeroCreate actual
             ensure.Invoke(ReadOnlySpan buffer, required) |> ignore)
@@ -137,7 +130,7 @@ type MemoryHelperTests () =
     [<InlineData(1, 1)>]
     [<InlineData(16, 16)>]
     member me.``Ensure Length (enough)`` (actual : int, required : int) =
-        let ensure = me.MakeDelegate<EnsureLength> "EnsureLength"
+        let ensure = me.MakeDelegate<EnsureLength> "MemoryHelper.EnsureLength"
         let buffer = Array.zeroCreate actual
         let location = &ensure.Invoke(ReadOnlySpan buffer, required)
         Assert.True(Unsafe.AreSame(&location, &buffer.[0]))
@@ -149,7 +142,7 @@ type MemoryHelperTests () =
     [<InlineData(15, 16)>]
     [<InlineData(127, -16)>]
     member me.``Ensure Length (reference, error)`` (actual : int, required : int) =
-        let ensure = me.MakeDelegate<EnsureLengthReference> "EnsureLength"
+        let ensure = me.MakeDelegate<EnsureLengthReference> "MemoryHelper.EnsureLength"
         let error = Assert.Throws<ArgumentException>(fun () ->
             let buffer = Array.zeroCreate actual
             let mutable span = ReadOnlySpan buffer
@@ -164,7 +157,7 @@ type MemoryHelperTests () =
     [<InlineData(16, 16, 0)>]
     [<InlineData(64, 16, 48)>]
     member me.``Ensure Length (reference)`` (actual : int, required : int, remain : int) =
-        let ensure = me.MakeDelegate<EnsureLengthReference> "EnsureLength"
+        let ensure = me.MakeDelegate<EnsureLengthReference> "MemoryHelper.EnsureLength"
         let buffer = Array.zeroCreate actual
         let mutable span = ReadOnlySpan buffer
         let location = &ensure.Invoke(&span, required)
@@ -178,7 +171,7 @@ type MemoryHelperTests () =
     [<InlineData(15, 16)>]
     [<InlineData(127, -16)>]
     member me.``Ensure Length (return span, error)`` (actual : int, required : int) =
-        let ensure = me.MakeDelegate<EnsureLengthReturnSpan> "EnsureLengthReturnBuffer"
+        let ensure = me.MakeDelegate<EnsureLengthReturnSpan> "MemoryHelper.EnsureLengthReturnBuffer"
         let error = Assert.Throws<ArgumentException>(fun () ->
             let buffer = Array.zeroCreate actual
             let mutable span = ReadOnlySpan buffer
@@ -196,7 +189,7 @@ type MemoryHelperTests () =
     [<InlineData(16, 16, 0)>]
     [<InlineData(64, 16, 48)>]
     member me.``Ensure Length (return span)`` (actual : int, required : int, remain : int) =
-        let ensure = me.MakeDelegate<EnsureLengthReturnSpan> "EnsureLengthReturnBuffer"
+        let ensure = me.MakeDelegate<EnsureLengthReturnSpan> "MemoryHelper.EnsureLengthReturnBuffer"
         let buffer = Array.zeroCreate actual
         let mutable span = ReadOnlySpan buffer
         let result = ensure.Invoke(&span, required)

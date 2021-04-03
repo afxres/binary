@@ -4,22 +4,10 @@ using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary.Internal
 {
-    internal static partial class MemoryHelper
+    internal static class NumberHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void EncodeNumberEndian<T>(ref byte location, T item) where T : unmanaged
-        {
-            Unsafe.WriteUnaligned(ref location, EnsureHandleEndian(item, BitConverter.IsLittleEndian));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static T DecodeNumberEndian<T>(ref byte location) where T : unmanaged
-        {
-            return EnsureHandleEndian(Unsafe.ReadUnaligned<T>(ref location), BitConverter.IsLittleEndian);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int EncodeNumberLength(uint number)
+        internal static int EncodeLength(uint number)
         {
             Debug.Assert(number <= int.MaxValue);
             if ((number >> 7) is 0)
@@ -29,18 +17,18 @@ namespace Mikodev.Binary.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void EncodeNumber(ref byte location, uint number, int numberLength)
+        internal static void Encode(ref byte location, uint number, int numberLength)
         {
             Debug.Assert(number <= int.MaxValue);
             Debug.Assert(numberLength is 1 or 4);
             if (numberLength is 1)
-                EncodeNativeEndian(ref location, (byte)number);
+                Unsafe.WriteUnaligned(ref location, (byte)number);
             else
-                EncodeNumberEndian(ref location, (int)(number | 0x8000_0000U));
+                Unsafe.WriteUnaligned(ref location, MemoryHelper.EnsureEndian((int)(number | 0x8000_0000U), BitConverter.IsLittleEndian));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int DecodeNumber(ref byte location, ref int offset, int limits)
+        internal static int Decode(ref byte location, ref int offset, int limits)
         {
             Debug.Assert(offset >= 0);
             Debug.Assert(limits >= 0);
@@ -48,24 +36,24 @@ namespace Mikodev.Binary.Internal
             if (limits == offset)
                 ThrowHelper.ThrowNotEnoughBytes();
             ref var source = ref Unsafe.Add(ref location, offset);
-            var header = (uint)DecodeNativeEndian<byte>(ref source);
+            var header = (uint)Unsafe.ReadUnaligned<byte>(ref source);
             offset += 1;
             if ((header & 0x80U) is 0)
                 return (int)header;
             if ((uint)(limits - offset) < 3U)
                 ThrowHelper.ThrowNotEnoughBytes();
-            var result = (uint)DecodeNumberEndian<int>(ref source);
+            var result = (uint)MemoryHelper.EnsureEndian(Unsafe.ReadUnaligned<int>(ref source), BitConverter.IsLittleEndian);
             offset += 3;
             return (int)(result & 0x7FFF_FFFFU);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int DecodeNumberEnsureBuffer(ref byte location, ref int offset, int limits)
+        internal static int DecodeEnsureBuffer(ref byte location, ref int offset, int limits)
         {
             Debug.Assert(offset >= 0);
             Debug.Assert(limits >= 0);
             Debug.Assert(limits >= offset);
-            var length = DecodeNumber(ref location, ref offset, limits);
+            var length = Decode(ref location, ref offset, limits);
             if ((uint)(limits - offset) < (uint)length)
                 ThrowHelper.ThrowNotEnoughBytes();
             return length;

@@ -11,7 +11,7 @@ namespace Mikodev.Binary.Converters
             if (item is null)
                 return;
             SharedHelper.EncodeIPAddress(ref allocator, item.Address);
-            MemoryHelper.EncodeLittleEndian(ref allocator, (short)(ushort)item.Port);
+            LittleEndian.Encode(ref allocator, (short)(ushort)item.Port);
         }
 
         private static void EncodeWithLengthPrefixInternal(ref Allocator allocator, IPEndPoint item)
@@ -30,7 +30,7 @@ namespace Mikodev.Binary.Converters
             var body = span;
             var head = MemoryHelper.EnsureLengthReturnBuffer(ref body, size);
             var data = new IPAddress(head);
-            var port = MemoryHelper.DecodeLittleEndian<short>(body);
+            var port = LittleEndian.Decode<short>(body);
             return new IPEndPoint(data, (ushort)port);
         }
 

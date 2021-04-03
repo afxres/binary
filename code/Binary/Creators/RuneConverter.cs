@@ -12,12 +12,12 @@ namespace Mikodev.Binary.Creators
 
         public override void Encode(ref Allocator allocator, Rune item)
         {
-            MemoryHelper.EncodeLittleEndian(ref allocator, item.Value);
+            LittleEndian.Encode(ref allocator, item.Value);
         }
 
         public override Rune Decode(in ReadOnlySpan<byte> span)
         {
-            return new Rune(MemoryHelper.DecodeLittleEndian<int>(span));
+            return new Rune(LittleEndian.Decode<int>(span));
         }
     }
 }

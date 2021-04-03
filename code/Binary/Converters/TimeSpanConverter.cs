@@ -9,12 +9,12 @@ namespace Mikodev.Binary.Converters
 
         public override void Encode(ref Allocator allocator, TimeSpan item)
         {
-            MemoryHelper.EncodeLittleEndian(ref allocator, item.Ticks);
+            LittleEndian.Encode(ref allocator, item.Ticks);
         }
 
         public override TimeSpan Decode(in ReadOnlySpan<byte> span)
         {
-            return new TimeSpan(MemoryHelper.DecodeLittleEndian<long>(span));
+            return new TimeSpan(LittleEndian.Decode<long>(span));
         }
     }
 }
