@@ -27,14 +27,14 @@ namespace Mikodev.Binary.Converters
         public override decimal Decode(in ReadOnlySpan<byte> span)
         {
             const int Limits = 4;
-            ref var source = ref MemoryHelper.EnsureLength(span, sizeof(int) * 4);
+            ref var source = ref MemoryHelper.EnsureLength(span, sizeof(int) * Limits);
             var buffer = (stackalloc int[Limits]);
             for (var i = 0; i < Limits; i++)
                 buffer[i] = LittleEndian.Decode<int>(ref Unsafe.Add(ref source, sizeof(int) * i));
 #if NET5_0_OR_GREATER
             return new decimal(buffer);
 #else
-            return new decimal(buffer[0], buffer[1], buffer[2], ((uint)buffer[3] & 0x8000_0000) is not 0, (byte)(buffer[3] >> 16));
+            return new decimal(buffer[0], buffer[1], buffer[2], ((uint)buffer[3] & 0x8000_0000U) is not 0, (byte)(buffer[3] >> 16));
 #endif
         }
     }
