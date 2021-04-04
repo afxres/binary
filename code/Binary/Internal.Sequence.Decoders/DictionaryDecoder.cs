@@ -23,8 +23,8 @@ namespace Mikodev.Binary.Internal.Sequence.Decoders
             var limits = span.Length;
             if (limits is 0)
                 return new Dictionary<K, V>();
-            const int Initial = 8;
-            var capacity = SequenceMethods.GetCapacity<KeyValuePair<K, V>>(limits, this.itemLength, Initial);
+            const int Capacity = 8;
+            var capacity = SequenceMethods.GetCapacity<KeyValuePair<K, V>>(limits, this.itemLength, Capacity);
             var item = new Dictionary<K, V>(capacity);
             var body = span;
             var init = this.init;

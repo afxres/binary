@@ -23,9 +23,9 @@ namespace Mikodev.Binary
             var cursor = (long)source.Length;
             Debug.Assert(cursor < amount);
             Debug.Assert(cursor <= limits);
-            const int Initial = 64;
+            const int Capacity = 64;
             if (cursor is 0)
-                cursor = Initial;
+                cursor = Capacity;
             do
                 cursor <<= 2;
             while (cursor < amount);

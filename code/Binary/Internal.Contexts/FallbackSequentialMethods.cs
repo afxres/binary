@@ -26,10 +26,10 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static object CreateListBuilder(Type type, Type itemType)
         {
-            const BindingFlags Flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            const BindingFlags Select = BindingFlags.Instance | BindingFlags.NonPublic;
             var itemArrayType = itemType.MakeArrayType();
-            var arrayField = type.GetField("_items", Flags);
-            var countField = type.GetField("_size", Flags);
+            var arrayField = type.GetField("_items", Select);
+            var countField = type.GetField("_size", Select);
             if (arrayField is null || arrayField.FieldType != itemArrayType ||
                 countField is null || countField.FieldType != typeof(int))
                 return null;

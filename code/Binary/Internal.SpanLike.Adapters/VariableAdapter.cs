@@ -19,8 +19,8 @@ namespace Mikodev.Binary.Internal.SpanLike.Adapters
         {
             if (span.Length is 0)
                 return new MemoryResult<T>(Array.Empty<T>(), 0);
-            const int Initial = 8;
-            var memory = new MemoryBuffer<T>(Initial);
+            const int Capacity = 8;
+            var memory = new MemoryBuffer<T>(Capacity);
             var body = span;
             var converter = this.converter;
             while (body.Length is not 0)
