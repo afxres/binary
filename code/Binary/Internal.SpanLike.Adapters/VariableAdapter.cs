@@ -15,17 +15,17 @@ namespace Mikodev.Binary.Internal.SpanLike.Adapters
                 converter.EncodeAuto(ref allocator, i);
         }
 
-        public override MemoryResult<T> Decode(ReadOnlySpan<byte> span)
+        public override MemoryBuffer<T> Decode(ReadOnlySpan<byte> span)
         {
             if (span.Length is 0)
-                return new MemoryResult<T>(Array.Empty<T>(), 0);
+                return new MemoryBuffer<T>(Array.Empty<T>(), 0);
             const int Capacity = 8;
             var memory = new MemoryBuffer<T>(Capacity);
             var body = span;
             var converter = this.converter;
             while (body.Length is not 0)
-                memory.Append(converter.DecodeAuto(ref body));
-            return memory.Result();
+                memory.Add(converter.DecodeAuto(ref body));
+            return memory;
         }
     }
 }

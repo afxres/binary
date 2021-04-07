@@ -8,17 +8,25 @@ namespace Mikodev.Binary.Internal
     {
         private T[] buffer;
 
-        private int cursor;
+        private int length;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public MemoryBuffer(int capacity)
         {
             this.buffer = new T[capacity];
-            this.cursor = 0;
+            this.length = 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Append(T item)
+        public MemoryBuffer(T[] buffer, int length)
+        {
+            Debug.Assert((uint)length <= (uint)buffer.Length);
+            this.buffer = buffer;
+            this.length = length;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Add(T item)
         {
             static void Expand(ref T[] buffer, T item)
             {
@@ -29,19 +37,22 @@ namespace Mikodev.Binary.Internal
                 buffer[cursor] = item;
             }
 
-            if ((uint)this.cursor < (uint)this.buffer.Length)
-                this.buffer[this.cursor] = item;
+            var buffer = this.buffer;
+            var length = this.length;
+            if ((uint)length < (uint)buffer.Length)
+                buffer[length] = item;
             else
                 Expand(ref this.buffer, item);
-            this.cursor++;
+            this.length++;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public MemoryResult<T> Result()
+        public void Deconstruct(out T[] buffer, out int length)
         {
-            Debug.Assert(this.cursor >= 0);
-            Debug.Assert(this.cursor <= this.buffer.Length);
-            return new MemoryResult<T>(this.buffer, this.cursor);
+            Debug.Assert(this.length >= 0);
+            Debug.Assert(this.length <= this.buffer.Length);
+            buffer = this.buffer;
+            length = this.length;
         }
     }
 }

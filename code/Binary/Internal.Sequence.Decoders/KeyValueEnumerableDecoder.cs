@@ -34,15 +34,13 @@ namespace Mikodev.Binary.Internal.Sequence.Decoders
             {
                 var head = init.DecodeAuto(ref body);
                 var next = tail.DecodeAuto(ref body);
-                memory.Append(new KeyValuePair<K, V>(head, next));
+                memory.Add(new KeyValuePair<K, V>(head, next));
             }
-            var result = memory.Result();
-            Debug.Assert((uint)result.Length <= (uint)result.Memory.Length);
-            var buffer = result.Memory;
-            var length = result.Length;
+            var (buffer, length) = memory;
+            Debug.Assert((uint)length <= (uint)buffer.Length);
             if (buffer.Length == length)
                 return buffer;
-            return new ArraySegment<KeyValuePair<K, V>>(result.Memory, 0, result.Length);
+            return new ArraySegment<KeyValuePair<K, V>>(buffer, 0, length);
         }
     }
 }

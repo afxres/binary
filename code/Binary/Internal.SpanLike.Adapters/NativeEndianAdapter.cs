@@ -12,15 +12,15 @@ namespace Mikodev.Binary.Internal.SpanLike.Adapters
             Allocator.Append(ref allocator, MemoryMarshal.AsBytes(item));
         }
 
-        public override MemoryResult<T> Decode(ReadOnlySpan<byte> span)
+        public override MemoryBuffer<T> Decode(ReadOnlySpan<byte> span)
         {
             var limits = span.Length;
             if (limits is 0)
-                return new MemoryResult<T>(Array.Empty<T>(), 0);
+                return new MemoryBuffer<T>(Array.Empty<T>(), 0);
             var capacity = SequenceMethods.GetCapacity<T>(limits, Unsafe.SizeOf<T>());
             var result = new T[capacity];
             Unsafe.CopyBlockUnaligned(ref Unsafe.As<T, byte>(ref MemoryMarshal.GetReference(new Span<T>(result))), ref MemoryMarshal.GetReference(span), (uint)limits);
-            return new MemoryResult<T>(result, capacity);
+            return new MemoryBuffer<T>(result, capacity);
         }
     }
 }

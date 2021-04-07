@@ -18,11 +18,11 @@ namespace Mikodev.Binary.Internal.SpanLike.Adapters
                 converter.Encode(ref allocator, i);
         }
 
-        public override MemoryResult<T> Decode(ReadOnlySpan<byte> span)
+        public override MemoryBuffer<T> Decode(ReadOnlySpan<byte> span)
         {
             var limits = span.Length;
             if (limits is 0)
-                return new MemoryResult<T>(Array.Empty<T>(), 0);
+                return new MemoryBuffer<T>(Array.Empty<T>(), 0);
             var converter = this.converter;
             var length = converter.Length;
             var capacity = SequenceMethods.GetCapacity<T>(limits, length);
@@ -30,7 +30,7 @@ namespace Mikodev.Binary.Internal.SpanLike.Adapters
             ref var source = ref MemoryMarshal.GetReference(span);
             for (var i = 0; i < capacity; i++)
                 result[i] = converter.Decode(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref source, length * i), length));
-            return new MemoryResult<T>(result, capacity);
+            return new MemoryBuffer<T>(result, capacity);
         }
     }
 }

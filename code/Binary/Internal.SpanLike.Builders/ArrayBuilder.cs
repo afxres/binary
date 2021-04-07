@@ -9,10 +9,8 @@ namespace Mikodev.Binary.Internal.SpanLike.Builders
 
         public override T[] Invoke(ReadOnlySpan<byte> span, SpanLikeAdapter<T> adapter)
         {
-            var result = adapter.Decode(span);
-            Debug.Assert((uint)result.Length <= (uint)result.Memory.Length);
-            var buffer = result.Memory;
-            var length = result.Length;
+            var (buffer, length) = adapter.Decode(span);
+            Debug.Assert((uint)length <= (uint)buffer.Length);
             if (buffer.Length == length)
                 return buffer;
             var target = new T[length];

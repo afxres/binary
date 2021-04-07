@@ -6,6 +6,6 @@ namespace Mikodev.Binary.Internal.SpanLike
     {
         public abstract void Encode(ref Allocator allocator, ReadOnlySpan<T> item);
 
-        public abstract MemoryResult<T> Decode(ReadOnlySpan<byte> span);
+        public abstract MemoryBuffer<T> Decode(ReadOnlySpan<byte> span);
     }
 }
