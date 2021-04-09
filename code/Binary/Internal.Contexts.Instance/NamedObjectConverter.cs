@@ -60,9 +60,9 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
                 ThrowHelper.ThrowNotEnoughBytes();
 
             // maybe 'StackOverflowException', just let it crash
-            var record = this.dictionary;
             var remain = this.capacity;
-            var values = (Span<long>)stackalloc long[remain];
+            var record = this.dictionary;
+            var values = (stackalloc long[remain]);
             ref var source = ref MemoryMarshal.GetReference(span);
 
             var limits = span.Length;
