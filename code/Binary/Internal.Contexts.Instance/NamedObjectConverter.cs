@@ -15,32 +15,32 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
 
     internal sealed class NamedObjectConverter<T> : Converter<T>
     {
+        private readonly int capacity;
+
+        private readonly IReadOnlyList<string> names;
+
+        private readonly BinaryDictionary<int> dictionary;
+
         private readonly NamedObjectEncoder<T> encode;
 
         private readonly NamedObjectDecoder<T> decode;
 
-        private readonly Node<int> nodeTree;
-
-        private readonly IReadOnlyList<string> nameList;
-
-        private readonly int capacity;
-
-        public NamedObjectConverter(NamedObjectEncoder<T> encode, NamedObjectDecoder<T> decode, Node<int> nodeTree, IReadOnlyCollection<string> nameList)
+        public NamedObjectConverter(NamedObjectEncoder<T> encode, NamedObjectDecoder<T> decode, IReadOnlyCollection<string> names, BinaryDictionary<int> dictionary)
         {
-            Debug.Assert(nodeTree is not null);
-            Debug.Assert(nameList.Any());
+            Debug.Assert(dictionary is not null);
+            Debug.Assert(names.Any());
+            this.names = names.ToArray();
+            this.capacity = names.Count;
+            this.dictionary = dictionary;
             this.encode = encode;
             this.decode = decode;
-            this.nodeTree = nodeTree;
-            this.nameList = nameList.ToArray();
-            this.capacity = nameList.Count;
         }
 
         [DebuggerStepThrough, DoesNotReturn]
-        private T ExceptKeyFound(int i) => throw new ArgumentException($"Named key '{this.nameList[i]}' already exists, type: {typeof(T)}");
+        private T ExceptKeyFound(int i) => throw new ArgumentException($"Named key '{this.names[i]}' already exists, type: {typeof(T)}");
 
         [DebuggerStepThrough, DoesNotReturn]
-        private T ExceptNotFound(int i) => throw new ArgumentException($"Named key '{this.nameList[i]}' does not exist, type: {typeof(T)}");
+        private T ExceptNotFound(int i) => throw new ArgumentException($"Named key '{this.names[i]}' does not exist, type: {typeof(T)}");
 
         public override void Encode(ref Allocator allocator, T item)
         {
@@ -60,7 +60,7 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
                 ThrowHelper.ThrowNotEnoughBytes();
 
             // maybe 'StackOverflowException', just let it crash
-            var record = this.nodeTree;
+            var record = this.dictionary;
             var remain = this.capacity;
             var values = (Span<long>)stackalloc long[remain];
             ref var source = ref MemoryMarshal.GetReference(span);
@@ -72,12 +72,12 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
             {
                 offset += length;
                 length = NumberHelper.DecodeEnsureBuffer(ref source, ref offset, limits);
-                var result = NodeTreeHelper.NodeOrNull(record, ref Unsafe.Add(ref source, offset), length);
+                var result = record.GetValueOrDefault(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref source, offset), length), -1);
                 offset += length;
                 length = NumberHelper.DecodeEnsureBuffer(ref source, ref offset, limits);
-                if (result is null)
+                if (result is -1)
                     continue;
-                var cursor = result.Intent;
+                var cursor = result;
                 ref var handle = ref values[cursor];
                 if (handle is not 0)
                     return ExceptKeyFound(cursor);
