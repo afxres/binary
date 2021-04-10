@@ -5,7 +5,7 @@ open System
 open System.Reflection
 open Xunit
 
-type CollectionTests() =
+type CollectionCapacityTests() =
 
     [<Theory>]
     [<InlineData(4, 4, 1)>]

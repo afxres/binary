@@ -1,4 +1,4 @@
-﻿module Sequence.EnumerationTests
+﻿module Sequence.EnumerableEncodeTests
 
 open Mikodev.Binary
 open System
