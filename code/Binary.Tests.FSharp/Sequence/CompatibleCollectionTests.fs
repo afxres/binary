@@ -57,9 +57,11 @@ let ``ConcurrentStack (not supported)`` () =
 let ``ConcurrentDictionary`` () =
     let alpha = [ -4..8 ] |> List.map (fun x -> KeyValuePair(x, sprintf "%x" x)) |> ConcurrentDictionary
     let bravo = [ "m16", 1.1; "m4", 2.0; "c4", 100.0 ] |> List.map (fun (x, y) -> KeyValuePair(x, y)) |> ConcurrentDictionary
+    let delta = [ 3..21 ] |> List.map (fun x -> KeyValuePair(int64 x, double x)) |> ConcurrentDictionary
 
     Test alpha
     Test bravo
+    Test delta
     ()
 
 [<Fact>]
