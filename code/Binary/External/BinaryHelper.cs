@@ -18,6 +18,12 @@ namespace Mikodev.Binary.External
             1674319, 2009191, 2411033, 2893249, 3471899, 4166287, 4999559, 5999471, 7199369,
         };
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int Join(int head, int last) => (head << 5) + head + last;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static T Load<T>(ref byte source, int offset) => Unsafe.ReadUnaligned<T>(ref Unsafe.Add(ref source, offset));
+
         internal static int GetCapacity(int capacity)
         {
             return primes.First(x => x > capacity);
@@ -25,12 +31,6 @@ namespace Mikodev.Binary.External
 
         internal static int GetHashCode(ref byte source, int length)
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static int Join(int head, int last) => (head << 5) + head + last;
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static T Load<T>(ref byte source, int offset) => Unsafe.ReadUnaligned<T>(ref Unsafe.Add(ref source, offset));
-
             var result = length;
             var header = length >> 2;
             for (var i = 0; i < header; i++)
@@ -41,15 +41,15 @@ namespace Mikodev.Binary.External
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool GetEquality(ReadOnlySpan<byte> head, byte[] last)
+        internal static bool GetEquality(ref byte source, int length, byte[] buffer)
         {
-            Debug.Assert(last is not null);
+            Debug.Assert(buffer is not null);
 #if NET5_0_OR_GREATER
-            var length = last.Length;
-            ref var source = ref MemoryMarshal.GetArrayDataReference(last);
-            return MemoryExtensions.SequenceEqual(head, MemoryMarshal.CreateReadOnlySpan(ref source, length));
+            var cursor = buffer.Length;
+            ref var origin = ref MemoryMarshal.GetArrayDataReference(buffer);
+            return MemoryExtensions.SequenceEqual(MemoryMarshal.CreateReadOnlySpan(ref source, length), MemoryMarshal.CreateReadOnlySpan(ref origin, cursor));
 #else
-            return MemoryExtensions.SequenceEqual(head, new ReadOnlySpan<byte>(last));
+            return MemoryExtensions.SequenceEqual(MemoryMarshal.CreateReadOnlySpan(ref source, length), new ReadOnlySpan<byte>(buffer));
 #endif
         }
     }

@@ -72,7 +72,7 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
             {
                 offset += length;
                 length = NumberHelper.DecodeEnsureBuffer(ref source, ref offset, limits);
-                var result = record.GetValueOrDefault(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref source, offset), length), -1);
+                var result = record.GetValueOrDefault(ref Unsafe.Add(ref source, offset), length, -1);
                 offset += length;
                 length = NumberHelper.DecodeEnsureBuffer(ref source, ref offset, limits);
                 if (result is -1)

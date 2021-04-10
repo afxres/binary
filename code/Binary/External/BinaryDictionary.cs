@@ -18,16 +18,16 @@ namespace Mikodev.Binary.External
             this.records = records;
         }
 
-        internal T GetValueOrDefault(ReadOnlySpan<byte> span, T @default)
+        internal T GetValueOrDefault(ref byte source, int length, T @default)
         {
             var buckets = this.buckets;
             var records = this.records;
-            var hash = BinaryHelper.GetHashCode(ref MemoryMarshal.GetReference(span), span.Length);
+            var hash = BinaryHelper.GetHashCode(ref source, length);
             var next = buckets[(int)((uint)hash % (uint)buckets.Length)];
             while (next is not -1)
             {
                 ref var slot = ref records[next];
-                if (hash == slot.Hash && BinaryHelper.GetEquality(span, slot.Head))
+                if (hash == slot.Hash && BinaryHelper.GetEquality(ref source, length, slot.Head))
                     return slot.Item;
                 next = slot.Next;
             }
@@ -43,19 +43,19 @@ namespace Mikodev.Binary.External
 
             foreach (var pair in items)
             {
-                var head = pair.Key.ToArray();
-                var item = pair.Value;
-                var span = new ReadOnlySpan<byte>(head);
-                var hash = BinaryHelper.GetHashCode(ref MemoryMarshal.GetReference(span), span.Length);
+                var buffer = pair.Key.ToArray();
+                var length = buffer.Length;
+                ref var source = ref MemoryMarshal.GetReference(new ReadOnlySpan<byte>(buffer));
+                var hash = BinaryHelper.GetHashCode(ref source, length);
                 ref var next = ref buckets[(int)((uint)hash % (uint)buckets.Length)];
                 while (next is not -1)
                 {
                     ref var slot = ref records[next];
-                    if (hash == slot.Hash && BinaryHelper.GetEquality(span, slot.Head))
+                    if (hash == slot.Hash && BinaryHelper.GetEquality(ref source, length, slot.Head))
                         return null;
                     next = ref slot.Next;
                 }
-                records[free] = new Slot { Head = head, Hash = hash, Item = item, Next = -1 };
+                records[free] = new Slot { Head = buffer, Hash = hash, Item = pair.Value, Next = -1 };
                 next = free;
                 free++;
             }
