@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Mikodev.Binary.Internal;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -35,7 +36,10 @@ namespace Mikodev.Binary.External
 
         internal static int GetCapacity(int capacity)
         {
-            return primes.First(x => x > capacity);
+            var result = primes.FirstOrDefault(x => x >= capacity);
+            if (result is 0)
+                ThrowHelper.ThrowMaxCapacityOverflow();
+            return result;
         }
 
         internal static int GetHashCode(ref byte source, int length)
@@ -49,7 +53,7 @@ namespace Mikodev.Binary.External
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool GetEquality(ref byte source, int length, byte[] buffer)
+        internal static bool GetEquality(byte[] buffer, ref byte source, int length)
         {
             if (length != buffer.Length)
                 return false;
