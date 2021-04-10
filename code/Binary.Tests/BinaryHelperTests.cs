@@ -17,6 +17,10 @@ namespace Mikodev.Binary.Tests
 
         private delegate int Capacity(int capacity);
 
+        private delegate object CreateDictionary<T>(IReadOnlyCollection<KeyValuePair<ReadOnlyMemory<byte>, T>> items);
+
+        private delegate T GetValueOrDefault<T>(ref byte source, int length, T @default);
+
         private T GetInternalDelegate<T>(string name) where T : Delegate
         {
             var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryHelper");
@@ -39,6 +43,22 @@ namespace Mikodev.Binary.Tests
         private Capacity GetCapacityDelegate()
         {
             return GetInternalDelegate<Capacity>("GetCapacity");
+        }
+
+        private CreateDictionary<T> GetCreateDictionaryDelegate<T>()
+        {
+            var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryDictionary`1");
+            Assert.NotNull(type);
+            var method = type.MakeGenericType(typeof(T)).GetMethod("Create", BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.NotNull(method);
+            return (CreateDictionary<T>)Delegate.CreateDelegate(typeof(CreateDictionary<T>), method);
+        }
+
+        private GetValueOrDefault<T> GetGetValueOrDefaultDelegate<T>(object dictionary)
+        {
+            var method = dictionary.GetType().GetMethod("GetValueOrDefault", BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.NotNull(method);
+            return (GetValueOrDefault<T>)Delegate.CreateDelegate(typeof(GetValueOrDefault<T>), dictionary, method);
         }
 
         [Theory(DisplayName = "Equality (length mismatch)")]
@@ -197,6 +217,50 @@ namespace Mikodev.Binary.Tests
                 var result = function.Invoke(i);
                 Assert.Equal(i, result);
             }
+        }
+
+        [Theory(DisplayName = "Dictionary (hash conflict)")]
+        [InlineData((byte)1, new[] { 49631, 52013 })]
+        [InlineData((byte)'A', new[] { 126008, 142545 })]
+        [InlineData((byte)'~', new[] { 93527, 154641 })]
+        public void DictionaryHashConflict(byte value, int[] sizes)
+        {
+            var hash = GetHashCodeDelegate();
+            var create = GetCreateDictionaryDelegate<int>();
+            var buffers = new List<byte[]>();
+            foreach (var i in sizes)
+            {
+                var buffer = new byte[i];
+                Array.Fill(buffer, value);
+                buffers.Add(buffer);
+            }
+
+            var codes = new List<int>();
+            foreach (var i in buffers)
+            {
+                var length = i.Length;
+                ref var source = ref MemoryMarshal.GetReference(new ReadOnlySpan<byte>(i));
+                var result = hash.Invoke(ref source, length);
+                codes.Add(result);
+            }
+
+            Assert.Equal(sizes.Length, codes.Count);
+            _ = Assert.Single(codes.Distinct());
+
+            var arguments = buffers.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(x), x.Length)).ToList();
+            var dictionary = create.Invoke(arguments);
+            var query = GetGetValueOrDefaultDelegate<int>(dictionary);
+
+            var actual = new List<int>();
+            foreach (var i in buffers)
+            {
+                var length = i.Length;
+                ref var source = ref MemoryMarshal.GetReference(new ReadOnlySpan<byte>(i));
+                var result = query.Invoke(ref source, length, -1);
+                actual.Add(result);
+                Assert.Equal(length, result);
+            }
+            Assert.Equal(sizes, actual);
         }
     }
 }
