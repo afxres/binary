@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -19,10 +17,21 @@ namespace Mikodev.Binary.External
         };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int Join(int head, int last) => (head << 5) + head + last;
+        private static uint Join(uint head, uint last) => (head << 5) + head + last;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T Load<T>(ref byte source, int offset) => Unsafe.ReadUnaligned<T>(ref Unsafe.Add(ref source, offset));
+        private static T Load<T>(ref byte source) => Unsafe.ReadUnaligned<T>(ref source);
+
+        private static bool Test(ref byte source, ref byte origin, int length)
+        {
+            for (; length >= 4; length -= 4, source = ref Unsafe.Add(ref source, 4), origin = ref Unsafe.Add(ref origin, 4))
+                if (Load<uint>(ref source) != Load<uint>(ref origin))
+                    return false;
+            for (; length >= 1; length -= 1, source = ref Unsafe.Add(ref source, 1), origin = ref Unsafe.Add(ref origin, 1))
+                if (Load<byte>(ref source) != Load<byte>(ref origin))
+                    return false;
+            return true;
+        }
 
         internal static int GetCapacity(int capacity)
         {
@@ -31,26 +40,27 @@ namespace Mikodev.Binary.External
 
         internal static int GetHashCode(ref byte source, int length)
         {
-            var result = length;
-            var header = length >> 2;
-            for (var i = 0; i < header; i++)
-                result = Join(result, Load<int>(ref source, i << 2));
-            for (var i = header << 2; i < length; i++)
-                result = Join(result, Load<byte>(ref source, i));
-            return result;
+            var result = (uint)length;
+            for (; length >= 4; length -= 4, source = ref Unsafe.Add(ref source, 4))
+                result = Join(result, Load<uint>(ref source));
+            for (; length >= 1; length -= 1, source = ref Unsafe.Add(ref source, 1))
+                result = Join(result, Load<byte>(ref source));
+            return (int)result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool GetEquality(ref byte source, int length, byte[] buffer)
         {
-            Debug.Assert(buffer is not null);
+            if (length != buffer.Length)
+                return false;
+            if (length is 0)
+                return true;
 #if NET5_0_OR_GREATER
-            var cursor = buffer.Length;
             ref var origin = ref MemoryMarshal.GetArrayDataReference(buffer);
-            return MemoryExtensions.SequenceEqual(MemoryMarshal.CreateReadOnlySpan(ref source, length), MemoryMarshal.CreateReadOnlySpan(ref origin, cursor));
 #else
-            return MemoryExtensions.SequenceEqual(MemoryMarshal.CreateReadOnlySpan(ref source, length), new ReadOnlySpan<byte>(buffer));
+            ref var origin = ref MemoryMarshal.GetReference(new System.ReadOnlySpan<byte>(buffer));
 #endif
+            return Test(ref source, ref origin, length);
         }
     }
 }
