@@ -2,7 +2,6 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Converters.Endianness
 {
@@ -35,7 +34,7 @@ namespace Mikodev.Binary.Converters.Endianness
         public override byte[] Encode(T item)
         {
             var buffer = new byte[Unsafe.SizeOf<T>()];
-            NativeEndian.Encode(ref MemoryMarshal.GetReference(new Span<byte>(buffer)), item);
+            NativeEndian.Encode(ref SharedHelper.GetArrayDataReference(buffer), item);
             return buffer;
         }
 

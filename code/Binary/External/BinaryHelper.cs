@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.External
 {
@@ -47,11 +46,7 @@ namespace Mikodev.Binary.External
                 return false;
             if (length is 0)
                 return true;
-#if NET5_0_OR_GREATER
-            ref var origin = ref MemoryMarshal.GetArrayDataReference(buffer);
-#else
-            ref var origin = ref MemoryMarshal.GetReference(new System.ReadOnlySpan<byte>(buffer));
-#endif
+            ref var origin = ref SharedHelper.GetArrayDataReference(buffer);
             for (; length >= 4; length -= 4, source = ref Unsafe.Add(ref source, 4), origin = ref Unsafe.Add(ref origin, 4))
                 if (Load<uint>(ref source) != Load<uint>(ref origin))
                     return false;
