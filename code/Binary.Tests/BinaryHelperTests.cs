@@ -263,5 +263,17 @@ namespace Mikodev.Binary.Tests
             }
             Assert.Equal(sizes, actual);
         }
+
+        [Theory(DisplayName = "Dictionary (duplicate key)")]
+        [InlineData(new[] { 1, 33, 1024, 33 })]
+        [InlineData(new[] { 2, 2, 3, 4 })]
+        [InlineData(new[] { 32768, 65535, 65536, 65536 })]
+        public void DictionaryDuplicateKey(int[] values)
+        {
+            var create = GetCreateDictionaryDelegate<int>();
+            var arguments = values.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString())), x)).ToArray();
+            var result = create.Invoke(arguments);
+            Assert.Null(result);
+        }
     }
 }
