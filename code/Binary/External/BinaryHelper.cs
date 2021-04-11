@@ -18,21 +18,10 @@ namespace Mikodev.Binary.External
         };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static uint Join(uint head, uint last) => (head << 5) + head + last;
+        private static uint Join(uint head, uint last) => head * 33 + last;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static T Load<T>(ref byte source) => Unsafe.ReadUnaligned<T>(ref source);
-
-        private static bool Test(ref byte source, ref byte origin, int length)
-        {
-            for (; length >= 4; length -= 4, source = ref Unsafe.Add(ref source, 4), origin = ref Unsafe.Add(ref origin, 4))
-                if (Load<uint>(ref source) != Load<uint>(ref origin))
-                    return false;
-            for (; length >= 1; length -= 1, source = ref Unsafe.Add(ref source, 1), origin = ref Unsafe.Add(ref origin, 1))
-                if (Load<byte>(ref source) != Load<byte>(ref origin))
-                    return false;
-            return true;
-        }
 
         internal static int GetCapacity(int capacity)
         {
@@ -52,8 +41,7 @@ namespace Mikodev.Binary.External
             return (int)result;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool GetEquality(byte[] buffer, ref byte source, int length)
+        internal static bool GetEquality(ref byte source, int length, byte[] buffer)
         {
             if (length != buffer.Length)
                 return false;
@@ -64,7 +52,13 @@ namespace Mikodev.Binary.External
 #else
             ref var origin = ref MemoryMarshal.GetReference(new System.ReadOnlySpan<byte>(buffer));
 #endif
-            return Test(ref source, ref origin, length);
+            for (; length >= 4; length -= 4, source = ref Unsafe.Add(ref source, 4), origin = ref Unsafe.Add(ref origin, 4))
+                if (Load<uint>(ref source) != Load<uint>(ref origin))
+                    return false;
+            for (; length >= 1; length -= 1, source = ref Unsafe.Add(ref source, 1), origin = ref Unsafe.Add(ref origin, 1))
+                if (Load<byte>(ref source) != Load<byte>(ref origin))
+                    return false;
+            return true;
         }
     }
 }

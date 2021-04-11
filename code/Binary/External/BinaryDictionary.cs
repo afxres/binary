@@ -27,7 +27,7 @@ namespace Mikodev.Binary.External
             while (next is not -1)
             {
                 ref var slot = ref records[next];
-                if (hash == slot.Hash && BinaryHelper.GetEquality(slot.Head, ref source, length))
+                if (hash == slot.Hash && BinaryHelper.GetEquality(ref source, length, slot.Head))
                     return slot.Item;
                 next = slot.Next;
             }
@@ -51,7 +51,7 @@ namespace Mikodev.Binary.External
                 while (next is not -1)
                 {
                     ref var slot = ref records[next];
-                    if (hash == slot.Hash && BinaryHelper.GetEquality(slot.Head, ref source, length))
+                    if (hash == slot.Hash && BinaryHelper.GetEquality(ref source, length, slot.Head))
                         return null;
                     next = ref slot.Next;
                 }

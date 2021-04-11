@@ -11,7 +11,7 @@ namespace Mikodev.Binary.Tests
 {
     public class BinaryHelperTests
     {
-        private delegate bool Equality(byte[] buffer, ref byte source, int length);
+        private delegate bool Equality(ref byte source, int length, byte[] buffer);
 
         private delegate int HashCode(ref byte source, int length);
 
@@ -70,7 +70,7 @@ namespace Mikodev.Binary.Tests
             var equality = GetEqualityDelegate();
             var alpha = new byte[length];
             var bravo = new byte[limits];
-            var result = equality.Invoke(alpha, ref MemoryMarshal.GetReference(new ReadOnlySpan<byte>(bravo)), bravo.Length);
+            var result = equality.Invoke(ref MemoryMarshal.GetReference(new ReadOnlySpan<byte>(bravo)), bravo.Length, alpha);
             Assert.NotEqual(length, limits);
             Assert.False(result);
         }
@@ -79,7 +79,7 @@ namespace Mikodev.Binary.Tests
         public void EqualityLengthBothZero()
         {
             var equality = GetEqualityDelegate();
-            var result = equality.Invoke(Array.Empty<byte>(), ref Unsafe.NullRef<byte>(), 0);
+            var result = equality.Invoke(ref Unsafe.NullRef<byte>(), 0, Array.Empty<byte>());
             Assert.True(result);
         }
 
@@ -94,7 +94,7 @@ namespace Mikodev.Binary.Tests
                 random.NextBytes(alpha);
                 var bravo = alpha.ToArray();
                 Assert.False(ReferenceEquals(alpha, bravo));
-                var result = equality.Invoke(alpha, ref MemoryMarshal.GetReference(new ReadOnlySpan<byte>(bravo)), bravo.Length);
+                var result = equality.Invoke(ref MemoryMarshal.GetReference(new ReadOnlySpan<byte>(bravo)), bravo.Length, alpha);
                 Assert.True(result);
                 Assert.Equal(i, alpha.Length);
                 Assert.Equal(i, bravo.Length);
@@ -116,7 +116,7 @@ namespace Mikodev.Binary.Tests
                     var bravo = alpha.ToArray();
                     bravo[k] = (byte)(bravo[k] + i);
                     Assert.False(ReferenceEquals(alpha, bravo));
-                    var result = equality.Invoke(alpha, ref MemoryMarshal.GetReference(new ReadOnlySpan<byte>(bravo)), bravo.Length);
+                    var result = equality.Invoke(ref MemoryMarshal.GetReference(new ReadOnlySpan<byte>(bravo)), bravo.Length, alpha);
                     Assert.False(result);
                     Assert.Equal(i, alpha.Length);
                     Assert.Equal(i, bravo.Length);
@@ -249,6 +249,7 @@ namespace Mikodev.Binary.Tests
 
             var arguments = buffers.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(x), x.Length)).ToList();
             var dictionary = create.Invoke(arguments);
+            Assert.NotNull(dictionary);
             var query = GetGetValueOrDefaultDelegate<int>(dictionary);
 
             var actual = new List<int>();
