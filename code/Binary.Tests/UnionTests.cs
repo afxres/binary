@@ -25,9 +25,9 @@ namespace Mikodev.Binary.Tests
             public FakeUnion(T item, int tag) : this(item) => this.tag = tag;
 
             [CompilationMapping(SourceConstructFlags.Field, 0, 0)]
-            public T Item => item;
+            public T Item => this.item;
 
-            public int Tag => tag;
+            public int Tag => this.tag;
         }
 
         private readonly IGenerator generator = Generator.CreateDefaultBuilder()
@@ -43,7 +43,7 @@ namespace Mikodev.Binary.Tests
             Assert.True(flag);
             Assert.Empty(items);
 
-            var error = Assert.Throws<ArgumentException>(() => generator.GetConverter<EmptyUnion>());
+            var error = Assert.Throws<ArgumentException>(() => this.generator.GetConverter<EmptyUnion>());
             var message = $"No available union case found, type: {type}";
             Assert.Equal(message, error.Message);
         }
@@ -54,7 +54,7 @@ namespace Mikodev.Binary.Tests
         public void ValidUnionTag(string item)
         {
             var source = new FakeUnion<string>(item);
-            var converter = generator.GetConverter(source);
+            var converter = this.generator.GetConverter(source);
             Assert.Equal(0, source.Tag);
             Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
 
@@ -74,7 +74,7 @@ namespace Mikodev.Binary.Tests
         public void ValidUnionTagAuto(string item)
         {
             var source = new FakeUnion<string>(item);
-            var converter = generator.GetConverter(source);
+            var converter = this.generator.GetConverter(source);
             Assert.Equal(0, source.Tag);
             Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
 
@@ -97,7 +97,7 @@ namespace Mikodev.Binary.Tests
         public void InvalidUnionTag(string item, int tag)
         {
             var source = new FakeUnion<string>(item, tag);
-            var converter = generator.GetConverter(source);
+            var converter = this.generator.GetConverter(source);
             Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
             var message = $"Invalid union tag '{tag}', type: {source.GetType()}";
 

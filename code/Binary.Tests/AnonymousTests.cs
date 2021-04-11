@@ -12,7 +12,7 @@ namespace Mikodev.Binary.Tests
         public void GetConverter()
         {
             var a = new { name = "Tom", age = 20 };
-            var converter = generator.GetConverter(a);
+            var converter = this.generator.GetConverter(a);
             Assert.NotNull(converter);
             Assert.Equal(0, converter.Length);
         }
@@ -21,7 +21,7 @@ namespace Mikodev.Binary.Tests
         public void Empty()
         {
             var a = new { };
-            var error = Assert.Throws<ArgumentException>(() => generator.GetConverter(a));
+            var error = Assert.Throws<ArgumentException>(() => this.generator.GetConverter(a));
             var message = $"No available property found, type: {a.GetType()}";
             Assert.Equal(message, error.Message);
         }
@@ -30,9 +30,9 @@ namespace Mikodev.Binary.Tests
         public void Convert()
         {
             var a = new { id = "some", data = new { name = "Bob" } };
-            var bytes = generator.Encode(a);
+            var bytes = this.generator.Encode(a);
             Assert.NotEmpty(bytes);
-            var value = generator.Decode(bytes, a);
+            var value = this.generator.Decode(bytes, a);
             Assert.False(ReferenceEquals(a, value));
             Assert.Equal(a, value);
         }
@@ -41,7 +41,7 @@ namespace Mikodev.Binary.Tests
         public void ValueFromEmptyBytes()
         {
             var bytes = Array.Empty<byte>();
-            var value = generator.Decode(bytes, new { key = default(string) });
+            var value = this.generator.Decode(bytes, new { key = default(string) });
             Assert.Null(value);
         }
 
@@ -52,7 +52,7 @@ namespace Mikodev.Binary.Tests
 
             var a = DefaultOf(new { key = default(string), value = default(int) });
             Assert.Null(a);
-            var bytes = generator.Encode(a);
+            var bytes = this.generator.Encode(a);
             Assert.Empty(bytes);
         }
 
@@ -60,8 +60,8 @@ namespace Mikodev.Binary.Tests
         public void TokenAs()
         {
             var a = new { guid = Guid.NewGuid(), inner = new { name = "Pro C# ...", price = 51.2 } };
-            var bytes = generator.Encode(a);
-            var token = new Token(generator, bytes);
+            var bytes = this.generator.Encode(a);
+            var token = new Token(this.generator, bytes);
             var value = token.As(a);
             Assert.False(ReferenceEquals(a, value));
             Assert.Equal(a, value);
@@ -75,10 +75,10 @@ namespace Mikodev.Binary.Tests
         public void CaseSensitive()
         {
             var a = new { name = "Tex", Name = 0 };
-            var bytes = generator.Encode(a);
-            var bravo = generator.Encode(new SortedDictionary<string, object> { ["name"] = "Tex", ["Name"] = 0 });
+            var bytes = this.generator.Encode(a);
+            var bravo = this.generator.Encode(new SortedDictionary<string, object> { ["name"] = "Tex", ["Name"] = 0 });
             Assert.Equal(bravo, bytes);
-            var error = Assert.Throws<NotSupportedException>(() => generator.Decode(bytes, anonymous: a));
+            var error = Assert.Throws<NotSupportedException>(() => this.generator.Decode(bytes, anonymous: a));
             var message = $"No suitable constructor found, type: {a.GetType()}";
             Assert.Equal(message, error.Message);
         }
