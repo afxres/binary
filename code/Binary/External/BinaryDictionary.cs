@@ -9,6 +9,8 @@ namespace Mikodev.Binary.External
 {
     internal sealed partial class BinaryDictionary<T>
     {
+        private readonly bool iterate;
+
         private readonly int[] buckets;
 
         private readonly Slot[] records;
@@ -17,6 +19,7 @@ namespace Mikodev.Binary.External
         {
             this.buckets = buckets;
             this.records = records;
+            this.iterate = records.Length < 7;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -25,7 +28,24 @@ namespace Mikodev.Binary.External
             return hash == slot.Hash && BinaryHelper.GetEquality(ref source, length, slot.Head);
         }
 
-        internal T GetValue(ref byte source, int length, T @default)
+        private T GetValueSmall(ref byte source, int length, T @default)
+        {
+            Debug.Assert(this.iterate is true);
+            Debug.Assert(this.records.Length < 7);
+            var records = this.records;
+            var hash = BinaryHelper.GetHashCode(ref source, length);
+            var next = 0;
+            while ((uint)next < (uint)records.Length)
+            {
+                ref var slot = ref records[next];
+                if (GetEqual(ref source, length, ref slot, hash))
+                    return slot.Item;
+                next++;
+            }
+            return @default;
+        }
+
+        private T GetValueLarge(ref byte source, int length, T @default)
         {
             var buckets = this.buckets;
             var records = this.records;
@@ -39,6 +59,15 @@ namespace Mikodev.Binary.External
                 next = slot.Next;
             }
             return @default;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal T GetValue(ref byte source, int length, T @default)
+        {
+            if (this.iterate)
+                return GetValueSmall(ref source, length, @default);
+            else
+                return GetValueLarge(ref source, length, @default);
         }
 
         internal static BinaryDictionary<T> Create(IReadOnlyCollection<KeyValuePair<ReadOnlyMemory<byte>, T>> items)
