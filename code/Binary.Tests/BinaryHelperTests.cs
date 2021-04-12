@@ -19,7 +19,7 @@ namespace Mikodev.Binary.Tests
 
         private delegate object CreateDictionary<T>(IReadOnlyCollection<KeyValuePair<ReadOnlyMemory<byte>, T>> items);
 
-        private delegate T GetValueOrDefault<T>(ref byte source, int length, T @default);
+        private delegate T GetValue<T>(ref byte source, int length, T @default);
 
         private T GetInternalDelegate<T>(string name) where T : Delegate
         {
@@ -54,11 +54,11 @@ namespace Mikodev.Binary.Tests
             return (CreateDictionary<T>)Delegate.CreateDelegate(typeof(CreateDictionary<T>), method);
         }
 
-        private GetValueOrDefault<T> GetGetValueOrDefaultDelegate<T>(object dictionary)
+        private GetValue<T> GetGetValueDelegate<T>(object dictionary)
         {
-            var method = dictionary.GetType().GetMethod("GetValueOrDefault", BindingFlags.Instance | BindingFlags.NonPublic);
+            var method = dictionary.GetType().GetMethod("GetValue", BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.NotNull(method);
-            return (GetValueOrDefault<T>)Delegate.CreateDelegate(typeof(GetValueOrDefault<T>), dictionary, method);
+            return (GetValue<T>)Delegate.CreateDelegate(typeof(GetValue<T>), dictionary, method);
         }
 
         [Theory(DisplayName = "Equality (length mismatch)")]
@@ -250,7 +250,7 @@ namespace Mikodev.Binary.Tests
             var arguments = buffers.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(x), x.Length)).ToList();
             var dictionary = create.Invoke(arguments);
             Assert.NotNull(dictionary);
-            var query = GetGetValueOrDefaultDelegate<int>(dictionary);
+            var query = GetGetValueDelegate<int>(dictionary);
 
             var actual = new List<int>();
             foreach (var i in buffers)

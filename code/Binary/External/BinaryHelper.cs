@@ -30,6 +30,7 @@ namespace Mikodev.Binary.External
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int GetHashCode(ref byte source, int length)
         {
             var result = (uint)length;

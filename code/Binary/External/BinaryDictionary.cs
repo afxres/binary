@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Mikodev.Binary.External
 {
@@ -18,16 +19,22 @@ namespace Mikodev.Binary.External
             this.records = records;
         }
 
-        internal T GetValueOrDefault(ref byte source, int length, T @default)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool GetEqual(ref byte source, int length, ref Slot slot, int hash)
+        {
+            return hash == slot.Hash && BinaryHelper.GetEquality(ref source, length, slot.Head);
+        }
+
+        internal T GetValue(ref byte source, int length, T @default)
         {
             var buckets = this.buckets;
             var records = this.records;
             var hash = BinaryHelper.GetHashCode(ref source, length);
             var next = buckets[(int)((uint)hash % (uint)buckets.Length)];
-            while (next is not -1)
+            while ((uint)next < (uint)records.Length)
             {
                 ref var slot = ref records[next];
-                if (hash == slot.Hash && BinaryHelper.GetEquality(ref source, length, slot.Head))
+                if (GetEqual(ref source, length, ref slot, hash))
                     return slot.Item;
                 next = slot.Next;
             }
@@ -48,10 +55,10 @@ namespace Mikodev.Binary.External
                 ref var source = ref SharedHelper.GetArrayDataReference(buffer);
                 var hash = BinaryHelper.GetHashCode(ref source, length);
                 ref var next = ref buckets[(int)((uint)hash % (uint)buckets.Length)];
-                while (next is not -1)
+                while ((uint)next < (uint)records.Length)
                 {
                     ref var slot = ref records[next];
-                    if (hash == slot.Hash && BinaryHelper.GetEquality(ref source, length, slot.Head))
+                    if (GetEqual(ref source, length, ref slot, hash))
                         return null;
                     next = ref slot.Next;
                 }
@@ -62,6 +69,7 @@ namespace Mikodev.Binary.External
 
             Debug.Assert(records.Length == free);
             Debug.Assert(records.All(x => x.Head is not null));
+            Debug.Assert(records.Select(x => x.Next).All(next => next is -1 || (uint)next < (uint)records.Length));
             return new BinaryDictionary<T>(buckets, records);
         }
     }
