@@ -54,11 +54,26 @@ namespace Mikodev.Binary.Tests
             return (CreateDictionary<T>)Delegate.CreateDelegate(typeof(CreateDictionary<T>), method);
         }
 
-        private GetValue<T> GetGetValueDelegate<T>(object dictionary)
+        private GetValue<T> GetGetValueDelegate<T>(object dictionary, string name)
         {
-            var method = dictionary.GetType().GetMethod("GetValue", BindingFlags.Instance | BindingFlags.NonPublic);
+            var method = dictionary.GetType().GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic);
             Assert.NotNull(method);
             return (GetValue<T>)Delegate.CreateDelegate(typeof(GetValue<T>), dictionary, method);
+        }
+
+        private GetValue<T> GetGetValueDelegate<T>(object dictionary)
+        {
+            return GetGetValueDelegate<T>(dictionary, "GetValue");
+        }
+
+        private GetValue<T> GetGetValueSmallDelegate<T>(object dictionary)
+        {
+            return GetGetValueDelegate<T>(dictionary, "GetValueSmall");
+        }
+
+        private GetValue<T> GetGetValueLargeDelegate<T>(object dictionary)
+        {
+            return GetGetValueDelegate<T>(dictionary, "GetValueLarge");
         }
 
         [Theory(DisplayName = "Equality (length mismatch)")]
@@ -250,15 +265,24 @@ namespace Mikodev.Binary.Tests
             var arguments = buffers.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(x), x.Length)).ToList();
             var dictionary = create.Invoke(arguments);
             Assert.NotNull(dictionary);
-            var query = GetGetValueDelegate<int>(dictionary);
+            var queries = new[]
+            {
+                GetGetValueDelegate<int>(dictionary),
+                GetGetValueSmallDelegate<int>(dictionary),
+                GetGetValueLargeDelegate<int>(dictionary),
+            };
 
             var actual = new List<int>();
             foreach (var i in buffers)
             {
                 var length = i.Length;
                 ref var source = ref MemoryMarshal.GetReference(new ReadOnlySpan<byte>(i));
-                var result = query.Invoke(ref source, length, -1);
+                var results = new List<int>();
+                foreach (var query in queries)
+                    results.Add(query.Invoke(ref source, length, -1));
+                var result = results.Distinct().Single();
                 actual.Add(result);
+                Assert.Equal(3, results.Count);
                 Assert.Equal(length, result);
             }
             Assert.Equal(sizes, actual);
@@ -274,6 +298,41 @@ namespace Mikodev.Binary.Tests
             var arguments = values.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString())), x)).ToArray();
             var result = create.Invoke(arguments);
             Assert.Null(result);
+        }
+
+        [Fact(DisplayName = "Dictionary (system type and member names)")]
+        public void DictionarySystemTypeNames()
+        {
+            var types = typeof(object).Assembly.GetTypes();
+            var members = types.SelectMany(x => x.GetMembers(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)).ToArray();
+            var names = types.Select(x => x.Name).Concat(members.Select(x => x.Name)).ToHashSet().ToArray();
+            Assert.True(names.Length > 1000);
+
+            var arguments = names.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x)), x)).ToArray();
+            var create = GetCreateDictionaryDelegate<string>();
+            var dictionary = create.Invoke(arguments);
+            Assert.NotNull(dictionary);
+            var queries = new[]
+            {
+                GetGetValueDelegate<string>(dictionary),
+                GetGetValueLargeDelegate<string>(dictionary),
+            };
+
+            var actual = new List<string>();
+            foreach (var i in arguments)
+            {
+                var buffer = i.Key.Span;
+                var length = buffer.Length;
+                ref var source = ref MemoryMarshal.GetReference(buffer);
+                var results = new List<string>();
+                foreach (var query in queries)
+                    results.Add(query.Invoke(ref source, length, null));
+                var result = results.Distinct().Single();
+                actual.Add(result);
+                Assert.Equal(2, results.Count);
+                Assert.Equal(i.Value, result);
+            }
+            Assert.Equal(names, actual);
         }
     }
 }
