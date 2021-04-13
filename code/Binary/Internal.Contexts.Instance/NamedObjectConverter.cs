@@ -72,17 +72,18 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
             {
                 offset += length;
                 length = NumberHelper.DecodeEnsureBuffer(ref source, ref offset, limits);
-                var result = record.GetValue(ref Unsafe.Add(ref source, offset), length, -1);
+                var cursor = record.GetValue(ref Unsafe.Add(ref source, offset), length, -1);
+                Debug.Assert(cursor is -1 || (uint)cursor < (uint)values.Length);
                 offset += length;
                 length = NumberHelper.DecodeEnsureBuffer(ref source, ref offset, limits);
-                if (result is -1)
-                    continue;
-                var cursor = result;
-                ref var handle = ref values[cursor];
-                if (handle is not 0)
-                    return ExceptKeyFound(cursor);
-                handle = (long)(((ulong)(uint)offset << 32) | (uint)length);
-                remain--;
+                if ((uint)cursor < (uint)values.Length)
+                {
+                    ref var handle = ref values[cursor];
+                    if (handle is not 0)
+                        return ExceptKeyFound(cursor);
+                    handle = (long)(((ulong)(uint)offset << 32) | (uint)length);
+                    remain--;
+                }
             }
 
             if (remain is not 0)
