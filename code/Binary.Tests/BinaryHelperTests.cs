@@ -66,16 +66,6 @@ namespace Mikodev.Binary.Tests
             return GetGetValueDelegate<T>(dictionary, "GetValue");
         }
 
-        private GetValue<T> GetGetValueSmallDelegate<T>(object dictionary)
-        {
-            return GetGetValueDelegate<T>(dictionary, "GetValueSmall");
-        }
-
-        private GetValue<T> GetGetValueLargeDelegate<T>(object dictionary)
-        {
-            return GetGetValueDelegate<T>(dictionary, "GetValueLarge");
-        }
-
         [Theory(DisplayName = "Equality (length mismatch)")]
         [InlineData(0, 1)]
         [InlineData(33, 0)]
@@ -265,24 +255,15 @@ namespace Mikodev.Binary.Tests
             var arguments = buffers.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(x), x.Length)).ToList();
             var dictionary = create.Invoke(arguments, -1);
             Assert.NotNull(dictionary);
-            var queries = new[]
-            {
-                GetGetValueDelegate<int>(dictionary),
-                GetGetValueSmallDelegate<int>(dictionary),
-                GetGetValueLargeDelegate<int>(dictionary),
-            };
+            var query = GetGetValueDelegate<int>(dictionary);
 
             var actual = new List<int>();
             foreach (var i in buffers)
             {
                 var length = i.Length;
                 ref var source = ref MemoryMarshal.GetReference(new ReadOnlySpan<byte>(i));
-                var results = new List<int>();
-                foreach (var query in queries)
-                    results.Add(query.Invoke(ref source, length));
-                var result = results.Distinct().Single();
+                var result = query.Invoke(ref source, length);
                 actual.Add(result);
-                Assert.Equal(3, results.Count);
                 Assert.Equal(length, result);
             }
             Assert.Equal(sizes, actual);
@@ -312,11 +293,7 @@ namespace Mikodev.Binary.Tests
             var create = GetCreateDictionaryDelegate<string>();
             var dictionary = create.Invoke(arguments, null);
             Assert.NotNull(dictionary);
-            var queries = new[]
-            {
-                GetGetValueDelegate<string>(dictionary),
-                GetGetValueLargeDelegate<string>(dictionary),
-            };
+            var query = GetGetValueDelegate<string>(dictionary);
 
             var actual = new List<string>();
             foreach (var i in arguments)
@@ -324,12 +301,8 @@ namespace Mikodev.Binary.Tests
                 var buffer = i.Key.Span;
                 var length = buffer.Length;
                 ref var source = ref MemoryMarshal.GetReference(buffer);
-                var results = new List<string>();
-                foreach (var query in queries)
-                    results.Add(query.Invoke(ref source, length));
-                var result = results.Distinct().Single();
+                var result = query.Invoke(ref source, length);
                 actual.Add(result);
-                Assert.Equal(2, results.Count);
                 Assert.Equal(i.Value, result);
             }
             Assert.Equal(names, actual);
