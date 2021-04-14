@@ -17,9 +17,9 @@ namespace Mikodev.Binary.Tests
 
         private delegate int Capacity(int capacity);
 
-        private delegate object CreateDictionary<T>(IReadOnlyCollection<KeyValuePair<ReadOnlyMemory<byte>, T>> items);
+        private delegate object CreateDictionary<T>(IReadOnlyCollection<KeyValuePair<ReadOnlyMemory<byte>, T>> items, T @default);
 
-        private delegate T GetValue<T>(ref byte source, int length, T @default);
+        private delegate T GetValue<T>(ref byte source, int length);
 
         private T GetInternalDelegate<T>(string name) where T : Delegate
         {
@@ -263,7 +263,7 @@ namespace Mikodev.Binary.Tests
             _ = Assert.Single(codes.Distinct());
 
             var arguments = buffers.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(x), x.Length)).ToList();
-            var dictionary = create.Invoke(arguments);
+            var dictionary = create.Invoke(arguments, -1);
             Assert.NotNull(dictionary);
             var queries = new[]
             {
@@ -279,7 +279,7 @@ namespace Mikodev.Binary.Tests
                 ref var source = ref MemoryMarshal.GetReference(new ReadOnlySpan<byte>(i));
                 var results = new List<int>();
                 foreach (var query in queries)
-                    results.Add(query.Invoke(ref source, length, -1));
+                    results.Add(query.Invoke(ref source, length));
                 var result = results.Distinct().Single();
                 actual.Add(result);
                 Assert.Equal(3, results.Count);
@@ -296,7 +296,7 @@ namespace Mikodev.Binary.Tests
         {
             var create = GetCreateDictionaryDelegate<int>();
             var arguments = values.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString())), x)).ToArray();
-            var result = create.Invoke(arguments);
+            var result = create.Invoke(arguments, -1);
             Assert.Null(result);
         }
 
@@ -310,7 +310,7 @@ namespace Mikodev.Binary.Tests
 
             var arguments = names.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x)), x)).ToArray();
             var create = GetCreateDictionaryDelegate<string>();
-            var dictionary = create.Invoke(arguments);
+            var dictionary = create.Invoke(arguments, null);
             Assert.NotNull(dictionary);
             var queries = new[]
             {
@@ -326,7 +326,7 @@ namespace Mikodev.Binary.Tests
                 ref var source = ref MemoryMarshal.GetReference(buffer);
                 var results = new List<string>();
                 foreach (var query in queries)
-                    results.Add(query.Invoke(ref source, length, null));
+                    results.Add(query.Invoke(ref source, length));
                 var result = results.Distinct().Single();
                 actual.Add(result);
                 Assert.Equal(2, results.Count);

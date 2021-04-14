@@ -9,14 +9,17 @@ namespace Mikodev.Binary.External
 {
     internal sealed partial class BinaryDictionary<T>
     {
+        private readonly T content;
+
         private readonly bool iterate;
 
         private readonly int[] buckets;
 
         private readonly Slot[] records;
 
-        private BinaryDictionary(int[] buckets, Slot[] records)
+        private BinaryDictionary(int[] buckets, Slot[] records, T content)
         {
+            this.content = content;
             this.buckets = buckets;
             this.records = records;
             this.iterate = records.Length < 7;
@@ -28,7 +31,7 @@ namespace Mikodev.Binary.External
             return hash == slot.Hash && BinaryHelper.GetEquality(ref source, length, slot.Head);
         }
 
-        private T GetValueSmall(ref byte source, int length, T @default)
+        private T GetValueSmall(ref byte source, int length)
         {
             Debug.Assert(this.iterate is true);
             Debug.Assert(this.records.Length < 7);
@@ -42,10 +45,10 @@ namespace Mikodev.Binary.External
                     return slot.Item;
                 next++;
             }
-            return @default;
+            return this.content;
         }
 
-        private T GetValueLarge(ref byte source, int length, T @default)
+        private T GetValueLarge(ref byte source, int length)
         {
             var buckets = this.buckets;
             var records = this.records;
@@ -58,19 +61,19 @@ namespace Mikodev.Binary.External
                     return slot.Item;
                 next = slot.Next;
             }
-            return @default;
+            return this.content;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal T GetValue(ref byte source, int length, T @default)
+        internal T GetValue(ref byte source, int length)
         {
             if (this.iterate)
-                return GetValueSmall(ref source, length, @default);
+                return GetValueSmall(ref source, length);
             else
-                return GetValueLarge(ref source, length, @default);
+                return GetValueLarge(ref source, length);
         }
 
-        internal static BinaryDictionary<T> Create(IReadOnlyCollection<KeyValuePair<ReadOnlyMemory<byte>, T>> items)
+        internal static BinaryDictionary<T> Create(IReadOnlyCollection<KeyValuePair<ReadOnlyMemory<byte>, T>> items, T @default)
         {
             var free = 0;
             var records = new Slot[items.Count];
@@ -99,7 +102,7 @@ namespace Mikodev.Binary.External
             Debug.Assert(records.Length == free);
             Debug.Assert(records.All(x => x.Head is not null));
             Debug.Assert(records.Select(x => x.Next).All(next => next is -1 || (uint)next < (uint)records.Length));
-            return new BinaryDictionary<T>(buckets, records);
+            return new BinaryDictionary<T>(buckets, records, @default);
         }
     }
 }

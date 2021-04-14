@@ -41,6 +41,7 @@ namespace Mikodev.Binary.External
             return (int)result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool GetEquality(ref byte source, int length, byte[] buffer)
         {
             if (length != buffer.Length)

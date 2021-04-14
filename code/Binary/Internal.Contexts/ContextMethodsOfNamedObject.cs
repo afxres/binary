@@ -23,7 +23,7 @@ namespace Mikodev.Binary.Internal.Contexts
             Debug.Assert(properties.Count == names.Count);
             Debug.Assert(properties.Count == memories.Count);
             Debug.Assert(properties.Count == converters.Count);
-            var dictionary = BinaryDictionary<int>.Create(memories.Select((x, i) => new KeyValuePair<ReadOnlyMemory<byte>, int>(x, i)).ToList());
+            var dictionary = BinaryDictionary<int>.Create(memories.Select((x, i) => new KeyValuePair<ReadOnlyMemory<byte>, int>(x, i)).ToList(), -1);
             if (dictionary is null)
                 throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {type}, string converter type: {encoder.GetType()}");
             var encode = GetEncodeDelegateAsNamedObject(type, converters, properties, memories);
