@@ -47,16 +47,16 @@ namespace Mikodev.Binary.Tests
 
         private CreateDictionary<T> GetCreateDictionaryDelegate<T>()
         {
-            var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryDictionary`1");
+            var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryDictionary");
             Assert.NotNull(type);
-            var method = type.MakeGenericType(typeof(T)).GetMethod("Create", BindingFlags.Static | BindingFlags.NonPublic);
+            var method = type.GetMethod("Create", BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(typeof(T));
             Assert.NotNull(method);
             return (CreateDictionary<T>)Delegate.CreateDelegate(typeof(CreateDictionary<T>), method);
         }
 
         private GetValue<T> GetGetValueDelegate<T>(object dictionary, string name)
         {
-            var method = dictionary.GetType().GetMethod(name, BindingFlags.Instance | BindingFlags.NonPublic);
+            var method = dictionary.GetType().GetMethod(name, BindingFlags.Instance | BindingFlags.Public);
             Assert.NotNull(method);
             return (GetValue<T>)Delegate.CreateDelegate(typeof(GetValue<T>), dictionary, method);
         }

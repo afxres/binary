@@ -179,5 +179,24 @@ namespace Mikodev.Binary.Tests
                 Assert.False(constructor.IsAssembly);
             }
         }
+
+        [Fact(DisplayName = "Internal Type Instance Member Access")]
+        public void InternalTypeInstanceMemberAccessLevel()
+        {
+            var types = typeof(IConverter).Assembly.GetTypes();
+            var array = types.Where(x => x.IsPublic is false && x.IsSubclassOf(typeof(Delegate)) is false && x.IsEnum is false).ToList();
+            var filter = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            foreach (var t in array)
+            {
+                var fields = t.GetFields(filter);
+                var methods = t.GetMethods(filter);
+                var constructors = t.GetConstructors(filter);
+                var properties = t.GetProperties(filter);
+                Assert.All(properties, x => Assert.True(x.GetGetMethod().IsPublic));
+                Assert.All(fields, x => Assert.True(x.IsPublic || x.IsPrivate));
+                Assert.All(methods, x => Assert.True(x.Name.Contains("<") || x.DeclaringType == typeof(object) || x.IsPublic || x.IsPrivate));
+                Assert.All(constructors, x => Assert.True((x.DeclaringType.IsAbstract && x.GetParameters().Length is 0) || x.IsPublic || x.IsPrivate));
+            }
+        }
     }
 }
