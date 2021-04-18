@@ -16,46 +16,46 @@ namespace Mikodev.Binary.Converters.Endianness
 
         public override void Encode(ref Allocator allocator, T item)
         {
-            NativeEndian.Encode(ref allocator, item);
+            Unsafe.WriteUnaligned(ref Allocator.Assign(ref allocator, Unsafe.SizeOf<T>()), item);
         }
 
         public override void EncodeAuto(ref Allocator allocator, T item)
         {
-            NativeEndian.Encode(ref allocator, item);
+            Unsafe.WriteUnaligned(ref Allocator.Assign(ref allocator, Unsafe.SizeOf<T>()), item);
         }
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
         {
             ref var target = ref Allocator.Assign(ref allocator, Unsafe.SizeOf<T>() + 1);
             NumberHelper.Encode(ref target, (uint)Unsafe.SizeOf<T>(), numberLength: 1);
-            NativeEndian.Encode(ref Unsafe.Add(ref target, 1), item);
+            Unsafe.WriteUnaligned(ref Unsafe.Add(ref target, 1), item);
         }
 
         public override byte[] Encode(T item)
         {
             var buffer = new byte[Unsafe.SizeOf<T>()];
-            NativeEndian.Encode(ref SharedHelper.GetArrayDataReference(buffer), item);
+            Unsafe.WriteUnaligned(ref SharedHelper.GetArrayDataReference(buffer), item);
             return buffer;
         }
 
         public override T Decode(in ReadOnlySpan<byte> span)
         {
-            return NativeEndian.Decode<T>(span);
+            return Unsafe.ReadUnaligned<T>(ref MemoryHelper.EnsureLength(span, Unsafe.SizeOf<T>()));
         }
 
         public override T DecodeAuto(ref ReadOnlySpan<byte> span)
         {
-            return NativeEndian.Decode<T>(ref MemoryHelper.EnsureLength(ref span, Unsafe.SizeOf<T>()));
+            return Unsafe.ReadUnaligned<T>(ref MemoryHelper.EnsureLength(ref span, Unsafe.SizeOf<T>()));
         }
 
         public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
         {
-            return NativeEndian.Decode<T>(Converter.DecodeWithLengthPrefix(ref span));
+            return Unsafe.ReadUnaligned<T>(ref MemoryHelper.EnsureLength(Converter.DecodeWithLengthPrefix(ref span), Unsafe.SizeOf<T>()));
         }
 
         public override T Decode(byte[] buffer)
         {
-            return NativeEndian.Decode<T>(new ReadOnlySpan<byte>(buffer));
+            return Unsafe.ReadUnaligned<T>(ref MemoryHelper.EnsureLength(new ReadOnlySpan<byte>(buffer), Unsafe.SizeOf<T>()));
         }
     }
 }
