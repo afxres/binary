@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <AssemblyName>Mikodev.Binary.Experimental</AssemblyName>
+    <RootNamespace>Mikodev.Binary.Experimental</RootNamespace>
+    <LangVersion>9.0</LangVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Mikodev</Authors>
+    <Company>Mikodev</Company>
+    <Copyright>Mikodev 2020</Copyright>
+    <Product>Mikodev.Binary</Product>
+    <Version>5.2.7</Version>
+    <PackageTags>binary dynamic serialization</PackageTags>
+    <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/afxres/binary.git</RepositoryUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Binary\Binary.csproj" />
+  </ItemGroup>
+
+</Project>
