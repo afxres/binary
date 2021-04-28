@@ -1,10 +1,8 @@
-﻿#if NET5_0_OR_GREATER
-
-using Mikodev.Binary.Internal;
+﻿using Mikodev.Binary.Internal;
 using System;
 using System.Text;
 
-namespace Mikodev.Binary.Creators
+namespace Mikodev.Binary.Converters
 {
     internal sealed class RuneConverter : Converter<Rune>
     {
@@ -21,5 +19,3 @@ namespace Mikodev.Binary.Creators
         }
     }
 }
-
-#endif

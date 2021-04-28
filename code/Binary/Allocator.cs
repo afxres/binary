@@ -46,7 +46,7 @@ namespace Mikodev.Binary
                 return Array.Empty<byte>();
             var buffer = this.buffer;
             var result = new byte[offset];
-            Unsafe.CopyBlockUnaligned(ref SharedHelper.GetArrayDataReference(result), ref MemoryMarshal.GetReference(buffer), (uint)offset);
+            Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetArrayDataReference(result), ref MemoryMarshal.GetReference(buffer), (uint)offset);
             return result;
         }
 

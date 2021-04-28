@@ -43,12 +43,10 @@ namespace Mikodev.Binary.Internal.Contexts
                 Expression.Assign(Expression.Field(value, arrayField), array),
                 Expression.Assign(Expression.Field(value, countField), count),
                 value);
-            var alphaType = typeof(Func<,>).MakeGenericType(type, itemArrayType);
-            var bravoType = typeof(Func<,,>).MakeGenericType(itemArrayType, typeof(int), type);
-            var alpha = Expression.Lambda(alphaType, Expression.Field(value, arrayField), value);
-            var bravo = Expression.Lambda(bravoType, block, array, count);
+            var functorType = typeof(Func<,,>).MakeGenericType(itemArrayType, typeof(int), type);
+            var functor = Expression.Lambda(functorType, block, array, count);
 
-            var builderArguments = new object[] { alpha.Compile(), bravo.Compile() };
+            var builderArguments = new object[] { functor.Compile() };
             var builderType = typeof(ListBuilder<>).MakeGenericType(itemType);
             return Activator.CreateInstance(builderType, builderArguments);
         }

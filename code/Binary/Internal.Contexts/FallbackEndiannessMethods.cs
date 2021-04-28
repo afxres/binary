@@ -22,11 +22,9 @@ namespace Mikodev.Binary.Internal.Contexts
             typeof(ulong),
             typeof(float),
             typeof(double),
+            typeof(Half),
             typeof(Guid),
             typeof(BitVector32),
-#if NET5_0_OR_GREATER
-            typeof(Half),
-#endif
         };
 
         internal static IConverter GetConverter(Type type)

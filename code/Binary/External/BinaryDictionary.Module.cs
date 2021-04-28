@@ -1,8 +1,8 @@
-﻿using Mikodev.Binary.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.External
 {
@@ -19,7 +19,7 @@ namespace Mikodev.Binary.External
             {
                 var buffer = pair.Key.ToArray();
                 var length = buffer.Length;
-                ref var source = ref SharedHelper.GetArrayDataReference(buffer);
+                ref var source = ref MemoryMarshal.GetArrayDataReference(buffer);
                 var hash = BinaryHelper.GetHashCode(ref source, length);
                 ref var next = ref buckets[(int)((uint)hash % (uint)buckets.Length)];
                 while ((uint)next < (uint)records.Length)

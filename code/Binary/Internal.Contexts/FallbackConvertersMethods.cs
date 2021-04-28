@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
@@ -10,6 +11,7 @@ namespace Mikodev.Binary.Internal.Contexts
         private static readonly IReadOnlyDictionary<Type, Type> Types = new Dictionary<Type, Type>
         {
             [typeof(Uri)] = typeof(UriConverter),
+            [typeof(Rune)] = typeof(RuneConverter),
             [typeof(string)] = typeof(StringConverter),
             [typeof(decimal)] = typeof(DecimalConverter),
             [typeof(DateTime)] = typeof(DateTimeConverter),

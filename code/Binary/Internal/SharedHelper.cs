@@ -40,16 +40,5 @@ namespace Mikodev.Binary.Internal
                 return (length + 1) * 3;
             return encoding.GetByteCount(span);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static ref T GetArrayDataReference<T>(T[] buffer)
-        {
-            Debug.Assert(buffer is not null);
-#if NET5_0_OR_GREATER
-            return ref MemoryMarshal.GetArrayDataReference(buffer);
-#else
-            return ref MemoryMarshal.GetReference(new Span<T>(buffer));
-#endif
-        }
     }
 }
