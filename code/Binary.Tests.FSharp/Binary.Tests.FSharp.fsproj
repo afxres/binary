@@ -48,6 +48,7 @@
     <Compile Include="Miscellaneous\ThrowTests.fs" />
     <Compile Include="Miscellaneous\ValueLayoutTests.fs" />
     <Compile Include="Sequence\CollectionIntegrationTests.fs" />
+    <Compile Include="Sequence\CollectionInterfaceTests.fs" />
     <Compile Include="Sequence\CollectionOverflowTests.fs" />
     <Compile Include="Sequence\CollectionCapacityTests.fs" />
     <Compile Include="Sequence\CompatibleCollectionTests.fs" />
