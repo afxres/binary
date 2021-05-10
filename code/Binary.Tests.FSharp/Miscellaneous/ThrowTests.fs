@@ -3,6 +3,7 @@
 open Mikodev.Binary
 open System
 open System.Collections.Generic
+open System.Runtime.Serialization
 open Xunit
 
 type BadConverter<'T>() =
@@ -44,10 +45,32 @@ type BadClassTypeWithOnlyIndexer() =
 type BadValueTypeWithOnlyIndexer =
     member __.Item with get (i : int) : string = String.Empty and set (i : int) (item : string) = ()
 
+type EmptyDelegate = delegate of uint -> unit
+
+type EmptyConverter<'T>() =
+    inherit Converter<'T>()
+
+    override __.Encode(allocator, item) = ()
+
+    override __.Decode (span : inref<ReadOnlySpan<byte>>) : 'T = Unchecked.defaultof<'T>
+
+type EmptyConverterCreator() =
+    interface IConverterCreator with
+        member __.GetConverter(_, t) =
+            if t = typeof<ValueTuple> || t.IsSubclassOf typeof<Delegate> || t.Assembly = typeof<IConverter>.Assembly || t.Assembly = typeof<obj>.Assembly then
+                Activator.CreateInstance(typedefof<EmptyConverter<_>>.MakeGenericType t) :?> IConverter
+            else
+                null
+
 type ThrowTests() =
     let generator = Generator.CreateDefault()
 
     let outofrange = ArgumentOutOfRangeException().Message
+
+    let GeneratorBuilder() =
+        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "GeneratorBuilder") |> Array.exactlyOne
+        let builder = Activator.CreateInstance(t)
+        builder :?> IGeneratorBuilder
 
     member private __.Test<'a> () =
         let throwExpected (action : unit -> unit) =
@@ -130,21 +153,27 @@ type ThrowTests() =
         Assert.Equal(sprintf "No available getter found, property name: %s, type: %O" name t, error.Message)
         ()
 
+    static member ``Data Delegate`` = [|
+        [| typeof<Delegate>; typeof<Delegate> |];
+        [| typeof<Predicate<int>>; typeof<Predicate<int>> |];
+        [| typeof<EmptyDelegate>; typeof<EmptyDelegate> |];
+        [| typeof<EmptyDelegate array>; typeof<EmptyDelegate> |];
+        [| typeof<EmptyDelegate * int>; typeof<EmptyDelegate> |];
+    |]
+
     static member ``Data Internal`` = [|
         [| typeof<Token>; typeof<Token> |];
         [| typeof<Token array>; typeof<Token> |];
         [| typeof<Token ResizeArray>; typeof<Token> |];
         [| typeof<Token IList>; typeof<Token> |];
         [| typeof<Token Memory>; typeof<Token> |];
-        [| typeof<Token ArraySegment>; typeof<Token> |];
         [| typeof<Token * int>; typeof<Token> |];
         [| typeof<struct (int * Token)>; typeof<Token> |];
         [| typeof<IConverter HashSet>; typeof<IConverter> |];
-        [| typeof<IConverter Queue>; typeof<IConverter> |];
         [| typeof<IConverter list>; typeof<IConverter> |];
     |]
 
-    static member ``Data Bravo`` = [|
+    static member ``Data Invalid`` = [|
         [| typeof<ValueTuple Set>; typeof<ValueTuple> |];
         [| typeof<ValueTuple ICollection>; typeof<ValueTuple> |];
         [| typeof<ValueTuple IEnumerable>; typeof<ValueTuple> |];
@@ -153,8 +182,32 @@ type ThrowTests() =
         [| typeof<IDictionary<ValueTuple, int>>; typeof<ValueTuple> |];
     |]
 
+    static member ``Data Pointer`` = [|
+        [| typeof<int>.MakePointerType(); typeof<int>.MakePointerType() |];
+        [| typeof<double>.MakePointerType(); typeof<double>.MakePointerType() |];
+    |]
+
+    static member ``Data System`` : (obj array) seq = seq {
+        yield [| typeof<ICloneable>; typeof<ICloneable> |]
+        yield [| typeof<ISerializable>; typeof<ISerializable> |]
+        yield [| typeof<Nullable<double>>; typeof<Nullable<double>> |]
+    }
+
     [<Theory>]
-    [<MemberData("Data Bravo")>]
+    [<MemberData("Data System")>]
+    [<MemberData("Data Invalid")>]
+    [<MemberData("Data Internal")>]
+    [<MemberData("Data Delegate")>]
+    member __.``Simple Or Complex Type Control Group`` (t : Type, by : Type) =
+        let g = GeneratorBuilder().AddConverterCreator(EmptyConverterCreator()).Build()
+        let a = g.GetConverter t
+        let b = g.GetConverter by
+        Assert.NotNull a
+        Assert.IsType(typedefof<EmptyConverter<_>>.MakeGenericType by, b)
+        ()
+
+    [<Theory>]
+    [<MemberData("Data Invalid")>]
     member __.``Simple Or Complex Type With Invalid Type`` (t : Type, by : Type) =
         let message = sprintf "Invalid type: %O" by
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
@@ -166,6 +219,32 @@ type ThrowTests() =
     member __.``Simple Or Complex Type With Invalid Internal Type`` (t : Type, by : Type) =
         let message = sprintf "Invalid internal type: %O" by
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
+        Assert.Equal(message, error.Message)
+        ()
+
+    [<Theory>]
+    [<MemberData("Data Delegate")>]
+    member __.``Simple Or Complex Type With Delegate Type`` (t : Type, by : Type) =
+        let message = sprintf "Invalid delegate type: %O" by
+        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
+        Assert.Equal(message, error.Message)
+        ()
+
+    [<Theory>]
+    [<MemberData("Data Pointer")>]
+    member __.``Simple Or Complex Type With Pointer Type`` (t : Type, by : Type) =
+        let message = sprintf "Invalid pointer type: %O" by
+        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
+        Assert.Equal(message, error.Message)
+        ()
+
+    [<Theory>]
+    [<MemberData("Data System")>]
+    member __.``Invalid System Type`` (t : Type, expected : Type) =
+        let generator = GeneratorBuilder().Build()
+        Assert.Equal("Generator(Converters: 1, Creators: 0)", generator.ToString())
+        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t |> ignore)
+        let message = sprintf "Invalid system type: %O" expected
         Assert.Equal(message, error.Message)
         ()
 

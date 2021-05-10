@@ -104,18 +104,3 @@ type GeneratorExtensionsTests() =
         Assert.Equal(message, b.Message)
         Assert.Equal(message, c.Message)
         ()
-
-    static member ``Data Bravo`` : (obj array) seq = seq {
-        yield [| typeof<Action>; typeof<Action> |]
-        yield [| typeof<Nullable<double>>; typeof<Nullable<double>> |]
-    }
-
-    [<Theory>]
-    [<MemberData("Data Bravo")>]
-    member __.``Invalid System Type`` (t : Type, expected : Type) =
-        let generator = GeneratorBuilder().Build()
-        Assert.Equal("Generator(Converters: 1, Creators: 0)", generator.ToString())
-        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t |> ignore)
-        let message = sprintf "Invalid system type: %O" expected
-        Assert.Equal(message, error.Message)
-        ()

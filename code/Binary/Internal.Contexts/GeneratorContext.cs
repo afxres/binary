@@ -44,6 +44,8 @@ namespace Mikodev.Binary.Internal.Contexts
                 throw new ArgumentException($"Invalid byref type: {type}");
             if (type.IsByRefLike)
                 throw new ArgumentException($"Invalid byref-like type: {type}");
+            if (type.IsPointer)
+                throw new ArgumentException($"Invalid pointer type: {type}");
             if (type.IsAbstract && type.IsSealed)
                 throw new ArgumentException($"Invalid static type: {type}");
             if (type.IsGenericTypeDefinition || type.IsGenericParameter)
@@ -66,8 +68,8 @@ namespace Mikodev.Binary.Internal.Contexts
             if ((converter = FallbackSequentialMethods.GetConverter(this, type)) is not null)
                 return converter;
 
-            if (type.IsPointer)
-                throw new ArgumentException($"Invalid pointer type: {type}");
+            if (type == typeof(Delegate) || type.IsSubclassOf(typeof(Delegate)))
+                throw new ArgumentException($"Invalid delegate type: {type}");
             if (type.Assembly == typeof(IConverter).Assembly)
                 throw new ArgumentException($"Invalid internal type: {type}");
 
