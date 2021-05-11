@@ -62,6 +62,11 @@ type EmptyConverterCreator() =
             else
                 null
 
+type ThrowConverterCreator() =
+    interface IConverterCreator with
+        member __.GetConverter(_, t) =
+            raise (NotSupportedException("Not supported."))
+
 type ThrowTests() =
     let generator = Generator.CreateDefault()
 
@@ -187,11 +192,28 @@ type ThrowTests() =
         [| typeof<double>.MakePointerType(); typeof<double>.MakePointerType() |];
     |]
 
+    static member ``Data Static`` = [|
+        [| typeof<BitConverter>; typeof<BitConverter> |];
+        [| typeof<MemoryExtensions>; typeof<MemoryExtensions> |];
+    |]
+
     static member ``Data System`` : (obj array) seq = seq {
         yield [| typeof<ICloneable>; typeof<ICloneable> |]
         yield [| typeof<ISerializable>; typeof<ISerializable> |]
         yield [| typeof<Nullable<double>>; typeof<Nullable<double>> |]
     }
+
+    [<Theory>]
+    [<MemberData("Data Static")>]
+    [<MemberData("Data Pointer")>]
+    member __.``Simple Or Complex Type Strictly Invalid`` (t : Type, by : Type) =
+        let g = GeneratorBuilder().AddConverterCreator(ThrowConverterCreator()).Build()
+        let a = Assert.Throws<NotSupportedException>(fun () -> g.GetConverter<int>() |> ignore)
+        Assert.Equal("Not supported.", a.Message)
+        let b = Assert.Throws<ArgumentException>(fun () -> g.GetConverter t |> ignore)
+        Assert.StartsWith("Invalid ", b.Message)
+        Assert.EndsWith($" type: {by}", b.Message)
+        ()
 
     [<Theory>]
     [<MemberData("Data System")>]
