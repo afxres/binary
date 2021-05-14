@@ -8,9 +8,9 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Mikodev</Authors>
     <Company>Mikodev</Company>
-    <Copyright>Mikodev 2020</Copyright>
+    <Copyright>Mikodev 2021</Copyright>
     <Product>Mikodev.Binary</Product>
-    <Version>5.2.6</Version>
+    <Version>5.2.8</Version>
     <PackageTags>binary dynamic serialization fsharp</PackageTags>
     <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
