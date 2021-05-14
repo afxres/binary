@@ -63,7 +63,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 typeof(IImmutableStack<>),
             };
 
-            var array = List<object[]>().Intersect(List<ArraySegment<object>>()).ToArray();
+            var array = List<object[]>().Intersect(List<List<object>>()).ToArray();
             var set = List<HashSet<object>>().Except(array).ToArray();
             var dictionary = List<Dictionary<object, object>>().Except(array).ToArray();
 

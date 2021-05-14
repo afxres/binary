@@ -3,8 +3,6 @@ using Mikodev.Binary.Internal.SpanLike.Builders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
@@ -12,8 +10,9 @@ namespace Mikodev.Binary.Internal.Contexts
     {
         private static readonly IReadOnlyDictionary<Type, Type> Types = new Dictionary<Type, Type>
         {
-            [typeof(ArraySegment<>)] = typeof(ArraySegmentBuilder<>),
+            [typeof(List<>)] = typeof(ListBuilder<>),
             [typeof(Memory<>)] = typeof(MemoryBuilder<>),
+            [typeof(ArraySegment<>)] = typeof(ArraySegmentBuilder<>),
             [typeof(ReadOnlyMemory<>)] = typeof(ReadOnlyMemoryBuilder<>),
         };
 
@@ -24,41 +23,12 @@ namespace Mikodev.Binary.Internal.Contexts
             return Activator.CreateInstance(typeof(ArrayBuilder<>).MakeGenericType(elementType));
         }
 
-        private static object CreateListBuilder(Type type, Type itemType)
-        {
-            const BindingFlags Select = BindingFlags.Instance | BindingFlags.NonPublic;
-            var itemArrayType = itemType.MakeArrayType();
-            var arrayField = type.GetField("_items", Select);
-            var countField = type.GetField("_size", Select);
-            if (arrayField is null || arrayField.FieldType != itemArrayType ||
-                countField is null || countField.FieldType != typeof(int))
-                return null;
-
-            var value = Expression.Parameter(type, "value");
-            var array = Expression.Parameter(itemArrayType, "array");
-            var count = Expression.Parameter(typeof(int), "count");
-            var block = Expression.Block(
-                new[] { value },
-                Expression.Assign(value, Expression.New(type)),
-                Expression.Assign(Expression.Field(value, arrayField), array),
-                Expression.Assign(Expression.Field(value, countField), count),
-                value);
-            var functorType = typeof(Func<,,>).MakeGenericType(itemArrayType, typeof(int), type);
-            var functor = Expression.Lambda(functorType, block, array, count);
-
-            var builderArguments = new object[] { functor.Compile() };
-            var builderType = typeof(ListBuilder<>).MakeGenericType(itemType);
-            return Activator.CreateInstance(builderType, builderArguments);
-        }
-
         internal static IConverter GetConverter(IGeneratorContext context, Type type)
         {
             object Invoke()
             {
                 if (type.IsArray && type.GetElementType() is { } elementType)
                     return CreateArrayBuilder(type, elementType);
-                if (CommonHelper.SelectGenericTypeDefinitionOrDefault(type, x => x == typeof(List<>)))
-                    return CreateListBuilder(type, type.GetGenericArguments().Single());
                 if (CommonHelper.SelectGenericTypeDefinitionOrDefault(type, Types.GetValueOrDefault) is { } result)
                     return Activator.CreateInstance(result.MakeGenericType(type.GetGenericArguments()));
                 return null;

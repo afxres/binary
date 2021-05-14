@@ -40,7 +40,7 @@ namespace Mikodev.Binary.Internal.Sequence.Decoders
             Debug.Assert((uint)length <= (uint)buffer.Length);
             if (buffer.Length == length)
                 return buffer;
-            return new ArraySegment<KeyValuePair<K, V>>(buffer, 0, length);
+            return NativeModule.CreateList(buffer, length);
         }
     }
 }

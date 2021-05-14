@@ -22,7 +22,7 @@ namespace Mikodev.Binary.Internal.Sequence.Decoders
             Debug.Assert((uint)length <= (uint)buffer.Length);
             if (buffer.Length == length)
                 return (T)(IEnumerable<E>)buffer;
-            return (T)(IEnumerable<E>)new ArraySegment<E>(buffer, 0, length);
+            return (T)(IEnumerable<E>)NativeModule.CreateList(buffer, length);
         }
     }
 }
