@@ -8,7 +8,7 @@ namespace Mikodev.Binary.Tests
 {
     public class HelperMethodTests
     {
-        private T GetCommonHelperMethod<T>(string methodName) where T : Delegate
+        private static T GetCommonHelperMethod<T>(string methodName) where T : Delegate
         {
             var invoke = typeof(T).GetMethodNotNull("Invoke", BindingFlags.Instance | BindingFlags.Public);
             var parameterTypes = invoke.GetParameters().Select(x => x.ParameterType).ToArray();

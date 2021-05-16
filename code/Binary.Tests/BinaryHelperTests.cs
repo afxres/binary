@@ -21,7 +21,7 @@ namespace Mikodev.Binary.Tests
 
         private delegate T GetValue<T>(ref byte source, int length);
 
-        private T GetInternalDelegate<T>(string name) where T : Delegate
+        private static T GetInternalDelegate<T>(string name) where T : Delegate
         {
             var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryHelper");
             Assert.NotNull(type);
@@ -30,22 +30,22 @@ namespace Mikodev.Binary.Tests
             return (T)Delegate.CreateDelegate(typeof(T), method);
         }
 
-        private Equality GetEqualityDelegate()
+        private static Equality GetEqualityDelegate()
         {
             return GetInternalDelegate<Equality>("GetEquality");
         }
 
-        private HashCode GetHashCodeDelegate()
+        private static HashCode GetHashCodeDelegate()
         {
             return GetInternalDelegate<HashCode>("GetHashCode");
         }
 
-        private Capacity GetCapacityDelegate()
+        private static Capacity GetCapacityDelegate()
         {
             return GetInternalDelegate<Capacity>("GetCapacity");
         }
 
-        private CreateDictionary<T> GetCreateDictionaryDelegate<T>()
+        private static CreateDictionary<T> GetCreateDictionaryDelegate<T>()
         {
             var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryDictionary");
             Assert.NotNull(type);
@@ -54,14 +54,14 @@ namespace Mikodev.Binary.Tests
             return (CreateDictionary<T>)Delegate.CreateDelegate(typeof(CreateDictionary<T>), method);
         }
 
-        private GetValue<T> GetGetValueDelegate<T>(object dictionary, string name)
+        private static GetValue<T> GetGetValueDelegate<T>(object dictionary, string name)
         {
             var method = dictionary.GetType().GetMethod(name, BindingFlags.Instance | BindingFlags.Public);
             Assert.NotNull(method);
             return (GetValue<T>)Delegate.CreateDelegate(typeof(GetValue<T>), dictionary, method);
         }
 
-        private GetValue<T> GetGetValueDelegate<T>(object dictionary)
+        private static GetValue<T> GetGetValueDelegate<T>(object dictionary)
         {
             return GetGetValueDelegate<T>(dictionary, "GetValue");
         }
@@ -172,7 +172,7 @@ namespace Mikodev.Binary.Tests
             var systemPrimeTable = (IReadOnlyList<int>)systemField.GetValue(null);
 
             var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryHelper");
-            var field = type.GetField("primes", BindingFlags.Static | BindingFlags.NonPublic);
+            var field = type.GetField("Primes", BindingFlags.Static | BindingFlags.NonPublic);
             var customPrimeTable = (IReadOnlyList<int>)field.GetValue(null);
 
             Assert.NotNull(systemPrimeTable);
@@ -190,7 +190,7 @@ namespace Mikodev.Binary.Tests
         public void CapacityTest(int capacity)
         {
             var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryHelper");
-            var field = type.GetField("primes", BindingFlags.Static | BindingFlags.NonPublic);
+            var field = type.GetField("Primes", BindingFlags.Static | BindingFlags.NonPublic);
             var customPrimeTable = (IReadOnlyList<int>)field.GetValue(null);
 
             var function = GetCapacityDelegate();
@@ -213,7 +213,7 @@ namespace Mikodev.Binary.Tests
         public void CapacityEqual()
         {
             var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryHelper");
-            var field = type.GetField("primes", BindingFlags.Static | BindingFlags.NonPublic);
+            var field = type.GetField("Primes", BindingFlags.Static | BindingFlags.NonPublic);
             var customPrimeTable = (IReadOnlyList<int>)field.GetValue(null);
 
             var function = GetCapacityDelegate();
