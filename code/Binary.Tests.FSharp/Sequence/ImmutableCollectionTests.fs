@@ -23,7 +23,7 @@ type ImmutableCollectionTests() =
         let converter = generator.GetConverter<'T>()
         let converterType = converter.GetType()
         Assert.Equal("SequenceConverter`1", converterType.Name)
-        let encoder = converterType.GetField("encoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
+        let encoder = converterType.GetField("encode", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
         let encoderMethod = encoder.Method
         if typeof<'T>.IsInterface then
             let encoderName = if typeof<'T>.GetGenericArguments().Length = 1 then "EnumerableEncoder`2" else "KeyValueEnumerableEncoder`3"
@@ -31,7 +31,7 @@ type ImmutableCollectionTests() =
         else
             Assert.Null(encoderMethod.DeclaringType)
             Assert.Contains("lambda", encoder.Method.Name)
-        let decoder = converterType.GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
+        let decoder = converterType.GetField("decode", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
         let decoderMethod = decoder.Method
         Assert.Null(decoderMethod.DeclaringType)
         Assert.Contains("lambda", decoder.Method.Name)

@@ -54,10 +54,10 @@ type ListTests () =
         let method = methodType.GetMethod("GetConverter", BindingFlags.Static ||| BindingFlags.NonPublic, null, [| typeof<IGeneratorContext>; typeof<Type> |], null)
 
         let alpha = method.Invoke(null, [| box context; typeof<'a ResizeArray> |]) :?> Converter<'a ResizeArray>
-        let alphaDecoder = alpha.GetType().GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(alpha) |> unbox<Delegate>
+        let alphaDecoder = alpha.GetType().GetField("decode", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(alpha) |> unbox<Delegate>
         Assert.Contains("lambda", alphaDecoder.Method.Name)
         let bravo = generator.GetConverter<'a ResizeArray>()
-        let bravoBuilder = bravo.GetType().GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(bravo)
+        let bravoBuilder = bravo.GetType().GetField("create", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(bravo)
         Assert.Equal("ListBuilder`1", bravoBuilder.GetType().Name)
 
         let buffer = bravo.Encode (ResizeArray array)

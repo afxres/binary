@@ -34,14 +34,14 @@ namespace Mikodev.Binary.Internal.Contexts
                 return null;
             }
 
-            var builder = Invoke();
-            if (builder is null)
+            var create = Invoke();
+            if (create is null)
                 return null;
-            var itemType = builder.GetType().GetGenericArguments().Single();
+            var itemType = create.GetType().GetGenericArguments().Single();
             var itemConverter = context.GetConverter(itemType);
 
             var converterType = typeof(SpanLikeConverter<,>).MakeGenericType(type, itemType);
-            var converterArguments = new object[] { builder, itemConverter };
+            var converterArguments = new object[] { create, itemConverter };
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (IConverter)converter;
         }

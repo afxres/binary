@@ -12,9 +12,9 @@ namespace Mikodev.Binary.Internal.SpanLike.Builders
             return CollectionsMarshal.AsSpan(item);
         }
 
-        public override List<T> Invoke(ReadOnlySpan<byte> span, SpanLikeAdapter<T> adapter)
+        public override List<T> Invoke(ReadOnlySpan<byte> span, SpanLikeAdapter<T> invoke)
         {
-            var (buffer, length) = adapter.Decode(span);
+            var (buffer, length) = invoke.Decode(span);
             Debug.Assert((uint)length <= (uint)buffer.Length);
             return NativeModule.CreateList(buffer, length);
         }

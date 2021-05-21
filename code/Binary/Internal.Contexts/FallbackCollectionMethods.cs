@@ -105,59 +105,59 @@ namespace Mikodev.Binary.Internal.Contexts
             return x => Expression.New(constructor, x);
         }
 
-        private static DecodeReadOnlyDelegate<T> GetDecoder<T, R>(DecodeReadOnlyDelegate<R> decoder)
+        private static DecodeReadOnlyDelegate<T> GetDecodeDelegate<T, R>(DecodeReadOnlyDelegate<R> decode)
         {
-            return (DecodeReadOnlyDelegate<T>)Delegate.CreateDelegate(typeof(DecodeReadOnlyDelegate<T>), decoder.Target, decoder.Method);
+            return (DecodeReadOnlyDelegate<T>)Delegate.CreateDelegate(typeof(DecodeReadOnlyDelegate<T>), decode.Target, decode.Method);
         }
 
-        private static DecodeReadOnlyDelegate<T> GetDecoder<T, R, I>(DecodeReadOnlyDelegate<R> decoder, Func<Expression, Expression> method)
+        private static DecodeReadOnlyDelegate<T> GetDecodeDelegate<T, R, I>(DecodeReadOnlyDelegate<R> decode, Func<Expression, Expression> method)
         {
             var source = Expression.Parameter(typeof(ReadOnlySpan<byte>).MakeByRefType(), "source");
-            var invoke = method.Invoke(Expression.Convert(Expression.Call(Expression.Constant(decoder.Target), decoder.Method, source), typeof(I)));
+            var invoke = method.Invoke(Expression.Convert(Expression.Call(Expression.Constant(decode.Target), decode.Method, source), typeof(I)));
             var lambda = Expression.Lambda<DecodeReadOnlyDelegate<T>>(invoke, source);
             return lambda.Compile();
         }
 
-        private static DecodeReadOnlyDelegate<T> GetDecoder<T, E>(Converter<E> converter, Func<Expression, Expression> method) where T : IEnumerable<E>
+        private static DecodeReadOnlyDelegate<T> GetDecodeDelegate<T, E>(Converter<E> converter, Func<Expression, Expression> method) where T : IEnumerable<E>
         {
-            return GetDecoder<T, IEnumerable<E>, IEnumerable<E>>(new EnumerableDecoder<IEnumerable<E>, E>(converter).Decode, method);
+            return GetDecodeDelegate<T, IEnumerable<E>, IEnumerable<E>>(new EnumerableDecoder<IEnumerable<E>, E>(converter).Decode, method);
         }
 
-        private static DecodeReadOnlyDelegate<T> GetDecoder<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
+        private static DecodeReadOnlyDelegate<T> GetDelegateDelegate<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
         {
-            return GetDecoder<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail, itemLength).Decode, method);
+            return GetDecodeDelegate<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail, itemLength).Decode, method);
         }
 
-        private static DecodeReadOnlyDelegate<T> GetDecoder<T, E>(Converter<E> converter) where T : IEnumerable<E>
+        private static DecodeReadOnlyDelegate<T> GetDecodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
         {
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ArrayOrArraySegmentAssignableDefinitions.Contains))
                 return new EnumerableDecoder<T, E>(converter).Decode;
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), HashSetAssignableDefinitions.Contains))
-                return GetDecoder<T, HashSet<E>>(new HashSetDecoder<E>(converter).Decode);
+                return GetDecodeDelegate<T, HashSet<E>>(new HashSetDecoder<E>(converter).Decode);
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } result)
-                return GetDecoder<T, E>(converter, x => Expression.Call(result.MakeGenericMethod(typeof(E)), x));
+                return GetDecodeDelegate<T, E>(converter, x => Expression.Call(result.MakeGenericMethod(typeof(E)), x));
             if (GetConstructorOrDefault(typeof(T), typeof(IEnumerable<E>)) is { } method)
-                return GetDecoder<T, E>(converter, method);
+                return GetDecodeDelegate<T, E>(converter, method);
             else
                 return null;
         }
 
-        private static DecodeReadOnlyDelegate<T> GetDecoder<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
+        private static DecodeReadOnlyDelegate<T> GetDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
         {
             var itemLength = ContextMethods.GetItemLength(new IConverter[] { init, tail });
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), DictionaryAssignableDefinitions.Contains))
-                return GetDecoder<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode);
+                return GetDecodeDelegate<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode);
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } result)
-                return GetDecoder<T, K, V>(init, tail, itemLength, x => Expression.Call(result.MakeGenericMethod(typeof(K), typeof(V)), x));
+                return GetDelegateDelegate<T, K, V>(init, tail, itemLength, x => Expression.Call(result.MakeGenericMethod(typeof(K), typeof(V)), x));
             if (GetConstructorOrDefault(typeof(T), typeof(IDictionary<K, V>)) is { } target)
-                return GetDecoder<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode, target);
+                return GetDecodeDelegate<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode, target);
             if (GetConstructorOrDefault(typeof(T), typeof(IEnumerable<KeyValuePair<K, V>>)) is { } method)
-                return GetDecoder<T, K, V>(init, tail, itemLength, method);
+                return GetDelegateDelegate<T, K, V>(init, tail, itemLength, method);
             else
                 return null;
         }
 
-        private static EncodeDelegate<T> GetEncoder<T, E>(Converter<E> converter) where T : IEnumerable<E>
+        private static EncodeDelegate<T> GetEncodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
         {
             Func<Expression, Expression, Expression> Invoke()
             {
@@ -168,11 +168,11 @@ namespace Mikodev.Binary.Internal.Contexts
             }
 
             var handle = new Lazy<Func<Expression, Expression, Expression>>(Invoke);
-            var result = GetEncoder<T>(typeof(E), handle);
+            var result = GetEncodeDelegate<T>(typeof(E), handle);
             return result ?? new EnumerableEncoder<T, E>(converter).Encode;
         }
 
-        private static EncodeDelegate<T> GetEncoder<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
+        private static EncodeDelegate<T> GetEncodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
         {
             Func<Expression, Expression, Expression> Invoke()
             {
@@ -192,11 +192,11 @@ namespace Mikodev.Binary.Internal.Contexts
             }
 
             var handle = new Lazy<Func<Expression, Expression, Expression>>(Invoke);
-            var result = GetEncoder<T>(typeof(KeyValuePair<K, V>), handle);
+            var result = GetEncodeDelegate<T>(typeof(KeyValuePair<K, V>), handle);
             return result ?? new KeyValueEnumerableEncoder<T, K, V>(init, tail).Encode;
         }
 
-        private static EncodeDelegate<T> GetEncoder<T>(Type elementType, Lazy<Func<Expression, Expression, Expression>> handle)
+        private static EncodeDelegate<T> GetEncodeDelegate<T>(Type elementType, Lazy<Func<Expression, Expression, Expression>> handle)
         {
             const BindingFlags Select = BindingFlags.Instance | BindingFlags.Public;
             var initial = typeof(T).GetMethods(Select).FirstOrDefault(x => x.Name is "GetEnumerator" && x.GetParameters().Length is 0);
@@ -236,18 +236,18 @@ namespace Mikodev.Binary.Internal.Contexts
         private static IConverter GetConverter<T, E>(IGeneratorContext context) where T : IEnumerable<E>
         {
             var converter = (Converter<E>)context.GetConverter(typeof(E));
-            var encoder = GetEncoder<T, E>(converter);
-            var decoder = GetDecoder<T, E>(converter);
-            return new SequenceConverter<T>(encoder, decoder);
+            var encode = GetEncodeDelegate<T, E>(converter);
+            var decode = GetDecodeDelegate<T, E>(converter);
+            return new SequenceConverter<T>(encode, decode);
         }
 
         private static IConverter GetConverter<T, K, V>(IGeneratorContext context) where T : IEnumerable<KeyValuePair<K, V>>
         {
             var init = (Converter<K>)context.GetConverter(typeof(K));
             var tail = (Converter<V>)context.GetConverter(typeof(V));
-            var encoder = GetEncoder<T, K, V>(init, tail);
-            var decoder = GetDecoder<T, K, V>(init, tail);
-            return new SequenceConverter<T>(encoder, decoder);
+            var encode = GetEncodeDelegate<T, K, V>(init, tail);
+            var decode = GetDecodeDelegate<T, K, V>(init, tail);
+            return new SequenceConverter<T>(encode, decode);
         }
     }
 }

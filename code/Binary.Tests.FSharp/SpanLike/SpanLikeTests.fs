@@ -63,7 +63,7 @@ type SpanLikeTests () =
     [<MemberData("Data Bravo")>]
     member __.``Validate Adapter Type`` (t : Type, name : string) =
         let converter = generator.GetConverter t
-        let adapterField = converter.GetType().GetField("adapter", BindingFlags.Instance ||| BindingFlags.NonPublic)
+        let adapterField = converter.GetType().GetField("invoke", BindingFlags.Instance ||| BindingFlags.NonPublic)
         let adapter = adapterField.GetValue(converter)
         let adapterTypeName = adapter.GetType().Name
         Assert.StartsWith(name, adapterTypeName)

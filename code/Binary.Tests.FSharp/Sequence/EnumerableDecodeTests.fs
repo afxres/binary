@@ -156,10 +156,10 @@ let Test (enumerable : 'a) (expected : 'b) (encoderName : string) =
     let converterType = converter.GetType()
     Assert.Equal("SequenceConverter`1", converter.GetType().Name)
 
-    let encoder = converterType.GetField("encoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
+    let encoder = converterType.GetField("encode", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
     let encoderActualName = encoder.Method.DeclaringType.Name
     Assert.Equal(encoderName, encoderActualName)
-    let decoder = converterType.GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
+    let decoder = converterType.GetField("decode", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
     let decoderMethod = decoder.Method
     // anonymous type
     Assert.Contains("<", decoderMethod.DeclaringType.Name)

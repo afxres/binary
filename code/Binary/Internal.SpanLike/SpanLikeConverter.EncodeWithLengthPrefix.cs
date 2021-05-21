@@ -13,20 +13,20 @@
 
         private void EncodeWithLengthPrefixConstant(ref Allocator allocator, T item)
         {
-            var result = this.builder.Handle(item);
+            var result = this.create.Handle(item);
             var number = checked(this.itemLength * result.Length);
             var numberLength = NumberHelper.EncodeLength((uint)number);
             NumberHelper.Encode(ref Allocator.Assign(ref allocator, numberLength), (uint)number, numberLength);
             if (number is 0)
                 return;
-            this.adapter.Encode(ref allocator, result);
+            this.invoke.Encode(ref allocator, result);
         }
 
         private void EncodeWithLengthPrefixVariable(ref Allocator allocator, T item)
         {
-            var result = this.builder.Handle(item);
+            var result = this.create.Handle(item);
             var anchor = Allocator.Anchor(ref allocator, sizeof(int));
-            this.adapter.Encode(ref allocator, result);
+            this.invoke.Encode(ref allocator, result);
             Allocator.FinishAnchor(ref allocator, anchor);
         }
     }

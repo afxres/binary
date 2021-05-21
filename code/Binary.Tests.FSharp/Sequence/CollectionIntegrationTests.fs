@@ -66,8 +66,8 @@ let Test<'a> (generator : IGenerator) (adapterName : string) (builderName : stri
     Assert.Equal("SpanLikeConverter`2", converter.GetType().Name)
 
     // test internal builder name
-    let builderField = converter.GetType().GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic)
-    let adapterField = converter.GetType().GetField("adapter", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    let builderField = converter.GetType().GetField("create", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    let adapterField = converter.GetType().GetField("invoke", BindingFlags.Instance ||| BindingFlags.NonPublic)
     let builder = builderField.GetValue(converter)
     let adapter = adapterField.GetValue(converter)
     Assert.Equal(builderName, builder.GetType().Name)
@@ -103,12 +103,12 @@ let TestSequence<'a when 'a : null> (encoderName : string) (decoderName : string
     Assert.Equal("SequenceConverter`1", converter.GetType().Name)
 
     // test internal builder name
-    let encoder = converter.GetType().GetField("encoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
+    let encoder = converter.GetType().GetField("encode", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
     let encoderMethod = encoder.Method
     let encoderActualType = encoderMethod.DeclaringType
     let encoderActualName = if isNull (box encoderActualType) then "<lambda-encoder>" else encoderActualType.Name
     Assert.Equal(encoderName, encoderActualName)
-    let decoder = converter.GetType().GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
+    let decoder = converter.GetType().GetField("decode", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
     let decoderMethod = decoder.Method
     let decoderActualType = decoderMethod.DeclaringType
     let decoderActualName = if isNull (box decoderActualType) then "<lambda-decoder>" else decoderActualType.Name

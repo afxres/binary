@@ -5,7 +5,7 @@
         private void EncodeWithLengthPrefixInternal(ref Allocator allocator, T item)
         {
             var anchor = Allocator.Anchor(ref allocator, sizeof(int));
-            this.encoder.Invoke(ref allocator, item);
+            this.encode.Invoke(ref allocator, item);
             Allocator.FinishAnchor(ref allocator, anchor);
         }
     }

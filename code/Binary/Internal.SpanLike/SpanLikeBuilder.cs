@@ -6,6 +6,6 @@ namespace Mikodev.Binary.Internal.SpanLike
     {
         public abstract ReadOnlySpan<E> Handle(T item);
 
-        public abstract T Invoke(ReadOnlySpan<byte> span, SpanLikeAdapter<E> adapter);
+        public abstract T Invoke(ReadOnlySpan<byte> span, SpanLikeAdapter<E> invoke);
     }
 }

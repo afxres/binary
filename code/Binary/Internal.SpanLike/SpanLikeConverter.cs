@@ -6,27 +6,27 @@ namespace Mikodev.Binary.Internal.SpanLike
     {
         private readonly int itemLength;
 
-        private readonly SpanLikeAdapter<E> adapter;
+        private readonly SpanLikeAdapter<E> invoke;
 
-        private readonly SpanLikeBuilder<T, E> builder;
+        private readonly SpanLikeBuilder<T, E> create;
 
-        public SpanLikeConverter(SpanLikeBuilder<T, E> builder, Converter<E> converter)
+        public SpanLikeConverter(SpanLikeBuilder<T, E> create, Converter<E> converter)
         {
-            this.adapter = SpanLikeAdapterHelper.Create(converter);
-            this.builder = builder;
+            this.invoke = SpanLikeAdapterHelper.Create(converter);
+            this.create = create;
             this.itemLength = converter.Length;
         }
 
-        public override void Encode(ref Allocator allocator, T item) => this.adapter.Encode(ref allocator, this.builder.Handle(item));
+        public override void Encode(ref Allocator allocator, T item) => this.invoke.Encode(ref allocator, this.create.Handle(item));
 
         public override void EncodeAuto(ref Allocator allocator, T item) => EncodeWithLengthPrefixInternal(ref allocator, item);
 
         public override void EncodeWithLengthPrefix(ref Allocator allocator, T item) => EncodeWithLengthPrefixInternal(ref allocator, item);
 
-        public override T Decode(in ReadOnlySpan<byte> span) => this.builder.Invoke(span, this.adapter);
+        public override T Decode(in ReadOnlySpan<byte> span) => this.create.Invoke(span, this.invoke);
 
-        public override T DecodeAuto(ref ReadOnlySpan<byte> span) => this.builder.Invoke(Converter.DecodeWithLengthPrefix(ref span), this.adapter);
+        public override T DecodeAuto(ref ReadOnlySpan<byte> span) => this.create.Invoke(Converter.DecodeWithLengthPrefix(ref span), this.invoke);
 
-        public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => this.builder.Invoke(Converter.DecodeWithLengthPrefix(ref span), this.adapter);
+        public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => this.create.Invoke(Converter.DecodeWithLengthPrefix(ref span), this.invoke);
     }
 }
