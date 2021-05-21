@@ -37,7 +37,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 var invoke = Expression.Call(Expression.Constant(converter), method, allocator, members[i].Invoke(item));
                 expressions.Add(invoke);
             }
-            var delegateType = typeof(TupleObjectEncoder<>).MakeGenericType(type);
+            var delegateType = typeof(EncodeDelegate<>).MakeGenericType(type);
             var lambda = Expression.Lambda(delegateType, Expression.Block(expressions), allocator, item);
             return lambda.Compile();
         }
@@ -57,7 +57,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 return results;
             }
 
-            return constructor?.Invoke(typeof(TupleObjectDecoder<>).MakeGenericType(type), Initialize);
+            return constructor?.Invoke(typeof(DecodeDelegate<>).MakeGenericType(type), Initialize);
         }
     }
 }

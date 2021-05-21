@@ -1,4 +1,5 @@
 ﻿using Mikodev.Binary.External;
+using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,9 +10,7 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Internal.Contexts.Instance
 {
-    internal delegate void NamedObjectEncoder<in T>(ref Allocator allocator, T item);
-
-    internal delegate T NamedObjectDecoder<out T>(in MemorySlices list);
+    internal delegate T NamedObjectDecodeDelegate<out T>(in MemorySlices list);
 
     internal sealed class NamedObjectConverter<T> : Converter<T>
     {
@@ -21,11 +20,11 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
 
         private readonly BinaryDictionary<int> dictionary;
 
-        private readonly NamedObjectEncoder<T> encode;
+        private readonly EncodeDelegate<T> encode;
 
-        private readonly NamedObjectDecoder<T> decode;
+        private readonly NamedObjectDecodeDelegate<T> decode;
 
-        public NamedObjectConverter(NamedObjectEncoder<T> encode, NamedObjectDecoder<T> decode, IReadOnlyCollection<string> names, BinaryDictionary<int> dictionary)
+        public NamedObjectConverter(EncodeDelegate<T> encode, NamedObjectDecodeDelegate<T> decode, IReadOnlyCollection<string> names, BinaryDictionary<int> dictionary)
         {
             Debug.Assert(dictionary is not null);
             Debug.Assert(names.Any());

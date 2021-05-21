@@ -1,23 +1,20 @@
-﻿using System;
+﻿using Mikodev.Binary.Internal.Metadata;
+using System;
 using System.Diagnostics;
 
 namespace Mikodev.Binary.Internal.Contexts.Instance
 {
-    internal delegate void TupleObjectEncoder<in T>(ref Allocator allocator, T item);
-
-    internal delegate T TupleObjectDecoder<out T>(ref ReadOnlySpan<byte> span);
-
     internal sealed class TupleObjectConverter<T> : Converter<T>
     {
-        private readonly TupleObjectEncoder<T> encode;
+        private readonly EncodeDelegate<T> encode;
 
-        private readonly TupleObjectEncoder<T> encodeAuto;
+        private readonly EncodeDelegate<T> encodeAuto;
 
-        private readonly TupleObjectDecoder<T> decode;
+        private readonly DecodeDelegate<T> decode;
 
-        private readonly TupleObjectDecoder<T> decodeAuto;
+        private readonly DecodeDelegate<T> decodeAuto;
 
-        public TupleObjectConverter(TupleObjectEncoder<T> encode, TupleObjectEncoder<T> encodeAuto, TupleObjectDecoder<T> decode, TupleObjectDecoder<T> decodeAuto, int length) : base(length)
+        public TupleObjectConverter(EncodeDelegate<T> encode, EncodeDelegate<T> encodeAuto, DecodeDelegate<T> decode, DecodeDelegate<T> decodeAuto, int length) : base(length)
         {
             this.encode = encode;
             this.encodeAuto = encodeAuto;

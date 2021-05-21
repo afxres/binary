@@ -1,4 +1,5 @@
 ﻿using Mikodev.Binary.Internal;
+using Mikodev.Binary.Internal.Metadata;
 using System;
 
 namespace Mikodev.Binary
@@ -12,7 +13,7 @@ namespace Mikodev.Binary
             var length = this.length;
             if (length is not 0)
                 return DecodeOption.Constant;
-            var method = new DecodeDefine(DecodeWithLengthPrefix).Method;
+            var method = new DecodeDelegate<T>(DecodeWithLengthPrefix).Method;
             if (method.DeclaringType == typeof(Converter<T>))
                 return DecodeOption.Variable;
             else

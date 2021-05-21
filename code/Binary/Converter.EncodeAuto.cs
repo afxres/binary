@@ -1,4 +1,6 @@
-﻿namespace Mikodev.Binary
+﻿using Mikodev.Binary.Internal.Metadata;
+
+namespace Mikodev.Binary
 {
     public abstract partial class Converter<T>
     {
@@ -9,7 +11,7 @@
             var length = this.length;
             if (length is not 0)
                 return EncodeOption.Constant;
-            var method = new EncodeDefine(EncodeWithLengthPrefix).Method;
+            var method = new EncodeDelegate<T>(EncodeWithLengthPrefix).Method;
             if (method.DeclaringType == typeof(Converter<T>))
                 return EncodeOption.Variable;
             else

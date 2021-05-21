@@ -1,21 +1,18 @@
-﻿using System;
+﻿using Mikodev.Binary.Internal.Metadata;
+using System;
 
 namespace Mikodev.Binary.Internal.Sequence
 {
-    internal delegate T SequenceDecoder<out T>(ReadOnlySpan<byte> span);
-
-    internal delegate void SequenceEncoder<in T>(ref Allocator allocator, T item);
-
     internal sealed partial class SequenceConverter<T> : Converter<T>
     {
-        private readonly SequenceDecoder<T> decoder;
+        private readonly DecodeReadOnlyDelegate<T> decoder;
 
-        private readonly SequenceEncoder<T> encoder;
+        private readonly EncodeDelegate<T> encoder;
 
-        public SequenceConverter(SequenceEncoder<T> encoder, SequenceDecoder<T> decoder)
+        public SequenceConverter(EncodeDelegate<T> encoder, DecodeReadOnlyDelegate<T> decoder)
         {
             this.encoder = encoder;
-            this.decoder = decoder ?? (_ => ThrowHelper.ThrowNoSuitableConstructor<T>());
+            this.decoder = decoder ?? ((in ReadOnlySpan<byte> _) => ThrowHelper.ThrowNoSuitableConstructor<T>());
         }
 
         public override void Encode(ref Allocator allocator, T item) => this.encoder.Invoke(ref allocator, item);

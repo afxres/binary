@@ -18,7 +18,7 @@ namespace Mikodev.Binary.Internal.Sequence.Decoders
             this.itemLength = itemLength;
         }
 
-        public Dictionary<K, V> Decode(ReadOnlySpan<byte> span)
+        public Dictionary<K, V> Decode(in ReadOnlySpan<byte> span)
         {
             var limits = span.Length;
             if (limits is 0)

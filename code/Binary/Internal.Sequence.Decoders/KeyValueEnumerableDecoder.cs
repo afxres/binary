@@ -19,7 +19,7 @@ namespace Mikodev.Binary.Internal.Sequence.Decoders
             this.itemLength = itemLength;
         }
 
-        public IEnumerable<KeyValuePair<K, V>> Decode(ReadOnlySpan<byte> span)
+        public IEnumerable<KeyValuePair<K, V>> Decode(in ReadOnlySpan<byte> span)
         {
             var limits = span.Length;
             if (limits is 0)

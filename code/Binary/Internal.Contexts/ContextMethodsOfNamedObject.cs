@@ -52,7 +52,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 expressions.Add(Expression.Call(Expression.Constant(converter), methodInfo, allocator, Expression.Property(item, property)));
             }
 
-            var delegateType = typeof(NamedObjectEncoder<>).MakeGenericType(type);
+            var delegateType = typeof(EncodeDelegate<>).MakeGenericType(type);
             var lambda = Expression.Lambda(delegateType, Expression.Block(expressions), allocator, item);
             return lambda.Compile();
         }
@@ -74,7 +74,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 return results;
             }
 
-            return constructor?.Invoke(typeof(NamedObjectDecoder<>).MakeGenericType(type), Initialize);
+            return constructor?.Invoke(typeof(NamedObjectDecodeDelegate<>).MakeGenericType(type), Initialize);
         }
     }
 }
