@@ -68,7 +68,7 @@ namespace Mikodev.Binary.Internal.Contexts
             var converters = properties.Select(x => propertyWithConverters[x]).ToList();
 
             if (attribute is TupleObjectAttribute)
-                return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, properties.Select(x => x.PropertyType).ToList(), ContextMethods.GetMemberInitializers(properties));
+                return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, ContextMethods.GetMemberInitializers(properties));
 
             var encoder = (Converter<string>)context.GetConverter(typeof(string));
             if (names is null)

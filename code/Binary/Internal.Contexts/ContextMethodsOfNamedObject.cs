@@ -1,5 +1,6 @@
 ﻿using Mikodev.Binary.External;
 using Mikodev.Binary.Internal.Contexts.Instance;
+using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -45,7 +46,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 var property = properties[i];
                 var converter = converters[i];
                 var buffer = Allocator.Invoke(memories[i], (ref Allocator allocator, ReadOnlyMemory<byte> data) => Converter.EncodeWithLengthPrefix(ref allocator, data.Span));
-                var methodInfo = ContextMethods.GetEncodeMethodInfo(property.PropertyType, nameof(IConverter.EncodeWithLengthPrefix));
+                var methodInfo = ((IConverterMetadata)converter).GetMethodInfo(nameof(IConverter.EncodeWithLengthPrefix));
                 // append named key with length prefix (cached), then append value with length prefix
                 expressions.Add(Expression.Call(AppendMethodInfo, allocator, Expression.New(ReadOnlySpanByteConstructorInfo, Expression.Constant(buffer))));
                 expressions.Add(Expression.Call(Expression.Constant(converter), methodInfo, allocator, Expression.Property(item, property)));
@@ -65,7 +66,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 {
                     var property = properties[i];
                     var converter = converters[i];
-                    var method = ContextMethods.GetDecodeMethodInfo(property.PropertyType, nameof(IConverter.Decode));
+                    var method = ((IConverterMetadata)converter).GetMethodInfo(nameof(IConverter.Decode));
                     var invoke = Expression.Call(slices, InvokeMethodInfo, Expression.Constant(i));
                     var decode = Expression.Call(Expression.Constant(converter), method, invoke);
                     results[i] = decode;

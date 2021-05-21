@@ -1,4 +1,5 @@
-﻿using Mikodev.Binary.Internal.Sequence;
+﻿using Mikodev.Binary.Internal.Metadata;
+using Mikodev.Binary.Internal.Sequence;
 using Mikodev.Binary.Internal.Sequence.Decoders;
 using Mikodev.Binary.Internal.Sequence.Encoders;
 using System;
@@ -161,7 +162,7 @@ namespace Mikodev.Binary.Internal.Contexts
             Func<Expression, Expression, Expression> Invoke()
             {
                 var member = Expression.Constant(converter);
-                var method = ContextMethods.GetEncodeMethodInfo(typeof(E), nameof(IConverter.EncodeAuto));
+                var method = ((IConverterMetadata)converter).GetMethodInfo(nameof(IConverter.EncodeAuto));
                 var invoke = new Func<Expression, Expression, Expression>((allocator, current) => Expression.Call(member, method, allocator, current));
                 return invoke;
             }
@@ -177,8 +178,8 @@ namespace Mikodev.Binary.Internal.Contexts
             {
                 var initMember = Expression.Constant(init);
                 var tailMember = Expression.Constant(tail);
-                var initMethod = ContextMethods.GetEncodeMethodInfo(typeof(K), nameof(IConverter.EncodeAuto));
-                var tailMethod = ContextMethods.GetEncodeMethodInfo(typeof(V), nameof(IConverter.EncodeAuto));
+                var initMethod = ((IConverterMetadata)init).GetMethodInfo(nameof(IConverter.EncodeAuto));
+                var tailMethod = ((IConverterMetadata)tail).GetMethodInfo(nameof(IConverter.EncodeAuto));
                 var initProperty = CommonHelper.GetProperty<KeyValuePair<K, V>, K>(x => x.Key);
                 var tailProperty = CommonHelper.GetProperty<KeyValuePair<K, V>, V>(x => x.Value);
                 var assign = Expression.Variable(typeof(KeyValuePair<K, V>), "current");

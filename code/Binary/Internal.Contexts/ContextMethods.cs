@@ -65,23 +65,5 @@ namespace Mikodev.Binary.Internal.Contexts
             var lambda = Expression.Lambda(delegateType, Expression.Block(CommonHelper.Concat(item, targets), expressions), data);
             return lambda.Compile();
         }
-
-        internal static MethodInfo GetDecodeMethodInfo(Type itemType, string methodName)
-        {
-            Debug.Assert(methodName is nameof(IConverter.Decode) or nameof(IConverter.DecodeAuto) or nameof(IConverter.DecodeWithLengthPrefix));
-            var types = new[] { typeof(ReadOnlySpan<byte>).MakeByRefType() };
-            var method = CommonHelper.GetMethod(typeof(Converter<>).MakeGenericType(itemType), methodName, types);
-            Debug.Assert(method is not null);
-            return method;
-        }
-
-        internal static MethodInfo GetEncodeMethodInfo(Type itemType, string methodName)
-        {
-            Debug.Assert(methodName is nameof(IConverter.Encode) or nameof(IConverter.EncodeAuto) or nameof(IConverter.EncodeWithLengthPrefix));
-            var types = new[] { typeof(Allocator).MakeByRefType(), itemType };
-            var method = CommonHelper.GetMethod(typeof(Converter<>).MakeGenericType(itemType), methodName, types);
-            Debug.Assert(method is not null);
-            return method;
-        }
     }
 }

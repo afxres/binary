@@ -56,7 +56,7 @@ namespace Mikodev.Binary.Internal.Contexts
             var converters = types.Select(context.GetConverter).ToList();
             var properties = names.Select(x => CommonHelper.GetProperty(type, x, BindingFlags.Instance | BindingFlags.Public)).ToList();
             var constructor = new ContextObjectConstructor((delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, constructorInfo));
-            return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, types, ContextMethods.GetMemberInitializers(properties));
+            return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, ContextMethods.GetMemberInitializers(properties));
         }
 
         private static IConverter GetValueTupleConverter(IGeneratorContext context, Type type)
@@ -81,11 +81,10 @@ namespace Mikodev.Binary.Internal.Contexts
 
             var result = new List<(Type Type, ContextMemberInitializer Member, IConverter Converter)>();
             Fields(type, x => Expand(context, result, x, v => v));
-            var types = result.Select(x => x.Type).ToList();
             var members = result.Select(x => x.Member).ToList();
             var converters = result.Select(x => x.Converter).ToList();
             var constructor = new ContextObjectConstructor((delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, members));
-            return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, types, members);
+            return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, members);
         }
 
         internal static IConverter GetConverter(IGeneratorContext context, Type type)
