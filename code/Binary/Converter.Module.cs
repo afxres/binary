@@ -1,4 +1,5 @@
 ﻿using Mikodev.Binary.Internal;
+using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -12,7 +13,9 @@ namespace Mikodev.Binary
         {
             if (converter is null)
                 throw new ArgumentNullException(nameof(converter));
-            return GetGenericArgument(converter.GetType());
+            if (converter is IConverterMetadata metadata)
+                return metadata.GetGenericArgument();
+            throw new ArgumentException($"Can not get generic argument, '{converter.GetType()}' is not a subclass of '{typeof(Converter<>)}'");
         }
 
         public static Type GetGenericArgument(Type type)

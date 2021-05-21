@@ -37,11 +37,12 @@ namespace Mikodev.Binary.Tests
             var inRefParameters = parameters.Where(x => x.GetCustomAttributes().Any(a => a.GetType().FullName == AttributeName)).ToList();
             var inRefExpected = inRefParameters.Where(x => typeof(IConverter).IsAssignableFrom(x.Member.DeclaringType)).ToList();
             var inRefUnexpected = inRefParameters.Except(inRefExpected).Select(x => x.Member).ToList();
+            var inRefUnexpectedNames = new[] { "NamedObjectDecoder`1", "DecodeReadOnlyDefine" };
 
             Assert.NotEmpty(inRefExpected);
             Assert.All(inRefExpected, x => Assert.EndsWith(nameof(IConverter.Decode), x.Member.Name));
             Assert.NotEmpty(inRefUnexpected);
-            Assert.All(inRefUnexpected, x => Assert.Equal("NamedObjectDecoder`1", x.DeclaringType.Name));
+            Assert.All(inRefUnexpected, x => Assert.Contains(x.DeclaringType.Name, inRefUnexpectedNames));
 
             var converterParameters = parameters.Where(x => x.Member is MethodInfo && typeof(IConverter).IsAssignableFrom(x.Member.DeclaringType)).ToList();
             var converterExpectedParameters = converterParameters.Where(x => !x.Member.Name.StartsWith("Throw") && Equals(x.ParameterType.Name, names)).ToList();

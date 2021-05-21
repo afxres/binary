@@ -1,7 +1,5 @@
 ﻿using Mikodev.Binary.Internal;
-using Mikodev.Binary.Internal.Contexts;
 using System;
-using System.Linq;
 
 namespace Mikodev.Binary
 {
@@ -14,9 +12,8 @@ namespace Mikodev.Binary
             var length = this.length;
             if (length is not 0)
                 return DecodeOption.Constant;
-            var method = ContextMethods.GetDecodeMethodInfo(typeof(T), nameof(IConverter.DecodeWithLengthPrefix));
-            var result = GetType().GetMethods().Single(x => x.GetBaseDefinition() == method);
-            if (result.DeclaringType == typeof(Converter<T>))
+            var method = new DecodeDefine(DecodeWithLengthPrefix).Method;
+            if (method.DeclaringType == typeof(Converter<T>))
                 return DecodeOption.Variable;
             else
                 return DecodeOption.VariableOverride;
