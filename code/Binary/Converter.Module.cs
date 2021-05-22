@@ -15,7 +15,7 @@ namespace Mikodev.Binary
                 throw new ArgumentNullException(nameof(converter));
             if (converter is IConverterMetadata metadata)
                 return metadata.GetGenericArgument();
-            throw new ArgumentException($"Can not get generic argument, '{converter.GetType()}' is not a subclass of '{typeof(Converter<>)}'");
+            return ThrowHelper.ThrowNotConverter(converter.GetType());
         }
 
         public static Type GetGenericArgument(Type type)
@@ -26,7 +26,7 @@ namespace Mikodev.Binary
             while ((node = node.BaseType) is not null)
                 if (CommonHelper.TryGetGenericArguments(node, typeof(Converter<>), out var arguments))
                     return arguments.Single();
-            throw new ArgumentException($"Can not get generic argument, '{type}' is not a subclass of '{typeof(Converter<>)}'");
+            return ThrowHelper.ThrowNotConverter(type);
         }
 
         public static void Encode(ref Allocator allocator, int number)
