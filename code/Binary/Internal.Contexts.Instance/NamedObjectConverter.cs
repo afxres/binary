@@ -1,7 +1,7 @@
 ﻿using Mikodev.Binary.External;
 using Mikodev.Binary.Internal.Metadata;
 using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -16,7 +16,7 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
     {
         private readonly int capacity;
 
-        private readonly IReadOnlyList<string> names;
+        private readonly ImmutableArray<string> names;
 
         private readonly BinaryDictionary<int> dictionary;
 
@@ -24,12 +24,12 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
 
         private readonly NamedObjectDecodeDelegate<T> decode;
 
-        public NamedObjectConverter(EncodeDelegate<T> encode, NamedObjectDecodeDelegate<T> decode, IReadOnlyCollection<string> names, BinaryDictionary<int> dictionary)
+        public NamedObjectConverter(EncodeDelegate<T> encode, NamedObjectDecodeDelegate<T> decode, ImmutableArray<string> names, BinaryDictionary<int> dictionary)
         {
             Debug.Assert(dictionary is not null);
             Debug.Assert(names.Any());
-            this.names = names.ToArray();
-            this.capacity = names.Count;
+            this.names = names;
+            this.capacity = names.Length;
             this.dictionary = dictionary;
             this.encode = encode;
             this.decode = decode;

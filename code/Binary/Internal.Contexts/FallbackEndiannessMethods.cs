@@ -1,14 +1,13 @@
 ﻿using Mikodev.Binary.Converters.Endianness;
 using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.Specialized;
-using System.Linq;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class FallbackEndiannessMethods
     {
-        private static readonly IReadOnlyCollection<Type> Types = new[]
+        private static readonly ImmutableArray<Type> Types = ImmutableArray.Create(new[]
         {
             typeof(bool),
             typeof(byte),
@@ -25,7 +24,7 @@ namespace Mikodev.Binary.Internal.Contexts
             typeof(Half),
             typeof(Guid),
             typeof(BitVector32),
-        };
+        });
 
         internal static IConverter GetConverter(Type type)
         {

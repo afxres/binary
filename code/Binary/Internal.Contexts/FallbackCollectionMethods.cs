@@ -14,15 +14,15 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class FallbackCollectionMethods
     {
-        private static readonly IReadOnlyList<Type> InvalidTypeDefinitions;
+        private static readonly ImmutableArray<Type> InvalidTypeDefinitions;
 
-        private static readonly IReadOnlyList<Type> HashSetAssignableDefinitions;
+        private static readonly ImmutableArray<Type> HashSetAssignableDefinitions;
 
-        private static readonly IReadOnlyList<Type> DictionaryAssignableDefinitions;
+        private static readonly ImmutableArray<Type> DictionaryAssignableDefinitions;
 
-        private static readonly IReadOnlyList<Type> ArrayOrArraySegmentAssignableDefinitions;
+        private static readonly ImmutableArray<Type> ArrayOrArraySegmentAssignableDefinitions;
 
-        private static readonly IReadOnlyDictionary<Type, MethodInfo> ImmutableCollectionCreateMethods;
+        private static readonly ImmutableDictionary<Type, MethodInfo> ImmutableCollectionCreateMethods;
 
         static FallbackCollectionMethods()
         {
@@ -34,14 +34,14 @@ namespace Mikodev.Binary.Internal.Contexts
             static IEnumerable<Type> List<T>()
             {
                 var enumerable = new[] { typeof(IEnumerable<object>), typeof(IEnumerable<KeyValuePair<object, object>>) };
-                var types = CommonHelper.Concat(typeof(T), typeof(T).GetInterfaces());
+                var types = ImmutableArray.Create(typeof(T)).AddRange(typeof(T).GetInterfaces());
                 var generic = types.Where(x => x.IsGenericType);
                 var assignable = generic.Where(x => enumerable.Any(t => t.IsAssignableFrom(x)));
                 var definitions = assignable.Select(x => x.GetGenericTypeDefinition());
                 return definitions;
             }
 
-            var immutable = new Dictionary<Type, MethodInfo>
+            var immutable = ImmutableDictionary.CreateRange(new Dictionary<Type, MethodInfo>
             {
                 [typeof(IImmutableDictionary<,>)] = Info(ImmutableDictionary.CreateRange),
                 [typeof(IImmutableList<>)] = Info(ImmutableList.CreateRange),
@@ -54,19 +54,19 @@ namespace Mikodev.Binary.Internal.Contexts
                 [typeof(ImmutableQueue<>)] = Info(ImmutableQueue.CreateRange),
                 [typeof(ImmutableSortedDictionary<,>)] = Info(ImmutableSortedDictionary.CreateRange),
                 [typeof(ImmutableSortedSet<>)] = Info(ImmutableSortedSet.CreateRange),
-            };
+            });
 
-            var invalid = new[]
+            var invalid = ImmutableArray.Create(new[]
             {
                 typeof(Stack<>),
                 typeof(ConcurrentStack<>),
                 typeof(ImmutableStack<>),
                 typeof(IImmutableStack<>),
-            };
+            });
 
-            var array = List<object[]>().Intersect(List<List<object>>()).ToArray();
-            var set = List<HashSet<object>>().Except(array).ToArray();
-            var dictionary = List<Dictionary<object, object>>().Except(array).ToArray();
+            var array = List<object[]>().Intersect(List<List<object>>()).ToImmutableArray();
+            var set = List<HashSet<object>>().Except(array).ToImmutableArray();
+            var dictionary = List<Dictionary<object, object>>().Except(array).ToImmutableArray();
 
             InvalidTypeDefinitions = invalid;
             HashSetAssignableDefinitions = set;
@@ -82,15 +82,15 @@ namespace Mikodev.Binary.Internal.Contexts
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(type, InvalidTypeDefinitions.Contains))
                 throw new ArgumentException($"Invalid collection type: {type}");
             if (CommonHelper.TryGetInterfaceArguments(type, typeof(IDictionary<,>), out var types) || CommonHelper.TryGetInterfaceArguments(type, typeof(IReadOnlyDictionary<,>), out types))
-                return GetConverter(context, GetConverter<IEnumerable<KeyValuePair<object, object>>, object, object>, CommonHelper.Concat(type, types));
+                return GetConverter(context, GetConverter<IEnumerable<KeyValuePair<object, object>>, object, object>, ImmutableArray.Create(type).AddRange(types));
             else
-                return GetConverter(context, GetConverter<IEnumerable<object>, object>, CommonHelper.Concat(type, arguments));
+                return GetConverter(context, GetConverter<IEnumerable<object>, object>, ImmutableArray.Create(type).AddRange(arguments));
         }
 
-        private static IConverter GetConverter(IGeneratorContext context, Func<IGeneratorContext, IConverter> func, params Type[] types)
+        private static IConverter GetConverter(IGeneratorContext context, Func<IGeneratorContext, IConverter> func, ImmutableArray<Type> types)
         {
             var source = Expression.Parameter(typeof(IGeneratorContext), "context");
-            var method = func.Method.GetGenericMethodDefinition().MakeGenericMethod(types);
+            var method = func.Method.GetGenericMethodDefinition().MakeGenericMethod(types.ToArray());
             var lambda = Expression.Lambda<Func<IGeneratorContext, IConverter>>(Expression.Call(method, source), source);
             return lambda.Compile().Invoke(context);
         }
@@ -144,7 +144,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static DecodeReadOnlyDelegate<T> GetDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
         {
-            var itemLength = ContextMethods.GetItemLength(new IConverter[] { init, tail });
+            var itemLength = ContextMethods.GetItemLength(ImmutableArray.Create(new IConverter[] { init, tail }));
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), DictionaryAssignableDefinitions.Contains))
                 return GetDecodeDelegate<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode);
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } result)

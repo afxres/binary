@@ -1,6 +1,7 @@
 ﻿using Mikodev.Binary.Converters;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Net;
 using System.Text;
 
@@ -8,7 +9,7 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class FallbackConvertersMethods
     {
-        private static readonly IReadOnlyDictionary<Type, Type> Types = new Dictionary<Type, Type>
+        private static readonly ImmutableDictionary<Type, Type> Types = ImmutableDictionary.CreateRange(new Dictionary<Type, Type>
         {
             [typeof(Uri)] = typeof(UriConverter),
             [typeof(Rune)] = typeof(RuneConverter),
@@ -19,7 +20,7 @@ namespace Mikodev.Binary.Internal.Contexts
             [typeof(IPAddress)] = typeof(IPAddressConverter),
             [typeof(IPEndPoint)] = typeof(IPEndPointConverter),
             [typeof(DateTimeOffset)] = typeof(DateTimeOffsetConverter),
-        };
+        });
 
         internal static IConverter GetConverter(Type type)
         {

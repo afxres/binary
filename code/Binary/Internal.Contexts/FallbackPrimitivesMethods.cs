@@ -1,6 +1,7 @@
 ﻿using Mikodev.Binary.Internal.Contexts.Instance;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -9,7 +10,7 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class FallbackPrimitivesMethods
     {
-        private static readonly IReadOnlyCollection<string> Names = new[]
+        private static readonly ImmutableArray<string> Names = ImmutableArray.Create(new[]
         {
             "Item1",
             "Item2",
@@ -19,9 +20,9 @@ namespace Mikodev.Binary.Internal.Contexts
             "Item6",
             "Item7",
             "Rest",
-        };
+        });
 
-        private static readonly IReadOnlyCollection<Type> Types = new[]
+        private static readonly ImmutableArray<Type> Types = ImmutableArray.Create(new[]
         {
             typeof(Tuple<>),
             typeof(Tuple<,>),
@@ -39,7 +40,7 @@ namespace Mikodev.Binary.Internal.Contexts
             typeof(ValueTuple<,,,,,>),
             typeof(ValueTuple<,,,,,,>),
             typeof(ValueTuple<,,,,,,,>),
-        };
+        });
 
         private static bool IsTupleOrValueTuple(Type type)
         {
@@ -53,8 +54,8 @@ namespace Mikodev.Binary.Internal.Contexts
             var names = Names.Take(type.GetGenericArguments().Length);
             var types = type.GetGenericArguments();
             var constructorInfo = CommonHelper.GetConstructor(type, types);
-            var converters = types.Select(context.GetConverter).ToList();
-            var properties = names.Select(x => CommonHelper.GetProperty(type, x, BindingFlags.Instance | BindingFlags.Public)).ToList();
+            var converters = types.Select(context.GetConverter).ToImmutableArray();
+            var properties = names.Select(x => CommonHelper.GetProperty(type, x, BindingFlags.Instance | BindingFlags.Public)).ToImmutableArray();
             var constructor = new ContextObjectConstructor((delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, constructorInfo));
             return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, ContextMethods.GetMemberInitializers(properties));
         }
@@ -81,8 +82,8 @@ namespace Mikodev.Binary.Internal.Contexts
 
             var result = new List<(Type Type, ContextMemberInitializer Member, IConverter Converter)>();
             Fields(type, x => Expand(context, result, x, v => v));
-            var members = result.Select(x => x.Member).ToList();
-            var converters = result.Select(x => x.Converter).ToList();
+            var members = result.Select(x => x.Member).ToImmutableArray();
+            var converters = result.Select(x => x.Converter).ToImmutableArray();
             var constructor = new ContextObjectConstructor((delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, members));
             return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, members);
         }

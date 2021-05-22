@@ -3,6 +3,7 @@ using Mikodev.Binary.Internal.Contexts.Instance;
 using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -18,13 +19,13 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static readonly ConstructorInfo ReadOnlySpanByteConstructorInfo = CommonHelper.GetConstructor(typeof(ReadOnlySpan<byte>), new[] { typeof(byte[]) });
 
-        internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor constructor, IReadOnlyList<IConverter> converters, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<string> names, Converter<string> encoder)
+        internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor constructor, ImmutableArray<IConverter> converters, ImmutableArray<PropertyInfo> properties, ImmutableArray<string> names, Converter<string> encoder)
         {
-            var memories = names.Select(x => new ReadOnlyMemory<byte>(encoder.Encode(x))).ToList();
-            Debug.Assert(properties.Count == names.Count);
-            Debug.Assert(properties.Count == memories.Count);
-            Debug.Assert(properties.Count == converters.Count);
-            var dictionary = BinaryDictionary.Create(memories.Select((x, i) => new KeyValuePair<ReadOnlyMemory<byte>, int>(x, i)).ToList(), -1);
+            var memories = names.Select(x => new ReadOnlyMemory<byte>(encoder.Encode(x))).ToImmutableArray();
+            Debug.Assert(properties.Length == names.Length);
+            Debug.Assert(properties.Length == memories.Length);
+            Debug.Assert(properties.Length == converters.Length);
+            var dictionary = BinaryDictionary.Create(memories.Select((x, i) => KeyValuePair.Create(x, i)).ToImmutableArray(), -1);
             if (dictionary is null)
                 throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {type}, string converter type: {encoder.GetType()}");
             var encode = GetEncodeDelegateAsNamedObject(type, converters, properties, memories);
@@ -35,13 +36,13 @@ namespace Mikodev.Binary.Internal.Contexts
             return (IConverter)converter;
         }
 
-        private static Delegate GetEncodeDelegateAsNamedObject(Type type, IReadOnlyList<IConverter> converters, IReadOnlyList<PropertyInfo> properties, IReadOnlyList<ReadOnlyMemory<byte>> memories)
+        private static Delegate GetEncodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<PropertyInfo> properties, ImmutableArray<ReadOnlyMemory<byte>> memories)
         {
             var item = Expression.Parameter(type, "item");
             var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
             var expressions = new List<Expression>();
 
-            for (var i = 0; i < properties.Count; i++)
+            for (var i = 0; i < properties.Length; i++)
             {
                 var property = properties[i];
                 var converter = converters[i];
@@ -57,12 +58,12 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        private static Delegate GetDecodeDelegateAsNamedObject(Type type, IReadOnlyList<IConverter> converters, IReadOnlyList<PropertyInfo> properties, ContextObjectConstructor constructor)
+        private static Delegate GetDecodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<PropertyInfo> properties, ContextObjectConstructor constructor)
         {
-            IReadOnlyList<Expression> Initialize(ParameterExpression slices)
+            ImmutableArray<Expression> Initialize(ParameterExpression slices)
             {
-                var results = new Expression[properties.Count];
-                for (var i = 0; i < properties.Count; i++)
+                var results = new Expression[properties.Length];
+                for (var i = 0; i < properties.Length; i++)
                 {
                     var property = properties[i];
                     var converter = converters[i];
@@ -71,7 +72,7 @@ namespace Mikodev.Binary.Internal.Contexts
                     var decode = Expression.Call(Expression.Constant(converter), method, invoke);
                     results[i] = decode;
                 }
-                return results;
+                return results.ToImmutableArray();
             }
 
             return constructor?.Invoke(typeof(NamedObjectDecodeDelegate<>).MakeGenericType(type), Initialize);

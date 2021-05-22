@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -17,7 +18,7 @@ namespace Mikodev.Binary.Tests
 
         private delegate int Capacity(int capacity);
 
-        private delegate object CreateDictionary<T>(IReadOnlyCollection<KeyValuePair<ReadOnlyMemory<byte>, T>> items, T @default);
+        private delegate object CreateDictionary<T>(ImmutableArray<KeyValuePair<ReadOnlyMemory<byte>, T>> items, T @default);
 
         private delegate T GetValue<T>(ref byte source, int length);
 
@@ -252,7 +253,7 @@ namespace Mikodev.Binary.Tests
             Assert.Equal(sizes.Length, codes.Count);
             _ = Assert.Single(codes.Distinct());
 
-            var arguments = buffers.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(x), x.Length)).ToList();
+            var arguments = buffers.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(x), x.Length)).ToImmutableArray();
             var dictionary = create.Invoke(arguments, -1);
             Assert.NotNull(dictionary);
             var query = GetGetValueDelegate<int>(dictionary);
@@ -276,7 +277,7 @@ namespace Mikodev.Binary.Tests
         public void DictionaryDuplicateKey(int[] values)
         {
             var create = GetCreateDictionaryDelegate<int>();
-            var arguments = values.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString())), x)).ToArray();
+            var arguments = values.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString())), x)).ToImmutableArray();
             var result = create.Invoke(arguments, -1);
             Assert.Null(result);
         }
@@ -289,7 +290,7 @@ namespace Mikodev.Binary.Tests
             var names = types.Select(x => x.Name).Concat(members.Select(x => x.Name)).ToHashSet().ToArray();
             Assert.True(names.Length > 1000);
 
-            var arguments = names.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x)), x)).ToArray();
+            var arguments = names.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x)), x)).ToImmutableArray();
             var create = GetCreateDictionaryDelegate<string>();
             var dictionary = create.Invoke(arguments, null);
             Assert.NotNull(dictionary);

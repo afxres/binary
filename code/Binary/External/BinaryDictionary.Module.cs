@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -8,10 +9,10 @@ namespace Mikodev.Binary.External
 {
     internal static class BinaryDictionary
     {
-        internal static BinaryDictionary<T> Create<T>(IReadOnlyCollection<KeyValuePair<ReadOnlyMemory<byte>, T>> items, T @default)
+        internal static BinaryDictionary<T> Create<T>(ImmutableArray<KeyValuePair<ReadOnlyMemory<byte>, T>> items, T @default)
         {
             var free = 0;
-            var records = new BinarySlot<T>[items.Count];
+            var records = new BinarySlot<T>[items.Length];
             var buckets = new int[BinaryHelper.GetCapacity(records.Length)];
             Array.Fill(buckets, -1);
 

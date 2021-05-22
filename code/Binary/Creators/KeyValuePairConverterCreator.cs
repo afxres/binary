@@ -9,7 +9,7 @@ namespace Mikodev.Binary.Creators
     {
         public IConverter GetConverter(IGeneratorContext context, Type type)
         {
-            return CommonHelper.GetConverter(context, type, typeof(KeyValuePair<,>), typeof(KeyValuePairConverter<,>), x => CommonHelper.Concat(x, (object)ContextMethods.GetItemLength(x)));
+            return CommonHelper.GetConverter(context, type, typeof(KeyValuePair<,>), typeof(KeyValuePairConverter<,>), x => x.CastArray<object>().Add(ContextMethods.GetItemLength(x)));
         }
     }
 }

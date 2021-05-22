@@ -2,19 +2,20 @@
 using Mikodev.Binary.Internal.SpanLike.Builders;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class FallbackSequentialMethods
     {
-        private static readonly IReadOnlyDictionary<Type, Type> Types = new Dictionary<Type, Type>
+        private static readonly ImmutableDictionary<Type, Type> Types = ImmutableDictionary.CreateRange(new Dictionary<Type, Type>
         {
             [typeof(List<>)] = typeof(ListBuilder<>),
             [typeof(Memory<>)] = typeof(MemoryBuilder<>),
             [typeof(ArraySegment<>)] = typeof(ArraySegmentBuilder<>),
             [typeof(ReadOnlyMemory<>)] = typeof(ReadOnlyMemoryBuilder<>),
-        };
+        });
 
         private static object CreateArrayBuilder(Type type, Type elementType)
         {

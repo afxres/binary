@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace Mikodev.Binary.Internal.Contexts
@@ -12,15 +13,14 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private readonly HashSet<Type> types = new HashSet<Type>();
 
+        private readonly ImmutableArray<IConverterCreator> creators;
+
         private readonly ConcurrentDictionary<Type, IConverter> converters;
 
-        private readonly IReadOnlyCollection<IConverterCreator> creators;
-
-        public GeneratorContext(ConcurrentDictionary<Type, IConverter> converters, IReadOnlyCollection<IConverterCreator> creators)
+        public GeneratorContext(ImmutableArray<IConverterCreator> creators, ConcurrentDictionary<Type, IConverter> converters)
         {
-            this.converters = converters;
             this.creators = creators;
-            Debug.Assert(creators is IConverterCreator[]);
+            this.converters = converters;
         }
 
         public void Destroy()

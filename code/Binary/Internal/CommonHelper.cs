@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -9,21 +10,6 @@ namespace Mikodev.Binary.Internal
 {
     internal static class CommonHelper
     {
-        internal static T[] Concat<T>(IReadOnlyList<T> values, T item)
-        {
-            Debug.Assert(values is not null);
-            var result = new List<T>(values) { item };
-            return result.ToArray();
-        }
-
-        internal static T[] Concat<T>(T item, IReadOnlyList<T> values)
-        {
-            Debug.Assert(values is not null);
-            var result = new List<T> { item };
-            result.AddRange(values);
-            return result.ToArray();
-        }
-
         internal static T SelectGenericTypeDefinitionOrDefault<T>(Type type, Func<Type, T> func)
         {
             return type.IsGenericType ? func.Invoke(type.GetGenericTypeDefinition()) : default;
@@ -40,7 +26,7 @@ namespace Mikodev.Binary.Internal
         {
             Debug.Assert(definition.IsInterface);
             Debug.Assert(definition.IsGenericTypeDefinition);
-            var interfaces = type.IsInterface ? Concat(type, type.GetInterfaces()) : type.GetInterfaces();
+            var interfaces = type.IsInterface ? (IEnumerable<Type>)ImmutableArray.Create(type).AddRange(type.GetInterfaces()) : type.GetInterfaces();
             var types = interfaces.Where(x => x.IsGenericType && x.GetGenericTypeDefinition() == definition).ToList();
             var count = types.Count;
             if (count > 1)
@@ -120,14 +106,14 @@ namespace Mikodev.Binary.Internal
             return converter;
         }
 
-        internal static IConverter GetConverter(IGeneratorContext context, Type type, Type typeDefinition, Type converterDefinition, Func<IConverter[], object[]> argumentsHandler)
+        internal static IConverter GetConverter(IGeneratorContext context, Type type, Type typeDefinition, Type converterDefinition, Func<ImmutableArray<IConverter>, ImmutableArray<object>> argumentsHandler)
         {
             Debug.Assert(converterDefinition.IsGenericTypeDefinition);
             Debug.Assert(converterDefinition.GetGenericArguments().Length == typeDefinition.GetGenericArguments().Length);
             if (TryGetGenericArguments(type, typeDefinition, out var arguments) is false)
                 return null;
-            var converters = arguments.Select(context.GetConverter).ToArray();
-            var converterArguments = argumentsHandler is null ? converters.Cast<object>().ToArray() : argumentsHandler.Invoke(converters);
+            var converters = arguments.Select(context.GetConverter).ToImmutableArray();
+            var converterArguments = argumentsHandler is null ? converters.Cast<object>().ToArray() : argumentsHandler.Invoke(converters).ToArray();
             var converterType = converterDefinition.MakeGenericType(arguments);
             var converter = Activator.CreateInstance(converterType, converterArguments);
             return (IConverter)converter;
