@@ -4,7 +4,7 @@ open Microsoft.FSharp.Reflection
 open Mikodev.Binary
 open Mikodev.Binary.Internal
 open System
-open System.Collections.Generic
+open System.Collections.Immutable
 open System.Linq.Expressions
 open System.Reflection
 
@@ -21,7 +21,7 @@ type internal UnionConverterCreator() =
         let method = CommonHelper.GetMethod(converterType, methodName, [| ModuleHelper.ReadOnlySpanByteByRefType |])
         method
 
-    static let GetEncodeExpression (t : Type) (converters : IReadOnlyDictionary<Type, IConverter>) (caseInfos : Map<int, UnionCaseInfo>) (tagMember : MemberInfo) (auto : bool) =
+    static let GetEncodeExpression (t : Type) (converters : ImmutableDictionary<Type, IConverter>) (caseInfos : Map<int, UnionCaseInfo>) (tagMember : MemberInfo) (auto : bool) =
         let allocator = Expression.Parameter(ModuleHelper.AllocatorByRefType, "allocator")
         let mark = Expression.Parameter(typeof<int>.MakeByRefType(), "mark")
         let item = Expression.Parameter(t, "item")
@@ -78,7 +78,7 @@ type internal UnionConverterCreator() =
         let lambda = Expression.Lambda(delegateType, block, allocator, item, mark)
         lambda
 
-    static let GetDecodeExpression (t : Type) (converters : IReadOnlyDictionary<Type, IConverter>) (constructorInfos : Map<int, MethodInfo>) (auto : bool) =
+    static let GetDecodeExpression (t : Type) (converters : ImmutableDictionary<Type, IConverter>) (constructorInfos : Map<int, MethodInfo>) (auto : bool) =
         let span = Expression.Parameter(ModuleHelper.ReadOnlySpanByteByRefType, "span")
         let mark = Expression.Parameter(typeof<int>.MakeByRefType(), "mark")
         let flag = Expression.Variable(typeof<int>, "flag")
@@ -142,7 +142,8 @@ type internal UnionConverterCreator() =
                     memberTypes
                     |> Seq.distinct
                     |> Seq.map (fun x -> x, CommonHelper.GetConverter(context, x))
-                    |> readOnlyDict
+                    |> dict
+                    |> ImmutableDictionary.CreateRange
                 let tagMember = FSharpValue.PreComputeUnionTagMemberInfo(t)
                 let noNull = t.IsValueType = false && tagMember :? MethodInfo = false
                 let encode = GetEncodeExpression t converters caseInfos tagMember false
@@ -155,7 +156,7 @@ type internal UnionConverterCreator() =
                 let converter = Activator.CreateInstance(converterType, converterArguments)
                 converter :?> IConverter
 
-            if FSharpType.IsUnion(t) = false || IsImplementationOf<List<_>> t then
+            if FSharpType.IsUnion(t) = false || IsImplementationOf<_ list> t then
                 null
             else
                 let cases = FSharpType.GetUnionCases(t)

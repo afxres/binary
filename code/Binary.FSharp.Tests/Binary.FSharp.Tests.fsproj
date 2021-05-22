@@ -10,6 +10,7 @@
     <Compile Include="Internal\HelperMethodTests.fs" />
     <Compile Include="Contexts\CodeContractsTests.fs" />
     <Compile Include="Contexts\ConverterCreatorTests.fs" />
+    <Compile Include="Creators\UnionConverterCreatorTests.fs" />
   </ItemGroup>
 
   <ItemGroup>

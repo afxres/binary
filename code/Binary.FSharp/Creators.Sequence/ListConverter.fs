@@ -5,7 +5,7 @@ open System
 
 [<CompiledName("FSharpListConverter`1")>]
 type internal ListConverter<'T>(converter : Converter<'T>) =
-    inherit Converter<List<'T>>(0)
+    inherit Converter<'T list>(0)
 
     [<Literal>]
     let capacity = 4
@@ -15,7 +15,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
     member private __.ExceptConstant(length : int) : unit =
         raise (ArgumentException $"Not enough bytes for collection element, byte length: {length}, element type: {typeof<'T>}")
 
-    member private me.DecodeConstant(span : ReadOnlySpan<byte>) : List<'T> =
+    member private me.DecodeConstant(span : ReadOnlySpan<byte>) : 'T list =
         let converter = converter
         let itemLength = converter.Length
         let spanLength = span.Length;
@@ -30,7 +30,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
             i <- i - itemLength
         list
 
-    member private __.SelectVariable(span : byref<ReadOnlySpan<byte>>) : List<'T> =
+    member private __.SelectVariable(span : byref<ReadOnlySpan<byte>>) : 'T list =
         let converter = converter
         let data = ResizeArray<'T> capacity
         while not span.IsEmpty do
@@ -43,7 +43,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
             i <- i - 1
         list
 
-    member private me.DecodeVariable(span : byref<ReadOnlySpan<byte>>, loop : int) : List<'T> =
+    member private me.DecodeVariable(span : byref<ReadOnlySpan<byte>>, loop : int) : 'T list =
         if span.IsEmpty then
             []
         elif loop > 0 then
@@ -60,7 +60,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
                 converter.EncodeAuto(&allocator, i)
         ()
 
-    override me.Decode(span : inref<ReadOnlySpan<byte>>) : List<'T> =
+    override me.Decode(span : inref<ReadOnlySpan<byte>>) : 'T list =
         if span.IsEmpty then
             []
         elif constant then

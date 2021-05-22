@@ -8,7 +8,7 @@ open System
 type internal ListConverterCreator() =
     interface IConverterCreator with
         member __.GetConverter(context, t) =
-            if IsImplementationOf<List<_>> t then
+            if IsImplementationOf<_ list> t then
                 let itemType = t.GetGenericArguments() |> Array.exactlyOne
                 let converterType = MakeGenericType<ListConverter<_>> itemType
                 let converterArguments = [| CommonHelper.GetConverter(context, itemType) |> box |]
