@@ -3,10 +3,24 @@
 open Mikodev.Binary
 open System
 open System.Collections.Generic
+open System.Reflection
 open Xunit
 
 type EnumerableTests () =
     let generator = Generator.CreateDefault()
+
+    [<Fact>]
+    member __.``Assignable Interface Definitions`` () =
+        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "FallbackCollectionMethods") |> Array.exactlyOne
+        let f = t.GetField("ArrayOrListAssignableDefinitions", BindingFlags.Static ||| BindingFlags.NonPublic)
+        let v = f.GetValue null :?> IReadOnlyList<Type>
+        let arrayInterfaces = typeof<int array>.GetInterfaces()
+        let listInterfaces = typeof<int ResizeArray>.GetInterfaces()
+        let types = HashSet<_>()
+        let listInterfaceGeneric = listInterfaces |> Array.filter (typeof<int seq>.IsAssignableFrom) in for i in listInterfaceGeneric do types.Add(i.GetGenericTypeDefinition()) |> ignore
+        let arrayInterfacesGeneric = arrayInterfaces |> Array.filter (typeof<int seq>.IsAssignableFrom) in for i in arrayInterfacesGeneric do types.Add(i.GetGenericTypeDefinition()) |> ignore
+        Assert.Equal<Type>(HashSet v, types)
+        ()
 
     [<Fact>]
     member __.``IList (Array)`` () =

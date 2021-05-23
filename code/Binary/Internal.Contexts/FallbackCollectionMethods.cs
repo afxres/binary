@@ -20,7 +20,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static readonly ImmutableArray<Type> DictionaryAssignableDefinitions;
 
-        private static readonly ImmutableArray<Type> ArrayOrArraySegmentAssignableDefinitions;
+        private static readonly ImmutableArray<Type> ArrayOrListAssignableDefinitions;
 
         private static readonly ImmutableDictionary<Type, MethodInfo> ImmutableCollectionCreateMethods;
 
@@ -31,7 +31,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 return func.Method.GetGenericMethodDefinition();
             }
 
-            static IEnumerable<Type> List<T>()
+            static IEnumerable<Type> Dump<T>()
             {
                 var enumerable = new[] { typeof(IEnumerable<object>), typeof(IEnumerable<KeyValuePair<object, object>>) };
                 var types = ImmutableArray.Create(typeof(T)).AddRange(typeof(T).GetInterfaces());
@@ -64,14 +64,14 @@ namespace Mikodev.Binary.Internal.Contexts
                 typeof(IImmutableStack<>),
             });
 
-            var array = List<object[]>().Intersect(List<List<object>>()).ToImmutableArray();
-            var set = List<HashSet<object>>().Except(array).ToImmutableArray();
-            var dictionary = List<Dictionary<object, object>>().Except(array).ToImmutableArray();
+            var array = Dump<object[]>().Intersect(Dump<List<object>>()).ToImmutableArray();
+            var set = Dump<HashSet<object>>().Except(array).ToImmutableArray();
+            var dictionary = Dump<Dictionary<object, object>>().Except(array).ToImmutableArray();
 
             InvalidTypeDefinitions = invalid;
             HashSetAssignableDefinitions = set;
             DictionaryAssignableDefinitions = dictionary;
-            ArrayOrArraySegmentAssignableDefinitions = array;
+            ArrayOrListAssignableDefinitions = array;
             ImmutableCollectionCreateMethods = immutable;
         }
 
@@ -130,7 +130,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static DecodeReadOnlyDelegate<T> GetDecodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
         {
-            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ArrayOrArraySegmentAssignableDefinitions.Contains))
+            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ArrayOrListAssignableDefinitions.Contains))
                 return new EnumerableDecoder<T, E>(converter).Decode;
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), HashSetAssignableDefinitions.Contains))
                 return GetDecodeDelegate<T, HashSet<E>>(new HashSetDecoder<E>(converter).Decode);
