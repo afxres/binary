@@ -16,7 +16,7 @@ namespace Mikodev.Binary.Internal.Sequence.Decoders
             this.invoke = SpanLikeAdapterHelper.Create(converter);
         }
 
-        public T Decode(in ReadOnlySpan<byte> span)
+        public T Decode(ReadOnlySpan<byte> span)
         {
             var (buffer, length) = this.invoke.Decode(span);
             Debug.Assert((uint)length <= (uint)buffer.Length);

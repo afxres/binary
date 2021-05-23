@@ -105,30 +105,30 @@ namespace Mikodev.Binary.Internal.Contexts
             return x => Expression.New(constructor, x);
         }
 
-        private static DecodeReadOnlyDelegate<T> GetDecodeDelegate<T, R>(DecodeReadOnlyDelegate<R> decode)
+        private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, R>(DecodePassSpanDelegate<R> decode)
         {
-            return (DecodeReadOnlyDelegate<T>)Delegate.CreateDelegate(typeof(DecodeReadOnlyDelegate<T>), decode.Target, decode.Method);
+            return (DecodePassSpanDelegate<T>)Delegate.CreateDelegate(typeof(DecodePassSpanDelegate<T>), decode.Target, decode.Method);
         }
 
-        private static DecodeReadOnlyDelegate<T> GetDecodeDelegate<T, R, I>(DecodeReadOnlyDelegate<R> decode, Func<Expression, Expression> method)
+        private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, R, I>(DecodePassSpanDelegate<R> decode, Func<Expression, Expression> method)
         {
-            var source = Expression.Parameter(typeof(ReadOnlySpan<byte>).MakeByRefType(), "source");
+            var source = Expression.Parameter(typeof(ReadOnlySpan<byte>), "source");
             var invoke = method.Invoke(Expression.Convert(Expression.Call(Expression.Constant(decode.Target), decode.Method, source), typeof(I)));
-            var lambda = Expression.Lambda<DecodeReadOnlyDelegate<T>>(invoke, source);
+            var lambda = Expression.Lambda<DecodePassSpanDelegate<T>>(invoke, source);
             return lambda.Compile();
         }
 
-        private static DecodeReadOnlyDelegate<T> GetDecodeDelegate<T, E>(Converter<E> converter, Func<Expression, Expression> method) where T : IEnumerable<E>
+        private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, E>(Converter<E> converter, Func<Expression, Expression> method) where T : IEnumerable<E>
         {
             return GetDecodeDelegate<T, IEnumerable<E>, IEnumerable<E>>(new EnumerableDecoder<IEnumerable<E>, E>(converter).Decode, method);
         }
 
-        private static DecodeReadOnlyDelegate<T> GetDelegateDelegate<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
+        private static DecodePassSpanDelegate<T> GetDelegateDelegate<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
         {
             return GetDecodeDelegate<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail, itemLength).Decode, method);
         }
 
-        private static DecodeReadOnlyDelegate<T> GetDecodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
+        private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
         {
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ArrayOrListAssignableDefinitions.Contains))
                 return new EnumerableDecoder<T, E>(converter).Decode;
@@ -142,7 +142,7 @@ namespace Mikodev.Binary.Internal.Contexts
                 return null;
         }
 
-        private static DecodeReadOnlyDelegate<T> GetDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
+        private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
         {
             var itemLength = ContextMethods.GetItemLength(ImmutableArray.Create(new IConverter[] { init, tail }));
             if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), DictionaryAssignableDefinitions.Contains))

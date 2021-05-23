@@ -41,7 +41,7 @@ namespace Mikodev.Binary.Tests
             Assert.NotEmpty(inRefExpected);
             Assert.All(inRefExpected, x => Assert.EndsWith(nameof(IConverter.Decode), x.Member.Name));
             Assert.NotEmpty(inRefUnexpected);
-            Assert.All(inRefUnexpected, x => Assert.True(x.DeclaringType.IsSubclassOf(typeof(Delegate)) || x.DeclaringType.Namespace.Contains("Sequence")));
+            Assert.All(inRefUnexpected, x => Assert.True(x.DeclaringType.IsSubclassOf(typeof(Delegate))));
 
             var converterParameters = parameters.Where(x => x.Member is MethodInfo && typeof(IConverter).IsAssignableFrom(x.Member.DeclaringType)).ToList();
             var converterExpectedParameters = converterParameters.Where(x => !x.Member.Name.StartsWith("Throw") && Equals(x.ParameterType.Name, names)).ToList();

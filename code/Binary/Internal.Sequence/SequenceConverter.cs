@@ -5,14 +5,14 @@ namespace Mikodev.Binary.Internal.Sequence
 {
     internal sealed partial class SequenceConverter<T> : Converter<T>
     {
-        private readonly DecodeReadOnlyDelegate<T> decode;
+        private readonly DecodePassSpanDelegate<T> decode;
 
         private readonly EncodeDelegate<T> encode;
 
-        public SequenceConverter(EncodeDelegate<T> encode, DecodeReadOnlyDelegate<T> decode)
+        public SequenceConverter(EncodeDelegate<T> encode, DecodePassSpanDelegate<T> decode)
         {
             this.encode = encode;
-            this.decode = decode ?? ((in ReadOnlySpan<byte> _) => ThrowHelper.ThrowNoSuitableConstructor<T>());
+            this.decode = decode ?? (_ => ThrowHelper.ThrowNoSuitableConstructor<T>());
         }
 
         public override void Encode(ref Allocator allocator, T item) => this.encode.Invoke(ref allocator, item);
