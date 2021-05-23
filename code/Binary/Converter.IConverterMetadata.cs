@@ -11,7 +11,7 @@ namespace Mikodev.Binary
             return typeof(T);
         }
 
-        MethodInfo IConverterMetadata.GetMethodInfo(string methodName)
+        MethodInfo IConverterMetadata.GetMethod(string methodName)
         {
             return methodName switch
             {
@@ -21,7 +21,7 @@ namespace Mikodev.Binary
                 nameof(Encode) => new EncodeDelegate<T>(Encode).Method,
                 nameof(EncodeAuto) => new EncodeDelegate<T>(EncodeAuto).Method,
                 nameof(EncodeWithLengthPrefix) => new EncodeDelegate<T>(EncodeWithLengthPrefix).Method,
-                _ => throw new ArgumentException($"Invalid method name."),
+                _ => throw new NotSupportedException(),
             };
         }
     }

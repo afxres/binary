@@ -42,6 +42,7 @@
     <Compile Include="Implementations\NamedObjectWithEncodingTests.fs" />
     <Compile Include="Implementations\TupleObjectTests.fs" />
     <Compile Include="Internal\MemoryHelperTests.fs" />
+    <Compile Include="Metadata\ConverterMetadataTests.fs" />
     <Compile Include="Miscellaneous\CrossTests.fs" />
     <Compile Include="Miscellaneous\ThrowDecodeTests.fs" />
     <Compile Include="Miscellaneous\ThrowObjectTests.fs" />

@@ -162,7 +162,7 @@ namespace Mikodev.Binary.Internal.Contexts
             Func<Expression, Expression, Expression> Invoke()
             {
                 var member = Expression.Constant(converter);
-                var method = ((IConverterMetadata)converter).GetMethodInfo(nameof(IConverter.EncodeAuto));
+                var method = ((IConverterMetadata)converter).GetMethod(nameof(IConverter.EncodeAuto));
                 var invoke = new Func<Expression, Expression, Expression>((allocator, current) => Expression.Call(member, method, allocator, current));
                 return invoke;
             }
@@ -178,8 +178,8 @@ namespace Mikodev.Binary.Internal.Contexts
             {
                 var initMember = Expression.Constant(init);
                 var tailMember = Expression.Constant(tail);
-                var initMethod = ((IConverterMetadata)init).GetMethodInfo(nameof(IConverter.EncodeAuto));
-                var tailMethod = ((IConverterMetadata)tail).GetMethodInfo(nameof(IConverter.EncodeAuto));
+                var initMethod = ((IConverterMetadata)init).GetMethod(nameof(IConverter.EncodeAuto));
+                var tailMethod = ((IConverterMetadata)tail).GetMethod(nameof(IConverter.EncodeAuto));
                 var initProperty = CommonHelper.GetProperty<KeyValuePair<K, V>, K>(x => x.Key);
                 var tailProperty = CommonHelper.GetProperty<KeyValuePair<K, V>, V>(x => x.Value);
                 var assign = Expression.Variable(typeof(KeyValuePair<K, V>), "current");

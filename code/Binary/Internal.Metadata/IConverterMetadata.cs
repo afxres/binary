@@ -13,6 +13,6 @@ namespace Mikodev.Binary.Internal.Metadata
     {
         Type GetGenericArgument();
 
-        MethodInfo GetMethodInfo(string methodName);
+        MethodInfo GetMethod(string methodName);
     }
 }
