@@ -1,7 +1,6 @@
 ﻿module internal Mikodev.Binary.Internal.ModuleHelper
 
 open Mikodev.Binary
-open System
 open System.Runtime.CompilerServices
 
 type IdentityDefinition = delegate of nativeint -> nativeint
