@@ -25,11 +25,11 @@ namespace Mikodev.Binary.Internal.Contexts
             Debug.Assert(properties.Length == names.Length);
             Debug.Assert(properties.Length == memories.Length);
             Debug.Assert(properties.Length == converters.Length);
-            var dictionary = BinaryDictionary.Create(memories.Select((x, i) => KeyValuePair.Create(x, i)).ToImmutableArray(), -1);
+            var dictionary = BinaryDictionary.Create(memories.Select(KeyValuePair.Create).ToImmutableArray(), -1);
             if (dictionary is null)
                 throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {type}, string converter type: {encoder.GetType()}");
             var encode = GetEncodeDelegateAsNamedObject(type, converters, properties, memories);
-            var decode = GetDecodeDelegateAsNamedObject(type, converters, properties, constructor);
+            var decode = GetDecodeDelegateAsNamedObject(type, converters, constructor);
             var converterArguments = new object[] { encode, decode, names, dictionary };
             var converterType = typeof(NamedObjectConverter<>).MakeGenericType(type);
             var converter = Activator.CreateInstance(converterType, converterArguments);
@@ -58,14 +58,13 @@ namespace Mikodev.Binary.Internal.Contexts
             return lambda.Compile();
         }
 
-        private static Delegate GetDecodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<PropertyInfo> properties, ContextObjectConstructor constructor)
+        private static Delegate GetDecodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ContextObjectConstructor constructor)
         {
             ImmutableArray<Expression> Initialize(ParameterExpression slices)
             {
-                var results = new Expression[properties.Length];
-                for (var i = 0; i < properties.Length; i++)
+                var results = new Expression[converters.Length];
+                for (var i = 0; i < converters.Length; i++)
                 {
-                    var property = properties[i];
                     var converter = converters[i];
                     var method = ((IConverterMetadata)converter).GetMethod(nameof(IConverter.Decode));
                     var invoke = Expression.Call(slices, InvokeMethodInfo, Expression.Constant(i));
