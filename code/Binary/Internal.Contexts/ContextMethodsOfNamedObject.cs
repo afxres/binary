@@ -62,16 +62,18 @@ namespace Mikodev.Binary.Internal.Contexts
         {
             ImmutableArray<Expression> Initialize(ParameterExpression slices)
             {
-                var results = new Expression[converters.Length];
+                var result = ImmutableArray.CreateBuilder<Expression>(converters.Length);
                 for (var i = 0; i < converters.Length; i++)
                 {
                     var converter = converters[i];
                     var method = ((IConverterMetadata)converter).GetMethod(nameof(IConverter.Decode));
                     var invoke = Expression.Call(slices, InvokeMethodInfo, Expression.Constant(i));
                     var decode = Expression.Call(Expression.Constant(converter), method, invoke);
-                    results[i] = decode;
+                    result.Add(decode);
                 }
-                return results.ToImmutableArray();
+                Debug.Assert(converters.Length == result.Count);
+                Debug.Assert(converters.Length == result.Capacity);
+                return result.MoveToImmutable();
             }
 
             return constructor?.Invoke(typeof(NamedObjectDecodeDelegate<>).MakeGenericType(type), Initialize);
