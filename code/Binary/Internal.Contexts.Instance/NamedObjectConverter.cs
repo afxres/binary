@@ -18,13 +18,13 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
 
         private readonly ImmutableArray<string> names;
 
-        private readonly BinaryDictionary<int> dictionary;
+        private readonly ByteViewDictionary<int> dictionary;
 
         private readonly EncodeDelegate<T> encode;
 
         private readonly NamedObjectDecodeDelegate<T> decode;
 
-        public NamedObjectConverter(EncodeDelegate<T> encode, NamedObjectDecodeDelegate<T> decode, ImmutableArray<string> names, BinaryDictionary<int> dictionary)
+        public NamedObjectConverter(EncodeDelegate<T> encode, NamedObjectDecodeDelegate<T> decode, ImmutableArray<string> names, ByteViewDictionary<int> dictionary)
         {
             Debug.Assert(dictionary is not null);
             Debug.Assert(names.Any());

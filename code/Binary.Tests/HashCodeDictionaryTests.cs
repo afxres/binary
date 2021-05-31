@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Mikodev.Binary.Tests
 {
-    public class BinaryHelperTests
+    public class HashCodeDictionaryTests
     {
         private delegate bool Equality(ref byte source, int length, byte[] buffer);
 
@@ -24,7 +24,7 @@ namespace Mikodev.Binary.Tests
 
         private static T GetInternalDelegate<T>(string name) where T : Delegate
         {
-            var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryHelper");
+            var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryModule");
             Assert.NotNull(type);
             var method = type.GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
             Assert.NotNull(method);
@@ -48,9 +48,9 @@ namespace Mikodev.Binary.Tests
 
         private static CreateDictionary<T> GetCreateDictionaryDelegate<T>()
         {
-            var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryDictionary");
+            var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryObject");
             Assert.NotNull(type);
-            var method = type.GetMethod("Create", BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(typeof(T));
+            var method = type.GetMethod("CreateHashCodeDictionary", BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(typeof(T));
             Assert.NotNull(method);
             return (CreateDictionary<T>)Delegate.CreateDelegate(typeof(CreateDictionary<T>), method);
         }
@@ -172,7 +172,7 @@ namespace Mikodev.Binary.Tests
             Assert.NotNull(systemField);
             var systemPrimeTable = (IReadOnlyList<int>)systemField.GetValue(null);
 
-            var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryHelper");
+            var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryModule");
             var field = type.GetField("Primes", BindingFlags.Static | BindingFlags.NonPublic);
             var customPrimeTable = (IReadOnlyList<int>)field.GetValue(null);
 
@@ -190,7 +190,7 @@ namespace Mikodev.Binary.Tests
         [InlineData(63356)]
         public void CapacityTest(int capacity)
         {
-            var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryHelper");
+            var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryModule");
             var field = type.GetField("Primes", BindingFlags.Static | BindingFlags.NonPublic);
             var customPrimeTable = (IReadOnlyList<int>)field.GetValue(null);
 
@@ -213,7 +213,7 @@ namespace Mikodev.Binary.Tests
         [Fact(DisplayName = "Capacity (match prime table)")]
         public void CapacityEqual()
         {
-            var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryHelper");
+            var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryModule");
             var field = type.GetField("Primes", BindingFlags.Static | BindingFlags.NonPublic);
             var customPrimeTable = (IReadOnlyList<int>)field.GetValue(null);
 

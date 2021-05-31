@@ -1,12 +1,13 @@
 ﻿using Mikodev.Binary.Internal;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.External
 {
-    internal static class BinaryHelper
+    internal static class BinaryModule
     {
         private static readonly ImmutableArray<int> Primes = ImmutableArray.Create(new[]
         {
@@ -57,6 +58,19 @@ namespace Mikodev.Binary.External
                 if (Load<byte>(ref source) != Load<byte>(ref origin))
                     return false;
             return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static long GetLongData(ref byte source, int length)
+        {
+            Debug.Assert(length >= 0);
+            Debug.Assert(length <= 8);
+            if (length is 8)
+                return Load<long>(ref source);
+            var result = (length & 4) is 0 ? 0 : (ulong)Load<uint>(ref Unsafe.Add(ref source, length & 3));
+            for (var i = (length & 3) - 1; i >= 0; i--)
+                result = (result << 8) | Load<byte>(ref Unsafe.Add(ref source, i));
+            return (long)result;
         }
     }
 }

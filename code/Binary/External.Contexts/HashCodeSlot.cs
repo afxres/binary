@@ -1,6 +1,6 @@
-﻿namespace Mikodev.Binary.External
+﻿namespace Mikodev.Binary.External.Contexts
 {
-    internal struct BinarySlot<T>
+    internal struct HashCodeSlot<T>
     {
         public byte[] Head;
 
