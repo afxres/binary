@@ -40,16 +40,11 @@ namespace Mikodev.Binary.Tests.External
             return (CreateDictionary<T>)Delegate.CreateDelegate(typeof(CreateDictionary<T>), method);
         }
 
-        private static GetValue<T> GetGetValueDelegate<T>(object dictionary, string name)
-        {
-            var method = dictionary.GetType().GetMethod(name, BindingFlags.Instance | BindingFlags.Public);
-            Assert.NotNull(method);
-            return (GetValue<T>)Delegate.CreateDelegate(typeof(GetValue<T>), dictionary, method);
-        }
-
         private static GetValue<T> GetGetValueDelegate<T>(object dictionary)
         {
-            return GetGetValueDelegate<T>(dictionary, "GetValue");
+            var method = dictionary.GetType().GetMethod("GetValue", BindingFlags.Instance | BindingFlags.Public);
+            Assert.NotNull(method);
+            return (GetValue<T>)Delegate.CreateDelegate(typeof(GetValue<T>), dictionary, method);
         }
 
         [Theory(DisplayName = "Dictionary (hash conflict)")]
