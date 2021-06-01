@@ -47,7 +47,7 @@ namespace Mikodev.Binary.Tests.External
             return (GetValue<T>)Delegate.CreateDelegate(typeof(GetValue<T>), dictionary, method);
         }
 
-        [Theory(DisplayName = "Dictionary (hash conflict)")]
+        [Theory(DisplayName = "Hash Conflicts")]
         [InlineData((byte)1, new[] { 49631, 52013 })]
         [InlineData((byte)'A', new[] { 126008, 142545 })]
         [InlineData((byte)'~', new[] { 93527, 154641 })]
@@ -92,7 +92,7 @@ namespace Mikodev.Binary.Tests.External
             Assert.Equal(sizes, actual);
         }
 
-        [Theory(DisplayName = "Dictionary (duplicate key)")]
+        [Theory(DisplayName = "Duplicate Keys")]
         [InlineData(new[] { 1, 33, 1024, 33 })]
         [InlineData(new[] { 2, 2, 3, 4 })]
         [InlineData(new[] { 32768, 65535, 65536, 65536 })]
@@ -104,7 +104,7 @@ namespace Mikodev.Binary.Tests.External
             Assert.Null(result);
         }
 
-        [Fact(DisplayName = "Dictionary (system type and member names)")]
+        [Fact(DisplayName = "Integration Test With System Member Names")]
         public void DictionarySystemTypeNames()
         {
             var types = typeof(object).Assembly.GetTypes();
@@ -129,6 +129,25 @@ namespace Mikodev.Binary.Tests.External
                 Assert.Equal(i.Value, result);
             }
             Assert.Equal(names, actual);
+        }
+
+        [Theory(DisplayName = "Key Not Found")]
+        [InlineData(new[] { 12345678 }, new[] { 87654321 })]
+        [InlineData(new[] { 333, 55555 }, new[] { 22, 4444 })]
+        [InlineData(new[] { 9, 1234567890 }, new[] { 3, 432, 67 })]
+        public void DictionaryQueryNotFound(int[] values, int[] others)
+        {
+            var create = GetCreateDictionaryDelegate<string>();
+            var arguments = values.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString())), x.ToString())).ToImmutableArray();
+            var result = create.Invoke(arguments, null);
+            var query = GetGetValueDelegate<string>(result);
+            Assert.NotNull(result);
+            for (var i = 0; i < others.Length; i++)
+            {
+                var buffer = Encoding.UTF8.GetBytes(others[i].ToString()).AsSpan();
+                var actual = query.Invoke(ref MemoryMarshal.GetReference(buffer), buffer.Length);
+                Assert.Null(actual);
+            }
         }
     }
 }

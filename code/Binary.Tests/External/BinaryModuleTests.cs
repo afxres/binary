@@ -17,6 +17,8 @@ namespace Mikodev.Binary.Tests.External
 
         private delegate bool Equality(ref byte source, int length, byte[] buffer);
 
+        private delegate long LongData(ref byte source, int length);
+
         private static T GetInternalDelegate<T>(string name) where T : Delegate
         {
             var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryModule");
@@ -39,6 +41,11 @@ namespace Mikodev.Binary.Tests.External
         private static Capacity GetCapacityDelegate()
         {
             return GetInternalDelegate<Capacity>("GetCapacity");
+        }
+
+        private static LongData GetLongDataDelegate()
+        {
+            return GetInternalDelegate<LongData>("GetLongData");
         }
 
         [Theory(DisplayName = "Equality (length mismatch)")]
@@ -197,6 +204,40 @@ namespace Mikodev.Binary.Tests.External
                 var result = function.Invoke(i);
                 Assert.Equal(i, result);
             }
+        }
+
+        [Fact(DisplayName = "Long Data (zero length)")]
+        public void LongDataZeroLength()
+        {
+            var function = GetLongDataDelegate();
+            var result = function.Invoke(ref Unsafe.NullRef<byte>(), 0);
+            Assert.Equal(0L, result);
+        }
+
+        [Fact(DisplayName = "Long Data (all possible sizes)")]
+        public void LongDataAllPossibleSizes()
+        {
+            var function = GetLongDataDelegate();
+            var origin = "12345678";
+            var values = new List<string>();
+            for (var i = 0; i <= 8; i++)
+            {
+                var source = origin.Substring(0, i);
+                var buffer = Encoding.UTF8.GetBytes(source.ToString()).AsSpan();
+                var result = function.Invoke(ref MemoryMarshal.GetReference(buffer), buffer.Length);
+                var target = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<long, byte>(ref result), sizeof(long));
+                var direct = Encoding.UTF8.GetString(target);
+                var actual = direct.Trim('\0');
+                if (BitConverter.IsLittleEndian)
+                    Assert.Equal(source, actual);
+                var expected = source.ToCharArray().ToHashSet();
+                var response = actual.ToCharArray().ToHashSet();
+                Assert.Equal(expected, response);
+                values.Add(actual);
+            }
+            Assert.Equal(9, values.Count);
+            Assert.Equal(string.Empty, values.First());
+            Assert.Equal(origin, values.Last());
         }
     }
 }

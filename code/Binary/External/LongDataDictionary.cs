@@ -18,7 +18,6 @@ namespace Mikodev.Binary.External
 
         public override int GetValue(ref byte source, int length)
         {
-            Debug.Assert(length >= 0);
             if ((uint)length > BinaryObject.LongDataLimits)
                 return BinaryObject.DataFallback;
             var data = BinaryModule.GetLongData(ref source, length);
