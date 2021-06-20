@@ -45,14 +45,16 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static Delegate GetDecodeDelegateAsTupleObject(Type type, ImmutableArray<IConverter> converters, ContextObjectConstructor constructor, bool auto)
         {
-            ImmutableArray<Expression> Initialize(ParameterExpression span)
+            ImmutableArray<Expression> Initialize(ImmutableArray<ParameterExpression> parameters)
             {
+                Debug.Assert(parameters.Length is 1);
+                var source = parameters[0];
                 var result = ImmutableArray.CreateBuilder<Expression>(converters.Length);
                 for (var i = 0; i < converters.Length; i++)
                 {
                     var converter = converters[i];
                     var method = ((IConverterMetadata)converter).GetMethod((auto || i != converters.Length - 1) ? nameof(IConverter.DecodeAuto) : nameof(IConverter.Decode));
-                    var decode = Expression.Call(Expression.Constant(converter), method, span);
+                    var decode = Expression.Call(Expression.Constant(converter), method, source);
                     result.Add(decode);
                 }
                 Debug.Assert(converters.Length == result.Count);

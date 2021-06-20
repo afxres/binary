@@ -1,5 +1,6 @@
 ﻿using Mikodev.Binary.External;
 using Mikodev.Binary.Internal.Contexts.Instance;
+using Mikodev.Binary.Internal.Contexts.Template;
 using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace Mikodev.Binary.Internal.Contexts
 {
     internal static class ContextMethodsOfNamedObject
     {
-        private static readonly MethodInfo InvokeMethodInfo = CommonHelper.GetMethod(typeof(MemorySlices), nameof(MemorySlices.Invoke), BindingFlags.Instance | BindingFlags.Public);
+        private static readonly MethodInfo InvokeMethodInfo = CommonHelper.GetMethod(typeof(NamedObjectTemplates), nameof(NamedObjectTemplates.GetIndexSpan), BindingFlags.Static | BindingFlags.NonPublic);
 
         private static readonly MethodInfo AppendMethodInfo = CommonHelper.GetMethod(typeof(Allocator), nameof(Allocator.Append), new[] { typeof(Allocator).MakeByRefType(), typeof(ReadOnlySpan<byte>) });
 
@@ -60,14 +61,17 @@ namespace Mikodev.Binary.Internal.Contexts
 
         private static Delegate GetDecodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ContextObjectConstructor constructor)
         {
-            ImmutableArray<Expression> Initialize(ParameterExpression slices)
+            ImmutableArray<Expression> Initialize(ImmutableArray<ParameterExpression> parameters)
             {
+                Debug.Assert(parameters.Length is 2);
+                var source = parameters[0];
+                var values = parameters[1];
                 var result = ImmutableArray.CreateBuilder<Expression>(converters.Length);
                 for (var i = 0; i < converters.Length; i++)
                 {
                     var converter = converters[i];
                     var method = ((IConverterMetadata)converter).GetMethod(nameof(IConverter.Decode));
-                    var invoke = Expression.Call(slices, InvokeMethodInfo, Expression.Constant(i));
+                    var invoke = Expression.Call(InvokeMethodInfo, source, values, Expression.Constant(i));
                     var decode = Expression.Call(Expression.Constant(converter), method, invoke);
                     result.Add(decode);
                 }

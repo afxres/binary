@@ -1,4 +1,5 @@
 ﻿using Mikodev.Binary.External;
+using Mikodev.Binary.Internal.Contexts.Template;
 using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Collections.Immutable;
@@ -10,7 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace Mikodev.Binary.Internal.Contexts.Instance
 {
-    internal delegate T NamedObjectDecodeDelegate<out T>(in MemorySlices list);
+    internal delegate T NamedObjectDecodeDelegate<out T>(ReadOnlySpan<byte> span, ReadOnlySpan<long> data);
 
     internal sealed class NamedObjectConverter<T> : Converter<T>
     {
@@ -80,14 +81,14 @@ namespace Mikodev.Binary.Internal.Contexts.Instance
                     ref var handle = ref values[cursor];
                     if (handle is not 0)
                         return ExceptKeyFound(cursor);
-                    handle = (long)(((ulong)(uint)offset << 32) | (uint)length);
+                    handle = NamedObjectTemplates.GetIndexData(offset, length);
                     remain--;
                 }
             }
 
             if (remain is not 0)
                 return ExceptNotFound(values.IndexOf(0));
-            return decode.Invoke(new MemorySlices(span, values));
+            return decode.Invoke(span, values);
         }
     }
 }

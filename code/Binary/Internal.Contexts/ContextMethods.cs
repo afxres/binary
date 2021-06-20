@@ -12,7 +12,7 @@ namespace Mikodev.Binary.Internal.Contexts
 
     internal delegate Expression ContextMemberInitializer(Expression expression);
 
-    internal delegate ImmutableArray<Expression> ContextObjectInitializer(ParameterExpression parameter);
+    internal delegate ImmutableArray<Expression> ContextObjectInitializer(ImmutableArray<ParameterExpression> parameters);
 
     internal static class ContextMethods
     {
@@ -46,14 +46,14 @@ namespace Mikodev.Binary.Internal.Contexts
         internal static Delegate GetDecodeDelegate(Type delegateType, ContextObjectInitializer initializer, ConstructorInfo constructor, ImmutableArray<int> objectIndexes, ImmutableArray<ContextMemberInitializer> members, ImmutableArray<int> memberIndexes)
         {
             var delegateInvoke = CommonHelper.GetMethod(delegateType, "Invoke", BindingFlags.Public | BindingFlags.Instance);
-            Debug.Assert(delegateInvoke.GetParameters().Length is 1);
+            Debug.Assert(delegateInvoke.GetParameters().Length is 1 or 2);
             var type = delegateInvoke.ReturnType;
-            var parameterType = delegateInvoke.GetParameters().Single().ParameterType;
-            var data = Expression.Parameter(parameterType, "parameter");
+            var parameterTypes = delegateInvoke.GetParameters().Select(x => x.ParameterType).ToList();
+            var parameters = parameterTypes.Select((x, i) => Expression.Parameter(x, $"arg{i}")).ToImmutableArray();
             var item = Expression.Variable(type, "item");
 
-            var sources = initializer.Invoke(data);
-            var targets = sources.Select((x, i) => Expression.Variable(x.Type, $"{i}")).ToList();
+            var sources = initializer.Invoke(parameters);
+            var targets = sources.Select((x, i) => Expression.Variable(x.Type, $"var{i}")).ToList();
             Debug.Assert(sources.Length == objectIndexes.Length + memberIndexes.Length);
             Debug.Assert(members.Length == memberIndexes.Length);
             Debug.Assert(Enumerable.Range(0, sources.Length).Except(objectIndexes).Except(memberIndexes).Any() is false);
@@ -63,7 +63,7 @@ namespace Mikodev.Binary.Internal.Contexts
             expressions.Add(Expression.Assign(item, constructor is null ? Expression.New(type) : Expression.New(constructor, objectIndexes.Select(x => targets[x]).ToList())));
             expressions.AddRange(memberIndexes.Select((x, i) => Expression.Assign(members[i].Invoke(item), targets[x])));
             expressions.Add(item);
-            var lambda = Expression.Lambda(delegateType, Expression.Block(ImmutableArray.Create(item).AddRange(targets), expressions), data);
+            var lambda = Expression.Lambda(delegateType, Expression.Block(ImmutableArray.Create(item).AddRange(targets), expressions), parameters);
             return lambda.Compile();
         }
     }
