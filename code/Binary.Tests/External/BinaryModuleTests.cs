@@ -239,5 +239,27 @@ namespace Mikodev.Binary.Tests.External
             Assert.Equal(string.Empty, values.First());
             Assert.Equal(origin, values.Last());
         }
+
+        [Fact(DisplayName = "Long Data (random bytes)")]
+        public void LongDataRandomBytes()
+        {
+            var function = GetLongDataDelegate();
+            var random = new Random();
+            var values = new List<(long, byte[])>();
+            for (int i = 1; i <= 8; i++)
+            {
+                for (int k = 0; k < 1024; k++)
+                {
+                    var source = new byte[i];
+                    random.NextBytes(source);
+                    var result = function.Invoke(ref MemoryMarshal.GetArrayDataReference(source), source.Length);
+                    var target = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<long, byte>(ref result), sizeof(long));
+                    Assert.True(target.Slice(i).ToArray().All(x => x is 0));
+                    Assert.True(target.Slice(0, i).SequenceEqual(source));
+                    values.Add((result, source));
+                }
+            }
+            Assert.Equal(8192, values.Count);
+        }
     }
 }
