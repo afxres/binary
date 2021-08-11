@@ -4,7 +4,7 @@
     <TargetFrameworks>net6.0</TargetFrameworks>
     <AssemblyName>Mikodev.Binary.Experimental.Tests</AssemblyName>
     <RootNamespace>Mikodev.Binary.Experimental.Tests</RootNamespace>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>preview</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
   </PropertyGroup>

@@ -4,7 +4,7 @@
     <TargetFrameworks>net6.0</TargetFrameworks>
     <AssemblyName>Mikodev.Binary.Experimental</AssemblyName>
     <RootNamespace>Mikodev.Binary.Experimental</RootNamespace>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>preview</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Mikodev</Authors>
     <Company>Mikodev</Company>
