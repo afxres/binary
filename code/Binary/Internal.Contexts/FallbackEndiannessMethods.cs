@@ -9,22 +9,22 @@ internal static class FallbackEndiannessMethods
 {
     private static readonly ImmutableArray<Type> Types = ImmutableArray.Create(new[]
     {
-            typeof(bool),
-            typeof(byte),
-            typeof(sbyte),
-            typeof(char),
-            typeof(short),
-            typeof(int),
-            typeof(long),
-            typeof(ushort),
-            typeof(uint),
-            typeof(ulong),
-            typeof(float),
-            typeof(double),
-            typeof(Half),
-            typeof(Guid),
-            typeof(BitVector32),
-        });
+        typeof(bool),
+        typeof(byte),
+        typeof(sbyte),
+        typeof(char),
+        typeof(short),
+        typeof(int),
+        typeof(long),
+        typeof(ushort),
+        typeof(uint),
+        typeof(ulong),
+        typeof(float),
+        typeof(double),
+        typeof(Half),
+        typeof(Guid),
+        typeof(BitVector32),
+    });
 
     internal static IConverter GetConverter(Type type)
     {

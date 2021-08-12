@@ -87,10 +87,10 @@ public class NullableTests
 
     public static IEnumerable<object[]> CollectionData = new[]
     {
-            new object[] { new byte?[] { 2, 4, null, 8, null } },
-            new object[] { new List<float?> { null, 2.71F, null } },
-            new object[] { new HashSet<double?> { 3.14, null, 1.41 } }
-        };
+        new object[] { new byte?[] { 2, 4, null, 8, null } },
+        new object[] { new List<float?> { null, 2.71F, null } },
+        new object[] { new HashSet<double?> { 3.14, null, 1.41 } }
+    };
 
     internal unsafe void CollectionFunction<TCollection, T>(TCollection collection) where T : unmanaged where TCollection : IEnumerable<T?>
     {
@@ -122,9 +122,9 @@ public class NullableTests
 
     public static IEnumerable<object[]> DictionaryData = new[]
     {
-            new object[] { new Dictionary<int?, double?> { [0] = null, [1] = 1.1, [-2] = 2.2 } },
-            new object[] { new Dictionary<float?, long?> { [0] = null, [-3.3F] = 6L, [4.4F] = 8 } },
-        };
+        new object[] { new Dictionary<int?, double?> { [0] = null, [1] = 1.1, [-2] = 2.2 } },
+        new object[] { new Dictionary<float?, long?> { [0] = null, [-3.3F] = 6L, [4.4F] = 8 } },
+    };
 
     [Theory(DisplayName = "Nullable Dictionary")]
     [MemberData(nameof(DictionaryData))]
@@ -197,11 +197,11 @@ public class NullableTests
 
     public static readonly IEnumerable<object[]> OptionData = new[]
     {
-            new object[] { 10 },
-            new object[] { long.MaxValue },
-            new object[] { (-1536, "Inner text") },
-            new object[] { ("Value tuple", Guid.NewGuid()) },
-        };
+        new object[] { 10 },
+        new object[] { long.MaxValue },
+        new object[] { (-1536, "Inner text") },
+        new object[] { ("Value tuple", Guid.NewGuid()) },
+    };
 
     [Theory(DisplayName = "Nullable With F# Option")]
     [MemberData(nameof(OptionData))]

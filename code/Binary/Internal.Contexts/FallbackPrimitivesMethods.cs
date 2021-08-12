@@ -12,35 +12,35 @@ internal static class FallbackPrimitivesMethods
 {
     private static readonly ImmutableArray<string> Names = ImmutableArray.Create(new[]
     {
-            "Item1",
-            "Item2",
-            "Item3",
-            "Item4",
-            "Item5",
-            "Item6",
-            "Item7",
-            "Rest",
-        });
+        "Item1",
+        "Item2",
+        "Item3",
+        "Item4",
+        "Item5",
+        "Item6",
+        "Item7",
+        "Rest",
+    });
 
     private static readonly ImmutableArray<Type> Types = ImmutableArray.Create(new[]
     {
-            typeof(Tuple<>),
-            typeof(Tuple<,>),
-            typeof(Tuple<,,>),
-            typeof(Tuple<,,,>),
-            typeof(Tuple<,,,,>),
-            typeof(Tuple<,,,,,>),
-            typeof(Tuple<,,,,,,>),
-            typeof(Tuple<,,,,,,,>),
-            typeof(ValueTuple<>),
-            typeof(ValueTuple<,>),
-            typeof(ValueTuple<,,>),
-            typeof(ValueTuple<,,,>),
-            typeof(ValueTuple<,,,,>),
-            typeof(ValueTuple<,,,,,>),
-            typeof(ValueTuple<,,,,,,>),
-            typeof(ValueTuple<,,,,,,,>),
-        });
+        typeof(Tuple<>),
+        typeof(Tuple<,>),
+        typeof(Tuple<,,>),
+        typeof(Tuple<,,,>),
+        typeof(Tuple<,,,,>),
+        typeof(Tuple<,,,,,>),
+        typeof(Tuple<,,,,,,>),
+        typeof(Tuple<,,,,,,,>),
+        typeof(ValueTuple<>),
+        typeof(ValueTuple<,>),
+        typeof(ValueTuple<,,>),
+        typeof(ValueTuple<,,,>),
+        typeof(ValueTuple<,,,,>),
+        typeof(ValueTuple<,,,,,>),
+        typeof(ValueTuple<,,,,,,>),
+        typeof(ValueTuple<,,,,,,,>),
+    });
 
     private static bool IsTupleOrValueTuple(Type type)
     {

@@ -58,11 +58,11 @@ internal static class FallbackCollectionMethods
 
         var invalid = ImmutableArray.Create(new[]
         {
-                typeof(Stack<>),
-                typeof(ConcurrentStack<>),
-                typeof(ImmutableStack<>),
-                typeof(IImmutableStack<>),
-            });
+            typeof(Stack<>),
+            typeof(ConcurrentStack<>),
+            typeof(ImmutableStack<>),
+            typeof(IImmutableStack<>),
+        });
 
         var array = Dump<object[]>().Intersect(Dump<List<object>>()).ToImmutableArray();
         var set = Dump<HashSet<object>>().Except(array).ToImmutableArray();

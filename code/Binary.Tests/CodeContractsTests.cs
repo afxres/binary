@@ -21,12 +21,12 @@ public class CodeContractsTests
 
         var names = new[]
         {
-                typeof(Allocator).Name,
-                typeof(Span<>).Name,
-                typeof(Memory<>).Name,
-                typeof(ReadOnlySpan<>).Name,
-                typeof(ReadOnlyMemory<>).Name,
-            };
+            typeof(Allocator).Name,
+            typeof(Span<>).Name,
+            typeof(Memory<>).Name,
+            typeof(ReadOnlySpan<>).Name,
+            typeof(ReadOnlyMemory<>).Name,
+        };
 
         var types = typeof(IConverter).Assembly.GetTypes();
         var members = types.SelectMany(x => x.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static)).ToList();
@@ -66,9 +66,9 @@ public class CodeContractsTests
     {
         var array = new[]
         {
-                "Mikodev.Binary",
-                "Mikodev.Binary.Attributes",
-            };
+            "Mikodev.Binary",
+            "Mikodev.Binary.Attributes",
+        };
         var types = new HashSet<Type>(typeof(IConverter).Assembly.GetTypes());
         var alpha = new HashSet<Type>(types.Where(x => array.Contains(x.Namespace) && !x.IsNested));
         var bravo = new HashSet<Type>(types.Where(x => x.Name.Any(c => c is '<' or '>' or '-')));
