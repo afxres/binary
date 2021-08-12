@@ -1,10 +1,10 @@
-﻿namespace Mikodev.Binary.Experimental.Converters;
+﻿namespace Mikodev.Binary.Converters;
 
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
 
-public sealed class TimeOnlyConverter : Converter<TimeOnly>
+internal sealed class TimeOnlyConverter : Converter<TimeOnly>
 {
     private static readonly SpanAction<byte, long> EncodeAction = BinaryPrimitives.WriteInt64LittleEndian;
 

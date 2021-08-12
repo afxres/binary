@@ -1,6 +1,5 @@
-﻿namespace Mikodev.Binary.Experimental.Tests.Converters;
+﻿namespace Mikodev.Binary.Tests.Converters;
 
-using Mikodev.Binary.Experimental.Converters;
 using System;
 using System.Buffers.Binary;
 using Xunit;
@@ -13,7 +12,9 @@ public class TimeOnlyConverterTests
     public void BasicTest(string data)
     {
         var time = TimeOnly.ParseExact(data, "HH:mm:ss");
-        var converter = new TimeOnlyConverter();
+        var generator = Generator.CreateDefault();
+        var converter = generator.GetConverter<TimeOnly>();
+        Assert.Equal("Mikodev.Binary.Converters.TimeOnlyConverter", converter.GetType().FullName);
         var buffer = converter.Encode(time);
         Assert.Equal(8, buffer.Length);
         Assert.Equal(8, converter.Length);

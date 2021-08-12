@@ -1,6 +1,5 @@
-﻿namespace Mikodev.Binary.Experimental.Tests.Converters;
+﻿namespace Mikodev.Binary.Tests.Converters;
 
-using Mikodev.Binary.Experimental.Converters;
 using System;
 using System.Buffers.Binary;
 using Xunit;
@@ -13,7 +12,9 @@ public class DateOnlyConverterTests
     public void BasicTest(string data)
     {
         var date = DateOnly.ParseExact(data, "yyyy-MM-dd");
-        var converter = new DateOnlyConverter();
+        var generator = Generator.CreateDefault();
+        var converter = generator.GetConverter<DateOnly>();
+        Assert.Equal("Mikodev.Binary.Converters.DateOnlyConverter", converter.GetType().FullName);
         var buffer = converter.Encode(date);
         Assert.Equal(4, buffer.Length);
         Assert.Equal(4, converter.Length);

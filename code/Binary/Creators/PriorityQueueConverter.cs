@@ -1,9 +1,9 @@
-﻿namespace Mikodev.Binary.Experimental;
+﻿namespace Mikodev.Binary.Creators;
 
 using System;
 using System.Collections.Generic;
 
-public sealed class PriorityQueueConverter<E, P> : Converter<PriorityQueue<E, P>>
+internal sealed class PriorityQueueConverter<E, P> : Converter<PriorityQueue<E, P>>
 {
     private readonly Converter<E> init;
 

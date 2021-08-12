@@ -1,10 +1,10 @@
-﻿namespace Mikodev.Binary.Experimental;
+﻿namespace Mikodev.Binary.Creators;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public sealed class PriorityQueueConverterCreator : IConverterCreator
+internal sealed class PriorityQueueConverterCreator : IConverterCreator
 {
     public IConverter GetConverter(IGeneratorContext context, Type type)
     {

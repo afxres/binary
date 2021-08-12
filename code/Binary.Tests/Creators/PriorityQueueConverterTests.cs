@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Experimental.Tests;
+﻿namespace Mikodev.Binary.Tests.Creators;
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ public class PriorityQueueConverterTests
     [Fact(DisplayName = "Null Priority Queue")]
     public void NullValue()
     {
-        var generator = Generator.CreateDefaultBuilder().AddConverterCreator(new PriorityQueueConverterCreator()).Build();
+        var generator = Generator.CreateDefault();
 
         void Invoke<E, P>()
         {
@@ -28,7 +28,7 @@ public class PriorityQueueConverterTests
     [Fact(DisplayName = "Priority Queue")]
     public void Value()
     {
-        var generator = Generator.CreateDefaultBuilder().AddConverterCreator(new PriorityQueueConverterCreator()).Build();
+        var generator = Generator.CreateDefault();
 
         void Invoke<E, P>(IEnumerable<(E, P)> values)
         {
