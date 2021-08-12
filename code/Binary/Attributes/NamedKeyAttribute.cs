@@ -1,12 +1,11 @@
-﻿using System;
+﻿namespace Mikodev.Binary.Attributes;
 
-namespace Mikodev.Binary.Attributes
+using System;
+
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+public sealed class NamedKeyAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-    public sealed class NamedKeyAttribute : Attribute
-    {
-        public string Key { get; }
+    public string Key { get; }
 
-        public NamedKeyAttribute(string key) => Key = key;
-    }
+    public NamedKeyAttribute(string key) => Key = key;
 }

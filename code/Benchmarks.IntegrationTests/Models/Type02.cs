@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
+﻿namespace Mikodev.Binary.Benchmarks.IntegrationTests.Models;
 
-namespace Mikodev.Binary.Benchmarks.IntegrationTests.Models
+using System.Collections.Generic;
+
+public class Type02
 {
-    public class Type02
-    {
-        public double Data { get; set; }
+    public double Data { get; set; }
 
-        public List<string> Tags { get; set; }
-    }
+    public List<string> Tags { get; set; }
 }

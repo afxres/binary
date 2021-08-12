@@ -1,9 +1,8 @@
-﻿using System;
+﻿namespace Mikodev.Binary;
 
-namespace Mikodev.Binary
+using System;
+
+public interface IGeneratorContext
 {
-    public interface IGeneratorContext
-    {
-        IConverter GetConverter(Type type);
-    }
+    IConverter GetConverter(Type type);
 }

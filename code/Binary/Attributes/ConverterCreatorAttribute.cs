@@ -1,12 +1,11 @@
-﻿using System;
+﻿namespace Mikodev.Binary.Attributes;
 
-namespace Mikodev.Binary.Attributes
+using System;
+
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum | AttributeTargets.Interface | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+public sealed class ConverterCreatorAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum | AttributeTargets.Interface | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-    public sealed class ConverterCreatorAttribute : Attribute
-    {
-        public Type Type { get; }
+    public Type Type { get; }
 
-        public ConverterCreatorAttribute(Type type) => Type = type;
-    }
+    public ConverterCreatorAttribute(Type type) => Type = type;
 }

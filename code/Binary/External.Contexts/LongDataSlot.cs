@@ -1,9 +1,8 @@
-﻿namespace Mikodev.Binary.External.Contexts
-{
-    internal struct LongDataSlot
-    {
-        public long Data;
+﻿namespace Mikodev.Binary.External.Contexts;
 
-        public int Size;
-    }
+internal struct LongDataSlot
+{
+    public long Data;
+
+    public int Size;
 }

@@ -1,11 +1,10 @@
-﻿namespace Mikodev.Binary
+﻿namespace Mikodev.Binary;
+
+public interface IGeneratorBuilder
 {
-    public interface IGeneratorBuilder
-    {
-        IGeneratorBuilder AddConverter(IConverter converter);
+    IGeneratorBuilder AddConverter(IConverter converter);
 
-        IGeneratorBuilder AddConverterCreator(IConverterCreator creator);
+    IGeneratorBuilder AddConverterCreator(IConverterCreator creator);
 
-        IGenerator Build();
-    }
+    IGenerator Build();
 }

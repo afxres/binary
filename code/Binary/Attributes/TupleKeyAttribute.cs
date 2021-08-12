@@ -1,12 +1,11 @@
-﻿using System;
+﻿namespace Mikodev.Binary.Attributes;
 
-namespace Mikodev.Binary.Attributes
+using System;
+
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+public sealed class TupleKeyAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-    public sealed class TupleKeyAttribute : Attribute
-    {
-        public int Key { get; }
+    public int Key { get; }
 
-        public TupleKeyAttribute(int key) => Key = key;
-    }
+    public TupleKeyAttribute(int key) => Key = key;
 }

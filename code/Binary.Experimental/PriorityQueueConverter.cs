@@ -1,46 +1,45 @@
-﻿using System;
+﻿namespace Mikodev.Binary.Experimental;
+
+using System;
 using System.Collections.Generic;
 
-namespace Mikodev.Binary.Experimental
+public sealed class PriorityQueueConverter<E, P> : Converter<PriorityQueue<E, P>>
 {
-    public sealed class PriorityQueueConverter<E, P> : Converter<PriorityQueue<E, P>>
+    private readonly Converter<E> init;
+
+    private readonly Converter<P> tail;
+
+    public PriorityQueueConverter(Converter<E> init, Converter<P> tail)
     {
-        private readonly Converter<E> init;
+        this.init = init;
+        this.tail = tail;
+    }
 
-        private readonly Converter<P> tail;
-
-        public PriorityQueueConverter(Converter<E> init, Converter<P> tail)
+    public override void Encode(ref Allocator allocator, PriorityQueue<E, P> item)
+    {
+        if (item is null)
+            return;
+        var init = this.init;
+        var tail = this.tail;
+        foreach (var (head, next) in item.UnorderedItems)
         {
-            this.init = init;
-            this.tail = tail;
+            init.EncodeAuto(ref allocator, head);
+            tail.EncodeAuto(ref allocator, next);
         }
+    }
 
-        public override void Encode(ref Allocator allocator, PriorityQueue<E, P> item)
+    public override PriorityQueue<E, P> Decode(in ReadOnlySpan<byte> span)
+    {
+        var item = new PriorityQueue<E, P>();
+        var init = this.init;
+        var tail = this.tail;
+        var body = span;
+        while (body.Length is not 0)
         {
-            if (item is null)
-                return;
-            var init = this.init;
-            var tail = this.tail;
-            foreach (var (head, next) in item.UnorderedItems)
-            {
-                init.EncodeAuto(ref allocator, head);
-                tail.EncodeAuto(ref allocator, next);
-            }
+            var head = init.DecodeAuto(ref body);
+            var next = tail.DecodeAuto(ref body);
+            item.Enqueue(head, next);
         }
-
-        public override PriorityQueue<E, P> Decode(in ReadOnlySpan<byte> span)
-        {
-            var item = new PriorityQueue<E, P>();
-            var init = this.init;
-            var tail = this.tail;
-            var body = span;
-            while (body.Length is not 0)
-            {
-                var head = init.DecodeAuto(ref body);
-                var next = tail.DecodeAuto(ref body);
-                item.Enqueue(head, next);
-            }
-            return item;
-        }
+        return item;
     }
 }
