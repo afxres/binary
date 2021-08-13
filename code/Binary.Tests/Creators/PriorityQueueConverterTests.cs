@@ -14,6 +14,7 @@ public class PriorityQueueConverterTests
         void Invoke<E, P>()
         {
             var converter = generator.GetConverter<PriorityQueue<E, P>>();
+            Assert.StartsWith("Mikodev.Binary.Creators.PriorityQueueConverter`2", converter.GetType().FullName);
             var buffer = converter.Encode(null);
             Assert.Empty(buffer);
             var result = converter.Decode(Array.Empty<byte>());
@@ -33,6 +34,7 @@ public class PriorityQueueConverterTests
         void Invoke<E, P>(IEnumerable<(E, P)> values)
         {
             var converter = generator.GetConverter<PriorityQueue<E, P>>();
+            Assert.StartsWith("Mikodev.Binary.Creators.PriorityQueueConverter`2", converter.GetType().FullName);
             var source = new PriorityQueue<E, P>(values);
             var buffer = converter.Encode(source);
             var result = converter.Decode(buffer);
