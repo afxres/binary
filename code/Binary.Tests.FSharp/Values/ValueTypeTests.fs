@@ -13,12 +13,6 @@ let generator = Generator.CreateDefault()
 
 let randomCount = 64
 
-let RandomNumber () : uint64 =
-    let buffer = Array.zeroCreate<byte>(sizeof<uint64>)
-    random.NextBytes buffer
-    let number = BitConverter.ToUInt64(buffer, 0)
-    number
-
 let TestWithSpan (value : 'a) (size : int) =
     let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
@@ -107,13 +101,13 @@ let Test (value : 'a when 'a : unmanaged) = TestExplicit value sizeof<'a>
 
 [<Fact>]
 let ``Int & UInit 16, 32, 64`` () =
-    for i = 1 to randomCount do
-        let i16 : int16 = int16(RandomNumber())
-        let i32 : int32 = int32(RandomNumber())
-        let i64 : int64 = int64(RandomNumber())
-        let u16 : uint16 = uint16(RandomNumber())
-        let u32 : uint32 = uint32(RandomNumber())
-        let u64 : uint64 = uint64(RandomNumber())
+    for _ = 1 to randomCount do
+        let i16 = int16 (random.NextInt64())
+        let i32 = int32 (random.NextInt64())
+        let i64 = int64 (random.NextInt64())
+        let u16 = uint16 (random.NextInt64())
+        let u32 = uint32 (random.NextInt64())
+        let u64 = uint64 (random.NextInt64())
 
         Test i16
         Test i32
@@ -125,9 +119,9 @@ let ``Int & UInit 16, 32, 64`` () =
 
 [<Fact>]
 let ``Single Double`` () =
-    for i = 0 to randomCount do
-        let single : single = single(random.NextDouble())
-        let double : double = double(random.NextDouble())
+    for _ = 0 to randomCount do
+        let single : single = single (random.NextDouble())
+        let double : double = double (random.NextDouble())
 
         Test single
         Test double
@@ -135,11 +129,11 @@ let ``Single Double`` () =
 
 [<Fact>]
 let ``Bool Char Byte SByte`` () =
-    for i = 0 to randomCount do
-        let u8 : byte = byte(RandomNumber())
-        let i8 : sbyte = sbyte(RandomNumber())
-        let char : char = char(RandomNumber())
-        let bool : bool = int(RandomNumber()) &&& 1 = 0
+    for _ = 0 to randomCount do
+        let u8 : byte = byte (random.NextInt64())
+        let i8 : sbyte = sbyte (random.NextInt64())
+        let char : char = char (random.NextInt64())
+        let bool : bool = int (random.NextInt64()) &&& 1 = 0
 
         Test u8
         Test i8
@@ -149,8 +143,8 @@ let ``Bool Char Byte SByte`` () =
 
 [<Fact>]
 let ``Decimal`` () =
-    for i = 0 to randomCount do
-        let number : decimal = decimal(random.NextDouble())
+    for _ = 0 to randomCount do
+        let number : decimal = decimal (random.NextDouble())
         let converter = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "DecimalConverter") |> Array.exactlyOne |> Activator.CreateInstance :?> Converter<decimal>
         let alpha = converter.Encode number
         let bravo = Decimal.GetBits(number) |> Array.map (fun x -> BitConverter.GetBytes x) |> Array.concat
@@ -160,7 +154,7 @@ let ``Decimal`` () =
 
 [<Fact>]
 let ``Guid`` () =
-    for i = 0 to randomCount do
+    for _ = 0 to randomCount do
         let guid : Guid = Guid.NewGuid()
         let bytes = generator.Encode<Guid> guid
 
@@ -253,8 +247,8 @@ let ``Enum Converter`` () =
 
 [<Fact>]
 let ``BitVector32`` () =
-    for i = 0 to randomCount do
-        Test (RandomNumber() |> int |> BitVector32)
+    for _ = 0 to randomCount do
+        Test (random.Next() |> BitVector32)
 
     Test (BitVector32 0x11223344)
     Test (BitVector32 0xAABBCCDD)
@@ -314,13 +308,13 @@ let ``Rune (decode invalid)`` (data : int) =
 
 [<Fact>]
 let ``DateOnly Instance`` () =
-    for i = 0 to randomCount do
+    for _ = 0 to randomCount do
         let number = random.Next(DateOnly.MinValue.DayNumber, DateOnly.MaxValue.DayNumber + 1)
         let date = DateOnly.FromDayNumber number
         Test date
 
-    Test (DateOnly.MinValue)
-    Test (DateOnly.MaxValue)
+    Test DateOnly.MinValue
+    Test DateOnly.MaxValue
     ()
 
 [<Fact>]
