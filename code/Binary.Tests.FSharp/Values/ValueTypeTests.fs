@@ -311,3 +311,14 @@ let ``Rune (decode invalid)`` (data : int) =
     let error = Assert.Throws<ArgumentOutOfRangeException>(fun () -> generator.Decode<Rune>(generator.Encode data) |> ignore)
     Assert.StartsWith(ArgumentOutOfRangeException().Message, error.Message)
     ()
+
+[<Fact>]
+let ``DateOnly Instance`` () =
+    for i = 0 to randomCount do
+        let number = random.Next(DateOnly.MinValue.DayNumber, DateOnly.MaxValue.DayNumber + 1)
+        let date = DateOnly.FromDayNumber number
+        Test date
+
+    Test (DateOnly.MinValue)
+    Test (DateOnly.MaxValue)
+    ()
