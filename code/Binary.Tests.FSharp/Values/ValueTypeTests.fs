@@ -322,3 +322,14 @@ let ``DateOnly Instance`` () =
     Test (DateOnly.MinValue)
     Test (DateOnly.MaxValue)
     ()
+
+[<Fact>]
+let ``TimeOnly Instance`` () =
+    for _ = 0 to randomCount do
+        let number = random.NextInt64(TimeOnly.MinValue.Ticks, TimeOnly.MaxValue.Ticks + 1L)
+        let time = TimeOnly number
+        Test time
+
+    Test TimeOnly.MinValue
+    Test TimeOnly.MaxValue
+    ()
