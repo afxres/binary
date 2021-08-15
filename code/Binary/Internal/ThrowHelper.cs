@@ -41,7 +41,7 @@ internal static class ThrowHelper
     internal static void ThrowNotEnoughBytes() => throw new ArgumentException("Not enough bytes or byte sequence invalid.");
 
     [DoesNotReturn]
-    internal static Type ThrowNotConverter(Type type) => throw new ArgumentException($"Can not get generic argument, '{type}' is not a subclass of '{typeof(Converter<>)}'");
+    internal static T ThrowNotConverter<T>(Type type) => throw new ArgumentException($"Can not get generic argument, '{type}' is not a subclass of '{typeof(Converter<>)}'");
 
     [DoesNotReturn]
     internal static T ThrowNoSuitableConstructor<T>() => throw new NotSupportedException($"No suitable constructor found, type: {typeof(T)}");
