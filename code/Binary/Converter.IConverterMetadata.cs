@@ -11,9 +11,9 @@ public abstract partial class Converter<T> : IConverterMetadata
         return typeof(T);
     }
 
-    MethodInfo IConverterMetadata.GetMethod(string methodName)
+    MethodInfo IConverterMetadata.GetMethod(string name)
     {
-        return methodName switch
+        return name switch
         {
             nameof(Decode) => new DecodeReadOnlyDelegate<T>(Decode).Method,
             nameof(DecodeAuto) => new DecodeDelegate<T>(DecodeAuto).Method,
@@ -21,7 +21,7 @@ public abstract partial class Converter<T> : IConverterMetadata
             nameof(Encode) => new EncodeDelegate<T>(Encode).Method,
             nameof(EncodeAuto) => new EncodeDelegate<T>(EncodeAuto).Method,
             nameof(EncodeWithLengthPrefix) => new EncodeDelegate<T>(EncodeWithLengthPrefix).Method,
-            _ => throw new NotSupportedException(),
+            _ => throw new ArgumentException($"Invalid method name '{name}'", nameof(name)),
         };
     }
 }

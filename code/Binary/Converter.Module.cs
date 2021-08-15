@@ -18,12 +18,12 @@ public static class Converter
         return ThrowHelper.ThrowNotConverter<Type>(converter.GetType());
     }
 
-    public static MethodInfo GetMethod(IConverter converter, string methodName)
+    public static MethodInfo GetMethod(IConverter converter, string name)
     {
         if (converter is null)
             throw new ArgumentNullException(nameof(converter));
         if (converter is IConverterMetadata metadata)
-            return metadata.GetMethod(methodName);
+            return metadata.GetMethod(name);
         return ThrowHelper.ThrowNotConverter<MethodInfo>(converter.GetType());
     }
 

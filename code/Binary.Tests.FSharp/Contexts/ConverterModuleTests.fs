@@ -99,3 +99,35 @@ type ConverterModuleTests() =
             Assert.Equal(1, parameters.Length)
             Assert.Equal("ReadOnlySpan`1&", parameters.[0].ParameterType.Name)
         ()
+
+    [<Fact>]
+    member __.``Get Method (converter null)`` () =
+        let error = Assert.Throws<ArgumentNullException>(fun () -> Converter.GetMethod(Unchecked.defaultof<IConverter>, null) |> ignore)
+        let methodInfo = typeof<Converter>.GetMethods() |> Array.filter (fun x -> x.Name = "GetMethod") |> Array.exactlyOne
+        let parameter = methodInfo.GetParameters() |> Array.head
+        Assert.Equal("converter", parameter.Name)
+        Assert.Equal("converter", error.ParamName)
+        ()
+
+    [<Theory>]
+    [<MemberData("Data Invalid Converter")>]
+    member __.``Get Method (invalid converter instance)`` (converter : IConverter) =
+        let error = Assert.Throws<ArgumentException>(fun () -> Converter.GetMethod(converter, null) |> ignore)
+        let message = sprintf "Can not get generic argument, '%O' is not a subclass of '%O'" (converter.GetType()) typedefof<Converter<_>>
+        Assert.Null(error.ParamName)
+        Assert.Equal(message, error.Message)
+        ()
+
+    [<Theory>]
+    [<InlineData(null)>]
+    [<InlineData("")>]
+    [<InlineData("Bad Name")>]
+    member __.``Get Method (invalid name)`` (name : string) =
+        let error = Assert.Throws<ArgumentException>(fun () -> Converter.GetMethod(GoodConverter<int>(), name) |> ignore)
+        let message = $"Invalid method name '{name}'"
+        let methodInfo = typeof<Converter>.GetMethods() |> Array.filter (fun x -> x.Name = "GetMethod") |> Array.exactlyOne
+        let parameter = methodInfo.GetParameters() |> Array.last
+        Assert.Equal("name", parameter.Name)
+        Assert.Equal("name", error.ParamName)
+        Assert.StartsWith(message, error.Message)
+        ()

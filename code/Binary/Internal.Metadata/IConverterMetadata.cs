@@ -15,5 +15,5 @@ internal interface IConverterMetadata
 {
     Type GetGenericArgument();
 
-    MethodInfo GetMethod(string methodName);
+    MethodInfo GetMethod(string name);
 }

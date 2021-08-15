@@ -52,11 +52,15 @@ type ConverterMetadataTests() =
         ()
 
     [<Theory>]
+    [<InlineData(null)>]
+    [<InlineData("")>]
     [<InlineData("Length")>]
     [<InlineData("GetGenericArgument")>]
-    member me.``Get Method Invalid Name`` (methodName : string) =
+    member me.``Get Method Invalid Name`` (name : string) =
         let interfaceMethod = me.GetInterfaceMethod()
         let converter = MetadataFakeConverter<obj>()
-        let error = Assert.Throws<NotSupportedException>(fun () -> interfaceMethod.Invoke(converter, methodName) |> ignore)
-        Assert.Equal(NotSupportedException().Message, error.Message)
+        let error = Assert.Throws<ArgumentException>(fun () -> interfaceMethod.Invoke(converter, name) |> ignore)
+        let message = $"Invalid method name '{name}'"
+        Assert.Equal("name", error.ParamName)
+        Assert.StartsWith(message, error.Message)
         ()
