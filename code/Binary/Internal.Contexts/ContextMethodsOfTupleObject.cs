@@ -34,7 +34,7 @@ internal static class ContextMethodsOfTupleObject
         for (var i = 0; i < converters.Length; i++)
         {
             var converter = converters[i];
-            var method = ((IConverterMetadata)converter).GetMethod((auto || i != converters.Length - 1) ? nameof(IConverter.EncodeAuto) : nameof(IConverter.Encode));
+            var method = Converter.GetMethod(converter, (auto || i != converters.Length - 1) ? nameof(IConverter.EncodeAuto) : nameof(IConverter.Encode));
             var invoke = Expression.Call(Expression.Constant(converter), method, allocator, members[i].Invoke(item));
             expressions.Add(invoke);
         }
@@ -53,7 +53,7 @@ internal static class ContextMethodsOfTupleObject
             for (var i = 0; i < converters.Length; i++)
             {
                 var converter = converters[i];
-                var method = ((IConverterMetadata)converter).GetMethod((auto || i != converters.Length - 1) ? nameof(IConverter.DecodeAuto) : nameof(IConverter.Decode));
+                var method = Converter.GetMethod(converter, (auto || i != converters.Length - 1) ? nameof(IConverter.DecodeAuto) : nameof(IConverter.Decode));
                 var decode = Expression.Call(Expression.Constant(converter), method, source);
                 result.Add(decode);
             }

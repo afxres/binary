@@ -162,7 +162,7 @@ internal static class FallbackCollectionMethods
         Func<Expression, Expression, Expression> Invoke()
         {
             var member = Expression.Constant(converter);
-            var method = ((IConverterMetadata)converter).GetMethod(nameof(IConverter.EncodeAuto));
+            var method = Converter.GetMethod(converter, nameof(IConverter.EncodeAuto));
             var invoke = new Func<Expression, Expression, Expression>((allocator, current) => Expression.Call(member, method, allocator, current));
             return invoke;
         }
@@ -178,8 +178,8 @@ internal static class FallbackCollectionMethods
         {
             var initMember = Expression.Constant(init);
             var tailMember = Expression.Constant(tail);
-            var initMethod = ((IConverterMetadata)init).GetMethod(nameof(IConverter.EncodeAuto));
-            var tailMethod = ((IConverterMetadata)tail).GetMethod(nameof(IConverter.EncodeAuto));
+            var initMethod = Converter.GetMethod(init, nameof(IConverter.EncodeAuto));
+            var tailMethod = Converter.GetMethod(tail, nameof(IConverter.EncodeAuto));
             var initProperty = CommonHelper.GetProperty<KeyValuePair<K, V>, K>(x => x.Key);
             var tailProperty = CommonHelper.GetProperty<KeyValuePair<K, V>, V>(x => x.Value);
             var assign = Expression.Variable(typeof(KeyValuePair<K, V>), "current");

@@ -48,7 +48,7 @@ internal static class ContextMethodsOfNamedObject
             var property = properties[i];
             var converter = converters[i];
             var buffer = Allocator.Invoke(memories[i], (ref Allocator allocator, ReadOnlyMemory<byte> data) => Converter.EncodeWithLengthPrefix(ref allocator, data.Span));
-            var methodInfo = ((IConverterMetadata)converter).GetMethod(nameof(IConverter.EncodeWithLengthPrefix));
+            var methodInfo = Converter.GetMethod(converter, nameof(IConverter.EncodeWithLengthPrefix));
             // append named key with length prefix (cached), then append value with length prefix
             expressions.Add(Expression.Call(AppendMethodInfo, allocator, Expression.New(ReadOnlySpanByteConstructorInfo, Expression.Constant(buffer))));
             expressions.Add(Expression.Call(Expression.Constant(converter), methodInfo, allocator, Expression.Property(item, property)));
@@ -70,7 +70,7 @@ internal static class ContextMethodsOfNamedObject
             for (var i = 0; i < converters.Length; i++)
             {
                 var converter = converters[i];
-                var method = ((IConverterMetadata)converter).GetMethod(nameof(IConverter.Decode));
+                var method = Converter.GetMethod(converter, nameof(IConverter.Decode));
                 var invoke = Expression.Call(InvokeMethodInfo, source, values, Expression.Constant(i));
                 var decode = Expression.Call(Expression.Constant(converter), method, invoke);
                 result.Add(decode);
