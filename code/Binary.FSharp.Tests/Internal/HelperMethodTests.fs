@@ -20,25 +20,11 @@ type HelperMethodTests() =
         yield [| typeof<HelperMethodTests>; "Function" |]
     }
 
-    static member ``Data Types`` : (obj array) seq = seq {
-        yield [| typeof<HelperMethodTests>; "Any"; [| typeof<int> |] |]
-        yield [| typeof<HelperMethodTests>; "None"; [| typeof<string> |] |]
-    }
-
     [<Theory>]
     [<MemberData(nameof HelperMethodTests.``Data Alpha``)>]
     member __.``Get Method Error`` (t : Type, methodName : string) =
         let invoke = HelperMethodTests.GetCommonHelperMethod<Func<Type, string, MethodInfo>> "GetMethod"
         let error = Assert.Throws<MissingMethodException>(fun () -> invoke.Invoke(t, methodName) |> ignore)
-        let message = $"Method not found, method name: {methodName}, type: {t}"
-        Assert.Equal(message, error.Message)
-        ()
-
-    [<Theory>]
-    [<MemberData(nameof HelperMethodTests.``Data Types``)>]
-    member __.``Get Method With Types Error`` (t : Type, methodName : string, types : Type array) =
-        let invoke = HelperMethodTests.GetCommonHelperMethod<Func<Type, string, Type array, MethodInfo>> "GetMethod"
-        let error = Assert.Throws<MissingMethodException>(fun () -> invoke.Invoke(t, methodName, types) |> ignore)
         let message = $"Method not found, method name: {methodName}, type: {t}"
         Assert.Equal(message, error.Message)
         ()

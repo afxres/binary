@@ -9,18 +9,6 @@ open System.Linq.Expressions
 open System.Reflection
 
 type internal UnionConverterCreator() =
-    static let GetEncodeMethodInfo (t : Type) (auto : bool) =
-        let converterType = MakeGenericType<Converter<_>> t
-        let methodName = if auto then "EncodeAuto" else "Encode"
-        let method = CommonHelper.GetMethod(converterType, methodName, [| ModuleHelper.AllocatorByRefType; t |])
-        method
-
-    static let GetDecodeMethodInfo (t : Type) (auto : bool) =
-        let converterType = MakeGenericType<Converter<_>> t
-        let methodName = if auto then "DecodeAuto" else "Decode"
-        let method = CommonHelper.GetMethod(converterType, methodName, [| ModuleHelper.ReadOnlySpanByteByRefType |])
-        method
-
     static let GetEncodeExpression (t : Type) (converters : ImmutableDictionary<Type, IConverter>) (caseInfos : Map<int, UnionCaseInfo>) (tagMember : MemberInfo) (auto : bool) =
         let allocator = Expression.Parameter(ModuleHelper.AllocatorByRefType, "allocator")
         let mark = Expression.Parameter(typeof<int>.MakeByRefType(), "mark")
@@ -32,7 +20,7 @@ type internal UnionConverterCreator() =
                 let property = properties.[i]
                 let propertyType = property.PropertyType
                 let converter = converters.[propertyType]
-                let method = GetEncodeMethodInfo propertyType (auto || i <> properties.Length - 1)
+                let method = Converter.GetMethod(converter, if auto || i <> properties.Length - 1 then "EncodeAuto" else "Encode")
                 let invoke = Expression.Call(Expression.Constant(converter), method, allocator, Expression.Property(instance, property))
                 invoke
         |]
@@ -91,7 +79,7 @@ type internal UnionConverterCreator() =
                     for i = 0 to parameters.Length - 1 do
                         let parameterType = parameters.[i].ParameterType
                         let converter = converters.[parameterType]
-                        let method = GetDecodeMethodInfo parameterType (auto || i <> parameters.Length - 1)
+                        let method = Converter.GetMethod(converter, if auto || i <> parameters.Length - 1 then "DecodeAuto" else "Decode")
                         let variable = Expression.Variable(parameterType, string i)
                         let invoke = Expression.Call(Expression.Constant(converter), method, span)
                         let assign = Expression.Assign(variable, invoke)

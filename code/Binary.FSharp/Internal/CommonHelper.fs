@@ -21,9 +21,3 @@ type internal CommonHelper =
         if isNull (box result) then
             raise (MissingMethodException $"Method not found, method name: {name}, type: {t}")
         result
-
-    static member GetMethod(t : Type, name : string, types : Type array) =
-        let result = t.GetMethod(name, types)
-        if isNull (box result) then
-            raise (MissingMethodException $"Method not found, method name: {name}, type: {t}")
-        result
