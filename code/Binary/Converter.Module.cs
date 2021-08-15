@@ -3,7 +3,6 @@
 using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Metadata;
 using System;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -17,17 +16,6 @@ public static class Converter
         if (converter is IConverterMetadata metadata)
             return metadata.GetGenericArgument();
         return ThrowHelper.ThrowNotConverter<Type>(converter.GetType());
-    }
-
-    public static Type GetGenericArgument(Type type)
-    {
-        if (type is null)
-            throw new ArgumentNullException(nameof(type));
-        var node = type;
-        while ((node = node.BaseType) is not null)
-            if (CommonHelper.TryGetGenericArguments(node, typeof(Converter<>), out var arguments))
-                return arguments.Single();
-        return ThrowHelper.ThrowNotConverter<Type>(type);
     }
 
     public static MethodInfo GetMethod(IConverter converter, string methodName)

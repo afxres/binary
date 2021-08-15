@@ -35,19 +35,10 @@ type ConverterModuleTests() =
     [<Fact>]
     member __.``Get Generic Argument (converter null)`` () =
         let error = Assert.Throws<ArgumentNullException>(fun () -> Converter.GetGenericArgument(Unchecked.defaultof<IConverter>) |> ignore)
-        let methodInfo = typeof<Converter>.GetMethods() |> Array.filter (fun x -> x.Name = "GetGenericArgument" && x.GetParameters().[0].ParameterType = typeof<IConverter>) |> Array.exactlyOne
+        let methodInfo = typeof<Converter>.GetMethods() |> Array.filter (fun x -> x.Name = "GetGenericArgument") |> Array.exactlyOne
         let parameter = methodInfo.GetParameters() |> Array.last
         Assert.Equal("converter", parameter.Name)
         Assert.Equal("converter", error.ParamName)
-        ()
-
-    [<Fact>]
-    member __.``Get Generic Argument (type null)`` () =
-        let error = Assert.Throws<ArgumentNullException>(fun () -> Converter.GetGenericArgument(Unchecked.defaultof<Type>) |> ignore)
-        let methodInfo = typeof<Converter>.GetMethods() |> Array.filter (fun x -> x.Name = "GetGenericArgument" && x.GetParameters().[0].ParameterType = typeof<Type>) |> Array.exactlyOne
-        let parameter = methodInfo.GetParameters() |> Array.last
-        Assert.Equal("type", parameter.Name)
-        Assert.Equal("type", error.ParamName)
         ()
 
     static member ``Data Invalid Converter`` : (obj array) seq = seq {
@@ -63,22 +54,6 @@ type ConverterModuleTests() =
         Assert.Equal(message, error.Message)
         ()
 
-    static member ``Data Invalid Type`` : (obj array) seq = seq {
-        yield [| typeof<FakeConverter> |]
-        yield [| typeof<IConverter> |]
-        yield [| typeof<Converter<int>> |]
-        yield [| typeof<obj> |]
-    }
-
-    [<Theory>]
-    [<MemberData("Data Invalid Type")>]
-    member __.``Get Generic Argument (invalid converter type)`` (t : Type) =
-        let error = Assert.Throws<ArgumentException>(fun () -> Converter.GetGenericArgument t |> ignore)
-        let message = sprintf "Can not get generic argument, '%O' is not a subclass of '%O'" t typedefof<Converter<_>>
-        Assert.Null(error.ParamName)
-        Assert.Equal(message, error.Message)
-        ()
-
     static member ``Data Converter With Type`` : (obj array) seq = seq {
         yield [| GoodConverter<int>(); box typeof<int> |]
         yield [| GoodConverter<obj>(); box typeof<obj> |]
@@ -87,10 +62,8 @@ type ConverterModuleTests() =
     [<Theory>]
     [<MemberData("Data Converter With Type")>]
     member __.``Get Generic Argument (valid)`` (converter : IConverter, t : Type) =
-        let alpha = Converter.GetGenericArgument(converter)
-        let bravo = Converter.GetGenericArgument(converter.GetType())
-        Assert.Equal(t, alpha)
-        Assert.Equal(t, bravo)
+        let a = Converter.GetGenericArgument(converter)
+        Assert.Equal(t, a)
         ()
 
     static member ``Data Converter`` : (obj array) seq = seq {
