@@ -79,16 +79,50 @@ type ConverterModuleTests() =
         Assert.Equal(message, error.Message)
         ()
 
-    static member ``Data Converter`` : (obj array) seq = seq {
+    static member ``Data Converter With Type`` : (obj array) seq = seq {
         yield [| GoodConverter<int>(); box typeof<int> |]
         yield [| GoodConverter<obj>(); box typeof<obj> |]
     }
 
     [<Theory>]
-    [<MemberData("Data Converter")>]
+    [<MemberData("Data Converter With Type")>]
     member __.``Get Generic Argument (valid)`` (converter : IConverter, t : Type) =
         let alpha = Converter.GetGenericArgument(converter)
         let bravo = Converter.GetGenericArgument(converter.GetType())
         Assert.Equal(t, alpha)
         Assert.Equal(t, bravo)
+        ()
+
+    static member ``Data Converter`` : (obj array) seq = seq {
+        yield [| GoodConverter<int>() |]
+        yield [| GoodConverter<obj>() |]
+    }
+
+    [<Theory>]
+    [<MemberData("Data Converter")>]
+    member __.``Get Method`` (converter : IConverter) =
+        let encode = [|
+            "Encode";
+            "EncodeAuto";
+            "EncodeWithLengthPrefix";
+        |]
+        let decode = [|
+            "Decode";
+            "DecodeAuto";
+            "DecodeWithLengthPrefix";
+        |]
+        for i in encode do
+            let m = Converter.GetMethod(converter, i)
+            Assert.NotNull m
+            Assert.Equal(i, m.Name)
+            let parameters = m .GetParameters()
+            Assert.Equal(2, parameters.Length)
+            Assert.Equal("Allocator&", parameters.[0].ParameterType.Name)
+        for i in decode do
+            let m = Converter.GetMethod(converter, i)
+            Assert.NotNull m
+            Assert.Equal(i, m.Name)
+            let parameters = m .GetParameters()
+            Assert.Equal(1, parameters.Length)
+            Assert.Equal("ReadOnlySpan`1&", parameters.[0].ParameterType.Name)
         ()
