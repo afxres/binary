@@ -62,7 +62,7 @@ type internal UnionConverterCreator() =
                 Expression.Assign(flag, tagExpression),
                 Expression.Call(ModuleHelper.EncodeNumberMethodInfo, allocator, flag),
                 Expression.Switch(flag, defaultBlock, switchCases))
-        let delegateType = MakeGenericType<UnionEncoder<_>> t
+        let delegateType = typedefof<UnionEncoder<_>>.MakeGenericType t
         let lambda = Expression.Lambda(delegateType, block, allocator, item, mark)
         lambda
 
@@ -105,7 +105,7 @@ type internal UnionConverterCreator() =
                 Seq.singleton flag,
                 Expression.Assign(flag, Expression.Call(ModuleHelper.DecodeNumberMethodInfo, span)),
                 Expression.Switch(flag, defaultBlock, switchCases))
-        let delegateType = MakeGenericType<UnionDecoder<_>> t
+        let delegateType = typedefof<UnionDecoder<_>>.MakeGenericType t
         let lambda = Expression.Lambda(delegateType, block, span, mark)
         lambda
 
@@ -138,13 +138,13 @@ type internal UnionConverterCreator() =
                 let encodeAuto = GetEncodeExpression t converters caseInfos tagMember true
                 let decode = GetDecodeExpression t converters constructorInfos false
                 let decodeAuto = GetDecodeExpression t converters constructorInfos true
-                let converterType = MakeGenericType<UnionConverter<_>> t
+                let converterType = typedefof<UnionConverter<_>>.MakeGenericType t
                 let delegates = [| encode; encodeAuto; decode; decodeAuto |] |> Array.map (fun x -> x.Compile())
                 let converterArguments = Array.append (delegates |> Array.map box) [| box noNull |]
                 let converter = Activator.CreateInstance(converterType, converterArguments)
                 converter :?> IConverter
 
-            if FSharpType.IsUnion(t) = false || IsImplementationOf<_ list> t then
+            if FSharpType.IsUnion(t) = false || (t.IsGenericType && t.GetGenericTypeDefinition() = typedefof<_ list>) then
                 null
             else
                 let cases = FSharpType.GetUnionCases(t)
