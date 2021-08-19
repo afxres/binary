@@ -5,15 +5,6 @@ using System;
 
 public abstract partial class Converter<T>
 {
-    private byte[] EncodeInternal(T item)
-    {
-        var length = this.length;
-        if (length is not 0)
-            return EncodeConstant(item);
-        else
-            return EncodeVariable(item);
-    }
-
     private byte[] EncodeConstant(T item)
     {
         var length = this.length;

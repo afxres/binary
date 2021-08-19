@@ -20,17 +20,6 @@ public abstract partial class Converter<T>
             return DecodeOption.VariableOverride;
     }
 
-    private T DecodeAutoInternal(ref ReadOnlySpan<byte> span)
-    {
-        var option = this.decode;
-        if (option is DecodeOption.Constant)
-            return DecodeAutoConstant(ref span);
-        else if (option is DecodeOption.Variable)
-            return DecodeAutoVariable(ref span);
-        else
-            return DecodeWithLengthPrefix(ref span);
-    }
-
     private T DecodeAutoConstant(ref ReadOnlySpan<byte> span)
     {
         return Decode(MemoryHelper.EnsureLengthReturnBuffer(ref span, this.length));
