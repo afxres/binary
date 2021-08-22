@@ -43,7 +43,8 @@ type SimplePersonConverter() =
     inherit Converter<Person>()
 
     override __.Encode(allocator : byref<Allocator>, item : Person) : unit =
-        Allocator.Append(&allocator, sizeof<int>, item.Id, fun span data -> BinaryPrimitives.WriteInt32LittleEndian(span, data))
+        Allocator.Append(&allocator, sizeof<int>, item.Id,
+            fun span data -> BinaryPrimitives.WriteInt32LittleEndian(span, data))
         Allocator.Append(&allocator, item.Name.AsSpan(), Encoding.UTF8)
         ()
 
@@ -62,7 +63,7 @@ type PersonConverter(intConverter : Converter<int>, stringConverter : Converter<
         intConverter.Encode(&allocator, item.Id)
         stringConverter.Encode(&allocator, item.Name)
         ()
-    
+
     override __.Decode(span : inref<ReadOnlySpan<byte>>) : Person =
         let id = intConverter.Decode(&span)
         let name = let part = span.Slice(sizeof<int>) in stringConverter.Decode(&part)
@@ -72,9 +73,10 @@ type PersonConverterCreator() =
     interface IConverterCreator with
         member __.GetConverter(context : IGeneratorContext, t : Type) =
             if t = typeof<Person> then
-                let arguments = [ typeof<int>; typeof<string> ] |> Seq.map context.GetConverter |> Seq.cast<obj> |> Seq.toArray
-                let converter = Activator.CreateInstance(typeof<PersonConverter>, arguments)
-                converter :?> IConverter
+                let select = [ typeof<int>; typeof<string> ] |> Seq.map context.GetConverter
+                let values = select |> Seq.cast<obj> |> Seq.toArray
+                let result = Activator.CreateInstance(typeof<PersonConverter>, values)
+                result :?> IConverter
             else
                 null
 ```
