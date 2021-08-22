@@ -94,6 +94,28 @@ let result = generator.Decode<Person> buffer
 printfn "result = %A" result
 ```
 
+## Binary Layout
+
+### Object
+
+Data model:
+```
+{| id = 1024; name = "F#" |}
+```
+
+Output bytes (hex):
+```
+02 69 64 04 00 04 00 00 04 6e 61 6d 65 02 46 23
+```
+
+Output layout:
+| Prefix Bytes | Content Bytes | Data | Comment         |
+| :----------- | :------------ | :--- | :-------------- |
+| 02           | 69 64         | id   | Key             |
+| 04           | 00 04 00 00   | 1024 | Value of int    |
+| 04           | 6e 61 6d 65   | name | Key             |
+| 02           | 46 23         | F#   | Value of string |
+
 [PC]:https://www.nuget.org/packages/Mikodev.Binary/
 [PF]:https://www.nuget.org/packages/Mikodev.Binary.FSharp/
 [VC]:https://img.shields.io/nuget/v/Mikodev.Binary
