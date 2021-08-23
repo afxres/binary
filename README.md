@@ -96,6 +96,14 @@ printfn "result = %A" result
 
 ## Binary Layout
 
+### Length Prefix
+
+Variable length codes for length prefix:
+| Leading Bit | Byte Length | Min Value | Max Value | Example (hex) | Example Value |
+| :---------- | :---------- | :-------- | :-------- | :------------ | :------------ |
+| 0           | 1           | 0         | 2^7 - 1   | 7F            | 127           |
+| 1           | 4           | 0         | 2^31 - 1  | 80 00 04 01   | 1025          |
+
 ### Object
 
 Data model:
