@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary;
 
 using Mikodev.Binary.Internal;
+using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -8,10 +9,6 @@ using System.Runtime.CompilerServices;
 public abstract partial class Converter<T>
 {
     private readonly int length;
-
-    private readonly EncodeOption encode;
-
-    private readonly DecodeOption decode;
 
     public int Length => this.length;
 
@@ -22,8 +19,8 @@ public abstract partial class Converter<T>
         if (length < 0)
             ThrowHelper.ThrowLengthNegative();
         this.length = length;
-        this.encode = EncodeOptionInternal();
-        this.decode = DecodeOptionInternal();
+        EnsureOverride<DecodeDelegate<T>>(DecodeAuto, DecodeWithLengthPrefix);
+        EnsureOverride<EncodeDelegate<T>>(EncodeAuto, EncodeWithLengthPrefix);
     }
 
     public abstract void Encode(ref Allocator allocator, T item);

@@ -7,12 +7,10 @@ public abstract partial class Converter<T>
 {
     public virtual T DecodeAuto(ref ReadOnlySpan<byte> span)
     {
-        var option = this.decode;
-        if (option is DecodeOption.Constant)
+        var length = this.length;
+        if (length is not 0)
             return Decode(MemoryHelper.EnsureLengthReturnBuffer(ref span, this.length));
-        else if (option is DecodeOption.Variable)
-            return Decode(Converter.DecodeWithLengthPrefix(ref span));
         else
-            return DecodeWithLengthPrefix(ref span);
+            return Decode(Converter.DecodeWithLengthPrefix(ref span));
     }
 }
