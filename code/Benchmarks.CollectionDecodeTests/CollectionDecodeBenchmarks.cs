@@ -49,16 +49,16 @@ public class CollectionDecodeBenchmarks<T> where T : ICollection<int>
         this.constructor = ReflectionMethods.GetConstructor<T, int>();
     }
 
-    [Benchmark(Description = "Decode")]
+    [Benchmark(Description = "Decode Via Add Method")]
     public T D01()
     {
-        return this.interfaceDecoder.Invoke(new ReadOnlySpan<byte>(this.dataBuffer));
+        return this.directiveDecoder.Invoke(new ReadOnlySpan<byte>(this.dataBuffer));
     }
 
-    [Benchmark(Description = "Decode Via Interface")]
+    [Benchmark(Description = "Decode Via Interface Add Method")]
     public T I01()
     {
-        return this.directiveDecoder.Invoke(new ReadOnlySpan<byte>(this.dataBuffer));
+        return this.interfaceDecoder.Invoke(new ReadOnlySpan<byte>(this.dataBuffer));
     }
 
     [Benchmark(Description = "Decode Via Constructor")]
