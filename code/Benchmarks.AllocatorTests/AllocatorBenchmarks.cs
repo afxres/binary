@@ -28,46 +28,46 @@ public class AllocatorBenchmarks
         this.buffer1024 = new byte[1024];
         this.maxCapacity512 = 512;
         this.maxCapacity2048 = 2048;
-        this.ignoreAction = new AllocatorAction<byte[]>((ref Allocator allocator, byte[] data) => { });
-        this.appendAction = new AllocatorAction<byte[]>((ref Allocator allocator, byte[] data) => Allocator.Append(ref allocator, data));
+        this.ignoreAction = (ref Allocator allocator, byte[] data) => { };
+        this.appendAction = (ref Allocator allocator, byte[] data) => Allocator.Append(ref allocator, data);
     }
 
-    [Benchmark(Description = "Append (from bytes 1024, length: 0)")]
+    [Benchmark(Description = "Append (buffer length 1024, length: 0)")]
     public void A01()
     {
         var allocator = new Allocator(this.buffer1024);
         Allocator.Append(ref allocator, this.buffer0);
     }
 
-    [Benchmark(Description = "Append (from bytes 1024, length: 1)")]
+    [Benchmark(Description = "Append (buffer length 1024, length: 1)")]
     public void A02()
     {
         var allocator = new Allocator(this.buffer1024);
         Allocator.Append(ref allocator, this.buffer1);
     }
 
-    [Benchmark(Description = "Append (from bytes 1024 with max capacity 512, length: 0)")]
+    [Benchmark(Description = "Append (buffer length 1024 with max capacity 512, length: 0)")]
     public void A03()
     {
         var allocator = new Allocator(this.buffer1024, this.maxCapacity512);
         Allocator.Append(ref allocator, this.buffer0);
     }
 
-    [Benchmark(Description = "Append (from bytes 1024 with max capacity 512, length: 1)")]
+    [Benchmark(Description = "Append (buffer length 1024 with max capacity 512, length: 1)")]
     public void A04()
     {
         var allocator = new Allocator(this.buffer1024, this.maxCapacity512);
         Allocator.Append(ref allocator, this.buffer1);
     }
 
-    [Benchmark(Description = "Append (from bytes 1024 with max capacity 2048, length: 0)")]
+    [Benchmark(Description = "Append (buffer length 1024 with max capacity 2048, length: 0)")]
     public void A05()
     {
         var allocator = new Allocator(this.buffer1024, this.maxCapacity2048);
         Allocator.Append(ref allocator, this.buffer0);
     }
 
-    [Benchmark(Description = "Append (from bytes 1024 with max capacity 2048, length: 1)")]
+    [Benchmark(Description = "Append (buffer length 1024 with max capacity 2048, length: 1)")]
     public void A06()
     {
         var allocator = new Allocator(this.buffer1024, this.maxCapacity2048);
