@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests;
+﻿namespace Mikodev.Binary.Tests.Contexts;
 
 using Mikodev.Binary.Tests.Internal;
 using System;
@@ -10,8 +10,6 @@ using Xunit;
 public class AllocatorTests
 {
     private delegate int Anchor(ref Allocator allocator, int length);
-
-    private delegate void Ensure(ref Allocator allocator, int expand);
 
     private delegate void Resize(ref Allocator allocator, int expand);
 
@@ -68,13 +66,11 @@ public class AllocatorTests
     [Fact(DisplayName = "Ensure Capacity (hack, zero)")]
     public void EnsureCapacityZero()
     {
-        var methodInfo = typeof(Allocator).GetMethodNotNull("Ensure", BindingFlags.Static | BindingFlags.Public);
-        var ensure = (Ensure)Delegate.CreateDelegate(typeof(Ensure), methodInfo);
         var capacity = 14;
         var buffer = new byte[capacity];
         var allocator = new Allocator(buffer);
         Assert.Equal(capacity, allocator.Capacity);
-        ensure.Invoke(ref allocator, 0);
+        Allocator.Ensure(ref allocator, 0);
         Assert.Equal(capacity, allocator.Capacity);
         Assert.Equal(0, allocator.Length);
     }
@@ -84,12 +80,10 @@ public class AllocatorTests
     [InlineData(int.MinValue)]
     public void EnsureCapacityInvalid(int expand)
     {
-        var methodInfo = typeof(Allocator).GetMethodNotNull("Ensure", BindingFlags.Static | BindingFlags.Public);
-        var ensure = (Ensure)Delegate.CreateDelegate(typeof(Ensure), methodInfo);
         var error = Assert.Throws<ArgumentOutOfRangeException>(() =>
         {
             var allocator = new Allocator();
-            ensure.Invoke(ref allocator, expand);
+            Allocator.Ensure(ref allocator, expand);
         });
         Assert.Equal("length", error.ParamName);
     }
@@ -99,8 +93,6 @@ public class AllocatorTests
     [InlineData(2, 8, 10)]
     public void EnsureCapacityExactly(int offset, int expand, int capacity)
     {
-        var methodInfo = typeof(Allocator).GetMethodNotNull("Ensure", BindingFlags.Static | BindingFlags.Public);
-        var ensure = (Ensure)Delegate.CreateDelegate(typeof(Ensure), methodInfo);
         Assert.Equal(capacity, offset + expand);
         var buffer = new byte[capacity];
         var allocator = new Allocator(buffer);
@@ -108,7 +100,7 @@ public class AllocatorTests
         Assert.Equal(0, allocator.Length);
         Allocator.Append(ref allocator, offset, 0, (a, b) => { });
         Assert.Equal(offset, allocator.Length);
-        ensure.Invoke(ref allocator, expand);
+        Allocator.Ensure(ref allocator, expand);
         Assert.Equal(capacity, allocator.Capacity);
         Assert.Equal(offset, allocator.Length);
     }
