@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests;
+﻿namespace Mikodev.Binary.Tests.Creators;
 
 using Microsoft.FSharp.Core;
 using Mikodev.Binary.Tests.Internal;
@@ -85,7 +85,7 @@ public class NullableTests
         Assert.Equal(value, ra.Value);
     }
 
-    public static IEnumerable<object[]> CollectionData = new[]
+    public static readonly IEnumerable<object[]> CollectionData = new[]
     {
         new object[] { new byte?[] { 2, 4, null, 8, null } },
         new object[] { new List<float?> { null, 2.71F, null } },
@@ -120,7 +120,7 @@ public class NullableTests
         var _ = method.Invoke(this, new object[] { collection });
     }
 
-    public static IEnumerable<object[]> DictionaryData = new[]
+    public static readonly IEnumerable<object[]> DictionaryData = new[]
     {
         new object[] { new Dictionary<int?, double?> { [0] = null, [1] = 1.1, [-2] = 2.2 } },
         new object[] { new Dictionary<float?, long?> { [0] = null, [-3.3F] = 6L, [4.4F] = 8 } },
