@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests;
+﻿namespace Mikodev.Binary.Tests.Features;
 
 using System;
 using System.Collections.Generic;
@@ -37,7 +37,7 @@ public class AnonymousTests
         Assert.Equal(a, value);
     }
 
-    [Fact(DisplayName = "Value From Empty Bytes")]
+    [Fact(DisplayName = "Decode Empty Bytes")]
     public void ValueFromEmptyBytes()
     {
         var bytes = Array.Empty<byte>();
@@ -45,7 +45,7 @@ public class AnonymousTests
         Assert.Null(value);
     }
 
-    [Fact(DisplayName = "Null Value Encode")]
+    [Fact(DisplayName = "Encode Null Value")]
     public void NullValue()
     {
         static T DefaultOf<T>(T _) => default;

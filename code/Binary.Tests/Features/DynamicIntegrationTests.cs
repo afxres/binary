@@ -1,10 +1,10 @@
-﻿namespace Mikodev.Binary.Tests;
+﻿namespace Mikodev.Binary.Tests.Features;
 
 using System;
 using System.Text;
 using Xunit;
 
-public class DynamicObjectCrossTests
+public class DynamicIntegrationTests
 {
     private sealed class EventStringConverter : Converter<string>
     {

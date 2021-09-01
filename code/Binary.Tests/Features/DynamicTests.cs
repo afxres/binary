@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests;
+﻿namespace Mikodev.Binary.Tests.Features;
 
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 using System.Net;
 using Xunit;
 
-public class DynamicObjectTests
+public class DynamicTests
 {
     private readonly IGenerator generator = Generator.CreateDefault();
 
