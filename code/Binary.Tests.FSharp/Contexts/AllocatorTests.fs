@@ -4,10 +4,6 @@ open Mikodev.Binary
 open System
 open Xunit
 
-let random = Random();
-
-let generator = Generator.CreateDefault()
-
 [<Fact>]
 let ``Constructor (default)`` () =
     let allocator = Allocator()
@@ -70,7 +66,7 @@ let ``Constructor (limitation)`` (size : int, limitation : int) =
 [<InlineData(257)>]
 let ``As Span`` (length : int) =
     let source = Array.zeroCreate<byte> length
-    random.NextBytes source
+    Random.Shared.NextBytes source
     let mutable allocator = Allocator()
     let span = ReadOnlySpan<byte>(source)
     Allocator.Append(&allocator, span)
@@ -93,7 +89,7 @@ let ``To Array (empty)`` () =
 [<InlineData(257)>]
 let ``To Array`` (length : int) =
     let source = Array.zeroCreate<byte> length
-    random.NextBytes source
+    Random.Shared.NextBytes source
     let mutable allocator = Allocator()
     let span = ReadOnlySpan<byte>(source)
     Allocator.Append(&allocator, span)

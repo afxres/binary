@@ -7,8 +7,6 @@ open System.Text
 open System.Reflection
 open Xunit
 
-let random = Random()
-
 let generator = Generator.CreateDefault()
 
 let randomCount = 64
@@ -102,12 +100,12 @@ let Test (value : 'a when 'a : unmanaged) = TestExplicit value sizeof<'a>
 [<Fact>]
 let ``Int & UInit 16, 32, 64`` () =
     for _ = 1 to randomCount do
-        let i16 = int16 (random.NextInt64())
-        let i32 = int32 (random.NextInt64())
-        let i64 = int64 (random.NextInt64())
-        let u16 = uint16 (random.NextInt64())
-        let u32 = uint32 (random.NextInt64())
-        let u64 = uint64 (random.NextInt64())
+        let i16 = int16 (Random.Shared.NextInt64())
+        let i32 = int32 (Random.Shared.NextInt64())
+        let i64 = int64 (Random.Shared.NextInt64())
+        let u16 = uint16 (Random.Shared.NextInt64())
+        let u32 = uint32 (Random.Shared.NextInt64())
+        let u64 = uint64 (Random.Shared.NextInt64())
 
         Test i16
         Test i32
@@ -120,8 +118,8 @@ let ``Int & UInit 16, 32, 64`` () =
 [<Fact>]
 let ``Single Double`` () =
     for _ = 0 to randomCount do
-        let single : single = single (random.NextDouble())
-        let double : double = double (random.NextDouble())
+        let single : single = single (Random.Shared.NextDouble())
+        let double : double = double (Random.Shared.NextDouble())
 
         Test single
         Test double
@@ -130,10 +128,10 @@ let ``Single Double`` () =
 [<Fact>]
 let ``Bool Char Byte SByte`` () =
     for _ = 0 to randomCount do
-        let u8 : byte = byte (random.NextInt64())
-        let i8 : sbyte = sbyte (random.NextInt64())
-        let char : char = char (random.NextInt64())
-        let bool : bool = int (random.NextInt64()) &&& 1 = 0
+        let u8 : byte = byte (Random.Shared.NextInt64())
+        let i8 : sbyte = sbyte (Random.Shared.NextInt64())
+        let char : char = char (Random.Shared.NextInt64())
+        let bool : bool = int (Random.Shared.NextInt64()) &&& 1 = 0
 
         Test u8
         Test i8
@@ -144,7 +142,7 @@ let ``Bool Char Byte SByte`` () =
 [<Fact>]
 let ``Decimal`` () =
     for _ = 0 to randomCount do
-        let number : decimal = decimal (random.NextDouble())
+        let number : decimal = decimal (Random.Shared.NextDouble())
         let converter = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "DecimalConverter") |> Array.exactlyOne |> Activator.CreateInstance :?> Converter<decimal>
         let alpha = converter.Encode number
         let bravo = Decimal.GetBits(number) |> Array.map (fun x -> BitConverter.GetBytes x) |> Array.concat
@@ -248,7 +246,7 @@ let ``Enum Converter`` () =
 [<Fact>]
 let ``BitVector32`` () =
     for _ = 0 to randomCount do
-        Test (random.Next() |> BitVector32)
+        Test (Random.Shared.Next() |> BitVector32)
 
     Test (BitVector32 0x11223344)
     Test (BitVector32 0xAABBCCDD)
@@ -309,7 +307,7 @@ let ``Rune (decode invalid)`` (data : int) =
 [<Fact>]
 let ``DateOnly Instance`` () =
     for _ = 0 to randomCount do
-        let number = random.Next(DateOnly.MinValue.DayNumber, DateOnly.MaxValue.DayNumber + 1)
+        let number = Random.Shared.Next(DateOnly.MinValue.DayNumber, DateOnly.MaxValue.DayNumber + 1)
         let date = DateOnly.FromDayNumber number
         Test date
 
@@ -320,7 +318,7 @@ let ``DateOnly Instance`` () =
 [<Fact>]
 let ``TimeOnly Instance`` () =
     for _ = 0 to randomCount do
-        let number = random.NextInt64(TimeOnly.MinValue.Ticks, TimeOnly.MaxValue.Ticks + 1L)
+        let number = Random.Shared.NextInt64(TimeOnly.MinValue.Ticks, TimeOnly.MaxValue.Ticks + 1L)
         let time = TimeOnly number
         Test time
 

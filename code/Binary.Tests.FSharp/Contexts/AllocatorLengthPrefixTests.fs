@@ -20,14 +20,12 @@ type ArrayWrapperConverter<'T when 'T : struct and 'T :> ValueType and 'T : (new
         let span = MemoryMarshal.Cast<byte, 'T> span
         { array = span.ToArray() }
 
-let random = Random()
-
 [<Fact>]
 let ``Variable Converter Length Prefix`` () =
     let converter = ArrayWrapperConverter<byte>()
     for i = 0 to 128 do
         let source = { array = Array.zeroCreate<byte> i }
-        random.NextBytes source.array
+        Random.Shared.NextBytes source.array
         let mutable allocator = Allocator()
         converter.EncodeWithLengthPrefix(&allocator, source)
         let buffer = allocator.AsSpan().ToArray()
@@ -50,7 +48,7 @@ let ``Uncountable Collection Length Prefix`` () =
     let converter = generator.GetConverter<IEnumerable<byte>>()
     for i = 0 to 128 do
         let source = Array.zeroCreate<byte> i
-        random.NextBytes source
+        Random.Shared.NextBytes source
         let source = source |> Array.toSeq
 
         let mutable allocator = Allocator()
@@ -73,7 +71,7 @@ let ``Uncountable Collection Length Prefix`` () =
 let ``Allocator Anchor Length Prefix`` () =
     for i = 0 to 128 do
         let source = Array.zeroCreate<byte> i
-        random.NextBytes source
+        Random.Shared.NextBytes source
 
         let mutable allocator = Allocator()
         Allocator.AppendWithLengthPrefix<byte array>(&allocator, source, fun a b -> Allocator.Append(&a, ReadOnlySpan b))

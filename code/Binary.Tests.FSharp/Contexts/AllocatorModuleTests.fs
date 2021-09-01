@@ -8,8 +8,6 @@ open System.Runtime.InteropServices
 open System.Text
 open Xunit
 
-let random = Random()
-
 let allocatorType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.IsValueType && x.Name = "Allocator") |> Array.exactlyOne
 
 [<Fact>]
@@ -102,7 +100,7 @@ let ``Append (1 byte 512 times, capacity test)`` () =
 let ``Append (default constructor)`` (length : int) =
     let mutable allocator = Allocator()
     let buffer = Array.zeroCreate<byte> length
-    random.NextBytes buffer
+    Random.Shared.NextBytes buffer
     Allocator.Append(&allocator, length, buffer,
         fun (a : Span<byte>) b ->
             b.CopyTo a
@@ -174,7 +172,7 @@ let ``Append Buffer (empty)`` () =
 [<InlineData(1024)>]
 let ``Append Buffer (random)`` (length : int) =
     let buffer = Array.zeroCreate<byte> length
-    random.NextBytes buffer
+    Random.Shared.NextBytes buffer
     let mutable allocator = Allocator()
     Allocator.Append(&allocator, ReadOnlySpan buffer)
     Assert.Equal(length, allocator.Length)
@@ -200,7 +198,7 @@ let ``Append With Length Prefix (action null)`` () =
 [<InlineData(65536)>]
 let ``Append With Length Prefix`` (length : int) =
     let source = Array.zeroCreate length
-    random.NextBytes source
+    Random.Shared.NextBytes source
     let mutable allocator = Allocator()
     Allocator.AppendWithLengthPrefix<byte array>(&allocator, source, fun a b -> Allocator.Append(&a, ReadOnlySpan b))
     let mutable span = allocator.AsSpan()
