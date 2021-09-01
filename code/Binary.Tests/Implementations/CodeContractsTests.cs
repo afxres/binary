@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests;
+﻿namespace Mikodev.Binary.Tests.Implementations;
 
 using Mikodev.Binary.Tests.Internal;
 using System;
@@ -11,7 +11,7 @@ using Xunit;
 
 public class CodeContractsTests
 {
-    [Fact(DisplayName = "Public Class Methods With ByRef Type")]
+    [Fact(DisplayName = "Public Class Method With ByRef Type")]
     public void Argument()
     {
         static bool Equals(string name, params string[] patterns)
@@ -49,7 +49,7 @@ public class CodeContractsTests
         Assert.All(ignoredParameters, x => Assert.Equal("DecodeInternal", x.Member.Name));
     }
 
-    [Fact(DisplayName = "Types With Sealed Modifier")]
+    [Fact(DisplayName = "Class Should Be Abstract Or Sealed")]
     public void Sealed()
     {
         var types = typeof(IConverter).Assembly.GetTypes();
@@ -61,7 +61,7 @@ public class CodeContractsTests
         }
     }
 
-    [Fact(DisplayName = "Public Types (namespace)")]
+    [Fact(DisplayName = "Public Type With Limited Namespace")]
     public void PublicTypes()
     {
         var array = new[]
@@ -81,7 +81,7 @@ public class CodeContractsTests
         Assert.Empty(deltaMembers);
     }
 
-    [Fact(DisplayName = "Public Class Object Methods All Invisible")]
+    [Fact(DisplayName = "Public Class Object Method Should Be Invisible")]
     public void PublicObjectMethods()
     {
         var types = typeof(IConverter).Assembly.GetTypes()
@@ -100,7 +100,7 @@ public class CodeContractsTests
         }
     }
 
-    [Fact(DisplayName = "Public Struct Members All Read Only")]
+    [Fact(DisplayName = "Public Struct Instance Member Should Be Read Only")]
     public void StructMethods()
     {
         static bool HasReadOnlyAttribute(MemberInfo info) => info.GetCustomAttributes().SingleOrDefault(x => x.GetType().Name == "IsReadOnlyAttribute") != null;
@@ -127,7 +127,7 @@ public class CodeContractsTests
         Assert.All(attributes, Assert.Null);
     }
 
-    [Fact(DisplayName = "Public Methods With Byte Array Parameter")]
+    [Fact(DisplayName = "Public Method With Byte Array Parameter")]
     public void ByteArray()
     {
         var types = typeof(IConverter).Assembly.GetTypes().Where(x => x.IsPublic).ToList();
@@ -194,7 +194,7 @@ public class CodeContractsTests
             var properties = t.GetProperties(filter);
             Assert.All(properties, x => Assert.True(x.GetGetMethod().IsPublic));
             Assert.All(fields, x => Assert.True(x.IsPublic || x.IsPrivate));
-            Assert.All(methods, x => Assert.True(x.Name.Contains("<") || x.DeclaringType == typeof(object) || x.IsPublic || x.IsPrivate));
+            Assert.All(methods, x => Assert.True(x.Name.Contains('<') || x.DeclaringType == typeof(object) || x.IsPublic || x.IsPrivate));
             Assert.All(constructors, x => Assert.True((x.DeclaringType.IsAbstract && x.GetParameters().Length is 0) || x.IsPublic || x.IsPrivate));
         }
     }

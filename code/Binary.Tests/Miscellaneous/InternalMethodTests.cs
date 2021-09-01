@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests;
+﻿namespace Mikodev.Binary.Tests.Miscellaneous;
 
 using Mikodev.Binary.Tests.Internal;
 using System;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Xunit;
 
-public class HelperMethodTests
+public class InternalMethodTests
 {
     private static T GetCommonHelperMethod<T>(string methodName) where T : Delegate
     {
@@ -18,8 +18,8 @@ public class HelperMethodTests
     }
 
     [Theory(DisplayName = "Get Method With Flags Error")]
-    [InlineData(typeof(HelperMethodTests), "NotExist", BindingFlags.Instance | BindingFlags.Public)]
-    [InlineData(typeof(HelperMethodTests), "SomeMethod", BindingFlags.Static | BindingFlags.Public)]
+    [InlineData(typeof(InternalMethodTests), "NotExist", BindingFlags.Instance | BindingFlags.Public)]
+    [InlineData(typeof(InternalMethodTests), "SomeMethod", BindingFlags.Static | BindingFlags.Public)]
     public void GetMethodWithFlagsError(Type type, string methodName, BindingFlags flags)
     {
         var invoke = GetCommonHelperMethod<Func<Type, string, BindingFlags, MethodInfo>>("GetMethod");
@@ -31,8 +31,8 @@ public class HelperMethodTests
     }
 
     [Theory(DisplayName = "Get Method With Types Error")]
-    [InlineData(typeof(HelperMethodTests), "Maybe", new Type[] { })]
-    [InlineData(typeof(HelperMethodTests), "NotSure", new[] { typeof(int) })]
+    [InlineData(typeof(InternalMethodTests), "Maybe", new Type[] { })]
+    [InlineData(typeof(InternalMethodTests), "NotSure", new[] { typeof(int) })]
     public void GetMethodWithTypesError(Type type, string methodName, Type[] types)
     {
         var invoke = GetCommonHelperMethod<Func<Type, string, Type[], MethodInfo>>("GetMethod");
@@ -44,8 +44,8 @@ public class HelperMethodTests
     }
 
     [Theory(DisplayName = "Get Field With Flags Error")]
-    [InlineData(typeof(HelperMethodTests), "Instance", BindingFlags.Instance | BindingFlags.Public)]
-    [InlineData(typeof(HelperMethodTests), "StaticData", BindingFlags.Static | BindingFlags.Public)]
+    [InlineData(typeof(InternalMethodTests), "Instance", BindingFlags.Instance | BindingFlags.Public)]
+    [InlineData(typeof(InternalMethodTests), "StaticData", BindingFlags.Static | BindingFlags.Public)]
     public void GetFieldWithFlagsError(Type type, string fieldName, BindingFlags flags)
     {
         var invoke = GetCommonHelperMethod<Func<Type, string, BindingFlags, FieldInfo>>("GetField");
@@ -57,8 +57,8 @@ public class HelperMethodTests
     }
 
     [Theory(DisplayName = "Get Property With Flags Error")]
-    [InlineData(typeof(HelperMethodTests), "Property", BindingFlags.Instance | BindingFlags.Public)]
-    [InlineData(typeof(HelperMethodTests), "DataMember", BindingFlags.Static | BindingFlags.Public)]
+    [InlineData(typeof(InternalMethodTests), "Property", BindingFlags.Instance | BindingFlags.Public)]
+    [InlineData(typeof(InternalMethodTests), "DataMember", BindingFlags.Static | BindingFlags.Public)]
     public void GetPropertyWithFlagsError(Type type, string propertyName, BindingFlags flags)
     {
         var invoke = GetCommonHelperMethod<Func<Type, string, BindingFlags, PropertyInfo>>("GetProperty");
@@ -70,8 +70,8 @@ public class HelperMethodTests
     }
 
     [Theory(DisplayName = "Get Constructor With Types Error")]
-    [InlineData(typeof(HelperMethodTests), new[] { typeof(int) })]
-    [InlineData(typeof(HelperMethodTests), new[] { typeof(string) })]
+    [InlineData(typeof(InternalMethodTests), new[] { typeof(int) })]
+    [InlineData(typeof(InternalMethodTests), new[] { typeof(string) })]
     public void GetConstructorWithTypesError(Type type, Type[] types)
     {
         var invoke = GetCommonHelperMethod<Func<Type, Type[], ConstructorInfo>>("GetConstructor");

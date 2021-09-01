@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests;
+﻿namespace Mikodev.Binary.Tests.Miscellaneous;
 
 using Mikodev.Binary.Tests.Internal;
 using System;
@@ -38,7 +38,7 @@ public class ThreadStaticTests
         public override T Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException();
     }
 
-    [Fact(DisplayName = "Multi Threads (encode, thread static)")]
+    [Fact(DisplayName = "Multi Threads Encode (thread static)")]
     public void MultiThreadsEncodeAsync()
     {
         const int ThreadCount = 4;
@@ -83,7 +83,7 @@ public class ThreadStaticTests
         });
     }
 
-    [Fact(DisplayName = "Multi Threads (invoke, thread static)")]
+    [Fact(DisplayName = "Multi Threads Invoke (thread static)")]
     public void MultiThreadsInvokeAsync()
     {
         const int ThreadCount = 4;
@@ -127,7 +127,7 @@ public class ThreadStaticTests
         });
     }
 
-    [Fact(DisplayName = "Nested Call (invoke)")]
+    [Fact(DisplayName = "Nested Invoke")]
     public void NestedInvoke()
     {
         static IEnumerable<bool> TestGroup()
@@ -175,7 +175,7 @@ public class ThreadStaticTests
         Assert.All(result, x => Assert.True(x));
     }
 
-    [Fact(DisplayName = "Nested Call (encode)")]
+    [Fact(DisplayName = "Nested Encode")]
     public void NestedEncode()
     {
         static IEnumerable<bool> TestGroup()
@@ -226,7 +226,7 @@ public class ThreadStaticTests
         Assert.All(result, x => Assert.True(x));
     }
 
-    [Fact(DisplayName = "Exception Call (invoke)")]
+    [Fact(DisplayName = "Invoke With Exception")]
     public void ExceptionCallInvoke()
     {
         static IEnumerable<bool> TestGroup()
@@ -259,7 +259,7 @@ public class ThreadStaticTests
         Assert.All(result, x => Assert.True(x));
     }
 
-    [Fact(DisplayName = "Exception Call (encode)")]
+    [Fact(DisplayName = "Encode With Exception")]
     public void ExceptionCallEncode()
     {
         static IEnumerable<bool> TestGroup()

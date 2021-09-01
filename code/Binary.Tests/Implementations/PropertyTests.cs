@@ -1,14 +1,12 @@
-﻿namespace Mikodev.Binary.Tests;
+﻿namespace Mikodev.Binary.Tests.Implementations;
 
 using System;
 using Xunit;
 
-public class IntegrationTests
+#pragma warning disable IDE0051 // Remove unused private members
+
+public class PropertyTests
 {
-    private readonly IGenerator generator = Generator.CreateDefault();
-
-    private readonly Random random = new Random();
-
     private class Class
     {
         public static int StaticA { get; set; }
@@ -54,19 +52,21 @@ public class IntegrationTests
     [Fact(DisplayName = "Class Type Properties")]
     public void ClassTypeProperties()
     {
-        var a = this.random.Next();
-        var b = this.random.Next().ToString();
+        var generator = Generator.CreateDefault();
+        var random = new Random();
+        var a = random.Next();
+        var b = random.Next().ToString();
         Class.StaticA = a;
         Class.StaticB = b;
 
         var source = new Class() { E = 172, F = "internal" };
-        var buffer = this.generator.Encode(source);
-        var result = this.generator.Decode<Class>(buffer);
+        var buffer = generator.Encode(source);
+        var result = generator.Decode<Class>(buffer);
         Assert.False(ReferenceEquals(source, result));
         Assert.Equal(source.E, result.E);
         Assert.Equal(source.F, result.F);
 
-        var token = new Token(this.generator, buffer);
+        var token = new Token(generator, buffer);
         var dictionary = token.Children;
         Assert.Equal(2, dictionary.Count);
 
@@ -77,19 +77,21 @@ public class IntegrationTests
     [Fact(DisplayName = "Value Type Properties")]
     public void ValueTypeProperties()
     {
-        var a = this.random.Next();
-        var b = this.random.Next().ToString();
+        var generator = Generator.CreateDefault();
+        var random = new Random();
+        var a = random.Next();
+        var b = random.Next().ToString();
         Value.StaticA = a;
         Value.StaticB = b;
 
         var source = new Value() { E = 256, F = "protected" };
-        var buffer = this.generator.Encode(source);
-        var result = this.generator.Decode<Value>(buffer);
+        var buffer = generator.Encode(source);
+        var result = generator.Decode<Value>(buffer);
 
         Assert.Equal(source.E, result.E);
         Assert.Equal(source.F, result.F);
 
-        var token = new Token(this.generator, buffer);
+        var token = new Token(generator, buffer);
         var dictionary = token.Children;
         Assert.Equal(2, dictionary.Count);
 
