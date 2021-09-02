@@ -1,12 +1,12 @@
-﻿namespace Mikodev.Binary.Tests;
+﻿namespace Mikodev.Binary.Tests.Contexts;
 
 using Microsoft.FSharp.Core;
 using System;
 using Xunit;
 
-public class ConverterNewMemberTests
+public class ConverterOverrideHideTests
 {
-    private class FakeConverterInstance<T> : Converter<T>
+    private class OverrideAllMember<T> : Converter<T>
     {
         public override void Encode(ref Allocator allocator, T item) => throw new NotSupportedException("Fake 'Encode'");
 
@@ -21,7 +21,7 @@ public class ConverterNewMemberTests
         public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => throw new NotSupportedException("Fake 'DecodeWithLengthPrefix'");
     }
 
-    private class FakeConverterHideAllMembers<T> : FakeConverterInstance<T>
+    private class OverrideHideAllMember<T> : OverrideAllMember<T>
     {
         public new virtual void Encode(ref Allocator allocator, T item) => throw new NotSupportedException("New 'Encode'");
 
@@ -39,7 +39,7 @@ public class ConverterNewMemberTests
     [Fact(DisplayName = "Encode With New 'Encode' Method")]
     public void EncodeWithHiddenEncodeMethod()
     {
-        var generator = Generator.CreateDefaultBuilder().AddConverter(new FakeConverterHideAllMembers<int>()).Build();
+        var generator = Generator.CreateDefaultBuilder().AddConverter(new OverrideHideAllMember<int>()).Build();
         var converter = generator.GetConverter<ValueTuple<int>>();
         Assert.StartsWith("TupleObjectConverter`1", converter.GetType().Name);
         var error = Assert.Throws<NotSupportedException>(() =>
@@ -53,7 +53,7 @@ public class ConverterNewMemberTests
     [Fact(DisplayName = "Encode With New 'EncodeAuto' Method")]
     public void EncodeWithHiddenEncodeAutoMethod()
     {
-        var generator = Generator.CreateDefaultBuilder().AddConverter(new FakeConverterHideAllMembers<int>()).Build();
+        var generator = Generator.CreateDefaultBuilder().AddConverter(new OverrideHideAllMember<int>()).Build();
         var converter = generator.GetConverter<ValueTuple<int>>();
         Assert.StartsWith("TupleObjectConverter`1", converter.GetType().Name);
         var error = Assert.Throws<NotSupportedException>(() =>
@@ -67,7 +67,7 @@ public class ConverterNewMemberTests
     [Fact(DisplayName = "Encode With New 'EncodeWithLengthPrefix' Method")]
     public void EncodeWithHiddenEncodeWithLengthPrefixMethod()
     {
-        var generator = Generator.CreateDefaultBuilder().AddConverter(new FakeConverterHideAllMembers<int>()).Build();
+        var generator = Generator.CreateDefaultBuilder().AddConverter(new OverrideHideAllMember<int>()).Build();
         var value = new { id = 0 };
         var error = Assert.Throws<NotSupportedException>(() => generator.Encode(value));
         Assert.Equal("Fake 'EncodeWithLengthPrefix'", error.Message);
@@ -76,7 +76,7 @@ public class ConverterNewMemberTests
     [Fact(DisplayName = "Decode With New 'Decode' Method")]
     public void DecodeWithHiddenDecodeMethod()
     {
-        var generator = Generator.CreateDefaultBuilder().AddConverter(new FakeConverterHideAllMembers<int>()).Build();
+        var generator = Generator.CreateDefaultBuilder().AddConverter(new OverrideHideAllMember<int>()).Build();
         var converter = generator.GetConverter<ValueTuple<int>>();
         Assert.StartsWith("TupleObjectConverter`1", converter.GetType().Name);
         var error = Assert.Throws<NotSupportedException>(() =>
@@ -90,7 +90,7 @@ public class ConverterNewMemberTests
     [Fact(DisplayName = "Decode With New 'DecodeAuto' Method")]
     public void DecodeWithHiddenDecodeAutoMethod()
     {
-        var generator = Generator.CreateDefaultBuilder().AddConverter(new FakeConverterHideAllMembers<int>()).Build();
+        var generator = Generator.CreateDefaultBuilder().AddConverter(new OverrideHideAllMember<int>()).Build();
         var converter = generator.GetConverter<ValueTuple<int>>();
         Assert.StartsWith("TupleObjectConverter`1", converter.GetType().Name);
         var error = Assert.Throws<NotSupportedException>(() =>
@@ -104,7 +104,7 @@ public class ConverterNewMemberTests
     [Fact(DisplayName = "Encode With New 'Encode' Method For Union")]
     public void EncodeWithHiddenEncodeMethodForUnion()
     {
-        var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().AddConverter(new FakeConverterHideAllMembers<int>()).Build();
+        var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().AddConverter(new OverrideHideAllMember<int>()).Build();
         var converter = generator.GetConverter<FSharpOption<int>>();
         Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
         var error = Assert.Throws<NotSupportedException>(() =>
@@ -118,7 +118,7 @@ public class ConverterNewMemberTests
     [Fact(DisplayName = "Encode With New 'EncodeAuto' Method For Union")]
     public void EncodeWithHiddenEncodeAutoMethodForUnion()
     {
-        var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().AddConverter(new FakeConverterHideAllMembers<int>()).Build();
+        var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().AddConverter(new OverrideHideAllMember<int>()).Build();
         var converter = generator.GetConverter<FSharpOption<int>>();
         Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
         var error = Assert.Throws<NotSupportedException>(() =>
@@ -132,7 +132,7 @@ public class ConverterNewMemberTests
     [Fact(DisplayName = "Decode With New 'Decode' Method For Union")]
     public void DecodeWithHiddenDecodeMethodForUnion()
     {
-        var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().AddConverter(new FakeConverterHideAllMembers<int>()).Build();
+        var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().AddConverter(new OverrideHideAllMember<int>()).Build();
         var converter = generator.GetConverter<FSharpOption<int>>();
         Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
         var error = Assert.Throws<NotSupportedException>(() =>
@@ -146,7 +146,7 @@ public class ConverterNewMemberTests
     [Fact(DisplayName = "Decode With New 'DecodeAuto' Method For Union")]
     public void DecodeWithHiddenDecodeAutoMethodForUnion()
     {
-        var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().AddConverter(new FakeConverterHideAllMembers<int>()).Build();
+        var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().AddConverter(new OverrideHideAllMember<int>()).Build();
         var converter = generator.GetConverter<FSharpOption<int>>();
         Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
         var error = Assert.Throws<NotSupportedException>(() =>

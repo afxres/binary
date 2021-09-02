@@ -1,11 +1,11 @@
-﻿namespace Mikodev.Binary.Tests;
+﻿namespace Mikodev.Binary.Tests.Miscellaneous;
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using Xunit;
 
-public class ThrowTests
+public class MultipleInterfaceTests
 {
     private class CollectionWithMultipleEnumerableInterfaces : IEnumerable<int>, IEnumerable<double>
     {
