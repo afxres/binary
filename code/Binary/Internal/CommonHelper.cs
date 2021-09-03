@@ -15,13 +15,6 @@ internal static class CommonHelper
         return type.IsGenericType ? func.Invoke(type.GetGenericTypeDefinition()) : default;
     }
 
-    internal static bool TryGetGenericArguments(Type type, Type definition, out Type[] arguments)
-    {
-        Debug.Assert(definition.IsGenericTypeDefinition);
-        arguments = type.IsGenericType && type.GetGenericTypeDefinition() == definition ? type.GetGenericArguments() : null;
-        return arguments is not null;
-    }
-
     internal static bool TryGetInterfaceArguments(Type type, Type definition, out Type[] arguments)
     {
         Debug.Assert(definition.IsInterface);
@@ -110,8 +103,9 @@ internal static class CommonHelper
     {
         Debug.Assert(converterDefinition.IsGenericTypeDefinition);
         Debug.Assert(converterDefinition.GetGenericArguments().Length == typeDefinition.GetGenericArguments().Length);
-        if (TryGetGenericArguments(type, typeDefinition, out var arguments) is false)
+        if (type.IsGenericType is false || type.GetGenericTypeDefinition() != typeDefinition)
             return null;
+        var arguments = type.GetGenericArguments();
         var converters = arguments.Select(context.GetConverter).ToImmutableArray();
         var converterArguments = argumentsHandler is null ? converters.Cast<object>().ToArray() : argumentsHandler.Invoke(converters).ToArray();
         var converterType = converterDefinition.MakeGenericType(arguments);
