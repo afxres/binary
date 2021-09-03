@@ -6,6 +6,7 @@ open System.Collections.Specialized
 open System.Drawing
 open System.Reflection
 open System.Runtime.CompilerServices
+open System.Runtime.Serialization
 open Xunit
 
 type EnumByte =
@@ -31,10 +32,6 @@ type EnumInt64 =
 
 type EnumUInt64 =
     | Data = 0xEEDDCCBBAA998877UL
-
-type EncodeInternal<'T> = delegate of location : byref<byte> * item : 'T -> unit
-
-type DecodeInternal<'T> = delegate of location : byref<byte> -> 'T
 
 type ConverterTests() =
     static let EnsureEnumName (t : Type) =
@@ -219,18 +216,14 @@ type ConverterTests() =
     [<MemberData("Data Not Supported")>]
     member __.``Encode Not Supported (little endian converter)`` (item : 'T) =
         let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "LittleEndianConverter`1") |> Array.exactlyOne
-        let method = t.MakeGenericType(typeof<'T>).GetMethod("EncodeInternal", BindingFlags.Static ||| BindingFlags.NonPublic)
-        let f = Delegate.CreateDelegate(typeof<EncodeInternal<'T>>, method) :?> EncodeInternal<'T>
-        let buffer = Array.zeroCreate (Unsafe.SizeOf<'T>())
-        Assert.Throws<NotSupportedException>(fun () -> f.Invoke(&buffer.[0], item)) |> ignore
+        let c = FormatterServices.GetSafeUninitializedObject(t.MakeGenericType(typeof<'T>)) :?> Converter<'T>
+        Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = Allocator() in c.Encode(&allocator, item)) |> ignore
         ()
 
     [<Theory>]
     [<MemberData("Data Not Supported")>]
     member __.``Decode Not Supported (little endian converter)`` (_ : 'T) =
         let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "LittleEndianConverter`1") |> Array.exactlyOne
-        let method = t.MakeGenericType(typeof<'T>).GetMethod("DecodeInternal", BindingFlags.Static ||| BindingFlags.NonPublic)
-        let f = Delegate.CreateDelegate(typeof<DecodeInternal<'T>>, method) :?> DecodeInternal<'T>
-        let buffer = Array.zeroCreate (Unsafe.SizeOf<'T>())
-        Assert.Throws<NotSupportedException>(fun () -> f.Invoke &buffer.[0] |> ignore) |> ignore
+        let c = FormatterServices.GetSafeUninitializedObject(t.MakeGenericType(typeof<'T>)) :?> Converter<'T>
+        Assert.Throws<NotSupportedException>(fun () -> let span = ReadOnlySpan<byte>(Array.zeroCreate 1024) in c.Decode(&span) |> ignore) |> ignore
         ()
