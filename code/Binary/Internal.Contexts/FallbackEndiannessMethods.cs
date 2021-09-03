@@ -22,7 +22,6 @@ internal static class FallbackEndiannessMethods
         typeof(float),
         typeof(double),
         typeof(Half),
-        typeof(Guid),
         typeof(BitVector32),
     });
 

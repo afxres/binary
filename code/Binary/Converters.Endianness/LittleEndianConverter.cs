@@ -11,8 +11,8 @@ internal sealed class LittleEndianConverter<T> : Converter<T> where T : unmanage
 {
     public LittleEndianConverter() : base(Unsafe.SizeOf<T>())
     {
-        Debug.Assert(Unsafe.SizeOf<T>() <= 8 || typeof(T) == typeof(Guid));
-        Debug.Assert(Unsafe.SizeOf<T>() is 1 or 2 or 4 or 8 or 16);
+        Debug.Assert(Unsafe.SizeOf<T>() <= 8);
+        Debug.Assert(Unsafe.SizeOf<T>() is 1 or 2 or 4 or 8);
         Debug.Assert(NumberHelper.EncodeLength((uint)Unsafe.SizeOf<T>()) is 1);
     }
 
@@ -24,9 +24,7 @@ internal sealed class LittleEndianConverter<T> : Converter<T> where T : unmanage
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static Span<byte> MakeSpan(ref byte location) => MemoryMarshal.CreateSpan(ref location, Unsafe.SizeOf<T>());
 
-        if (typeof(T) == typeof(Guid))
-            _ = ((Guid)(object)item).TryWriteBytes(MakeSpan(ref location));
-        else if (Unsafe.SizeOf<T>() is 1)
+        if (Unsafe.SizeOf<T>() is 1)
             Unsafe.WriteUnaligned(ref location, MakeCast<byte>(item));
         else if (Unsafe.SizeOf<T>() is 2)
             BinaryPrimitives.WriteInt16LittleEndian(MakeSpan(ref location), MakeCast<short>(item));
@@ -46,9 +44,7 @@ internal sealed class LittleEndianConverter<T> : Converter<T> where T : unmanage
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static ReadOnlySpan<byte> MakeSpan(ref byte location) => MemoryMarshal.CreateReadOnlySpan(ref location, Unsafe.SizeOf<T>());
 
-        if (typeof(T) == typeof(Guid))
-            return (T)(object)new Guid(MakeSpan(ref location));
-        else if (Unsafe.SizeOf<T>() is 1)
+        if (Unsafe.SizeOf<T>() is 1)
             return MakeCast(Unsafe.ReadUnaligned<byte>(ref location));
         else if (Unsafe.SizeOf<T>() is 2)
             return MakeCast(BinaryPrimitives.ReadInt16LittleEndian(MakeSpan(ref location)));

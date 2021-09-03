@@ -11,7 +11,7 @@ internal sealed class NativeEndianConverter<T> : Converter<T> where T : unmanage
     public NativeEndianConverter() : base(Unsafe.SizeOf<T>())
     {
         Debug.Assert(BitConverter.IsLittleEndian);
-        Debug.Assert(Unsafe.SizeOf<T>() is 1 or 2 or 4 or 8 or 16);
+        Debug.Assert(Unsafe.SizeOf<T>() is 1 or 2 or 4 or 8);
         Debug.Assert(NumberHelper.EncodeLength((uint)Unsafe.SizeOf<T>()) is 1);
     }
 

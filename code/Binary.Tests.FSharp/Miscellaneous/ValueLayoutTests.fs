@@ -78,6 +78,8 @@ let ``UInt64 Layout`` (item : UInt64) =
 let ``Guid Layout`` (text : string) =
     let item = Guid.Parse text
     let origin = item.ToByteArray()
-    let buffer = Encode item
+    let converter = generator.GetConverter<Guid>()
+    Assert.StartsWith("GuidConverter", converter.GetType().Name)
+    let buffer = converter.Encode item
     Assert.Equal<byte>(origin, buffer)
     ()

@@ -116,11 +116,6 @@ type ThrowTests() =
         ()
 
     [<Fact>]
-    member me.``Bytes Not Enough Or Null Guid`` () =
-        me.Test<Guid>()
-        ()
-
-    [<Fact>]
     member __.``Allocator Modified`` () =
         let converter = BadConverter<string>()
         let error = Assert.Throws<InvalidOperationException>(fun () ->
