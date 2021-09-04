@@ -18,8 +18,6 @@ type EnsureLength = delegate of span : ReadOnlySpan<byte> * length : int -> byre
 
 type EnsureLengthReference = delegate of span : byref<ReadOnlySpan<byte>> * length : int -> byref<byte>
 
-type EnsureLengthReturnSpan = delegate of span : byref<ReadOnlySpan<byte>> * length : int -> ReadOnlySpan<byte>
-
 type MemoryHelperTests () =
     member private __.MakeDelegate<'T when 'T :> Delegate> (method : string) =
         let s = method.Split('.')
@@ -162,38 +160,5 @@ type MemoryHelperTests () =
         let mutable span = ReadOnlySpan buffer
         let location = &ensure.Invoke(&span, required)
         Assert.True(Unsafe.AreSame(&location, &buffer.[0]))
-        Assert.Equal(remain, span.Length)
-        ()
-
-    [<Theory>]
-    [<InlineData(0, 1)>]
-    [<InlineData(0, -1)>]
-    [<InlineData(15, 16)>]
-    [<InlineData(127, -16)>]
-    member me.``Ensure Length (return span, error)`` (actual : int, required : int) =
-        let ensure = me.MakeDelegate<EnsureLengthReturnSpan> "MemoryHelper.EnsureLengthReturnBuffer"
-        let error = Assert.Throws<ArgumentException>(fun () ->
-            let buffer = Array.zeroCreate actual
-            let mutable span = ReadOnlySpan buffer
-            let _ = ensure.Invoke(&span, required)
-            ())
-        let message = "Not enough bytes or byte sequence invalid."
-        Assert.StartsWith(message, error.Message)
-        ()
-
-    [<Theory>]
-    [<InlineData(0, 0, 0)>]
-    [<InlineData(1, 0, 1)>]
-    [<InlineData(1, 1, 0)>]
-    [<InlineData(8, 5, 3)>]
-    [<InlineData(16, 16, 0)>]
-    [<InlineData(64, 16, 48)>]
-    member me.``Ensure Length (return span)`` (actual : int, required : int, remain : int) =
-        let ensure = me.MakeDelegate<EnsureLengthReturnSpan> "MemoryHelper.EnsureLengthReturnBuffer"
-        let buffer = Array.zeroCreate actual
-        let mutable span = ReadOnlySpan buffer
-        let result = ensure.Invoke(&span, required)
-        Assert.True(Unsafe.AreSame(&MemoryMarshal.GetReference(result), &MemoryMarshal.GetReference(Span buffer)))
-        Assert.Equal(required, result.Length)
         Assert.Equal(remain, span.Length)
         ()

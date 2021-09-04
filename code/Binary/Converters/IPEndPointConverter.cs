@@ -3,6 +3,8 @@
 using Mikodev.Binary.Internal;
 using System;
 using System.Net;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 internal sealed class IPEndPointConverter : Converter<IPEndPoint>
 {
@@ -26,12 +28,13 @@ internal sealed class IPEndPointConverter : Converter<IPEndPoint>
         var limits = span.Length;
         if (limits is 0)
             return null;
-        var size = limits - sizeof(ushort);
-        var body = span;
-        var head = MemoryHelper.EnsureLengthReturnBuffer(ref body, size);
-        var data = new IPAddress(head);
-        var port = LittleEndian.Decode<short>(body);
-        return new IPEndPoint(data, (ushort)port);
+        var offset = limits - sizeof(ushort);
+        if (offset < 0)
+            ThrowHelper.ThrowNotEnoughBytes();
+        ref var source = ref MemoryMarshal.GetReference(span);
+        var header = new IPAddress(MemoryMarshal.CreateReadOnlySpan(ref source, offset));
+        var number = LittleEndian.Decode<short>(ref Unsafe.Add(ref source, offset));
+        return new IPEndPoint(header, (ushort)number);
     }
 
     private static IPEndPoint DecodeWithLengthPrefixInternal(ref ReadOnlySpan<byte> span)

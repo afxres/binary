@@ -30,17 +30,6 @@ internal static class MemoryHelper
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static ReadOnlySpan<byte> EnsureLengthReturnBuffer(ref ReadOnlySpan<byte> span, int length)
-    {
-        ref var source = ref MemoryMarshal.GetReference(span);
-        var limits = span.Length;
-        if ((uint)limits < (uint)length)
-            ThrowHelper.ThrowNotEnoughBytes();
-        span = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref source, length), limits - length);
-        return MemoryMarshal.CreateReadOnlySpan(ref source, length);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static T EnsureEndian<T>(T item, bool swap) where T : unmanaged
     {
         if (typeof(T) == typeof(short))
