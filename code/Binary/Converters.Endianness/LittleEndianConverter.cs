@@ -28,9 +28,9 @@ internal sealed class LittleEndianConverter<T> : Converter<T> where T : unmanage
         switch (Unsafe.SizeOf<T>())
         {
             case 1: Unsafe.WriteUnaligned(ref target, MakeCast<byte>(item)); break;
-            case 2: BinaryPrimitives.WriteInt16LittleEndian(MakeSpan(ref target), MakeCast<short>(item)); break;
-            case 4: BinaryPrimitives.WriteInt32LittleEndian(MakeSpan(ref target), MakeCast<int>(item)); break;
-            case 8: BinaryPrimitives.WriteInt64LittleEndian(MakeSpan(ref target), MakeCast<long>(item)); break;
+            case 2: BinaryPrimitives.WriteInt16LittleEndian(MakeSpan(ref target), MakeCast<Int16>(item)); break;
+            case 4: BinaryPrimitives.WriteInt32LittleEndian(MakeSpan(ref target), MakeCast<Int32>(item)); break;
+            case 8: BinaryPrimitives.WriteInt64LittleEndian(MakeSpan(ref target), MakeCast<Int64>(item)); break;
             default: throw new NotSupportedException();
         }
     }
