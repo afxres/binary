@@ -56,13 +56,12 @@ internal static class FallbackAttributesMethods
             return GetConverter(context, type, attribute);
 
         var names = default(ImmutableArray<string>);
-        var properties = default(ImmutableArray<PropertyInfo>);
-        if (attribute is NamedObjectAttribute)
-            properties = GetSortedProperties(type, propertyWithNamedKeyAttributes.Select(x => (x.Property, x.Key)).ToImmutableArray(), out names);
-        else if (attribute is TupleObjectAttribute)
-            properties = GetSortedProperties(type, propertyWithTupleKeyAttributes.Select(x => (x.Property, x.Key)).ToImmutableArray());
-        else
-            properties = propertyWithAttributes.Select(x => x.Property).ToImmutableArray();
+        var properties = attribute switch
+        {
+            NamedObjectAttribute => GetSortedProperties(type, propertyWithNamedKeyAttributes.Select(x => (x.Property, x.Key)).ToImmutableArray(), out names),
+            TupleObjectAttribute => GetSortedProperties(type, propertyWithTupleKeyAttributes.Select(x => (x.Property, x.Key)).ToImmutableArray()),
+            _ => propertyWithAttributes.Select(x => x.Property).ToImmutableArray(),
+        };
 
         var constructor = GetConstructor(type, properties);
         var propertyWithConverters = propertyWithAttributes.ToDictionary(x => x.Property, x => GetConverter(context, x.Property.PropertyType, x.ConverterOrCreator));

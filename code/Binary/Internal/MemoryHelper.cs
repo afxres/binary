@@ -32,12 +32,12 @@ internal static class MemoryHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static T EnsureEndian<T>(T item, bool swap) where T : unmanaged
     {
-        switch (item)
+        return item switch
         {
-            case Int16: return swap is false ? item : (T)(object)BinaryPrimitives.ReverseEndianness((Int16)(object)item);
-            case Int32: return swap is false ? item : (T)(object)BinaryPrimitives.ReverseEndianness((Int32)(object)item);
-            case Int64: return swap is false ? item : (T)(object)BinaryPrimitives.ReverseEndianness((Int64)(object)item);
-            default: throw new NotSupportedException();
-        }
+            Int16 => swap is false ? item : (T)(object)BinaryPrimitives.ReverseEndianness((Int16)(object)item),
+            Int32 => swap is false ? item : (T)(object)BinaryPrimitives.ReverseEndianness((Int32)(object)item),
+            Int64 => swap is false ? item : (T)(object)BinaryPrimitives.ReverseEndianness((Int64)(object)item),
+            _ => throw new NotSupportedException(),
+        };
     }
 }
