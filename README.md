@@ -107,7 +107,7 @@ Variable length codes for length prefix:
 ### Object
 
 Data model:
-```
+```fsharp
 {| id = 1024; name = "F#" |}
 ```
 
