@@ -6,6 +6,15 @@ using Xunit;
 
 public class DateOnlyConverterTests
 {
+    [Fact(DisplayName = "Converter Type Name And Length")]
+    public void GetConverter()
+    {
+        var generator = Generator.CreateDefault();
+        var converter = generator.GetConverter<DateOnly>();
+        Assert.Equal("Mikodev.Binary.Converters.DateOnlyConverter", converter.GetType().FullName);
+        Assert.Equal(sizeof(int), converter.Length);
+    }
+
     [Theory(DisplayName = "Encode Decode")]
     [InlineData("2020-12-12")]
     [InlineData("1900-01-01")]
@@ -14,7 +23,6 @@ public class DateOnlyConverterTests
         var date = DateOnly.ParseExact(data, "yyyy-MM-dd");
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<DateOnly>();
-        Assert.Equal("Mikodev.Binary.Converters.DateOnlyConverter", converter.GetType().FullName);
         var buffer = converter.Encode(date);
         Assert.Equal(4, buffer.Length);
         Assert.Equal(4, converter.Length);
