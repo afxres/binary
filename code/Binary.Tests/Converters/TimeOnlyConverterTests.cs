@@ -6,6 +6,15 @@ using Xunit;
 
 public class TimeOnlyConverterTests
 {
+    [Fact(DisplayName = "Converter Type Name And Length")]
+    public void GetConverter()
+    {
+        var generator = Generator.CreateDefault();
+        var converter = generator.GetConverter<TimeOnly>();
+        Assert.Equal("Mikodev.Binary.Converters.TimeOnlyConverter", converter.GetType().FullName);
+        Assert.Equal(sizeof(long), converter.Length);
+    }
+
     [Theory(DisplayName = "Encode Decode")]
     [InlineData("06:30:30")]
     [InlineData("18:00:00")]
@@ -14,7 +23,6 @@ public class TimeOnlyConverterTests
         var time = TimeOnly.ParseExact(data, "HH:mm:ss");
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<TimeOnly>();
-        Assert.Equal("Mikodev.Binary.Converters.TimeOnlyConverter", converter.GetType().FullName);
         var buffer = converter.Encode(time);
         Assert.Equal(8, buffer.Length);
         Assert.Equal(8, converter.Length);
