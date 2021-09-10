@@ -31,4 +31,18 @@ public class GuidConverterTests
         var result = converter.Decode(buffer);
         Assert.Equal(guid, result);
     }
+
+    [Theory(DisplayName = "Not Exactly Bytes")]
+    [InlineData(0)]
+    [InlineData(15)]
+    [InlineData(17)]
+    public void NotExactlyBytes(int length)
+    {
+        var generator = Generator.CreateDefault();
+        var converter = generator.GetConverter<Guid>();
+        var buffer = new byte[length];
+        var origin = Assert.Throws<ArgumentException>(() => new Guid(new ReadOnlySpan<byte>(buffer)));
+        var actual = Assert.Throws<ArgumentException>(() => converter.Decode(new ReadOnlySpan<byte>(buffer)));
+        Assert.Equal(origin.Message, actual.Message);
+    }
 }
