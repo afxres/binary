@@ -8,7 +8,7 @@ using System.Reflection;
 
 internal sealed class TokenDynamicMetaObject : DynamicMetaObject
 {
-    private static readonly MethodInfo IndexerMethodInfo = CommonHelper.GetMethod<Token, Token>(a => a[null]);
+    private static readonly MethodInfo IndexerMethodInfo = CommonHelper.GetMethod<Token, Token>(a => a[string.Empty]);
 
     private static readonly MethodInfo ConvertMethodInfo = CommonHelper.GetMethod<Token, object>(a => a.As<object>()).GetGenericMethodDefinition();
 
@@ -30,5 +30,5 @@ internal sealed class TokenDynamicMetaObject : DynamicMetaObject
         return new DynamicMetaObject(body, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
     }
 
-    public override IEnumerable<string> GetDynamicMemberNames() => ((Token)Value)?.Children.Keys ?? Array.Empty<string>();
+    public override IEnumerable<string> GetDynamicMemberNames() => ((Token?)Value)?.Children.Keys ?? Array.Empty<string>();
 }

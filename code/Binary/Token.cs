@@ -18,7 +18,7 @@ public sealed class Token : IDynamicMetaObjectProvider
 
     private readonly ReadOnlyMemory<byte> memory;
 
-    private readonly Token parent;
+    private readonly Token? parent;
 
     private readonly Converter<string> encoder;
 
@@ -28,9 +28,9 @@ public sealed class Token : IDynamicMetaObjectProvider
 
     public ReadOnlyMemory<byte> Memory => this.memory;
 
-    public Token Parent => this.parent;
+    public Token? Parent => this.parent;
 
-    private Token(IGenerator generator, ReadOnlyMemory<byte> memory, Token parent, Converter<string> encoder)
+    private Token(IGenerator generator, ReadOnlyMemory<byte> memory, Token? parent, Converter<string>? encoder)
     {
         if (generator is null)
             throw new ArgumentNullException(nameof(generator));
@@ -79,7 +79,7 @@ public sealed class Token : IDynamicMetaObjectProvider
 
     public Token this[string key] => this.lazy.Value[key];
 
-    public object As(Type type) => this.generator.GetConverter(type).Decode(this.memory.Span);
+    public object? As(Type type) => this.generator.GetConverter(type).Decode(this.memory.Span);
 
     public T As<T>() => ((Converter<T>)this.generator.GetConverter(typeof(T))).Decode(this.memory.Span);
 
