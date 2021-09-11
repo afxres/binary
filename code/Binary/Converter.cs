@@ -31,7 +31,7 @@ public abstract partial class Converter<T>
     public abstract T Decode(in ReadOnlySpan<byte> span);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public override bool Equals(object obj) => ReferenceEquals(this, obj);
+    public override bool Equals(object? obj) => ReferenceEquals(this, obj);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override int GetHashCode() => RuntimeHelpers.GetHashCode(this);

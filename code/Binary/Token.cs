@@ -86,7 +86,7 @@ public sealed class Token : IDynamicMetaObjectProvider
     public T As<T>(T anonymous) => As<T>();
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public override bool Equals(object obj) => ReferenceEquals(this, obj);
+    public override bool Equals(object? obj) => ReferenceEquals(this, obj);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override int GetHashCode() => RuntimeHelpers.GetHashCode(this);
