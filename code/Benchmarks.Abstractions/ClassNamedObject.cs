@@ -2,5 +2,5 @@
 
 public class ClassNamedObject<T>
 {
-    public T Item1 { get; set; }
+    public T? Item1 { get; set; }
 }
