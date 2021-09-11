@@ -8,30 +8,30 @@ using System.Collections.Generic;
 [MemoryDiagnoser]
 public class CollectionBenchmarks
 {
-    private byte[] buffer;
+    private byte[]? buffer;
 
-    private byte[] encodeBytes;
+    private byte[]? encodeBytes;
 
-    private byte[] encodeWithLengthPrefixBytes;
+    private byte[]? encodeWithLengthPrefixBytes;
 
-    private byte[] encodeBytesOfPair;
+    private byte[]? encodeBytesOfPair;
 
-    private byte[] encodeWithLengthPrefixBytesOfPair;
+    private byte[]? encodeWithLengthPrefixBytesOfPair;
 
-    private HashSet<int> hashSet;
+    private HashSet<int>? hashSet;
 
-    private LinkedList<int> linkedList;
+    private LinkedList<int>? linkedList;
 
-    private Dictionary<int, int> dictionary;
+    private Dictionary<int, int>? dictionary;
 
-    private Converter<HashSet<int>> hashSetConverter;
+    private Converter<HashSet<int>>? hashSetConverter;
 
-    private Converter<LinkedList<int>> linkedListConverter;
+    private Converter<LinkedList<int>>? linkedListConverter;
 
-    private Converter<Dictionary<int, int>> dictionaryConverter;
+    private Converter<Dictionary<int, int>>? dictionaryConverter;
 
     [Params("constant", "variable")]
-    public string Flag;
+    public string? Flag;
 
     [GlobalSetup]
     public void Setup()
