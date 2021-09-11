@@ -13,20 +13,20 @@ using System.Linq;
 [GenericTypeArguments(typeof(LinkedList<int>))]
 public class CollectionDecodeBenchmarks<T> where T : ICollection<int>
 {
-    private Converter<int> converter;
+    private Converter<int>? converter;
 
-    private Converter<IEnumerable<int>> enumerableConverter;
+    private Converter<IEnumerable<int>?>? enumerableConverter;
 
-    private byte[] dataBuffer;
+    private byte[]? dataBuffer;
 
-    private Decoder<T> directiveDecoder;
+    private Decoder<T>? directiveDecoder;
 
-    private Decoder<T> interfaceDecoder;
+    private Decoder<T>? interfaceDecoder;
 
-    private Func<IEnumerable<int>, T> constructor;
+    private Func<IEnumerable<int>, T>? constructor;
 
     [Params("constant", "variable")]
-    public string Flag;
+    public string? Flag;
 
     [GlobalSetup]
     public void Setup()
@@ -35,7 +35,7 @@ public class CollectionDecodeBenchmarks<T> where T : ICollection<int>
             ? new ConstantNativeConverter<int>()
             : new VariableNativeConverter<int>();
         var generator = Generator.CreateDefaultBuilder().AddConverter(this.converter).Build();
-        this.enumerableConverter = generator.GetConverter<IEnumerable<int>>();
+        this.enumerableConverter = generator.GetConverter<IEnumerable<int>?>();
         this.dataBuffer = generator.Encode(Enumerable.Range(0, 1024));
         if (typeof(T) == typeof(HashSet<int>))
             this.directiveDecoder = (Decoder<T>)(object)ReflectionMethods.GetDecoder<HashSet<int>, int>(this.converter, a => a.Add(0));
