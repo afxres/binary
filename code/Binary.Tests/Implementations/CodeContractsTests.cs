@@ -3,6 +3,7 @@
 using Mikodev.Binary.Tests.Internal;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -198,5 +199,21 @@ public class CodeContractsTests
             Assert.All(methods, x => Assert.True(x.Name.Contains('<') || x.DeclaringType == typeof(object) || x.IsPublic || x.IsPrivate));
             Assert.All(constructors, x => Assert.True((Assert.IsAssignableFrom<Type>(x.DeclaringType).IsAbstract && x.GetParameters().Length is 0) || x.IsPublic || x.IsPrivate));
         }
+    }
+
+    [Fact(DisplayName = "Public Method Parameter Nullability")]
+    public void PublicEncodeMethodNullability()
+    {
+        var context = new NullabilityInfoContext();
+        var publicTypes = typeof(IConverter).Assembly.GetTypes().Where(x => x.IsPublic).ToImmutableArray();
+        var publicMethods = publicTypes.SelectMany(x => x.GetMethods()).ToImmutableArray();
+        var filter = (ParameterInfo p) => p.ParameterType.IsGenericParameter || p.ParameterType == typeof(object) || p.ParameterType == typeof(byte[]);
+        var parameters = publicMethods.SelectMany(x => x.GetParameters()).Where(filter).ToImmutableArray();
+        var selections = parameters.Select(x => KeyValuePair.Create(x, context.Create(x))).ToList();
+        Assert.All(selections, x => Assert.Equal(x.Value.ReadState, x.Value.WriteState));
+        var groups = selections.GroupBy(x => x.Value.ReadState).ToDictionary(x => x.Key);
+        Assert.Equal(3, groups.Count);
+        Assert.All(groups[NullabilityState.NotNull], x => Assert.True(x.Key.Name is "anonymous"));
+        Assert.All(groups[NullabilityState.Unknown], x => Assert.True(x.Key.Member.DeclaringType?.IsSubclassOf(typeof(Delegate))));
     }
 }
