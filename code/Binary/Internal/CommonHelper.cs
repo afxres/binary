@@ -107,7 +107,7 @@ internal static class CommonHelper
         return converter;
     }
 
-    internal static IConverter GetConverter(IGeneratorContext context, Type type, Type typeDefinition, Type converterDefinition, Func<ImmutableArray<IConverter>, ImmutableArray<object>> argumentsHandler)
+    internal static IConverter? GetConverter(IGeneratorContext context, Type type, Type typeDefinition, Type converterDefinition, Func<ImmutableArray<IConverter>, ImmutableArray<object>>? argumentsHandler)
     {
         Debug.Assert(converterDefinition.IsGenericTypeDefinition);
         Debug.Assert(converterDefinition.GetGenericArguments().Length == typeDefinition.GetGenericArguments().Length);

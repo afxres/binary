@@ -15,7 +15,7 @@ internal sealed class PriorityQueueConverter<E, P> : Converter<PriorityQueue<E, 
         this.tail = tail;
     }
 
-    public override void Encode(ref Allocator allocator, PriorityQueue<E, P> item)
+    public override void Encode(ref Allocator allocator, PriorityQueue<E, P>? item)
     {
         if (item is null)
             return;

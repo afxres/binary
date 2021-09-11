@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 internal sealed class LinkedListConverterCreator : IConverterCreator
 {
-    public IConverter GetConverter(IGeneratorContext context, Type type)
+    public IConverter? GetConverter(IGeneratorContext context, Type type)
     {
         return CommonHelper.GetConverter(context, type, typeof(LinkedList<>), typeof(LinkedListConverter<>), null);
     }

@@ -9,7 +9,7 @@ internal sealed class LinkedListConverter<T> : Converter<LinkedList<T>>
 
     public LinkedListConverter(Converter<T> converter) => this.converter = converter;
 
-    public override void Encode(ref Allocator allocator, LinkedList<T> item)
+    public override void Encode(ref Allocator allocator, LinkedList<T>? item)
     {
         if (item is null)
             return;
