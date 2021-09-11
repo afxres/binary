@@ -11,11 +11,11 @@ public class ConverterOverrideTests
 
         public OnlyOverrideEncodeWithLengthPrefix(int length) : base(length) { }
 
-        public override void Encode(ref Allocator allocator, T item) => throw new NotSupportedException();
-
         public override T Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException();
 
-        public override void EncodeWithLengthPrefix(ref Allocator allocator, T item) => throw new NotSupportedException();
+        public override void Encode(ref Allocator allocator, T? item) => throw new NotSupportedException();
+
+        public override void EncodeWithLengthPrefix(ref Allocator allocator, T? item) => throw new NotSupportedException();
     }
 
     [Fact(DisplayName = "Only Override 'EncodeWithLengthPrefix'")]
@@ -34,11 +34,11 @@ public class ConverterOverrideTests
 
         public OnlyOverrideDecodeWithLengthPrefix(int length) : base(length) { }
 
-        public override void Encode(ref Allocator allocator, T item) => throw new NotSupportedException();
-
         public override T Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException();
 
         public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => throw new NotSupportedException();
+
+        public override void Encode(ref Allocator allocator, T? item) => throw new NotSupportedException();
     }
 
     [Fact(DisplayName = "Only Override 'DecodeWithLengthPrefix'")]

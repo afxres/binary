@@ -8,18 +8,18 @@ public class DynamicIntegrationTests
 {
     private sealed class EventStringConverter : Converter<string>
     {
-        public event Func<string, string> OnDecode;
-
-        public override void Encode(ref Allocator allocator, string item)
-        {
-            Allocator.Append(ref allocator, item.AsSpan(), Encoding.UTF8);
-        }
+        public event Func<string, string>? OnDecode;
 
         public override string Decode(in ReadOnlySpan<byte> span)
         {
             var result = Encoding.UTF8.GetString(span);
             result = OnDecode?.Invoke(result) ?? result;
             return result;
+        }
+
+        public override void Encode(ref Allocator allocator, string? item)
+        {
+            Allocator.Append(ref allocator, item.AsSpan(), Encoding.UTF8);
         }
     }
 

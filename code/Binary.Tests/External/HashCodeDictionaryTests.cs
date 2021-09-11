@@ -13,7 +13,7 @@ public class HashCodeDictionaryTests
 {
     private delegate int HashCode(ref byte source, int length);
 
-    private delegate object CreateDictionary<T>(ImmutableArray<KeyValuePair<ReadOnlyMemory<byte>, T>> items, T @default);
+    private delegate object CreateDictionary<T>(ImmutableArray<KeyValuePair<ReadOnlyMemory<byte>, T>> items, T? @default);
 
     private delegate T GetValue<T>(ref byte source, int length);
 
@@ -23,7 +23,7 @@ public class HashCodeDictionaryTests
         Assert.NotNull(type);
         var method = type.GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
         Assert.NotNull(method);
-        return (T)Delegate.CreateDelegate(typeof(T), method);
+        return (T)Delegate.CreateDelegate(typeof(T), Assert.IsAssignableFrom<MethodInfo>(method));
     }
 
     private static HashCode GetHashCodeDelegate()
@@ -35,16 +35,16 @@ public class HashCodeDictionaryTests
     {
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryObject");
         Assert.NotNull(type);
-        var method = type.GetMethod("CreateHashCodeDictionary", BindingFlags.Static | BindingFlags.NonPublic).MakeGenericMethod(typeof(T));
+        var method = type.GetMethod("CreateHashCodeDictionary", BindingFlags.Static | BindingFlags.NonPublic);
         Assert.NotNull(method);
-        return (CreateDictionary<T>)Delegate.CreateDelegate(typeof(CreateDictionary<T>), method);
+        return (CreateDictionary<T>)Delegate.CreateDelegate(typeof(CreateDictionary<T>), Assert.IsAssignableFrom<MethodInfo>(method).MakeGenericMethod(typeof(T)));
     }
 
     private static GetValue<T> GetGetValueDelegate<T>(object dictionary)
     {
         var method = dictionary.GetType().GetMethod("GetValue", BindingFlags.Instance | BindingFlags.Public);
         Assert.NotNull(method);
-        return (GetValue<T>)Delegate.CreateDelegate(typeof(GetValue<T>), dictionary, method);
+        return (GetValue<T>)Delegate.CreateDelegate(typeof(GetValue<T>), dictionary, Assert.IsAssignableFrom<MethodInfo>(method));
     }
 
     [Theory(DisplayName = "Hash Conflicts")]

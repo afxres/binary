@@ -8,32 +8,32 @@ public class ConverterOverrideHideTests
 {
     private class OverrideAllMember<T> : Converter<T>
     {
-        public override void Encode(ref Allocator allocator, T item) => throw new NotSupportedException("Fake 'Encode'");
-
         public override T Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException("Fake 'Decode'");
-
-        public override void EncodeAuto(ref Allocator allocator, T item) => throw new NotSupportedException("Fake 'EncodeAuto'");
 
         public override T DecodeAuto(ref ReadOnlySpan<byte> span) => throw new NotSupportedException("Fake 'DecodeAuto'");
 
-        public override void EncodeWithLengthPrefix(ref Allocator allocator, T item) => throw new NotSupportedException("Fake 'EncodeWithLengthPrefix'");
-
         public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => throw new NotSupportedException("Fake 'DecodeWithLengthPrefix'");
+
+        public override void Encode(ref Allocator allocator, T? item) => throw new NotSupportedException("Fake 'Encode'");
+
+        public override void EncodeAuto(ref Allocator allocator, T? item) => throw new NotSupportedException("Fake 'EncodeAuto'");
+
+        public override void EncodeWithLengthPrefix(ref Allocator allocator, T? item) => throw new NotSupportedException("Fake 'EncodeWithLengthPrefix'");
     }
 
     private class OverrideHideAllMember<T> : OverrideAllMember<T>
     {
-        public new virtual void Encode(ref Allocator allocator, T item) => throw new NotSupportedException("New 'Encode'");
-
         public new virtual T Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException("New 'Decode'");
-
-        public new virtual void EncodeAuto(ref Allocator allocator, T item) => throw new NotSupportedException("New 'EncodeAuto'");
 
         public new virtual T DecodeAuto(ref ReadOnlySpan<byte> span) => throw new NotSupportedException("New 'DecodeAuto'");
 
-        public new virtual void EncodeWithLengthPrefix(ref Allocator allocator, T item) => throw new NotSupportedException("New 'EncodeWithLengthPrefix'");
-
         public new virtual T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => throw new NotSupportedException("New 'DecodeWithLengthPrefix'");
+
+        public new virtual void Encode(ref Allocator allocator, T item) => throw new NotSupportedException("New 'Encode'");
+
+        public new virtual void EncodeAuto(ref Allocator allocator, T item) => throw new NotSupportedException("New 'EncodeAuto'");
+
+        public new virtual void EncodeWithLengthPrefix(ref Allocator allocator, T item) => throw new NotSupportedException("New 'EncodeWithLengthPrefix'");
     }
 
     [Fact(DisplayName = "Encode With New 'Encode' Method")]

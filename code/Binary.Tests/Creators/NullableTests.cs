@@ -53,7 +53,7 @@ public class NullableTests
 
         Assert.True(ra.HasValue);
         Assert.False(rb.HasValue);
-        Assert.Equal(value, ra.Value);
+        Assert.Equal(value, ra);
     }
 
     [Theory(DisplayName = "Nullable (encode auto & decode auto)")]
@@ -82,7 +82,7 @@ public class NullableTests
 
         Assert.True(ra.HasValue);
         Assert.False(rb.HasValue);
-        Assert.Equal(value, ra.Value);
+        Assert.Equal(value, ra);
     }
 
     public static readonly IEnumerable<object[]> CollectionData = new[]
@@ -105,7 +105,7 @@ public class NullableTests
 
     [Theory(DisplayName = "Nullable Collection")]
     [MemberData(nameof(CollectionData))]
-    public unsafe void Collection<TCollection>(TCollection collection)
+    public unsafe void Collection<TCollection>(TCollection collection) where TCollection : notnull
     {
         var collectionType = collection.GetType();
         var nullableType = collectionType
@@ -117,21 +117,21 @@ public class NullableTests
         var method = GetType()
             .GetMethodNotNull(nameof(CollectionFunction), BindingFlags.Instance | BindingFlags.NonPublic)
             .MakeGenericMethod(collectionType, elementType);
-        var _ = method.Invoke(this, new object[] { collection });
+        _ = method.Invoke(this, new object[] { collection });
     }
 
     public static readonly IEnumerable<object[]> DictionaryData = new[]
     {
-        new object[] { new Dictionary<int?, double?> { [0] = null, [1] = 1.1, [-2] = 2.2 } },
-        new object[] { new Dictionary<float?, long?> { [0] = null, [-3.3F] = 6L, [4.4F] = 8 } },
+        new object[] { new Dictionary<int, double?> { [0] = null, [1] = 1.1, [-2] = 2.2 } },
+        new object[] { new Dictionary<float, long?> { [0] = null, [-3.3F] = 6L, [4.4F] = 8 } },
     };
 
     [Theory(DisplayName = "Nullable Dictionary")]
     [MemberData(nameof(DictionaryData))]
-    public void Dictionary<TKey, TValue>(IDictionary<TKey, TValue> dictionary)
+    public void Dictionary<TKey, TValue>(IDictionary<TKey, TValue> dictionary) where TKey : notnull
     {
         var buffer = this.generator.Encode(dictionary);
-        Assert.Equal(((1 + 4) * 3) + (1 + ((1 + 8) * 2)), buffer.Length);
+        Assert.Equal((4 * 3) + (1 + ((1 + 8) * 2)), buffer.Length);
         var result = this.generator.Decode<IDictionary<TKey, TValue>>(buffer);
         Assert.False(ReferenceEquals(dictionary, result));
         Assert.Equal(dictionary, result);

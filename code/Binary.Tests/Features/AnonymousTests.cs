@@ -48,7 +48,7 @@ public class AnonymousTests
     [Fact(DisplayName = "Encode Null Value")]
     public void NullValue()
     {
-        static T DefaultOf<T>(T _) => default;
+        static T? DefaultOf<T>(T _) => default;
 
         var a = DefaultOf(new { key = default(string), value = default(int) });
         Assert.Null(a);

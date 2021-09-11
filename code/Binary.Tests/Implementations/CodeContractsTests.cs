@@ -41,7 +41,7 @@ public class CodeContractsTests
         Assert.NotEmpty(inRefExpected);
         Assert.All(inRefExpected, x => Assert.EndsWith(nameof(IConverter.Decode), x.Member.Name));
         Assert.NotEmpty(inRefUnexpected);
-        Assert.All(inRefUnexpected, x => Assert.True(x.DeclaringType.IsSubclassOf(typeof(Delegate))));
+        Assert.All(inRefUnexpected, x => Assert.True(Assert.IsAssignableFrom<Type>(x.DeclaringType).IsSubclassOf(typeof(Delegate))));
 
         var converterParameters = parameters.Where(x => x.Member is MethodInfo && typeof(IConverter).IsAssignableFrom(x.Member.DeclaringType)).ToList();
         var converterExpectedParameters = converterParameters.Where(x => !x.Member.Name.StartsWith("Throw") && Equals(x.ParameterType.Name, names)).ToList();
@@ -96,7 +96,7 @@ public class CodeContractsTests
             var attributes = new[] { equalMethod, hashMethod, stringMethod }.Select(x => x.GetCustomAttribute<EditorBrowsableAttribute>()).ToList();
             Assert.Equal(3, attributes.Count);
             Assert.All(attributes, Assert.NotNull);
-            Assert.True(attributes.All(x => x.State == EditorBrowsableState.Never));
+            Assert.True(attributes.All(x => Assert.IsAssignableFrom<EditorBrowsableAttribute>(x).State == EditorBrowsableState.Never));
         }
     }
 
@@ -159,7 +159,7 @@ public class CodeContractsTests
         var types = typeof(IConverter).Assembly.GetTypes();
         var methods = types.SelectMany(x => x.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)).ToList();
         var attributedMethods = methods.Where(x => x.GetCustomAttributes().SingleOrDefault(a => a.GetType().FullName == AttributeName) != null).ToList();
-        Assert.All(attributedMethods, x => Assert.True((x.DeclaringType.Name == "ThrowHelper" && x.Name.StartsWith("Throw")) || x.Name.StartsWith("Except")));
+        Assert.All(attributedMethods, x => Assert.True((x.DeclaringType?.Name is "ThrowHelper" && x.Name.StartsWith("Throw")) || x.Name.StartsWith("Except")));
 
         var expectedMethods = methods.Where(x => x.Name.Contains("Throw") || x.Name.Contains("Except")).ToList();
         Assert.Equal(new HashSet<MethodInfo>(attributedMethods), new HashSet<MethodInfo>(expectedMethods));
@@ -193,10 +193,10 @@ public class CodeContractsTests
             var methods = t.GetMethods(filter);
             var constructors = t.GetConstructors(filter);
             var properties = t.GetProperties(filter);
-            Assert.All(properties, x => Assert.True(x.GetGetMethod().IsPublic));
+            Assert.All(properties, x => Assert.True(Assert.IsAssignableFrom<MethodInfo>(x.GetGetMethod()).IsPublic));
             Assert.All(fields, x => Assert.True(x.IsPublic || x.IsPrivate));
             Assert.All(methods, x => Assert.True(x.Name.Contains('<') || x.DeclaringType == typeof(object) || x.IsPublic || x.IsPrivate));
-            Assert.All(constructors, x => Assert.True((x.DeclaringType.IsAbstract && x.GetParameters().Length is 0) || x.IsPublic || x.IsPrivate));
+            Assert.All(constructors, x => Assert.True((Assert.IsAssignableFrom<Type>(x.DeclaringType).IsAbstract && x.GetParameters().Length is 0) || x.IsPublic || x.IsPrivate));
         }
     }
 }

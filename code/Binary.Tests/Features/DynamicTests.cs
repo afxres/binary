@@ -75,10 +75,7 @@ public class DynamicTests
     [Fact(DisplayName = "Property With Null Value")]
     public void PropertyWithNull()
     {
-        var value = new
-        {
-            ip = (IPAddress)null,
-        };
+        var value = new { ip = (IPAddress?)null };
         var bytes = this.generator.Encode(value);
         var token = new Token(this.generator, bytes);
         var d = (dynamic)token;
@@ -169,7 +166,7 @@ public class DynamicTests
     public void DynamicKeysNullValue()
     {
         var type = typeof(Converter).Assembly.GetTypes().Single(x => x.Name is "TokenDynamicMetaObject");
-        var instance = (DynamicMetaObject)Activator.CreateInstance(type, new object[] { Expression.Parameter(typeof(Token)), null });
+        var instance = Assert.IsAssignableFrom<DynamicMetaObject>(Activator.CreateInstance(type, new object?[] { Expression.Parameter(typeof(Token)), null }));
         var keys = instance.GetDynamicMemberNames();
         Assert.Equal(Array.Empty<string>(), keys);
         Assert.Null(instance.Value);

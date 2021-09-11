@@ -22,7 +22,7 @@ public class ThreadStaticTests
 
         private ReferenceEqualityComparer() { }
 
-        public bool Equals(T x, T y) => ReferenceEquals(x, y);
+        public bool Equals(T? x, T? y) => ReferenceEquals(x, y);
 
         public int GetHashCode(T obj) => RuntimeHelpers.GetHashCode(obj);
     }
@@ -33,7 +33,7 @@ public class ThreadStaticTests
 
         public FakeVariableConverter(EncodeAction<T> encodeAction) : base(0) => this.encodeAction = encodeAction;
 
-        public override void Encode(ref Allocator allocator, T item) => this.encodeAction.Invoke(ref allocator, item);
+        public override void Encode(ref Allocator allocator, T? item) => this.encodeAction.Invoke(ref allocator, Assert.IsAssignableFrom<T>(item));
 
         public override T Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException();
     }
@@ -56,7 +56,7 @@ public class ThreadStaticTests
             _ = new FakeVariableConverter<int>((ref Allocator allocator, int item) =>
             {
                 var bufferHelper = threadStaticField.GetValue(null);
-                var buffer = (byte[])bufferField.GetValue(bufferHelper);
+                var buffer = Assert.IsAssignableFrom<byte[]>(bufferField.GetValue(bufferHelper));
                 ref var head = ref MemoryMarshal.GetReference(allocator.AsSpan());
                 ref var data = ref MemoryMarshal.GetReference(new Span<byte>(buffer));
                 Assert.True(Unsafe.AreSame(ref head, ref data));
@@ -101,7 +101,7 @@ public class ThreadStaticTests
             _ = Allocator.Invoke(-1, (ref Allocator allocator, int item) =>
             {
                 var bufferHelper = threadStaticField.GetValue(null);
-                var buffer = (byte[])bufferField.GetValue(bufferHelper);
+                var buffer = Assert.IsAssignableFrom<byte[]>(bufferField.GetValue(bufferHelper));
                 ref var head = ref MemoryMarshal.GetReference(allocator.AsSpan());
                 ref var data = ref MemoryMarshal.GetReference(new Span<byte>(buffer));
                 Assert.True(Unsafe.AreSame(ref head, ref data));
@@ -160,9 +160,9 @@ public class ThreadStaticTests
                 });
             });
 
-            var result01 = BitConverter.ToInt32(buffer01, 0);
-            var result02 = BitConverter.ToInt32(buffer02, 0);
-            var result03 = BitConverter.ToInt32(buffer03, 0);
+            var result01 = BitConverter.ToInt32(Assert.IsAssignableFrom<byte[]>(buffer01), 0);
+            var result02 = BitConverter.ToInt32(Assert.IsAssignableFrom<byte[]>(buffer02), 0);
+            var result03 = BitConverter.ToInt32(Assert.IsAssignableFrom<byte[]>(buffer03), 0);
 
             yield return result01 == 0x11223344;
             yield return result02 == 0x33445566;
@@ -211,9 +211,9 @@ public class ThreadStaticTests
             })
             .Encode(0x99AABBCC);
 
-            var result01 = BitConverter.ToUInt32(buffer01, 0);
-            var result02 = BitConverter.ToUInt32(buffer02, 0);
-            var result03 = BitConverter.ToUInt32(buffer03, 0);
+            var result01 = BitConverter.ToUInt32(Assert.IsAssignableFrom<byte[]>(buffer01), 0);
+            var result02 = BitConverter.ToUInt32(Assert.IsAssignableFrom<byte[]>(buffer02), 0);
+            var result03 = BitConverter.ToUInt32(Assert.IsAssignableFrom<byte[]>(buffer03), 0);
 
             yield return result01 == 0x99AABBCC;
             yield return result02 == 0xBBCCDDEE;

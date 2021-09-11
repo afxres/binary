@@ -11,7 +11,7 @@ public class PropertyTests
     {
         public static int StaticA { get; set; }
 
-        public static string StaticB { get; set; }
+        public static string? StaticB { get; set; }
 
         private static int InvalidC { get; }
 
@@ -19,7 +19,7 @@ public class PropertyTests
 
         public int E { get; set; }
 
-        public string F { get; set; }
+        public string? F { get; set; }
 
         private int InvalidG { get; set; }
 
@@ -32,7 +32,7 @@ public class PropertyTests
     {
         public static int StaticA { get; set; }
 
-        public static string StaticB { get; set; }
+        public static string? StaticB { get; set; }
 
         private static int InvalidC { get; }
 

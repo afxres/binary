@@ -9,9 +9,9 @@ public class CircularTypeReferenceTests
     {
         public T Data { get; }
 
-        public LinkedList<T> Next { get; }
+        public LinkedList<T>? Next { get; }
 
-        public LinkedList(T data, LinkedList<T> next)
+        public LinkedList(T data, LinkedList<T>? next)
         {
             Data = data;
             Next = next;
@@ -22,17 +22,17 @@ public class CircularTypeReferenceTests
 
     private class A
     {
-        public B Data { get; set; }
+        public B? Data { get; set; }
     }
 
     private class B
     {
-        public C Data { get; set; }
+        public C? Data { get; set; }
     }
 
     private class C
     {
-        public A Data { get; set; }
+        public A? Data { get; set; }
     }
 
     private readonly IGenerator generator = Generator.CreateDefault();

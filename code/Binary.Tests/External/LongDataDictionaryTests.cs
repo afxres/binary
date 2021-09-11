@@ -21,14 +21,14 @@ public class LongDataDictionaryTests
         Assert.NotNull(type);
         var method = type.GetMethod("CreateLongDataDictionary", BindingFlags.Static | BindingFlags.NonPublic);
         Assert.NotNull(method);
-        return (CreateDictionary)Delegate.CreateDelegate(typeof(CreateDictionary), method);
+        return (CreateDictionary)Delegate.CreateDelegate(typeof(CreateDictionary), Assert.IsAssignableFrom<MethodInfo>(method));
     }
 
     private static GetValue GetGetValueDelegate(object dictionary)
     {
         var method = dictionary.GetType().GetMethod("GetValue", BindingFlags.Instance | BindingFlags.Public);
         Assert.NotNull(method);
-        return (GetValue)Delegate.CreateDelegate(typeof(GetValue), dictionary, method);
+        return (GetValue)Delegate.CreateDelegate(typeof(GetValue), dictionary, Assert.IsAssignableFrom<MethodInfo>(method));
     }
 
     [Theory(DisplayName = "Duplicate Keys")]
