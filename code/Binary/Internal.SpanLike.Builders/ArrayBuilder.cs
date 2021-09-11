@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 internal sealed class ArrayBuilder<T> : SpanLikeBuilder<T[], T>
 {
-    public override ReadOnlySpan<T> Handle(T[] item) => item;
+    public override ReadOnlySpan<T> Handle(T[]? item) => item;
 
     public override T[] Invoke(ReadOnlySpan<byte> span, SpanLikeAdapter<T> invoke)
     {

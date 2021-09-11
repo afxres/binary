@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 internal sealed class ListBuilder<T> : SpanLikeBuilder<List<T>, T>
 {
-    public override ReadOnlySpan<T> Handle(List<T> item)
+    public override ReadOnlySpan<T> Handle(List<T>? item)
     {
         return CollectionsMarshal.AsSpan(item);
     }
