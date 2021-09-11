@@ -17,11 +17,11 @@ internal sealed partial class SpanLikeConverter<T, E> : Converter<T>
         this.itemLength = converter.Length;
     }
 
-    public override void Encode(ref Allocator allocator, T item) => this.invoke.Encode(ref allocator, this.create.Handle(item));
+    public override void Encode(ref Allocator allocator, T? item) => this.invoke.Encode(ref allocator, this.create.Handle(item));
 
-    public override void EncodeAuto(ref Allocator allocator, T item) => EncodeWithLengthPrefixInternal(ref allocator, item);
+    public override void EncodeAuto(ref Allocator allocator, T? item) => EncodeWithLengthPrefixInternal(ref allocator, item);
 
-    public override void EncodeWithLengthPrefix(ref Allocator allocator, T item) => EncodeWithLengthPrefixInternal(ref allocator, item);
+    public override void EncodeWithLengthPrefix(ref Allocator allocator, T? item) => EncodeWithLengthPrefixInternal(ref allocator, item);
 
     public override T Decode(in ReadOnlySpan<byte> span) => this.create.Invoke(span, this.invoke);
 
