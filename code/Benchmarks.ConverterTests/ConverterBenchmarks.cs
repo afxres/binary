@@ -7,20 +7,20 @@ using System;
 [MemoryDiagnoser]
 public class ConverterBenchmarks
 {
-    private byte[] buffer;
+    private byte[]? buffer;
 
     private int number;
 
-    private byte[] encodeBytes;
+    private byte[]? encodeBytes;
 
-    private byte[] encodeAutoBytes;
+    private byte[]? encodeAutoBytes;
 
-    private byte[] encodeWithLengthPrefixBytes;
+    private byte[]? encodeWithLengthPrefixBytes;
 
-    private Converter<int> converter;
+    private Converter<int>? converter;
 
     [Params("constant", "variable", "native")]
-    public string Flag;
+    public string? Flag;
 
     [GlobalSetup]
     public void Setup()
