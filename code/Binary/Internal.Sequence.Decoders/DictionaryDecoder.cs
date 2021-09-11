@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-internal sealed class DictionaryDecoder<K, V>
+internal sealed class DictionaryDecoder<K, V> where K : notnull
 {
     private readonly int itemLength;
 

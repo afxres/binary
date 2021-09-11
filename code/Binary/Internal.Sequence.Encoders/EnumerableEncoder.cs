@@ -8,7 +8,7 @@ internal sealed class EnumerableEncoder<T, E> where T : IEnumerable<E>
 
     public EnumerableEncoder(Converter<E> converter) => this.converter = converter;
 
-    public void Encode(ref Allocator allocator, T item)
+    public void Encode(ref Allocator allocator, T? item)
     {
         if (item is null)
             return;

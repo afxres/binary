@@ -14,7 +14,7 @@ internal sealed class KeyValueEnumerableEncoder<T, K, V> where T : IEnumerable<K
         this.tail = tail;
     }
 
-    public void Encode(ref Allocator allocator, T item)
+    public void Encode(ref Allocator allocator, T? item)
     {
         if (item is null)
             return;
