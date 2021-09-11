@@ -25,9 +25,9 @@ internal static class FallbackEndiannessMethods
         typeof(BitVector32),
     });
 
-    internal static IConverter GetConverter(Type type)
+    internal static IConverter? GetConverter(Type type)
     {
-        static IConverter Invoke(Type type, bool native)
+        static IConverter? Invoke(Type type, bool native)
         {
             if (Types.Contains(type) is false && type.IsEnum is false)
                 return null;

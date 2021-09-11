@@ -31,7 +31,7 @@ internal static class ContextMethodsOfNamedObject
             throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {type}, string converter type: {encoder.GetType()}");
         var encode = GetEncodeDelegateAsNamedObject(type, converters, properties, memories);
         var decode = GetDecodeDelegateAsNamedObject(type, converters, constructor);
-        var converterArguments = new object[] { encode, decode, names, dictionary };
+        var converterArguments = new object?[] { encode, decode, names, dictionary };
         var converterType = typeof(NamedObjectConverter<>).MakeGenericType(type);
         var converter = CommonHelper.CreateInstance(converterType, converterArguments);
         return (IConverter)converter;
@@ -59,7 +59,7 @@ internal static class ContextMethodsOfNamedObject
         return lambda.Compile();
     }
 
-    private static Delegate GetDecodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ContextObjectConstructor constructor)
+    private static Delegate? GetDecodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ContextObjectConstructor constructor)
     {
         ImmutableArray<Expression> Initialize(ImmutableArray<ParameterExpression> parameters)
         {

@@ -88,7 +88,7 @@ internal static class FallbackPrimitivesMethods
         return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, members);
     }
 
-    internal static IConverter GetConverter(IGeneratorContext context, Type type)
+    internal static IConverter? GetConverter(IGeneratorContext context, Type type)
     {
         if (IsTupleOrValueTuple(type) is false)
             return null;

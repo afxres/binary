@@ -16,7 +16,7 @@ internal static class FallbackConvertersMethods
         SharedConverters = converters;
     }
 
-    internal static IConverter GetConverter(Type type)
+    internal static IConverter? GetConverter(Type type)
     {
         return SharedConverters.GetValueOrDefault(type);
     }

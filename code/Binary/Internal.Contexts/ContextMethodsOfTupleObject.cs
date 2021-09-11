@@ -18,7 +18,7 @@ internal static class ContextMethodsOfTupleObject
         var decode = GetDecodeDelegateAsTupleObject(type, converters, constructor, auto: false);
         var decodeAuto = GetDecodeDelegateAsTupleObject(type, converters, constructor, auto: true);
         var itemLength = ContextMethods.GetItemLength(converters);
-        var converterArguments = new object[] { encode, encodeAuto, decode, decodeAuto, itemLength };
+        var converterArguments = new object?[] { encode, encodeAuto, decode, decodeAuto, itemLength };
         var converterType = typeof(TupleObjectConverter<>).MakeGenericType(type);
         var converter = CommonHelper.CreateInstance(converterType, converterArguments);
         return (IConverter)converter;
@@ -43,7 +43,7 @@ internal static class ContextMethodsOfTupleObject
         return lambda.Compile();
     }
 
-    private static Delegate GetDecodeDelegateAsTupleObject(Type type, ImmutableArray<IConverter> converters, ContextObjectConstructor constructor, bool auto)
+    private static Delegate? GetDecodeDelegateAsTupleObject(Type type, ImmutableArray<IConverter> converters, ContextObjectConstructor constructor, bool auto)
     {
         ImmutableArray<Expression> Initialize(ImmutableArray<ParameterExpression> parameters)
         {

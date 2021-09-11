@@ -24,9 +24,9 @@ internal static class FallbackSequentialMethods
         return CommonHelper.CreateInstance(typeof(ArrayBuilder<>).MakeGenericType(elementType), null);
     }
 
-    internal static IConverter GetConverter(IGeneratorContext context, Type type)
+    internal static IConverter? GetConverter(IGeneratorContext context, Type type)
     {
-        object Invoke()
+        object? Invoke()
         {
             if (type.IsArray && type.GetElementType() is { } elementType)
                 return CreateArrayBuilder(type, elementType);
