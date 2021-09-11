@@ -6,19 +6,19 @@ using System;
 [MemoryDiagnoser]
 public class AllocatorBenchmarks
 {
-    private byte[] buffer0;
+    private byte[]? buffer0;
 
-    private byte[] buffer1;
+    private byte[]? buffer1;
 
-    private byte[] buffer1024;
+    private byte[]? buffer1024;
 
     private int maxCapacity512;
 
     private int maxCapacity2048;
 
-    private AllocatorAction<byte[]> ignoreAction;
+    private AllocatorAction<byte[]?>? ignoreAction;
 
-    private AllocatorAction<byte[]> appendAction;
+    private AllocatorAction<byte[]?>? appendAction;
 
     [GlobalSetup]
     public void Setup()
@@ -28,8 +28,8 @@ public class AllocatorBenchmarks
         this.buffer1024 = new byte[1024];
         this.maxCapacity512 = 512;
         this.maxCapacity2048 = 2048;
-        this.ignoreAction = (ref Allocator allocator, byte[] data) => { };
-        this.appendAction = (ref Allocator allocator, byte[] data) => Allocator.Append(ref allocator, data);
+        this.ignoreAction = (ref Allocator allocator, byte[]? data) => { };
+        this.appendAction = (ref Allocator allocator, byte[]? data) => Allocator.Append(ref allocator, data);
     }
 
     [Benchmark(Description = "Append (buffer length 1024, length: 0)")]
