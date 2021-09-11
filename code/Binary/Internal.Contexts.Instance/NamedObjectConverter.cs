@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 
 internal delegate T NamedObjectDecodeDelegate<out T>(ReadOnlySpan<byte> span, ReadOnlySpan<long> data);
 
-internal sealed class NamedObjectConverter<T> : Converter<T>
+internal sealed class NamedObjectConverter<T> : Converter<T?>
 {
     private readonly int capacity;
 
@@ -42,14 +42,14 @@ internal sealed class NamedObjectConverter<T> : Converter<T>
     [DebuggerStepThrough, DoesNotReturn]
     private T ExceptNotFound(int i) => throw new ArgumentException($"Named key '{this.names[i]}' does not exist, type: {typeof(T)}");
 
-    public override void Encode(ref Allocator allocator, T item)
+    public override void Encode(ref Allocator allocator, T? item)
     {
         if (item is null)
             return;
         this.encode.Invoke(ref allocator, item);
     }
 
-    public override T Decode(in ReadOnlySpan<byte> span)
+    public override T? Decode(in ReadOnlySpan<byte> span)
     {
         var decode = this.decode;
         if (decode is null)

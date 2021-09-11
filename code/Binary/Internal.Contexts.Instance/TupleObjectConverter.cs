@@ -14,7 +14,7 @@ internal sealed class TupleObjectConverter<T> : Converter<T>
 
     private readonly DecodeDelegate<T> decodeAuto;
 
-    public TupleObjectConverter(EncodeDelegate<T> encode, EncodeDelegate<T> encodeAuto, DecodeDelegate<T> decode, DecodeDelegate<T> decodeAuto, int length) : base(length)
+    public TupleObjectConverter(EncodeDelegate<T> encode, EncodeDelegate<T> encodeAuto, DecodeDelegate<T>? decode, DecodeDelegate<T>? decodeAuto, int length) : base(length)
     {
         this.encode = encode;
         this.encodeAuto = encodeAuto;
@@ -22,14 +22,14 @@ internal sealed class TupleObjectConverter<T> : Converter<T>
         this.decodeAuto = decodeAuto ?? ((ref ReadOnlySpan<byte> _) => ThrowHelper.ThrowNoSuitableConstructor<T>());
     }
 
-    public override void Encode(ref Allocator allocator, T item)
+    public override void Encode(ref Allocator allocator, T? item)
     {
         if (item is null)
             ThrowHelper.ThrowTupleNull<T>();
         this.encode.Invoke(ref allocator, item);
     }
 
-    public override void EncodeAuto(ref Allocator allocator, T item)
+    public override void EncodeAuto(ref Allocator allocator, T? item)
     {
         if (item is null)
             ThrowHelper.ThrowTupleNull<T>();
