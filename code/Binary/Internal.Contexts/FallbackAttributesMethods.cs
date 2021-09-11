@@ -80,7 +80,7 @@ internal static class FallbackAttributesMethods
     {
         try
         {
-            result = (T)Activator.CreateInstance(type);
+            result = (T)CommonHelper.CreateInstance(type, null);
             return null;
         }
         catch (Exception exception)

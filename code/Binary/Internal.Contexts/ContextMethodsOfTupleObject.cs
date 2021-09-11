@@ -20,7 +20,7 @@ internal static class ContextMethodsOfTupleObject
         var itemLength = ContextMethods.GetItemLength(converters);
         var converterArguments = new object[] { encode, encodeAuto, decode, decodeAuto, itemLength };
         var converterType = typeof(TupleObjectConverter<>).MakeGenericType(type);
-        var converter = Activator.CreateInstance(converterType, converterArguments);
+        var converter = CommonHelper.CreateInstance(converterType, converterArguments);
         return (IConverter)converter;
     }
 

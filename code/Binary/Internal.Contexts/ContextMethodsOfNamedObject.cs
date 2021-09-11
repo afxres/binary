@@ -33,7 +33,7 @@ internal static class ContextMethodsOfNamedObject
         var decode = GetDecodeDelegateAsNamedObject(type, converters, constructor);
         var converterArguments = new object[] { encode, decode, names, dictionary };
         var converterType = typeof(NamedObjectConverter<>).MakeGenericType(type);
-        var converter = Activator.CreateInstance(converterType, converterArguments);
+        var converter = CommonHelper.CreateInstance(converterType, converterArguments);
         return (IConverter)converter;
     }
 

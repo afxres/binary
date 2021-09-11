@@ -15,6 +15,14 @@ internal static class CommonHelper
         return type.IsGenericType ? func.Invoke(type.GetGenericTypeDefinition()) : default;
     }
 
+    internal static object CreateInstance(Type type, object[] arguments)
+    {
+        var result = Activator.CreateInstance(type, arguments);
+        if (result is null)
+            throw new InvalidOperationException($"Invalid null instance detected, type: {type}");
+        return result;
+    }
+
     internal static bool TryGetInterfaceArguments(Type type, Type definition, out Type[] arguments)
     {
         Debug.Assert(definition.IsInterface);
@@ -109,7 +117,7 @@ internal static class CommonHelper
         var converters = arguments.Select(context.GetConverter).ToImmutableArray();
         var converterArguments = argumentsHandler is null ? converters.Cast<object>().ToArray() : argumentsHandler.Invoke(converters).ToArray();
         var converterType = converterDefinition.MakeGenericType(arguments);
-        var converter = Activator.CreateInstance(converterType, converterArguments);
+        var converter = CreateInstance(converterType, converterArguments);
         return (IConverter)converter;
     }
 }

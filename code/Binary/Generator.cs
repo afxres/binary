@@ -1,7 +1,7 @@
 ﻿namespace Mikodev.Binary;
 
+using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Contexts;
-using System;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -13,7 +13,7 @@ public static class Generator
     {
         var creators = typeof(IConverter).Assembly.GetTypes()
             .Where(x => x.Namespace is "Mikodev.Binary.Creators" && typeof(IConverterCreator).IsAssignableFrom(x))
-            .Select(x => (IConverterCreator)Activator.CreateInstance(x))
+            .Select(x => (IConverterCreator)CommonHelper.CreateInstance(x, null))
             .ToImmutableArray();
         SharedConverterCreators = creators;
     }
