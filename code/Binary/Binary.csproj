@@ -22,4 +22,8 @@
     <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
 </Project>

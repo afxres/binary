@@ -5,6 +5,7 @@
     <AssemblyName>Mikodev.Binary.Tests</AssemblyName>
     <RootNamespace>Mikodev.Binary.Tests</RootNamespace>
     <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
