@@ -83,7 +83,7 @@ public sealed class Token : IDynamicMetaObjectProvider
 
     public T As<T>() => ((Converter<T>)this.generator.GetConverter(typeof(T))).Decode(this.memory.Span);
 
-    public T As<T>(T anonymous) => As<T>();
+    public T As<T>(T? anonymous) => As<T>();
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals(object? obj) => ReferenceEquals(this, obj);

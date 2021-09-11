@@ -6,7 +6,7 @@ public static class GeneratorExtensions
 {
     public static Converter<T> GetConverter<T>(this IGenerator generator) => (Converter<T>)generator.GetConverter(typeof(T));
 
-    public static Converter<T> GetConverter<T>(this IGenerator generator, T anonymous) => generator.GetConverter<T>();
+    public static Converter<T> GetConverter<T>(this IGenerator generator, T? anonymous) => generator.GetConverter<T>();
 
     public static byte[] Encode(this IGenerator generator, object? item, Type type) => generator.GetConverter(type).Encode(item);
 
@@ -18,9 +18,9 @@ public static class GeneratorExtensions
 
     public static T Decode<T>(this IGenerator generator, byte[]? buffer) => generator.GetConverter<T>().Decode(buffer);
 
-    public static T Decode<T>(this IGenerator generator, byte[]? buffer, T anonymous) => generator.Decode<T>(buffer);
+    public static T Decode<T>(this IGenerator generator, byte[]? buffer, T? anonymous) => generator.Decode<T>(buffer);
 
     public static T Decode<T>(this IGenerator generator, ReadOnlySpan<byte> span) => generator.GetConverter<T>().Decode(in span);
 
-    public static T Decode<T>(this IGenerator generator, ReadOnlySpan<byte> span, T anonymous) => generator.Decode<T>(span);
+    public static T Decode<T>(this IGenerator generator, ReadOnlySpan<byte> span, T? anonymous) => generator.Decode<T>(span);
 }
