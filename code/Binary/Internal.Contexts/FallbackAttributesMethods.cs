@@ -16,7 +16,7 @@ internal static class FallbackAttributesMethods
         if (attributes.Length > 1)
             throw new ArgumentException($"Multiple attributes found, type: {type}");
 
-        var propertyWithAttributes = new List<(PropertyInfo Property, Attribute Key, Attribute ConverterOrCreator)>();
+        var propertyWithAttributes = new List<(PropertyInfo Property, Attribute? Key, Attribute? ConverterOrCreator)>();
         foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public).OrderBy(x => x.Name))
         {
             var keys = GetAttributes(property, a => a is NamedKeyAttribute or TupleKeyAttribute);
@@ -41,8 +41,14 @@ internal static class FallbackAttributesMethods
         if (propertyWithAttributes.Count is 0 && attribute is not ConverterAttribute && attribute is not ConverterCreatorAttribute)
             throw new ArgumentException($"No available property found, type: {type}");
 
-        var propertyWithNamedKeyAttributes = propertyWithAttributes.Select(x => (x.Property, Key: x.Key as NamedKeyAttribute, x.ConverterOrCreator)).Where(x => x.Key is not null).ToList();
-        var propertyWithTupleKeyAttributes = propertyWithAttributes.Select(x => (x.Property, Key: x.Key as TupleKeyAttribute, x.ConverterOrCreator)).Where(x => x.Key is not null).ToList();
+        static IEnumerable<R> Choose<T, U, R>(IEnumerable<T> source, Func<T, U?> filter, Func<T, U, R> result) =>
+            from i in source
+            let x = filter.Invoke(i)
+            where x is not null
+            select result.Invoke(i, x);
+
+        var propertyWithNamedKeyAttributes = Choose(propertyWithAttributes, x => x.Key as NamedKeyAttribute, (a, b) => (a.Property, Key: b)).ToList();
+        var propertyWithTupleKeyAttributes = Choose(propertyWithAttributes, x => x.Key as TupleKeyAttribute, (a, b) => (a.Property, Key: b)).ToList();
         if (propertyWithNamedKeyAttributes.Count is 0 && attribute is NamedObjectAttribute)
             throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' for '{nameof(NamedObjectAttribute)}', type: {type}");
         if (propertyWithTupleKeyAttributes.Count is 0 && attribute is TupleObjectAttribute)
@@ -76,20 +82,6 @@ internal static class FallbackAttributesMethods
         return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, properties, names, encoder);
     }
 
-    private static Exception GetInstance<T>(Type type, out T result) where T : class
-    {
-        try
-        {
-            result = (T)CommonHelper.CreateInstance(type, null);
-            return null;
-        }
-        catch (Exception exception)
-        {
-            result = null;
-            return exception;
-        }
-    }
-
     private static ImmutableArray<Attribute> GetAttributes(MemberInfo member, Func<Attribute, bool> filter)
     {
         Debug.Assert(member is Type or PropertyInfo);
@@ -97,20 +89,30 @@ internal static class FallbackAttributesMethods
         return attributes;
     }
 
-    private static IConverter GetConverter(IGeneratorContext context, Type type, Attribute attribute)
+    private static T GetInstance<T>(Type instance, Type item, Func<Type, string> message)
     {
+        try
+        {
+            return (T)CommonHelper.CreateInstance(instance, null);
+        }
+        catch (Exception e)
+        {
+            throw new ArgumentException(message.Invoke(typeof(Converter<>).MakeGenericType(item)), e);
+        }
+    }
+
+    private static IConverter GetConverter(IGeneratorContext context, Type type, Attribute? attribute)
+    {
+        var x = (Type t) => $"Can not get custom converter via attribute, expected converter type: {t}";
+        var y = (Type t) => $"Can not get custom converter creator via attribute, expected converter type: {t}";
+
         Debug.Assert(attribute is null or ConverterAttribute or ConverterCreatorAttribute);
-        if (attribute is ConverterAttribute alpha)
-            if (GetInstance<IConverter>(alpha.Type, out var converter) is { } exception)
-                throw new ArgumentException($"Can not get custom converter via attribute, expected converter type: {typeof(Converter<>).MakeGenericType(type)}", exception);
-            else
-                return CommonHelper.GetConverter(converter, type);
-        if (attribute is ConverterCreatorAttribute bravo)
-            if (GetInstance<IConverterCreator>(bravo.Type, out var creator) is { } exception)
-                throw new ArgumentException($"Can not get custom converter creator via attribute, expected converter type: {typeof(Converter<>).MakeGenericType(type)}", exception);
-            else
-                return CommonHelper.GetConverter(creator.GetConverter(context, type), type, bravo.Type);
-        return context.GetConverter(type);
+        return attribute switch
+        {
+            ConverterAttribute alpha => CommonHelper.GetConverter(GetInstance<IConverter>(alpha.Type, type, x), type),
+            ConverterCreatorAttribute bravo => CommonHelper.GetConverter(GetInstance<IConverterCreator>(bravo.Type, type, y).GetConverter(context, type), type, bravo.Type),
+            _ => context.GetConverter(type),
+        };
     }
 
     private static ImmutableArray<PropertyInfo> GetSortedProperties(Type type, ImmutableArray<(PropertyInfo, NamedKeyAttribute)> collection, out ImmutableArray<string> names)
@@ -147,9 +149,9 @@ internal static class FallbackAttributesMethods
         return map.Values.ToImmutableArray();
     }
 
-    private static ContextObjectConstructor GetConstructor(Type type, ImmutableArray<PropertyInfo> properties)
+    private static ContextObjectConstructor? GetConstructor(Type type, ImmutableArray<PropertyInfo> properties)
     {
-        static string MakeUpperCaseInvariant(string text) => string.IsNullOrEmpty(text) ? string.Empty : text.ToUpperInvariant();
+        static string MakeUpperCaseInvariant(string? text) => string.IsNullOrEmpty(text) ? string.Empty : text.ToUpperInvariant();
 
         Debug.Assert(properties.Any());
         if (type.IsAbstract || type.IsInterface)
@@ -168,7 +170,7 @@ internal static class FallbackAttributesMethods
             var parameters = i.GetParameters();
             var result = parameters
                 .Select(x => dictionary.TryGetValue(MakeUpperCaseInvariant(x.Name), out var property) && property.PropertyType == x.ParameterType ? property : null)
-                .Where(x => x is not null)
+                .OfType<PropertyInfo>()
                 .ToImmutableArray();
             if (result.Length is 0 || result.Length != parameters.Length)
                 continue;

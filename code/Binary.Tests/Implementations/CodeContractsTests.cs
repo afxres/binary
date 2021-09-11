@@ -123,7 +123,8 @@ public class CodeContractsTests
     public void DebuggerDisplay()
     {
         var types = typeof(IConverter).Assembly.GetTypes();
-        var attributes = types.Select(x => x.GetCustomAttribute<DebuggerDisplayAttribute>()).ToList();
+        var selection = types.Where(x => x.Name.Contains('<') is false);
+        var attributes = selection.Select(x => x.GetCustomAttribute<DebuggerDisplayAttribute>()).ToList();
         Assert.All(attributes, Assert.Null);
     }
 

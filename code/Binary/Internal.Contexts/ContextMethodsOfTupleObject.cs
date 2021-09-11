@@ -10,7 +10,7 @@ using System.Linq.Expressions;
 
 internal static class ContextMethodsOfTupleObject
 {
-    internal static IConverter GetConverterAsTupleObject(Type type, ContextObjectConstructor constructor, ImmutableArray<IConverter> converters, ImmutableArray<ContextMemberInitializer> members)
+    internal static IConverter GetConverterAsTupleObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<ContextMemberInitializer> members)
     {
         Debug.Assert(converters.Length == members.Length);
         var encode = GetEncodeDelegateAsTupleObject(type, converters, members, auto: false);
@@ -43,7 +43,7 @@ internal static class ContextMethodsOfTupleObject
         return lambda.Compile();
     }
 
-    private static Delegate? GetDecodeDelegateAsTupleObject(Type type, ImmutableArray<IConverter> converters, ContextObjectConstructor constructor, bool auto)
+    private static Delegate? GetDecodeDelegateAsTupleObject(Type type, ImmutableArray<IConverter> converters, ContextObjectConstructor? constructor, bool auto)
     {
         ImmutableArray<Expression> Initialize(ImmutableArray<ParameterExpression> parameters)
         {

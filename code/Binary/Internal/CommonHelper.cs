@@ -97,7 +97,7 @@ internal static class CommonHelper
         return converter;
     }
 
-    internal static IConverter GetConverter(IConverter converter, Type type, Type creatorType)
+    internal static IConverter GetConverter(IConverter? converter, Type type, Type creatorType)
     {
         var expectedType = typeof(Converter<>).MakeGenericType(type);
         if (converter is null)

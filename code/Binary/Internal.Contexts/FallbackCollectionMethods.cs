@@ -168,7 +168,7 @@ internal static class FallbackCollectionMethods
         }
 
         var handle = new Lazy<Func<Expression, Expression, Expression>>(Invoke);
-        var result = GetEncodeDelegate<T?>(typeof(E), handle);
+        var result = GetEncodeDelegate<T>(typeof(E), handle);
         return result ?? new EnumerableEncoder<T, E>(converter).Encode;
     }
 
@@ -192,11 +192,11 @@ internal static class FallbackCollectionMethods
         }
 
         var handle = new Lazy<Func<Expression, Expression, Expression>>(Invoke);
-        var result = GetEncodeDelegate<T?>(typeof(KeyValuePair<K, V>), handle);
+        var result = GetEncodeDelegate<T>(typeof(KeyValuePair<K, V>), handle);
         return result ?? new KeyValueEnumerableEncoder<T, K, V>(init, tail).Encode;
     }
 
-    private static EncodeDelegate<T>? GetEncodeDelegate<T>(Type elementType, Lazy<Func<Expression, Expression, Expression>> handle)
+    private static EncodeDelegate<T?>? GetEncodeDelegate<T>(Type elementType, Lazy<Func<Expression, Expression, Expression>> handle)
     {
         const BindingFlags Select = BindingFlags.Instance | BindingFlags.Public;
         var initial = typeof(T).GetMethods(Select).FirstOrDefault(x => x.Name is "GetEnumerator" && x.GetParameters().Length is 0);
@@ -229,7 +229,7 @@ internal static class FallbackCollectionMethods
         var ensure = typeof(T).IsValueType
             ? result as Expression
             : Expression.IfThen(Expression.NotEqual(collection, Expression.Constant(null, typeof(T))), result);
-        var lambda = Expression.Lambda<EncodeDelegate<T>>(ensure, allocator, collection);
+        var lambda = Expression.Lambda<EncodeDelegate<T?>>(ensure, allocator, collection);
         return lambda.Compile();
     }
 

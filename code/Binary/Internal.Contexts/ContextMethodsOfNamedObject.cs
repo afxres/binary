@@ -20,7 +20,7 @@ internal static class ContextMethodsOfNamedObject
 
     private static readonly ConstructorInfo ReadOnlySpanByteConstructorInfo = CommonHelper.GetConstructor(typeof(ReadOnlySpan<byte>), new[] { typeof(byte[]) });
 
-    internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor constructor, ImmutableArray<IConverter> converters, ImmutableArray<PropertyInfo> properties, ImmutableArray<string> names, Converter<string> encoder)
+    internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<PropertyInfo> properties, ImmutableArray<string> names, Converter<string> encoder)
     {
         var memories = names.Select(x => new ReadOnlyMemory<byte>(encoder.Encode(x))).ToImmutableArray();
         Debug.Assert(properties.Length == names.Length);
@@ -59,7 +59,7 @@ internal static class ContextMethodsOfNamedObject
         return lambda.Compile();
     }
 
-    private static Delegate? GetDecodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ContextObjectConstructor constructor)
+    private static Delegate? GetDecodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ContextObjectConstructor? constructor)
     {
         ImmutableArray<Expression> Initialize(ImmutableArray<ParameterExpression> parameters)
         {
