@@ -6,6 +6,7 @@
     <AssemblyName>Mikodev.Binary.Benchmarks.ObjectTests</AssemblyName>
     <RootNamespace>Mikodev.Binary.Benchmarks.ObjectTests</RootNamespace>
     <LangVersion>preview</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
