@@ -20,5 +20,5 @@ public interface IConverter
 
     object? DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span);
 
-    object? Decode(byte[] buffer);
+    object? Decode(byte[]? buffer);
 }

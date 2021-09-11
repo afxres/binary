@@ -5,7 +5,7 @@ using System;
 
 public abstract partial class Converter<T>
 {
-    private byte[] EncodeConstant(T item)
+    private byte[] EncodeConstant(T? item)
     {
         var length = this.length;
         var buffer = new byte[length];
@@ -14,7 +14,7 @@ public abstract partial class Converter<T>
         return buffer;
     }
 
-    private byte[] EncodeVariable(T item)
+    private byte[] EncodeVariable(T? item)
     {
         var handle = BufferHelper.Borrow();
         try
@@ -29,7 +29,7 @@ public abstract partial class Converter<T>
         }
     }
 
-    private void EncodeWithLengthPrefixConstant(ref Allocator allocator, T item)
+    private void EncodeWithLengthPrefixConstant(ref Allocator allocator, T? item)
     {
         var length = this.length;
         var numberLength = NumberHelper.EncodeLength((uint)length);
@@ -37,7 +37,7 @@ public abstract partial class Converter<T>
         Encode(ref allocator, item);
     }
 
-    private void EncodeWithLengthPrefixVariable(ref Allocator allocator, T item)
+    private void EncodeWithLengthPrefixVariable(ref Allocator allocator, T? item)
     {
         var anchor = Allocator.Anchor(ref allocator, sizeof(int));
         Encode(ref allocator, item);

@@ -26,7 +26,7 @@ public abstract partial class Converter<T>
         this.length = length;
     }
 
-    public abstract void Encode(ref Allocator allocator, T item);
+    public abstract void Encode(ref Allocator allocator, T? item);
 
     public abstract T Decode(in ReadOnlySpan<byte> span);
 

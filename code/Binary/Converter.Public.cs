@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 public abstract partial class Converter<T>
 {
-    public virtual T Decode(byte[] buffer)
+    public virtual T Decode(byte[]? buffer)
     {
         return Decode(new ReadOnlySpan<byte>(buffer));
     }
@@ -25,7 +25,7 @@ public abstract partial class Converter<T>
         return Decode(Converter.DecodeWithLengthPrefix(ref span));
     }
 
-    public virtual byte[] Encode(T item)
+    public virtual byte[] Encode(T? item)
     {
         var length = this.length;
         if (length is not 0)
@@ -34,7 +34,7 @@ public abstract partial class Converter<T>
             return EncodeVariable(item);
     }
 
-    public virtual void EncodeAuto(ref Allocator allocator, T item)
+    public virtual void EncodeAuto(ref Allocator allocator, T? item)
     {
         var length = this.length;
         if (length is not 0)
@@ -43,7 +43,7 @@ public abstract partial class Converter<T>
             EncodeWithLengthPrefixVariable(ref allocator, item);
     }
 
-    public virtual void EncodeWithLengthPrefix(ref Allocator allocator, T item)
+    public virtual void EncodeWithLengthPrefix(ref Allocator allocator, T? item)
     {
         var length = this.length;
         if (length is not 0)
