@@ -81,6 +81,17 @@ public class InternalMethodTests
         Assert.Contains(type.Name, error.Message);
     }
 
+    [Theory(DisplayName = "Create Instance With Null Result")]
+    [InlineData(typeof(int?), null)]
+    [InlineData(typeof(long?), null)]
+    public void CreateInstanceWithNull(Type type, object[] arguments)
+    {
+        var invoke = GetCommonHelperMethod<Func<Type, object[], object>>("CreateInstance");
+        var error = Assert.Throws<InvalidOperationException>(() => invoke.Invoke(type, arguments));
+        var message = $"Invalid null instance detected, type: {type}";
+        Assert.Equal(message, error.Message);
+    }
+
     [Theory(DisplayName = "Make Upper Case Invariant")]
     [InlineData(null, "")]
     [InlineData("Abc", "ABC")]
