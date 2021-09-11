@@ -16,7 +16,7 @@ internal static class BinaryObject
 
     internal const int LongDataLimits = sizeof(long);
 
-    internal static ByteViewDictionary<int> Create(ImmutableArray<ReadOnlyMemory<byte>> items)
+    internal static ByteViewDictionary<int>? Create(ImmutableArray<ReadOnlyMemory<byte>> items)
     {
         Debug.Assert(items.Any());
         if (items.Length <= ItemLimits && items.All(x => x.Length <= LongDataLimits))
@@ -25,7 +25,7 @@ internal static class BinaryObject
             return CreateHashCodeDictionary(items.Select(KeyValuePair.Create).ToImmutableArray(), DataFallback);
     }
 
-    private static LongDataDictionary CreateLongDataDictionary(ImmutableArray<ReadOnlyMemory<byte>> items)
+    private static LongDataDictionary? CreateLongDataDictionary(ImmutableArray<ReadOnlyMemory<byte>> items)
     {
         static long Select(ReadOnlySpan<byte> span) => BinaryModule.GetLongData(ref MemoryMarshal.GetReference(span), span.Length);
         var records = items.Select(x => new LongDataSlot { Data = Select(x.Span), Size = x.Length }).ToArray();
@@ -34,7 +34,7 @@ internal static class BinaryObject
         return new LongDataDictionary(records);
     }
 
-    private static HashCodeDictionary<T> CreateHashCodeDictionary<T>(ImmutableArray<KeyValuePair<ReadOnlyMemory<byte>, T>> items, T @default)
+    private static HashCodeDictionary<T>? CreateHashCodeDictionary<T>(ImmutableArray<KeyValuePair<ReadOnlyMemory<byte>, T>> items, T @default)
     {
         var free = 0;
         var records = new HashCodeSlot<T>[items.Length];

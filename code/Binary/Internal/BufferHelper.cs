@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 internal sealed class BufferHelper
 {
     [ThreadStatic]
-    private static BufferHelper ThreadStaticInstance;
+    private static BufferHelper? ThreadStaticInstance;
 
     private static readonly BufferHelper GlobalSharedInstance = new BufferHelper(Array.Empty<byte>());
 

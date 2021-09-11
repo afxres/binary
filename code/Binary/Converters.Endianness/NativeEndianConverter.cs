@@ -54,7 +54,7 @@ internal sealed class NativeEndianConverter<T> : Converter<T> where T : unmanage
         return Unsafe.ReadUnaligned<T>(ref MemoryHelper.EnsureLength(Converter.DecodeWithLengthPrefix(ref span), Unsafe.SizeOf<T>()));
     }
 
-    public override T Decode(byte[] buffer)
+    public override T Decode(byte[]? buffer)
     {
         return Unsafe.ReadUnaligned<T>(ref MemoryHelper.EnsureLength(new ReadOnlySpan<byte>(buffer), Unsafe.SizeOf<T>()));
     }

@@ -4,18 +4,19 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
 internal static class CommonHelper
 {
-    internal static T SelectGenericTypeDefinitionOrDefault<T>(Type type, Func<Type, T> func)
+    internal static T? SelectGenericTypeDefinitionOrDefault<T>(Type type, Func<Type, T> func)
     {
         return type.IsGenericType ? func.Invoke(type.GetGenericTypeDefinition()) : default;
     }
 
-    internal static object CreateInstance(Type type, object[] arguments)
+    internal static object CreateInstance(Type type, object?[]? arguments)
     {
         var result = Activator.CreateInstance(type, arguments);
         if (result is null)
@@ -23,7 +24,7 @@ internal static class CommonHelper
         return result;
     }
 
-    internal static bool TryGetInterfaceArguments(Type type, Type definition, out Type[] arguments)
+    internal static bool TryGetInterfaceArguments(Type type, Type definition, [MaybeNullWhen(false)] out Type[] arguments)
     {
         Debug.Assert(definition.IsInterface);
         Debug.Assert(definition.IsGenericTypeDefinition);

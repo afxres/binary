@@ -8,7 +8,7 @@ internal static class NativeModule
 {
     private sealed class RawListData<T>
     {
-        public T[] Data;
+        public T[]? Data;
 
         public int Size;
     }
