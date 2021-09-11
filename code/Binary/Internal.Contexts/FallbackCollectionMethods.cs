@@ -75,7 +75,7 @@ internal static class FallbackCollectionMethods
         ImmutableCollectionCreateMethods = immutable;
     }
 
-    internal static IConverter GetConverter(IGeneratorContext context, Type type)
+    internal static IConverter? GetConverter(IGeneratorContext context, Type type)
     {
         if (CommonHelper.TryGetInterfaceArguments(type, typeof(IEnumerable<>), out var arguments) is false)
             return null;
@@ -95,7 +95,7 @@ internal static class FallbackCollectionMethods
         return lambda.Compile().Invoke(context);
     }
 
-    private static Func<Expression, Expression> GetConstructorOrDefault(Type type, Type enumerable)
+    private static Func<Expression, Expression>? GetConstructorOrDefault(Type type, Type enumerable)
     {
         if (type.IsAbstract || type.IsInterface)
             return null;
@@ -128,7 +128,7 @@ internal static class FallbackCollectionMethods
         return GetDecodeDelegate<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail, itemLength).Decode, method);
     }
 
-    private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
+    private static DecodePassSpanDelegate<T>? GetDecodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
     {
         if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ArrayOrListAssignableDefinitions.Contains))
             return new EnumerableDecoder<T, E>(converter).Decode;
@@ -142,7 +142,7 @@ internal static class FallbackCollectionMethods
             return null;
     }
 
-    private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
+    private static DecodePassSpanDelegate<T>? GetDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
     {
         var itemLength = ContextMethods.GetItemLength(ImmutableArray.Create(new IConverter[] { init, tail }));
         if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), DictionaryAssignableDefinitions.Contains))
@@ -157,7 +157,7 @@ internal static class FallbackCollectionMethods
             return null;
     }
 
-    private static EncodeDelegate<T> GetEncodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
+    private static EncodeDelegate<T?> GetEncodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
     {
         Func<Expression, Expression, Expression> Invoke()
         {
@@ -168,11 +168,11 @@ internal static class FallbackCollectionMethods
         }
 
         var handle = new Lazy<Func<Expression, Expression, Expression>>(Invoke);
-        var result = GetEncodeDelegate<T>(typeof(E), handle);
+        var result = GetEncodeDelegate<T?>(typeof(E), handle);
         return result ?? new EnumerableEncoder<T, E>(converter).Encode;
     }
 
-    private static EncodeDelegate<T> GetEncodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
+    private static EncodeDelegate<T?> GetEncodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
     {
         Func<Expression, Expression, Expression> Invoke()
         {
@@ -192,11 +192,11 @@ internal static class FallbackCollectionMethods
         }
 
         var handle = new Lazy<Func<Expression, Expression, Expression>>(Invoke);
-        var result = GetEncodeDelegate<T>(typeof(KeyValuePair<K, V>), handle);
+        var result = GetEncodeDelegate<T?>(typeof(KeyValuePair<K, V>), handle);
         return result ?? new KeyValueEnumerableEncoder<T, K, V>(init, tail).Encode;
     }
 
-    private static EncodeDelegate<T> GetEncodeDelegate<T>(Type elementType, Lazy<Func<Expression, Expression, Expression>> handle)
+    private static EncodeDelegate<T>? GetEncodeDelegate<T>(Type elementType, Lazy<Func<Expression, Expression, Expression>> handle)
     {
         const BindingFlags Select = BindingFlags.Instance | BindingFlags.Public;
         var initial = typeof(T).GetMethods(Select).FirstOrDefault(x => x.Name is "GetEnumerator" && x.GetParameters().Length is 0);
@@ -241,7 +241,7 @@ internal static class FallbackCollectionMethods
         return new SequenceConverter<T>(encode, decode);
     }
 
-    private static IConverter GetConverter<T, K, V>(IGeneratorContext context) where T : IEnumerable<KeyValuePair<K, V>>
+    private static IConverter GetConverter<T, K, V>(IGeneratorContext context) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
     {
         var init = (Converter<K>)context.GetConverter(typeof(K));
         var tail = (Converter<V>)context.GetConverter(typeof(V));
