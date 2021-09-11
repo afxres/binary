@@ -8,26 +8,26 @@ using System.Collections.Generic;
 [MemoryDiagnoser]
 public class ArrayBenchmarks
 {
-    private byte[] buffer;
+    private byte[]? buffer;
 
-    private byte[] encodeBytes;
+    private byte[]? encodeBytes;
 
-    private byte[] encodeWithLengthPrefixBytes;
+    private byte[]? encodeWithLengthPrefixBytes;
 
-    private int[] array01;
+    private int[]? array01;
 
-    private List<int> list01;
+    private List<int>? list01;
 
     private Memory<int> memory01;
 
-    private Converter<int[]> arrayConverter;
+    private Converter<int[]?>? arrayConverter;
 
-    private Converter<List<int>> listConverter;
+    private Converter<List<int>?>? listConverter;
 
-    private Converter<Memory<int>> memoryConverter;
+    private Converter<Memory<int>>? memoryConverter;
 
     [Params("constant", "variable")]
-    public string Flag;
+    public string? Flag;
 
     [GlobalSetup]
     public void Setup()
@@ -41,8 +41,8 @@ public class ArrayBenchmarks
         this.list01 = new List<int> { 1313 };
         this.memory01 = new Memory<int>(new int[] { 1313 });
 
-        this.arrayConverter = generator.GetConverter<int[]>();
-        this.listConverter = generator.GetConverter<List<int>>();
+        this.arrayConverter = generator.GetConverter<int[]?>();
+        this.listConverter = generator.GetConverter<List<int>?>();
         this.memoryConverter = generator.GetConverter<Memory<int>>();
 
         this.buffer = new byte[65536];
