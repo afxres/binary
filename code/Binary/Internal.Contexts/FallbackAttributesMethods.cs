@@ -89,28 +89,37 @@ internal static class FallbackAttributesMethods
         return attributes;
     }
 
-    private static T GetInstance<T>(Type instance, Type item, Func<Type, string> message)
+    private static IConverter GetConverter(Type instance, Type item)
     {
         try
         {
-            return (T)CommonHelper.CreateInstance(instance, null);
+            return (IConverter)CommonHelper.CreateInstance(instance, null);
         }
         catch (Exception e)
         {
-            throw new ArgumentException(message.Invoke(typeof(Converter<>).MakeGenericType(item)), e);
+            throw new ArgumentException($"Can not get custom converter via attribute, expected converter type: {typeof(Converter<>).MakeGenericType(item)}", e);
+        }
+    }
+
+    private static IConverterCreator GetConverterCreator(Type instance, Type item)
+    {
+        try
+        {
+            return (IConverterCreator)CommonHelper.CreateInstance(instance, null);
+        }
+        catch (Exception e)
+        {
+            throw new ArgumentException($"Can not get custom converter creator via attribute, expected converter type: {typeof(Converter<>).MakeGenericType(item)}", e);
         }
     }
 
     private static IConverter GetConverter(IGeneratorContext context, Type type, Attribute? attribute)
     {
-        var x = (Type t) => $"Can not get custom converter via attribute, expected converter type: {t}";
-        var y = (Type t) => $"Can not get custom converter creator via attribute, expected converter type: {t}";
-
         Debug.Assert(attribute is null or ConverterAttribute or ConverterCreatorAttribute);
         return attribute switch
         {
-            ConverterAttribute alpha => CommonHelper.GetConverter(GetInstance<IConverter>(alpha.Type, type, x), type),
-            ConverterCreatorAttribute bravo => CommonHelper.GetConverter(GetInstance<IConverterCreator>(bravo.Type, type, y).GetConverter(context, type), type, bravo.Type),
+            ConverterAttribute alpha => CommonHelper.GetConverter(GetConverter(alpha.Type, type), type),
+            ConverterCreatorAttribute bravo => CommonHelper.GetConverter(GetConverterCreator(bravo.Type, type).GetConverter(context, type), type, bravo.Type),
             _ => context.GetConverter(type),
         };
     }
