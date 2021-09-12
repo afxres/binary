@@ -4,6 +4,7 @@ using BenchmarkDotNet.Attributes;
 using Mikodev.Binary.Benchmarks.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 [MemoryDiagnoser]
 public class ArrayBenchmarks
@@ -20,11 +21,14 @@ public class ArrayBenchmarks
 
     private Memory<int> memory01;
 
-    private Converter<int[]?>? arrayConverter;
+    [AllowNull]
+    private Converter<int[]> arrayConverter;
 
-    private Converter<List<int>?>? listConverter;
+    [AllowNull]
+    private Converter<List<int>> listConverter;
 
-    private Converter<Memory<int>>? memoryConverter;
+    [AllowNull]
+    private Converter<Memory<int>> memoryConverter;
 
     [Params("constant", "variable")]
     public string? Flag;
@@ -41,8 +45,8 @@ public class ArrayBenchmarks
         this.list01 = new List<int> { 1313 };
         this.memory01 = new Memory<int>(new int[] { 1313 });
 
-        this.arrayConverter = generator.GetConverter<int[]?>();
-        this.listConverter = generator.GetConverter<List<int>?>();
+        this.arrayConverter = generator.GetConverter<int[]>();
+        this.listConverter = generator.GetConverter<List<int>>();
         this.memoryConverter = generator.GetConverter<Memory<int>>();
 
         this.buffer = new byte[65536];

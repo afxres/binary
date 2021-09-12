@@ -4,6 +4,7 @@ using BenchmarkDotNet.Attributes;
 using Mikodev.Binary.Benchmarks.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 [MemoryDiagnoser]
 public class CollectionBenchmarks
@@ -24,11 +25,14 @@ public class CollectionBenchmarks
 
     private Dictionary<int, int>? dictionary;
 
-    private Converter<HashSet<int>>? hashSetConverter;
+    [AllowNull]
+    private Converter<HashSet<int>> hashSetConverter;
 
-    private Converter<LinkedList<int>>? linkedListConverter;
+    [AllowNull]
+    private Converter<LinkedList<int>> linkedListConverter;
 
-    private Converter<Dictionary<int, int>>? dictionaryConverter;
+    [AllowNull]
+    private Converter<Dictionary<int, int>> dictionaryConverter;
 
     [Params("constant", "variable")]
     public string? Flag;

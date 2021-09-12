@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public static class EnumerationEncoder
 {
-    public static void EncodeHashSetForEach<T>(ref Allocator allocator, Converter<T> converter, HashSet<T> collection)
+    public static void EncodeHashSetForEach<T>(ref Allocator allocator, Converter<T> converter, HashSet<T>? collection)
     {
         if (collection is null)
             return;
@@ -12,7 +12,7 @@ public static class EnumerationEncoder
             converter.Encode(ref allocator, i);
     }
 
-    public static void EncodeEnumerableForEach<T>(ref Allocator allocator, Converter<T> converter, IEnumerable<T> collection)
+    public static void EncodeEnumerableForEach<T>(ref Allocator allocator, Converter<T> converter, IEnumerable<T>? collection)
     {
         if (collection is null)
             return;
@@ -20,7 +20,7 @@ public static class EnumerationEncoder
             converter.Encode(ref allocator, i);
     }
 
-    public static void EncodeCollectionToArrayThenForEach<T>(ref Allocator allocator, Converter<T> converter, ICollection<T> collection)
+    public static void EncodeCollectionToArrayThenForEach<T>(ref Allocator allocator, Converter<T> converter, ICollection<T>? collection)
     {
         if (collection is null)
             return;
@@ -30,7 +30,7 @@ public static class EnumerationEncoder
             converter.Encode(ref allocator, i);
     }
 
-    public static void EncodeDictionaryForEach<K, V>(ref Allocator allocator, Converter<K> init, Converter<V> tail, Dictionary<K, V> collection)
+    public static void EncodeDictionaryForEach<K, V>(ref Allocator allocator, Converter<K> init, Converter<V> tail, Dictionary<K, V>? collection) where K : notnull
     {
         if (collection is null)
             return;
@@ -41,7 +41,7 @@ public static class EnumerationEncoder
         }
     }
 
-    public static void EncodeKeyValueEnumerableForEach<K, V>(ref Allocator allocator, Converter<K> init, Converter<V> tail, IEnumerable<KeyValuePair<K, V>> collection)
+    public static void EncodeKeyValueEnumerableForEach<K, V>(ref Allocator allocator, Converter<K> init, Converter<V> tail, IEnumerable<KeyValuePair<K, V>>? collection)
     {
         if (collection is null)
             return;
@@ -52,7 +52,7 @@ public static class EnumerationEncoder
         }
     }
 
-    public static void EncodeKeyValueCollectionForEach<K, V>(ref Allocator allocator, Converter<K> init, Converter<V> tail, ICollection<KeyValuePair<K, V>> collection)
+    public static void EncodeKeyValueCollectionForEach<K, V>(ref Allocator allocator, Converter<K> init, Converter<V> tail, ICollection<KeyValuePair<K, V>>? collection)
     {
         if (collection is null)
             return;

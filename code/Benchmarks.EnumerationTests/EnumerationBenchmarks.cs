@@ -4,23 +4,27 @@ using BenchmarkDotNet.Attributes;
 using Mikodev.Binary.Benchmarks.EnumerationTests.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 [MemoryDiagnoser]
 [GenericTypeArguments(typeof(int))]
 [GenericTypeArguments(typeof(string))]
-public class EnumerationBenchmarks<T>
+public class EnumerationBenchmarks<T> where T : notnull
 {
-    private byte[] buffer;
+    private byte[]? buffer;
 
+    private HashSet<T>? collection;
+
+    private Dictionary<T, T>? dictionary;
+
+    [AllowNull]
     private Converter<T> converter;
 
-    private HashSet<T> collection;
-
-    private Dictionary<T, T> dictionary;
-
+    [AllowNull]
     private Converter<HashSet<T>> collectionConverter;
 
+    [AllowNull]
     private Converter<Dictionary<T, T>> dictionaryConverter;
 
     [Params(0, 1 << 4, 1 << 8, 1 << 20)]

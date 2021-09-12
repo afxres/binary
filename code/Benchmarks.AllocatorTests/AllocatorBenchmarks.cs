@@ -2,6 +2,7 @@
 
 using BenchmarkDotNet.Attributes;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 [MemoryDiagnoser]
 public class AllocatorBenchmarks
@@ -16,9 +17,11 @@ public class AllocatorBenchmarks
 
     private int maxCapacity2048;
 
-    private AllocatorAction<byte[]?>? ignoreAction;
+    [AllowNull]
+    private AllocatorAction<byte[]?> ignoreAction;
 
-    private AllocatorAction<byte[]?>? appendAction;
+    [AllowNull]
+    private AllocatorAction<byte[]?> appendAction;
 
     [GlobalSetup]
     public void Setup()

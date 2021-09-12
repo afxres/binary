@@ -5,6 +5,7 @@ using Mikodev.Binary.Benchmarks.Abstractions;
 using Mikodev.Binary.Benchmarks.CollectionDecodeTests.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 [MemoryDiagnoser]
@@ -13,17 +14,22 @@ using System.Linq;
 [GenericTypeArguments(typeof(LinkedList<int>))]
 public class CollectionDecodeBenchmarks<T> where T : ICollection<int>
 {
-    private Converter<int>? converter;
-
-    private Converter<IEnumerable<int>?>? enumerableConverter;
-
     private byte[]? dataBuffer;
 
-    private Decoder<T>? directiveDecoder;
+    [AllowNull]
+    private Converter<int> converter;
 
-    private Decoder<T>? interfaceDecoder;
+    [AllowNull]
+    private Converter<IEnumerable<int>> enumerableConverter;
 
-    private Func<IEnumerable<int>, T>? constructor;
+    [AllowNull]
+    private Decoder<T> directiveDecoder;
+
+    [AllowNull]
+    private Decoder<T> interfaceDecoder;
+
+    [AllowNull]
+    private Func<IEnumerable<int>, T> constructor;
 
     [Params("constant", "variable")]
     public string? Flag;
@@ -35,7 +41,7 @@ public class CollectionDecodeBenchmarks<T> where T : ICollection<int>
             ? new ConstantNativeConverter<int>()
             : new VariableNativeConverter<int>();
         var generator = Generator.CreateDefaultBuilder().AddConverter(this.converter).Build();
-        this.enumerableConverter = generator.GetConverter<IEnumerable<int>?>();
+        this.enumerableConverter = generator.GetConverter<IEnumerable<int>>();
         this.dataBuffer = generator.Encode(Enumerable.Range(0, 1024));
         if (typeof(T) == typeof(HashSet<int>))
             this.directiveDecoder = (Decoder<T>)(object)ReflectionMethods.GetDecoder<HashSet<int>, int>(this.converter, a => a.Add(0));
