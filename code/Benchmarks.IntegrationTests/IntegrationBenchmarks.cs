@@ -3,25 +3,29 @@
 using BenchmarkDotNet.Attributes;
 using Mikodev.Binary.Benchmarks.IntegrationTests.Models;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using TypeX1 = System.ValueTuple<int, string, int[], System.ValueTuple<double, System.Collections.Generic.List<string>>>;
 
 [MemoryDiagnoser]
 public class IntegrationBenchmarks
 {
+    [AllowNull]
     private IGenerator generator;
 
-    private byte[] buffer;
+    private byte[]? buffer;
 
-    private Type01 value;
+    private Type01? value;
 
-    private byte[] valueBytes;
+    private byte[]? valueBytes;
 
+    [AllowNull]
     private Converter<Type01> valueConverter;
 
     private TypeX1 tuple;
 
-    private byte[] tupleBytes;
+    private byte[]? tupleBytes;
 
+    [AllowNull]
     private Converter<TypeX1> tupleConverter;
 
     [GlobalSetup]
