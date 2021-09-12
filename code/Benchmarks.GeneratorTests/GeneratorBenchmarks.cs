@@ -4,16 +4,21 @@ using BenchmarkDotNet.Attributes;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 public class GeneratorBenchmarks
 {
+    [AllowNull]
     private IGenerator generator;
 
+    [AllowNull]
     private Dictionary<Type, IConverter> dictionary;
 
+    [AllowNull]
     private ConcurrentDictionary<Type, IConverter> concurrentDictionary;
 
+    [AllowNull]
     [Params(typeof(object), typeof(int), typeof(string))]
     public Type Value;
 
