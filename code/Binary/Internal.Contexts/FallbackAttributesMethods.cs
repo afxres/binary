@@ -160,15 +160,17 @@ internal static class FallbackAttributesMethods
 
     private static ContextObjectConstructor? GetConstructor(Type type, ImmutableArray<PropertyInfo> properties)
     {
-        static string MakeUpperCaseInvariant(string? text) => string.IsNullOrEmpty(text) ? string.Empty : text.ToUpperInvariant();
-
         Debug.Assert(properties.Any());
         if (type.IsAbstract || type.IsInterface)
             return null;
         if ((type.IsValueType || type.GetConstructor(Type.EmptyTypes) is not null) && properties.All(x => x.GetSetMethod() is not null))
             return (delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, ContextMethods.GetMemberInitializers(properties));
 
-        var selector = new Func<PropertyInfo, string>(x => MakeUpperCaseInvariant(x.Name));
+        static string Select(string? text) =>
+            text?.ToUpperInvariant() ??
+            string.Empty;
+
+        var selector = new Func<PropertyInfo, string>(x => Select(x.Name));
         if (properties.Select(selector).Distinct().Count() != properties.Length)
             return null;
 
@@ -178,7 +180,7 @@ internal static class FallbackAttributesMethods
         {
             var parameters = i.GetParameters();
             var result = parameters
-                .Select(x => dictionary.TryGetValue(MakeUpperCaseInvariant(x.Name), out var property) && property.PropertyType == x.ParameterType ? property : null)
+                .Select(x => dictionary.TryGetValue(Select(x.Name), out var property) && property.PropertyType == x.ParameterType ? property : null)
                 .OfType<PropertyInfo>()
                 .ToImmutableArray();
             if (result.Length is 0 || result.Length != parameters.Length)

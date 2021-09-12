@@ -99,7 +99,7 @@ public class InternalMethodTests
     public void MakeUpperCaseInvariant(string origin, string expected)
     {
         var type = typeof(Converter).Assembly.GetTypes().Single(x => x.Name is "FallbackAttributesMethods");
-        var method = type.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name.Contains("UpperCase"));
+        var method = type.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name.Contains("Select"));
         var invoke = (Func<string, string>)Delegate.CreateDelegate(typeof(Func<string, string>), method);
         var result = invoke.Invoke(origin);
         Assert.Equal(origin?.ToUpperInvariant() ?? string.Empty, result);
