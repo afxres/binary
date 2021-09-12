@@ -2,13 +2,15 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 internal static class NativeModule
 {
     private sealed class RawListData<T>
     {
-        public T[]? Data;
+        [AllowNull]
+        public T[] Data;
 
         public int Size;
     }
