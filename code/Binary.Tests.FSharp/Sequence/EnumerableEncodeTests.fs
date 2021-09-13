@@ -26,6 +26,17 @@ let TestType (collection : 'T when 'T :> FakeEnumerable<'E>) =
     Assert.Empty(collection.Steps)
     converter
 
+let TestNull (collection : 'T when 'T :> FakeEnumerable<'E>) =
+    let converter = TestType collection
+    Assert.Empty collection.Steps
+    let nullInstance = Unchecked.defaultof<'T>
+    Assert.Null nullInstance
+    let buffer = converter.Encode nullInstance
+    Assert.Empty buffer
+    Assert.True(obj.ReferenceEquals(Array.Empty<byte>(), buffer))
+    Assert.Empty collection.Steps
+    ()
+
 let Test (collection : 'T when 'T :> FakeEnumerable<'E>) (expected : string seq) =
     let converter = TestType collection
     let steps = collection.Steps
@@ -63,9 +74,14 @@ type FakeValueTypeEnumeratorSource<'T>() =
     member me.GetEnumerator() = FakeValueTypeEnumerator<'T> me.Steps
 
 [<Fact>]
-let ``Encode Custom Value Type Enumerator`` () =
+let ``Encode Custom Value Type Enumerator Can Dispose`` () =
     let source = FakeValueTypeEnumeratorSource<int>()
     Test source [ "start"; "current"; "end"; "dispose" ]
+    ()
+
+[<Fact>]
+let ``Encode Custom Value Type Enumerator Can Dispose For Null Instance`` () =
+    TestNull (FakeValueTypeEnumeratorSource<int>())
     ()
 
 type FakeValueTypeEnumeratorNoDispose<'T> =
@@ -96,6 +112,11 @@ type FakeValueTypeEnumeratorNoDisposeSource<'T>() =
 let ``Encode Custom Value Type Enumerator No 'Dispose'`` () =
     let source = FakeValueTypeEnumeratorNoDisposeSource<int>()
     Test source [ "1"; "2"; "3" ]
+    ()
+
+[<Fact>]
+let ``Encode Custom Value Type Enumerator No 'Dispose' For Null Instance`` () =
+    TestNull (FakeValueTypeEnumeratorNoDisposeSource<int>())
     ()
 
 type FakeValueTypeEnumeratorMultipleOverload<'T> =
@@ -142,6 +163,11 @@ let ``Encode Custom Value Type Enumerator With Bad 'Dispose' And Overload Method
     Test source [ "a"; "b"; "c" ]
     ()
 
+[<Fact>]
+let ``Encode Custom Value Type Enumerator With Bad 'Dispose' And Overload Methods For Null Instance`` () =
+    TestNull (FakeValueTypeEnumeratorMultipleOverloadSource<int>())
+    ()
+
 let TestInvalid (collection : 'T when 'T :> FakeEnumerable<'E>) =
     let generator = Generator.CreateDefault()
     let converter = generator.GetConverter<'T>()
@@ -165,7 +191,7 @@ type FakeValueTypeEnumeratorMoveNextReturnTypeMismatchSource<'T>() =
     member __.GetEnumerator() = FakeValueTypeEnumeratorMoveNextReturnTypeMismatch<'T>()
 
 [<Fact>]
-let ``Encode Custom Value Type Enumerator 'MoveNext' Return Type Mismatch`` () =
+let ``Encode Custom Value Type Invalid Enumerator 'MoveNext' Return Type Mismatch`` () =
     TestInvalid (FakeValueTypeEnumeratorMoveNextReturnTypeMismatchSource<single>())
     ()
 
@@ -182,7 +208,7 @@ type FakeValueTypeEnumeratorCurrentPropertyTypeMismatchSource<'T>() =
     member __.GetEnumerator() = FakeValueTypeEnumeratorCurrentPropertyTypeMismatch<'T>()
 
 [<Fact>]
-let ``Encode Custom Value Type Enumerator 'Current' Property Type Mismatch`` () =
+let ``Encode Custom Value Type Invalid Enumerator 'Current' Property Type Mismatch`` () =
     TestInvalid (FakeValueTypeEnumeratorCurrentPropertyTypeMismatchSource<double>())
     ()
 
@@ -201,7 +227,7 @@ type FakeValueTypeEnumeratorCurrentPropertySignatureMismatchSource<'T>() =
     member __.GetEnumerator() = FakeValueTypeEnumeratorCurrentPropertySignatureMismatch<'T>()
 
 [<Fact>]
-let ``Encode Custom Value Type Enumerator 'Current' Property No Getter Or Is Indexer`` () =
+let ``Encode Custom Value Type Invalid Enumerator 'Current' Property No Getter Or Is Indexer`` () =
     TestInvalid (FakeValueTypeEnumeratorCurrentPropertySignatureMismatchSource<uint64>())
     ()
 
@@ -232,6 +258,11 @@ let ``Encode Custom Value Type Enumerator 'MoveNext' Throw Exception`` () =
     Assert.Equal<string>([| "Dispose" |], source.Steps)
     ()
 
+[<Fact>]
+let ``Encode Custom Value Type Enumerator 'MoveNext' Throw Exception For Null Instance`` () =
+    TestNull (FakeValueTypeEnumeratorMoveNextThrowExceptionSource<int>())
+    ()
+
 type FakeValueTypeEnumeratorCurrentThrowException<'T> =
     struct
         val Steps : ResizeArray<string>
@@ -257,4 +288,9 @@ let ``Encode Custom Value Type Enumerator 'Current' Throw Exception`` () =
     let error = Assert.Throws<Exception>(fun () -> converter.Encode source |> ignore)
     Assert.Equal("Unknown!", error.Message)
     Assert.Equal<string>([| "MoveNext"; "Dispose" |], source.Steps)
+    ()
+
+[<Fact>]
+let ``Encode Custom Value Type Enumerator 'Current' Throw Exception For Null Instance`` () =
+    TestNull (FakeValueTypeEnumeratorCurrentThrowExceptionSource<int>())
     ()
