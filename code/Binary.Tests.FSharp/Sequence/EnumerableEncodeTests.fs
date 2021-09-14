@@ -15,7 +15,7 @@ type FakeEnumerable<'T>() =
 
         member __.GetEnumerator(): IEnumerator<'T> = raise (NotSupportedException())
 
-let TestType (collection : 'T when 'T :> FakeEnumerable<'E>) =
+let TestType (collection : 'T) (steps : 'T -> string seq) =
     let generator = Generator.CreateDefault()
     let converter = generator.GetConverter<'T>()
     let converterType = converter.GetType()
@@ -23,11 +23,11 @@ let TestType (collection : 'T when 'T :> FakeEnumerable<'E>) =
     let encoder = converterType.GetField("encode", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
     Assert.Null(encoder.Method.DeclaringType)
     Assert.Contains("lambda", encoder.Method.Name)
-    Assert.Empty(collection.Steps)
+    Assert.Empty(steps collection)
     converter
 
 let TestNull (collection : 'T when 'T :> FakeEnumerable<'E>) =
-    let converter = TestType collection
+    let converter = TestType collection (fun x -> x.Steps :> _)
     Assert.Empty collection.Steps
     let nullInstance = Unchecked.defaultof<'T>
     Assert.Null nullInstance
@@ -38,7 +38,7 @@ let TestNull (collection : 'T when 'T :> FakeEnumerable<'E>) =
     ()
 
 let Test (collection : 'T when 'T :> FakeEnumerable<'E>) (expected : string seq) =
-    let converter = TestType collection
+    let converter = TestType collection (fun x -> x.Steps :> _)
     let steps = collection.Steps
     Assert.Empty steps
     converter.Encode collection |> ignore
@@ -252,7 +252,7 @@ type FakeValueTypeEnumeratorMoveNextThrowExceptionSource<'T>() =
 [<Fact>]
 let ``Encode Custom Value Type Enumerator 'MoveNext' Throw Exception`` () =
     let source = FakeValueTypeEnumeratorMoveNextThrowExceptionSource<int>()
-    let converter = TestType source
+    let converter = TestType source (fun x -> x.Steps :> _)
     let error = Assert.Throws<Exception>(fun () -> converter.Encode source |> ignore)
     Assert.Equal("Error!", error.Message)
     Assert.Equal<string>([| "Dispose" |], source.Steps)
@@ -284,7 +284,7 @@ type FakeValueTypeEnumeratorCurrentThrowExceptionSource<'T>() =
 [<Fact>]
 let ``Encode Custom Value Type Enumerator 'Current' Throw Exception`` () =
     let source = FakeValueTypeEnumeratorCurrentThrowExceptionSource<int>()
-    let converter = TestType source
+    let converter = TestType source (fun x -> x.Steps :> _)
     let error = Assert.Throws<Exception>(fun () -> converter.Encode source |> ignore)
     Assert.Equal("Unknown!", error.Message)
     Assert.Equal<string>([| "MoveNext"; "Dispose" |], source.Steps)
