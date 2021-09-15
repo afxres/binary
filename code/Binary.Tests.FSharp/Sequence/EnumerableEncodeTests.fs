@@ -45,6 +45,13 @@ let Test (collection : 'T when 'T :> FakeEnumerable<'E>) (expected : string seq)
     Assert.Equal<string>(expected, steps)
     ()
 
+let TestValue (collection : 'T) (expected : string seq) (steps : 'T -> string seq) =
+    let converter = TestType collection steps
+    Assert.Empty(steps collection)
+    converter.Encode collection |> ignore
+    Assert.Equal<string>(expected, steps collection)
+    ()
+
 type FakeValueTypeEnumerator<'T> =
     struct
         val Steps : ResizeArray<string>
@@ -73,10 +80,30 @@ type FakeValueTypeEnumeratorSource<'T>() =
 
     member me.GetEnumerator() = FakeValueTypeEnumerator<'T> me.Steps
 
+type FakeValueTypeEnumeratorValueSource<'T> =
+    struct
+        val Steps : ResizeArray<string>
+    end
+
+    new (steps) = { Steps = steps }
+
+    interface IEnumerable<'T> with
+        member __.GetEnumerator(): IEnumerator = raise (NotSupportedException())
+
+        member __.GetEnumerator(): IEnumerator<'T> = raise (NotSupportedException())
+
+    member me.GetEnumerator() = FakeValueTypeEnumerator<'T> me.Steps
+
 [<Fact>]
 let ``Encode Custom Value Type Enumerator Can Dispose`` () =
     let source = FakeValueTypeEnumeratorSource<int>()
     Test source [ "start"; "current"; "end"; "dispose" ]
+    ()
+
+[<Fact>]
+let ``Encode Custom Value Type Enumerator Can Dispose Value Type Source`` () =
+    let source = FakeValueTypeEnumeratorValueSource<int>(ResizeArray<_>())
+    TestValue source [ "start"; "current"; "end"; "dispose" ] (fun x -> x.Steps :> _)
     ()
 
 [<Fact>]
