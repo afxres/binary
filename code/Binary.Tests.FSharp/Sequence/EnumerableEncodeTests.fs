@@ -135,10 +135,30 @@ type FakeValueTypeEnumeratorNoDisposeSource<'T>() =
 
     member me.GetEnumerator() = FakeValueTypeEnumeratorNoDispose<'T> me.Steps
 
+type FakeValueTypeEnumeratorNoDisposeValueSource<'T> =
+    struct
+        val Steps : ResizeArray<string>
+    end
+
+    new (steps) = { Steps = steps }
+
+    interface IEnumerable<'T> with
+        member __.GetEnumerator(): IEnumerator = raise (NotSupportedException())
+
+        member __.GetEnumerator(): IEnumerator<'T> = raise (NotSupportedException())
+
+    member me.GetEnumerator() = FakeValueTypeEnumeratorNoDispose<'T> me.Steps
+
 [<Fact>]
 let ``Encode Custom Value Type Enumerator No 'Dispose'`` () =
     let source = FakeValueTypeEnumeratorNoDisposeSource<int>()
     Test source [ "1"; "2"; "3" ]
+    ()
+
+[<Fact>]
+let ``Encode Custom Value Type Enumerator No 'Dispose' Value Type Source`` () =
+    let source = FakeValueTypeEnumeratorNoDisposeValueSource<int>(ResizeArray<_>())
+    TestValue source [ "1"; "2"; "3" ] (fun x -> x.Steps :> _)
     ()
 
 [<Fact>]
@@ -184,10 +204,34 @@ type FakeValueTypeEnumeratorMultipleOverloadSource<'T>() =
 
     member __.GetEnumerator(_a : int, _base : single) = raise (NotSupportedException())
 
+type FakeValueTypeEnumeratorMultipleOverloadValueSource<'T> =
+    struct
+        val Steps : ResizeArray<string>
+    end
+
+    new (steps) = { Steps = steps }
+
+    interface IEnumerable<'T> with
+        member __.GetEnumerator(): IEnumerator = raise (NotSupportedException())
+
+        member __.GetEnumerator(): IEnumerator<'T> = raise (NotSupportedException())
+
+    member __.GetEnumerator(_a : obj) = raise (NotSupportedException())
+
+    member me.GetEnumerator() = FakeValueTypeEnumeratorMultipleOverload<'T> me.Steps
+
+    member __.GetEnumerator(_a : int, _base : single) = raise (NotSupportedException())
+
 [<Fact>]
 let ``Encode Custom Value Type Enumerator With Bad 'Dispose' And Overload Methods`` () =
     let source = FakeValueTypeEnumeratorMultipleOverloadSource<int>()
     Test source [ "a"; "b"; "c" ]
+    ()
+
+[<Fact>]
+let ``Encode Custom Value Type Enumerator With Bad 'Dispose' And Overload Methods Value Type Source`` () =
+    let source = FakeValueTypeEnumeratorMultipleOverloadValueSource<int>(ResizeArray<_>())
+    TestValue source [ "a"; "b"; "c" ] (fun x -> x.Steps :> _)
     ()
 
 [<Fact>]
