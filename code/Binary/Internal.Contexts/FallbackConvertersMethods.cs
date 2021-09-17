@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Linq;
 
 internal static class FallbackConvertersMethods
 {
