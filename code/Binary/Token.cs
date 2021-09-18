@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary;
 
 using Mikodev.Binary.Internal;
+using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -18,9 +19,9 @@ public sealed class Token : IDynamicMetaObjectProvider
 
     private readonly ReadOnlyMemory<byte> memory;
 
-    private readonly Token? parent;
+    private readonly DecodeReadOnlyDelegate<string> decode;
 
-    private readonly Converter<string> encoder;
+    private readonly Token? parent;
 
     private readonly Lazy<ImmutableDictionary<string, Token>> lazy;
 
@@ -30,26 +31,22 @@ public sealed class Token : IDynamicMetaObjectProvider
 
     public Token? Parent => this.parent;
 
-    private Token(IGenerator generator, ReadOnlyMemory<byte> memory, Token? parent, Converter<string>? encoder)
+    private Token(IGenerator generator, ReadOnlyMemory<byte> memory, Token? parent, DecodeReadOnlyDelegate<string>? decode)
     {
         if (generator is null)
             throw new ArgumentNullException(nameof(generator));
-        if (encoder is null)
-            encoder = generator.GetConverter<string>();
-        if (encoder is null)
-            throw new ArgumentException("No available string converter found.");
-        this.parent = parent;
-        this.memory = memory;
         this.generator = generator;
-        this.encoder = encoder;
+        this.memory = memory;
+        this.parent = parent;
+        this.decode = decode ?? (generator.GetConverter<string>() ?? throw new ArgumentException("No available string converter found.")).Decode;
         this.lazy = new Lazy<ImmutableDictionary<string, Token>>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
     }
 
-    private static ImmutableDictionary<string, Token> GetTokens(Token instance)
+    private static ImmutableDictionary<string, Token> GetTokens(Token origin)
     {
-        var memory = instance.memory;
-        var generator = instance.generator;
-        var encoder = instance.encoder;
+        var generator = origin.generator;
+        var memory = origin.memory;
+        var decode = origin.decode;
         var body = memory.Span;
 
         try
@@ -61,8 +58,8 @@ public sealed class Token : IDynamicMetaObjectProvider
                 var buffer = Converter.DecodeWithLengthPrefix(ref body);
                 var offset = memory.Length - buffer.Length - body.Length;
                 var target = memory.Slice(offset, buffer.Length);
-                var source = encoder.Decode(in header);
-                var result = new Token(generator, target, instance, encoder);
+                var source = decode.Invoke(in header);
+                var result = new Token(generator, target, origin, decode);
                 builder.Add(source, result);
             }
             return builder.ToImmutable();
