@@ -233,22 +233,6 @@ type TokenTests() =
         ()
 
     [<Fact>]
-    member __.``Operate With Private Constructor`` () =
-        let constructors = typeof<Token>.GetConstructors(BindingFlags.Public ||| BindingFlags.NonPublic ||| BindingFlags.Instance)
-        Assert.Equal(2, constructors.Length)
-        let constructor = Assert.Single(constructors |> Array.filter (fun x -> not x.IsPublic))
-        let generator = {
-            new IGenerator with
-                member __.GetConverter t =
-                    raise (NotSupportedException(sprintf "Invalid type '%O'" t))
-        }
-        let error = Assert.Throws<TargetInvocationException>(fun () -> constructor.Invoke([| box generator; box (ReadOnlyMemory<byte>()); null; null |]))
-        let inner = Assert.IsType<NotSupportedException>(error.InnerException)
-        let message = sprintf "Invalid type '%O'" typeof<string>
-        Assert.Equal(message, inner.Message)
-        ()
-
-    [<Fact>]
     member __.``From Empty Bytes`` () =
         let token = Token(generator, ReadOnlyMemory())
         let dictionary = token.Children

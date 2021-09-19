@@ -23,23 +23,23 @@ public sealed class Token : IDynamicMetaObjectProvider
 
     private readonly Token? parent;
 
-    private readonly Lazy<ImmutableDictionary<string, Token>> lazy;
+    private readonly Lazy<ImmutableDictionary<string, Token>> create;
 
-    public IReadOnlyDictionary<string, Token> Children => this.lazy.Value;
+    public IReadOnlyDictionary<string, Token> Children => this.create.Value;
 
     public ReadOnlyMemory<byte> Memory => this.memory;
 
     public Token? Parent => this.parent;
 
-    private Token(IGenerator generator, ReadOnlyMemory<byte> memory, Token? parent, DecodeReadOnlyDelegate<string>? decode)
+    private Token(IGenerator generator, ReadOnlyMemory<byte> memory, Token? parent, DecodeReadOnlyDelegate<string> decode)
     {
-        if (generator is null)
-            throw new ArgumentNullException(nameof(generator));
+        Debug.Assert(generator is not null);
+        Debug.Assert(decode is not null);
         this.generator = generator;
         this.memory = memory;
         this.parent = parent;
-        this.decode = decode ?? (generator.GetConverter<string>() ?? throw new ArgumentException("No available string converter found.")).Decode;
-        this.lazy = new Lazy<ImmutableDictionary<string, Token>>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
+        this.decode = decode;
+        this.create = new Lazy<ImmutableDictionary<string, Token>>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
     }
 
     private static ImmutableDictionary<string, Token> GetTokens(Token origin)
@@ -70,11 +70,21 @@ public sealed class Token : IDynamicMetaObjectProvider
         }
     }
 
+    private static DecodeReadOnlyDelegate<string> GetDelegate(IGenerator generator)
+    {
+        if (generator is null)
+            throw new ArgumentNullException(nameof(generator));
+        var converter = generator.GetConverter<string>();
+        if (converter is null)
+            throw new ArgumentException("No available string converter found.");
+        return converter.Decode;
+    }
+
     DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => new TokenDynamicMetaObject(parameter, this);
 
-    public Token(IGenerator generator, ReadOnlyMemory<byte> memory) : this(generator, memory, null, null) { }
+    public Token(IGenerator generator, ReadOnlyMemory<byte> memory) : this(generator, memory, null, GetDelegate(generator)) { }
 
-    public Token this[string key] => this.lazy.Value[key];
+    public Token this[string key] => this.create.Value[key];
 
     public object? As(Type type) => this.generator.GetConverter(type).Decode(this.memory.Span);
 
