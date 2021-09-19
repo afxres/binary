@@ -3,6 +3,7 @@
 open Mikodev.Binary
 open System
 open System.Collections.Generic
+open System.Collections.Immutable
 open System.Diagnostics
 open System.Dynamic
 open System.Linq.Expressions
@@ -303,4 +304,40 @@ type TokenTests() =
         let meta = (token :> IDynamicMetaObjectProvider).GetMetaObject(Expression.Parameter(typeof<Token>))
         let names = meta.GetDynamicMemberNames()
         Assert.Equal<string>(names |> SortedSet, token.Children.Keys |> SortedSet)
+        ()
+
+    [<Fact>]
+    member __.``Internal Exception Wrapper`` () =
+        let converter = {
+            new Converter<string>() with
+                override __.Decode(_ : inref<ReadOnlySpan<byte>>) : string = raise (Exception("Decode Test Message!"))
+
+                override __.Encode(_, _) = raise (NotSupportedException())
+        }
+        let generator = {
+            new IGenerator with
+                member __.GetConverter t =
+                    if t = typeof<string> then
+                        converter :> _
+                    else
+                        raise (NotSupportedException())
+        }
+        let token = Token(generator, ReadOnlyMemory (Array.zeroCreate 2))
+        let field = typeof<Token>.GetField("create", BindingFlags.Instance ||| BindingFlags.NonPublic)
+        let value = field.GetValue(token) |> unbox<Lazy<struct (ImmutableDictionary<string, Token> * Exception)>>
+        let struct (dictionary, error) = value.Value
+        Assert.Empty dictionary
+        Assert.IsType(typeof<Exception>, error)
+        Assert.Equal("Decode Test Message!", error.Message)
+        ()
+
+    [<Fact>]
+    member __.``Internal Exception Wrapper (Empty Bytes)`` () =
+        let generator = Generator.CreateDefault()
+        let token = Token(generator, ReadOnlyMemory Array.empty)
+        let field = typeof<Token>.GetField("create", BindingFlags.Instance ||| BindingFlags.NonPublic)
+        let value = field.GetValue(token) |> unbox<Lazy<struct (ImmutableDictionary<string, Token> * Exception)>>
+        let struct (dictionary, error) = value.Value
+        Assert.Empty dictionary
+        Assert.Null error
         ()

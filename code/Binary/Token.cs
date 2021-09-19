@@ -23,9 +23,9 @@ public sealed class Token : IDynamicMetaObjectProvider
 
     private readonly Token? parent;
 
-    private readonly Lazy<ImmutableDictionary<string, Token>> create;
+    private readonly Lazy<(ImmutableDictionary<string, Token> Dictionary, Exception?)> create;
 
-    public IReadOnlyDictionary<string, Token> Children => this.create.Value;
+    public IReadOnlyDictionary<string, Token> Children => this.create.Value.Dictionary;
 
     public ReadOnlyMemory<byte> Memory => this.memory;
 
@@ -39,10 +39,10 @@ public sealed class Token : IDynamicMetaObjectProvider
         this.memory = memory;
         this.parent = parent;
         this.decode = decode;
-        this.create = new Lazy<ImmutableDictionary<string, Token>>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
+        this.create = new Lazy<(ImmutableDictionary<string, Token>, Exception?)>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
     }
 
-    private static ImmutableDictionary<string, Token> GetTokens(Token origin)
+    private static (ImmutableDictionary<string, Token>, Exception?) GetTokens(Token origin)
     {
         var generator = origin.generator;
         var memory = origin.memory;
@@ -62,11 +62,11 @@ public sealed class Token : IDynamicMetaObjectProvider
                 var result = new Token(generator, target, origin, decode);
                 builder.Add(source, result);
             }
-            return builder.ToImmutable();
+            return (builder.ToImmutable(), null);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            return ImmutableDictionary.Create<string, Token>();
+            return (ImmutableDictionary.Create<string, Token>(), e);
         }
     }
 
@@ -84,7 +84,7 @@ public sealed class Token : IDynamicMetaObjectProvider
 
     public Token(IGenerator generator, ReadOnlyMemory<byte> memory) : this(generator, memory, null, GetDelegate(generator)) { }
 
-    public Token this[string key] => this.create.Value[key];
+    public Token this[string key] => this.create.Value.Dictionary[key];
 
     public object? As(Type type) => this.generator.GetConverter(type).Decode(this.memory.Span);
 
