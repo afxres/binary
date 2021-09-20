@@ -16,29 +16,35 @@ internal static class FallbackAttributesMethods
         if (attributes.Length > 1)
             throw new ArgumentException($"Multiple attributes found, type: {type}");
 
+        var attribute = attributes.FirstOrDefault();
         var propertyWithAttributes = new List<(PropertyInfo Property, Attribute? Key, Attribute? ConverterOrCreator)>();
         foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public).OrderBy(x => x.Name))
         {
             var keys = GetAttributes(property, a => a is NamedKeyAttribute or TupleKeyAttribute);
-            var list = GetAttributes(property, a => a is ConverterAttribute or ConverterCreatorAttribute);
-            var head = keys.FirstOrDefault();
-            var tail = list.FirstOrDefault();
+            var acts = GetAttributes(property, a => a is ConverterAttribute or ConverterCreatorAttribute);
+            var key = keys.FirstOrDefault();
+            var act = acts.FirstOrDefault();
             var indexer = property.GetIndexParameters().Any();
-            if (indexer && (head ?? tail) is { } result)
+            if (indexer && (key ?? act) is { } result)
                 throw new ArgumentException($"Can not apply '{result.GetType().Name}' to an indexer, type: {type}");
             if (indexer)
                 continue;
             if (property.GetGetMethod() is null)
                 throw new ArgumentException($"No available getter found, property name: {property.Name}, type: {type}");
-            if (keys.Length > 1 || list.Length > 1)
+            if (keys.Length > 1 || acts.Length > 1)
                 throw new ArgumentException($"Multiple attributes found, property name: {property.Name}, type: {type}");
-            if (head is null && tail is not null)
-                throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' for '{tail.GetType().Name}', property name: {property.Name}, type: {type}");
-            propertyWithAttributes.Add((property, head, tail));
+            if (key is null && act is not null)
+                throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' for '{act.GetType().Name}', property name: {property.Name}, type: {type}");
+            if (key is NamedKeyAttribute && attribute is not NamedObjectAttribute)
+                throw new ArgumentException($"Require '{nameof(NamedObjectAttribute)}' for '{nameof(NamedKeyAttribute)}', property name: {property.Name}, type: {type}");
+            if (key is TupleKeyAttribute && attribute is not TupleObjectAttribute)
+                throw new ArgumentException($"Require '{nameof(TupleObjectAttribute)}' for '{nameof(TupleKeyAttribute)}', property name: {property.Name}, type: {type}");
+            propertyWithAttributes.Add((property, key, act));
         }
 
-        var attribute = attributes.FirstOrDefault();
-        if (propertyWithAttributes.Count is 0 && attribute is not ConverterAttribute && attribute is not ConverterCreatorAttribute)
+        if (attribute is ConverterAttribute or ConverterCreatorAttribute)
+            return GetConverter(context, type, attribute);
+        if (propertyWithAttributes.Count is 0)
             throw new ArgumentException($"No available property found, type: {type}");
 
         static IEnumerable<R> Choose<T, U, R>(IEnumerable<T> source, Func<T, U?> filter, Func<T, U, R> result) =>
@@ -53,13 +59,6 @@ internal static class FallbackAttributesMethods
             throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' for '{nameof(NamedObjectAttribute)}', type: {type}");
         if (propertyWithTupleKeyAttributes.Count is 0 && attribute is TupleObjectAttribute)
             throw new ArgumentException($"Require '{nameof(TupleKeyAttribute)}' for '{nameof(TupleObjectAttribute)}', type: {type}");
-        if (propertyWithNamedKeyAttributes.FirstOrDefault().Property is { } alpha && attribute is NamedObjectAttribute is false)
-            throw new ArgumentException($"Require '{nameof(NamedObjectAttribute)}' for '{nameof(NamedKeyAttribute)}', property name: {alpha.Name}, type: {type}");
-        if (propertyWithTupleKeyAttributes.FirstOrDefault().Property is { } bravo && attribute is TupleObjectAttribute is false)
-            throw new ArgumentException($"Require '{nameof(TupleObjectAttribute)}' for '{nameof(TupleKeyAttribute)}', property name: {bravo.Name}, type: {type}");
-
-        if (attribute is ConverterAttribute or ConverterCreatorAttribute)
-            return GetConverter(context, type, attribute);
 
         var names = default(ImmutableArray<string>);
         var properties = attribute switch

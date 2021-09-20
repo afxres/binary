@@ -644,7 +644,7 @@ type AttributeTests() =
     [<Theory>]
     [<InlineData(typeof<ClassAsNamedObjectWithoutKey>, "NamedKeyAttribute", "NamedObjectAttribute")>]
     [<InlineData(typeof<ClassAsTupleObjectWithoutKey>, "TupleKeyAttribute", "TupleObjectAttribute")>]
-    member __.``Without key`` (t : Type, required : string, existed : string) =
+    member __.``Require Key Attribute For Object Attribute`` (t : Type, required : string, existed : string) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
         let message = sprintf "Require '%s' for '%s', type: %O" required existed t
         Assert.Equal(message, error.Message)
@@ -737,20 +737,13 @@ type AttributeTests() =
     [<Theory>]
     [<InlineData(typeof<ClassMissAttribute01>, "NamedObjectAttribute", "NamedKeyAttribute", "Class")>]
     [<InlineData(typeof<ClassMissAttribute02>, "TupleObjectAttribute", "TupleKeyAttribute", "Value")>]
+    [<InlineData(typeof<ClassMissAttribute03>, "TupleObjectAttribute", "TupleKeyAttribute", "Empty")>]
+    [<InlineData(typeof<ClassMissAttribute04>, "NamedObjectAttribute", "NamedKeyAttribute", "Throw")>]
     [<InlineData(typeof<ClassMissAttribute05>, "NamedObjectAttribute", "NamedKeyAttribute", "Three")>]
     [<InlineData(typeof<ClassMissAttribute06>, "TupleObjectAttribute", "TupleKeyAttribute", "Query")>]
     member __.``Require Object Attribute For Key Attribute`` (t: Type, required : string, existed : string, propertyName : string) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t |> ignore)
         let message = sprintf "Require '%s' for '%s', property name: %s, type: %O" required existed propertyName t
-        Assert.Equal(message, error.Message)
-        ()
-
-    [<Theory>]
-    [<InlineData(typeof<ClassMissAttribute03>, "NamedKeyAttribute", "NamedObjectAttribute")>]
-    [<InlineData(typeof<ClassMissAttribute04>, "TupleKeyAttribute", "TupleObjectAttribute")>]
-    member __.``Require Key Attribute For Object Attribute`` (t : Type, required : string, existed : string) =
-        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t |> ignore)
-        let message = sprintf "Require '%s' for '%s', type: %O" required existed t
         Assert.Equal(message, error.Message)
         ()
 
