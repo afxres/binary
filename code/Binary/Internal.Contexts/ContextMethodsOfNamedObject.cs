@@ -1,9 +1,9 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts;
 
+using Mikodev.Binary.Components;
 using Mikodev.Binary.External;
 using Mikodev.Binary.Internal.Contexts.Instance;
 using Mikodev.Binary.Internal.Contexts.Template;
-using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;

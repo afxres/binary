@@ -1,6 +1,6 @@
 ﻿namespace Mikodev.Binary.Internal.Sequence;
 
-using Mikodev.Binary.Internal.Metadata;
+using Mikodev.Binary.Components;
 using System;
 
 internal sealed partial class SequenceConverter<T> : Converter<T>

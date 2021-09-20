@@ -1,7 +1,7 @@
 ﻿namespace Mikodev.Binary;
 
+using Mikodev.Binary.Components;
 using Mikodev.Binary.Internal;
-using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;

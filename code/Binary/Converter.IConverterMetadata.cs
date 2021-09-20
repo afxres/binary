@@ -1,6 +1,6 @@
 ﻿namespace Mikodev.Binary;
 
-using Mikodev.Binary.Internal.Metadata;
+using Mikodev.Binary.Components;
 using System;
 using System.Reflection;
 

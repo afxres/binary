@@ -1,6 +1,6 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts;
 
-using Mikodev.Binary.Internal.Metadata;
+using Mikodev.Binary.Components;
 using Mikodev.Binary.Internal.Sequence;
 using Mikodev.Binary.Internal.Sequence.Decoders;
 using Mikodev.Binary.Internal.Sequence.Encoders;
