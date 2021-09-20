@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -20,15 +19,11 @@ internal static class ContextMethodsOfNamedObject
 
     private static readonly ConstructorInfo ReadOnlySpanByteConstructorInfo = CommonHelper.GetConstructor(typeof(ReadOnlySpan<byte>), new[] { typeof(byte[]) });
 
-    internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<PropertyInfo> properties, ImmutableArray<string> names, Converter<string> encoder)
+    internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<PropertyInfo> properties, ImmutableArray<string> names, ImmutableArray<ReadOnlyMemory<byte>> memories, ByteViewDictionary<int> dictionary)
     {
-        var memories = names.Select(x => new ReadOnlyMemory<byte>(encoder.Encode(x))).ToImmutableArray();
         Debug.Assert(properties.Length == names.Length);
         Debug.Assert(properties.Length == memories.Length);
         Debug.Assert(properties.Length == converters.Length);
-        var dictionary = BinaryObject.Create(memories);
-        if (dictionary is null)
-            throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {type}, string converter type: {encoder.GetType()}");
         var encode = GetEncodeDelegateAsNamedObject(type, converters, properties, memories);
         var decode = GetDecodeDelegateAsNamedObject(type, converters, constructor);
         var converterArguments = new object?[] { encode, decode, names, dictionary };
