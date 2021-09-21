@@ -18,78 +18,56 @@ internal static class FallbackAttributesMethods
             throw new ArgumentException($"Multiple attributes found, type: {type}");
 
         var attribute = attributes.FirstOrDefault();
-        var propertyQuery =
-            from i in type.GetProperties(BindingFlags.Instance | BindingFlags.Public).OrderBy(x => x.Name)
-            let x = GetAttributes(i, type, attribute)
-            where x.Yes
-            select (Property: i, x.Key, x.Act);
-        var propertyDetails = propertyQuery.ToImmutableArray();
+        var selection = GetAttributes(type, attribute);
 
         if (attribute is ConverterAttribute or ConverterCreatorAttribute)
             return GetConverter(context, type, attribute);
-        if (propertyDetails.Length is 0)
+        if (selection.Length is 0)
             throw new ArgumentException($"No available property found, type: {type}");
 
-        IEnumerable<(PropertyInfo Property, T Key)> Choose<T>() where T : class =>
-            from i in propertyDetails
-            let x = i.Key as T
-            where x is not null
-            select (i.Property, Key: x);
-
-        var propertyNamedKeys = Choose<NamedKeyAttribute>().ToImmutableArray();
-        var propertyTupleKeys = Choose<TupleKeyAttribute>().ToImmutableArray();
-        if (propertyNamedKeys.Length is 0 && attribute is NamedObjectAttribute)
-            throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' for '{nameof(NamedObjectAttribute)}', type: {type}");
-        if (propertyTupleKeys.Length is 0 && attribute is TupleObjectAttribute)
-            throw new ArgumentException($"Require '{nameof(TupleKeyAttribute)}' for '{nameof(TupleObjectAttribute)}', type: {type}");
-
-        var stringArray = default(ImmutableArray<string>);
-        var properties = attribute switch
-        {
-            NamedObjectAttribute => GetSortedProperties(type, propertyNamedKeys, out stringArray),
-            TupleObjectAttribute => GetSortedProperties(type, propertyTupleKeys),
-            _ => propertyDetails.Select(x => x.Property).ToImmutableArray(),
-        };
-
+        var properties = GetSortedProperties(type, attribute, selection, out var names);
+        var collection = selection.ToDictionary(x => x.Property, x => GetConverter(context, x.Property.PropertyType, x.Act));
+        var converters = properties.Select(x => collection[x]).ToImmutableArray();
         var constructor = GetConstructor(type, properties);
-        var converterDictionary = propertyDetails.ToDictionary(x => x.Property, x => GetConverter(context, x.Property.PropertyType, x.Act));
-        var converters = properties.Select(x => converterDictionary[x]).ToImmutableArray();
 
         if (attribute is TupleObjectAttribute)
             return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, ContextMethods.GetMemberInitializers(properties));
 
-        var stringConverter = (Converter<string>)context.GetConverter(typeof(string));
-        if (stringArray.IsDefault)
-            stringArray = properties.Select(x => x.Name).ToImmutableArray();
-        var memoryArray = stringArray.Select(x => new ReadOnlyMemory<byte>(stringConverter.Encode(x))).ToImmutableArray();
-        var dictionary = BinaryObject.Create(memoryArray);
+        var instance = (Converter<string>)context.GetConverter(typeof(string));
+        var memories = names.Select(x => new ReadOnlyMemory<byte>(instance.Encode(x))).ToImmutableArray();
+        var dictionary = BinaryObject.Create(memories);
         if (dictionary is null)
-            throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {type}, string converter type: {stringConverter.GetType()}");
-        return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, properties, stringArray, memoryArray, dictionary);
+            throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {type}, string converter type: {instance.GetType()}");
+        return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, properties, names, memories, dictionary);
     }
 
-    private static (bool Yes, Attribute? Key, Attribute? Act) GetAttributes(PropertyInfo property, Type type, Attribute? attribute)
+    private static ImmutableArray<(PropertyInfo Property, Attribute? Key, Attribute? Act)> GetAttributes(Type type, Attribute? attribute)
     {
-        var keys = GetAttributes(property, a => a is NamedKeyAttribute or TupleKeyAttribute);
-        var acts = GetAttributes(property, a => a is ConverterAttribute or ConverterCreatorAttribute);
-        var key = keys.FirstOrDefault();
-        var act = acts.FirstOrDefault();
-        var indexer = property.GetIndexParameters().Any();
-        if (indexer && (key ?? act) is { } result)
-            throw new ArgumentException($"Can not apply '{result.GetType().Name}' to an indexer, type: {type}");
-        if (indexer)
-            return default;
-        if (property.GetGetMethod() is null)
-            throw new ArgumentException($"No available getter found, property name: {property.Name}, type: {type}");
-        if (keys.Length > 1 || acts.Length > 1)
-            throw new ArgumentException($"Multiple attributes found, property name: {property.Name}, type: {type}");
-        if (key is null && act is not null)
-            throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' for '{act.GetType().Name}', property name: {property.Name}, type: {type}");
-        if (key is NamedKeyAttribute && attribute is not NamedObjectAttribute)
-            throw new ArgumentException($"Require '{nameof(NamedObjectAttribute)}' for '{nameof(NamedKeyAttribute)}', property name: {property.Name}, type: {type}");
-        if (key is TupleKeyAttribute && attribute is not TupleObjectAttribute)
-            throw new ArgumentException($"Require '{nameof(TupleObjectAttribute)}' for '{nameof(TupleKeyAttribute)}', property name: {property.Name}, type: {type}");
-        return (true, key, act);
+        var builder = ImmutableArray.CreateBuilder<(PropertyInfo, Attribute?, Attribute?)>();
+        foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public).OrderBy(x => x.Name))
+        {
+            var keys = GetAttributes(property, a => a is NamedKeyAttribute or TupleKeyAttribute);
+            var acts = GetAttributes(property, a => a is ConverterAttribute or ConverterCreatorAttribute);
+            var key = keys.FirstOrDefault();
+            var act = acts.FirstOrDefault();
+            var indexer = property.GetIndexParameters().Any();
+            if (indexer && (key ?? act) is { } result)
+                throw new ArgumentException($"Can not apply '{result.GetType().Name}' to an indexer, type: {type}");
+            if (indexer)
+                continue;
+            if (property.GetGetMethod() is null)
+                throw new ArgumentException($"No available getter found, property name: {property.Name}, type: {type}");
+            if (keys.Length > 1 || acts.Length > 1)
+                throw new ArgumentException($"Multiple attributes found, property name: {property.Name}, type: {type}");
+            if (key is null && act is not null)
+                throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' for '{act.GetType().Name}', property name: {property.Name}, type: {type}");
+            if (key is NamedKeyAttribute && attribute is not NamedObjectAttribute)
+                throw new ArgumentException($"Require '{nameof(NamedObjectAttribute)}' for '{nameof(NamedKeyAttribute)}', property name: {property.Name}, type: {type}");
+            if (key is TupleKeyAttribute && attribute is not TupleObjectAttribute)
+                throw new ArgumentException($"Require '{nameof(TupleObjectAttribute)}' for '{nameof(TupleKeyAttribute)}', property name: {property.Name}, type: {type}");
+            builder.Add((property, key, act));
+        }
+        return builder.ToImmutable();
     }
 
     private static ImmutableArray<Attribute> GetAttributes(MemberInfo member, Func<Attribute, bool> filter)
@@ -126,15 +104,39 @@ internal static class FallbackAttributesMethods
     private static IConverter GetConverter(IGeneratorContext context, Type type, Attribute? attribute)
     {
         Debug.Assert(attribute is null or ConverterAttribute or ConverterCreatorAttribute);
-        return attribute switch
-        {
-            ConverterAttribute alpha => CommonHelper.GetConverter(GetConverter(alpha.Type, type), type),
-            ConverterCreatorAttribute bravo => CommonHelper.GetConverter(GetConverterCreator(bravo.Type, type).GetConverter(context, type), type, bravo.Type),
-            _ => context.GetConverter(type),
-        };
+        if (attribute is ConverterAttribute alpha)
+            return CommonHelper.GetConverter(GetConverter(alpha.Type, type), type);
+        if (attribute is ConverterCreatorAttribute bravo)
+            return CommonHelper.GetConverter(GetConverterCreator(bravo.Type, type).GetConverter(context, type), type, bravo.Type);
+        Debug.Assert(attribute is null);
+        return context.GetConverter(type);
     }
 
-    private static ImmutableArray<PropertyInfo> GetSortedProperties(Type type, ImmutableArray<(PropertyInfo, NamedKeyAttribute)> collection, out ImmutableArray<string> names)
+    private static ImmutableArray<PropertyInfo> GetSortedProperties(Type type, Attribute? attribute, ImmutableArray<(PropertyInfo Property, Attribute? Key, Attribute?)> source, out ImmutableArray<string> list)
+    {
+        IEnumerable<(PropertyInfo Property, T Key)> Choose<T>() where T : class =>
+            from i in source
+            let x = i.Key as T
+            where x is not null
+            select (i.Property, Key: x);
+
+        var named = Choose<NamedKeyAttribute>().ToImmutableArray();
+        var tuple = Choose<TupleKeyAttribute>().ToImmutableArray();
+        if (named.Length is 0 && attribute is NamedObjectAttribute)
+            throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' for '{nameof(NamedObjectAttribute)}', type: {type}");
+        if (tuple.Length is 0 && attribute is TupleObjectAttribute)
+            throw new ArgumentException($"Require '{nameof(TupleKeyAttribute)}' for '{nameof(TupleObjectAttribute)}', type: {type}");
+
+        list = default;
+        if (attribute is TupleObjectAttribute)
+            return GetSortedProperties(type, tuple);
+        if (attribute is NamedObjectAttribute)
+            return GetSortedProperties(type, named, out list);
+        list = source.Select(x => x.Property.Name).ToImmutableArray();
+        return source.Select(x => x.Property).ToImmutableArray();
+    }
+
+    private static ImmutableArray<PropertyInfo> GetSortedProperties(Type type, ImmutableArray<(PropertyInfo, NamedKeyAttribute)> collection, out ImmutableArray<string> list)
     {
         Debug.Assert(collection.Any());
         var map = new SortedDictionary<string, PropertyInfo>();
@@ -147,7 +149,7 @@ internal static class FallbackAttributesMethods
                 throw new ArgumentException($"Named key '{key}' already exists, property name: {property.Name}, type: {type}");
             map.Add(key, property);
         }
-        names = map.Keys.ToImmutableArray();
+        list = map.Keys.ToImmutableArray();
         return map.Values.ToImmutableArray();
     }
 
