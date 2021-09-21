@@ -10,7 +10,7 @@
     <Company>Mikodev</Company>
     <Copyright>Mikodev 2021</Copyright>
     <Product>Mikodev.Binary</Product>
-    <Version>5.3.0</Version>
+    <Version>5.3.0-rc.1</Version>
     <PackageTags>binary dynamic serialization fsharp</PackageTags>
     <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
