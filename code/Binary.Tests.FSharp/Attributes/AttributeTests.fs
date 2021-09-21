@@ -445,10 +445,24 @@ type ClassWithBadConverterAttribute02() =
     end
 
 [<NamedObject>]
-type ClassWithBadConverterAttribute03() =
+type ClassWithBadConverterAttributeOnProperty01() =
     [<NamedKey("alpha")>]
     [<Converter(typeof<BadConverterWithoutPublicConstructor<char>>)>]
     member val Alpha = 'a' with get, set
+
+[<NamedObject>]
+type ClassWithBadConverterAttributeOnPropertyInherit01() =
+    inherit ClassWithBadConverterAttributeOnProperty01()
+
+[<TupleObject>]
+type ClassWithBadConverterAttributeOnProperty02() =
+    [<TupleKey(0)>]
+    [<Converter(typeof<Guid>)>]
+    member val Bravo = 0.0 with get, set
+
+[<TupleObject>]
+type ClassWithBadConverterAttributeOnPropertyInherit02() =
+    inherit ClassWithBadConverterAttributeOnProperty02()
 
 [<ConverterCreator(null)>]
 type ClassWithBadConverterCreatorAttribute01() =
@@ -461,10 +475,24 @@ type ClassWithBadConverterCreatorAttribute02() =
     end
 
 [<TupleObject>]
-type ClassWithBadConverterCreatorAttribute03() =
+type ClassWithBadConverterCreatorAttributeOnProperty01() =
     [<TupleKey(0)>]
     [<ConverterCreator(typeof<Guid>)>]
     member val Delta = 0.0 with get, set
+
+[<TupleObject>]
+type ClassWithBadConverterCreatorAttributeOnPropertyInherit01() =
+    inherit ClassWithBadConverterCreatorAttributeOnProperty01()
+
+[<NamedObject>]
+type ClassWithBadConverterCreatorAttributeOnProperty02() =
+    [<NamedKey("echo")>]
+    [<ConverterCreator(typeof<BadConverterCreatorWithoutPublicConstructor>)>]
+    member val Echo = Rune() with get, set
+
+[<NamedObject>]
+type ClassWithBadConverterCreatorAttributeOnPropertyInherit02() =
+    inherit ClassWithBadConverterCreatorAttributeOnProperty02()
 
 [<Struct>]
 [<StructuralEquality>]
@@ -782,24 +810,48 @@ type AttributeTests() =
         ()
 
     [<Theory>]
-    [<InlineData(typeof<ClassWithBadConverterAttribute01>, typeof<Converter<ClassWithBadConverterAttribute01>>, typeof<InvalidCastException>)>]
-    [<InlineData(typeof<ClassWithBadConverterAttribute02>, typeof<Converter<ClassWithBadConverterAttribute02>>, typeof<ArgumentNullException>)>]
-    [<InlineData(typeof<ClassWithBadConverterAttribute03>, typeof<Converter<char>>, typeof<MissingMethodException>)>]
-    member __.``Converter Attribute With Invalid Type`` (t : Type, expectedType : Type, errorType : Type) =
+    [<InlineData(typeof<ClassWithBadConverterAttribute01>, typeof<InvalidCastException>)>]
+    [<InlineData(typeof<ClassWithBadConverterAttribute02>, typeof<ArgumentNullException>)>]
+    member __.``Converter Attribute On Type With Invalid Type`` (t : Type, errorType : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Can not get custom converter via attribute, expected converter type: %O" expectedType
+        let message = sprintf "Can not get custom converter via attribute, type: %O" t
         Assert.Equal(message, error.Message)
         let innerError = error.InnerException
         Assert.IsType(errorType, innerError)
         ()
 
     [<Theory>]
-    [<InlineData(typeof<ClassWithBadConverterCreatorAttribute01>, typeof<Converter<ClassWithBadConverterCreatorAttribute01>>, typeof<ArgumentNullException>)>]
-    [<InlineData(typeof<ClassWithBadConverterCreatorAttribute02>, typeof<Converter<ClassWithBadConverterCreatorAttribute02>>, typeof<MissingMethodException>)>]
-    [<InlineData(typeof<ClassWithBadConverterCreatorAttribute03>, typeof<Converter<double>>, typeof<InvalidCastException>)>]
-    member __.``Converter Creator Attribute With Invalid Type`` (t : Type, expectedType : Type, errorType : Type) =
+    [<InlineData(typeof<ClassWithBadConverterAttributeOnProperty01>, typeof<MissingMethodException>, "Alpha")>]
+    [<InlineData(typeof<ClassWithBadConverterAttributeOnPropertyInherit01>, typeof<MissingMethodException>, "Alpha")>]
+    [<InlineData(typeof<ClassWithBadConverterAttributeOnProperty02>, typeof<InvalidCastException>, "Bravo")>]
+    [<InlineData(typeof<ClassWithBadConverterAttributeOnPropertyInherit02>, typeof<InvalidCastException>, "Bravo")>]
+    member __.``Converter Attribute On Property With Invalid Type`` (t : Type, errorType : Type, propertyName : string) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Can not get custom converter creator via attribute, expected converter type: %O" expectedType
+        let message = sprintf "Can not get custom converter via attribute, property name: %s, type: %O" propertyName t
+        Assert.Equal(message, error.Message)
+        let innerError = error.InnerException
+        Assert.IsType(errorType, innerError)
+        ()
+
+    [<Theory>]
+    [<InlineData(typeof<ClassWithBadConverterCreatorAttribute01>, typeof<ArgumentNullException>)>]
+    [<InlineData(typeof<ClassWithBadConverterCreatorAttribute02>, typeof<MissingMethodException>)>]
+    member __.``Converter Creator Attribute With Invalid Type`` (t : Type, errorType : Type) =
+        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
+        let message = sprintf "Can not get custom converter creator via attribute, type: %O" t
+        Assert.Equal(message, error.Message)
+        let innerError = error.InnerException
+        Assert.IsType(errorType, innerError)
+        ()
+
+    [<Theory>]
+    [<InlineData(typeof<ClassWithBadConverterCreatorAttributeOnProperty01>, typeof<InvalidCastException>, "Delta")>]
+    [<InlineData(typeof<ClassWithBadConverterCreatorAttributeOnPropertyInherit01>, typeof<InvalidCastException>, "Delta")>]
+    [<InlineData(typeof<ClassWithBadConverterCreatorAttributeOnProperty02>, typeof<MissingMethodException>, "Echo")>]
+    [<InlineData(typeof<ClassWithBadConverterCreatorAttributeOnPropertyInherit02>, typeof<MissingMethodException>, "Echo")>]
+    member __.``Converter Creator Attribute On Property With Invalid Type`` (t : Type, errorType : Type, propertyName : string) =
+        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
+        let message = sprintf "Can not get custom converter creator via attribute, property name: %s, type: %O" propertyName t
         Assert.Equal(message, error.Message)
         let innerError = error.InnerException
         Assert.IsType(errorType, innerError)

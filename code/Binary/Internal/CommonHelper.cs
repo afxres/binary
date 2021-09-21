@@ -87,24 +87,15 @@ internal static class CommonHelper
         return (PropertyInfo)((MemberExpression)expression.Body).Member;
     }
 
-    internal static IConverter GetConverter(IConverter converter, Type type)
+    internal static IConverter GetConverter(IConverter? converter, Type type, Type? creator)
     {
-        Debug.Assert(converter is not null);
-        var expectedType = typeof(Converter<>).MakeGenericType(type);
-        var instanceType = converter.GetType();
-        if (expectedType.IsAssignableFrom(instanceType) is false)
-            throw new ArgumentException($"Can not convert '{instanceType}' to '{expectedType}'");
-        return converter;
-    }
-
-    internal static IConverter GetConverter(IConverter? converter, Type type, Type creatorType)
-    {
-        var expectedType = typeof(Converter<>).MakeGenericType(type);
+        var action = (string text) => creator is null ? text : $"{text}, converter creator type: {creator}";
+        var target = typeof(Converter<>).MakeGenericType(type);
         if (converter is null)
-            throw new ArgumentException($"Can not convert null to '{expectedType}', converter creator type: {creatorType}");
-        var instanceType = converter.GetType();
-        if (expectedType.IsAssignableFrom(instanceType) is false)
-            throw new ArgumentException($"Can not convert '{instanceType}' to '{expectedType}', converter creator type: {creatorType}");
+            throw new ArgumentException(action.Invoke($"Can not convert null to '{target}'"));
+        var actual = converter.GetType();
+        if (target.IsAssignableFrom(actual) is false)
+            throw new ArgumentException(action.Invoke($"Can not convert '{actual}' to '{target}'"));
         return converter;
     }
 

@@ -21,12 +21,12 @@ internal static class FallbackAttributesMethods
         var selection = GetAttributes(type, attribute);
 
         if (attribute is ConverterAttribute or ConverterCreatorAttribute)
-            return GetConverter(context, type, attribute);
+            return GetConverter(context, type, null, attribute);
         if (selection.Length is 0)
             throw new ArgumentException($"No available property found, type: {type}");
 
         var properties = GetSortedProperties(type, attribute, selection, out var names);
-        var collection = selection.ToDictionary(x => x.Property, x => GetConverter(context, x.Property.PropertyType, x.Act));
+        var collection = selection.ToDictionary(x => x.Property, x => GetConverter(context, type, x.Property, x.Act));
         var converters = properties.Select(x => collection[x]).ToImmutableArray();
         var constructor = GetConstructor(type, properties);
 
@@ -77,37 +77,32 @@ internal static class FallbackAttributesMethods
         return attributes;
     }
 
-    private static IConverter GetConverter(Type instance, Type item)
+    private static T GetConverterOrCreator<T>(Type instance, Type reflected, PropertyInfo? property)
     {
         try
         {
-            return (IConverter)CommonHelper.CreateInstance(instance, null);
+            return (T)CommonHelper.CreateInstance(instance, null);
         }
         catch (Exception e)
         {
-            throw new ArgumentException($"Can not get custom converter via attribute, expected converter type: {typeof(Converter<>).MakeGenericType(item)}", e);
+            var prefix = typeof(T) == typeof(IConverter)
+                ? "converter"
+                : "converter creator";
+            var suffix = property is null
+                ? $"type: {reflected}"
+                : $"property name: {property.Name}, type: {reflected}";
+            throw new ArgumentException($"Can not get custom {prefix} via attribute, {suffix}", e);
         }
     }
 
-    private static IConverterCreator GetConverterCreator(Type instance, Type item)
+    private static IConverter GetConverter(IGeneratorContext context, Type reflected, PropertyInfo? property, Attribute? attribute)
     {
-        try
-        {
-            return (IConverterCreator)CommonHelper.CreateInstance(instance, null);
-        }
-        catch (Exception e)
-        {
-            throw new ArgumentException($"Can not get custom converter creator via attribute, expected converter type: {typeof(Converter<>).MakeGenericType(item)}", e);
-        }
-    }
-
-    private static IConverter GetConverter(IGeneratorContext context, Type type, Attribute? attribute)
-    {
+        var type = property is null ? reflected : property.PropertyType;
         Debug.Assert(attribute is null or ConverterAttribute or ConverterCreatorAttribute);
         if (attribute is ConverterAttribute alpha)
-            return CommonHelper.GetConverter(GetConverter(alpha.Type, type), type);
+            return CommonHelper.GetConverter(GetConverterOrCreator<IConverter>(alpha.Type, reflected, property), type, null);
         if (attribute is ConverterCreatorAttribute bravo)
-            return CommonHelper.GetConverter(GetConverterCreator(bravo.Type, type).GetConverter(context, type), type, bravo.Type);
+            return CommonHelper.GetConverter(GetConverterOrCreator<IConverterCreator>(bravo.Type, reflected, property).GetConverter(context, type), type, bravo.Type);
         Debug.Assert(attribute is null);
         return context.GetConverter(type);
     }
