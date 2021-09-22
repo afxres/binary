@@ -4,7 +4,6 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Xunit;
@@ -76,7 +75,7 @@ public class LongDataDictionaryTests
         var result = create.Invoke(arguments);
         var query = GetGetValueDelegate(result);
         Assert.NotNull(result);
-        var actual = query.Invoke(ref Unsafe.NullRef<byte>(), length);
+        var actual = query.Invoke(ref MemoryMarshal.GetReference<byte>(default), length);
         Assert.Equal(-1, actual);
     }
 

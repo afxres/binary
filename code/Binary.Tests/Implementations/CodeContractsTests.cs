@@ -201,6 +201,7 @@ public class CodeContractsTests
         }
     }
 
+#if NET6_0_OR_GREATER
     [Fact(DisplayName = "Public Method Parameter Nullability")]
     public void PublicEncodeMethodNullability()
     {
@@ -216,4 +217,5 @@ public class CodeContractsTests
         Assert.All(groups[NullabilityState.NotNull], x => Assert.True(x.Key.Name is "anonymous"));
         Assert.All(groups[NullabilityState.Unknown], x => Assert.True(x.Key.Member.DeclaringType?.IsSubclassOf(typeof(Delegate))));
     }
+#endif
 }

@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using Xunit;
 
+#if NET5_0_OR_GREATER
 public class RecordTests
 {
     record Person(int Id, string Name);
@@ -28,3 +29,4 @@ public class RecordTests
         Assert.Equal(b, k);
     }
 }
+#endif

@@ -66,7 +66,7 @@ public class BinaryModuleTests
     public void EqualityLengthBothZero()
     {
         var equality = GetEqualityDelegate();
-        var result = equality.Invoke(ref Unsafe.NullRef<byte>(), 0, Array.Empty<byte>());
+        var result = equality.Invoke(ref MemoryMarshal.GetReference<byte>(default), 0, Array.Empty<byte>());
         Assert.True(result);
     }
 
@@ -140,7 +140,7 @@ public class BinaryModuleTests
     public void HashCodeEmptyBuffer()
     {
         var function = GetHashCodeDelegate();
-        var result = function.Invoke(ref Unsafe.NullRef<byte>(), 0);
+        var result = function.Invoke(ref MemoryMarshal.GetReference<byte>(default), 0);
         Assert.Equal(0, result);
     }
 
@@ -210,7 +210,7 @@ public class BinaryModuleTests
     public void LongDataZeroLength()
     {
         var function = GetLongDataDelegate();
-        var result = function.Invoke(ref Unsafe.NullRef<byte>(), 0);
+        var result = function.Invoke(ref MemoryMarshal.GetReference<byte>(default), 0);
         Assert.Equal(0L, result);
     }
 
@@ -252,7 +252,7 @@ public class BinaryModuleTests
             {
                 var source = new byte[i];
                 random.NextBytes(source);
-                var result = function.Invoke(ref MemoryMarshal.GetArrayDataReference(source), source.Length);
+                var result = function.Invoke(ref MemoryMarshal.GetReference(new Span<byte>(source)), source.Length);
                 var target = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<long, byte>(ref result), sizeof(long));
                 Assert.True(target.Slice(i).ToArray().All(x => x is 0));
                 Assert.True(target.Slice(0, i).SequenceEqual(source));
