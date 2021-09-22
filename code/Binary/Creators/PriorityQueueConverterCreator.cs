@@ -4,6 +4,7 @@ using Mikodev.Binary.Internal;
 using System;
 using System.Collections.Generic;
 
+#if NET6_0_OR_GREATER
 internal sealed class PriorityQueueConverterCreator : IConverterCreator
 {
     public IConverter? GetConverter(IGeneratorContext context, Type type)
@@ -11,3 +12,4 @@ internal sealed class PriorityQueueConverterCreator : IConverterCreator
         return CommonHelper.GetConverter(context, type, typeof(PriorityQueue<,>), typeof(PriorityQueueConverter<,>), null);
     }
 }
+#endif

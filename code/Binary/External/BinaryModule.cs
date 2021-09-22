@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary.External;
 
 using Mikodev.Binary.Internal;
+using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -50,7 +51,11 @@ internal static class BinaryModule
             return false;
         if (length is 0)
             return true;
+#if NET5_0_OR_GREATER
         ref var origin = ref MemoryMarshal.GetArrayDataReference(buffer);
+#else
+        ref var origin = ref MemoryMarshal.GetReference(new Span<byte>(buffer));
+#endif
         for (; length >= 4; length -= 4, source = ref Unsafe.Add(ref source, 4), origin = ref Unsafe.Add(ref origin, 4))
             if (Load<uint>(ref source) != Load<uint>(ref origin))
                 return false;

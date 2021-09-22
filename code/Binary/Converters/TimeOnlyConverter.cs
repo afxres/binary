@@ -3,6 +3,7 @@
 using Mikodev.Binary.Internal;
 using System;
 
+#if NET6_0_OR_GREATER
 internal sealed class TimeOnlyConverter : Converter<TimeOnly>
 {
     public TimeOnlyConverter() : base(sizeof(long)) { }
@@ -17,3 +18,4 @@ internal sealed class TimeOnlyConverter : Converter<TimeOnly>
         return new TimeOnly(LittleEndian.Decode<long>(span));
     }
 }
+#endif

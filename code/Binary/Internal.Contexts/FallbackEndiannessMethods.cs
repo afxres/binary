@@ -21,7 +21,9 @@ internal static class FallbackEndiannessMethods
         typeof(ulong),
         typeof(float),
         typeof(double),
+#if NET5_0_OR_GREATER
         typeof(Half),
+#endif
         typeof(BitVector32),
     });
 

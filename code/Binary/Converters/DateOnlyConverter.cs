@@ -3,6 +3,7 @@
 using Mikodev.Binary.Internal;
 using System;
 
+#if NET6_0_OR_GREATER
 internal sealed class DateOnlyConverter : Converter<DateOnly>
 {
     public DateOnlyConverter() : base(sizeof(int)) { }
@@ -17,3 +18,4 @@ internal sealed class DateOnlyConverter : Converter<DateOnly>
         return DateOnly.FromDayNumber(LittleEndian.Decode<int>(span));
     }
 }
+#endif
