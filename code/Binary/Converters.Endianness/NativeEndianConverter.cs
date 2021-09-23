@@ -34,13 +34,9 @@ internal sealed class NativeEndianConverter<T> : Converter<T> where T : unmanage
 
     public override byte[] Encode(T item)
     {
-        var buffer = new byte[Unsafe.SizeOf<T>()];
-#if NET5_0_OR_GREATER
-        Unsafe.WriteUnaligned(ref MemoryMarshal.GetArrayDataReference(buffer), item);
-#else
-        Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(new Span<byte>(buffer)), item);
-#endif
-        return buffer;
+        var result = new byte[Unsafe.SizeOf<T>()];
+        Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(new Span<byte>(result)), item);
+        return result;
     }
 
     public override T Decode(in ReadOnlySpan<byte> span)

@@ -46,11 +46,7 @@ public ref partial struct Allocator
             return Array.Empty<byte>();
         var buffer = this.buffer;
         var result = new byte[offset];
-#if NET5_0_OR_GREATER
-        Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetArrayDataReference(result), ref MemoryMarshal.GetReference(buffer), (uint)offset);
-#else
         Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetReference(new Span<byte>(result)), ref MemoryMarshal.GetReference(buffer), (uint)offset);
-#endif
         return result;
     }
 
