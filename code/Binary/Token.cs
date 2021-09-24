@@ -23,9 +23,9 @@ public sealed class Token : IDynamicMetaObjectProvider
 
     private readonly Token? parent;
 
-    private readonly Lazy<(ImmutableDictionary<string, Token> Dictionary, Exception?)> create;
+    private readonly Lazy<(ImmutableDictionary<string, Token> Tokens, Exception? Error)> create;
 
-    public IReadOnlyDictionary<string, Token> Children => this.create.Value.Dictionary;
+    public IReadOnlyDictionary<string, Token> Children => this.create.Value.Tokens;
 
     public ReadOnlyMemory<byte> Memory => this.memory;
 
@@ -80,11 +80,19 @@ public sealed class Token : IDynamicMetaObjectProvider
         return converter.Decode;
     }
 
+    private static Token GetToken(Token origin, string key)
+    {
+        var source = origin.create.Value;
+        if (source.Tokens.TryGetValue(key, out var result))
+            return result;
+        throw new KeyNotFoundException($"Key '{key}' not found.", source.Error);
+    }
+
     DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => new TokenDynamicMetaObject(parameter, this);
 
     public Token(IGenerator generator, ReadOnlyMemory<byte> memory) : this(generator, memory, null, GetDelegate(generator)) { }
 
-    public Token this[string key] => this.create.Value.Dictionary[key];
+    public Token this[string key] => GetToken(this, key);
 
     public object? As(Type type) => this.generator.GetConverter(type).Decode(this.memory.Span);
 
