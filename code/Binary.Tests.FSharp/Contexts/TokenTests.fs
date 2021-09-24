@@ -341,3 +341,64 @@ type TokenTests() =
         Assert.Empty dictionary
         Assert.Null error
         ()
+
+    [<Theory>]
+    [<InlineData("")>]
+    [<InlineData("a")>]
+    [<InlineData("bravo")>]
+    member __.``Key Not Found Empty Bytes`` (key : string) =
+        let generator = Generator.CreateDefault()
+        let token = Token(generator, ReadOnlyMemory Array.empty)
+        let error = Assert.Throws<KeyNotFoundException>(fun () -> token.[key] |> ignore)
+        Assert.Empty token.Children
+        Assert.Equal($"Key '{key}' not found.", error.Message)
+        Assert.Null error.InnerException
+        ()
+
+    [<Theory>]
+    [<InlineData("")>]
+    [<InlineData("kilo")>]
+    [<InlineData("Mega")>]
+    member __.``Key Not Found Valid Bytes`` (key : string) =
+        let generator = Generator.CreateDefault()
+        let buffer = generator.Encode({| first = 1.0; second = "Next" |})
+        let token = Token(generator, ReadOnlyMemory buffer)
+        let error = Assert.Throws<KeyNotFoundException>(fun () -> token.[key] |> ignore)
+        Assert.Equal(2, token.Children.Count)
+        Assert.Equal($"Key '{key}' not found.", error.Message)
+        Assert.Null error.InnerException
+        ()
+
+    [<Theory>]
+    [<InlineData("")>]
+    [<InlineData("A")>]
+    [<InlineData("Beta")>]
+    member __.``Key Not Found Invalid Bytes`` (key : string) =
+        let generator = Generator.CreateDefault()
+        let token = Token(generator, ReadOnlyMemory [| 0uy |])
+        let error = Assert.Throws<KeyNotFoundException>(fun () -> token.[key] |> ignore)
+        let inner = Assert.IsType<ArgumentException> error.InnerException
+        Assert.Empty token.Children
+        Assert.Equal($"Key '{key}' not found.", error.Message)
+        Assert.Equal("Not enough bytes or byte sequence invalid.", inner.Message)
+        ()
+
+    [<Theory>]
+    [<InlineData("")>]
+    [<InlineData("α")>]
+    [<InlineData("二")>]
+    member __.``Key Not Found Converter Exception`` (key : string) =
+        let converter = {
+            new Converter<string>() with
+                override __.Decode(_ : inref<ReadOnlySpan<byte>>) : string = raise (Exception("Not a good idea!"))
+
+                override __.Encode(_, _) = raise (NotSupportedException())
+        }
+        let generator = Generator.CreateDefaultBuilder().AddConverter(converter).Build()
+        let token = Token(generator, ReadOnlyMemory [| 0uy; 0uy |])
+        let error = Assert.Throws<KeyNotFoundException>(fun () -> token.[key] |> ignore)
+        let inner = Assert.IsType<Exception> error.InnerException
+        Assert.Empty token.Children
+        Assert.Equal($"Key '{key}' not found.", error.Message)
+        Assert.Equal("Not a good idea!", inner.Message)
+        ()
