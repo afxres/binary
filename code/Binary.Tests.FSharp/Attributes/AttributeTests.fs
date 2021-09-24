@@ -527,6 +527,46 @@ type Tuple03<'T1, 'T2, 'T3>(item01 : 'T1, item02 : 'T2, item03 : 'T3) =
     [<TupleKey(2)>]
     member __.Item03 = item03
 
+[<NamedObject>]
+type EmptyClassAsNamedObject() =
+    class
+    end
+
+[<TupleObject>]
+type EmptyClassAsTupleObject() =
+    class
+    end
+
+[<Converter(typeof<BadConverter<EmptyClassCustomConverter>>)>]
+type EmptyClassCustomConverter() =
+    class
+    end
+
+[<ConverterCreator(typeof<BadConverterCreator<EmptyClassCustomConverterCreator>>)>]
+type EmptyClassCustomConverterCreator() =
+    class
+    end
+
+[<NamedObject>]
+type EmptyStructAsNamedObject =
+    struct
+    end
+
+[<TupleObject>]
+type EmptyStructAsTupleObject =
+    struct
+    end
+
+[<Converter(typeof<BadConverter<EmptyStructCustomConverter>>)>]
+type EmptyStructCustomConverter =
+    struct
+    end
+
+[<ConverterCreator(typeof<BadConverterCreator<EmptyStructCustomConverterCreator>>)>]
+type EmptyStructCustomConverterCreator =
+    struct
+    end
+
 type AttributeTests() =
     let generator = Generator.CreateDefault()
 
@@ -855,4 +895,48 @@ type AttributeTests() =
         Assert.Equal(message, error.Message)
         let innerError = error.InnerException
         Assert.IsType(errorType, innerError)
+        ()
+
+    [<Theory>]
+    [<InlineData(typeof<EmptyClassAsNamedObject>)>]
+    [<InlineData(typeof<EmptyStructAsNamedObject>)>]
+    member __.``Empty Type As Named Object`` (t : Type) =
+        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
+        let message = $"No available property found, type: {t}"
+        Assert.Equal(message, error.Message)
+        Assert.Null error.ParamName
+        Assert.Null error.InnerException
+        Assert.Empty(t.GetProperties())
+        ()
+
+    [<Theory>]
+    [<InlineData(typeof<EmptyClassAsTupleObject>)>]
+    [<InlineData(typeof<EmptyStructAsTupleObject>)>]
+    member __.``Empty Type As Tuple Object`` (t : Type) =
+        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
+        let message = $"No available property found, type: {t}"
+        Assert.Equal(message, error.Message)
+        Assert.Null error.ParamName
+        Assert.Null error.InnerException
+        Assert.Empty(t.GetProperties())
+        ()
+
+    [<Theory>]
+    [<InlineData(typeof<EmptyClassCustomConverter>)>]
+    [<InlineData(typeof<EmptyStructCustomConverter>)>]
+    member __.``Empty Type Custom Converter`` (t : Type) =
+        let converter = generator.GetConverter t
+        let expectedType = typedefof<BadConverter<_>>.MakeGenericType t
+        Assert.IsType(expectedType, converter)
+        Assert.Empty(t.GetProperties())
+        ()
+
+    [<Theory>]
+    [<InlineData(typeof<EmptyClassCustomConverterCreator>)>]
+    [<InlineData(typeof<EmptyStructCustomConverterCreator>)>]
+    member __.``Empty Type Custom Converter Creator`` (t : Type) =
+        let converter = generator.GetConverter t
+        let expectedType = typedefof<BadConverter<_>>.MakeGenericType t
+        Assert.IsType(expectedType, converter)
+        Assert.Empty(t.GetProperties())
         ()
