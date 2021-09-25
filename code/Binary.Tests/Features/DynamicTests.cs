@@ -188,4 +188,16 @@ public class DynamicTests
         var values = result.Select(x => (int)x.id).ToList();
         Assert.Equal(new[] { 1, 2, 3 }, values);
     }
+
+    [Fact(DisplayName = "Dynamic Dictionary Item")]
+    public void DynamicDictionaryItem()
+    {
+        var source = new { id = 1, data = "two", item = new { tags = new[] { "key", "value" } } };
+        var buffer = this.generator.Encode(source);
+        var result = this.generator.Decode<Dictionary<dynamic, dynamic>>(buffer);
+        _ = Assert.IsType<Dictionary<object, object>>(result);
+        var values = result.ToDictionary(x => (string)x.Key, x => x.Value);
+        var target = (string)(values["item"].tags.key);
+        Assert.Equal("value", target);
+    }
 }
