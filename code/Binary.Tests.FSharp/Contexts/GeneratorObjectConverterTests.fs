@@ -4,6 +4,7 @@ open Mikodev.Binary
 open System
 open System.Collections.Generic
 open System.Runtime.CompilerServices
+open System.Text
 open Xunit
 
 type FakeObjectConverter<'T>() =
@@ -25,6 +26,13 @@ type FakeObjectConverter<'T>() =
 
     override __.Decode(_ : byte array) : 'T = raise (NotImplementedException())
 
+type FakeStringConverter() =
+    inherit Converter<string>()
+
+    override __.Encode(allocator, item) = Allocator.Append(&allocator, item.AsSpan(), Encoding.UTF8)
+
+    override __.Decode(span : inref<ReadOnlySpan<byte>>) : string = Encoding.UTF8.GetString span
+
 type FakeObjectGenerator(converters : IReadOnlyDictionary<Type, IConverter>) =
     interface IGenerator with
         member __.GetConverter t =
@@ -32,8 +40,13 @@ type FakeObjectGenerator(converters : IReadOnlyDictionary<Type, IConverter>) =
 
 type GeneratorObjectConverterTests() =
     static let CreateConverter() =
+        let sequences = [
+            typeof<int>, FakeObjectConverter<int>() :> IConverter;
+            typeof<string>, FakeStringConverter() :> IConverter;
+        ]
+        let generator = sequences |> readOnlyDict |> FakeObjectGenerator
         let converterType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "GeneratorObjectConverter") |> Array.exactlyOne
-        let converter = Activator.CreateInstance(converterType, [| [ typeof<int>, FakeObjectConverter<int>() :> IConverter ] |> readOnlyDict |> FakeObjectGenerator |> box |]) :?> Converter<obj>
+        let converter = Activator.CreateInstance(converterType, [| generator |> box |]) :?> Converter<obj>
         converter
 
     static let rec InvokeWithInsufficientExecutionStack (action : Action) =
@@ -53,10 +66,10 @@ type GeneratorObjectConverterTests() =
     }
 
     static member ``Decode Arguments`` : (obj array) seq = seq {
-        yield [| Action(fun () -> let mutable span = ReadOnlySpan() in CreateConverter().Decode &span |> ignore); "Decode(System.ReadOnlySpan`1[System.Byte] ByRef)" |]
-        yield [| Action(fun () -> let mutable span = ReadOnlySpan() in CreateConverter().DecodeAuto &span |> ignore); "DecodeAuto" |]
-        yield [| Action(fun () -> let mutable span = ReadOnlySpan() in CreateConverter().DecodeWithLengthPrefix &span |> ignore); "DecodeWithLengthPrefix" |]
-        yield [| Action(fun () -> CreateConverter().Decode Array.empty |> ignore); "Decode(Byte[])" |]
+        yield [| Func<obj>(fun () -> let mutable span = ReadOnlySpan() in CreateConverter().Decode &span); "Decode(System.ReadOnlySpan`1[System.Byte] ByRef)" |]
+        yield [| Func<obj>(fun () -> let mutable span = ReadOnlySpan([| 0uy |]) in CreateConverter().DecodeAuto &span); "DecodeAuto" |]
+        yield [| Func<obj>(fun () -> let mutable span = ReadOnlySpan([| 0uy |]) in CreateConverter().DecodeWithLengthPrefix &span); "DecodeWithLengthPrefix" |]
+        yield [| Func<obj>(fun () -> CreateConverter().Decode Array.empty); "Decode(Byte[])" |]
     }
 
     [<Fact>]
@@ -110,10 +123,10 @@ type GeneratorObjectConverterTests() =
 
     [<Theory>]
     [<MemberData("Decode Arguments")>]
-    member __.``Decode (ensure override)`` (action : Action, name : string) =
-        let error = Assert.Throws<NotSupportedException>(fun () -> action.Invoke())
-        let message = "Can not decode object, type: System.Object"
-        Assert.Equal(message, error.Message)
+    member __.``Decode (ensure override)`` (action : Func<obj>, name : string) =
+        let token = Assert.IsType<Token>(action.Invoke())
+        Assert.Empty token.Children
+        Assert.Equal(0, token.Memory.Length)
 
         let converterType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "GeneratorObjectConverter") |> Array.exactlyOne
         let methods = converterType.GetMethods()

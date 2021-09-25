@@ -148,8 +148,9 @@ let ``Encode (as object)`` (value : obj) =
 
 [<Fact>]
 let ``Decode (as object)`` () =
-    let error = Assert.Throws<NotSupportedException>(fun () -> generator.Decode<obj> Array.empty<byte>)
-    Assert.Equal("Can not decode object, type: System.Object", error.Message)
+    let token = Assert.IsType<Token>(generator.Decode<obj> Array.empty<byte>)
+    Assert.Empty token.Children
+    Assert.Equal(0, token.Memory.Length)
     ()
 
 [<Theory>]
