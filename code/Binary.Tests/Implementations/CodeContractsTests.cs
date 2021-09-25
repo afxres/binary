@@ -201,6 +201,16 @@ public class CodeContractsTests
         }
     }
 
+    [Fact(DisplayName = "Public Obsolete Members")]
+    public void PublicObsoleteMembers()
+    {
+        var publicTypes = typeof(IConverter).Assembly.GetTypes().Where(x => x.IsPublic).ToList();
+        var publicMembers = publicTypes.SelectMany(x => x.GetMembers());
+        var obsoleteAttributes = publicMembers.SelectMany(x => x.GetCustomAttributes(true)).OfType<ObsoleteAttribute>().ToList();
+        Assert.Equal(2, obsoleteAttributes.Count);
+        Assert.All(obsoleteAttributes, x => Assert.EndsWith("Allocator will always throw an exception.", x.Message));
+    }
+
 #if NET6_0_OR_GREATER
     [Fact(DisplayName = "Public Method Parameter Nullability")]
     public void PublicEncodeMethodNullability()

@@ -109,6 +109,24 @@ let ``Get Hash Code (not supported)`` () =
     ()
 
 [<Fact>]
+let ``Equals (obsolete)`` () =
+    let define = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "Allocator") |> Array.exactlyOne
+    let method = define.GetMethods() |> Array.filter (fun x -> x.Name = "Equals") |> Array.exactlyOne
+    let attributes = method.GetCustomAttributes(typeof<ObsoleteAttribute>, false) |> Array.exactlyOne :?> ObsoleteAttribute
+    let message = "Equals on Allocator will always throw an exception."
+    Assert.Equal(message, attributes.Message)
+    ()
+
+[<Fact>]
+let ``Get Hash Code (obsolete)`` () =
+    let define = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "Allocator") |> Array.exactlyOne
+    let method = define.GetMethods() |> Array.filter (fun x -> x.Name = "GetHashCode") |> Array.exactlyOne
+    let attributes = method.GetCustomAttributes(typeof<ObsoleteAttribute>, false) |> Array.exactlyOne :?> ObsoleteAttribute
+    let message = "GetHashCode on Allocator will always throw an exception."
+    Assert.Equal(message, attributes.Message)
+    ()
+
+[<Fact>]
 let ``To String (debug)`` () =
     let mutable allocator = Allocator(Span (Array.zeroCreate 64), 32)
     Allocator.Append(&allocator, 4, null :> obj, fun a b -> ())

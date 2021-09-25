@@ -54,9 +54,11 @@ public ref partial struct Allocator
     public readonly ReadOnlySpan<byte> AsSpan() => MemoryMarshal.CreateReadOnlySpan(ref MemoryMarshal.GetReference(this.buffer), this.offset);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete($"{nameof(Equals)} on {nameof(Allocator)} will always throw an exception.")]
     public override readonly bool Equals(object? obj) => throw new NotSupportedException();
 
     [EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete($"{nameof(GetHashCode)} on {nameof(Allocator)} will always throw an exception.")]
     public override readonly int GetHashCode() => throw new NotSupportedException();
 
     [EditorBrowsable(EditorBrowsableState.Never)]
