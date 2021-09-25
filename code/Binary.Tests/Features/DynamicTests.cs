@@ -172,4 +172,20 @@ public class DynamicTests
         Assert.Null(instance.Value);
         Assert.True(ReferenceEquals(keys, Array.Empty<string>()));
     }
+
+    [Fact(DisplayName = "Dynamic Collection Item")]
+    public void DynamicCollectionItem()
+    {
+        var a = new { id = 1 };
+        var b = new { id = 2, tags = Array.Empty<object>() };
+        var c = new { id = 3, data = "one" };
+        var list = new dynamic[] { a, b, c };
+        var converter = this.generator.GetConverter(list);
+        _ = Assert.IsAssignableFrom<Converter<object[]>>(converter);
+        var buffer = converter.Encode(list);
+        var result = converter.Decode(buffer);
+        Assert.All(result, x => _ = Assert.IsType<Token>(x));
+        var values = result.Select(x => (int)x.id).ToList();
+        Assert.Equal(new[] { 1, 2, 3 }, values);
+    }
 }
