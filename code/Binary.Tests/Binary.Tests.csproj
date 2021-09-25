@@ -4,7 +4,7 @@
     <TargetFrameworks>net6.0;net5.0;netcoreapp3.1</TargetFrameworks>
     <AssemblyName>Mikodev.Binary.Tests</AssemblyName>
     <RootNamespace>Mikodev.Binary.Tests</RootNamespace>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>

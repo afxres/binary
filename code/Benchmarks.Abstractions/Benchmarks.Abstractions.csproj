@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>Mikodev.Binary.Benchmarks.Abstractions</AssemblyName>
     <RootNamespace>Mikodev.Binary.Benchmarks.Abstractions</RootNamespace>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

@@ -5,7 +5,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>Mikodev.Binary.Benchmarks.GeneratorTests</AssemblyName>
     <RootNamespace>Mikodev.Binary.Benchmarks.GeneratorTests</RootNamespace>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
