@@ -2,6 +2,7 @@
 
 open Mikodev.Binary
 open System
+open System.Diagnostics
 
 [<CompiledName("FSharpListConverter`1")>]
 type internal ListConverter<'T>(converter : Converter<'T>) =
@@ -12,6 +13,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
 
     let constant = converter.Length > 0
 
+    [<DebuggerStepThrough>]
     member private __.ExceptConstant(length : int) : unit =
         raise (ArgumentException $"Not enough bytes for collection element, byte length: {length}, element type: {typeof<'T>}")
 
