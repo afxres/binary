@@ -71,7 +71,7 @@ let ``List (null)`` () =
 [<InlineData(23, 7)>]
 let ``List (value type, invalid byte count)`` (bytes : int, remainder : int) =
     let buffer = Array.zeroCreate<byte> bytes
-    let converter = generator.GetConverter<List<double>>()
+    let converter = generator.GetConverter<double list>()
     let otherConverter = generator.GetConverter<double array>()
     let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode buffer |> ignore)
     let otherError = Assert.Throws<ArgumentException>(fun () -> otherConverter.Decode buffer |> ignore)
