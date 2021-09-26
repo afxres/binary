@@ -2,6 +2,7 @@
 
 open Mikodev.Binary
 open System
+open System.Diagnostics
 open System.Runtime.CompilerServices
 
 type internal UnionEncoder<'T> = delegate of allocator : byref<Allocator> * item : 'T * mark : byref<int> -> unit
@@ -14,18 +15,22 @@ type internal UnionConverter<'T>(encode : UnionEncoder<'T>, encodeAuto : UnionEn
     [<Literal>]
     let constant = 0
 
+    [<DebuggerStepThrough>]
     member private __.ExceptNull() : unit =
         raise (ArgumentNullException("item", $"Union can not be null, type: {typeof<'T>}"))
 
+    [<DebuggerStepThrough>]
     member private __.ExceptMark(mark : int) : unit =
         raise (ArgumentException $"Invalid union tag '{mark}', type: {typeof<'T>}")
 
+    [<DebuggerStepThrough>]
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
     member private me.HandleNull(item : 'T) : unit =
         if noNull && isNull (box item) then
             me.ExceptNull()
         ()
 
+    [<DebuggerStepThrough>]
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
     member private me.HandleMark(mark : int) : unit =
         if mark <> constant then
