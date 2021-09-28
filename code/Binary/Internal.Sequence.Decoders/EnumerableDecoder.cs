@@ -18,10 +18,6 @@ internal sealed class EnumerableDecoder<T, E> where T : IEnumerable<E>
 
     public T Decode(ReadOnlySpan<byte> span)
     {
-        var (buffer, length) = this.invoke.Decode(span);
-        Debug.Assert((uint)length <= (uint)buffer.Length);
-        if (buffer.Length == length)
-            return (T)(IEnumerable<E>)buffer;
-        return (T)(IEnumerable<E>)NativeModule.CreateList(buffer, length);
+        return (T)this.invoke.Decode(span).GetEnumerable();
     }
 }

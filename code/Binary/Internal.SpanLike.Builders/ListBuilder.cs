@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 internal sealed class ListBuilder<T> : SpanLikeBuilder<List<T>, T>
 {
@@ -13,8 +12,6 @@ internal sealed class ListBuilder<T> : SpanLikeBuilder<List<T>, T>
 
     public override List<T> Invoke(ReadOnlySpan<byte> span, SpanLikeAdapter<T> invoke)
     {
-        var (buffer, length) = invoke.Decode(span);
-        Debug.Assert((uint)length <= (uint)buffer.Length);
-        return NativeModule.CreateList(buffer, length);
+        return invoke.Decode(span).GetList();
     }
 }

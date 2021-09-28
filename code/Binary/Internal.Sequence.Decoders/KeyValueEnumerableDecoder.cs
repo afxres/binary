@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 internal sealed class KeyValueEnumerableDecoder<K, V>
 {
@@ -36,10 +35,6 @@ internal sealed class KeyValueEnumerableDecoder<K, V>
             var next = tail.DecodeAuto(ref body);
             memory.Add(new KeyValuePair<K, V>(head, next));
         }
-        var (buffer, length) = memory;
-        Debug.Assert((uint)length <= (uint)buffer.Length);
-        if (buffer.Length == length)
-            return buffer;
-        return NativeModule.CreateList(buffer, length);
+        return memory.GetEnumerable();
     }
 }

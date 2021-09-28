@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary.Internal;
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -46,12 +47,41 @@ internal ref struct MemoryBuffer<T>
         this.length++;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Deconstruct(out T[] buffer, out int length)
+    public readonly ArraySegment<T> GetArraySegment()
     {
-        Debug.Assert(this.length >= 0);
-        Debug.Assert(this.length <= this.buffer.Length);
-        buffer = this.buffer;
-        length = this.length;
+        var buffer = this.buffer;
+        var length = this.length;
+        Debug.Assert((uint)length <= (uint)buffer.Length);
+        return new ArraySegment<T>(buffer, 0, length);
+    }
+
+    public readonly List<T> GetList()
+    {
+        var buffer = this.buffer;
+        var length = this.length;
+        Debug.Assert((uint)length <= (uint)buffer.Length);
+        return NativeModule.CreateList(buffer, length);
+    }
+
+    public readonly T[] GetArray()
+    {
+        var buffer = this.buffer;
+        var length = this.length;
+        Debug.Assert((uint)length <= (uint)buffer.Length);
+        if (buffer.Length == length)
+            return buffer;
+        var target = new T[length];
+        Array.Copy(buffer, 0, target, 0, length);
+        return target;
+    }
+
+    public readonly IEnumerable<T> GetEnumerable()
+    {
+        var buffer = this.buffer;
+        var length = this.length;
+        Debug.Assert((uint)length <= (uint)buffer.Length);
+        if (buffer.Length == length)
+            return buffer;
+        return NativeModule.CreateList(buffer, length);
     }
 }
