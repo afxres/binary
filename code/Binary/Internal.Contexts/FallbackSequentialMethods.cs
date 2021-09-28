@@ -15,6 +15,7 @@ internal static class FallbackSequentialMethods
         [typeof(Memory<>)] = typeof(MemoryBuilder<>),
         [typeof(ArraySegment<>)] = typeof(ArraySegmentBuilder<>),
         [typeof(ReadOnlyMemory<>)] = typeof(ReadOnlyMemoryBuilder<>),
+        [typeof(ImmutableArray<>)] = typeof(ImmutableArrayBuilder<>),
     });
 
     private static object CreateArrayBuilder(Type type, Type elementType)

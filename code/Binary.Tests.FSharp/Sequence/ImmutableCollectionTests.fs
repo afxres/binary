@@ -8,8 +8,6 @@ open System.Reflection
 open Xunit
 
 type ImmutableCollectionTests() =
-    let generator = Generator.CreateDefault()
-
     let TestNumberArray = [| 1; 5 |]
 
     let TestStringArray = [| "immutable"; "list"; "collection"; "readonly" |]
@@ -18,9 +16,23 @@ type ImmutableCollectionTests() =
 
     let TestStringNumberPairArray = [| KeyValuePair("Epsilon", Double.Epsilon); KeyValuePair("NaN", Double.NaN) |]
 
+    let TestInternalConverter =
+        let g = Generator.CreateDefault()
+        let context = {
+            new IGeneratorContext with
+                member __.GetConverter t =
+                    Assert.Equal("System", t.Namespace)
+                    g.GetConverter t
+        }
+
+        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "FallbackCollectionMethods") |> Array.exactlyOne
+        let m = t.GetMethod("GetConverter", BindingFlags.Static ||| BindingFlags.NonPublic, null, [| typeof<IGeneratorContext>; typeof<Type> |], null)
+        let d = Delegate.CreateDelegate(typeof<Func<Type, IConverter>>, context, m)
+        d :?> Func<Type, IConverter>
+
     let TestConverter (item : 'T when 'T :> 'E seq) =
         Assert.NotNull item
-        let converter = generator.GetConverter<'T>()
+        let converter = TestInternalConverter.Invoke typeof<'T> :?> Converter<'T>
         let converterType = converter.GetType()
         Assert.Equal("SequenceConverter`1", converterType.Name)
         let encoder = converterType.GetField("encode", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
@@ -86,7 +98,7 @@ type ImmutableCollectionTests() =
 
     let TestInvalid (item : 'T when 'T :> 'E seq) =
         Assert.Empty item
-        let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter<'T>() |> ignore)
+        let error = Assert.Throws<ArgumentException>(fun () -> TestInternalConverter.Invoke typeof<'T> |> ignore)
         let message = sprintf "Invalid collection type: %O" typeof<'T>
         Assert.Null error.ParamName
         Assert.Equal(message, error.Message)
