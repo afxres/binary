@@ -55,6 +55,7 @@
     <Compile Include="Sequence\CompatibleCollectionTests.fs" />
     <Compile Include="Sequence\EnumerableDecodeTests.fs" />
     <Compile Include="Sequence\EnumerableEncodeTests.fs" />
+    <Compile Include="Sequence\ImmutableArrayTests.fs" />
     <Compile Include="Sequence\ImmutableCollectionTests.fs" />
     <Compile Include="SpanLike\SpanLikeTests.fs" />
     <Compile Include="TupleLike\KeyValuePairTests.fs" />
