@@ -80,5 +80,5 @@ type CollectionOverflowTests () =
         let backup = { data = 4 }
         Assert.Throws<OverflowException>(fun () ->
             let mutable allocator = Allocator()
-            generator.GetConverter<Backup<int> array>().EncodeWithLengthPrefix(&allocator, Array.create 0x1000 backup) |> ignore) |> ignore
+            generator.GetConverter<Backup<int> array>().EncodeWithLengthPrefix(&allocator, Array.create 0x1000 backup)) |> ignore
         ()

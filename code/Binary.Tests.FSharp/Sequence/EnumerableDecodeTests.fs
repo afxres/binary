@@ -53,15 +53,15 @@ type FakeDictionary<'K, 'V>(item : Queue<KeyValuePair<'K, 'V>>) =
     interface IFakeDictionaryInterface<'K, 'V>
 
     interface IDictionary<'K, 'V> with
-        member __.Add(key: 'K, value: 'V): unit = raise (NotImplementedException())
+        member __.Add(_: 'K, _: 'V): unit = raise (NotSupportedException())
 
-        member __.Add(item: KeyValuePair<'K,'V>): unit = raise (NotImplementedException())
+        member __.Add(_: KeyValuePair<'K,'V>): unit = raise (NotSupportedException())
 
-        member __.Clear(): unit = raise (NotImplementedException())
+        member __.Clear(): unit = raise (NotSupportedException())
 
-        member __.Contains(item: KeyValuePair<'K,'V>): bool = raise (NotImplementedException())
+        member __.Contains(_: KeyValuePair<'K,'V>): bool = raise (NotSupportedException())
 
-        member __.ContainsKey(key: 'K): bool = raise (NotImplementedException())
+        member __.ContainsKey(_: 'K): bool = raise (NotSupportedException())
 
         member __.CopyTo(array: KeyValuePair<'K,'V> [], arrayIndex: int): unit = item.CopyTo(array, arrayIndex)
 
@@ -71,37 +71,37 @@ type FakeDictionary<'K, 'V>(item : Queue<KeyValuePair<'K, 'V>>) =
 
         member __.GetEnumerator(): IEnumerator<KeyValuePair<'K,'V>> = (item :> seq<_>).GetEnumerator()
 
-        member __.IsReadOnly: bool = raise (NotImplementedException())
+        member __.IsReadOnly: bool = raise (NotSupportedException())
 
-        member __.Item with get (key: 'K): 'V = raise (NotImplementedException()) and set (key: 'K) (v: 'V): unit = raise (NotImplementedException())
+        member __.Item with get (_key: 'K): 'V = raise (NotSupportedException()) and set (_key: 'K) (_v: 'V): unit = raise (NotSupportedException())
 
-        member __.Keys: ICollection<'K> = raise (NotImplementedException())
+        member __.Keys: ICollection<'K> = raise (NotSupportedException())
 
-        member __.Remove(key: 'K): bool = raise (NotImplementedException())
+        member __.Remove(_: 'K): bool = raise (NotSupportedException())
 
-        member __.Remove(item: KeyValuePair<'K,'V>): bool = raise (NotImplementedException())
+        member __.Remove(_: KeyValuePair<'K,'V>): bool = raise (NotSupportedException())
 
-        member __.TryGetValue(key: 'K, value: byref<'V>): bool = raise (NotImplementedException())
+        member __.TryGetValue(_: 'K, value: byref<'V>): bool = raise (NotSupportedException())
 
-        member __.Values: ICollection<'V> = raise (NotImplementedException())
+        member __.Values: ICollection<'V> = raise (NotSupportedException())
 
 type FakeReadOnlyDictionary<'K, 'V>(item : KeyValuePair<'K, 'V> array) =
     interface IReadOnlyDictionary<'K, 'V> with
-        member __.ContainsKey(key: 'K): bool = raise (NotImplementedException())
+        member __.ContainsKey(_: 'K): bool = raise (NotSupportedException())
 
-        member __.Count: int = raise (NotImplementedException())
+        member __.Count: int = raise (NotSupportedException())
 
         member __.GetEnumerator(): IEnumerator = (item :> seq<_>).GetEnumerator() :> IEnumerator
 
         member __.GetEnumerator(): IEnumerator<KeyValuePair<'K,'V>> = (item :> seq<_>).GetEnumerator()
 
-        member __.Item with get (key: 'K): 'V = raise (NotImplementedException())
+        member __.Item with get (_key: 'K): 'V = raise (NotSupportedException())
 
-        member __.Keys: IEnumerable<'K> = raise (NotImplementedException())
+        member __.Keys: IEnumerable<'K> = raise (NotSupportedException())
 
-        member __.TryGetValue(key: 'K, value: byref<'V>): bool = raise (NotImplementedException())
+        member __.TryGetValue(_: 'K, value: byref<'V>): bool = raise (NotSupportedException())
 
-        member __.Values: IEnumerable<'V> = raise (NotImplementedException())
+        member __.Values: IEnumerable<'V> = raise (NotSupportedException())
 
 type FakeDictionaryReadOnlyDictionary<'K, 'V>(item : KeyValuePair<'K, 'V> ResizeArray) =
     interface IEnumerable<KeyValuePair<'K, 'V>> with
@@ -110,46 +110,46 @@ type FakeDictionaryReadOnlyDictionary<'K, 'V>(item : KeyValuePair<'K, 'V> Resize
         member __.GetEnumerator(): IEnumerator<KeyValuePair<'K,'V>> = (item :> seq<_>).GetEnumerator()
 
     interface IDictionary<'K, 'V> with
-        member __.Add(key: 'K, value: 'V): unit = raise (NotImplementedException())
+        member __.Add(_: 'K, _: 'V): unit = raise (NotSupportedException())
 
-        member __.Add(item: KeyValuePair<'K,'V>): unit = raise (NotImplementedException())
+        member __.Add(_: KeyValuePair<'K,'V>): unit = raise (NotSupportedException())
 
-        member __.Clear(): unit = raise (NotImplementedException())
+        member __.Clear(): unit = raise (NotSupportedException())
 
-        member __.Contains(item: KeyValuePair<'K,'V>): bool = raise (NotImplementedException())
+        member __.Contains(_: KeyValuePair<'K,'V>): bool = raise (NotSupportedException())
 
-        member __.ContainsKey(key: 'K): bool = raise (NotImplementedException())
+        member __.ContainsKey(_: 'K): bool = raise (NotSupportedException())
 
         member __.CopyTo(array: KeyValuePair<'K,'V> [], arrayIndex: int): unit = item.CopyTo(array, arrayIndex)
 
         member __.Count: int = item.Count
 
-        member __.IsReadOnly: bool = raise (NotImplementedException())
+        member __.IsReadOnly: bool = raise (NotSupportedException())
 
-        member __.Item with get (key: 'K): 'V = raise (NotImplementedException()) and set (key: 'K) (v: 'V): unit = raise (NotImplementedException())
+        member __.Item with get (_key: 'K): 'V = raise (NotSupportedException()) and set (_key: 'K) (_v: 'V): unit = raise (NotSupportedException())
 
-        member __.Keys: ICollection<'K> = raise (NotImplementedException())
+        member __.Keys: ICollection<'K> = raise (NotSupportedException())
 
-        member __.Remove(key: 'K): bool = raise (NotImplementedException())
+        member __.Remove(_: 'K): bool = raise (NotSupportedException())
 
-        member __.Remove(item: KeyValuePair<'K,'V>): bool = raise (NotImplementedException())
+        member __.Remove(_: KeyValuePair<'K,'V>): bool = raise (NotSupportedException())
 
-        member __.TryGetValue(key: 'K, value: byref<'V>): bool = raise (NotImplementedException())
+        member __.TryGetValue(_: 'K, value: byref<'V>): bool = raise (NotSupportedException())
 
-        member __.Values: ICollection<'V> = raise (NotImplementedException())
+        member __.Values: ICollection<'V> = raise (NotSupportedException())
 
     interface IReadOnlyDictionary<'K, 'V> with
-        member __.ContainsKey(key: 'K): bool = raise (NotImplementedException())
+        member __.ContainsKey(_: 'K): bool = raise (NotSupportedException())
 
-        member __.Count: int = raise (NotImplementedException())
+        member __.Count: int = raise (NotSupportedException())
 
-        member __.Item with get (key: 'K): 'V = raise (NotImplementedException())
+        member __.Item with get (_key: 'K): 'V = raise (NotSupportedException())
 
-        member __.Keys: IEnumerable<'K> = raise (NotImplementedException())
+        member __.Keys: IEnumerable<'K> = raise (NotSupportedException())
 
-        member __.TryGetValue(key: 'K, value: byref<'V>): bool = raise (NotImplementedException())
+        member __.TryGetValue(_: 'K, value: byref<'V>): bool = raise (NotSupportedException())
 
-        member __.Values: IEnumerable<'V> = raise (NotImplementedException())
+        member __.Values: IEnumerable<'V> = raise (NotSupportedException())
 
 let Test (enumerable : 'a) (expected : 'b) (encoderName : string) =
     let converter = generator.GetConverter<'a>()

@@ -18,13 +18,13 @@ type FakeObjectConverter<'T>() =
 
     override __.Encode(_) = raise (InvalidOperationException("EncodeBuffer"))
 
-    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotImplementedException())
+    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 
-    override __.DecodeAuto _ = raise (NotImplementedException())
+    override __.DecodeAuto _ = raise (NotSupportedException())
 
-    override __.DecodeWithLengthPrefix _ = raise (NotImplementedException())
+    override __.DecodeWithLengthPrefix _ = raise (NotSupportedException())
 
-    override __.Decode(_ : byte array) : 'T = raise (NotImplementedException())
+    override __.Decode(_ : byte array) : 'T = raise (NotSupportedException())
 
 type FakeStringConverter() =
     inherit Converter<string>()

@@ -7,21 +7,21 @@ open Xunit
 
 type FakeIConverterImplementation() =
     interface IConverter with
-        member __.Decode(span: inref<System.ReadOnlySpan<byte>>): obj = raise (NotSupportedException())
+        member __.Decode(span: inref<ReadOnlySpan<byte>>): obj = raise (NotSupportedException())
 
-        member __.Decode(buffer: byte []): obj = raise (NotSupportedException())
+        member __.Decode(_: byte []): obj = raise (NotSupportedException())
 
-        member __.DecodeAuto(span: byref<System.ReadOnlySpan<byte>>): obj = raise (NotSupportedException())
+        member __.DecodeAuto(span: byref<ReadOnlySpan<byte>>): obj = raise (NotSupportedException())
 
-        member __.DecodeWithLengthPrefix(span: byref<System.ReadOnlySpan<byte>>): obj = raise (NotSupportedException())
+        member __.DecodeWithLengthPrefix(span: byref<ReadOnlySpan<byte>>): obj = raise (NotSupportedException())
 
-        member __.Encode(item: obj): byte [] = raise (NotSupportedException())
+        member __.Encode(_: obj): byte [] = raise (NotSupportedException())
 
-        member __.Encode(allocator: byref<Allocator>, item: obj): unit = raise (NotSupportedException())
+        member __.Encode(allocator: byref<Allocator>, _: obj): unit = raise (NotSupportedException())
 
-        member __.EncodeAuto(allocator: byref<Allocator>, item: obj): unit = raise (NotSupportedException())
+        member __.EncodeAuto(allocator: byref<Allocator>, _: obj): unit = raise (NotSupportedException())
 
-        member __.EncodeWithLengthPrefix(allocator: byref<Allocator>, item: obj): unit = raise (NotSupportedException())
+        member __.EncodeWithLengthPrefix(allocator: byref<Allocator>, _: obj): unit = raise (NotSupportedException())
 
         member __.Length: int = raise (NotSupportedException())
 

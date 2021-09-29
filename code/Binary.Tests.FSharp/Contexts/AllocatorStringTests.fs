@@ -130,7 +130,7 @@ let ``Append String (random, from 0 to 1024)`` () =
     let encoding = Encoding.UTF8
 
     for i = 0 to 1024 do
-        let data = [| for k = 0 to (i - 1) do yield char (Random.Shared.Next(32, 127)) |]
+        let data = [| for _ = 0 to (i - 1) do yield char (Random.Shared.Next(32, 127)) |]
         let text = String data
         Assert.Equal(i, text.Length)
 
@@ -147,7 +147,7 @@ let ``Append String With Length Prefix (random, from 0 to 1024)`` () =
     let encoding = Encoding.UTF8
 
     for i = 0 to 1024 do
-        let data = [| for k = 0 to (i - 1) do yield char (Random.Shared.Next(32, 127)) |]
+        let data = [| for _ = 0 to (i - 1) do yield char (Random.Shared.Next(32, 127)) |]
         let text = String data
         Assert.Equal(i, text.Length)
 

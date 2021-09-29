@@ -66,10 +66,10 @@ let ``List (null)`` () =
     ()
 
 [<Theory>]
-[<InlineData(1, 1)>]
-[<InlineData(4, 4)>]
-[<InlineData(23, 7)>]
-let ``List (value type, invalid byte count)`` (bytes : int, remainder : int) =
+[<InlineData(1)>]
+[<InlineData(4)>]
+[<InlineData(23)>]
+let ``List (value type, invalid byte count)`` (bytes : int) =
     let buffer = Array.zeroCreate<byte> bytes
     let converter = generator.GetConverter<double list>()
     let otherConverter = generator.GetConverter<double array>()

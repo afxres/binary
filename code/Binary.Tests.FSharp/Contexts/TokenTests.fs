@@ -259,7 +259,6 @@ type TokenTests() =
     [<Fact>]
     member __.``Debugger Proxy (token null)`` () =
         let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "TokenDebuggerTypeProxy") |> Array.exactlyOne
-        let token = Token(generator, ReadOnlyMemory())
         let proxy = Activator.CreateInstance(t, [| box null |])
         let items = t.GetProperty("Items").GetValue(proxy) :?> KeyValuePair<string, Token>[]
         Assert.Equal(0, items.Length)

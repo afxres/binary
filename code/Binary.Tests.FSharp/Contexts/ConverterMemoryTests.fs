@@ -32,7 +32,7 @@ let ``Decode With Length Prefix (empty bytes)`` () =
 [<Fact>]
 let ``Decode With Length Prefix (not enough bytes)`` () =
     let Test (bytes : byte array) =
-        let error = Assert.Throws<ArgumentException>(fun () -> let mutable span = ReadOnlySpan<byte>() in let _ = Converter.DecodeWithLengthPrefix(&span) in ())
+        let error = Assert.Throws<ArgumentException>(fun () -> let mutable span = ReadOnlySpan<byte> bytes in let _ = Converter.DecodeWithLengthPrefix(&span) in ())
         let message = "Not enough bytes or byte sequence invalid."
         Assert.Equal(message, error.Message)
         ()

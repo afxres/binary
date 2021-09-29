@@ -190,9 +190,9 @@ type ConverterTests() =
     [<Fact>]
     member __.``Interface Method All Forwarded`` () =
         let converter = CustomConverterAllOverride<obj>(0) :> IConverter
-        let e1 = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = Allocator() in converter.Encode(&allocator, null) |> ignore)
-        let ea = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = Allocator() in converter.EncodeAuto(&allocator, null) |> ignore)
-        let ew = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = Allocator() in converter.EncodeWithLengthPrefix(&allocator, null) |> ignore)
+        let e1 = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = Allocator() in converter.Encode(&allocator, null))
+        let ea = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = Allocator() in converter.EncodeAuto(&allocator, null))
+        let ew = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = Allocator() in converter.EncodeWithLengthPrefix(&allocator, null))
         let e2 = Assert.Throws<NotSupportedException>(fun () -> converter.Encode(null) |> ignore)
         let d1 = Assert.Throws<NotSupportedException>(fun () -> let span = ReadOnlySpan<byte>() in converter.Decode &span |> ignore)
         let da = Assert.Throws<NotSupportedException>(fun () -> let mutable span = ReadOnlySpan<byte>() in converter.DecodeAuto &span |> ignore)

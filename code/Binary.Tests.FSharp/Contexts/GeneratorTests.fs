@@ -199,27 +199,27 @@ type BadConverterCreator () =
 
 type BadConverterInterfaceImplementation () =
     interface IConverter with
-        member __.Decode(span: inref<ReadOnlySpan<byte>>): obj = raise (System.NotImplementedException())
+        member __.Decode(span: inref<ReadOnlySpan<byte>>): obj = raise (NotSupportedException())
 
-        member __.Decode(buffer: byte []): obj = raise (System.NotImplementedException())
+        member __.Decode(_: byte []): obj = raise (NotSupportedException())
 
-        member __.DecodeAuto(span: byref<ReadOnlySpan<byte>>): obj = raise (System.NotImplementedException())
+        member __.DecodeAuto(span: byref<ReadOnlySpan<byte>>): obj = raise (NotSupportedException())
 
-        member __.DecodeWithLengthPrefix(span: byref<ReadOnlySpan<byte>>): obj = raise (System.NotImplementedException())
+        member __.DecodeWithLengthPrefix(span: byref<ReadOnlySpan<byte>>): obj = raise (NotSupportedException())
 
-        member __.Encode(item: obj): byte [] = raise (System.NotImplementedException())
+        member __.Encode(_: obj): byte [] = raise (NotSupportedException())
 
-        member __.Encode(allocator: byref<Allocator>, item: obj): unit = raise (System.NotImplementedException())
+        member __.Encode(allocator: byref<Allocator>, _: obj): unit = raise (NotSupportedException())
 
-        member __.EncodeAuto(allocator: byref<Allocator>, item: obj): unit = raise (System.NotImplementedException())
+        member __.EncodeAuto(allocator: byref<Allocator>, _: obj): unit = raise (NotSupportedException())
 
-        member __.EncodeWithLengthPrefix(allocator: byref<Allocator>, item: obj): unit = raise (System.NotImplementedException())
+        member __.EncodeWithLengthPrefix(allocator: byref<Allocator>, _: obj): unit = raise (NotSupportedException())
 
-        member __.Length: int = raise (System.NotImplementedException())
+        member __.Length: int = raise (NotSupportedException())
 
 type BadConverterCreatorInterfaceImplementation () =
     interface IConverterCreator with
-        member __.GetConverter(context, ``type``) =
+        member __.GetConverter(_, ``type``) =
             if ``type`` = typeof<BadType> then
                 BadConverterInterfaceImplementation() :> IConverter // bad return value
             else null

@@ -9,7 +9,7 @@ open Xunit
 type BadConverter<'T>() =
     inherit Converter<'T>()
 
-    override __.Encode(allocator, item) = allocator <- Allocator()
+    override __.Encode(allocator, _) = allocator <- Allocator()
 
     override __.Decode (span : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 
@@ -39,18 +39,18 @@ type BadValueTypeWithPrivateGetter =
 
 [<Class>]
 type BadClassTypeWithOnlyIndexer() =
-    member __.Item with get (i : int) : string = String.Empty and set (i : int) (item : string) = ()
+    member __.Item with get (_i : int) : string = String.Empty and set (_i : int) (_item : string) = ()
 
 [<Struct>]
 type BadValueTypeWithOnlyIndexer =
-    member __.Item with get (i : int) : string = String.Empty and set (i : int) (item : string) = ()
+    member __.Item with get (_i : int) : string = String.Empty and set (_i : int) (_item : string) = ()
 
 type EmptyDelegate = delegate of uint -> unit
 
 type EmptyConverter<'T>() =
     inherit Converter<'T>()
 
-    override __.Encode(allocator, item) = ()
+    override __.Encode(allocator, _) = ()
 
     override __.Decode (span : inref<ReadOnlySpan<byte>>) : 'T = Unchecked.defaultof<'T>
 
@@ -64,7 +64,7 @@ type EmptyConverterCreator() =
 
 type ThrowConverterCreator() =
     interface IConverterCreator with
-        member __.GetConverter(_, t) =
+        member __.GetConverter(_, _) =
             raise (NotSupportedException("Not supported."))
 
 type ThrowTests() =
@@ -274,7 +274,7 @@ type ThrowTests() =
 
     [<Theory>]
     [<MemberData("Data Delta")>]
-    member __.``Unmanaged Collection Bytes Not Match`` (collection : 'a, item : 'b, length : int) =
+    member __.``Unmanaged Collection Bytes Not Match`` (_ : 'a, _ : 'b, length : int) =
         let buffer = Array.zeroCreate<byte> length
         let converter = generator.GetConverter<'a> ()
         let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode buffer |> ignore)

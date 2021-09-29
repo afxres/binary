@@ -8,19 +8,19 @@ type FakeConverter () =
     interface IConverter with
         member __.Decode(span: inref<ReadOnlySpan<byte>>): obj = raise (NotImplementedException())
 
-        member __.Decode(buffer: byte []): obj = raise (NotImplementedException())
+        member __.Decode(_: byte []): obj = raise (NotImplementedException())
 
         member __.DecodeAuto(span: byref<ReadOnlySpan<byte>>): obj = raise (NotImplementedException())
 
         member __.DecodeWithLengthPrefix(span: byref<ReadOnlySpan<byte>>): obj = raise (NotImplementedException())
 
-        member __.Encode(item: obj): byte [] = raise (NotImplementedException())
+        member __.Encode(_: obj): byte [] = raise (NotImplementedException())
 
-        member __.Encode(allocator: byref<Allocator>, item: obj): unit = raise (NotImplementedException())
+        member __.Encode(allocator: byref<Allocator>, _: obj): unit = raise (NotImplementedException())
 
-        member __.EncodeAuto(allocator: byref<Allocator>, item: obj): unit = raise (NotImplementedException())
+        member __.EncodeAuto(allocator: byref<Allocator>, _: obj): unit = raise (NotImplementedException())
 
-        member __.EncodeWithLengthPrefix(allocator: byref<Allocator>, item: obj): unit = raise (NotImplementedException())
+        member __.EncodeWithLengthPrefix(allocator: byref<Allocator>, _: obj): unit = raise (NotImplementedException())
 
         member __.Length: int = raise (NotImplementedException())
 
