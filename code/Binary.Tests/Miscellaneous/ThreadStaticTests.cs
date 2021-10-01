@@ -44,7 +44,7 @@ public class ThreadStaticTests
         const int ThreadCount = 4;
         var dictionary = new ConcurrentDictionary<int, byte[]>();
         var handle = new ManualResetEvent(false);
-        var bufferHelperType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name == "BufferHelper");
+        var bufferHelperType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name == "BufferModule");
         var threadStaticField = bufferHelperType.GetFieldNotNull("ThreadStaticInstance", BindingFlags.Static | BindingFlags.NonPublic);
         var bufferField = bufferHelperType.GetFieldNotNull("buffer", BindingFlags.Instance | BindingFlags.NonPublic);
         var attribute = threadStaticField.GetCustomAttributes(false).SingleOrDefault(x => x is ThreadStaticAttribute);
@@ -89,7 +89,7 @@ public class ThreadStaticTests
         const int ThreadCount = 4;
         var dictionary = new ConcurrentDictionary<int, byte[]>();
         var handle = new ManualResetEvent(false);
-        var bufferHelperType = typeof(IConverter).Assembly.GetTypes().Where(x => x.Name == "BufferHelper").Single();
+        var bufferHelperType = typeof(IConverter).Assembly.GetTypes().Where(x => x.Name == "BufferModule").Single();
         var threadStaticField = bufferHelperType.GetFieldNotNull("ThreadStaticInstance", BindingFlags.Static | BindingFlags.NonPublic);
         var bufferField = bufferHelperType.GetFieldNotNull("buffer", BindingFlags.Instance | BindingFlags.NonPublic);
         var attribute = threadStaticField.GetCustomAttributes(false).Where(x => x is ThreadStaticAttribute).SingleOrDefault();

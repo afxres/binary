@@ -16,16 +16,16 @@ public abstract partial class Converter<T>
 
     private byte[] EncodeVariable(T? item)
     {
-        var handle = BufferHelper.Borrow();
+        var handle = BufferModule.Borrow();
         try
         {
-            var allocator = new Allocator(BufferHelper.Result(handle));
+            var allocator = new Allocator(BufferModule.Result(handle));
             Encode(ref allocator, item);
             return allocator.ToArray();
         }
         finally
         {
-            BufferHelper.Return(handle);
+            BufferModule.Return(handle);
         }
     }
 

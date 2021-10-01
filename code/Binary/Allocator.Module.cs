@@ -56,16 +56,16 @@ public ref partial struct Allocator
     {
         if (action is null)
             ThrowHelper.ThrowActionNull();
-        var handle = BufferHelper.Borrow();
+        var handle = BufferModule.Borrow();
         try
         {
-            var allocator = new Allocator(BufferHelper.Result(handle));
+            var allocator = new Allocator(BufferModule.Result(handle));
             action.Invoke(ref allocator, data);
             return allocator.ToArray();
         }
         finally
         {
-            BufferHelper.Return(handle);
+            BufferModule.Return(handle);
         }
     }
 }
