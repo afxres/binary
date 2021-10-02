@@ -27,7 +27,7 @@ internal sealed class DecimalConverter : Converter<decimal>
     public override decimal Decode(in ReadOnlySpan<byte> span)
     {
         const int Limits = 4;
-        ref var source = ref MemoryHelper.EnsureLength(span, sizeof(int) * Limits);
+        ref var source = ref MemoryModule.EnsureLength(span, sizeof(int) * Limits);
         var buffer = (stackalloc int[Limits]);
         for (var i = 0; i < Limits; i++)
             buffer[i] = LittleEndian.Decode<int>(ref Unsafe.Add(ref source, sizeof(int) * i));

@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-internal static class MemoryHelper
+internal static class MemoryModule
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static ref byte EnsureLength(ReadOnlySpan<byte> span, int length)

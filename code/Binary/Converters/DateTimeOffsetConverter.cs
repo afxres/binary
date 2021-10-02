@@ -17,7 +17,7 @@ internal sealed class DateTimeOffsetConverter : Converter<DateTimeOffset>
 
     public override DateTimeOffset Decode(in ReadOnlySpan<byte> span)
     {
-        ref var source = ref MemoryHelper.EnsureLength(span, sizeof(long) + sizeof(short));
+        ref var source = ref MemoryModule.EnsureLength(span, sizeof(long) + sizeof(short));
         var origin = LittleEndian.Decode<long>(ref source);
         var offset = LittleEndian.Decode<short>(ref Unsafe.Add(ref source, sizeof(long)));
         return new DateTimeOffset(origin, new TimeSpan(offset * TimeSpan.TicksPerMinute));

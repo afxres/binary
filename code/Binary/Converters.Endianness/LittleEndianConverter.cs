@@ -43,7 +43,7 @@ internal sealed class LittleEndianConverter<T> : Converter<T> where T : unmanage
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static ReadOnlySpan<byte> MakeSpan(ref byte location) => MemoryMarshal.CreateReadOnlySpan(ref location, Unsafe.SizeOf<T>());
 
-        ref var source = ref MemoryHelper.EnsureLength(span, Unsafe.SizeOf<T>());
+        ref var source = ref MemoryModule.EnsureLength(span, Unsafe.SizeOf<T>());
         switch (Unsafe.SizeOf<T>())
         {
             case 1: return MakeCast(Unsafe.ReadUnaligned<byte>(ref source));

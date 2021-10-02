@@ -41,21 +41,21 @@ internal sealed class NativeEndianConverter<T> : Converter<T> where T : unmanage
 
     public override T Decode(in ReadOnlySpan<byte> span)
     {
-        return Unsafe.ReadUnaligned<T>(ref MemoryHelper.EnsureLength(span, Unsafe.SizeOf<T>()));
+        return Unsafe.ReadUnaligned<T>(ref MemoryModule.EnsureLength(span, Unsafe.SizeOf<T>()));
     }
 
     public override T DecodeAuto(ref ReadOnlySpan<byte> span)
     {
-        return Unsafe.ReadUnaligned<T>(ref MemoryHelper.EnsureLength(ref span, Unsafe.SizeOf<T>()));
+        return Unsafe.ReadUnaligned<T>(ref MemoryModule.EnsureLength(ref span, Unsafe.SizeOf<T>()));
     }
 
     public override T DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
     {
-        return Unsafe.ReadUnaligned<T>(ref MemoryHelper.EnsureLength(Converter.DecodeWithLengthPrefix(ref span), Unsafe.SizeOf<T>()));
+        return Unsafe.ReadUnaligned<T>(ref MemoryModule.EnsureLength(Converter.DecodeWithLengthPrefix(ref span), Unsafe.SizeOf<T>()));
     }
 
     public override T Decode(byte[]? buffer)
     {
-        return Unsafe.ReadUnaligned<T>(ref MemoryHelper.EnsureLength(new ReadOnlySpan<byte>(buffer), Unsafe.SizeOf<T>()));
+        return Unsafe.ReadUnaligned<T>(ref MemoryModule.EnsureLength(new ReadOnlySpan<byte>(buffer), Unsafe.SizeOf<T>()));
     }
 }

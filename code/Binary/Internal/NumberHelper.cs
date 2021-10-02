@@ -24,7 +24,7 @@ internal static class NumberHelper
         if (numberLength is 1)
             Unsafe.WriteUnaligned(ref location, (byte)number);
         else
-            Unsafe.WriteUnaligned(ref location, MemoryHelper.EnsureEndian((int)(number | 0x8000_0000U), BitConverter.IsLittleEndian));
+            Unsafe.WriteUnaligned(ref location, MemoryModule.EnsureEndian((int)(number | 0x8000_0000U), BitConverter.IsLittleEndian));
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -42,7 +42,7 @@ internal static class NumberHelper
             return (int)header;
         if ((uint)(limits - offset) < 3U)
             ThrowHelper.ThrowNotEnoughBytes();
-        var result = (uint)MemoryHelper.EnsureEndian(Unsafe.ReadUnaligned<int>(ref source), BitConverter.IsLittleEndian);
+        var result = (uint)MemoryModule.EnsureEndian(Unsafe.ReadUnaligned<int>(ref source), BitConverter.IsLittleEndian);
         offset += 3;
         return (int)(result & 0x7FFF_FFFFU);
     }
