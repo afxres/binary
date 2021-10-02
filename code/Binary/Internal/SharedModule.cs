@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
-internal static class SharedHelper
+internal static class SharedModule
 {
     internal static readonly Encoding Encoding = Encoding.UTF8;
 

@@ -12,13 +12,13 @@ internal sealed class IPEndPointConverter : Converter<IPEndPoint?>
     {
         if (item is null)
             return;
-        SharedHelper.EncodeIPAddress(ref allocator, item.Address);
+        SharedModule.EncodeIPAddress(ref allocator, item.Address);
         LittleEndian.Encode(ref allocator, (short)(ushort)item.Port);
     }
 
     private static void EncodeWithLengthPrefixInternal(ref Allocator allocator, IPEndPoint? item)
     {
-        var size = item is null ? 0 : SharedHelper.SizeOfIPAddress(item.Address) + sizeof(ushort);
+        var size = item is null ? 0 : SharedModule.SizeOfIPAddress(item.Address) + sizeof(ushort);
         Converter.Encode(ref allocator, size);
         EncodeInternal(ref allocator, item);
     }

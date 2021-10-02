@@ -13,7 +13,7 @@ public ref partial struct Allocator
     {
         if (encoding is null)
             ThrowHelper.ThrowEncodingNull();
-        var targetLimits = SharedHelper.GetMaxByteCount(span, encoding);
+        var targetLimits = SharedModule.GetMaxByteCount(span, encoding);
         Debug.Assert(targetLimits <= encoding.GetMaxByteCount(span.Length));
         if (targetLimits is 0)
             return;
@@ -29,7 +29,7 @@ public ref partial struct Allocator
     {
         if (encoding is null)
             ThrowHelper.ThrowEncodingNull();
-        var targetLimits = SharedHelper.GetMaxByteCount(span, encoding);
+        var targetLimits = SharedModule.GetMaxByteCount(span, encoding);
         Debug.Assert(targetLimits <= encoding.GetMaxByteCount(span.Length));
         var prefixLength = NumberHelper.EncodeLength((uint)targetLimits);
         Ensure(ref allocator, prefixLength + targetLimits);

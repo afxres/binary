@@ -10,12 +10,12 @@ internal sealed class IPAddressConverter : Converter<IPAddress?>
     {
         if (item is null)
             return;
-        SharedHelper.EncodeIPAddress(ref allocator, item);
+        SharedModule.EncodeIPAddress(ref allocator, item);
     }
 
     private static void EncodeWithLengthPrefixInternal(ref Allocator allocator, IPAddress? item)
     {
-        var size = item is null ? 0 : SharedHelper.SizeOfIPAddress(item);
+        var size = item is null ? 0 : SharedModule.SizeOfIPAddress(item);
         Converter.Encode(ref allocator, size);
         EncodeInternal(ref allocator, item);
     }
