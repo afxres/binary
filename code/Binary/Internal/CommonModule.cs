@@ -9,7 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-internal static class CommonHelper
+internal static class CommonModule
 {
     internal static T? SelectGenericTypeDefinitionOrDefault<T>(Type type, Func<Type, T> func)
     {

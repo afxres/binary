@@ -13,11 +13,11 @@ using System.Reflection;
 
 internal static class ContextMethodsOfNamedObject
 {
-    private static readonly MethodInfo InvokeMethodInfo = CommonHelper.GetMethod(typeof(NamedObjectTemplates), nameof(NamedObjectTemplates.GetIndexSpan), BindingFlags.Static | BindingFlags.NonPublic);
+    private static readonly MethodInfo InvokeMethodInfo = CommonModule.GetMethod(typeof(NamedObjectTemplates), nameof(NamedObjectTemplates.GetIndexSpan), BindingFlags.Static | BindingFlags.NonPublic);
 
-    private static readonly MethodInfo AppendMethodInfo = CommonHelper.GetMethod(typeof(Allocator), nameof(Allocator.Append), new[] { typeof(Allocator).MakeByRefType(), typeof(ReadOnlySpan<byte>) });
+    private static readonly MethodInfo AppendMethodInfo = CommonModule.GetMethod(typeof(Allocator), nameof(Allocator.Append), new[] { typeof(Allocator).MakeByRefType(), typeof(ReadOnlySpan<byte>) });
 
-    private static readonly ConstructorInfo ReadOnlySpanByteConstructorInfo = CommonHelper.GetConstructor(typeof(ReadOnlySpan<byte>), new[] { typeof(byte[]) });
+    private static readonly ConstructorInfo ReadOnlySpanByteConstructorInfo = CommonModule.GetConstructor(typeof(ReadOnlySpan<byte>), new[] { typeof(byte[]) });
 
     internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<PropertyInfo> properties, ImmutableArray<string> names, ImmutableArray<ReadOnlyMemory<byte>> memories, ByteViewDictionary<int> dictionary)
     {
@@ -28,7 +28,7 @@ internal static class ContextMethodsOfNamedObject
         var decode = GetDecodeDelegateAsNamedObject(type, converters, constructor);
         var converterArguments = new object?[] { encode, decode, names, dictionary };
         var converterType = typeof(NamedObjectConverter<>).MakeGenericType(type);
-        var converter = CommonHelper.CreateInstance(converterType, converterArguments);
+        var converter = CommonModule.CreateInstance(converterType, converterArguments);
         return (IConverter)converter;
     }
 

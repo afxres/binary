@@ -22,7 +22,7 @@ internal static class FallbackSequentialMethods
     {
         if (type != elementType.MakeArrayType())
             throw new NotSupportedException($"Only single dimensional zero based arrays are supported, type: {type}");
-        return CommonHelper.CreateInstance(typeof(ArrayBuilder<>).MakeGenericType(elementType), null);
+        return CommonModule.CreateInstance(typeof(ArrayBuilder<>).MakeGenericType(elementType), null);
     }
 
     internal static IConverter? GetConverter(IGeneratorContext context, Type type)
@@ -31,8 +31,8 @@ internal static class FallbackSequentialMethods
         {
             if (type.IsArray && type.GetElementType() is { } elementType)
                 return CreateArrayBuilder(type, elementType);
-            if (CommonHelper.SelectGenericTypeDefinitionOrDefault(type, Types.GetValueOrDefault) is { } result)
-                return CommonHelper.CreateInstance(result.MakeGenericType(type.GetGenericArguments()), null);
+            if (CommonModule.SelectGenericTypeDefinitionOrDefault(type, Types.GetValueOrDefault) is { } result)
+                return CommonModule.CreateInstance(result.MakeGenericType(type.GetGenericArguments()), null);
             return null;
         }
 
@@ -44,7 +44,7 @@ internal static class FallbackSequentialMethods
 
         var converterType = typeof(SpanLikeConverter<,>).MakeGenericType(type, itemType);
         var converterArguments = new object[] { create, itemConverter };
-        var converter = CommonHelper.CreateInstance(converterType, converterArguments);
+        var converter = CommonModule.CreateInstance(converterType, converterArguments);
         return (IConverter)converter;
     }
 }

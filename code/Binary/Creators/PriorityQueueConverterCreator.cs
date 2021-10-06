@@ -9,7 +9,7 @@ internal sealed class PriorityQueueConverterCreator : IConverterCreator
 {
     public IConverter? GetConverter(IGeneratorContext context, Type type)
     {
-        return CommonHelper.GetConverter(context, type, typeof(PriorityQueue<,>), typeof(PriorityQueueConverter<,>), null);
+        return CommonModule.GetConverter(context, type, typeof(PriorityQueue<,>), typeof(PriorityQueueConverter<,>), null);
     }
 }
 #endif

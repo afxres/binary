@@ -46,16 +46,16 @@ internal static class FallbackPrimitivesMethods
     {
         if (type == typeof(ValueTuple))
             throw new ArgumentException($"Invalid type: {typeof(ValueTuple)}");
-        return CommonHelper.SelectGenericTypeDefinitionOrDefault(type, Types.Contains);
+        return CommonModule.SelectGenericTypeDefinitionOrDefault(type, Types.Contains);
     }
 
     private static IConverter GetTupleConverter(IGeneratorContext context, Type type)
     {
         var names = Names.Take(type.GetGenericArguments().Length);
         var types = type.GetGenericArguments();
-        var constructorInfo = CommonHelper.GetConstructor(type, types);
+        var constructorInfo = CommonModule.GetConstructor(type, types);
         var converters = types.Select(context.GetConverter).ToImmutableArray();
-        var properties = names.Select(x => CommonHelper.GetProperty(type, x, BindingFlags.Instance | BindingFlags.Public)).ToImmutableArray();
+        var properties = names.Select(x => CommonModule.GetProperty(type, x, BindingFlags.Instance | BindingFlags.Public)).ToImmutableArray();
         var constructor = new ContextObjectConstructor((delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, constructorInfo));
         return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, ContextMethods.GetMemberInitializers(properties));
     }
@@ -65,7 +65,7 @@ internal static class FallbackPrimitivesMethods
         static void Fields(Type type, Action<FieldInfo> action)
         {
             var names = Names.Take(type.GetGenericArguments().Length);
-            var fields = names.Select(x => CommonHelper.GetField(type, x, BindingFlags.Instance | BindingFlags.Public)).ToList();
+            var fields = names.Select(x => CommonModule.GetField(type, x, BindingFlags.Instance | BindingFlags.Public)).ToList();
             fields.ForEach(action);
         }
 

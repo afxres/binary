@@ -13,7 +13,7 @@ public static class Generator
     {
         var creators = typeof(IConverter).Assembly.GetTypes()
             .Where(x => x.Namespace is "Mikodev.Binary.Creators" && typeof(IConverterCreator).IsAssignableFrom(x))
-            .Select(x => (IConverterCreator)CommonHelper.CreateInstance(x, null))
+            .Select(x => (IConverterCreator)CommonModule.CreateInstance(x, null))
             .ToImmutableArray();
         SharedConverterCreators = creators;
     }

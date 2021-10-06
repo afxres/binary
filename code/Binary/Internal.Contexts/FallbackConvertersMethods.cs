@@ -12,7 +12,7 @@ internal static class FallbackConvertersMethods
     {
         var converters = typeof(IConverter).Assembly.GetTypes()
             .Where(x => x.Namespace is "Mikodev.Binary.Converters")
-            .Select(x => (IConverter)CommonHelper.CreateInstance(x, null))
+            .Select(x => (IConverter)CommonModule.CreateInstance(x, null))
             .ToImmutableDictionary(Converter.GetGenericArgument);
         SharedConverters = converters;
     }

@@ -8,6 +8,6 @@ internal sealed class LinkedListConverterCreator : IConverterCreator
 {
     public IConverter? GetConverter(IGeneratorContext context, Type type)
     {
-        return CommonHelper.GetConverter(context, type, typeof(LinkedList<>), typeof(LinkedListConverter<>), null);
+        return CommonModule.GetConverter(context, type, typeof(LinkedList<>), typeof(LinkedListConverter<>), null);
     }
 }

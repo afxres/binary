@@ -37,7 +37,7 @@ internal static class FallbackEndiannessMethods
                 ? typeof(NativeEndianConverter<>)
                 : typeof(LittleEndianConverter<>);
             var converterType = definition.MakeGenericType(type);
-            var converter = CommonHelper.CreateInstance(converterType, null);
+            var converter = CommonModule.CreateInstance(converterType, null);
             return (IConverter)converter;
         }
 

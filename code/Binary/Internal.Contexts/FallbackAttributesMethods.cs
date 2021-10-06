@@ -81,7 +81,7 @@ internal static class FallbackAttributesMethods
     {
         try
         {
-            return (T)CommonHelper.CreateInstance(instance, null);
+            return (T)CommonModule.CreateInstance(instance, null);
         }
         catch (Exception e)
         {
@@ -100,9 +100,9 @@ internal static class FallbackAttributesMethods
         var type = property is null ? reflected : property.PropertyType;
         Debug.Assert(attribute is null or ConverterAttribute or ConverterCreatorAttribute);
         if (attribute is ConverterAttribute alpha)
-            return CommonHelper.GetConverter(GetConverterOrCreator<IConverter>(alpha.Type, reflected, property), type, null);
+            return CommonModule.GetConverter(GetConverterOrCreator<IConverter>(alpha.Type, reflected, property), type, null);
         if (attribute is ConverterCreatorAttribute bravo)
-            return CommonHelper.GetConverter(GetConverterOrCreator<IConverterCreator>(bravo.Type, reflected, property).GetConverter(context, type), type, bravo.Type);
+            return CommonModule.GetConverter(GetConverterOrCreator<IConverterCreator>(bravo.Type, reflected, property).GetConverter(context, type), type, bravo.Type);
         Debug.Assert(attribute is null);
         return context.GetConverter(type);
     }

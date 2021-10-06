@@ -77,11 +77,11 @@ internal static class FallbackCollectionMethods
 
     internal static IConverter? GetConverter(IGeneratorContext context, Type type)
     {
-        if (CommonHelper.TryGetInterfaceArguments(type, typeof(IEnumerable<>), out var arguments) is false)
+        if (CommonModule.TryGetInterfaceArguments(type, typeof(IEnumerable<>), out var arguments) is false)
             return null;
-        if (CommonHelper.SelectGenericTypeDefinitionOrDefault(type, InvalidTypeDefinitions.Contains))
+        if (CommonModule.SelectGenericTypeDefinitionOrDefault(type, InvalidTypeDefinitions.Contains))
             throw new ArgumentException($"Invalid collection type: {type}");
-        if (CommonHelper.TryGetInterfaceArguments(type, typeof(IDictionary<,>), out var types) || CommonHelper.TryGetInterfaceArguments(type, typeof(IReadOnlyDictionary<,>), out types))
+        if (CommonModule.TryGetInterfaceArguments(type, typeof(IDictionary<,>), out var types) || CommonModule.TryGetInterfaceArguments(type, typeof(IReadOnlyDictionary<,>), out types))
             return GetConverter(context, GetConverter<IEnumerable<KeyValuePair<object, object>>, object, object>, ImmutableArray.Create(type).AddRange(types));
         else
             return GetConverter(context, GetConverter<IEnumerable<object>, object>, ImmutableArray.Create(type).AddRange(arguments));
@@ -130,11 +130,11 @@ internal static class FallbackCollectionMethods
 
     private static DecodePassSpanDelegate<T>? GetDecodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
     {
-        if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ArrayOrListAssignableDefinitions.Contains))
+        if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), ArrayOrListAssignableDefinitions.Contains))
             return new EnumerableDecoder<T, E>(converter).Decode;
-        if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), HashSetAssignableDefinitions.Contains))
+        if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), HashSetAssignableDefinitions.Contains))
             return GetDecodeDelegate<T, HashSet<E>>(new HashSetDecoder<E>(converter).Decode);
-        if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } result)
+        if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } result)
             return GetDecodeDelegate<T, E>(converter, x => Expression.Call(result.MakeGenericMethod(typeof(E)), x));
         if (GetConstructorOrDefault(typeof(T), typeof(IEnumerable<E>)) is { } method)
             return GetDecodeDelegate<T, E>(converter, method);
@@ -145,9 +145,9 @@ internal static class FallbackCollectionMethods
     private static DecodePassSpanDelegate<T>? GetDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
     {
         var itemLength = ContextMethods.GetItemLength(ImmutableArray.Create(new IConverter[] { init, tail }));
-        if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), DictionaryAssignableDefinitions.Contains))
+        if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), DictionaryAssignableDefinitions.Contains))
             return GetDecodeDelegate<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode);
-        if (CommonHelper.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } result)
+        if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } result)
             return GetDecodeDelegate<T, K, V>(init, tail, itemLength, x => Expression.Call(result.MakeGenericMethod(typeof(K), typeof(V)), x));
         if (GetConstructorOrDefault(typeof(T), typeof(IDictionary<K, V>)) is { } target)
             return GetDecodeDelegate<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode, target);
@@ -180,8 +180,8 @@ internal static class FallbackCollectionMethods
             var tailMember = Expression.Constant(tail);
             var initMethod = Converter.GetMethod(init, nameof(IConverter.EncodeAuto));
             var tailMethod = Converter.GetMethod(tail, nameof(IConverter.EncodeAuto));
-            var initProperty = CommonHelper.GetProperty<KeyValuePair<K, V>, K>(x => x.Key);
-            var tailProperty = CommonHelper.GetProperty<KeyValuePair<K, V>, V>(x => x.Value);
+            var initProperty = CommonModule.GetProperty<KeyValuePair<K, V>, K>(x => x.Key);
+            var tailProperty = CommonModule.GetProperty<KeyValuePair<K, V>, V>(x => x.Value);
             var assign = Expression.Variable(typeof(KeyValuePair<K, V>), "current");
             var invoke = new Func<Expression, Expression, Expression>((allocator, current) => Expression.Block(
                 new[] { assign },

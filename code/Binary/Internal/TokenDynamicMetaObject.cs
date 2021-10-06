@@ -8,9 +8,9 @@ using System.Reflection;
 
 internal sealed class TokenDynamicMetaObject : DynamicMetaObject
 {
-    private static readonly MethodInfo IndexerMethodInfo = CommonHelper.GetMethod<Token, Token>(a => a[string.Empty]);
+    private static readonly MethodInfo IndexerMethodInfo = CommonModule.GetMethod<Token, Token>(a => a[string.Empty]);
 
-    private static readonly MethodInfo ConvertMethodInfo = CommonHelper.GetMethod<Token, object>(a => a.As<object>()).GetGenericMethodDefinition();
+    private static readonly MethodInfo ConvertMethodInfo = CommonModule.GetMethod<Token, object>(a => a.As<object>()).GetGenericMethodDefinition();
 
     public TokenDynamicMetaObject(Expression parameter, object value) : base(parameter, BindingRestrictions.Empty, value) { }
 
