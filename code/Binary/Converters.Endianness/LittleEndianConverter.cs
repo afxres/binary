@@ -13,7 +13,7 @@ internal sealed class LittleEndianConverter<T> : Converter<T> where T : unmanage
     {
         Debug.Assert(Unsafe.SizeOf<T>() <= 8);
         Debug.Assert(Unsafe.SizeOf<T>() is 1 or 2 or 4 or 8);
-        Debug.Assert(NumberHelper.EncodeLength((uint)Unsafe.SizeOf<T>()) is 1);
+        Debug.Assert(NumberModule.EncodeLength((uint)Unsafe.SizeOf<T>()) is 1);
     }
 
     public override void Encode(ref Allocator allocator, T item)

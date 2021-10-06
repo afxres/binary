@@ -4,7 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-internal static class NumberHelper
+internal static class NumberModule
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static int EncodeLength(uint number)

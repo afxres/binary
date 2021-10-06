@@ -15,8 +15,8 @@ internal sealed partial class SpanLikeConverter<T, E>
     {
         var result = this.create.Handle(item);
         var number = checked(this.itemLength * result.Length);
-        var numberLength = NumberHelper.EncodeLength((uint)number);
-        NumberHelper.Encode(ref Allocator.Assign(ref allocator, numberLength), (uint)number, numberLength);
+        var numberLength = NumberModule.EncodeLength((uint)number);
+        NumberModule.Encode(ref Allocator.Assign(ref allocator, numberLength), (uint)number, numberLength);
         if (number is 0)
             return;
         this.invoke.Encode(ref allocator, result);

@@ -31,13 +31,13 @@ public ref partial struct Allocator
             ThrowHelper.ThrowEncodingNull();
         var targetLimits = SharedModule.GetMaxByteCount(span, encoding);
         Debug.Assert(targetLimits <= encoding.GetMaxByteCount(span.Length));
-        var prefixLength = NumberHelper.EncodeLength((uint)targetLimits);
+        var prefixLength = NumberModule.EncodeLength((uint)targetLimits);
         Ensure(ref allocator, prefixLength + targetLimits);
         var offset = allocator.offset;
         var buffer = allocator.buffer;
         ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
         var targetLength = targetLimits is 0 ? 0 : encoding.GetBytes(span, MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, prefixLength), targetLimits));
-        NumberHelper.Encode(ref target, (uint)targetLength, prefixLength);
+        NumberModule.Encode(ref target, (uint)targetLength, prefixLength);
         allocator.offset = offset + targetLength + prefixLength;
     }
 }

@@ -32,8 +32,8 @@ public abstract partial class Converter<T>
     private void EncodeWithLengthPrefixConstant(ref Allocator allocator, T? item)
     {
         var length = this.length;
-        var numberLength = NumberHelper.EncodeLength((uint)length);
-        NumberHelper.Encode(ref Allocator.Assign(ref allocator, numberLength), (uint)length, numberLength);
+        var numberLength = NumberModule.EncodeLength((uint)length);
+        NumberModule.Encode(ref Allocator.Assign(ref allocator, numberLength), (uint)length, numberLength);
         Encode(ref allocator, item);
     }
 

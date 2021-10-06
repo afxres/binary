@@ -73,7 +73,7 @@ public ref partial struct Allocator
         if (length <= Limits && buffer.Length - offset >= ((-length) & 7))
         {
             allocator.offset = offset - 3;
-            NumberHelper.Encode(ref target, (uint)length, numberLength: 1);
+            NumberModule.Encode(ref target, (uint)length, numberLength: 1);
             var header = (length + 7) >> 3;
             if (header is not 0)
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref target, 0 + 1), Unsafe.ReadUnaligned<long>(ref Unsafe.Add(ref target, 0 + 4)));
@@ -84,7 +84,7 @@ public ref partial struct Allocator
         }
         else
         {
-            NumberHelper.Encode(ref target, (uint)length, numberLength: 4);
+            NumberModule.Encode(ref target, (uint)length, numberLength: 4);
             Debug.Assert(allocator.offset >= 4);
             Debug.Assert(allocator.offset <= allocator.buffer.Length);
         }

@@ -71,11 +71,11 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
         while (limits - offset != length)
         {
             offset += length;
-            length = NumberHelper.DecodeEnsureBuffer(ref source, ref offset, limits);
+            length = NumberModule.DecodeEnsureBuffer(ref source, ref offset, limits);
             var cursor = record.GetValue(ref Unsafe.Add(ref source, offset), length);
             Debug.Assert(cursor is -1 || (uint)cursor < (uint)values.Length);
             offset += length;
-            length = NumberHelper.DecodeEnsureBuffer(ref source, ref offset, limits);
+            length = NumberModule.DecodeEnsureBuffer(ref source, ref offset, limits);
             if ((uint)cursor < (uint)values.Length)
             {
                 ref var handle = ref values[cursor];

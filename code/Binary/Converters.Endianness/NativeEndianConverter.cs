@@ -12,7 +12,7 @@ internal sealed class NativeEndianConverter<T> : Converter<T> where T : unmanage
     {
         Debug.Assert(BitConverter.IsLittleEndian);
         Debug.Assert(Unsafe.SizeOf<T>() is 1 or 2 or 4 or 8);
-        Debug.Assert(NumberHelper.EncodeLength((uint)Unsafe.SizeOf<T>()) is 1);
+        Debug.Assert(NumberModule.EncodeLength((uint)Unsafe.SizeOf<T>()) is 1);
     }
 
     public override void Encode(ref Allocator allocator, T item)
@@ -28,7 +28,7 @@ internal sealed class NativeEndianConverter<T> : Converter<T> where T : unmanage
     public override void EncodeWithLengthPrefix(ref Allocator allocator, T item)
     {
         ref var target = ref Allocator.Assign(ref allocator, Unsafe.SizeOf<T>() + 1);
-        NumberHelper.Encode(ref target, (uint)Unsafe.SizeOf<T>(), numberLength: 1);
+        NumberModule.Encode(ref target, (uint)Unsafe.SizeOf<T>(), numberLength: 1);
         Unsafe.WriteUnaligned(ref Unsafe.Add(ref target, 1), item);
     }
 
