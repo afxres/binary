@@ -3,7 +3,7 @@
 using Mikodev.Binary.Converters.Endianness;
 using Mikodev.Binary.Internal.SpanLike.Adapters;
 
-internal static class SpanLikeAdapterHelper
+internal static class SpanLikeAdapter
 {
     internal static SpanLikeAdapter<T> Create<T>(Converter<T> converter)
     {

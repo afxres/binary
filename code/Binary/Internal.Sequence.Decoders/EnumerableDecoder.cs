@@ -13,7 +13,7 @@ internal sealed class EnumerableDecoder<T, E> where T : IEnumerable<E>
     {
         Debug.Assert(converter is not null);
         Debug.Assert(converter.Length >= 0);
-        this.invoke = SpanLikeAdapterHelper.Create(converter);
+        this.invoke = SpanLikeAdapter.Create(converter);
     }
 
     public T Decode(ReadOnlySpan<byte> span)

@@ -12,7 +12,7 @@ internal sealed partial class SpanLikeConverter<T, E> : Converter<T>
 
     public SpanLikeConverter(SpanLikeBuilder<T, E> create, Converter<E> converter)
     {
-        this.invoke = SpanLikeAdapterHelper.Create(converter);
+        this.invoke = SpanLikeAdapter.Create(converter);
         this.create = create;
         this.itemLength = converter.Length;
     }
