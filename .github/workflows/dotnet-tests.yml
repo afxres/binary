@@ -6,26 +6,43 @@ jobs:
     defaults:
       run:
         working-directory: code
+
     steps:
       - uses: actions/checkout@v2
+
       - name: Setup .NET Core 3.1
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1.x
+
       - name: Setup .NET 5.0
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 5.0.x
+
       - name: Setup .NET 6.0
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0.100-rc.1.21458.32
+
       - name: Restore
         run: dotnet restore
+
       - name: Build (Debug)
         run: dotnet build --no-restore -c Debug
       - name: Build (Release)
         run: dotnet build --no-restore -c Release
+
+      - name: Test (.NET Core 3.1, Debug)
+        run: dotnet test --no-restore -v normal -f netcoreapp3.1 -c Debug
+      - name: Test (.NET Core 3.1, Release)
+        run: dotnet test --no-restore -v normal -f netcoreapp3.1 -c Release
+
+      - name: Test (.NET 5.0, Debug)
+        run: dotnet test --no-restore -v normal -f net5.0 -c Debug
+      - name: Test (.NET 5.0, Release)
+        run: dotnet test --no-restore -v normal -f net5.0 -c Release
+
       - name: Test (.NET 6.0, Debug)
         run: dotnet test --no-restore -v normal -f net6.0 -c Debug
       - name: Test (.NET 6.0, Release)
