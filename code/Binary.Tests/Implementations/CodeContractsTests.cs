@@ -223,8 +223,11 @@ public class CodeContractsTests
         var selections = parameters.Select(x => KeyValuePair.Create(x, context.Create(x))).ToList();
         Assert.All(selections, x => Assert.Equal(x.Value.ReadState, x.Value.WriteState));
         var groups = selections.GroupBy(x => x.Value.ReadState).ToDictionary(x => x.Key);
-        Assert.Equal(3, groups.Count);
-        Assert.All(groups[NullabilityState.NotNull], x => Assert.True(x.Key.Name is "anonymous"));
+        var anonymous = groups[NullabilityState.Nullable].Select(x => x.Key).Where(x => x.Name is "anonymous").ToList();
+        Assert.Equal(2, groups.Count);
+        Assert.Equal(4, anonymous.Count);
+        Assert.True(groups.ContainsKey(NullabilityState.Unknown));
+        Assert.True(groups.ContainsKey(NullabilityState.Nullable));
         Assert.All(groups[NullabilityState.Unknown], x => Assert.True(x.Key.Member.DeclaringType?.IsSubclassOf(typeof(Delegate))));
     }
 #endif
