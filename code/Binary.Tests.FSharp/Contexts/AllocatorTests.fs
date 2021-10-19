@@ -2,6 +2,8 @@
 
 open Mikodev.Binary
 open System
+open System.Runtime.CompilerServices
+open System.Runtime.InteropServices
 open Xunit
 
 [<Fact>]
@@ -61,6 +63,14 @@ let ``Constructor (limitation)`` (size : int, limitation : int) =
     Assert.Equal(limitation, allocator.MaxCapacity)
     ()
 
+[<Fact>]
+let ``As Span (default constructor)`` () =
+    let allocator = Allocator()
+    let span = allocator.AsSpan()
+    Assert.Equal(0, span.Length)
+    Assert.True(Unsafe.IsNullRef(&MemoryMarshal.GetReference(span)))
+    ()
+
 [<Theory>]
 [<InlineData(0)>]
 [<InlineData(257)>]
@@ -78,7 +88,7 @@ let ``As Span`` (length : int) =
     ()
 
 [<Fact>]
-let ``To Array (empty)`` () =
+let ``To Array (default constructor)`` () =
     let mutable allocator = Allocator()
     let buffer = allocator.ToArray()
     Assert.True(obj.ReferenceEquals(Array.Empty<byte>(), buffer))
