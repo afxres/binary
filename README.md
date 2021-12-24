@@ -51,7 +51,7 @@ type SimplePersonConverter() =
     override __.Decode(span : inref<ReadOnlySpan<byte>>) : Person =
         let id = BinaryPrimitives.ReadInt32LittleEndian(span)
         let name = Encoding.UTF8.GetString(span.Slice(sizeof<int>))
-        { Id = id; Name = name}
+        { Id = id; Name = name }
 ```
 
 Or implement with existing converters via converter creator:
@@ -67,7 +67,7 @@ type PersonConverter(intConverter : Converter<int>, stringConverter : Converter<
     override __.Decode(span : inref<ReadOnlySpan<byte>>) : Person =
         let id = intConverter.Decode(&span)
         let name = let part = span.Slice(sizeof<int>) in stringConverter.Decode(&part)
-        { Id = id; Name = name}
+        { Id = id; Name = name }
 
 type PersonConverterCreator() =
     interface IConverterCreator with
