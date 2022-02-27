@@ -45,4 +45,40 @@ public class BitArrayConverterTests
             }
         }
     }
+
+    [Fact(DisplayName = "Null Instance")]
+    public void NullInstance()
+    {
+        var generator = Generator.CreateDefault();
+        var converter = generator.GetConverter<BitArray?>();
+        var encode = converter.Encode(null);
+        Assert.True(ReferenceEquals(Array.Empty<byte>(), encode));
+        var result = converter.Decode(Array.Empty<byte>());
+        Assert.Null(result);
+    }
+
+    [Fact(DisplayName = "Empty Collection")]
+    public void Empty()
+    {
+        var generator = Generator.CreateDefault();
+        var converter = generator.GetConverter<BitArray>();
+        var source = new BitArray(0);
+        var encode = converter.Encode(source);
+        Assert.Equal(new[] { (byte)0 }, encode);
+        var result = converter.Decode(encode);
+        Assert.Empty(result.Cast<bool>());
+    }
+
+    [Fact(DisplayName = "Empty Collection Compatible Byte Sequence")]
+    public void EmptyCompatibles()
+    {
+        var generator = Generator.CreateDefault();
+        var converter = generator.GetConverter<BitArray>();
+        var a = new byte[] { 0 };
+        var b = new byte[] { 0x80, 0, 0, 0 };
+        var x = converter.Decode(a);
+        var y = converter.Decode(b);
+        Assert.Empty(x.Cast<bool>());
+        Assert.Empty(y.Cast<bool>());
+    }
 }
