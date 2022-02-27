@@ -246,9 +246,9 @@ public class BinaryModuleTests
         var function = GetLongDataDelegate();
         var random = new Random();
         var values = new List<(long, byte[])>();
-        for (int i = 1; i <= 8; i++)
+        for (var i = 1; i <= 8; i++)
         {
-            for (int k = 0; k < 1024; k++)
+            for (var k = 0; k < 1024; k++)
             {
                 var source = new byte[i];
                 random.NextBytes(source);
