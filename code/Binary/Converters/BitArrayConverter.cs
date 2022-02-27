@@ -4,6 +4,7 @@ using Mikodev.Binary.Internal;
 using System;
 using System.Buffers.Binary;
 using System.Collections;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -61,8 +62,9 @@ internal sealed class BitArrayConverter : Converter<BitArray?>
             return;
         var length = item.Count;
         var source = FieldFunction.Invoke(item);
-        var padding = 8 - (length & 7);
-        Converter.Encode(ref allocator, padding);
+        var margin = (-length) & 7;
+        Debug.Assert(margin is >= 0 and <= 7);
+        Converter.Encode(ref allocator, margin);
         if (length is 0)
             return;
         var required = (int)(((uint)length + 7U) >> 3);
@@ -75,12 +77,13 @@ internal sealed class BitArrayConverter : Converter<BitArray?>
         if (span.Length is 0)
             return null;
         var body = span;
-        var padding = Converter.Decode(ref body);
-        if (padding is 0)
+        var margin = Converter.Decode(ref body);
+        Debug.Assert(margin >= 0);
+        if (body.Length is 0 && margin is 0)
             return new BitArray(0);
-        if (padding > 7 || body.Length is 0)
+        if (body.Length is 0 || margin >= 8)
             throw new ArgumentException("Invalid bit array bytes.");
-        var length = (body.Length << 3) - padding;
+        var length = checked((int)(((ulong)body.Length << 3) - (uint)margin));
         var result = new BitArray(length);
         var target = FieldFunction.Invoke(result);
         DecodeInternal(target, body, length);
