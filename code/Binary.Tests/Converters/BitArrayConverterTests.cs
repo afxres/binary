@@ -115,4 +115,40 @@ public class BitArrayConverterTests
         var error = Assert.Throws<OverflowException>(() => converter.Decode(buffer));
         Assert.Equal(new OverflowException().Message, error.Message);
     }
+
+    [Theory(DisplayName = "Invalid Margin Info")]
+    [InlineData(new byte[] { 8, 0 })]
+    [InlineData(new byte[] { 127, 1, 2 })]
+    [InlineData(new byte[] { 0x80, 0, 0, 8, 4 })]
+    [InlineData(new byte[] { 0x80, 2, 0, 0, 2, 8 })]
+    public void InvalidMarginInfo(byte[] buffer)
+    {
+        var generator = Generator.CreateDefault();
+        var converter = generator.GetConverter<BitArray>();
+        var error = Assert.Throws<ArgumentException>(() => converter.Decode(buffer));
+        var target = new ReadOnlySpan<byte>(buffer);
+        var margin = Converter.Decode(ref target);
+        Assert.True((uint)margin >= 8U);
+        Assert.True(target.Length is not 0);
+        Assert.Null(error.ParamName);
+        Assert.Equal("Not enough bytes or byte sequence invalid.", error.Message);
+    }
+
+    [Theory(DisplayName = "Not Enough Bytes")]
+    [InlineData(new byte[] { 1 })]
+    [InlineData(new byte[] { 7 })]
+    [InlineData(new byte[] { 0x80, 0, 0, 2 })]
+    [InlineData(new byte[] { 0x80, 0, 0, 5 })]
+    public void NotEnoughBytes(byte[] buffer)
+    {
+        var generator = Generator.CreateDefault();
+        var converter = generator.GetConverter<BitArray>();
+        var error = Assert.Throws<ArgumentException>(() => converter.Decode(buffer));
+        var target = new ReadOnlySpan<byte>(buffer);
+        var margin = Converter.Decode(ref target);
+        Assert.True((uint)margin <= 7U);
+        Assert.True(target.Length is 0);
+        Assert.Null(error.ParamName);
+        Assert.Equal("Not enough bytes or byte sequence invalid.", error.Message);
+    }
 }

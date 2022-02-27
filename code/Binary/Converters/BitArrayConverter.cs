@@ -76,17 +76,17 @@ internal sealed class BitArrayConverter : Converter<BitArray?>
     {
         if (span.Length is 0)
             return null;
-        var body = span;
-        var margin = Converter.Decode(ref body);
+        var cursor = span;
+        var margin = Converter.Decode(ref cursor);
         Debug.Assert(margin >= 0);
-        if (body.Length is 0 && margin is 0)
+        if (margin is 0 && cursor.Length is 0)
             return new BitArray(0);
-        if (body.Length is 0 || margin >= 8)
-            throw new ArgumentException("Invalid bit array bytes.");
-        var length = checked((int)(((ulong)body.Length << 3) - (uint)margin));
+        if (margin >= 8 || cursor.Length is 0)
+            ThrowHelper.ThrowNotEnoughBytes();
+        var length = checked((int)(((ulong)cursor.Length << 3) - (uint)margin));
         var result = new BitArray(length);
         var target = FieldFunction.Invoke(result);
-        DecodeInternal(target, body, length);
+        DecodeInternal(target, cursor, length);
         return result;
     }
 }
