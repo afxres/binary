@@ -81,4 +81,38 @@ public class BitArrayConverterTests
         Assert.Empty(x.Cast<bool>());
         Assert.Empty(y.Cast<bool>());
     }
+
+    [Fact(DisplayName = "Large Array Encode")]
+    public void LargeArrayEncode()
+    {
+        var generator = Generator.CreateDefault();
+        var converter = generator.GetConverter<BitArray>();
+        var source = new BitArray(int.MaxValue);
+        var encode = converter.Encode(source);
+        var target = new ReadOnlySpan<byte>(encode);
+        var margin = Converter.Decode(ref target);
+        Assert.Equal(1, margin);
+        Assert.Equal(0x1000_0000, target.Length);
+    }
+
+    [Fact(DisplayName = "Large Array Decode")]
+    public void LargeArrayDecode()
+    {
+        var generator = Generator.CreateDefault();
+        var converter = generator.GetConverter<BitArray>();
+        var buffer = new byte[0x1000_0001];
+        buffer[0] = 1;
+        var result = converter.Decode(buffer);
+        Assert.Equal(int.MaxValue, result.Length);
+    }
+
+    [Fact(DisplayName = "Large Array Overflow")]
+    public void LargeArrayOverflow()
+    {
+        var generator = Generator.CreateDefault();
+        var converter = generator.GetConverter<BitArray>();
+        var buffer = new byte[0x1000_0001];
+        var error = Assert.Throws<OverflowException>(() => converter.Decode(buffer));
+        Assert.Equal(new OverflowException().Message, error.Message);
+    }
 }
