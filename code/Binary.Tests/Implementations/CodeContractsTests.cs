@@ -78,12 +78,10 @@ public class CodeContractsTests
         var alpha = new HashSet<Type>(types.Where(x => array.Contains(x.Namespace) && !x.IsNested));
         var bravo = new HashSet<Type>(types.Where(x => x.Name.Any(c => c is '<' or '>' or '-')));
         var delta = new HashSet<Type>(types.Except(alpha).Except(bravo));
-        var deltaMembers = delta.SelectMany(x => x.GetMethods(BindingFlags.Static | BindingFlags.Public)).ToList();
         Assert.Equal(types.Count, alpha.Count + bravo.Count + delta.Count);
         Assert.Equal(types, new HashSet<Type>(alpha.Union(bravo).Union(delta)));
         Assert.True(alpha.All(x => x.IsPublic));
         Assert.True(delta.All(x => !x.IsPublic));
-        Assert.Empty(deltaMembers);
     }
 
     [Fact(DisplayName = "Public Class Object Method Should Be Invisible")]
@@ -105,22 +103,21 @@ public class CodeContractsTests
         }
     }
 
-    [Fact(DisplayName = "Public Struct Instance Member Should Be Read Only")]
+    [Fact(DisplayName = "Struct Instance Member Should Be Read Only")]
     public void StructMethods()
     {
         static bool HasReadOnlyAttribute(MemberInfo info) => info.GetCustomAttributes().SingleOrDefault(x => x.GetType().Name == "IsReadOnlyAttribute") != null;
 
-        var types = typeof(IConverter).Assembly.GetTypes().Where(x => (x.IsPublic || x.IsNestedPublic) && x.IsValueType).ToList();
+        var types = typeof(IConverter).Assembly.GetTypes().Where(x => x.IsValueType).ToList();
         var readonlyTypes = types.Where(HasReadOnlyAttribute).ToList();
         var otherTypes = types.Except(readonlyTypes).ToList();
         var methods = otherTypes.SelectMany(x => x.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)).ToList();
-        var ignoreMembers = methods.Where(x => x.DeclaringType == typeof(object)).ToList();
+        var ignoreMembers = methods.Where(x => x.DeclaringType == typeof(object) || x.DeclaringType == typeof(ValueType)).ToList();
         var remainMembers = methods.Except(ignoreMembers).ToList();
         var attributes = remainMembers.Select(x => (x, Flag: HasReadOnlyAttribute(x))).ToList();
 
-        _ = Assert.Single(otherTypes);
         Assert.Empty(readonlyTypes);
-        Assert.Equal(3, ignoreMembers.Count);
+        Assert.Equal(otherTypes.Count * 6 - 3, ignoreMembers.Count);
         Assert.All(attributes, x => Assert.True(x.Flag));
     }
 

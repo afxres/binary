@@ -33,7 +33,7 @@ internal sealed class KeyValueEnumerableDecoder<K, V>
         {
             var head = init.DecodeAuto(ref body);
             var next = tail.DecodeAuto(ref body);
-            memory.Add(new KeyValuePair<K, V>(head, next));
+            MemoryBuffer<KeyValuePair<K, V>>.Add(ref memory, new KeyValuePair<K, V>(head, next));
         }
         return memory.GetEnumerable();
     }

@@ -27,7 +27,7 @@ internal ref struct MemoryBuffer<T>
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Add(T item)
+    public static void Add(ref MemoryBuffer<T> memory, T item)
     {
         static void Expand(ref T[] buffer, T item)
         {
@@ -38,13 +38,13 @@ internal ref struct MemoryBuffer<T>
             buffer[cursor] = item;
         }
 
-        var buffer = this.buffer;
-        var length = this.length;
+        var buffer = memory.buffer;
+        var length = memory.length;
         if ((uint)length < (uint)buffer.Length)
             buffer[length] = item;
         else
-            Expand(ref this.buffer, item);
-        this.length++;
+            Expand(ref memory.buffer, item);
+        memory.length++;
     }
 
     public readonly ArraySegment<T> GetArraySegment()

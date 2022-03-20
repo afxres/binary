@@ -24,7 +24,7 @@ internal sealed class VariableAdapter<T> : SpanLikeAdapter<T>
         var body = span;
         var converter = this.converter;
         while (body.Length is not 0)
-            memory.Add(converter.DecodeAuto(ref body));
+            MemoryBuffer<T>.Add(ref memory, converter.DecodeAuto(ref body));
         return memory;
     }
 }
