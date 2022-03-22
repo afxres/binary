@@ -53,4 +53,36 @@ public class BitArrayConverterInternalTests
         this.decode.Invoke(actual, source, length);
         Assert.Equal(expected, actual);
     }
+
+    [Theory(DisplayName = "Encode Bounds Checking")]
+    [InlineData(0, 1, 1)]
+    [InlineData(1, 0, 1)]
+    [InlineData(7, 2, 63)]
+    [InlineData(17, 4, 129)]
+    public void EncodeBoundsChecking(int target, int source, int length)
+    {
+        var error = Assert.Throws<IndexOutOfRangeException>(() =>
+        {
+            var a = new byte[target];
+            var b = new int[source];
+            encode.Invoke(a, b, length);
+        });
+        Assert.Equal(new IndexOutOfRangeException().Message, error.Message);
+    }
+
+    [Theory(DisplayName = "Decode Bounds Checking")]
+    [InlineData(0, 1, 1)]
+    [InlineData(1, 0, 1)]
+    [InlineData(2, 7, 63)]
+    [InlineData(4, 17, 129)]
+    public void DecodeBoundsChecking(int target, int source, int length)
+    {
+        var error = Assert.Throws<IndexOutOfRangeException>(() =>
+        {
+            var a = new int[target];
+            var b = new byte[source];
+            decode.Invoke(a, b, length);
+        });
+        Assert.Equal(new IndexOutOfRangeException().Message, error.Message);
+    }
 }
