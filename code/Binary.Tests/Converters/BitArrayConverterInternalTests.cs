@@ -85,4 +85,32 @@ public class BitArrayConverterInternalTests
         });
         Assert.Equal(new IndexOutOfRangeException().Message, error.Message);
     }
+
+    [Theory(DisplayName = "Encode Slices Error")]
+    [InlineData(0, 1, 33)]
+    [InlineData(4, 2, 65)]
+    public void EncodeSlicesError(int target, int source, int length)
+    {
+        var error = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        {
+            var a = new byte[target];
+            var b = new int[source];
+            encode.Invoke(a, b, length);
+        });
+        Assert.Equal("length", error.ParamName);
+    }
+
+    [Theory(DisplayName = "Decode Slices Error")]
+    [InlineData(1, 0, 33)]
+    [InlineData(2, 4, 65)]
+    public void DecodeSlicesError(int target, int source, int length)
+    {
+        var error = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        {
+            var a = new int[target];
+            var b = new byte[source];
+            decode.Invoke(a, b, length);
+        });
+        Assert.Equal("length", error.ParamName);
+    }
 }
