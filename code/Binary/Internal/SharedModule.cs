@@ -12,20 +12,31 @@ internal static class SharedModule
 {
     internal static readonly Encoding Encoding = Encoding.UTF8;
 
-    internal static int SizeOfIPAddress(IPAddress item)
+    internal static int SizeOf(IPAddress item)
     {
         Debug.Assert(item is not null);
         var family = item.AddressFamily;
-        return family is AddressFamily.InterNetwork ? 4 : 16;
+        if (family is AddressFamily.InterNetwork)
+            return 4;
+        if (family is AddressFamily.InterNetworkV6)
+            return 16;
+        throw new ArgumentException($"Invalid address family: {family}");
     }
 
-    internal static void EncodeIPAddress(ref Allocator allocator, IPAddress item)
+    internal static void Encode(ref Allocator allocator, IPAddress address, int addressSize)
     {
-        Debug.Assert(item is not null);
-        var size = SizeOfIPAddress(item);
-        var flag = item.TryWriteBytes(MemoryMarshal.CreateSpan(ref Allocator.Assign(ref allocator, size), size), out var actual);
+        Debug.Assert(address is not null);
+        Debug.Assert(addressSize is 4 or 16);
+        var flag = address.TryWriteBytes(MemoryMarshal.CreateSpan(ref Allocator.Assign(ref allocator, addressSize), addressSize), out var actual);
         Debug.Assert(flag);
-        Debug.Assert(size == actual);
+        Debug.Assert(addressSize == actual);
+    }
+
+    internal static void Encode(ref Allocator allocator, IPAddress address, int addressSize, int port)
+    {
+        Debug.Assert(address is not null);
+        Encode(ref allocator, address, addressSize);
+        LittleEndian.Encode(ref allocator, (short)(ushort)port);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -3,8 +3,6 @@
 using Mikodev.Binary.Internal;
 using System;
 using System.Net;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 internal sealed class IPEndPointConverter : Converter<IPEndPoint?>
 {
@@ -12,15 +10,23 @@ internal sealed class IPEndPointConverter : Converter<IPEndPoint?>
     {
         if (item is null)
             return;
-        SharedModule.EncodeIPAddress(ref allocator, item.Address);
-        LittleEndian.Encode(ref allocator, (short)(ushort)item.Port);
+        var address = item.Address;
+        SharedModule.Encode(ref allocator, address, SharedModule.SizeOf(address), item.Port);
     }
 
     private static void EncodeWithLengthPrefixInternal(ref Allocator allocator, IPEndPoint? item)
     {
-        var size = item is null ? 0 : SharedModule.SizeOfIPAddress(item.Address) + sizeof(ushort);
-        Converter.Encode(ref allocator, size);
-        EncodeInternal(ref allocator, item);
+        if (item is null)
+        {
+            Converter.Encode(ref allocator, 0);
+        }
+        else
+        {
+            var address = item.Address;
+            var addressSize = SharedModule.SizeOf(address);
+            Converter.Encode(ref allocator, addressSize + sizeof(ushort));
+            SharedModule.Encode(ref allocator, address, addressSize, item.Port);
+        }
     }
 
     private static IPEndPoint? DecodeInternal(ReadOnlySpan<byte> span)
@@ -31,9 +37,8 @@ internal sealed class IPEndPointConverter : Converter<IPEndPoint?>
         var offset = limits - sizeof(ushort);
         if (offset < 0)
             ThrowHelper.ThrowNotEnoughBytes();
-        ref var source = ref MemoryMarshal.GetReference(span);
-        var header = new IPAddress(MemoryMarshal.CreateReadOnlySpan(ref source, offset));
-        var number = LittleEndian.Decode<short>(ref Unsafe.Add(ref source, offset));
+        var header = new IPAddress(span.Slice(0, offset));
+        var number = LittleEndian.Decode<short>(span.Slice(offset));
         return new IPEndPoint(header, (ushort)number);
     }
 
