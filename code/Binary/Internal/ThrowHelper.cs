@@ -29,7 +29,7 @@ internal static class ThrowHelper
     internal static void ThrowMaxLengthNegative() => throw new ArgumentOutOfRangeException("maxLength", "Argument max length must be greater than or equal to zero!");
 
     [DoesNotReturn]
-    internal static void ThrowMaxCapacityNegative() => throw new ArgumentOutOfRangeException("maxCapacity", "Maximum capacity must be greater than or equal to zero!");
+    internal static void ThrowMaxCapacityNegative() => throw new ArgumentOutOfRangeException("maxCapacity", "Argument max capacity must be greater than or equal to zero!");
 
     [DoesNotReturn]
     internal static void ThrowMaxCapacityOverflow() => throw new ArgumentException("Maximum capacity has been reached.");

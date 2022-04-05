@@ -26,7 +26,7 @@ let ``Constructor (argument out of range)`` (limits : int) =
     let parameter = constructor.GetParameters() |> Array.last
     Assert.Equal("maxCapacity", parameter.Name)
     Assert.Equal("maxCapacity", error.ParamName)
-    Assert.StartsWith("Maximum capacity must be greater than or equal to zero!", error.Message)
+    Assert.StartsWith("Argument max capacity must be greater than or equal to zero!", error.Message)
     ()
 
 [<Theory>]
