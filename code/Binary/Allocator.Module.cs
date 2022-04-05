@@ -27,6 +27,47 @@ public ref partial struct Allocator
         action.Invoke(MemoryMarshal.CreateSpan(ref Assign(ref allocator, length), length), data);
     }
 
+    public static void Append<T>(ref Allocator allocator, int maxLength, T data, AllocatorSpanAction<T> action)
+    {
+        if (action is null)
+            ThrowHelper.ThrowActionNull();
+        if (maxLength < 0)
+            ThrowHelper.ThrowMaxLengthNegative();
+        if (maxLength is 0)
+            return;
+        Ensure(ref allocator, maxLength);
+        var offset = allocator.offset;
+        var buffer = allocator.buffer;
+        ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
+        var actual = action.Invoke(MemoryMarshal.CreateSpan(ref target, maxLength), data);
+        if ((uint)actual > (uint)maxLength)
+            ThrowHelper.ThrowInvalidReturnValue();
+        Debug.Assert(actual >= 0);
+        Debug.Assert(actual <= maxLength);
+        allocator.offset = offset + actual;
+    }
+
+    public static void AppendWithLengthPrefix<T>(ref Allocator allocator, int maxLength, T data, AllocatorSpanAction<T> action)
+    {
+        if (action is null)
+            ThrowHelper.ThrowActionNull();
+        if (maxLength < 0)
+            ThrowHelper.ThrowMaxLengthNegative();
+        if (maxLength is 0)
+            return;
+        var numberLength = NumberModule.EncodeLength((uint)maxLength);
+        Ensure(ref allocator, maxLength + numberLength);
+        var offset = allocator.offset;
+        var buffer = allocator.buffer;
+        ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
+        var actual = action.Invoke(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, numberLength), maxLength), data);
+        if ((uint)actual > (uint)maxLength)
+            ThrowHelper.ThrowInvalidReturnValue();
+        Debug.Assert(actual >= 0);
+        Debug.Assert(actual <= maxLength);
+        NumberModule.Encode(ref target, (uint)actual, numberLength);
+    }
+
     public static void AppendWithLengthPrefix<T>(ref Allocator allocator, T data, AllocatorAction<T> action)
     {
         if (action is null)

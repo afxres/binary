@@ -2,6 +2,7 @@
 
 open Mikodev.Binary
 open System
+open System.Buffers
 open System.Reflection
 open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
@@ -13,7 +14,7 @@ let allocatorType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun 
 [<Fact>]
 let ``Append (default constructor, length zero with raise expression)`` () =
     let mutable allocator = Allocator()
-    Allocator.Append(&allocator, 0, null :> obj, fun a b -> raise (NotSupportedException()))
+    Allocator.Append(&allocator, 0, null :> obj, fun a b -> raise (NotSupportedException()); ())
     Assert.Equal(0, allocator.Length)
     Assert.Equal(0, allocator.Capacity)
     ()
@@ -28,7 +29,8 @@ let ``Append (default constructor, length invalid)`` (length : int) =
         Allocator.Append(&allocator, length, null :> obj, fun a b -> ())
         ())
     let methodInfos = allocatorType.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4)
-    let parameter = methodInfos |> Array.map (fun x -> x.GetParameters() |> Array.skip 1 |> Array.head) |> Array.filter (fun x -> x.ParameterType = typeof<int>) |> Array.exactlyOne
+    let methodInfo = methodInfos |> Array.filter (fun x -> x.GetParameters().[3].ParameterType.Name.StartsWith "SpanAction`2") |> Array.exactlyOne
+    let parameter = methodInfo.GetParameters().[1]
     Assert.StartsWith("Argument length must be greater than or equal to zero!", error.Message)
     Assert.Equal("length", error.ParamName)
     Assert.Equal("length", parameter.Name)
@@ -50,7 +52,7 @@ let ``Append (append some then, length zero with raise expression)`` () =
     Allocator.Append(&allocator, 8, null :> obj, fun a b -> ())
     Assert.Equal(8, allocator.Length)
     Assert.Equal(256, allocator.Capacity)
-    Allocator.Append(&allocator, 0, null :> obj, fun a b -> raise (NotSupportedException()))
+    Allocator.Append(&allocator, 0, null :> obj, fun a b -> raise (NotSupportedException()); ())
     Assert.Equal(8, allocator.Length)
     Assert.Equal(256, allocator.Capacity)
     ()
@@ -75,7 +77,7 @@ let ``Append (append some then, length invalid)`` (length : int) =
 [<Fact>]
 let ``Append (limited to zero, length zero with raise expression)`` () =
     let mutable allocator = Allocator(Span(), maxCapacity = 0)
-    Allocator.Append(&allocator, 0, null :> obj, fun a b -> raise (NotSupportedException()))
+    Allocator.Append(&allocator, 0, null :> obj, fun a b -> raise (NotSupportedException()); ())
     Assert.Equal(0, allocator.Length)
     Assert.Equal(0, allocator.Capacity)
     ()
@@ -102,7 +104,7 @@ let ``Append (default constructor)`` (length : int) =
     let buffer = Array.zeroCreate<byte> length
     Random.Shared.NextBytes buffer
     Allocator.Append(&allocator, length, buffer,
-        fun (a : Span<byte>) b ->
+        fun (a : Span<byte>) (b : byte array) ->
             b.CopyTo a
             Assert.Equal(length, a.Length))
     let result = allocator.AsSpan().ToArray()
@@ -136,12 +138,12 @@ let ``Append (limited)`` () =
 [<InlineData(0)>]
 [<InlineData(1)>]
 [<InlineData(4)>]
-let ``Append (default constructor, action null)`` (length : int) =
+let ``Append Span Action (default constructor, action null)`` (length : int) =
     let error = Assert.Throws<ArgumentNullException>(fun () ->
         let mutable allocator = Allocator()
-        Allocator.Append(&allocator, length, null :> obj, null))
+        Allocator.Append(&allocator, length, null :> obj, Unchecked.defaultof<SpanAction<_, _>>))
     let methodInfos = allocatorType.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4)
-    let methodInfo = methodInfos |> Array.filter (fun x -> x.GetParameters().[1].ParameterType = typeof<int>) |> Array.exactlyOne
+    let methodInfo = methodInfos |> Array.filter (fun x -> x.GetParameters().[3].ParameterType.Name.StartsWith "SpanAction`2") |> Array.exactlyOne
     let parameter = methodInfo.GetParameters() |> Array.last
     Assert.Equal("action", parameter.Name)
     Assert.Equal("action", error.ParamName)
@@ -185,7 +187,8 @@ let ``Append With Length Prefix (action null)`` () =
         let mutable allocator = Allocator()
         Allocator.AppendWithLengthPrefix(&allocator, Array.empty<byte>, null)
         ())
-    let methodInfo = allocatorType.GetMethods() |> Array.filter (fun x -> x.IsGenericMethod && x.Name = "AppendWithLengthPrefix") |> Array.exactlyOne
+    let methodInfos = allocatorType.GetMethods() |> Array.filter (fun x -> x.Name = "AppendWithLengthPrefix" && x.GetParameters().Length = 3)
+    let methodInfo = methodInfos |> Array.filter (fun x -> x.GetParameters().[2].ParameterType.Name.StartsWith "AllocatorAction") |> Array.exactlyOne
     let parameter = methodInfo.GetParameters() |> Array.last
     Assert.Equal("action", parameter.Name)
     Assert.Equal("action", error.ParamName)
