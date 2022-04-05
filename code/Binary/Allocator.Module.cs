@@ -66,6 +66,7 @@ public ref partial struct Allocator
         Debug.Assert(actual >= 0);
         Debug.Assert(actual <= maxLength);
         NumberModule.Encode(ref target, (uint)actual, numberLength);
+        allocator.offset = offset + actual + numberLength;
     }
 
     public static void AppendWithLengthPrefix<T>(ref Allocator allocator, T data, AllocatorAction<T> action)
