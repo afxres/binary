@@ -36,8 +36,8 @@ internal sealed class IPEndPointConverter : Converter<IPEndPoint?>
         if (offset < 0)
             ThrowHelper.ThrowNotEnoughBytes();
         var header = new IPAddress(span.Slice(0, offset));
-        var number = LittleEndian.Decode<short>(span.Slice(offset));
-        return new IPEndPoint(header, (ushort)number);
+        var number = BinaryPrimitives.ReadUInt16LittleEndian(span.Slice(offset));
+        return new IPEndPoint(header, number);
     }
 
     public override void Encode(ref Allocator allocator, IPEndPoint? item) => Allocator.Append(ref allocator, MaxLength, item, EncodeAction);
