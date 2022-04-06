@@ -8,7 +8,7 @@ internal sealed class IPAddressConverter : Converter<IPAddress?>
 {
     private const int MaxLength = 16;
 
-    private static readonly AllocatorSpanAction<IPAddress?> EncodeAction;
+    private static readonly AllocatorWriter<IPAddress?> EncodeAction;
 
     static IPAddressConverter()
     {

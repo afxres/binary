@@ -27,10 +27,10 @@ public ref partial struct Allocator
         action.Invoke(MemoryMarshal.CreateSpan(ref Assign(ref allocator, length), length), data);
     }
 
-    public static void Append<T>(ref Allocator allocator, int maxLength, T data, AllocatorSpanAction<T> action)
+    public static void Append<T>(ref Allocator allocator, int maxLength, T data, AllocatorWriter<T> writer)
     {
-        if (action is null)
-            ThrowHelper.ThrowActionNull();
+        if (writer is null)
+            ThrowHelper.ThrowWriterNull();
         if (maxLength < 0)
             ThrowHelper.ThrowMaxLengthNegative();
         if (maxLength is 0)
@@ -39,7 +39,7 @@ public ref partial struct Allocator
         var offset = allocator.offset;
         var buffer = allocator.buffer;
         ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
-        var actual = action.Invoke(MemoryMarshal.CreateSpan(ref target, maxLength), data);
+        var actual = writer.Invoke(MemoryMarshal.CreateSpan(ref target, maxLength), data);
         if ((uint)actual > (uint)maxLength)
             ThrowHelper.ThrowInvalidReturnValue();
         Debug.Assert(actual >= 0);
@@ -47,10 +47,10 @@ public ref partial struct Allocator
         allocator.offset = offset + actual;
     }
 
-    public static void AppendWithLengthPrefix<T>(ref Allocator allocator, int maxLength, T data, AllocatorSpanAction<T> action)
+    public static void AppendWithLengthPrefix<T>(ref Allocator allocator, int maxLength, T data, AllocatorWriter<T> writer)
     {
-        if (action is null)
-            ThrowHelper.ThrowActionNull();
+        if (writer is null)
+            ThrowHelper.ThrowWriterNull();
         if (maxLength < 0)
             ThrowHelper.ThrowMaxLengthNegative();
         if (maxLength is 0)
@@ -60,7 +60,7 @@ public ref partial struct Allocator
         var offset = allocator.offset;
         var buffer = allocator.buffer;
         ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
-        var actual = action.Invoke(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, numberLength), maxLength), data);
+        var actual = writer.Invoke(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, numberLength), maxLength), data);
         if ((uint)actual > (uint)maxLength)
             ThrowHelper.ThrowInvalidReturnValue();
         Debug.Assert(actual >= 0);

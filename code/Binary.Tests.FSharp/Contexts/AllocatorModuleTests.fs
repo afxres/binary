@@ -54,7 +54,7 @@ let ``Append Max Length (default constructor, max length invalid)`` (maxLength :
         Allocator.Append(&allocator, maxLength, null :> obj, fun a b -> raise (NotSupportedException()); -1)
         ())
     let methodInfos = allocatorType.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4)
-    let methodInfo = methodInfos |> Array.filter (fun x -> x.GetParameters().[3].ParameterType.Name.StartsWith "AllocatorSpanAction`1") |> Array.exactlyOne
+    let methodInfo = methodInfos |> Array.filter (fun x -> x.GetParameters().[3].ParameterType.Name.StartsWith "AllocatorWriter`1") |> Array.exactlyOne
     let parameter = methodInfo.GetParameters().[1]
     Assert.StartsWith("Argument max length must be greater than or equal to zero!", error.Message)
     Assert.Equal("maxLength", error.ParamName)
@@ -93,7 +93,7 @@ let ``Append Action (append some then, length zero with raise expression)`` () =
     ()
 
 [<Fact>]
-let ``Append Max Length (append some then, length zero with raise expression)`` () =
+let ``Append Max Length (append some then, max length zero with raise expression)`` () =
     let mutable allocator = Allocator()
     Allocator.Append(&allocator, 8, null :> obj, fun a b -> (); 8)
     Assert.Equal(8, allocator.Length)
@@ -124,7 +124,7 @@ let ``Append Action (append some then, length invalid)`` (length : int) =
 [<InlineData(-1)>]
 [<InlineData(-100)>]
 [<InlineData(Int32.MinValue)>]
-let ``Append Max Length (append some then, length invalid)`` (maxLength : int) =
+let ``Append Max Length (append some then, max length invalid)`` (maxLength : int) =
     let mutable flag = 0
     let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
         let mutable allocator = Allocator()
@@ -224,15 +224,15 @@ let ``Append Action (default constructor, action null)`` (length : int) =
 [<InlineData(0)>]
 [<InlineData(1)>]
 [<InlineData(4)>]
-let ``Append Max Length (default constructor, action null)`` (maxLength : int) =
+let ``Append Max Length (default constructor, writer null)`` (maxLength : int) =
     let error = Assert.Throws<ArgumentNullException>(fun () ->
         let mutable allocator = Allocator()
-        Allocator.Append(&allocator, maxLength, null :> obj, Unchecked.defaultof<AllocatorSpanAction<_>>))
+        Allocator.Append(&allocator, maxLength, null :> obj, Unchecked.defaultof<AllocatorWriter<_>>))
     let methodInfos = allocatorType.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4)
-    let methodInfo = methodInfos |> Array.filter (fun x -> x.GetParameters().[3].ParameterType.Name.StartsWith "AllocatorSpanAction`1") |> Array.exactlyOne
+    let methodInfo = methodInfos |> Array.filter (fun x -> x.GetParameters().[3].ParameterType.Name.StartsWith "AllocatorWriter`1") |> Array.exactlyOne
     let parameter = methodInfo.GetParameters() |> Array.last
-    Assert.Equal("action", parameter.Name)
-    Assert.Equal("action", error.ParamName)
+    Assert.Equal("writer", parameter.Name)
+    Assert.Equal("writer", error.ParamName)
     ()
 
 [<Theory>]
@@ -304,8 +304,8 @@ let ``Allocator Action (contravariant)`` () =
     ()
 
 [<Fact>]
-let ``Allocator Span Action (contravariant)`` () =
-    let t = typedefof<AllocatorSpanAction<_>>
+let ``Allocator Writer (contravariant)`` () =
+    let t = typedefof<AllocatorWriter<_>>
     let parameter = t.GetGenericArguments() |> Array.exactlyOne
     Assert.Equal(GenericParameterAttributes.Contravariant, parameter.GenericParameterAttributes)
     ()

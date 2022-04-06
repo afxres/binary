@@ -10,7 +10,7 @@ internal sealed class IPEndPointConverter : Converter<IPEndPoint?>
 {
     private const int MaxLength = 18;
 
-    private static readonly AllocatorSpanAction<IPEndPoint?> EncodeAction;
+    private static readonly AllocatorWriter<IPEndPoint?> EncodeAction;
 
     static IPEndPointConverter()
     {

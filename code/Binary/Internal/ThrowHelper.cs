@@ -11,6 +11,9 @@ internal static class ThrowHelper
     internal static void ThrowActionNull() => throw new ArgumentNullException("action");
 
     [DoesNotReturn]
+    internal static void ThrowWriterNull() => throw new ArgumentNullException("writer");
+
+    [DoesNotReturn]
     internal static void ThrowEncodingNull() => throw new ArgumentNullException("encoding");
 
     [DoesNotReturn]
