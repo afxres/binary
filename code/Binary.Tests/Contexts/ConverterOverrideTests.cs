@@ -23,7 +23,7 @@ public class ConverterOverrideTests
     {
         var alpha = Assert.Throws<InvalidOperationException>(() => new OnlyOverrideEncodeWithLengthPrefix<int>());
         var bravo = Assert.Throws<InvalidOperationException>(() => new OnlyOverrideEncodeWithLengthPrefix<int>(4));
-        var message = $"Method 'EncodeAuto' should be override if method 'EncodeWithLengthPrefix' is overridden, type: {typeof(OnlyOverrideEncodeWithLengthPrefix<int>)}";
+        var message = $"Method 'EncodeAuto' should be overridden if method 'EncodeWithLengthPrefix' has been overridden, type: {typeof(OnlyOverrideEncodeWithLengthPrefix<int>)}";
         Assert.Equal(message, alpha.Message);
         Assert.Equal(message, bravo.Message);
     }
@@ -46,7 +46,7 @@ public class ConverterOverrideTests
     {
         var alpha = Assert.Throws<InvalidOperationException>(() => new OnlyOverrideDecodeWithLengthPrefix<int>());
         var bravo = Assert.Throws<InvalidOperationException>(() => new OnlyOverrideDecodeWithLengthPrefix<int>(4));
-        var message = $"Method 'DecodeAuto' should be override if method 'DecodeWithLengthPrefix' is overridden, type: {typeof(OnlyOverrideDecodeWithLengthPrefix<int>)}";
+        var message = $"Method 'DecodeAuto' should be overridden if method 'DecodeWithLengthPrefix' has been overridden, type: {typeof(OnlyOverrideDecodeWithLengthPrefix<int>)}";
         Assert.Equal(message, alpha.Message);
         Assert.Equal(message, bravo.Message);
     }
