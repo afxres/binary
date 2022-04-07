@@ -53,14 +53,12 @@ public ref partial struct Allocator
             ThrowHelper.ThrowWriterNull();
         if (maxLength < 0)
             ThrowHelper.ThrowMaxLengthNegative();
-        if (maxLength is 0)
-            return;
         var numberLength = NumberModule.EncodeLength((uint)maxLength);
         Ensure(ref allocator, maxLength + numberLength);
         var offset = allocator.offset;
         var buffer = allocator.buffer;
         ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
-        var actual = writer.Invoke(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, numberLength), maxLength), data);
+        var actual = maxLength is 0 ? 0 : writer.Invoke(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, numberLength), maxLength), data);
         if ((uint)actual > (uint)maxLength)
             ThrowHelper.ThrowInvalidReturnValue();
         Debug.Assert(actual >= 0);

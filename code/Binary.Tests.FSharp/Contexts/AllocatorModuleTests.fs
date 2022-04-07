@@ -27,6 +27,14 @@ let ``Append Max Length (default constructor, max length zero with raise express
     Assert.Equal(0, allocator.Capacity)
     ()
 
+[<Fact>]
+let ``Append Max Length With Length Prefix (default constructor, max length zero with raise expression)`` () =
+    let mutable allocator = Allocator()
+    Allocator.AppendWithLengthPrefix(&allocator, 0, null :> obj, fun a b -> raise (NotSupportedException()); -1)
+    Assert.Equal(1, allocator.Length)
+    Assert.Equal(256, allocator.Capacity)
+    ()
+
 [<Theory>]
 [<InlineData(-1)>]
 [<InlineData(-100)>]
@@ -61,6 +69,23 @@ let ``Append Max Length (default constructor, max length invalid)`` (maxLength :
     Assert.Equal("maxLength", parameter.Name)
     ()
 
+[<Theory>]
+[<InlineData(-1)>]
+[<InlineData(-100)>]
+[<InlineData(Int32.MinValue)>]
+let ``Append Max Length With Length Prefix (default constructor, max length invalid)`` (maxLength : int) =
+    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
+        let mutable allocator = Allocator()
+        Allocator.AppendWithLengthPrefix(&allocator, maxLength, null :> obj, fun a b -> raise (NotSupportedException()); -1)
+        ())
+    let methodInfos = allocatorType.GetMethods() |> Array.filter (fun x -> x.Name = "AppendWithLengthPrefix" && x.GetParameters().Length = 4)
+    let methodInfo = methodInfos |> Array.filter (fun x -> x.GetParameters().[3].ParameterType.Name.StartsWith "AllocatorWriter`1") |> Array.exactlyOne
+    let parameter = methodInfo.GetParameters().[1]
+    Assert.StartsWith("Argument max length must be greater than or equal to zero!", error.Message)
+    Assert.Equal("maxLength", error.ParamName)
+    Assert.Equal("maxLength", parameter.Name)
+    ()
+
 [<Fact>]
 let ``Append Action (default constructor, length overflow)`` () =
     let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
@@ -76,6 +101,16 @@ let ``Append Max Length (default constructor, max length overflow)`` () =
     let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
         let mutable allocator = Allocator()
         Allocator.Append(&allocator, Int32.MaxValue + 1, null :> obj, fun a b -> raise (NotSupportedException()); -1)
+        ())
+    Assert.StartsWith("Argument max length must be greater than or equal to zero!", error.Message)
+    Assert.Equal("maxLength", error.ParamName)
+    ()
+
+[<Fact>]
+let ``Append Max Length With Length Prefix (default constructor, max length overflow)`` () =
+    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
+        let mutable allocator = Allocator()
+        Allocator.AppendWithLengthPrefix(&allocator, Int32.MaxValue + 1, null :> obj, fun a b -> raise (NotSupportedException()); -1)
         ())
     Assert.StartsWith("Argument max length must be greater than or equal to zero!", error.Message)
     Assert.Equal("maxLength", error.ParamName)
@@ -100,6 +135,17 @@ let ``Append Max Length (append some then, max length zero with raise expression
     Assert.Equal(256, allocator.Capacity)
     Allocator.Append(&allocator, 0, null :> obj, fun a b -> raise (NotSupportedException()); -1)
     Assert.Equal(8, allocator.Length)
+    Assert.Equal(256, allocator.Capacity)
+    ()
+
+[<Fact>]
+let ``Append Max Length With Length Prefix (append some then, max length zero with raise expression)`` () =
+    let mutable allocator = Allocator()
+    Allocator.AppendWithLengthPrefix(&allocator, 8, null :> obj, fun a b -> (); 8)
+    Assert.Equal(9, allocator.Length)
+    Assert.Equal(256, allocator.Capacity)
+    Allocator.AppendWithLengthPrefix(&allocator, 0, null :> obj, fun a b -> raise (NotSupportedException()); -1)
+    Assert.Equal(10, allocator.Length)
     Assert.Equal(256, allocator.Capacity)
     ()
 
@@ -131,6 +177,23 @@ let ``Append Max Length (append some then, max length invalid)`` (maxLength : in
         Allocator.Append(&allocator, 8, null :> obj, fun a b -> (); 8)
         flag <- 1
         Allocator.Append(&allocator, maxLength, null :> obj, fun a b -> raise (NotSupportedException()); -1)
+        ())
+    Assert.Equal(1, flag)
+    Assert.StartsWith("Argument max length must be greater than or equal to zero!", error.Message)
+    Assert.Equal("maxLength", error.ParamName)
+    ()
+
+[<Theory>]
+[<InlineData(-1)>]
+[<InlineData(-100)>]
+[<InlineData(Int32.MinValue)>]
+let ``Append Max Length With Length Prefix (append some then, max length invalid)`` (maxLength : int) =
+    let mutable flag = 0
+    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
+        let mutable allocator = Allocator()
+        Allocator.AppendWithLengthPrefix(&allocator, 8, null :> obj, fun a b -> (); 8)
+        flag <- 1
+        Allocator.AppendWithLengthPrefix(&allocator, maxLength, null :> obj, fun a b -> raise (NotSupportedException()); -1)
         ())
     Assert.Equal(1, flag)
     Assert.StartsWith("Argument max length must be greater than or equal to zero!", error.Message)
@@ -229,6 +292,21 @@ let ``Append Max Length (default constructor, writer null)`` (maxLength : int) =
         let mutable allocator = Allocator()
         Allocator.Append(&allocator, maxLength, null :> obj, Unchecked.defaultof<AllocatorWriter<_>>))
     let methodInfos = allocatorType.GetMethods() |> Array.filter (fun x -> x.Name = "Append" && x.GetParameters().Length = 4)
+    let methodInfo = methodInfos |> Array.filter (fun x -> x.GetParameters().[3].ParameterType.Name.StartsWith "AllocatorWriter`1") |> Array.exactlyOne
+    let parameter = methodInfo.GetParameters() |> Array.last
+    Assert.Equal("writer", parameter.Name)
+    Assert.Equal("writer", error.ParamName)
+    ()
+
+[<Theory>]
+[<InlineData(0)>]
+[<InlineData(1)>]
+[<InlineData(4)>]
+let ``Append Max Length With Length Prefix (default constructor, writer null)`` (maxLength : int) =
+    let error = Assert.Throws<ArgumentNullException>(fun () ->
+        let mutable allocator = Allocator()
+        Allocator.AppendWithLengthPrefix(&allocator, maxLength, null :> obj, Unchecked.defaultof<AllocatorWriter<_>>))
+    let methodInfos = allocatorType.GetMethods() |> Array.filter (fun x -> x.Name = "AppendWithLengthPrefix" && x.GetParameters().Length = 4)
     let methodInfo = methodInfos |> Array.filter (fun x -> x.GetParameters().[3].ParameterType.Name.StartsWith "AllocatorWriter`1") |> Array.exactlyOne
     let parameter = methodInfo.GetParameters() |> Array.last
     Assert.Equal("writer", parameter.Name)
@@ -461,7 +539,7 @@ let ``Expand (no resize)`` (capacity : int, offset : int, length : int) =
 [<InlineData(512, 128, 1024)>]
 [<InlineData(768, 512, 1024)>]
 [<InlineData(4096, 4096, 4096)>]
-let ``Append Max Length (integration test)`` (maxLength : int, actual : int, capacityExpected) =
+let ``Append Max Length (integration test)`` (maxLength : int, actual : int, capacityExpected : int) =
     let mutable allocator = Allocator()
     let buffer = Array.zeroCreate actual
     Allocator.Append(&allocator, maxLength, buffer, fun (a : Span<byte>) (b : byte array) -> b.CopyTo a; b.Length)
@@ -482,6 +560,44 @@ let ``Append Max Length (invalid return value)`` (maxLength : int, actual : int)
     let error = Assert.Throws<InvalidOperationException>(fun () ->
         let mutable allocator = Allocator()
         Allocator.Append(&allocator, maxLength, null :> obj, fun a b -> (); actual)
+        ())
+    Assert.Equal("Invalid return value.", error.Message)
+    ()
+
+[<Theory>]
+[<InlineData(0, 0, 1, 1, 256)>]
+[<InlineData(127, 0, 1, 1, 256)>]
+[<InlineData(128, 0, 4, 4, 256)>]
+[<InlineData(16, 16, 1, 17, 256)>]
+[<InlineData(56, 48, 1, 49, 256)>]
+[<InlineData(384, 72, 4, 76, 1024)>]
+[<InlineData(1536, 96, 4, 100, 4096)>]
+let ``Append Max Length With Length Prefix (integration test)`` (maxLength : int, actual : int, prefixLength : int, lengthExpected : int, capacityExpected : int) =
+    let mutable allocator = Allocator()
+    let buffer = Array.zeroCreate actual
+    Allocator.AppendWithLengthPrefix(&allocator, maxLength, buffer, fun (a : Span<byte>) (b : byte array) -> b.CopyTo a; b.Length)
+    let result = allocator.AsSpan().ToArray()
+    let mutable span = ReadOnlySpan result
+    let header = Converter.Decode &span
+    Assert.Equal(actual, header)
+    Assert.Equal(prefixLength, allocator.Length - span.Length)
+    Assert.Equal(lengthExpected, allocator.Length)
+    Assert.Equal<byte>(buffer, span.ToArray())
+    Assert.Equal(actual, span.Length)
+    Assert.Equal(capacityExpected, allocator.Capacity)
+    ()
+
+[<Theory>]
+[<InlineData(1, -1)>]
+[<InlineData(16, -1)>]
+[<InlineData(16, 17)>]
+[<InlineData(384, -200)>]
+[<InlineData(512, 768)>]
+[<InlineData(512, Int32.MinValue)>]
+let ``Append Max Length With Length Prefix (invalid return value)`` (maxLength : int, actual : int) =
+    let error = Assert.Throws<InvalidOperationException>(fun () ->
+        let mutable allocator = Allocator()
+        Allocator.AppendWithLengthPrefix(&allocator, maxLength, null :> obj, fun a b -> (); actual)
         ())
     Assert.Equal("Invalid return value.", error.Message)
     ()
