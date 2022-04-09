@@ -11,14 +11,23 @@ using System.Runtime.InteropServices;
 
 internal sealed class BitArrayConverter : Converter<BitArray?>
 {
-    private static readonly Func<BitArray, int[]> FieldFunction;
+    private static readonly Func<BitArray, int[]> MemberFunction;
 
     static BitArrayConverter()
     {
         var field = CommonModule.GetField(typeof(BitArray), "m_array", BindingFlags.Instance | BindingFlags.NonPublic);
         var parameter = Expression.Parameter(typeof(BitArray), "array");
         var expression = Expression.Lambda<Func<BitArray, int[]>>(Expression.Field(parameter, field), parameter);
-        FieldFunction = expression.Compile();
+        MemberFunction = expression.Compile();
+    }
+
+    private static uint FilterFunction(uint buffer, int remain)
+    {
+        Debug.Assert((uint)remain < 32);
+        var offset = 32 - remain;
+        buffer <<= offset;
+        buffer >>= offset;
+        return buffer;
     }
 
     private static void EncodeInternal(Span<byte> target, ReadOnlySpan<int> source, int length)
@@ -29,10 +38,7 @@ internal sealed class BitArrayConverter : Converter<BitArray?>
         var remain = length & 31;
         if (remain is 0)
             return;
-        var offset = 32 - remain;
-        var buffer = (uint)source[bounds];
-        buffer <<= offset;
-        buffer >>= offset;
+        var buffer = FilterFunction((uint)source[bounds], remain);
         var limits = (remain + 7) >> 3;
         for (var i = 0; i < limits; i++)
             target[i] = (byte)(buffer >> (i * 8));
@@ -46,14 +52,11 @@ internal sealed class BitArrayConverter : Converter<BitArray?>
         var remain = length & 31;
         if (remain is 0)
             return;
-        var offset = 32 - remain;
         var buffer = (uint)0;
         var limits = (remain + 7) >> 3;
         for (var i = 0; i < limits; i++)
             buffer |= (uint)source[i] << (i * 8);
-        buffer <<= offset;
-        buffer >>= offset;
-        target[bounds] = (int)buffer;
+        target[bounds] = (int)FilterFunction(buffer, remain);
     }
 
     public override void Encode(ref Allocator allocator, BitArray? item)
@@ -61,9 +64,9 @@ internal sealed class BitArrayConverter : Converter<BitArray?>
         if (item is null)
             return;
         var length = item.Count;
-        var source = FieldFunction.Invoke(item);
+        var source = MemberFunction.Invoke(item);
         var margin = (-length) & 7;
-        Debug.Assert(margin is >= 0 and <= 7);
+        Debug.Assert((uint)margin < 8);
         Converter.Encode(ref allocator, margin);
         if (length is 0)
             return;
@@ -85,7 +88,7 @@ internal sealed class BitArrayConverter : Converter<BitArray?>
             ThrowHelper.ThrowNotEnoughBytes();
         var length = checked((int)(((ulong)cursor.Length << 3) - (uint)margin));
         var result = new BitArray(length);
-        var target = FieldFunction.Invoke(result);
+        var target = MemberFunction.Invoke(result);
         DecodeInternal(target, cursor, length);
         return result;
     }

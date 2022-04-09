@@ -10,7 +10,7 @@ internal sealed class IPEndPointConverter : Converter<IPEndPoint?>
 {
     private const int MaxLength = 18;
 
-    private static readonly AllocatorWriter<IPEndPoint?> EncodeAction;
+    private static readonly AllocatorWriter<IPEndPoint?> EncodeFunction;
 
     static IPEndPointConverter()
     {
@@ -24,7 +24,7 @@ internal sealed class IPEndPointConverter : Converter<IPEndPoint?>
             BinaryPrimitives.WriteUInt16LittleEndian(span.Slice(actual, sizeof(ushort)), (ushort)item.Port);
             return actual + sizeof(ushort);
         };
-        EncodeAction = Invoke;
+        EncodeFunction = Invoke;
     }
 
     private static IPEndPoint? DecodeInternal(ReadOnlySpan<byte> span)
@@ -40,11 +40,11 @@ internal sealed class IPEndPointConverter : Converter<IPEndPoint?>
         return new IPEndPoint(header, number);
     }
 
-    public override void Encode(ref Allocator allocator, IPEndPoint? item) => Allocator.Append(ref allocator, MaxLength, item, EncodeAction);
+    public override void Encode(ref Allocator allocator, IPEndPoint? item) => Allocator.Append(ref allocator, MaxLength, item, EncodeFunction);
 
-    public override void EncodeAuto(ref Allocator allocator, IPEndPoint? item) => Allocator.AppendWithLengthPrefix(ref allocator, MaxLength, item, EncodeAction);
+    public override void EncodeAuto(ref Allocator allocator, IPEndPoint? item) => Allocator.AppendWithLengthPrefix(ref allocator, MaxLength, item, EncodeFunction);
 
-    public override void EncodeWithLengthPrefix(ref Allocator allocator, IPEndPoint? item) => Allocator.AppendWithLengthPrefix(ref allocator, MaxLength, item, EncodeAction);
+    public override void EncodeWithLengthPrefix(ref Allocator allocator, IPEndPoint? item) => Allocator.AppendWithLengthPrefix(ref allocator, MaxLength, item, EncodeFunction);
 
     public override IPEndPoint? Decode(in ReadOnlySpan<byte> span) => DecodeInternal(span);
 

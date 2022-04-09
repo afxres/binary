@@ -8,7 +8,7 @@ internal sealed class IPAddressConverter : Converter<IPAddress?>
 {
     private const int MaxLength = 16;
 
-    private static readonly AllocatorWriter<IPAddress?> EncodeAction;
+    private static readonly AllocatorWriter<IPAddress?> EncodeFunction;
 
     static IPAddressConverter()
     {
@@ -21,7 +21,7 @@ internal sealed class IPAddressConverter : Converter<IPAddress?>
             Debug.Assert(actual is 4 or 16);
             return actual;
         };
-        EncodeAction = Invoke;
+        EncodeFunction = Invoke;
     }
 
     private static IPAddress? DecodeInternal(ReadOnlySpan<byte> span)
@@ -31,11 +31,11 @@ internal sealed class IPAddressConverter : Converter<IPAddress?>
         return new IPAddress(span);
     }
 
-    public override void Encode(ref Allocator allocator, IPAddress? item) => Allocator.Append(ref allocator, MaxLength, item, EncodeAction);
+    public override void Encode(ref Allocator allocator, IPAddress? item) => Allocator.Append(ref allocator, MaxLength, item, EncodeFunction);
 
-    public override void EncodeAuto(ref Allocator allocator, IPAddress? item) => Allocator.AppendWithLengthPrefix(ref allocator, MaxLength, item, EncodeAction);
+    public override void EncodeAuto(ref Allocator allocator, IPAddress? item) => Allocator.AppendWithLengthPrefix(ref allocator, MaxLength, item, EncodeFunction);
 
-    public override void EncodeWithLengthPrefix(ref Allocator allocator, IPAddress? item) => Allocator.AppendWithLengthPrefix(ref allocator, MaxLength, item, EncodeAction);
+    public override void EncodeWithLengthPrefix(ref Allocator allocator, IPAddress? item) => Allocator.AppendWithLengthPrefix(ref allocator, MaxLength, item, EncodeFunction);
 
     public override IPAddress? Decode(in ReadOnlySpan<byte> span) => DecodeInternal(span);
 
