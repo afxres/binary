@@ -65,7 +65,7 @@ public class BitArrayConverterInternalTests
         {
             var a = new byte[target];
             var b = new int[source];
-            encode.Invoke(a, b, length);
+            this.encode.Invoke(a, b, length);
         });
         Assert.Equal(new IndexOutOfRangeException().Message, error.Message);
     }
@@ -81,7 +81,7 @@ public class BitArrayConverterInternalTests
         {
             var a = new int[target];
             var b = new byte[source];
-            decode.Invoke(a, b, length);
+            this.decode.Invoke(a, b, length);
         });
         Assert.Equal(new IndexOutOfRangeException().Message, error.Message);
     }
@@ -95,7 +95,7 @@ public class BitArrayConverterInternalTests
         {
             var a = new byte[target];
             var b = new int[source];
-            encode.Invoke(a, b, length);
+            this.encode.Invoke(a, b, length);
         });
         Assert.Equal("length", error.ParamName);
     }
@@ -109,7 +109,7 @@ public class BitArrayConverterInternalTests
         {
             var a = new int[target];
             var b = new byte[source];
-            decode.Invoke(a, b, length);
+            this.decode.Invoke(a, b, length);
         });
         Assert.Equal("length", error.ParamName);
     }
