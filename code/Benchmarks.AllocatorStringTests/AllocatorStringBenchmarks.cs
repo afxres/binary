@@ -17,7 +17,7 @@ public class AllocatorStringBenchmarks
     private AllocatorWriter<string?> writer;
 
     [AllowNull]
-    [Params("", "Hello, world!", "The quick brown fox jumps over the lazy dog.")]
+    [Params("", "#", "Hello, world!", "0123456789ABCDEF0123456789abcdef", "The quick brown fox jumps over the lazy dog.")]
     public string Text;
 
     [GlobalSetup]
