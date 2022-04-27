@@ -116,7 +116,6 @@ public class CodeContractsTests
         var remainMembers = methods.Except(ignoreMembers).ToList();
         var attributes = remainMembers.Select(x => (x, Flag: HasReadOnlyAttribute(x))).ToList();
 
-        Assert.Empty(readonlyTypes);
         Assert.Equal(otherTypes.Count * 6 - 3, ignoreMembers.Count);
         Assert.All(attributes, x => Assert.True(x.Flag));
     }
