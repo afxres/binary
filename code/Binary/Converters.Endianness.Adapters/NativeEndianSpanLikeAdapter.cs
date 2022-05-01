@@ -1,11 +1,13 @@
-﻿namespace Mikodev.Binary.Internal.SpanLike.Adapters;
+﻿namespace Mikodev.Binary.Converters.Endianness.Adapters;
 
+using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Sequence;
+using Mikodev.Binary.Internal.SpanLike;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-internal sealed class NativeEndianAdapter<T> : SpanLikeAdapter<T> where T : unmanaged
+internal sealed class NativeEndianSpanLikeAdapter<T> : SpanLikeAdapter<T> where T : unmanaged
 {
     public override void Encode(ref Allocator allocator, ReadOnlySpan<T> item)
     {
