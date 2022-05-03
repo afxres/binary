@@ -1,21 +1,24 @@
-﻿namespace Mikodev.Binary.Internal.SpanLike.Adapters;
+﻿namespace Mikodev.Binary.Features.Adapters;
 
+using Mikodev.Binary.Features.Contexts;
+using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Sequence;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
-internal sealed class ConstantAdapter<T> : SpanLikeAdapter<T>
+#if NET6_0_OR_GREATER
+[RequiresPreviewFeatures]
+internal sealed class RawConverterSequenceAdapter<T, U> : SequenceAdapter<T> where U : struct, IRawConverter<T>
 {
-    private readonly Converter<T> converter;
-
-    public ConstantAdapter(Converter<T> converter) => this.converter = converter;
-
     public override void Encode(ref Allocator allocator, ReadOnlySpan<T> item)
     {
-        var converter = this.converter;
-        foreach (var i in item)
-            converter.Encode(ref allocator, i);
+        var length = U.Length;
+        ref var target = ref Allocator.Assign(ref allocator, checked(length * item.Length));
+        for (var i = 0; i < item.Length; i++)
+            U.Encode(ref Unsafe.Add(ref target, length * i), item[i]);
+        return;
     }
 
     public override MemoryBuffer<T> Decode(ReadOnlySpan<byte> span)
@@ -23,13 +26,13 @@ internal sealed class ConstantAdapter<T> : SpanLikeAdapter<T>
         var limits = span.Length;
         if (limits is 0)
             return new MemoryBuffer<T>(Array.Empty<T>(), 0);
-        var converter = this.converter;
-        var length = converter.Length;
+        var length = U.Length;
         var capacity = SequenceMethods.GetCapacity<T>(limits, length);
         var result = new T[capacity];
         ref var source = ref MemoryMarshal.GetReference(span);
         for (var i = 0; i < capacity; i++)
-            result[i] = converter.Decode(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref source, length * i), length));
+            result[i] = U.Decode(ref Unsafe.Add(ref source, length * i));
         return new MemoryBuffer<T>(result, capacity);
     }
 }
+#endif

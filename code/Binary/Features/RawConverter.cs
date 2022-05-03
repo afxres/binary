@@ -5,8 +5,8 @@ using Mikodev.Binary.Features.Adapters;
 using Mikodev.Binary.Features.Contexts;
 using Mikodev.Binary.Features.Instance;
 using Mikodev.Binary.Internal;
-using Mikodev.Binary.Internal.SpanLike;
-using Mikodev.Binary.Internal.SpanLike.Contexts;
+using Mikodev.Binary.Internal.Sequence;
+using Mikodev.Binary.Internal.Sequence.Contexts;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -14,7 +14,7 @@ using System.Runtime.Versioning;
 
 #if NET6_0_OR_GREATER
 [RequiresPreviewFeatures]
-internal sealed class RawConverter<T, U> : Converter<T>, ISpanLikeAdapterCreator<T> where T : unmanaged where U : struct, IRawConverter<T>
+internal sealed class RawConverter<T, U> : Converter<T>, ISequenceAdapterCreator<T> where T : unmanaged where U : struct, IRawConverter<T>
 {
     public RawConverter() : base(U.Length)
     {
@@ -68,11 +68,11 @@ internal sealed class RawConverter<T, U> : Converter<T>, ISpanLikeAdapterCreator
         U.Encode(ref Unsafe.Add(ref target, prefix), item);
     }
 
-    public SpanLikeAdapter<T> GetAdapter()
+    public SequenceAdapter<T> GetAdapter()
     {
         if (typeof(U) == typeof(NativeEndianRawConverter<T>))
-            return new NativeEndianSpanLikeAdapter<T>();
-        return new RawConverterSpanLikeAdapter<T, U>();
+            return new NativeEndianSequenceAdapter<T>();
+        return new RawConverterSequenceAdapter<T, U>();
     }
 }
 #endif

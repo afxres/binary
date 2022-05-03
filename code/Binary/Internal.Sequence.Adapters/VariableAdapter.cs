@@ -1,8 +1,9 @@
-﻿namespace Mikodev.Binary.Internal.SpanLike.Adapters;
+﻿namespace Mikodev.Binary.Internal.Sequence.Adapters;
 
+using Mikodev.Binary.Internal.Sequence;
 using System;
 
-internal sealed class VariableAdapter<T> : SpanLikeAdapter<T>
+internal sealed class VariableAdapter<T> : SequenceAdapter<T>
 {
     private readonly Converter<T> converter;
 

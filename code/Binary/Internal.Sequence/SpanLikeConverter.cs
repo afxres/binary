@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Internal.SpanLike;
+﻿namespace Mikodev.Binary.Internal.Sequence;
 
 using System;
 
@@ -6,13 +6,13 @@ internal sealed partial class SpanLikeConverter<T, E> : Converter<T>
 {
     private readonly int itemLength;
 
-    private readonly SpanLikeAdapter<E> invoke;
+    private readonly SequenceAdapter<E> invoke;
 
-    private readonly SpanLikeBuilder<T, E> create;
+    private readonly SequenceBuilder<T, E> create;
 
-    public SpanLikeConverter(SpanLikeBuilder<T, E> create, Converter<E> converter)
+    public SpanLikeConverter(SequenceBuilder<T, E> create, Converter<E> converter)
     {
-        this.invoke = SpanLikeAdapter.Create(converter);
+        this.invoke = SequenceAdapter.Create(converter);
         this.create = create;
         this.itemLength = converter.Length;
     }

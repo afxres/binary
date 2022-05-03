@@ -2,14 +2,14 @@
 
 using Mikodev.Binary.Converters.Endianness.Adapters;
 using Mikodev.Binary.Internal;
-using Mikodev.Binary.Internal.SpanLike;
-using Mikodev.Binary.Internal.SpanLike.Contexts;
+using Mikodev.Binary.Internal.Sequence;
+using Mikodev.Binary.Internal.Sequence.Contexts;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-internal sealed class NativeEndianConverter<T> : Converter<T>, ISpanLikeAdapterCreator<T> where T : unmanaged
+internal sealed class NativeEndianConverter<T> : Converter<T>, ISequenceAdapterCreator<T> where T : unmanaged
 {
     public NativeEndianConverter() : base(Unsafe.SizeOf<T>())
     {
@@ -62,8 +62,8 @@ internal sealed class NativeEndianConverter<T> : Converter<T>, ISpanLikeAdapterC
         return Unsafe.ReadUnaligned<T>(ref MemoryModule.EnsureLength(new ReadOnlySpan<byte>(buffer), Unsafe.SizeOf<T>()));
     }
 
-    public SpanLikeAdapter<T> GetAdapter()
+    public SequenceAdapter<T> GetAdapter()
     {
-        return new NativeEndianSpanLikeAdapter<T>();
+        return new NativeEndianSequenceAdapter<T>();
     }
 }

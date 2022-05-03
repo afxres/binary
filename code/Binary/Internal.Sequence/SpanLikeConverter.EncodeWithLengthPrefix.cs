@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Internal.SpanLike;
+﻿namespace Mikodev.Binary.Internal.Sequence;
 
 internal sealed partial class SpanLikeConverter<T, E>
 {

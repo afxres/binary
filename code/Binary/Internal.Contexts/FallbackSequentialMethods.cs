@@ -1,7 +1,7 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts;
 
-using Mikodev.Binary.Internal.SpanLike;
-using Mikodev.Binary.Internal.SpanLike.Builders;
+using Mikodev.Binary.Internal.Sequence;
+using Mikodev.Binary.Internal.Sequence.Builders;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
