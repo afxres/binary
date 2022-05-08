@@ -8,6 +8,7 @@ using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Sequence;
 using Mikodev.Binary.Internal.Sequence.Contexts;
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -18,9 +19,9 @@ internal sealed class RawConverter<T, U> : Converter<T>, ISequenceAdapterCreator
 {
     public RawConverter() : base(U.Length)
     {
-        if (U.Length > 0)
-            return;
-        ThrowHelper.ThrowLengthNegative();
+        Debug.Assert(U.Length >= 1);
+        Debug.Assert(U.Length <= 16);
+        Debug.Assert(NumberModule.EncodeLength((uint)U.Length) is 1);
     }
 
     public override T Decode(byte[]? buffer)
