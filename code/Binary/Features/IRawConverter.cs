@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Features.Contexts;
+﻿namespace Mikodev.Binary.Features;
 
 using System.Runtime.Versioning;
 

@@ -1,9 +1,10 @@
 ﻿namespace Mikodev.Binary.Features.Adapters;
 
-using Mikodev.Binary.Features.Contexts;
+using Mikodev.Binary.Features;
 using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Sequence;
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -14,6 +15,9 @@ internal sealed class RawConverterSequenceAdapter<T, U> : SequenceAdapter<T> whe
 {
     public override void Encode(ref Allocator allocator, ReadOnlySpan<T> item)
     {
+        Debug.Assert(U.Length >= 1);
+        if (item.Length is 0)
+            return;
         var length = U.Length;
         ref var target = ref Allocator.Assign(ref allocator, checked(length * item.Length));
         for (var i = 0; i < item.Length; i++)
@@ -23,6 +27,7 @@ internal sealed class RawConverterSequenceAdapter<T, U> : SequenceAdapter<T> whe
 
     public override MemoryBuffer<T> Decode(ReadOnlySpan<byte> span)
     {
+        Debug.Assert(U.Length >= 1);
         var limits = span.Length;
         if (limits is 0)
             return new MemoryBuffer<T>(Array.Empty<T>(), 0);

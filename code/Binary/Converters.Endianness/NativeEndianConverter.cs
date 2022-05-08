@@ -62,7 +62,7 @@ internal sealed class NativeEndianConverter<T> : Converter<T>, ISequenceAdapterC
         return Unsafe.ReadUnaligned<T>(ref MemoryModule.EnsureLength(new ReadOnlySpan<byte>(buffer), Unsafe.SizeOf<T>()));
     }
 
-    public SequenceAdapter<T> GetAdapter()
+    SequenceAdapter<T> ISequenceAdapterCreator<T>.GetAdapter()
     {
         return new NativeEndianSequenceAdapter<T>();
     }

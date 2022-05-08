@@ -1,6 +1,6 @@
 ﻿namespace Mikodev.Binary.Features.Instance;
 
-using Mikodev.Binary.Features.Contexts;
+using Mikodev.Binary.Features;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
