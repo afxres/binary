@@ -9,8 +9,6 @@ public class IntegrationTests
 {
     public static IEnumerable<object[]> SimpleObjectData => new List<object[]>
     {
-        new object[] { 0x04, 0 },
-        new object[] { 0x08, 2.3 },
         new object[] { 0x04, DateOnly.Parse("2001-02-03") },
         new object[] { 0x0A, DateTimeOffset.Parse("2020-02-02T11:22:33+04:00") },
         new object[] { 0x08, DateTime.Parse("2001-02-03T04:05:06") },
@@ -30,7 +28,10 @@ public class IntegrationTests
             .AddPreviewFeaturesConverterCreators()
             .Build();
         var converter = generator.GetConverter(data.GetType());
-        Assert.Equal("RawConverter`2", converter.GetType().Name);
+        var converterType = converter.GetType();
+        var rawConverterTypeName = $"{data.GetType().Name}RawConverter";
+        Assert.Equal("RawConverter`2", converterType.Name);
+        Assert.Contains(rawConverterTypeName, converterType.FullName);
         Assert.Equal(length, converter.Length);
         var buffer = converter.Encode(data);
         var result = converter.Decode(buffer);
