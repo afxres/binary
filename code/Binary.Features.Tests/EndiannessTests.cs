@@ -4,10 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Xunit;
 
 public class EndiannessTests
 {
+    private delegate T Decode<T>(ref byte source);
+
+    private delegate void Encode<T>(ref byte target, T item);
+
     public enum Enum32 : int { }
 
     public enum Enum64 : long { }
@@ -15,6 +21,12 @@ public class EndiannessTests
     public enum EnumU32 : uint { }
 
     public enum EnumU64 : ulong { }
+
+    [StructLayout(LayoutKind.Explicit, Size = 16)]
+    public struct Block16 { }
+
+    [StructLayout(LayoutKind.Explicit, Size = 32)]
+    public struct Block32 { }
 
     public static IEnumerable<object[]> EnumData => new List<object[]>
     {
@@ -26,6 +38,10 @@ public class EndiannessTests
 
     public static IEnumerable<object[]> NumberData => new List<object[]>
     {
+        new object[] { 1, (byte)1 },
+        new object[] { 1, (sbyte)-1 },
+        new object[] { 2, (short)-3 },
+        new object[] { 2, (ushort)5 },
         new object[] { 4, 0 },
         new object[] { 8, 0L },
         new object[] { 4, 0U },
@@ -61,7 +77,7 @@ public class EndiannessTests
         var creatorType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "RawConverterCreator");
         var creatorInvokeMethod = creatorType.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name.Contains("Invoke"));
         var creatorInvokeFunctor = (Func<Type, bool, IConverter>)Delegate.CreateDelegate(typeof(Func<Type, bool, IConverter>), creatorInvokeMethod);
-        var converter = creatorInvokeFunctor.Invoke(typeof(T), true);
+        var converter = (Converter<T>)creatorInvokeFunctor.Invoke(typeof(T), true);
         var converterType = converter.GetType();
         Assert.Equal("RawConverter`2", converterType.Name);
         Assert.Contains("NativeEndianRawConverter`1", converterType.FullName);
@@ -79,7 +95,7 @@ public class EndiannessTests
         var creatorType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "RawConverterCreator");
         var creatorInvokeMethod = creatorType.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name.Contains("Invoke"));
         var creatorInvokeFunctor = (Func<Type, bool, IConverter>)Delegate.CreateDelegate(typeof(Func<Type, bool, IConverter>), creatorInvokeMethod);
-        var converter = creatorInvokeFunctor.Invoke(typeof(T), false);
+        var converter = (Converter<T>)creatorInvokeFunctor.Invoke(typeof(T), false);
         var converterType = converter.GetType();
         Assert.Equal("RawConverter`2", converterType.Name);
         Assert.Contains("LittleEndianRawConverter`1", converterType.FullName);
@@ -87,5 +103,30 @@ public class EndiannessTests
         var buffer = converter.Encode(data);
         var result = converter.Decode(buffer);
         Assert.Equal(data, result);
+    }
+
+    public static IEnumerable<object[]> InvalidBlockData => new List<object[]>
+    {
+        new object[] { 16, default(Block16) },
+        new object[] { 32, default(Block32) },
+    };
+
+    [Theory(DisplayName = "Internal Little Endian Converter Invalid Type")]
+    [MemberData(nameof(InvalidBlockData))]
+    public void InternalLittleEndianConverterInvalidType<T>(int length, T data)
+    {
+        Assert.Equal(length, Unsafe.SizeOf<T>());
+        var converterOpenType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "LittleEndianRawConverter`1");
+        var converterType = converterOpenType.MakeGenericType(typeof(T));
+        var decodeFunctor = (Decode<T>)Delegate.CreateDelegate(typeof(Decode<T>), converterType, "Decode");
+        var encodeFunctor = (Encode<T>)Delegate.CreateDelegate(typeof(Encode<T>), converterType, "Encode");
+
+        // Invalid null reference, do not dereference!!!
+        var alpha = Assert.Throws<NotSupportedException>(() => decodeFunctor.Invoke(ref Unsafe.NullRef<byte>()));
+        Assert.Equal(new NotSupportedException().Message, alpha.Message);
+
+        // Invalid null reference, do not dereference!!!
+        var bravo = Assert.Throws<NotSupportedException>(() => encodeFunctor.Invoke(ref Unsafe.NullRef<byte>(), data));
+        Assert.Equal(new NotSupportedException().Message, bravo.Message);
     }
 }
