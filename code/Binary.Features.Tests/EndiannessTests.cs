@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -128,5 +129,16 @@ public class EndiannessTests
         // Invalid null reference, do not dereference!!!
         var bravo = Assert.Throws<NotSupportedException>(() => encodeFunctor.Invoke(ref Unsafe.NullRef<byte>(), data));
         Assert.Equal(new NotSupportedException().Message, bravo.Message);
+    }
+
+    [Fact(DisplayName = "Supported Types")]
+    public void SupportedTypes()
+    {
+        var assemblyTypes = typeof(IConverter).Assembly.GetTypes();
+        var alpha = assemblyTypes.Single(x => x.Name is "RawConverterCreator").GetField("Types", BindingFlags.Static | BindingFlags.NonPublic);
+        var bravo = assemblyTypes.Single(x => x.Name is "FallbackEndiannessMethods").GetField("Types", BindingFlags.Static | BindingFlags.NonPublic);
+        var delta = Assert.IsType<ImmutableArray<Type>>(alpha?.GetValue(null));
+        var hotel = Assert.IsType<ImmutableArray<Type>>(bravo?.GetValue(null));
+        Assert.Equal(delta.ToHashSet(), hotel.ToHashSet());
     }
 }
