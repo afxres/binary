@@ -21,7 +21,7 @@ public class ConverterBenchmarks
     [AllowNull]
     private Converter<int> converter;
 
-    [Params("constant", "variable", "native")]
+    [Params("constant", "variable", "fallback", "features")]
     public string? Flag;
 
     [GlobalSetup]
@@ -33,7 +33,8 @@ public class ConverterBenchmarks
         {
             "constant" => new ConstantNativeConverter<int>(),
             "variable" => new VariableNativeConverter<int>(),
-            "native" => Generator.CreateDefault().GetConverter<int>(),
+            "features" => Generator.CreateDefaultBuilder().AddPreviewFeaturesConverterCreators().Build().GetConverter<int>(),
+            "fallback" => Generator.CreateDefault().GetConverter<int>(),
             _ => throw new NotSupportedException(),
         };
         this.encodeBytes = this.converter.Encode(this.number);
