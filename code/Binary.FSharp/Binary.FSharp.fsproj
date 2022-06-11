@@ -8,7 +8,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Mikodev</Authors>
     <Company>Mikodev</Company>
-    <Copyright>Mikodev 2021</Copyright>
+    <Copyright>Mikodev $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
     <Product>Mikodev.Binary</Product>
     <Version>5.3.1</Version>
     <PackageTags>binary dynamic serialization fsharp</PackageTags>
