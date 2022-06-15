@@ -4,10 +4,8 @@ using Mikodev.Binary.Features;
 using Mikodev.Binary.Internal;
 using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.Versioning;
 
-#if NET6_0_OR_GREATER
-[RequiresPreviewFeatures]
+#if NET7_0_OR_GREATER
 internal readonly struct DateTimeOffsetRawConverter : IRawConverter<DateTimeOffset>
 {
     public static int Length => sizeof(long) + sizeof(short);

@@ -1,12 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0</TargetFrameworks>
-    <AssemblyName>Mikodev.Binary.Features.Tests</AssemblyName>
-    <RootNamespace>Mikodev.Binary.Features.Tests</RootNamespace>
+    <TargetFrameworks>net7.0</TargetFrameworks>
+    <AssemblyName>Mikodev.Binary.Tests.Net7OrGreater</AssemblyName>
+    <RootNamespace>Mikodev.Binary.Tests.Net7OrGreater</RootNamespace>
     <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
-    <EnablePreviewFeatures>true</EnablePreviewFeatures>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

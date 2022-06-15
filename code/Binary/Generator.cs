@@ -28,6 +28,9 @@ public static class Generator
         var builder = new GeneratorBuilder();
         foreach (var creator in SharedConverterCreators)
             _ = builder.AddConverterCreator(creator);
+#if NET7_0_OR_GREATER
+        builder.AddConverterCreator(new Features.RawConverterCreator());
+#endif
         return builder;
     }
 }

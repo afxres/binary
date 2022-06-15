@@ -2,11 +2,9 @@
 
 using Mikodev.Binary.Features;
 using Mikodev.Binary.Internal;
-using System.Runtime.Versioning;
 using System.Text;
 
-#if NET6_0_OR_GREATER
-[RequiresPreviewFeatures]
+#if NET7_0_OR_GREATER
 internal readonly struct RuneRawConverter : IRawConverter<Rune>
 {
     public static int Length => sizeof(int);

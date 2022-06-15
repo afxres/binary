@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Features.Tests;
+﻿namespace Mikodev.Binary.Tests.Net7OrGreater;
 
 using System;
 using System.Collections.Generic;
@@ -56,10 +56,7 @@ public class EndiannessTests
     [MemberData(nameof(NumberData))]
     public void FallbackConverterBasicInfo<T>(int length, T data)
     {
-        var generator = Generator
-            .CreateDefaultBuilder()
-            .AddPreviewFeaturesConverterCreators()
-            .Build();
+        var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<T>();
         var converterType = converter.GetType();
         Assert.Equal("RawConverter`2", converterType.Name);

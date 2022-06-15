@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Features.Tests;
+﻿namespace Mikodev.Binary.Tests.Net7OrGreater;
 
 using System;
 using Xunit;
@@ -13,9 +13,7 @@ public class ConverterThrowTests
 
     public ConverterThrowTests()
     {
-        var generator = Generator.CreateDefaultBuilder()
-            .AddPreviewFeaturesConverterCreators()
-            .Build();
+        var generator = Generator.CreateDefault();
         this.generator = generator;
     }
 

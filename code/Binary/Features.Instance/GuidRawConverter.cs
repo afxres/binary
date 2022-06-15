@@ -4,10 +4,8 @@ using Mikodev.Binary.Features;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 
-#if NET6_0_OR_GREATER
-[RequiresPreviewFeatures]
+#if NET7_0_OR_GREATER
 internal readonly struct GuidRawConverter : IRawConverter<Guid>
 {
     public static int Length => Unsafe.SizeOf<Guid>();

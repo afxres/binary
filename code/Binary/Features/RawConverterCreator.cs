@@ -7,10 +7,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Runtime.Versioning;
 
-#if NET6_0_OR_GREATER
-[RequiresPreviewFeatures]
+#if NET7_0_OR_GREATER
 internal sealed class RawConverterCreator : IConverterCreator
 {
     private static readonly ImmutableArray<Type> Types = ImmutableArray.Create(new[]

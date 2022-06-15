@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Features.Tests;
+﻿namespace Mikodev.Binary.Tests.Net7OrGreater;
 
 using System;
 using System.Collections.Generic;
@@ -23,10 +23,7 @@ public class IntegrationTests
     [MemberData(nameof(SimpleObjectData))]
     public void ConverterBasicInfo(int length, object data)
     {
-        var generator = Generator
-            .CreateDefaultBuilder()
-            .AddPreviewFeaturesConverterCreators()
-            .Build();
+        var generator = Generator.CreateDefault();
         var converter = generator.GetConverter(data.GetType());
         var converterType = converter.GetType();
         var rawConverterTypeName = $"{data.GetType().Name}RawConverter";
@@ -114,10 +111,7 @@ public class IntegrationTests
     [MemberData(nameof(TimeSpanData))]
     public void EncodeDecode<T>(T item)
     {
-        var generator = Generator
-           .CreateDefaultBuilder()
-           .AddPreviewFeaturesConverterCreators()
-           .Build();
+        var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<T>();
         var allocator = new Allocator();
         var buffer = converter.Encode(item);
@@ -144,10 +138,7 @@ public class IntegrationTests
     [MemberData(nameof(TimeSpanData))]
     public void EncodeDecodeAuto<T>(T item)
     {
-        var generator = Generator
-           .CreateDefaultBuilder()
-           .AddPreviewFeaturesConverterCreators()
-           .Build();
+        var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<T>();
         var allocator = new Allocator();
         var buffer = converter.Encode(item);
@@ -173,10 +164,7 @@ public class IntegrationTests
     [MemberData(nameof(TimeSpanData))]
     public void EncodeDecodeWithLengthPrefix<T>(T item)
     {
-        var generator = Generator
-           .CreateDefaultBuilder()
-           .AddPreviewFeaturesConverterCreators()
-           .Build();
+        var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<T>();
         var allocator = new Allocator();
         var buffer = converter.Encode(item);

@@ -4,6 +4,7 @@ using BenchmarkDotNet.Attributes;
 using Mikodev.Binary.Benchmarks.Abstractions;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 [MemoryDiagnoser]
 public class ConverterBenchmarks
@@ -33,8 +34,8 @@ public class ConverterBenchmarks
         {
             "constant" => new ConstantNativeConverter<int>(),
             "variable" => new VariableNativeConverter<int>(),
-            "features" => Generator.CreateDefaultBuilder().AddPreviewFeaturesConverterCreators().Build().GetConverter<int>(),
-            "fallback" => Generator.CreateDefault().GetConverter<int>(),
+            "features" => Generator.CreateDefault().GetConverter<int>(),
+            "fallback" => (Converter<int>)Activator.CreateInstance(typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "NativeEndianConverter`1").MakeGenericType(typeof(int)))!,
             _ => throw new NotSupportedException(),
         };
         this.encodeBytes = this.converter.Encode(this.number);

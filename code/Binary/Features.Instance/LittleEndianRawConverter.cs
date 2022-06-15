@@ -5,10 +5,8 @@ using System;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 
-#if NET6_0_OR_GREATER
-[RequiresPreviewFeatures]
+#if NET7_0_OR_GREATER
 internal readonly struct LittleEndianRawConverter<T> : IRawConverter<T> where T : unmanaged
 {
     public static int Length => Unsafe.SizeOf<T>();
