@@ -27,6 +27,8 @@ internal sealed class RawConverterCreator : IConverterCreator
         typeof(double),
         typeof(Half),
         typeof(BitVector32),
+        typeof(Int128),
+        typeof(UInt128),
     });
 
     private static readonly ImmutableDictionary<Type, IConverter> SharedConverters;

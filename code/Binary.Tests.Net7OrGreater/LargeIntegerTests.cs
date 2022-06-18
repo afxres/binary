@@ -5,20 +5,27 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using Xunit;
 
 public class LargeIntegerTests
 {
-    private static void BinaryIntegerBasicTest<T>(int size, T item) where T : IBinaryInteger<T>
+    private static Converter<T> CreateConverter<T>(bool isNative)
     {
-        var generator = Generator.CreateDefault();
-        var converter = generator.GetConverter<T>();
+        var creatorType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "RawConverterCreator");
+        var creatorInvokeMethod = creatorType.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name.Contains("Invoke"));
+        var creatorInvokeFunctor = (Func<Type, bool, IConverter>)Delegate.CreateDelegate(typeof(Func<Type, bool, IConverter>), creatorInvokeMethod);
+        var converter = (Converter<T>)creatorInvokeFunctor.Invoke(typeof(T), isNative);
+        return converter;
+    }
+
+    private static void BinaryIntegerBasicTest<T>(int size, T item, Converter<T> converter, string rawConverterTypeName) where T : IBinaryInteger<T>
+    {
         var converterType = converter.GetType();
         Assert.Equal("RawConverter`2", converterType.Name);
         var genericArguments = converterType.GetGenericArguments();
         var rawConverterType = genericArguments.Last();
-        var standardName = $"{typeof(T).Name}RawConverter";
-        Assert.Equal(standardName, rawConverterType.Name);
+        Assert.Equal(rawConverterTypeName, rawConverterType.Name);
         Assert.Equal(size, converter.Length);
         var buffer = converter.Encode(item);
         var result = converter.Decode(buffer);
@@ -45,7 +52,12 @@ public class LargeIntegerTests
     [MemberData(nameof(Int128Data))]
     public void Int128EncodeDecode(int size, Int128 item)
     {
-        BinaryIntegerBasicTest(size, item);
+        var origin = Generator.CreateDefault().GetConverter<Int128>();
+        var native = CreateConverter<Int128>(true);
+        var little = CreateConverter<Int128>(false);
+        BinaryIntegerBasicTest(size, item, origin, "NativeEndianRawConverter`1");
+        BinaryIntegerBasicTest(size, item, native, "NativeEndianRawConverter`1");
+        BinaryIntegerBasicTest(size, item, little, "LittleEndianRawConverter`1");
     }
 
     public static IEnumerable<object[]> UInt128Data => new List<object[]>
@@ -62,6 +74,11 @@ public class LargeIntegerTests
     [MemberData(nameof(UInt128Data))]
     public void UInt128EncodeDecode(int size, UInt128 item)
     {
-        BinaryIntegerBasicTest(size, item);
+        var origin = Generator.CreateDefault().GetConverter<UInt128>();
+        var native = CreateConverter<UInt128>(true);
+        var little = CreateConverter<UInt128>(false);
+        BinaryIntegerBasicTest(size, item, origin, "NativeEndianRawConverter`1");
+        BinaryIntegerBasicTest(size, item, native, "NativeEndianRawConverter`1");
+        BinaryIntegerBasicTest(size, item, little, "LittleEndianRawConverter`1");
     }
 }

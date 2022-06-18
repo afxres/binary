@@ -23,11 +23,11 @@ public class EndiannessTests
 
     public enum EnumU64 : ulong { }
 
-    [StructLayout(LayoutKind.Explicit, Size = 16)]
-    public struct Block16 { }
-
     [StructLayout(LayoutKind.Explicit, Size = 32)]
     public struct Block32 { }
+
+    [StructLayout(LayoutKind.Explicit, Size = 64)]
+    public struct Block64 { }
 
     public static IEnumerable<object[]> EnumData => new List<object[]>
     {
@@ -105,8 +105,8 @@ public class EndiannessTests
 
     public static IEnumerable<object[]> InvalidBlockData => new List<object[]>
     {
-        new object[] { 16, default(Block16) },
         new object[] { 32, default(Block32) },
+        new object[] { 64, default(Block64) },
     };
 
     [Theory(DisplayName = "Internal Little Endian Converter Invalid Type")]
@@ -136,6 +136,7 @@ public class EndiannessTests
         var bravo = assemblyTypes.Single(x => x.Name is "FallbackEndiannessMethods").GetField("Types", BindingFlags.Static | BindingFlags.NonPublic);
         var delta = Assert.IsType<ImmutableArray<Type>>(alpha?.GetValue(null));
         var hotel = Assert.IsType<ImmutableArray<Type>>(bravo?.GetValue(null));
-        Assert.Equal(delta.ToHashSet(), hotel.ToHashSet());
+        var additionalTypes = new[] { typeof(Int128), typeof(UInt128) };
+        Assert.Equal(delta.ToHashSet(), hotel.Concat(additionalTypes).ToHashSet());
     }
 }
