@@ -18,8 +18,8 @@ internal sealed class IPEndPointConverter : Converter<IPEndPoint?>
         {
             if (item is null)
                 return 0;
-            var flag = item.Address.TryWriteBytes(span, out var actual);
-            Debug.Assert(flag);
+            var result = item.Address.TryWriteBytes(span, out var actual);
+            Debug.Assert(result);
             Debug.Assert(actual is 4 or 16);
             BinaryPrimitives.WriteUInt16LittleEndian(span.Slice(actual, sizeof(ushort)), (ushort)item.Port);
             return actual + sizeof(ushort);

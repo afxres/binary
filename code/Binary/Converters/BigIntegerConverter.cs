@@ -10,9 +10,9 @@ internal sealed class BigIntegerConverter : Converter<BigInteger>
     public override void Encode(ref Allocator allocator, BigInteger item)
     {
         var length = item.GetByteCount();
-        var target = MemoryMarshal.CreateSpan(ref Allocator.Assign(ref allocator, length), length);
-        var flag = item.TryWriteBytes(target, out var actual);
-        Debug.Assert(flag);
+        var buffer = MemoryMarshal.CreateSpan(ref Allocator.Assign(ref allocator, length), length);
+        var result = item.TryWriteBytes(buffer, out var actual);
+        Debug.Assert(result);
         Debug.Assert(actual == length);
     }
 

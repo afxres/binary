@@ -16,8 +16,8 @@ internal sealed class IPAddressConverter : Converter<IPAddress?>
         {
             if (item is null)
                 return 0;
-            var flag = item.TryWriteBytes(span, out var actual);
-            Debug.Assert(flag);
+            var result = item.TryWriteBytes(span, out var actual);
+            Debug.Assert(result);
             Debug.Assert(actual is 4 or 16);
             return actual;
         };

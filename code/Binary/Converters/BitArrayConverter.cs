@@ -71,8 +71,8 @@ internal sealed class BitArrayConverter : Converter<BitArray?>
         if (length is 0)
             return;
         var required = (int)(((uint)length + 7U) >> 3);
-        var target = MemoryMarshal.CreateSpan(ref Allocator.Assign(ref allocator, required), required);
-        EncodeInternal(target, source, length);
+        var buffer = MemoryMarshal.CreateSpan(ref Allocator.Assign(ref allocator, required), required);
+        EncodeInternal(buffer, source, length);
     }
 
     public override BitArray? Decode(in ReadOnlySpan<byte> span)
