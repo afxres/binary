@@ -5,6 +5,9 @@ using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Int16 = System.Int16;
+using Int32 = System.Int32;
+using Int64 = System.Int64;
 
 internal static class MemoryModule
 {
