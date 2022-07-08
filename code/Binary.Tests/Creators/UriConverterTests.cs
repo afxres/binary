@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Text;
 using Xunit;
 
-public partial class UriConverterCreator
+public partial class UriConverterTests
 {
     public static readonly IEnumerable<object[]> NormalData = new[]
     {

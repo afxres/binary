@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-public partial class UriConverterCreator
+public partial class UriConverterTests
 {
     private sealed class SimpleStringConverter : Converter<string>
     {

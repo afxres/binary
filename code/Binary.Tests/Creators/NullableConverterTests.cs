@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Text;
 using Xunit;
 
-public class NullableTests
+public class NullableConverterTests
 {
     private readonly IGenerator generator = Generator.CreateDefaultBuilder()
         .AddFSharpConverterCreators()
