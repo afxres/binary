@@ -3,10 +3,9 @@
 using Mikodev.Binary.Features.Instance;
 using Mikodev.Binary.Internal;
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.Specialized;
-using System.Linq;
+using System.Text;
 
 #if NET7_0_OR_GREATER
 internal sealed class RawConverterCreator : IConverterCreator
@@ -35,14 +34,18 @@ internal sealed class RawConverterCreator : IConverterCreator
 
     static RawConverterCreator()
     {
-        var query =
-            from i in typeof(IConverter).Assembly.GetTypes()
-            where i.Namespace is "Mikodev.Binary.Features.Instance" && i.IsGenericType is false
-            let k = i.GetInterfaces().Single().GetGenericArguments().Single()
-            let t = typeof(RawConverter<,>).MakeGenericType(k, i)
-            let v = (IConverter)CommonModule.CreateInstance(t, null)
-            select KeyValuePair.Create(k, v);
-        SharedConverters = ImmutableDictionary.CreateRange(query);
+        var converters = new IConverter[]
+        {
+            new RawConverter<DateOnly, DateOnlyRawConverter>(),
+            new RawConverter<DateTime, DateTimeRawConverter>(),
+            new RawConverter<DateTimeOffset, DateTimeOffsetRawConverter>(),
+            new RawConverter<decimal, DecimalRawConverter>(),
+            new RawConverter<Guid, GuidRawConverter>(),
+            new RawConverter<Rune, RuneRawConverter>(),
+            new RawConverter<TimeOnly, TimeOnlyRawConverter>(),
+            new RawConverter<TimeSpan, TimeSpanRawConverter>(),
+        };
+        SharedConverters = converters.ToImmutableDictionary(Converter.GetGenericArgument);
     }
 
     public IConverter? GetConverter(IGeneratorContext context, Type type)
