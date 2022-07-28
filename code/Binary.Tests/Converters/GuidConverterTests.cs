@@ -1,5 +1,6 @@
 ﻿namespace Mikodev.Binary.Tests.Converters;
 
+using Mikodev.Binary.Tests.Internal;
 using System;
 using System.Runtime.CompilerServices;
 using Xunit;
@@ -9,8 +10,7 @@ public class GuidConverterTests
     [Fact(DisplayName = "Converter Type Name And Length")]
     public void GetConverter()
     {
-        var generator = Generator.CreateDefault();
-        var converter = generator.GetConverter<Guid>();
+        var converter = ReflectionExtensions.CreateInstance<Converter<Guid>>("GuidConverter");
         Assert.Equal("Mikodev.Binary.Converters.GuidConverter", converter.GetType().FullName);
         Assert.Equal(Unsafe.SizeOf<Guid>(), converter.Length);
     }
@@ -21,8 +21,7 @@ public class GuidConverterTests
     public void BasicTest(string data)
     {
         var guid = Guid.Parse(data);
-        var generator = Generator.CreateDefault();
-        var converter = generator.GetConverter<Guid>();
+        var converter = ReflectionExtensions.CreateInstance<Converter<Guid>>("GuidConverter");
         var buffer = converter.Encode(guid);
         Assert.Equal(16, buffer.Length);
         Assert.Equal(16, converter.Length);
@@ -38,8 +37,7 @@ public class GuidConverterTests
     [InlineData(17)]
     public void NotExactlyBytes(int length)
     {
-        var generator = Generator.CreateDefault();
-        var converter = generator.GetConverter<Guid>();
+        var converter = ReflectionExtensions.CreateInstance<Converter<Guid>>("GuidConverter");
         var buffer = new byte[length];
         var origin = Assert.Throws<ArgumentException>(() => new Guid(new ReadOnlySpan<byte>(buffer)));
         var actual = Assert.Throws<ArgumentException>(() => converter.Decode(new ReadOnlySpan<byte>(buffer)));

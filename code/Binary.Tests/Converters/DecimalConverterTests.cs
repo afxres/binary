@@ -1,5 +1,6 @@
 ﻿namespace Mikodev.Binary.Tests.Converters;
 
+using Mikodev.Binary.Tests.Internal;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -11,8 +12,7 @@ public class DecimalConverterTests
     [Fact(DisplayName = "Converter Type Name And Length")]
     public void GetConverter()
     {
-        var generator = Generator.CreateDefault();
-        var converter = generator.GetConverter<decimal>();
+        var converter = ReflectionExtensions.CreateInstance<Converter<decimal>>("DecimalConverter");
         Assert.Equal("Mikodev.Binary.Converters.DecimalConverter", converter.GetType().FullName);
         Assert.Equal(sizeof(int) * 4, converter.Length);
     }
@@ -30,8 +30,7 @@ public class DecimalConverterTests
     [MemberData(nameof(DataNumber))]
     public void BasicTest(decimal number)
     {
-        var generator = Generator.CreateDefault();
-        var converter = generator.GetConverter<decimal>();
+        var converter = ReflectionExtensions.CreateInstance<Converter<decimal>>("DecimalConverter");
         var buffer = converter.Encode(number);
         Assert.Equal(16, buffer.Length);
         Assert.Equal(16, converter.Length);

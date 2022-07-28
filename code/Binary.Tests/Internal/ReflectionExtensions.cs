@@ -1,7 +1,9 @@
 ﻿namespace Mikodev.Binary.Tests.Internal;
 
 using System;
+using System.Linq;
 using System.Reflection;
+using Xunit;
 
 internal static class ReflectionExtensions
 {
@@ -27,5 +29,12 @@ internal static class ReflectionExtensions
         if (result is null)
             throw new MissingFieldException();
         return result;
+    }
+
+    internal static T CreateInstance<T>(string typeName)
+    {
+        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name == typeName);
+        var instance = Activator.CreateInstance(type);
+        return Assert.IsAssignableFrom<T>(instance);
     }
 }
