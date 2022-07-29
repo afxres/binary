@@ -30,19 +30,6 @@ public class InternalMethodTests
         Assert.Contains(methodName, error.Message);
     }
 
-    [Theory(DisplayName = "Get Method With Types Error")]
-    [InlineData(typeof(InternalMethodTests), "Maybe", new Type[] { })]
-    [InlineData(typeof(InternalMethodTests), "NotSure", new[] { typeof(int) })]
-    public void GetMethodWithTypesError(Type type, string methodName, Type[] types)
-    {
-        var invoke = GetCommonModuleMethod<Func<Type, string, Type[], MethodInfo>>("GetMethod");
-        var error = Assert.Throws<MissingMethodException>(() => invoke.Invoke(type, methodName, types));
-        var message = $"Method not found, method name: {methodName}, type: {type}";
-        Assert.Equal(message, error.Message);
-        Assert.Contains(type.Name, error.Message);
-        Assert.Contains(methodName, error.Message);
-    }
-
     [Theory(DisplayName = "Get Field With Flags Error")]
     [InlineData(typeof(InternalMethodTests), "Instance", BindingFlags.Instance | BindingFlags.Public)]
     [InlineData(typeof(InternalMethodTests), "StaticData", BindingFlags.Static | BindingFlags.Public)]

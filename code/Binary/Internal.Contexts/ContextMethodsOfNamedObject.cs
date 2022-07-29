@@ -13,11 +13,17 @@ using System.Reflection;
 
 internal static class ContextMethodsOfNamedObject
 {
-    private static readonly MethodInfo InvokeMethodInfo = CommonModule.GetMethod(typeof(NamedObjectTemplates), nameof(NamedObjectTemplates.GetIndexSpan), BindingFlags.Static | BindingFlags.NonPublic);
+    private delegate void AppendMethodDelegate(ref Allocator allocator, ReadOnlySpan<byte> span);
 
-    private static readonly MethodInfo AppendMethodInfo = CommonModule.GetMethod(typeof(Allocator), nameof(Allocator.Append), new[] { typeof(Allocator).MakeByRefType(), typeof(ReadOnlySpan<byte>) });
+    private delegate ReadOnlySpan<byte> CreateMethodDelegate(byte[]? data);
 
-    private static readonly ConstructorInfo ReadOnlySpanByteConstructorInfo = CommonModule.GetConstructor(typeof(ReadOnlySpan<byte>), new[] { typeof(byte[]) });
+    private delegate ReadOnlySpan<byte> InvokeMethodDelegate(ReadOnlySpan<byte> span, ReadOnlySpan<long> data, int index);
+
+    private static readonly MethodInfo AppendMethodInfo = new AppendMethodDelegate(Allocator.Append).Method;
+
+    private static readonly MethodInfo CreateMethodInfo = new CreateMethodDelegate(BridgeModule.CreateReadOnlySpan).Method;
+
+    private static readonly MethodInfo InvokeMethodInfo = new InvokeMethodDelegate(NamedObjectTemplates.GetIndexSpan).Method;
 
     internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<PropertyInfo> properties, ImmutableArray<string> names, ImmutableArray<ReadOnlyMemory<byte>> memories, ByteViewDictionary<int> dictionary)
     {
@@ -45,7 +51,7 @@ internal static class ContextMethodsOfNamedObject
             var buffer = Allocator.Invoke(memories[i], (ref Allocator allocator, ReadOnlyMemory<byte> data) => Converter.EncodeWithLengthPrefix(ref allocator, data.Span));
             var methodInfo = Converter.GetMethod(converter, nameof(IConverter.EncodeWithLengthPrefix));
             // append named key with length prefix (cached), then append value with length prefix
-            expressions.Add(Expression.Call(AppendMethodInfo, allocator, Expression.New(ReadOnlySpanByteConstructorInfo, Expression.Constant(buffer))));
+            expressions.Add(Expression.Call(AppendMethodInfo, allocator, Expression.Call(CreateMethodInfo, Expression.Constant(buffer))));
             expressions.Add(Expression.Call(Expression.Constant(converter), methodInfo, allocator, Expression.Property(item, property)));
         }
 

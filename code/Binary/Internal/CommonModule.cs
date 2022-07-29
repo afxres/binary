@@ -37,14 +37,6 @@ internal static class CommonModule
         return arguments is not null;
     }
 
-    internal static MethodInfo GetMethod(Type type, string methodName, Type[] types)
-    {
-        var result = type.GetMethod(methodName, types);
-        if (result is null)
-            throw new MissingMethodException($"Method not found, method name: {methodName}, type: {type}");
-        return result;
-    }
-
     internal static MethodInfo GetMethod(Type type, string methodName, BindingFlags flags)
     {
         var result = type.GetMethod(methodName, flags);
