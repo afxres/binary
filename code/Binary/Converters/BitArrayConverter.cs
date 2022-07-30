@@ -5,22 +5,10 @@ using System;
 using System.Buffers.Binary;
 using System.Collections;
 using System.Diagnostics;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Runtime.InteropServices;
 
 internal sealed class BitArrayConverter : Converter<BitArray?>
 {
-    private static readonly Func<BitArray, int[]> MemberFunction;
-
-    static BitArrayConverter()
-    {
-        var field = CommonModule.GetField(typeof(BitArray), "m_array", BindingFlags.Instance | BindingFlags.NonPublic);
-        var parameter = Expression.Parameter(typeof(BitArray), "array");
-        var expression = Expression.Lambda<Func<BitArray, int[]>>(Expression.Field(parameter, field), parameter);
-        MemberFunction = expression.Compile();
-    }
-
     private static uint FilterFunction(uint buffer, int remain)
     {
         Debug.Assert((uint)remain < 32);
@@ -64,7 +52,7 @@ internal sealed class BitArrayConverter : Converter<BitArray?>
         if (item is null)
             return;
         var length = item.Count;
-        var source = MemberFunction.Invoke(item);
+        var source = NativeModule.AsSpan(item);
         var margin = (-length) & 7;
         Debug.Assert((uint)margin < 8);
         Converter.Encode(ref allocator, margin);
@@ -88,7 +76,7 @@ internal sealed class BitArrayConverter : Converter<BitArray?>
             ThrowHelper.ThrowNotEnoughBytes();
         var length = checked((int)(((ulong)cursor.Length << 3) - (uint)margin));
         var result = new BitArray(length);
-        var target = MemberFunction.Invoke(result);
+        var target = NativeModule.AsSpan(result);
         DecodeInternal(target, cursor, length);
         return result;
     }

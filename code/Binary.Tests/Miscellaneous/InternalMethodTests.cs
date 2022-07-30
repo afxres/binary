@@ -17,51 +17,51 @@ public class InternalMethodTests
         return (T)Delegate.CreateDelegate(typeof(T), method);
     }
 
-    [Theory(DisplayName = "Get Method With Flags Error")]
-    [InlineData(typeof(InternalMethodTests), "NotExist", BindingFlags.Instance | BindingFlags.Public)]
-    [InlineData(typeof(InternalMethodTests), "SomeMethod", BindingFlags.Static | BindingFlags.Public)]
-    public void GetMethodWithFlagsError(Type type, string methodName, BindingFlags flags)
+    [Theory(DisplayName = "Get Public Instance Method Error")]
+    [InlineData(typeof(InternalMethodTests), "NotExist")]
+    [InlineData(typeof(InternalMethodTests), "SomeMethod")]
+    public void GetPublicInstanceMethodError(Type type, string methodName)
     {
-        var invoke = GetCommonModuleMethod<Func<Type, string, BindingFlags, MethodInfo>>("GetMethod");
-        var error = Assert.Throws<MissingMethodException>(() => invoke.Invoke(type, methodName, flags));
+        var invoke = GetCommonModuleMethod<Func<Type, string, MethodInfo>>("GetPublicInstanceMethod");
+        var error = Assert.Throws<MissingMethodException>(() => invoke.Invoke(type, methodName));
         var message = $"Method not found, method name: {methodName}, type: {type}";
         Assert.Equal(message, error.Message);
         Assert.Contains(type.Name, error.Message);
         Assert.Contains(methodName, error.Message);
     }
 
-    [Theory(DisplayName = "Get Field With Flags Error")]
-    [InlineData(typeof(InternalMethodTests), "Instance", BindingFlags.Instance | BindingFlags.Public)]
-    [InlineData(typeof(InternalMethodTests), "StaticData", BindingFlags.Static | BindingFlags.Public)]
-    public void GetFieldWithFlagsError(Type type, string fieldName, BindingFlags flags)
+    [Theory(DisplayName = "Get Public Instance Field Error")]
+    [InlineData(typeof(InternalMethodTests), "Instance")]
+    [InlineData(typeof(InternalMethodTests), "StaticData")]
+    public void GetPublicInstanceFieldError(Type type, string fieldName)
     {
-        var invoke = GetCommonModuleMethod<Func<Type, string, BindingFlags, FieldInfo>>("GetField");
-        var error = Assert.Throws<MissingFieldException>(() => invoke.Invoke(type, fieldName, flags));
+        var invoke = GetCommonModuleMethod<Func<Type, string, FieldInfo>>("GetPublicInstanceField");
+        var error = Assert.Throws<MissingFieldException>(() => invoke.Invoke(type, fieldName));
         var message = $"Field not found, field name: {fieldName}, type: {type}";
         Assert.Equal(message, error.Message);
         Assert.Contains(type.Name, error.Message);
         Assert.Contains(fieldName, error.Message);
     }
 
-    [Theory(DisplayName = "Get Property With Flags Error")]
-    [InlineData(typeof(InternalMethodTests), "Property", BindingFlags.Instance | BindingFlags.Public)]
-    [InlineData(typeof(InternalMethodTests), "DataMember", BindingFlags.Static | BindingFlags.Public)]
-    public void GetPropertyWithFlagsError(Type type, string propertyName, BindingFlags flags)
+    [Theory(DisplayName = "Get Public Instance Property Error")]
+    [InlineData(typeof(InternalMethodTests), "Property")]
+    [InlineData(typeof(InternalMethodTests), "DataMember")]
+    public void GetPublicInstancePropertyError(Type type, string propertyName)
     {
-        var invoke = GetCommonModuleMethod<Func<Type, string, BindingFlags, PropertyInfo>>("GetProperty");
-        var error = Assert.Throws<MissingMemberException>(() => invoke.Invoke(type, propertyName, flags));
+        var invoke = GetCommonModuleMethod<Func<Type, string, PropertyInfo>>("GetPublicInstanceProperty");
+        var error = Assert.Throws<MissingMemberException>(() => invoke.Invoke(type, propertyName));
         var message = $"Property not found, property name: {propertyName}, type: {type}";
         Assert.Equal(message, error.Message);
         Assert.Contains(type.Name, error.Message);
         Assert.Contains(propertyName, error.Message);
     }
 
-    [Theory(DisplayName = "Get Constructor With Types Error")]
+    [Theory(DisplayName = "Get Public Instance Constructor With Types Error")]
     [InlineData(typeof(InternalMethodTests), new[] { typeof(int) })]
     [InlineData(typeof(InternalMethodTests), new[] { typeof(string) })]
-    public void GetConstructorWithTypesError(Type type, Type[] types)
+    public void GetPublicInstanceConstructorError(Type type, Type[] types)
     {
-        var invoke = GetCommonModuleMethod<Func<Type, Type[], ConstructorInfo>>("GetConstructor");
+        var invoke = GetCommonModuleMethod<Func<Type, Type[], ConstructorInfo>>("GetPublicInstanceConstructor");
         var error = Assert.Throws<MissingMethodException>(() => invoke.Invoke(type, types));
         var message = $"Constructor not found, type: {type}";
         Assert.Equal(message, error.Message);

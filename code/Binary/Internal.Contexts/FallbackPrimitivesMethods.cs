@@ -53,9 +53,9 @@ internal static class FallbackPrimitivesMethods
     {
         var names = Names.Take(type.GetGenericArguments().Length);
         var types = type.GetGenericArguments();
-        var constructorInfo = CommonModule.GetConstructor(type, types);
+        var constructorInfo = CommonModule.GetPublicInstanceConstructor(type, types);
         var converters = types.Select(context.GetConverter).ToImmutableArray();
-        var properties = names.Select(x => CommonModule.GetProperty(type, x, BindingFlags.Instance | BindingFlags.Public)).ToImmutableArray();
+        var properties = names.Select(x => CommonModule.GetPublicInstanceProperty(type, x)).ToImmutableArray();
         var constructor = new ContextObjectConstructor((delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, constructorInfo));
         return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, ContextMethods.GetMemberInitializers(properties));
     }
@@ -65,7 +65,7 @@ internal static class FallbackPrimitivesMethods
         static void Fields(Type type, Action<FieldInfo> action)
         {
             var names = Names.Take(type.GetGenericArguments().Length);
-            var fields = names.Select(x => CommonModule.GetField(type, x, BindingFlags.Instance | BindingFlags.Public)).ToList();
+            var fields = names.Select(x => CommonModule.GetPublicInstanceField(type, x)).ToList();
             fields.ForEach(action);
         }
 

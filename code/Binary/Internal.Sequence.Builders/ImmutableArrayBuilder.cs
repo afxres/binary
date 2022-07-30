@@ -8,7 +8,7 @@ internal sealed class ImmutableArrayBuilder<T> : SequenceBuilder<ImmutableArray<
 {
     public override ReadOnlySpan<T> Handle(ImmutableArray<T> item)
     {
-        return NativeModule.AsSpan(item);
+        return NativeModule.AsReadOnlySpan(item);
     }
 
     public override ImmutableArray<T> Invoke(ReadOnlySpan<byte> span, SequenceAdapter<T> invoke)

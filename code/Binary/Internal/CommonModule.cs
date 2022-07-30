@@ -11,6 +11,8 @@ using System.Reflection;
 
 internal static class CommonModule
 {
+    internal const BindingFlags PublicInstanceBindingFlags = BindingFlags.Instance | BindingFlags.Public;
+
     internal static T? SelectGenericTypeDefinitionOrDefault<T>(Type type, Func<Type, T> func)
     {
         return type.IsGenericType ? func.Invoke(type.GetGenericTypeDefinition()) : default;
@@ -37,31 +39,31 @@ internal static class CommonModule
         return arguments is not null;
     }
 
-    internal static MethodInfo GetMethod(Type type, string methodName, BindingFlags flags)
+    internal static MethodInfo GetPublicInstanceMethod(Type type, string methodName)
     {
-        var result = type.GetMethod(methodName, flags);
+        var result = type.GetMethod(methodName, PublicInstanceBindingFlags);
         if (result is null)
             throw new MissingMethodException($"Method not found, method name: {methodName}, type: {type}");
         return result;
     }
 
-    internal static FieldInfo GetField(Type type, string fieldName, BindingFlags flags)
+    internal static FieldInfo GetPublicInstanceField(Type type, string fieldName)
     {
-        var result = type.GetField(fieldName, flags);
+        var result = type.GetField(fieldName, PublicInstanceBindingFlags);
         if (result is null)
             throw new MissingFieldException($"Field not found, field name: {fieldName}, type: {type}");
         return result;
     }
 
-    internal static PropertyInfo GetProperty(Type type, string propertyName, BindingFlags flags)
+    internal static PropertyInfo GetPublicInstanceProperty(Type type, string propertyName)
     {
-        var result = type.GetProperty(propertyName, flags);
+        var result = type.GetProperty(propertyName, PublicInstanceBindingFlags);
         if (result is null)
             throw new MissingMemberException($"Property not found, property name: {propertyName}, type: {type}");
         return result;
     }
 
-    internal static ConstructorInfo GetConstructor(Type type, Type[] types)
+    internal static ConstructorInfo GetPublicInstanceConstructor(Type type, Type[] types)
     {
         var result = type.GetConstructor(types);
         if (result is null)

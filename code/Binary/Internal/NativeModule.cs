@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary.Internal;
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -9,6 +10,14 @@ using System.Runtime.CompilerServices;
 
 internal static class NativeModule
 {
+    private sealed class RawBitArrayData
+    {
+#pragma warning disable CS0649 // Field 'NativeModule.RawBitArrayData.Data' is never assigned to, and will always have its default value null
+        [AllowNull]
+        public int[] Data;
+#pragma warning restore CS0649
+    }
+
     private sealed class RawListData<T>
     {
         [AllowNull]
@@ -23,7 +32,14 @@ internal static class NativeModule
         public T[] Data;
     }
 
-    internal static ReadOnlySpan<T> AsSpan<T>(List<T>? source)
+    internal static Span<int> AsSpan(BitArray source)
+    {
+        Debug.Assert(source is not null);
+        var buffer = Unsafe.As<RawBitArrayData>(source).Data;
+        return new Span<int>(buffer);
+    }
+
+    internal static ReadOnlySpan<T> AsReadOnlySpan<T>(List<T>? source)
     {
         if (source is null || source.Count is 0)
             return default;
@@ -32,7 +48,7 @@ internal static class NativeModule
         return new ReadOnlySpan<T>(buffer, 0, length);
     }
 
-    internal static ReadOnlySpan<T> AsSpan<T>(ImmutableArray<T> source)
+    internal static ReadOnlySpan<T> AsReadOnlySpan<T>(ImmutableArray<T> source)
     {
         // unsafe get array
         var buffer = Unsafe.As<ImmutableArray<T>, RawImmutableArrayData<T>>(ref source).Data;

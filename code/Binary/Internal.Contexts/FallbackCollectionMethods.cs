@@ -198,16 +198,15 @@ internal static class FallbackCollectionMethods
 
     private static EncodeDelegate<T?>? GetEncodeDelegate<T>(Type elementType, Lazy<Func<Expression, Expression, Expression>> handle)
     {
-        const BindingFlags Select = BindingFlags.Instance | BindingFlags.Public;
-        var initial = typeof(T).GetMethods(Select).FirstOrDefault(x => x.Name is "GetEnumerator" && x.GetParameters().Length is 0);
+        var initial = typeof(T).GetMethods(CommonModule.PublicInstanceBindingFlags).FirstOrDefault(x => x.Name is "GetEnumerator" && x.GetParameters().Length is 0);
         if (initial is null)
             return null;
         var enumeratorType = initial.ReturnType;
         if (enumeratorType.IsValueType is false)
             return null;
-        var dispose = enumeratorType.GetMethods(Select).FirstOrDefault(x => x.Name is "Dispose" && x.GetParameters().Length is 0 && x.ReturnType == typeof(void));
-        var functor = enumeratorType.GetMethods(Select).FirstOrDefault(x => x.Name is "MoveNext" && x.GetParameters().Length is 0 && x.ReturnType == typeof(bool));
-        var current = enumeratorType.GetProperties(Select).FirstOrDefault(x => x.Name is "Current" && x.GetGetMethod() is { } method && method.GetParameters().Length is 0 && x.PropertyType == elementType);
+        var dispose = enumeratorType.GetMethods(CommonModule.PublicInstanceBindingFlags).FirstOrDefault(x => x.Name is "Dispose" && x.GetParameters().Length is 0 && x.ReturnType == typeof(void));
+        var functor = enumeratorType.GetMethods(CommonModule.PublicInstanceBindingFlags).FirstOrDefault(x => x.Name is "MoveNext" && x.GetParameters().Length is 0 && x.ReturnType == typeof(bool));
+        var current = enumeratorType.GetProperties(CommonModule.PublicInstanceBindingFlags).FirstOrDefault(x => x.Name is "Current" && x.GetGetMethod() is { } method && method.GetParameters().Length is 0 && x.PropertyType == elementType);
         if (functor is null || current is null)
             return null;
 

@@ -44,7 +44,7 @@ internal static class FallbackAttributesMethods
     private static ImmutableArray<(PropertyInfo Property, Attribute? Key, Attribute? Act)> GetAttributes(Type type, Attribute? attribute)
     {
         var builder = ImmutableArray.CreateBuilder<(PropertyInfo, Attribute?, Attribute?)>();
-        foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public).OrderBy(x => x.Name))
+        foreach (var property in type.GetProperties(CommonModule.PublicInstanceBindingFlags).OrderBy(x => x.Name))
         {
             var keys = GetAttributes(property, a => a is NamedKeyAttribute or TupleKeyAttribute);
             var acts = GetAttributes(property, a => a is ConverterAttribute or ConverterCreatorAttribute);
