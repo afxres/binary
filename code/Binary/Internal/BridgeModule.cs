@@ -10,5 +10,4 @@ internal static class BridgeModule
     {
         return new ReadOnlySpan<T>(data);
     }
-
 }
