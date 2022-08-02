@@ -38,7 +38,7 @@ internal sealed class NativeEndianConverter<T> : Converter<T>, ISequenceAdapterC
     public override byte[] Encode(T item)
     {
         var result = new byte[Unsafe.SizeOf<T>()];
-        Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(new Span<byte>(result)), item);
+        Unsafe.WriteUnaligned(ref MemoryMarshal.GetArrayDataReference(result), item);
         return result;
     }
 

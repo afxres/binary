@@ -42,7 +42,7 @@ internal sealed class RawConverter<T, U> : Converter<T>, ISequenceAdapterCreator
     public override byte[] Encode(T? item)
     {
         var result = new byte[U.Length];
-        U.Encode(ref MemoryMarshal.GetReference(new Span<byte>(result)), item);
+        U.Encode(ref MemoryMarshal.GetArrayDataReference(result), item);
         return result;
     }
 

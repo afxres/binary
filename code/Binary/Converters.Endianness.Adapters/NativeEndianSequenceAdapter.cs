@@ -20,7 +20,7 @@ internal sealed class NativeEndianSequenceAdapter<T> : SequenceAdapter<T> where 
             return new MemoryBuffer<T>(Array.Empty<T>(), 0);
         var capacity = SequenceMethods.GetCapacity<T>(limits, Unsafe.SizeOf<T>());
         var result = new T[capacity];
-        Unsafe.CopyBlockUnaligned(ref Unsafe.As<T, byte>(ref MemoryMarshal.GetReference(new Span<T>(result))), ref MemoryMarshal.GetReference(span), (uint)limits);
+        Unsafe.CopyBlockUnaligned(ref Unsafe.As<T, byte>(ref MemoryMarshal.GetArrayDataReference(result)), ref MemoryMarshal.GetReference(span), (uint)limits);
         return new MemoryBuffer<T>(result, capacity);
     }
 }
