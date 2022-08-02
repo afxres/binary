@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-#if NET6_0_OR_GREATER
 public class PriorityQueueConverterTests
 {
     [Fact(DisplayName = "Null Priority Queue")]
@@ -47,4 +46,3 @@ public class PriorityQueueConverterTests
         Invoke(new[] { (2.1, "A"), (5.5, "B+"), (7.6, "C") });
     }
 }
-#endif

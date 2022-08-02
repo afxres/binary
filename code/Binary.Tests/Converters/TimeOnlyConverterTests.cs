@@ -5,7 +5,6 @@ using System;
 using System.Buffers.Binary;
 using Xunit;
 
-#if NET6_0_OR_GREATER
 public class TimeOnlyConverterTests
 {
     [Fact(DisplayName = "Converter Type Name And Length")]
@@ -32,4 +31,3 @@ public class TimeOnlyConverterTests
         Assert.Equal(time, result);
     }
 }
-#endif

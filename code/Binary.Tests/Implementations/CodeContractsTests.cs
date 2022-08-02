@@ -211,7 +211,6 @@ public class CodeContractsTests
         Assert.All(obsoleteAttributes, x => Assert.EndsWith("Allocator will always throw an exception.", x.Message));
     }
 
-#if NET6_0_OR_GREATER
     [Fact(DisplayName = "Public Method Parameter Nullability")]
     public void PublicEncodeMethodNullability()
     {
@@ -230,5 +229,4 @@ public class CodeContractsTests
         Assert.True(groups.ContainsKey(NullabilityState.Nullable));
         Assert.All(groups[NullabilityState.Unknown], x => Assert.True(x.Key.Member.DeclaringType?.IsSubclassOf(typeof(Delegate))));
     }
-#endif
 }

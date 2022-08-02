@@ -15,10 +15,8 @@ public static class Generator
             new KeyValuePairConverterCreator(),
             new LinkedListConverterCreator(),
             new NullableConverterCreator(),
-            new UriConverterCreator(),
-#if NET6_0_OR_GREATER
             new PriorityQueueConverterCreator(),
-#endif
+            new UriConverterCreator(),
         };
         SharedConverterCreators = creators.ToImmutableArray();
     }

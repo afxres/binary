@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 
-#if NET6_0_OR_GREATER
 internal sealed class PriorityQueueConverter<E, P> : Converter<PriorityQueue<E, P>>
 {
     private readonly Converter<E> init;
@@ -44,4 +43,3 @@ internal sealed class PriorityQueueConverter<E, P> : Converter<PriorityQueue<E, 
         return item;
     }
 }
-#endif

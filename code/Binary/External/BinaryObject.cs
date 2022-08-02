@@ -45,11 +45,7 @@ internal static class BinaryObject
         {
             var buffer = pair.Key.ToArray();
             var length = buffer.Length;
-#if NET5_0_OR_GREATER
             ref var source = ref MemoryMarshal.GetArrayDataReference(buffer);
-#else
-            ref var source = ref MemoryMarshal.GetReference(new Span<byte>(buffer));
-#endif
             var hash = BinaryModule.GetHashCode(ref source, length);
             ref var next = ref buckets[(int)((uint)hash % (uint)buckets.Length)];
             while ((uint)next < (uint)records.Length)

@@ -16,19 +16,15 @@ internal static class FallbackConvertersMethods
             new BitArrayConverter(),
             new DateTimeConverter(),
             new DateTimeOffsetConverter(),
+            new DateOnlyConverter(),
             new DecimalConverter(),
             new GuidConverter(),
             new IPAddressConverter(),
             new IPEndPointConverter(),
+            new RuneConverter(),
             new StringConverter(),
             new TimeSpanConverter(),
-#if NET5_0_OR_GREATER
-            new RuneConverter(),
-#endif
-#if NET6_0_OR_GREATER
-            new DateOnlyConverter(),
             new TimeOnlyConverter(),
-#endif
         };
         SharedConverters = converters.ToImmutableDictionary(Converter.GetGenericArgument);
     }
