@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary;
 
 using Mikodev.Binary.Creators;
+using Mikodev.Binary.Features;
 using Mikodev.Binary.Internal.Contexts;
 using System.Collections.Immutable;
 
@@ -17,6 +18,9 @@ public static class Generator
             new NullableConverterCreator(),
             new PriorityQueueConverterCreator(),
             new UriConverterCreator(),
+#if NET7_0_OR_GREATER
+            new RawConverterCreator()
+#endif
         };
         SharedConverterCreators = creators.ToImmutableArray();
     }
@@ -31,9 +35,6 @@ public static class Generator
         var builder = new GeneratorBuilder();
         foreach (var creator in SharedConverterCreators)
             _ = builder.AddConverterCreator(creator);
-#if NET7_0_OR_GREATER
-        builder.AddConverterCreator(new Features.RawConverterCreator());
-#endif
         return builder;
     }
 }

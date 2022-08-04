@@ -28,7 +28,7 @@ public class InternalTypeCollectionTests
     public void GeneratorSharedConverterCreators()
     {
         var expected = typeof(IConverter).Assembly.GetTypes()
-            .Where(x => x.Namespace is "Mikodev.Binary.Creators" && typeof(IConverterCreator).IsAssignableFrom(x))
+            .Where(x => x.IsAbstract is false && typeof(IConverterCreator).IsAssignableFrom(x))
             .Select(x => Assert.IsAssignableFrom<IConverterCreator>(Activator.CreateInstance(x, null)))
             .ToImmutableArray();
         var field = typeof(Generator).GetFieldNotNull("SharedConverterCreators", BindingFlags.Static | BindingFlags.NonPublic);
