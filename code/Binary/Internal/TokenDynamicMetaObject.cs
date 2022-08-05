@@ -2,10 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq.Expressions;
 using System.Reflection;
 
+[SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code")]
 internal sealed class TokenDynamicMetaObject : DynamicMetaObject
 {
     private static readonly MethodInfo IndexerMethodInfo = CommonModule.GetMethod<Token, Token>(a => a[string.Empty]);

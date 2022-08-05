@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -70,6 +71,7 @@ public sealed class Token : IDynamicMetaObjectProvider
         }
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static DecodeReadOnlyDelegate<string> GetDelegate(IGenerator generator)
     {
         if (generator is null)
@@ -90,14 +92,18 @@ public sealed class Token : IDynamicMetaObjectProvider
 
     DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => new TokenDynamicMetaObject(parameter, this);
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public Token(IGenerator generator, ReadOnlyMemory<byte> memory) : this(generator, memory, null, GetDelegate(generator)) { }
 
     public Token this[string key] => GetToken(this, key);
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public object? As(Type type) => this.generator.GetConverter(type).Decode(this.memory.Span);
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public T As<T>() => ((Converter<T>)this.generator.GetConverter(typeof(T))).Decode(this.memory.Span);
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public T As<T>(T? anonymous) => As<T>();
 
     [EditorBrowsable(EditorBrowsableState.Never)]

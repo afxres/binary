@@ -6,11 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
 internal static class FallbackAttributesMethods
 {
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static IConverter GetConverter(IGeneratorContext context, Type type)
     {
         var attributes = GetAttributes(type, a => a is NamedObjectAttribute or TupleObjectAttribute or ConverterAttribute or ConverterCreatorAttribute);
@@ -41,7 +43,7 @@ internal static class FallbackAttributesMethods
         return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, properties, names, memories, dictionary);
     }
 
-    private static ImmutableArray<(PropertyInfo Property, Attribute? Key, Attribute? Act)> GetAttributes(Type type, Attribute? attribute)
+    private static ImmutableArray<(PropertyInfo Property, Attribute? Key, Attribute? Act)> GetAttributes([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type type, Attribute? attribute)
     {
         var builder = ImmutableArray.CreateBuilder<(PropertyInfo, Attribute?, Attribute?)>();
         foreach (var property in type.GetProperties(CommonModule.PublicInstanceBindingFlags).OrderBy(x => x.Name))
@@ -77,7 +79,7 @@ internal static class FallbackAttributesMethods
         return attributes;
     }
 
-    private static T GetConverterOrCreator<T>(Type instance, Type reflected, PropertyInfo? property)
+    private static T GetConverterOrCreator<T>([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type instance, Type reflected, PropertyInfo? property)
     {
         try
         {
@@ -95,6 +97,7 @@ internal static class FallbackAttributesMethods
         }
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static IConverter GetConverter(IGeneratorContext context, Type reflected, PropertyInfo? property, Attribute? attribute)
     {
         var type = property is null ? reflected : property.PropertyType;
@@ -165,6 +168,7 @@ internal static class FallbackAttributesMethods
         return map.Values.ToImmutableArray();
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static ContextObjectConstructor? GetConstructor(Type type, ImmutableArray<PropertyInfo> properties)
     {
         Debug.Assert(properties.Any());

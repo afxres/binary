@@ -4,6 +4,7 @@ using Mikodev.Binary.Internal.Contexts.Instance;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -49,6 +50,7 @@ internal static class FallbackPrimitivesMethods
         return CommonModule.SelectGenericTypeDefinitionOrDefault(type, Types.Contains);
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static IConverter GetTupleConverter(IGeneratorContext context, Type type)
     {
         var names = Names.Take(type.GetGenericArguments().Length);
@@ -60,6 +62,7 @@ internal static class FallbackPrimitivesMethods
         return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, ContextMethods.GetMemberInitializers(properties));
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static IConverter GetValueTupleConverter(IGeneratorContext context, Type type)
     {
         static void Fields(Type type, Action<FieldInfo> action)
@@ -77,7 +80,7 @@ internal static class FallbackPrimitivesMethods
             if (type.IsValueType && IsTupleOrValueTuple(type) && converter.GetType() == typeof(TupleObjectConverter<>).MakeGenericType(type))
                 Fields(type, x => Expand(context, result, x, func));
             else
-                result.Add((type, x => func.Invoke(x), converter));
+                result.Add((type, func.Invoke, converter));
         }
 
         var result = new List<(Type Type, ContextMemberInitializer Member, IConverter Converter)>();
@@ -88,6 +91,7 @@ internal static class FallbackPrimitivesMethods
         return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, members);
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static IConverter? GetConverter(IGeneratorContext context, Type type)
     {
         if (IsTupleOrValueTuple(type) is false)

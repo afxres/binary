@@ -11,6 +11,8 @@ using System.Reflection;
 
 internal static class CommonModule
 {
+    internal const string RequiresUnreferencedCodeMessage = "Require public members for binary serialization.";
+
     internal const BindingFlags PublicInstanceBindingFlags = BindingFlags.Instance | BindingFlags.Public;
 
     internal static T? SelectGenericTypeDefinitionOrDefault<T>(Type type, Func<Type, T> func)
@@ -18,7 +20,7 @@ internal static class CommonModule
         return type.IsGenericType ? func.Invoke(type.GetGenericTypeDefinition()) : default;
     }
 
-    internal static object CreateInstance(Type type, object?[]? arguments)
+    internal static object CreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type, object?[]? arguments)
     {
         var result = Activator.CreateInstance(type, arguments);
         if (result is null)
@@ -26,7 +28,7 @@ internal static class CommonModule
         return result;
     }
 
-    internal static bool TryGetInterfaceArguments(Type type, Type definition, [MaybeNullWhen(false)] out Type[] arguments)
+    internal static bool TryGetInterfaceArguments([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type, Type definition, [MaybeNullWhen(false)] out Type[] arguments)
     {
         Debug.Assert(definition.IsInterface);
         Debug.Assert(definition.IsGenericTypeDefinition);
@@ -39,7 +41,7 @@ internal static class CommonModule
         return arguments is not null;
     }
 
-    internal static MethodInfo GetPublicInstanceMethod(Type type, string methodName)
+    internal static MethodInfo GetPublicInstanceMethod([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] Type type, string methodName)
     {
         var result = type.GetMethod(methodName, PublicInstanceBindingFlags);
         if (result is null)
@@ -47,7 +49,7 @@ internal static class CommonModule
         return result;
     }
 
-    internal static FieldInfo GetPublicInstanceField(Type type, string fieldName)
+    internal static FieldInfo GetPublicInstanceField([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] Type type, string fieldName)
     {
         var result = type.GetField(fieldName, PublicInstanceBindingFlags);
         if (result is null)
@@ -55,7 +57,7 @@ internal static class CommonModule
         return result;
     }
 
-    internal static PropertyInfo GetPublicInstanceProperty(Type type, string propertyName)
+    internal static PropertyInfo GetPublicInstanceProperty([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type type, string propertyName)
     {
         var result = type.GetProperty(propertyName, PublicInstanceBindingFlags);
         if (result is null)
@@ -63,7 +65,7 @@ internal static class CommonModule
         return result;
     }
 
-    internal static ConstructorInfo GetPublicInstanceConstructor(Type type, Type[] types)
+    internal static ConstructorInfo GetPublicInstanceConstructor([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type, Type[] types)
     {
         var result = type.GetConstructor(types);
         if (result is null)
@@ -93,6 +95,7 @@ internal static class CommonModule
         return converter;
     }
 
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     internal static IConverter? GetConverter(IGeneratorContext context, Type type, Type typeDefinition, Type converterDefinition, Func<ImmutableArray<IConverter>, ImmutableArray<object>>? argumentsHandler)
     {
         Debug.Assert(converterDefinition.IsGenericTypeDefinition);

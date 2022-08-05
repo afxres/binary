@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 internal sealed class GeneratorContext : IGeneratorContext
 {
@@ -28,6 +29,7 @@ internal sealed class GeneratorContext : IGeneratorContext
         this.destroyed = true;
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public IConverter GetConverter(Type type)
     {
         if (this.destroyed)
@@ -38,6 +40,7 @@ internal sealed class GeneratorContext : IGeneratorContext
         return this.converters.GetOrAdd(type, converter);
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private IConverter GetOrCreateConverter(Type type)
     {
         if (type.IsByRef)

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -75,6 +76,7 @@ internal static class FallbackCollectionMethods
         ImmutableCollectionCreateMethods = immutable;
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static IConverter? GetConverter(IGeneratorContext context, Type type)
     {
         if (CommonModule.TryGetInterfaceArguments(type, typeof(IEnumerable<>), out var arguments) is false)
@@ -87,6 +89,7 @@ internal static class FallbackCollectionMethods
             return GetConverter(context, GetConverter<IEnumerable<object>, object>, ImmutableArray.Create(type).AddRange(arguments));
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static IConverter GetConverter(IGeneratorContext context, Func<IGeneratorContext, IConverter> func, ImmutableArray<Type> types)
     {
         var source = Expression.Parameter(typeof(IGeneratorContext), "context");
@@ -95,7 +98,7 @@ internal static class FallbackCollectionMethods
         return lambda.Compile().Invoke(context);
     }
 
-    private static Func<Expression, Expression>? GetConstructorOrDefault(Type type, Type enumerable)
+    private static Func<Expression, Expression>? GetConstructorOrDefault([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type, Type enumerable)
     {
         if (type.IsAbstract || type.IsInterface)
             return null;
@@ -128,6 +131,7 @@ internal static class FallbackCollectionMethods
         return GetDecodeDelegate<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail, itemLength).Decode, method);
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static DecodePassSpanDelegate<T>? GetDecodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
     {
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), ArrayOrListAssignableDefinitions.Contains))
@@ -142,6 +146,7 @@ internal static class FallbackCollectionMethods
             return null;
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static DecodePassSpanDelegate<T>? GetDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
     {
         var itemLength = ContextMethods.GetItemLength(ImmutableArray.Create(new IConverter[] { init, tail }));
@@ -157,6 +162,7 @@ internal static class FallbackCollectionMethods
             return null;
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static EncodeDelegate<T?> GetEncodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
     {
         Func<Expression, Expression, Expression> Invoke()
@@ -172,6 +178,7 @@ internal static class FallbackCollectionMethods
         return result ?? new EnumerableEncoder<T, E>(converter).Encode;
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static EncodeDelegate<T?> GetEncodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
     {
         Func<Expression, Expression, Expression> Invoke()
@@ -196,6 +203,7 @@ internal static class FallbackCollectionMethods
         return result ?? new KeyValueEnumerableEncoder<T, K, V>(init, tail).Encode;
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static EncodeDelegate<T?>? GetEncodeDelegate<T>(Type elementType, Lazy<Func<Expression, Expression, Expression>> handle)
     {
         var initial = typeof(T).GetMethods(CommonModule.PublicInstanceBindingFlags).FirstOrDefault(x => x.Name is "GetEnumerator" && x.GetParameters().Length is 0);
@@ -232,6 +240,7 @@ internal static class FallbackCollectionMethods
         return lambda.Compile();
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static IConverter GetConverter<T, E>(IGeneratorContext context) where T : IEnumerable<E>
     {
         var converter = (Converter<E>)context.GetConverter(typeof(E));
@@ -240,6 +249,7 @@ internal static class FallbackCollectionMethods
         return new SequenceConverter<T>(encode, decode);
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static IConverter GetConverter<T, K, V>(IGeneratorContext context) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
     {
         var init = (Converter<K>)context.GetConverter(typeof(K));

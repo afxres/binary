@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -28,6 +29,7 @@ internal static class ContextMethods
         return properties.Select(x => new ContextMemberInitializer(e => Expression.Property(e, x))).ToImmutableArray();
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static Delegate GetDecodeDelegate(Type delegateType, ContextObjectInitializer initializer, ConstructorInfo constructor)
     {
         var parameters = constructor.GetParameters();
@@ -36,6 +38,7 @@ internal static class ContextMethods
         return GetDecodeDelegate(delegateType, initializer, constructor, objectIndexes, ImmutableArray.Create<ContextMemberInitializer>(), ImmutableArray.Create<int>());
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static Delegate GetDecodeDelegate(Type delegateType, ContextObjectInitializer initializer, ImmutableArray<ContextMemberInitializer> members)
     {
         Debug.Assert(members.Any());
@@ -43,6 +46,7 @@ internal static class ContextMethods
         return GetDecodeDelegate(delegateType, initializer, null, ImmutableArray.Create<int>(), members, memberIndexes);
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static Delegate GetDecodeDelegate(Type delegateType, ContextObjectInitializer initializer, ConstructorInfo? constructor, ImmutableArray<int> objectIndexes, ImmutableArray<ContextMemberInitializer> members, ImmutableArray<int> memberIndexes)
     {
         var delegateInvoke = CommonModule.GetPublicInstanceMethod(delegateType, "Invoke");

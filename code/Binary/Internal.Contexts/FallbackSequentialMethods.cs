@@ -5,6 +5,7 @@ using Mikodev.Binary.Internal.Sequence.Builders;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 internal static class FallbackSequentialMethods
@@ -25,6 +26,7 @@ internal static class FallbackSequentialMethods
         return CommonModule.CreateInstance(typeof(ArrayBuilder<>).MakeGenericType(elementType), null);
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static IConverter? GetConverter(IGeneratorContext context, Type type)
     {
         object? Invoke()

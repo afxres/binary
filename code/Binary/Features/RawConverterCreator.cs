@@ -5,6 +5,7 @@ using Mikodev.Binary.Internal;
 using System;
 using System.Collections.Immutable;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 #if NET7_0_OR_GREATER
@@ -48,6 +49,7 @@ internal sealed class RawConverterCreator : IConverterCreator
         SharedConverters = converters.ToImmutableDictionary(Converter.GetGenericArgument);
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public IConverter? GetConverter(IGeneratorContext context, Type type)
     {
         static IConverter? Invoke(Type type, bool native)

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 internal sealed class Generator : IGenerator
@@ -22,6 +23,7 @@ internal sealed class Generator : IGenerator
         Debug.Assert(this.creators.Length is 0 || this.creators.All(x => x is not null));
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public IConverter GetConverter(Type type)
     {
         if (type is null)
