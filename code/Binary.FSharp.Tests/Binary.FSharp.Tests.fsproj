@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0</TargetFrameworks>
-    <LangVersion>5.0</LangVersion>
+    <LangVersion>6.0</LangVersion>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -31,7 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.0" />
+    <PackageReference Update="FSharp.Core" Version="6.0.0" />
   </ItemGroup>
 
 </Project>

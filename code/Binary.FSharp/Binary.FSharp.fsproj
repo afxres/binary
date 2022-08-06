@@ -4,7 +4,7 @@
     <TargetFrameworks>net6.0</TargetFrameworks>
     <AssemblyName>Mikodev.Binary.FSharp</AssemblyName>
     <RootNamespace>Mikodev.Binary</RootNamespace>
-    <LangVersion>5.0</LangVersion>
+    <LangVersion>6.0</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Mikodev</Authors>
     <Company>Mikodev</Company>
@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.0" />
+    <PackageReference Update="FSharp.Core" Version="6.0.0" />
   </ItemGroup>
 
 </Project>
