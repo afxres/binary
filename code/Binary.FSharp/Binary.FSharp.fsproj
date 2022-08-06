@@ -25,14 +25,14 @@
   <ItemGroup>
     <Compile Include="Internal\CommonHelper.fs" />
     <Compile Include="Internal\ModuleHelper.fs" />
-    <Compile Include="Creators.Fallback\UnionConverter.fs" />
-    <Compile Include="Creators.Fallback\UnionConverterCreator.fs" />
-    <Compile Include="Creators.Sequence\ListConverter.fs" />
-    <Compile Include="Creators.Sequence\ListConverterCreator.fs" />
-    <Compile Include="Creators.Sequence\MapConverter.fs" />
-    <Compile Include="Creators.Sequence\MapConverterCreator.fs" />
-    <Compile Include="Creators.Sequence\SetConverter.fs" />
-    <Compile Include="Creators.Sequence\SetConverterCreator.fs" />
+    <Compile Include="Creators\ListConverter.fs" />
+    <Compile Include="Creators\ListConverterCreator.fs" />
+    <Compile Include="Creators\MapConverter.fs" />
+    <Compile Include="Creators\MapConverterCreator.fs" />
+    <Compile Include="Creators\SetConverter.fs" />
+    <Compile Include="Creators\SetConverterCreator.fs" />
+    <Compile Include="Creators\UnionConverter.fs" />
+    <Compile Include="Creators\UnionConverterCreator.fs" />
     <Compile Include="GeneratorBuilderFSharpExtensions.fs" />
   </ItemGroup>
 
