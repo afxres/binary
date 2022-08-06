@@ -57,7 +57,7 @@ type ListBenchmarks() =
         let data = MemoryMarshal.Cast<byte, int>(ReadOnlySpan intListBuffer)
         let mutable list = []
         for i = data.Length - 1 downto 0 do
-            list <- data.[i] :: list
+            list <- data[i] :: list
         list
 
     [<Benchmark(Description = "Decode List Of Int (for loop)")>]
@@ -85,7 +85,7 @@ type ListBenchmarks() =
             data.Add(converter.DecodeAuto &span)
         let mutable list = []
         for i = data.Count - 1 downto 0 do
-            list <- data.[i] :: list
+            list <- data[i] :: list
         list
 
     static member private Decode(converter : Converter<_>, span : byref<ReadOnlySpan<byte>>) : List<_> =

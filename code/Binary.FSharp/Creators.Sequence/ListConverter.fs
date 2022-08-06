@@ -40,7 +40,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
         let mutable list = []
         let mutable i = data.Count - 1
         while i >= 0 do
-            let head = data.[i]
+            let head = data[i]
             list <- head :: list
             i <- i - 1
         list

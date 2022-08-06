@@ -17,9 +17,9 @@ type internal UnionConverterCreator() =
 
         let MakeBody (instance : Expression) (properties : PropertyInfo array) : Expression array = [|
             for i = 0 to properties.Length - 1 do
-                let property = properties.[i]
+                let property = properties[i]
                 let propertyType = property.PropertyType
-                let converter = converters.[propertyType]
+                let converter = converters[propertyType]
                 let method = Converter.GetMethod(converter, if auto || i <> properties.Length - 1 then "EncodeAuto" else "Encode")
                 let invoke = Expression.Call(Expression.Constant(converter), method, allocator, Expression.Property(instance, property))
                 invoke
@@ -77,8 +77,8 @@ type internal UnionConverterCreator() =
             let MakeBodyItem () : Expression =
                 let result = [|
                     for i = 0 to parameters.Length - 1 do
-                        let parameterType = parameters.[i].ParameterType
-                        let converter = converters.[parameterType]
+                        let parameterType = parameters[i].ParameterType
+                        let converter = converters[parameterType]
                         let method = Converter.GetMethod(converter, if auto || i <> parameters.Length - 1 then "DecodeAuto" else "Decode")
                         let variable = Expression.Variable(parameterType, string i)
                         let invoke = Expression.Call(Expression.Constant(converter), method, span)
