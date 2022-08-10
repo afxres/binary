@@ -22,7 +22,7 @@ public ref partial struct Allocator
         var source = allocator.buffer;
         var cursor = (long)source.Length;
         Debug.Assert(cursor < amount);
-        Debug.Assert(cursor <= limits);
+        Debug.Assert(cursor < limits);
         const int Capacity = 64;
         if (cursor is 0)
             cursor = Capacity;
