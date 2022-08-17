@@ -37,8 +37,12 @@ public ref partial struct Allocator
             return;
         Ensure(ref allocator, maxLength);
         var offset = allocator.offset;
+#if NET7_0_OR_GREATER
+        ref var target = ref Unsafe.Add(ref allocator.values, offset);
+#else
         var buffer = allocator.buffer;
         ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
+#endif
         var actual = writer.Invoke(MemoryMarshal.CreateSpan(ref target, maxLength), data);
         if ((uint)actual > (uint)maxLength)
             ThrowHelper.ThrowInvalidReturnValue();
@@ -56,8 +60,12 @@ public ref partial struct Allocator
         var numberLength = NumberModule.EncodeLength((uint)maxLength);
         Ensure(ref allocator, maxLength + numberLength);
         var offset = allocator.offset;
+#if NET7_0_OR_GREATER
+        ref var target = ref Unsafe.Add(ref allocator.values, offset);
+#else
         var buffer = allocator.buffer;
         ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
+#endif
         var actual = maxLength is 0 ? 0 : writer.Invoke(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, numberLength), maxLength), data);
         if ((uint)actual > (uint)maxLength)
             ThrowHelper.ThrowInvalidReturnValue();
@@ -79,10 +87,17 @@ public ref partial struct Allocator
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Ensure(ref Allocator allocator, int length)
     {
+#if NET7_0_OR_GREATER
+        if ((ulong)(uint)allocator.offset + (uint)length > (uint)allocator.bounds)
+            Resize(ref allocator, length);
+        Debug.Assert(allocator.bounds <= allocator.MaxCapacity);
+        Debug.Assert(allocator.bounds >= allocator.offset + length);
+#else
         if ((ulong)(uint)allocator.offset + (uint)length > (uint)allocator.buffer.Length)
             Resize(ref allocator, length);
         Debug.Assert(allocator.buffer.Length <= allocator.MaxCapacity);
         Debug.Assert(allocator.buffer.Length >= allocator.offset + length);
+#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

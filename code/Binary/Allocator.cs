@@ -8,7 +8,13 @@ using System.Runtime.InteropServices;
 
 public ref partial struct Allocator
 {
+#if NET7_0_OR_GREATER
+    private ref byte values;
+
+    private int bounds;
+#else
     private Span<byte> buffer;
+#endif
 
     private int offset;
 
@@ -16,7 +22,11 @@ public ref partial struct Allocator
 
     public readonly int Length => this.offset;
 
+#if NET7_0_OR_GREATER
+    public readonly int Capacity => this.bounds;
+#else
     public readonly int Capacity => this.buffer.Length;
+#endif
 
     public readonly int MaxCapacity => this.limits is 0 ? int.MaxValue : ~this.limits;
 
@@ -25,7 +35,12 @@ public ref partial struct Allocator
     {
         this.limits = 0;
         this.offset = 0;
+#if NET7_0_OR_GREATER
+        this.bounds = span.Length;
+        this.values = ref MemoryMarshal.GetReference(span);
+#else
         this.buffer = span;
+#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -35,7 +50,12 @@ public ref partial struct Allocator
             ThrowHelper.ThrowMaxCapacityNegative();
         this.limits = ~maxCapacity;
         this.offset = 0;
+#if NET7_0_OR_GREATER
+        this.bounds = Math.Min(span.Length, maxCapacity);
+        this.values = ref MemoryMarshal.GetReference(span);
+#else
         this.buffer = MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(span), Math.Min(span.Length, maxCapacity));
+#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -44,14 +64,22 @@ public ref partial struct Allocator
         var offset = this.offset;
         if (offset is 0)
             return Array.Empty<byte>();
-        var buffer = this.buffer;
         var result = new byte[offset];
+#if NET7_0_OR_GREATER
+        Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetArrayDataReference(result), ref this.values, (uint)offset);
+#else
+        var buffer = this.buffer;
         Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetArrayDataReference(result), ref MemoryMarshal.GetReference(buffer), (uint)offset);
+#endif
         return result;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if NET7_0_OR_GREATER
+    public readonly ReadOnlySpan<byte> AsSpan() => MemoryMarshal.CreateReadOnlySpan(ref this.values, this.offset);
+#else
     public readonly ReadOnlySpan<byte> AsSpan() => MemoryMarshal.CreateReadOnlySpan(ref MemoryMarshal.GetReference(this.buffer), this.offset);
+#endif
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete($"{nameof(Equals)} on {nameof(Allocator)} will always throw an exception.")]
