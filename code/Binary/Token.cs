@@ -92,17 +92,29 @@ public sealed class Token : IDynamicMetaObjectProvider
 
     DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => new TokenDynamicMetaObject(parameter, this);
 
+#if NET7_0_OR_GREATER
+    [RequiresDynamicCode(CommonModule.RequiresDynamicCodeMessage)]
+#endif
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public Token(IGenerator generator, ReadOnlyMemory<byte> memory) : this(generator, memory, null, GetDelegate(generator)) { }
 
     public Token this[string key] => GetToken(this, key);
 
+#if NET7_0_OR_GREATER
+    [RequiresDynamicCode(CommonModule.RequiresDynamicCodeMessage)]
+#endif
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public object? As(Type type) => this.generator.GetConverter(type).Decode(this.memory.Span);
 
+#if NET7_0_OR_GREATER
+    [RequiresDynamicCode(CommonModule.RequiresDynamicCodeMessage)]
+#endif
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public T As<T>() => ((Converter<T>)this.generator.GetConverter(typeof(T))).Decode(this.memory.Span);
 
+#if NET7_0_OR_GREATER
+    [RequiresDynamicCode(CommonModule.RequiresDynamicCodeMessage)]
+#endif
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public T As<T>(T? anonymous) => As<T>();
 

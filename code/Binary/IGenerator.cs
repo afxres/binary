@@ -6,6 +6,9 @@ using System.Diagnostics.CodeAnalysis;
 
 public interface IGenerator
 {
+#if NET7_0_OR_GREATER
+    [RequiresDynamicCode(CommonModule.RequiresDynamicCodeMessage)]
+#endif
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     IConverter GetConverter(Type type);
 }
