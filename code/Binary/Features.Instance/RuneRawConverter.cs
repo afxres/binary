@@ -4,7 +4,9 @@ using Mikodev.Binary.Features;
 using Mikodev.Binary.Internal;
 using System.Text;
 
-#if NET7_0_OR_GREATER
+#if NET6_0
+[System.Runtime.Versioning.RequiresPreviewFeatures]
+#endif
 internal readonly struct RuneRawConverter : IRawConverter<Rune>
 {
     public static int Length => sizeof(int);
@@ -19,4 +21,3 @@ internal readonly struct RuneRawConverter : IRawConverter<Rune>
         LittleEndian.Encode(ref target, item.Value);
     }
 }
-#endif

@@ -1,6 +1,8 @@
 ﻿namespace Mikodev.Binary.Features;
 
-#if NET7_0_OR_GREATER
+#if NET6_0
+[System.Runtime.Versioning.RequiresPreviewFeatures]
+#endif
 internal interface IRawConverter<T>
 {
     static abstract int Length { get; }
@@ -9,4 +11,3 @@ internal interface IRawConverter<T>
 
     static abstract void Encode(ref byte target, T? item);
 }
-#endif

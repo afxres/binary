@@ -6,7 +6,9 @@ using Mikodev.Binary.Internal.Sequence;
 using Mikodev.Binary.Internal.Sequence.Contexts;
 using System.Runtime.CompilerServices;
 
-#if NET7_0_OR_GREATER
+#if NET6_0
+[System.Runtime.Versioning.RequiresPreviewFeatures]
+#endif
 internal readonly struct NativeEndianRawConverter<T> : IRawConverter<T>, ISequenceAdapterCreator<T> where T : unmanaged
 {
     public static int Length => Unsafe.SizeOf<T>();
@@ -17,4 +19,3 @@ internal readonly struct NativeEndianRawConverter<T> : IRawConverter<T>, ISequen
 
     SequenceAdapter<T> ISequenceAdapterCreator<T>.GetAdapter() => new NativeEndianSequenceAdapter<T>();
 }
-#endif

@@ -6,7 +6,9 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-#if NET7_0_OR_GREATER
+#if NET6_0
+[System.Runtime.Versioning.RequiresPreviewFeatures]
+#endif
 internal readonly struct GuidRawConverter : IRawConverter<Guid>
 {
     public static int Length => Unsafe.SizeOf<Guid>();
@@ -23,4 +25,3 @@ internal readonly struct GuidRawConverter : IRawConverter<Guid>
         Debug.Assert(result);
     }
 }
-#endif

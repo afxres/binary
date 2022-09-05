@@ -4,7 +4,9 @@ using Mikodev.Binary.Features;
 using Mikodev.Binary.Internal;
 using System.Runtime.CompilerServices;
 
-#if NET7_0_OR_GREATER
+#if NET6_0
+[System.Runtime.Versioning.RequiresPreviewFeatures]
+#endif
 internal readonly struct DecimalRawConverter : IRawConverter<decimal>
 {
     public static int Length => sizeof(int) * 4;
@@ -28,4 +30,3 @@ internal readonly struct DecimalRawConverter : IRawConverter<decimal>
         return;
     }
 }
-#endif

@@ -5,7 +5,9 @@ using Mikodev.Binary.Internal;
 using System;
 using System.Runtime.CompilerServices;
 
-#if NET7_0_OR_GREATER
+#if NET6_0
+[System.Runtime.Versioning.RequiresPreviewFeatures]
+#endif
 internal readonly struct DateTimeOffsetRawConverter : IRawConverter<DateTimeOffset>
 {
     public static int Length => sizeof(long) + sizeof(short);
@@ -23,4 +25,3 @@ internal readonly struct DateTimeOffsetRawConverter : IRawConverter<DateTimeOffs
         LittleEndian.Encode(ref Unsafe.Add(ref target, sizeof(long)), (short)(item.Offset.Ticks / TimeSpan.TicksPerMinute));
     }
 }
-#endif

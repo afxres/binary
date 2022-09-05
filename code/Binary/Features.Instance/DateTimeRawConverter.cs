@@ -4,7 +4,9 @@ using Mikodev.Binary.Features;
 using Mikodev.Binary.Internal;
 using System;
 
-#if NET7_0_OR_GREATER
+#if NET6_0
+[System.Runtime.Versioning.RequiresPreviewFeatures]
+#endif
 internal readonly struct DateTimeRawConverter : IRawConverter<DateTime>
 {
     public static int Length => sizeof(long);
@@ -13,4 +15,3 @@ internal readonly struct DateTimeRawConverter : IRawConverter<DateTime>
 
     public static void Encode(ref byte target, DateTime item) => LittleEndian.Encode(ref target, item.ToBinary());
 }
-#endif

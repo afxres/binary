@@ -8,7 +8,9 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-#if NET7_0_OR_GREATER
+#if NET6_0
+[System.Runtime.Versioning.RequiresPreviewFeatures]
+#endif
 internal sealed class RawConverterSequenceAdapter<T, U> : SequenceAdapter<T> where U : struct, IRawConverter<T>
 {
     public override void Encode(ref Allocator allocator, ReadOnlySpan<T> item)
@@ -38,4 +40,3 @@ internal sealed class RawConverterSequenceAdapter<T, U> : SequenceAdapter<T> whe
         return new MemoryBuffer<T>(result, capacity);
     }
 }
-#endif

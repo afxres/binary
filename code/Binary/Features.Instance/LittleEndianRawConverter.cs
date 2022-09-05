@@ -4,7 +4,9 @@ using Mikodev.Binary.Features;
 using Mikodev.Binary.Features.Fallback;
 using System.Runtime.CompilerServices;
 
-#if NET7_0_OR_GREATER
+#if NET6_0
+[System.Runtime.Versioning.RequiresPreviewFeatures]
+#endif
 internal readonly struct LittleEndianRawConverter<T> : IRawConverter<T> where T : unmanaged
 {
     public static int Length => Unsafe.SizeOf<T>();
@@ -13,4 +15,3 @@ internal readonly struct LittleEndianRawConverter<T> : IRawConverter<T> where T 
 
     public static void Encode(ref byte target, T item) => LittleEndianFallback.Encode(ref target, item);
 }
-#endif
