@@ -52,7 +52,7 @@ let ``List (empty)`` () =
     let result : string list = generator.Decode buffer
 
     Assert.Empty(buffer)
-    Assert.Equal<string seq>(source, result)
+    Assert.Equal<string>(ResizeArray source, ResizeArray result)
     ()
 
 [<Fact>]
@@ -90,7 +90,7 @@ let ``List (value type, no stack overflow)`` (count : int) =
     let source = Array.zeroCreate<byte> count |> Array.toList
     let buffer = generator.Encode source
     let result = generator.Decode<byte list> buffer
-    Assert.Equal<byte>(source, result)
+    Assert.Equal<byte>(ResizeArray source, ResizeArray result)
     ()
 
 [<Theory>]
@@ -101,7 +101,7 @@ let ``List (class type, no stack overflow)`` (count : int) =
     let source = seq { for i in 0..(count - 1) do yield sprintf "%d" i } |> Seq.toList
     let buffer = generator.Encode source
     let result = generator.Decode<string list> buffer
-    Assert.Equal<string>(source, result)
+    Assert.Equal<string>(ResizeArray source, ResizeArray result)
     ()
 
 [<Fact>]

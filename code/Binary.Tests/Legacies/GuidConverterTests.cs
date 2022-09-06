@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Converters;
+﻿namespace Mikodev.Binary.Tests.Legacies;
 
 using Mikodev.Binary.Tests.Internal;
 using System;
@@ -11,7 +11,7 @@ public class GuidConverterTests
     public void GetConverter()
     {
         var converter = ReflectionExtensions.CreateInstance<Converter<Guid>>("GuidConverter");
-        Assert.Equal("Mikodev.Binary.Converters.GuidConverter", converter.GetType().FullName);
+        Assert.Equal("Mikodev.Binary.Legacies.Instance.GuidConverter", converter.GetType().FullName);
         Assert.Equal(Unsafe.SizeOf<Guid>(), converter.Length);
     }
 

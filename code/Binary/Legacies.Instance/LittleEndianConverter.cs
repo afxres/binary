@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Converters.Endianness;
+﻿namespace Mikodev.Binary.Legacies.Instance;
 
 using Mikodev.Binary.Features.Fallback;
 using Mikodev.Binary.Internal;

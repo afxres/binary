@@ -43,6 +43,7 @@ public class TrimAnalyzerTests
             typeof(IConverterCreator),
             typeof(IGenerator),
             typeof(IGeneratorContext),
+            typeof(Generator),
             typeof(GeneratorExtensions),
             typeof(Token),
         };

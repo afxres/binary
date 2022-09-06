@@ -1,14 +1,15 @@
-﻿namespace Mikodev.Binary.Internal.Contexts;
+﻿namespace Mikodev.Binary.Legacies;
 
-using Mikodev.Binary.Converters.Endianness;
+using Mikodev.Binary.Internal;
+using Mikodev.Binary.Legacies.Instance;
 using System;
 using System.Collections.Immutable;
 using System.Collections.Specialized;
 
-internal static class FallbackEndiannessMethods
+internal sealed class OldConverterCreator
 {
     private static readonly ImmutableArray<Type> Types = ImmutableArray.Create(new[]
-    {
+{
         typeof(bool),
         typeof(byte),
         typeof(sbyte),
@@ -25,6 +26,24 @@ internal static class FallbackEndiannessMethods
         typeof(BitVector32),
     });
 
+    private static readonly ImmutableDictionary<Type, IConverter> SharedConverters;
+
+    static OldConverterCreator()
+    {
+        var converters = new IConverter[]
+        {
+            new DateTimeConverter(),
+            new DateTimeOffsetConverter(),
+            new DateOnlyConverter(),
+            new DecimalConverter(),
+            new GuidConverter(),
+            new RuneConverter(),
+            new TimeSpanConverter(),
+            new TimeOnlyConverter(),
+        };
+        SharedConverters = converters.ToImmutableDictionary(Converter.GetGenericArgument);
+    }
+
     internal static IConverter? GetConverter(Type type)
     {
         static IConverter? Invoke(Type type, bool native)
@@ -39,6 +58,8 @@ internal static class FallbackEndiannessMethods
             return (IConverter)converter;
         }
 
+        if (SharedConverters.TryGetValue(type, out var result))
+            return result;
         return Invoke(type, BitConverter.IsLittleEndian);
     }
 }

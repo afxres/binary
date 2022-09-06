@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Features;
+﻿namespace Mikodev.Binary.Tests.Instance;
 
 using Microsoft.FSharp.Core;
 using Microsoft.FSharp.Reflection;

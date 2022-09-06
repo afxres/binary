@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Converters.Endianness.Adapters;
+﻿namespace Mikodev.Binary.Features.Adapters;
 
 using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Sequence;

@@ -45,8 +45,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.CollectionDecode
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.AllocatorStringTests", "Benchmarks.AllocatorStringTests\Benchmarks.AllocatorStringTests.csproj", "{3249A207-7B39-488E-A1A6-08534B49120B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Binary.Tests.Net7OrGreater", "Binary.Tests.Net7OrGreater\Binary.Tests.Net7OrGreater.csproj", "{1F9D0AF0-8603-4F7A-8CD5-6E4D13193812}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -133,10 +131,6 @@ Global
 		{3249A207-7B39-488E-A1A6-08534B49120B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3249A207-7B39-488E-A1A6-08534B49120B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3249A207-7B39-488E-A1A6-08534B49120B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1F9D0AF0-8603-4F7A-8CD5-6E4D13193812}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1F9D0AF0-8603-4F7A-8CD5-6E4D13193812}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1F9D0AF0-8603-4F7A-8CD5-6E4D13193812}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1F9D0AF0-8603-4F7A-8CD5-6E4D13193812}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

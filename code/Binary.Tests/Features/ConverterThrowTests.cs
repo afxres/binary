@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Net7OrGreater;
+﻿namespace Mikodev.Binary.Tests.Features;
 
 using System;
 using Xunit;

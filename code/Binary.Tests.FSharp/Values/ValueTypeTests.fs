@@ -240,7 +240,7 @@ let ``Enum`` () =
 [<Fact>]
 let ``Enum Converter`` () =
     let value = generator.GetConverter typeof<DayOfWeek>
-    Assert.StartsWith("NativeEndianConverter", value.GetType().Name)
+    Assert.Matches("RawConverter.*NativeEndianRawConverter", value.GetType().FullName)
     ()
 
 [<Fact>]
@@ -255,13 +255,13 @@ let ``BitVector32`` () =
 [<Fact>]
 let ``Half Converter`` () =
     let types = typeof<IConverter>.Assembly.GetTypes()
-    let value = types |> Array.filter (fun x -> x.Name = "FallbackEndiannessMethods") |> Array.exactlyOne
+    let value = types |> Array.filter (fun x -> x.Name = "RawConverterCreator") |> Array.exactlyOne
     let method = value.GetMethods(BindingFlags.Static ||| BindingFlags.NonPublic) |> Array.filter (fun x -> x.ReturnType = typeof<IConverter> && x.Name.Contains("Invoke")) |> Array.exactlyOne
     let invoke = fun x -> method.Invoke(null, [| box typeof<Half>; box x |]) :?> Converter<Half>
     let native = invoke true
     let little = invoke false
-    Assert.StartsWith("NativeEndianConverter`1", native.GetType().Name)
-    Assert.StartsWith("LittleEndianConverter`1", little.GetType().Name)
+    Assert.Matches("RawConverter.*NativeEndianRawConverter", native.GetType().FullName)
+    Assert.Matches("RawConverter.*LittleEndianRawConverter", little.GetType().FullName)
     Assert.Equal(2, native.Length)
     Assert.Equal(2, little.Length)
     ()
@@ -270,7 +270,7 @@ let ``Half Converter`` () =
 let ``Rune Converter`` () =
     let generator = Generator.CreateDefault()
     let converter = generator.GetConverter<Rune>()
-    Assert.StartsWith("RuneConverter", converter.GetType().Name)
+    Assert.Matches("RawConverter.*RuneRawConverter", converter.GetType().FullName)
     ()
 
 [<Theory>]

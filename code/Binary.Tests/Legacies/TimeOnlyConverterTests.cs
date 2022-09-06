@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Converters;
+﻿namespace Mikodev.Binary.Tests.Legacies;
 
 using Mikodev.Binary.Tests.Internal;
 using System;
@@ -11,7 +11,7 @@ public class TimeOnlyConverterTests
     public void GetConverter()
     {
         var converter = ReflectionExtensions.CreateInstance<Converter<TimeOnly>>("TimeOnlyConverter");
-        Assert.Equal("Mikodev.Binary.Converters.TimeOnlyConverter", converter.GetType().FullName);
+        Assert.Equal("Mikodev.Binary.Legacies.Instance.TimeOnlyConverter", converter.GetType().FullName);
         Assert.Equal(sizeof(long), converter.Length);
     }
 

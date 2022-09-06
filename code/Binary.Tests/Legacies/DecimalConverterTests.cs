@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Converters;
+﻿namespace Mikodev.Binary.Tests.Legacies;
 
 using Mikodev.Binary.Tests.Internal;
 using System;
@@ -13,7 +13,7 @@ public class DecimalConverterTests
     public void GetConverter()
     {
         var converter = ReflectionExtensions.CreateInstance<Converter<decimal>>("DecimalConverter");
-        Assert.Equal("Mikodev.Binary.Converters.DecimalConverter", converter.GetType().FullName);
+        Assert.Equal("Mikodev.Binary.Legacies.Instance.DecimalConverter", converter.GetType().FullName);
         Assert.Equal(sizeof(int) * 4, converter.Length);
     }
 

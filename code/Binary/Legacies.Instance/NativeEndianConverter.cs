@@ -1,6 +1,6 @@
-﻿namespace Mikodev.Binary.Converters.Endianness;
+﻿namespace Mikodev.Binary.Legacies.Instance;
 
-using Mikodev.Binary.Converters.Endianness.Adapters;
+using Mikodev.Binary.Features.Adapters;
 using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Sequence;
 using Mikodev.Binary.Internal.Sequence.Contexts;

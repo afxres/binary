@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Net7OrGreater;
+﻿namespace Mikodev.Binary.Tests.Features;
 
 using System;
 using System.Collections.Generic;
@@ -43,6 +43,9 @@ public class EndiannessTests
         new object[] { 1, (sbyte)-1 },
         new object[] { 2, (short)-3 },
         new object[] { 2, (ushort)5 },
+        new object[] { 2, Half.MinValue },
+        new object[] { 2, Half.MaxValue },
+        new object[] { 2, Half.NaN },
         new object[] { 4, 0 },
         new object[] { 8, 0L },
         new object[] { 4, 0U },
@@ -133,10 +136,16 @@ public class EndiannessTests
     {
         var assemblyTypes = typeof(IConverter).Assembly.GetTypes();
         var alpha = assemblyTypes.Single(x => x.Name is "RawConverterCreator").GetField("Types", BindingFlags.Static | BindingFlags.NonPublic);
-        var bravo = assemblyTypes.Single(x => x.Name is "FallbackEndiannessMethods").GetField("Types", BindingFlags.Static | BindingFlags.NonPublic);
+        var bravo = assemblyTypes.Single(x => x.Name is "OldConverterCreator").GetField("Types", BindingFlags.Static | BindingFlags.NonPublic);
         var delta = Assert.IsType<ImmutableArray<Type>>(alpha?.GetValue(null));
         var hotel = Assert.IsType<ImmutableArray<Type>>(bravo?.GetValue(null));
-        var additionalTypes = new[] { typeof(Int128), typeof(UInt128) };
+        var additionalTypes = new Type[]
+        {
+#if NET7_0_OR_GREATER
+            typeof(Int128),
+            typeof(UInt128),
+#endif
+        };
         Assert.Equal(delta.ToHashSet(), hotel.Concat(additionalTypes).ToHashSet());
     }
 }

@@ -9,7 +9,7 @@ let generator = Generator.CreateDefault()
 
 let Encode (item : 'a) =
     let converter = generator.GetConverter<'a>()
-    Assert.StartsWith("NativeEndianConverter`1", converter.GetType().Name)
+    Assert.Matches("RawConverter.*NativeEndianRawConverter`1", converter.GetType().FullName)
     converter.Encode item
 
 [<Theory>]
@@ -79,7 +79,7 @@ let ``Guid Layout`` (text : string) =
     let item = Guid.Parse text
     let origin = item.ToByteArray()
     let converter = generator.GetConverter<Guid>()
-    Assert.StartsWith("GuidConverter", converter.GetType().Name)
+    Assert.Matches("RawConverter.*GuidRawConverter", converter.GetType().FullName)
     let buffer = converter.Encode item
     Assert.Equal<byte>(origin, buffer)
     ()

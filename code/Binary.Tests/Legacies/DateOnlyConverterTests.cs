@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Converters;
+﻿namespace Mikodev.Binary.Tests.Legacies;
 
 using Mikodev.Binary.Tests.Internal;
 using System;
@@ -11,7 +11,7 @@ public class DateOnlyConverterTests
     public void GetConverter()
     {
         var converter = ReflectionExtensions.CreateInstance<Converter<DateOnly>>("DateOnlyConverter");
-        Assert.Equal("Mikodev.Binary.Converters.DateOnlyConverter", converter.GetType().FullName);
+        Assert.Equal("Mikodev.Binary.Legacies.Instance.DateOnlyConverter", converter.GetType().FullName);
         Assert.Equal(sizeof(int), converter.Length);
     }
 

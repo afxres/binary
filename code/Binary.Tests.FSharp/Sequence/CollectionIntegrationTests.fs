@@ -136,7 +136,7 @@ let TestSequence<'a when 'a : null> (encoderName : string) (decoderName : string
 [<Fact>]
 let ``Collection Integration Test (span-like collection, null or empty collection test)`` () =
     Test generator "VariableAdapter`1" "ArraySegmentBuilder`1" (ArraySegment<string>())
-    Test generator "ConstantAdapter`1" "MemoryBuilder`1" (Memory<TimeSpan>())
+    Test generator "RawConverterSequenceAdapter`2" "MemoryBuilder`1" (Memory<TimeSpan>())
     Test generator "NativeEndianSequenceAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<int>())
     Test generator "NativeEndianSequenceAdapter`1" "ImmutableArrayBuilder`1" (ImmutableArray<double>())
     TestNull "NativeEndianSequenceAdapter`1" "ArrayBuilder`1" (Array.zeroCreate<int> 0)

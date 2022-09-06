@@ -17,11 +17,11 @@ let EncodeAuto<'a> (c : Converter<'a>) v =
     c.EncodeAuto(&allocator, v)
     allocator.AsSpan().ToArray()
 
-let Decode<'a> (c : Converter<'a>) buffer =
+let Decode<'a> (c : Converter<'a>) (buffer : byte array) =
     let span = ReadOnlySpan<byte>(buffer)
     c.Decode &span
 
-let DecodeAuto<'a> (c : Converter<'a>) buffer =
+let DecodeAuto<'a> (c : Converter<'a>) (buffer : byte array) =
     let mutable span = ReadOnlySpan<byte>(buffer)
     c.DecodeAuto &span
 

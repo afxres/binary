@@ -1,7 +1,7 @@
 ﻿namespace Mikodev.Binary.Features.Instance;
 
-using Mikodev.Binary.Converters.Endianness.Adapters;
 using Mikodev.Binary.Features;
+using Mikodev.Binary.Features.Adapters;
 using Mikodev.Binary.Internal.Sequence;
 using Mikodev.Binary.Internal.Sequence.Contexts;
 using System.Runtime.CompilerServices;

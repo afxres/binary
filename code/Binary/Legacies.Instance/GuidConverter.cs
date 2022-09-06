@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Converters;
+﻿namespace Mikodev.Binary.Legacies.Instance;
 
 using System;
 using System.Diagnostics;
