@@ -2,6 +2,7 @@
 
 using Mikodev.Binary.Tests.Internal;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -30,10 +31,13 @@ public class InternalTypeCollectionTests
         var expected = typeof(IConverter).Assembly.GetTypes()
             .Where(x => x.IsAbstract is false && typeof(IConverterCreator).IsAssignableFrom(x))
             .Select(x => Assert.IsAssignableFrom<IConverterCreator>(Activator.CreateInstance(x, null)))
-            .ToImmutableArray();
+            .ToList();
+        Assert.Equal(1, expected.RemoveAll(x => x.GetType().Name is "OldConverterCreator"));
+        // ensure internal converter creators
+        _ = Generator.CreateDefaultBuilder();
         var field = typeof(Generator).GetFieldNotNull("SharedConverterCreators", BindingFlags.Static | BindingFlags.NonPublic);
-        var actual = Assert.IsAssignableFrom<ImmutableArray<IConverterCreator>>(field.GetValue(null));
-        Assert.Equal(expected.Select(x => x.GetType()).ToHashSet(), actual.Select(x => x.GetType()).ToHashSet());
+        var actual = Assert.IsAssignableFrom<ConcurrentDictionary<string, IConverterCreator>>(field.GetValue(null));
+        Assert.Equal(expected.Select(x => x.GetType()).ToHashSet(), actual.Values.Select(x => x.GetType()).ToHashSet());
     }
 
 #if NET7_0_OR_GREATER

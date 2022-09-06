@@ -5,8 +5,9 @@ using Mikodev.Binary.Legacies.Instance;
 using System;
 using System.Collections.Immutable;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 
-internal sealed class OldConverterCreator
+internal sealed class OldConverterCreator : IConverterCreator
 {
     private static readonly ImmutableArray<Type> Types = ImmutableArray.Create(new[]
 {
@@ -44,7 +45,8 @@ internal sealed class OldConverterCreator
         SharedConverters = converters.ToImmutableDictionary(Converter.GetGenericArgument);
     }
 
-    internal static IConverter? GetConverter(Type type)
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
+    public IConverter? GetConverter(IGeneratorContext context, Type type)
     {
         static IConverter? Invoke(Type type, bool native)
         {
