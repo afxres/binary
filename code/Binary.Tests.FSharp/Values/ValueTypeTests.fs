@@ -4,74 +4,79 @@ open Mikodev.Binary
 open System
 open System.Collections.Specialized
 open System.Text
-open System.Reflection
 open Xunit
 
 let generator = Generator.CreateDefault()
 
 let randomCount = 64
 
-let TestWithSpan (value : 'a) (size : int) =
+let MakeConverters<'a> () =
+    let types = typeof<IConverter>.Assembly.GetTypes()
+    let raw = types |> Array.filter (fun x -> x.Name = "RawConverterCreator") |> Array.exactlyOne |> Activator.CreateInstance :?> IConverterCreator
+    let old = types |> Array.filter (fun x -> x.Name = "OldConverterCreator") |> Array.exactlyOne |> Activator.CreateInstance :?> IConverterCreator
+    let r = raw.GetConverter(null, typeof<'a>) :?> Converter<'a>
+    let o = old.GetConverter(null, typeof<'a>) :?> Converter<'a>
+    Assert.Contains("Raw", r.GetType().Name)
+    Assert.DoesNotContain("Raw", o.GetType().Name)
+    [ r; o ]
+
+let TestWithSpan (converters : Converter<'a> list) (value : 'a) (size : int) =
     let bufferOrigin = generator.Encode value
-    let converter = generator.GetConverter<'a>()
+    for converter in converters do
+        let mutable allocator = Allocator()
+        converter.Encode(&allocator, value)
+        let buffer = allocator.AsSpan().ToArray()
+        Assert.Equal<byte>(bufferOrigin, buffer)
+        Assert.Equal(size, buffer.Length)
 
-    let mutable allocator = Allocator()
-    converter.Encode(&allocator, value)
-    let buffer = allocator.AsSpan().ToArray()
-    Assert.Equal<byte>(bufferOrigin, buffer)
-    Assert.Equal(size, buffer.Length)
-
-    let span = ReadOnlySpan buffer
-    let result = converter.Decode &span
-    Assert.Equal<'a>(value, result)
+        let span = ReadOnlySpan buffer
+        let result = converter.Decode &span
+        Assert.Equal<'a>(value, result)
     ()
 
-let TestWithBytes (value : 'a) (size : int) =
+let TestWithBytes (converters : Converter<'a> list) (value : 'a) (size : int) =
     let bufferOrigin = generator.Encode value
-    let converter = generator.GetConverter<'a>()
+    for converter in converters do
+        let buffer = converter.Encode value
+        Assert.Equal<byte>(bufferOrigin, buffer)
+        Assert.Equal(size, buffer.Length)
 
-    let buffer = converter.Encode value
-    Assert.Equal<byte>(bufferOrigin, buffer)
-    Assert.Equal(size, buffer.Length)
-
-    let result = converter.Decode buffer
-    Assert.Equal<'a>(value, result)
+        let result = converter.Decode buffer
+        Assert.Equal<'a>(value, result)
     ()
 
-let TestAuto (value : 'a) (size : int) =
+let TestAuto (converters : Converter<'a> list) (value : 'a) (size : int) =
     let bufferOrigin = generator.Encode value
-    let converter = generator.GetConverter<'a>()
+    for converter in converters do
+        let mutable allocator = Allocator()
+        converter.EncodeAuto(&allocator, value)
+        let buffer = allocator.AsSpan().ToArray()
+        Assert.Equal(size, buffer.Length)
+        Assert.Equal<byte>(bufferOrigin, buffer)
 
-    let mutable allocator = Allocator()
-    converter.EncodeAuto(&allocator, value)
-    let buffer = allocator.AsSpan().ToArray()
-    Assert.Equal(size, buffer.Length)
-    Assert.Equal<byte>(bufferOrigin, buffer)
-
-    let mutable span = ReadOnlySpan buffer
-    let result = converter.DecodeAuto &span
-    Assert.True(span.IsEmpty)
-    Assert.Equal<'a>(value, result)
+        let mutable span = ReadOnlySpan buffer
+        let result = converter.DecodeAuto &span
+        Assert.True(span.IsEmpty)
+        Assert.Equal<'a>(value, result)
     ()
 
-let TestWithLengthPrefix (value : 'a) (size : int) =
+let TestWithLengthPrefix (converters : Converter<'a> list) (value : 'a) (size : int) =
     let bufferOrigin = generator.Encode value
-    let converter = generator.GetConverter<'a>()
+    for converter in converters do
+        let mutable allocator = Allocator()
+        converter.EncodeWithLengthPrefix(&allocator, value)
+        let buffer = allocator.AsSpan().ToArray()
 
-    let mutable allocator = Allocator()
-    converter.EncodeWithLengthPrefix(&allocator, value)
-    let buffer = allocator.AsSpan().ToArray()
+        let mutable span = ReadOnlySpan buffer
+        let length = Converter.Decode &span
+        Assert.Equal(size, length)
+        Assert.Equal(size, span.Length)
+        Assert.Equal<byte>(bufferOrigin, span.ToArray())
 
-    let mutable span = ReadOnlySpan buffer
-    let length = Converter.Decode &span
-    Assert.Equal(size, length)
-    Assert.Equal(size, span.Length)
-    Assert.Equal<byte>(bufferOrigin, span.ToArray())
-
-    let mutable span = ReadOnlySpan buffer
-    let result = converter.DecodeWithLengthPrefix(&span)
-    Assert.True(span.IsEmpty)
-    Assert.Equal<'a>(value, result)
+        let mutable span = ReadOnlySpan buffer
+        let result = converter.DecodeWithLengthPrefix(&span)
+        Assert.True(span.IsEmpty)
+        Assert.Equal<'a>(value, result)
     ()
 
 let TestExplicit (value : 'a) (size : int) =
@@ -82,20 +87,22 @@ let TestExplicit (value : 'a) (size : int) =
     let result : 'a = generator.Decode buffer
     Assert.Equal<'a>(value, result)
 
-    let converter = generator.GetConverter<'a>()
-    Assert.Equal(size, converter.Length)
+    let converters = MakeConverters<'a> ()
+    for converter in converters do
+        Assert.Equal(size, converter.Length)
 
     // convert via Converter
-    TestWithSpan value size
+    TestWithSpan converters value size
     // convert via bytes methods
-    TestWithBytes value size
+    TestWithBytes converters value size
     // convert via 'auto' methods
-    TestAuto value size
+    TestAuto converters value size
     // convert with length prefix
-    TestWithLengthPrefix value size
+    TestWithLengthPrefix converters value size
     ()
 
-let Test (value : 'a when 'a : unmanaged) = TestExplicit value sizeof<'a>
+let Test (value : 'a when 'a : unmanaged) =
+    TestExplicit value sizeof<'a>
 
 [<Fact>]
 let ``Int & UInit 16, 32, 64`` () =
@@ -148,6 +155,24 @@ let ``Decimal`` () =
         let bravo = Decimal.GetBits(number) |> Array.map (fun x -> BitConverter.GetBytes x) |> Array.concat
         Assert.Equal<byte>(alpha, bravo)
         Test number
+    ()
+
+[<Fact>]
+let ``Half`` () =
+    for _ = 0 to randomCount do
+        Test (Random.Shared.NextDouble() |> Half.op_Explicit)
+
+    Test Half.MaxValue
+    Test Half.MinValue
+    ()
+
+[<Fact>]
+let ``BitVector32`` () =
+    for _ = 0 to randomCount do
+        Test (Random.Shared.Next() |> BitVector32)
+
+    Test (BitVector32 0x11223344)
+    Test (BitVector32 0xAABBCCDD)
     ()
 
 [<Fact>]
@@ -237,62 +262,26 @@ let ``Enum`` () =
     Test ConsoleKey.Escape
     ()
 
-[<Fact>]
-let ``Enum Converter`` () =
-    let value = generator.GetConverter typeof<DayOfWeek>
-    Assert.Matches("RawConverter.*NativeEndianRawConverter", value.GetType().FullName)
-    ()
-
-[<Fact>]
-let ``BitVector32`` () =
-    for _ = 0 to randomCount do
-        Test (Random.Shared.Next() |> BitVector32)
-
-    Test (BitVector32 0x11223344)
-    Test (BitVector32 0xAABBCCDD)
-    ()
-
-[<Fact>]
-let ``Half Converter`` () =
-    let types = typeof<IConverter>.Assembly.GetTypes()
-    let value = types |> Array.filter (fun x -> x.Name = "RawConverterCreator") |> Array.exactlyOne
-    let method = value.GetMethods(BindingFlags.Static ||| BindingFlags.NonPublic) |> Array.filter (fun x -> x.ReturnType = typeof<IConverter> && x.Name.Contains("Invoke")) |> Array.exactlyOne
-    let invoke = fun x -> method.Invoke(null, [| box typeof<Half>; box x |]) :?> Converter<Half>
-    let native = invoke true
-    let little = invoke false
-    Assert.Matches("RawConverter.*NativeEndianRawConverter", native.GetType().FullName)
-    Assert.Matches("RawConverter.*LittleEndianRawConverter", little.GetType().FullName)
-    Assert.Equal(2, native.Length)
-    Assert.Equal(2, little.Length)
-    ()
-
-[<Fact>]
-let ``Rune Converter`` () =
-    let generator = Generator.CreateDefault()
-    let converter = generator.GetConverter<Rune>()
-    Assert.Matches("RawConverter.*RuneRawConverter", converter.GetType().FullName)
-    ()
-
 [<Theory>]
 [<InlineData(0x1F600)>]
 [<InlineData(0x1F610)>]
 let ``Rune`` (data : int) =
-    let generator = Generator.CreateDefault()
-    let converter = generator.GetConverter<Rune>()
-    let rune = Rune data
-    let buffer = converter.Encode rune
-    let result = converter.Decode buffer
-    Assert.Equal(data, result.Value)
+    let converters = MakeConverters<Rune> ()
+    for converter in converters do
+        let rune = Rune data
+        let buffer = converter.Encode rune
+        let result = converter.Decode buffer
+        Assert.Equal(data, result.Value)
 
-    let bufferAuto = Allocator.Invoke(rune, fun allocator data -> converter.EncodeAuto(&allocator, data))
-    Assert.Equal<byte>(buffer, bufferAuto)
+        let bufferAuto = Allocator.Invoke(rune, fun allocator data -> converter.EncodeAuto(&allocator, data))
+        Assert.Equal<byte>(buffer, bufferAuto)
 
-    let bufferHead = Allocator.Invoke(rune, fun allocator data -> converter.EncodeWithLengthPrefix(&allocator, data))
-    let mutable span = ReadOnlySpan bufferHead
-    let body = Converter.DecodeWithLengthPrefix &span
-    Assert.Equal(0, span.Length)
-    Assert.Equal(4, body.Length)
-    Assert.Equal<byte>(buffer, body.ToArray())
+        let bufferHead = Allocator.Invoke(rune, fun allocator data -> converter.EncodeWithLengthPrefix(&allocator, data))
+        let mutable span = ReadOnlySpan bufferHead
+        let body = Converter.DecodeWithLengthPrefix &span
+        Assert.Equal(0, span.Length)
+        Assert.Equal(4, body.Length)
+        Assert.Equal<byte>(buffer, body.ToArray())
     ()
 
 [<Theory>]

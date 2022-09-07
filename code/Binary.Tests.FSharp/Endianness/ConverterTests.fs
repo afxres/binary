@@ -3,7 +3,6 @@
 open Mikodev.Binary
 open System
 open System.Collections.Specialized
-open System.Drawing
 open System.Reflection
 open System.Runtime.CompilerServices
 open System.Runtime.Serialization
