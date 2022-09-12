@@ -2,9 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Text;
 using Xunit;
 
@@ -83,18 +80,6 @@ public partial class UriConverterTests
         var x = converter.DecodeWithLengthPrefix(ref span);
         Assert.Equal(item, x);
         Assert.Equal(new[] { "DecodeWithLengthPrefix", }, stringConverter.CallingSteps);
-    }
-
-    [Fact(DisplayName = "Null String Converter")]
-    public void NullStringConverter()
-    {
-        var converterType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "UriConverter");
-        var parameter = Expression.Parameter(typeof(Converter<string>));
-        var constructor = Assert.IsAssignableFrom<ConstructorInfo>(converterType.GetConstructor(new[] { parameter.Type }));
-        var lambda = Expression.Lambda<Func<Converter<string>?, Converter<Uri>>>(Expression.New(constructor, parameter), parameter);
-        var functor = lambda.Compile();
-        var error = Assert.Throws<ArgumentNullException>(() => functor.Invoke(null));
-        Assert.Equal(constructor.GetParameters().Single().Name, error.ParamName);
     }
 
     [Fact(DisplayName = "Null Or Empty")]

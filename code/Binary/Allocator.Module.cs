@@ -20,8 +20,7 @@ public ref partial struct Allocator
 
     public static void Append<T>(ref Allocator allocator, int length, T data, SpanAction<byte, T> action)
     {
-        if (action is null)
-            ThrowHelper.ThrowActionNull();
+        ArgumentNullException.ThrowIfNull(action);
         if (length is 0)
             return;
         action.Invoke(MemoryMarshal.CreateSpan(ref Assign(ref allocator, length), length), data);
@@ -29,8 +28,7 @@ public ref partial struct Allocator
 
     public static void Append<T>(ref Allocator allocator, int maxLength, T data, AllocatorWriter<T> writer)
     {
-        if (writer is null)
-            ThrowHelper.ThrowWriterNull();
+        ArgumentNullException.ThrowIfNull(writer);
         if (maxLength < 0)
             ThrowHelper.ThrowMaxLengthNegative();
         if (maxLength is 0)
@@ -53,8 +51,7 @@ public ref partial struct Allocator
 
     public static void AppendWithLengthPrefix<T>(ref Allocator allocator, int maxLength, T data, AllocatorWriter<T> writer)
     {
-        if (writer is null)
-            ThrowHelper.ThrowWriterNull();
+        ArgumentNullException.ThrowIfNull(writer);
         if (maxLength < 0)
             ThrowHelper.ThrowMaxLengthNegative();
         var numberLength = NumberModule.EncodeLength((uint)maxLength);
@@ -77,8 +74,7 @@ public ref partial struct Allocator
 
     public static void AppendWithLengthPrefix<T>(ref Allocator allocator, T data, AllocatorAction<T> action)
     {
-        if (action is null)
-            ThrowHelper.ThrowActionNull();
+        ArgumentNullException.ThrowIfNull(action);
         var anchor = Anchor(ref allocator, sizeof(int));
         action.Invoke(ref allocator, data);
         FinishAnchor(ref allocator, anchor);
@@ -109,8 +105,7 @@ public ref partial struct Allocator
 
     public static byte[] Invoke<T>(T data, AllocatorAction<T> action)
     {
-        if (action is null)
-            ThrowHelper.ThrowActionNull();
+        ArgumentNullException.ThrowIfNull(action);
         var handle = BufferModule.Borrow();
         try
         {

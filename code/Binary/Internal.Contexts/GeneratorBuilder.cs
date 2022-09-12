@@ -11,8 +11,7 @@ internal sealed class GeneratorBuilder : IGeneratorBuilder
 
     public IGeneratorBuilder AddConverter(IConverter converter)
     {
-        if (converter is null)
-            throw new ArgumentNullException(nameof(converter));
+        ArgumentNullException.ThrowIfNull(converter);
         var itemType = Converter.GetGenericArgument(converter);
         if (itemType == typeof(object))
             throw new ArgumentException($"Can not add converter for '{typeof(object)}'");
@@ -22,8 +21,7 @@ internal sealed class GeneratorBuilder : IGeneratorBuilder
 
     public IGeneratorBuilder AddConverterCreator(IConverterCreator creator)
     {
-        if (creator is null)
-            throw new ArgumentNullException(nameof(creator));
+        ArgumentNullException.ThrowIfNull(creator);
         this.creators.Add(creator);
         return this;
     }

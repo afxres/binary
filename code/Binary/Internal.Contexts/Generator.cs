@@ -26,8 +26,7 @@ internal sealed class Generator : IGenerator
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public IConverter GetConverter(Type type)
     {
-        if (type is null)
-            ThrowHelper.ThrowTypeNull();
+        ArgumentNullException.ThrowIfNull(type);
         if (this.converters.TryGetValue(type, out var result))
             return result;
         var context = new GeneratorContext(this.creators, this.converters);

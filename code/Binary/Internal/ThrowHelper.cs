@@ -8,18 +8,6 @@ using System.Diagnostics.CodeAnalysis;
 internal static class ThrowHelper
 {
     [DoesNotReturn]
-    internal static void ThrowActionNull() => throw new ArgumentNullException("action");
-
-    [DoesNotReturn]
-    internal static void ThrowWriterNull() => throw new ArgumentNullException("writer");
-
-    [DoesNotReturn]
-    internal static void ThrowEncodingNull() => throw new ArgumentNullException("encoding");
-
-    [DoesNotReturn]
-    internal static void ThrowTypeNull() => throw new ArgumentNullException("type");
-
-    [DoesNotReturn]
     internal static void ThrowAllocatorInvalid() => throw new InvalidOperationException("Allocator has been modified unexpectedly!");
 
     [DoesNotReturn]

@@ -6,7 +6,7 @@ internal sealed class UriConverter : Converter<Uri?>
 {
     private readonly Converter<string> converter;
 
-    public UriConverter(Converter<string> converter) => this.converter = converter ?? throw new ArgumentNullException(nameof(converter));
+    public UriConverter(Converter<string> converter) => this.converter = converter;
 
     private static Uri? DecodeInternal(string item) => string.IsNullOrEmpty(item) ? null : new Uri(item);
 

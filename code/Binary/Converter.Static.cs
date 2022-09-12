@@ -11,8 +11,7 @@ public static class Converter
 {
     public static Type GetGenericArgument(IConverter converter)
     {
-        if (converter is null)
-            throw new ArgumentNullException(nameof(converter));
+        ArgumentNullException.ThrowIfNull(converter);
         if (converter is IConverterMetadata metadata)
             return metadata.GetGenericArgument();
         return ThrowHelper.ThrowNotConverter<Type>(converter.GetType());
@@ -20,8 +19,7 @@ public static class Converter
 
     public static MethodInfo GetMethod(IConverter converter, string name)
     {
-        if (converter is null)
-            throw new ArgumentNullException(nameof(converter));
+        ArgumentNullException.ThrowIfNull(converter);
         if (converter is IConverterMetadata metadata)
             return metadata.GetMethod(name);
         return ThrowHelper.ThrowNotConverter<MethodInfo>(converter.GetType());

@@ -11,8 +11,7 @@ public ref partial struct Allocator
 {
     public static void Append(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding)
     {
-        if (encoding is null)
-            ThrowHelper.ThrowEncodingNull();
+        ArgumentNullException.ThrowIfNull(encoding);
         var targetLimits = SharedModule.GetMaxByteCount(span, encoding);
         Debug.Assert(targetLimits <= encoding.GetMaxByteCount(span.Length));
         if (targetLimits is 0)
@@ -31,8 +30,7 @@ public ref partial struct Allocator
 
     public static void AppendWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding)
     {
-        if (encoding is null)
-            ThrowHelper.ThrowEncodingNull();
+        ArgumentNullException.ThrowIfNull(encoding);
         var targetLimits = SharedModule.GetMaxByteCount(span, encoding);
         Debug.Assert(targetLimits <= encoding.GetMaxByteCount(span.Length));
         var prefixLength = NumberModule.EncodeLength((uint)targetLimits);

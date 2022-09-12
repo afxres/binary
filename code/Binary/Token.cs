@@ -74,8 +74,7 @@ public sealed class Token : IDynamicMetaObjectProvider
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static DecodeReadOnlyDelegate<string> GetDelegate(IGenerator generator)
     {
-        if (generator is null)
-            throw new ArgumentNullException(nameof(generator));
+        ArgumentNullException.ThrowIfNull(generator);
         var converter = generator.GetConverter<string>();
         if (converter is null)
             throw new ArgumentException("No available string converter found.");
