@@ -59,25 +59,56 @@ public ref partial struct Allocator
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static int Anchor(ref Allocator allocator, int length)
+    private static ref byte Create(ref Allocator allocator, int length)
     {
         Ensure(ref allocator, length);
         var offset = allocator.offset;
-        allocator.offset = offset + length;
-        return offset;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static ref byte Assign(ref Allocator allocator, int length)
-    {
-        Debug.Assert(length is not 0);
-        var offset = Anchor(ref allocator, length);
 #if NET7_0_OR_GREATER
         return ref Unsafe.Add(ref allocator.values, offset);
 #else
         var buffer = allocator.buffer;
         return ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
 #endif
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void FinishCreate(ref Allocator allocator, int length)
+    {
+        var offset = allocator.offset;
+        Debug.Assert(length >= 0);
+        Debug.Assert(offset >= 0);
+#if NET7_0_OR_GREATER
+        Debug.Assert(offset <= allocator.bounds);
+        Debug.Assert(length <= allocator.bounds - offset);
+#else
+        Debug.Assert(offset <= allocator.buffer.Length);
+        Debug.Assert(length <= allocator.buffer.Length - offset);
+#endif
+        allocator.offset = offset + length;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static ref byte Assign(ref Allocator allocator, int length)
+    {
+        Debug.Assert(length is not 0);
+        Ensure(ref allocator, length);
+        var offset = allocator.offset;
+        allocator.offset = offset + length;
+#if NET7_0_OR_GREATER
+        return ref Unsafe.Add(ref allocator.values, offset);
+#else
+        var buffer = allocator.buffer;
+        return ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
+#endif
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static int Anchor(ref Allocator allocator, int length)
+    {
+        Ensure(ref allocator, length);
+        var offset = allocator.offset;
+        allocator.offset = offset + length;
+        return offset;
     }
 
     internal static void FinishAnchor(ref Allocator allocator, int anchor)

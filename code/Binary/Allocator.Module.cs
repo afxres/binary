@@ -33,20 +33,13 @@ public ref partial struct Allocator
             ThrowHelper.ThrowMaxLengthNegative();
         if (maxLength is 0)
             return;
-        Ensure(ref allocator, maxLength);
-        var offset = allocator.offset;
-#if NET7_0_OR_GREATER
-        ref var target = ref Unsafe.Add(ref allocator.values, offset);
-#else
-        var buffer = allocator.buffer;
-        ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
-#endif
+        ref var target = ref Create(ref allocator, maxLength);
         var actual = writer.Invoke(MemoryMarshal.CreateSpan(ref target, maxLength), data);
         if ((uint)actual > (uint)maxLength)
             ThrowHelper.ThrowInvalidReturnValue();
         Debug.Assert(actual >= 0);
         Debug.Assert(actual <= maxLength);
-        allocator.offset = offset + actual;
+        FinishCreate(ref allocator, actual);
     }
 
     public static void AppendWithLengthPrefix<T>(ref Allocator allocator, int maxLength, T data, AllocatorWriter<T> writer)
@@ -55,21 +48,14 @@ public ref partial struct Allocator
         if (maxLength < 0)
             ThrowHelper.ThrowMaxLengthNegative();
         var numberLength = NumberModule.EncodeLength((uint)maxLength);
-        Ensure(ref allocator, maxLength + numberLength);
-        var offset = allocator.offset;
-#if NET7_0_OR_GREATER
-        ref var target = ref Unsafe.Add(ref allocator.values, offset);
-#else
-        var buffer = allocator.buffer;
-        ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
-#endif
+        ref var target = ref Create(ref allocator, maxLength + numberLength);
         var actual = maxLength is 0 ? 0 : writer.Invoke(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, numberLength), maxLength), data);
         if ((uint)actual > (uint)maxLength)
             ThrowHelper.ThrowInvalidReturnValue();
         Debug.Assert(actual >= 0);
         Debug.Assert(actual <= maxLength);
         NumberModule.Encode(ref target, (uint)actual, numberLength);
-        allocator.offset = offset + actual + numberLength;
+        FinishCreate(ref allocator, actual + numberLength);
     }
 
     public static void AppendWithLengthPrefix<T>(ref Allocator allocator, T data, AllocatorAction<T> action)

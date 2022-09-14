@@ -16,16 +16,9 @@ public ref partial struct Allocator
         Debug.Assert(targetLimits <= encoding.GetMaxByteCount(span.Length));
         if (targetLimits is 0)
             return;
-        Ensure(ref allocator, targetLimits);
-        var offset = allocator.offset;
-#if NET7_0_OR_GREATER
-        ref var target = ref Unsafe.Add(ref allocator.values, offset);
-#else
-        var buffer = allocator.buffer;
-        ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
-#endif
+        ref var target = ref Create(ref allocator, targetLimits);
         var targetLength = encoding.GetBytes(span, MemoryMarshal.CreateSpan(ref target, targetLimits));
-        allocator.offset = offset + targetLength;
+        FinishCreate(ref allocator, targetLength);
     }
 
     public static void AppendWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding)
@@ -34,16 +27,9 @@ public ref partial struct Allocator
         var targetLimits = SharedModule.GetMaxByteCount(span, encoding);
         Debug.Assert(targetLimits <= encoding.GetMaxByteCount(span.Length));
         var prefixLength = NumberModule.EncodeLength((uint)targetLimits);
-        Ensure(ref allocator, prefixLength + targetLimits);
-        var offset = allocator.offset;
-#if NET7_0_OR_GREATER
-        ref var target = ref Unsafe.Add(ref allocator.values, offset);
-#else
-        var buffer = allocator.buffer;
-        ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
-#endif
+        ref var target = ref Create(ref allocator, prefixLength + targetLimits);
         var targetLength = targetLimits is 0 ? 0 : encoding.GetBytes(span, MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, prefixLength), targetLimits));
         NumberModule.Encode(ref target, (uint)targetLength, prefixLength);
-        allocator.offset = offset + targetLength + prefixLength;
+        FinishCreate(ref allocator, targetLength + prefixLength);
     }
 }
