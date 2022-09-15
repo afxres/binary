@@ -18,15 +18,16 @@ let ``Constructor (default)`` () =
 [<InlineData(-1)>]
 [<InlineData(-255)>]
 let ``Constructor (argument out of range)`` (limits : int) =
-    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
-        let _ = Allocator(Span(), limits)
-        ())
+    let a = Assert.Throws<ArgumentOutOfRangeException>(fun () -> let _ = Allocator(Span(), limits) in ())
+    let b = Assert.Throws<ArgumentOutOfRangeException>(fun () -> let _ = Allocator(Unchecked.defaultof<IAllocator>, limits) in ())
     let allocatorType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "Allocator") |> Array.exactlyOne
-    let constructor = allocatorType.GetConstructors() |> Array.filter (fun x -> x.GetParameters().Length = 2) |> Array.exactlyOne
-    let parameter = constructor.GetParameters() |> Array.last
-    Assert.Equal("maxCapacity", parameter.Name)
-    Assert.Equal("maxCapacity", error.ParamName)
-    Assert.StartsWith("Argument max capacity must be greater than or equal to zero!", error.Message)
+    let constructors = allocatorType.GetConstructors() |> Array.filter (fun x -> x.GetParameters().Length = 2)
+    let parameterName = constructors |> Array.map (fun x -> x.GetParameters() |> Array.last) |> Array.map (fun x -> x.Name) |> Array.distinct |> Array.exactlyOne
+    Assert.Equal("maxCapacity", parameterName)
+    Assert.Equal("maxCapacity", a.ParamName)
+    Assert.Equal("maxCapacity", b.ParamName)
+    Assert.StartsWith("Argument max capacity must be greater than or equal to zero!", a.Message)
+    Assert.StartsWith("Argument max capacity must be greater than or equal to zero!", b.Message)
     ()
 
 [<Theory>]

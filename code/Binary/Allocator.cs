@@ -8,6 +8,8 @@ using System.Runtime.InteropServices;
 
 public ref partial struct Allocator
 {
+    private readonly IAllocator? underlying;
+
     private Span<byte> buffer;
 
     private int offset;
@@ -23,8 +25,6 @@ public ref partial struct Allocator
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Allocator(Span<byte> span)
     {
-        this.limits = 0;
-        this.offset = 0;
         this.buffer = span;
     }
 
@@ -34,8 +34,22 @@ public ref partial struct Allocator
         if (maxCapacity < 0)
             ThrowHelper.ThrowMaxCapacityNegative();
         this.limits = ~maxCapacity;
-        this.offset = 0;
         this.buffer = MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(span), Math.Min(span.Length, maxCapacity));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Allocator(IAllocator underlyingAllocator)
+    {
+        this.underlying = underlyingAllocator;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public Allocator(IAllocator underlyingAllocator, int maxCapacity)
+    {
+        if (maxCapacity < 0)
+            ThrowHelper.ThrowMaxCapacityNegative();
+        this.underlying = underlyingAllocator;
+        this.limits = ~maxCapacity;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

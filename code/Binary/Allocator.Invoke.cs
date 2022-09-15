@@ -34,12 +34,23 @@ public ref partial struct Allocator
         Debug.Assert(amount <= cursor);
         Debug.Assert(cursor <= limits);
 
-        var target = new Span<byte>(new byte[(int)cursor]);
+        var bounds = (int)cursor;
+        var underlying = allocator.underlying;
+        if (underlying is not null)
+        {
+            ref var values = ref underlying.Allocate(bounds);
+            var target = MemoryMarshal.CreateSpan(ref values, bounds);
+            allocator.buffer = target;
+        }
+        else
+        {
+            var target = new Span<byte>(new byte[bounds]);
+            if (offset is not 0)
+                Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetReference(target), ref MemoryMarshal.GetReference(source), (uint)offset);
+            allocator.buffer = target;
+        }
         Debug.Assert(offset <= source.Length);
-        Debug.Assert(offset <= target.Length);
-        if (offset is not 0)
-            Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetReference(target), ref MemoryMarshal.GetReference(source), (uint)offset);
-        allocator.buffer = target;
+        Debug.Assert(offset <= allocator.buffer.Length);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
