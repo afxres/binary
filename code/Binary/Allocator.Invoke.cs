@@ -19,12 +19,8 @@ public ref partial struct Allocator
         if (amount > limits)
             ThrowHelper.ThrowMaxCapacityOverflow();
 
-#if NET7_0_OR_GREATER
-        var cursor = (long)allocator.bounds;
-#else
         var source = allocator.buffer;
         var cursor = (long)source.Length;
-#endif
         Debug.Assert(cursor < amount);
         Debug.Assert(cursor < limits);
         const int Capacity = 64;
@@ -38,24 +34,12 @@ public ref partial struct Allocator
         Debug.Assert(amount <= cursor);
         Debug.Assert(cursor <= limits);
 
-#if NET7_0_OR_GREATER
-        var bounds = (int)cursor;
-        var buffer = new byte[bounds];
-        ref var values = ref MemoryMarshal.GetArrayDataReference(buffer);
-        Debug.Assert(offset <= bounds);
-        Debug.Assert(offset <= allocator.bounds);
-        if (offset is not 0)
-            Unsafe.CopyBlockUnaligned(ref values, ref allocator.values, (uint)offset);
-        allocator.bounds = bounds;
-        allocator.values = ref values;
-#else
         var target = new Span<byte>(new byte[(int)cursor]);
         Debug.Assert(offset <= source.Length);
         Debug.Assert(offset <= target.Length);
         if (offset is not 0)
             Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetReference(target), ref MemoryMarshal.GetReference(source), (uint)offset);
         allocator.buffer = target;
-#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -63,12 +47,8 @@ public ref partial struct Allocator
     {
         Ensure(ref allocator, length);
         var offset = allocator.offset;
-#if NET7_0_OR_GREATER
-        return ref Unsafe.Add(ref allocator.values, offset);
-#else
         var buffer = allocator.buffer;
         return ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
-#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -77,13 +57,8 @@ public ref partial struct Allocator
         var offset = allocator.offset;
         Debug.Assert(length >= 0);
         Debug.Assert(offset >= 0);
-#if NET7_0_OR_GREATER
-        Debug.Assert(offset <= allocator.bounds);
-        Debug.Assert(length <= allocator.bounds - offset);
-#else
         Debug.Assert(offset <= allocator.buffer.Length);
         Debug.Assert(length <= allocator.buffer.Length - offset);
-#endif
         allocator.offset = offset + length;
     }
 
@@ -94,12 +69,8 @@ public ref partial struct Allocator
         Ensure(ref allocator, length);
         var offset = allocator.offset;
         allocator.offset = offset + length;
-#if NET7_0_OR_GREATER
-        return ref Unsafe.Add(ref allocator.values, offset);
-#else
         var buffer = allocator.buffer;
         return ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
-#endif
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -119,27 +90,6 @@ public ref partial struct Allocator
         if (result < 0)
             ThrowHelper.ThrowAllocatorInvalid();
         var length = (int)result;
-#if NET7_0_OR_GREATER
-        ref var target = ref Unsafe.Add(ref allocator.values, anchor);
-        if (length <= Limits && allocator.bounds - offset >= ((-length) & 7))
-        {
-            allocator.offset = offset - 3;
-            NumberModule.Encode(ref target, (uint)length, numberLength: 1);
-            var header = (length + 7) >> 3;
-            if (header is not 0)
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref target, 0 + 1), Unsafe.ReadUnaligned<long>(ref Unsafe.Add(ref target, 0 + 4)));
-            if (header is 2)
-                Unsafe.WriteUnaligned(ref Unsafe.Add(ref target, 8 + 1), Unsafe.ReadUnaligned<long>(ref Unsafe.Add(ref target, 8 + 4)));
-            Debug.Assert(allocator.offset >= 1);
-            Debug.Assert(allocator.offset <= allocator.bounds);
-        }
-        else
-        {
-            NumberModule.Encode(ref target, (uint)length, numberLength: 4);
-            Debug.Assert(allocator.offset >= 4);
-            Debug.Assert(allocator.offset <= allocator.bounds);
-        }
-#else
         var buffer = allocator.buffer;
         ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), anchor);
         if (length <= Limits && buffer.Length - offset >= ((-length) & 7))
@@ -160,6 +110,5 @@ public ref partial struct Allocator
             Debug.Assert(allocator.offset >= 4);
             Debug.Assert(allocator.offset <= allocator.buffer.Length);
         }
-#endif
     }
 }
