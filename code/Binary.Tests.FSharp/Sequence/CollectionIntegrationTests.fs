@@ -145,10 +145,10 @@ let ``Collection Integration Test (span-like collection, null or empty collectio
 
 [<Fact>]
 let ``Collection Integration Test (collection, null or empty collection test, default interface implementation test)`` () =
-    TestSequence<IEnumerable<_>> "EnumerableEncoder`2" "EnumerableDecoder`2" (ResizeArray<string>())
     TestSequence<IList<_>> "EnumerableEncoder`2" "EnumerableDecoder`2" (Array.zeroCreate<int> 0)
-    TestSequence<IReadOnlyList<_>> "EnumerableEncoder`2" "EnumerableDecoder`2" (ResizeArray<string>())
     TestSequence<ICollection<_>> "EnumerableEncoder`2" "EnumerableDecoder`2" (Array.zeroCreate<int> 0)
+    TestSequence<IEnumerable<_>> "EnumerableEncoder`2" "EnumerableDecoder`2" (ResizeArray<string>())
+    TestSequence<IReadOnlyList<_>> "EnumerableEncoder`2" "EnumerableDecoder`2" (ResizeArray<string>())
     TestSequence<IReadOnlyCollection<_>> "EnumerableEncoder`2" "EnumerableDecoder`2" (Array.zeroCreate<int> 0)
 
     TestSequence<Queue<_>> "<lambda-encoder>" "<lambda-decoder>" (Queue<int> 0)
@@ -157,9 +157,10 @@ let ``Collection Integration Test (collection, null or empty collection test, de
     TestSequence<IImmutableList<_>> "EnumerableEncoder`2" "<lambda-decoder>" (ImmutableList.Create<int>())
     TestSequence<IImmutableQueue<_>> "EnumerableEncoder`2" "<lambda-decoder>" (ImmutableQueue.Create<string>())
 
-    TestSequence<ISet<_>> "EnumerableEncoder`2" "HashSetDecoder`1" (HashSet<TimeSpan>())
     TestSequence<HashSet<_>> "<lambda-encoder>" "HashSetDecoder`1" (HashSet<int64>())
     TestSequence<HashSet<_>> "<lambda-encoder>" "HashSetDecoder`1" (HashSet<string>())
+    TestSequence<ISet<_>> "EnumerableEncoder`2" "HashSetDecoder`1" (HashSet<TimeSpan>())
+    TestSequence<IReadOnlySet<_>> "EnumerableEncoder`2" "HashSetDecoder`1" (HashSet<TimeOnly>())
     ()
 
 [<Fact>]
