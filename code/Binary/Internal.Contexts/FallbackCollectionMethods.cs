@@ -32,16 +32,6 @@ internal static class FallbackCollectionMethods
             return func.Method.GetGenericMethodDefinition();
         }
 
-        static IEnumerable<Type> Dump<T>()
-        {
-            var enumerable = new[] { typeof(IEnumerable<object>), typeof(IEnumerable<KeyValuePair<object, object>>) };
-            var types = ImmutableArray.Create(typeof(T)).AddRange(typeof(T).GetInterfaces());
-            var generic = types.Where(x => x.IsGenericType);
-            var assignable = generic.Where(x => enumerable.Any(t => t.IsAssignableFrom(x)));
-            var definitions = assignable.Select(x => x.GetGenericTypeDefinition());
-            return definitions;
-        }
-
         var immutable = ImmutableDictionary.CreateRange(new Dictionary<Type, MethodInfo>
         {
             [typeof(IImmutableDictionary<,>)] = Info(ImmutableDictionary.CreateRange),
@@ -65,9 +55,28 @@ internal static class FallbackCollectionMethods
             typeof(IImmutableStack<>),
         });
 
-        var array = Dump<object[]>().Intersect(Dump<List<object>>()).ToImmutableArray();
-        var set = Dump<HashSet<object>>().Except(array).ToImmutableArray();
-        var dictionary = Dump<Dictionary<object, object>>().Except(array).ToImmutableArray();
+        var array = ImmutableArray.Create(new[]
+        {
+            typeof(IList<>),
+            typeof(ICollection<>),
+            typeof(IEnumerable<>),
+            typeof(IReadOnlyList<>),
+            typeof(IReadOnlyCollection<>),
+        });
+
+        var set = ImmutableArray.Create(new[]
+        {
+            typeof(HashSet<>),
+            typeof(ISet<>),
+            typeof(IReadOnlySet<>),
+        });
+
+        var dictionary = ImmutableArray.Create(new[]
+        {
+            typeof(Dictionary<,>),
+            typeof(IDictionary<,>),
+            typeof(IReadOnlyDictionary<,>),
+        });
 
         InvalidTypeDefinitions = invalid;
         HashSetAssignableDefinitions = set;
