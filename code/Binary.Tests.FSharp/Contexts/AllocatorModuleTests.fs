@@ -225,15 +225,16 @@ let ``Append Action (1 byte 512 times, capacity test)`` () =
                 Assert.Null b
                 Assert.Equal(1, a.Length))
         Assert.Equal(item, allocator.Length)
-        Assert.Equal((if item > 256 then 1024 else 256), allocator.Capacity)
+        Assert.Equal((if item > 256 then 512 else 256), allocator.Capacity)
     ()
 
 [<Theory>]
-[<InlineData(1)>]
-[<InlineData(256)>]
-[<InlineData(257)>]
-[<InlineData(1024)>]
-let ``Append Action (default constructor)`` (length : int) =
+[<InlineData(1, 256)>]
+[<InlineData(256, 256)>]
+[<InlineData(257, 512)>]
+[<InlineData(666, 1024)>]
+[<InlineData(1024, 1024)>]
+let ``Append Action (default constructor)`` (length : int, capacityExpected : int) =
     let mutable allocator = Allocator()
     let buffer = Array.zeroCreate<byte> length
     Random.Shared.NextBytes buffer
@@ -243,7 +244,7 @@ let ``Append Action (default constructor)`` (length : int) =
             Assert.Equal(length, a.Length))
     let result = allocator.AsSpan().ToArray()
     Assert.Equal<byte>(buffer, result)
-    Assert.Equal((if length > 256 then 1024 else 256), allocator.Capacity)
+    Assert.Equal(capacityExpected, allocator.Capacity)
     ()
 
 [<Theory>]
@@ -261,9 +262,9 @@ let ``Append Action (limited, overflow)`` (limits : int) =
 [<Fact>]
 let ``Append Action (limited)`` () =
     let mutable allocator = Allocator(Span (Array.zeroCreate 96), 640)
-    Allocator.Append(&allocator, 192, null :> obj, fun a b -> ())
-    Assert.Equal(96 <<< 2, allocator.Capacity)
-    Allocator.Append(&allocator, 448, null :> obj, fun a b -> ())
+    Allocator.Append(&allocator, 190, null :> obj, fun a b -> ())
+    Assert.Equal(96 * 2, allocator.Capacity)
+    Allocator.Append(&allocator, 450, null :> obj, fun a b -> ())
     Assert.Equal(640, allocator.Length)
     Assert.Equal(640, allocator.Capacity)
     ()
@@ -332,17 +333,19 @@ let ``Append Buffer (empty)`` () =
     ()
 
 [<Theory>]
-[<InlineData(1)>]
-[<InlineData(256)>]
-[<InlineData(512)>]
-[<InlineData(1024)>]
-let ``Append Buffer (random)`` (length : int) =
+[<InlineData(1, 256)>]
+[<InlineData(256, 256)>]
+[<InlineData(386, 512)>]
+[<InlineData(512, 512)>]
+[<InlineData(768, 1024)>]
+[<InlineData(1024, 1024)>]
+let ``Append Buffer (random)`` (length : int, capacityExpected : int) =
     let buffer = Array.zeroCreate<byte> length
     Random.Shared.NextBytes buffer
     let mutable allocator = Allocator()
     Allocator.Append(&allocator, ReadOnlySpan buffer)
     Assert.Equal(length, allocator.Length)
-    Assert.Equal((if length > 256 then 1024 else 256), allocator.Capacity)
+    Assert.Equal(capacityExpected, allocator.Capacity)
     ()
 
 [<Fact>]
@@ -536,7 +539,7 @@ let ``Expand (no resize)`` (capacity : int, offset : int, length : int) =
 [<InlineData(0, 0, 0)>]
 [<InlineData(16, 0, 256)>]
 [<InlineData(16, 16, 256)>]
-[<InlineData(512, 128, 1024)>]
+[<InlineData(512, 128, 512)>]
 [<InlineData(768, 512, 1024)>]
 [<InlineData(4096, 4096, 4096)>]
 let ``Append Max Length (integration test)`` (maxLength : int, actual : int, capacityExpected : int) =
@@ -570,8 +573,8 @@ let ``Append Max Length (invalid return value)`` (maxLength : int, actual : int)
 [<InlineData(128, 0, 4, 4, 256)>]
 [<InlineData(16, 16, 1, 17, 256)>]
 [<InlineData(56, 48, 1, 49, 256)>]
-[<InlineData(384, 72, 4, 76, 1024)>]
-[<InlineData(1536, 96, 4, 100, 4096)>]
+[<InlineData(384, 72, 4, 76, 512)>]
+[<InlineData(1536, 96, 4, 100, 2048)>]
 let ``Append Max Length With Length Prefix (integration test)`` (maxLength : int, actual : int, prefixLength : int, lengthExpected : int, capacityExpected : int) =
     let mutable allocator = Allocator()
     let buffer = Array.zeroCreate actual
