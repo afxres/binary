@@ -25,7 +25,10 @@ public ref partial struct Allocator
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Allocator(Span<byte> span)
     {
+        this.underlying = null;
         this.buffer = span;
+        this.offset = 0;
+        this.limits = 0;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -33,22 +36,31 @@ public ref partial struct Allocator
     {
         if (maxCapacity < 0)
             ThrowHelper.ThrowMaxCapacityNegative();
-        this.limits = ~maxCapacity;
+        this.underlying = null;
         this.buffer = MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(span), Math.Min(span.Length, maxCapacity));
+        this.offset = 0;
+        this.limits = ~maxCapacity;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Allocator(IAllocator underlyingAllocator)
     {
+        ArgumentNullException.ThrowIfNull(underlyingAllocator);
         this.underlying = underlyingAllocator;
+        this.buffer = default;
+        this.offset = 0;
+        this.limits = 0;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Allocator(IAllocator underlyingAllocator, int maxCapacity)
     {
+        ArgumentNullException.ThrowIfNull(underlyingAllocator);
         if (maxCapacity < 0)
             ThrowHelper.ThrowMaxCapacityNegative();
         this.underlying = underlyingAllocator;
+        this.buffer = default;
+        this.offset = 0;
         this.limits = ~maxCapacity;
     }
 

@@ -18,8 +18,9 @@ let ``Constructor (default)`` () =
 [<InlineData(-1)>]
 [<InlineData(-255)>]
 let ``Constructor (argument out of range)`` (limits : int) =
+    let underlyingAllocator = { new IAllocator with member __.Allocate _ = raise (NotSupportedException()); &Unsafe.NullRef<byte>() };
     let a = Assert.Throws<ArgumentOutOfRangeException>(fun () -> let _ = Allocator(Span(), limits) in ())
-    let b = Assert.Throws<ArgumentOutOfRangeException>(fun () -> let _ = Allocator(Unchecked.defaultof<IAllocator>, limits) in ())
+    let b = Assert.Throws<ArgumentOutOfRangeException>(fun () -> let _ = Allocator(underlyingAllocator, limits) in ())
     let allocatorType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "Allocator") |> Array.exactlyOne
     let constructors = allocatorType.GetConstructors() |> Array.filter (fun x -> x.GetParameters().Length = 2)
     let parameterName = constructors |> Array.map (fun x -> x.GetParameters() |> Array.last) |> Array.map (fun x -> x.Name) |> Array.distinct |> Array.exactlyOne
@@ -28,6 +29,20 @@ let ``Constructor (argument out of range)`` (limits : int) =
     Assert.Equal("maxCapacity", b.ParamName)
     Assert.StartsWith("Argument max capacity must be greater than or equal to zero!", a.Message)
     Assert.StartsWith("Argument max capacity must be greater than or equal to zero!", b.Message)
+    ()
+
+[<Fact>]
+let ``Constructor (argument underlying allocator null)`` () =
+    let a = Assert.Throws<ArgumentNullException>(fun () -> let _ = Allocator(Unchecked.defaultof<IAllocator>) in ())
+    let b = Assert.Throws<ArgumentNullException>(fun () -> let _ = Allocator(Unchecked.defaultof<IAllocator>, 100) in ())
+    let allocatorType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "Allocator") |> Array.exactlyOne
+    let constructors = allocatorType.GetConstructors() |> Array.filter (fun x -> x.GetParameters().[0].ParameterType = typeof<IAllocator>)
+    let parameterName = constructors |> Array.map (fun x -> x.GetParameters() |> Array.head) |> Array.map (fun x -> x.Name) |> Array.distinct |> Array.exactlyOne
+    Assert.Equal("underlyingAllocator", parameterName)
+    Assert.Equal("underlyingAllocator", a.ParamName)
+    Assert.Equal("underlyingAllocator", b.ParamName)
+    Assert.StartsWith(ArgumentNullException().Message, a.Message)
+    Assert.StartsWith(ArgumentNullException().Message, b.Message)
     ()
 
 [<Theory>]
