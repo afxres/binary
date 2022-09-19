@@ -4,8 +4,10 @@ using Mikodev.Binary.Components;
 using Mikodev.Binary.Internal;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
+[DebuggerDisplay(CommonModule.DebuggerDisplayValue)]
 public abstract partial class Converter<T>
 {
     private readonly int length;
@@ -37,5 +39,5 @@ public abstract partial class Converter<T>
     public override int GetHashCode() => RuntimeHelpers.GetHashCode(this);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public override string ToString() => $"{nameof(Converter<T>)}<{typeof(T).Name}>({nameof(Length)}: {Length})";
+    public override string ToString() => $"{nameof(Length)} = {Length}, {nameof(T)} = {typeof(T).Name}";
 }

@@ -259,7 +259,7 @@ type ThrowTests() =
     [<MemberData("Data System")>]
     member __.``Invalid System Type`` (t : Type, expected : Type) =
         let generator = GeneratorBuilder().Build()
-        Assert.Equal("Generator(Converters: 1, Creators: 0)", generator.ToString())
+        Assert.Equal("Converter Count = 1, Converter Creator Count = 0", generator.ToString())
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t |> ignore)
         let message = sprintf "Invalid system type: %O" expected
         Assert.Equal(message, error.Message)

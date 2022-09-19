@@ -11,6 +11,7 @@ using System.Reflection;
 
 internal static class CommonModule
 {
+    internal const string DebuggerDisplayValue = "{ToString(),nq}";
 #if NET7_0_OR_GREATER
     internal const string RequiresDynamicCodeMessage = "Require dynamic code for binary serialization.";
 #endif

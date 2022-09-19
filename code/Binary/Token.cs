@@ -13,6 +13,7 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
+[DebuggerDisplay(CommonModule.DebuggerDisplayValue)]
 [DebuggerTypeProxy(typeof(TokenDebuggerTypeProxy))]
 public sealed class Token : IDynamicMetaObjectProvider
 {
@@ -124,5 +125,5 @@ public sealed class Token : IDynamicMetaObjectProvider
     public override int GetHashCode() => RuntimeHelpers.GetHashCode(this);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public override string ToString() => $"{nameof(Token)}({nameof(Children)}: {Children.Count}, {nameof(Memory)}: {Memory.Length})";
+    public override string ToString() => $"Child Count = {Children.Count}, Memory Length = {Memory.Length}";
 }

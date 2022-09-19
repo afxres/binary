@@ -125,8 +125,12 @@ public class CodeContractsTests
     {
         var types = typeof(IConverter).Assembly.GetTypes();
         var selection = types.Where(x => x.Name.Contains('<') is false);
-        var attributes = selection.Select(x => x.GetCustomAttribute<DebuggerDisplayAttribute>()).ToList();
-        Assert.All(attributes, Assert.Null);
+        var attributes = selection.Select(x => (Type: x, Attribute: x.GetCustomAttribute<DebuggerDisplayAttribute>(inherit: false))).Where(x => x.Attribute is not null).ToList();
+        var overridden = types.Where(x => x.Name.Contains('<') is false && x.GetMethod("ToString")?.DeclaringType == x).ToList();
+        Assert.Equal(5, overridden.Count);
+        Assert.Equal(overridden.ToHashSet(), attributes.Select(x => x.Type).ToHashSet());
+        var display = attributes.Select(x => x.Attribute?.Value).Distinct().Single();
+        Assert.Equal("{ToString(),nq}", display);
     }
 
     [Fact(DisplayName = "Public Method With Byte Array Parameter")]

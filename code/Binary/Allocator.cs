@@ -3,9 +3,11 @@
 using Mikodev.Binary.Internal;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
+[DebuggerDisplay(CommonModule.DebuggerDisplayValue)]
 public ref partial struct Allocator
 {
     private readonly IAllocator? underlying;
@@ -88,5 +90,5 @@ public ref partial struct Allocator
     public override readonly int GetHashCode() => throw new NotSupportedException();
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public override readonly string ToString() => $"{nameof(Allocator)}({nameof(Length)}: {Length}, {nameof(Capacity)}: {Capacity}, {nameof(MaxCapacity)}: {MaxCapacity})";
+    public override readonly string ToString() => $"{nameof(Length)} = {Length}, {nameof(Capacity)} = {Capacity}, {nameof(MaxCapacity)} = {MaxCapacity}";
 }

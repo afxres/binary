@@ -156,5 +156,5 @@ let ``Get Hash Code (obsolete)`` () =
 let ``To String (debug)`` () =
     let mutable allocator = Allocator(Span (Array.zeroCreate 64), 32)
     Allocator.Append(&allocator, 4, null :> obj, fun a b -> ())
-    Assert.Equal("Allocator(Length: 4, Capacity: 32, MaxCapacity: 32)", allocator.ToString())
+    Assert.Equal("Length = 4, Capacity = 32, MaxCapacity = 32", allocator.ToString())
     ()

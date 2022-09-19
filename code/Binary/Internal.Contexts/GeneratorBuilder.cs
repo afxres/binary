@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics;
 
+[DebuggerDisplay(CommonModule.DebuggerDisplayValue)]
 internal sealed class GeneratorBuilder : IGeneratorBuilder
 {
     private readonly ImmutableArray<IConverterCreator>.Builder creators = ImmutableArray.CreateBuilder<IConverterCreator>();
@@ -28,5 +30,5 @@ internal sealed class GeneratorBuilder : IGeneratorBuilder
 
     public IGenerator Build() => new Generator(this.creators.ToImmutable(), this.converters.ToImmutable());
 
-    public override string ToString() => $"{nameof(GeneratorBuilder)}(Converters: {this.converters.Count}, Creators: {this.creators.Count})";
+    public override string ToString() => $"Converter Count = {this.converters.Count}, Converter Creator Count = {this.creators.Count}";
 }

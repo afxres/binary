@@ -245,5 +245,5 @@ let ``Bad Creator (not a subclass)`` () =
 [<Fact>]
 let ``To String (debug)`` () =
     let generator = Generator.CreateDefault()
-    Assert.Matches(@"Generator\(Converters: 1, Creators: \d+\)", generator.ToString())
+    Assert.Matches(@"Converter Count = 1, Converter Creator Count = \d+", generator.ToString())
     ()

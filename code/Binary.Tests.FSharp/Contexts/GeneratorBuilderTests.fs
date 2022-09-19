@@ -35,7 +35,7 @@ type FakeConverterCreatorB() =
 let ``Build Empty`` () =
     let builder = GeneratorBuilder()
     let generator = builder.Build()
-    Assert.Equal("Generator(Converters: 1, Creators: 0)", generator.ToString())
+    Assert.Equal("Converter Count = 1, Converter Creator Count = 0", generator.ToString())
     ()
 
 [<Fact>]
@@ -64,7 +64,7 @@ let ``Add Two Converters For One Type`` () =
                 .AddConverter(a)
                 .AddConverter(b)
         let generator = builder.Build()
-        Assert.Equal("Generator(Converters: 2, Creators: 0)", generator.ToString())
+        Assert.Equal("Converter Count = 2, Converter Creator Count = 0", generator.ToString())
         let converter = generator.GetConverter<int>()
         Assert.True(obj.ReferenceEquals(b, converter))
         ()
@@ -81,7 +81,7 @@ let ``Last Added Creator First Executed`` () =
                 .AddConverterCreator(a)
                 .AddConverterCreator(b)
         let generator = builder.Build()
-        Assert.Equal("Generator(Converters: 1, Creators: 2)", generator.ToString())
+        Assert.Equal("Converter Count = 1, Converter Creator Count = 2", generator.ToString())
         let error = Assert.Throws<NotSupportedException>(fun () -> generator.GetConverter<int>() |> ignore)
         Assert.Equal(message, error.Message)
         ()
@@ -100,5 +100,5 @@ let ``Invalid Converter For Object`` () =
 [<Fact>]
 let ``To String (debug)`` () =
     let builder = GeneratorBuilder()
-    Assert.Equal("GeneratorBuilder(Converters: 0, Creators: 0)", builder.ToString())
+    Assert.Equal("Converter Count = 0, Converter Creator Count = 0", builder.ToString())
     ()

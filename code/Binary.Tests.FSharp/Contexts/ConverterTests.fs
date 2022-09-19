@@ -73,7 +73,7 @@ type ConverterTests() =
     [<MemberData("Data Alpha")>]
     member __.``To String (debug)`` (t : Type, length : int) =
         let converter = generator.GetConverter t
-        let message = sprintf "Converter<%s>(Length: %d)" t.Name length
+        let message = sprintf "Length = %d, T = %s" length t.Name
         Assert.Equal(message, converter.ToString())
         ()
 

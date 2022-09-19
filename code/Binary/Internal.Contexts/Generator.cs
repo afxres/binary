@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
+[DebuggerDisplay(CommonModule.DebuggerDisplayValue)]
 internal sealed class Generator : IGenerator
 {
     private readonly ImmutableArray<IConverterCreator> creators;
@@ -40,5 +41,5 @@ internal sealed class Generator : IGenerator
         }
     }
 
-    public override string ToString() => $"{nameof(Generator)}(Converters: {this.converters.Count}, Creators: {this.creators.Length})";
+    public override string ToString() => $"Converter Count = {this.converters.Count}, Converter Creator Count = {this.creators.Length}";
 }

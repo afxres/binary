@@ -185,7 +185,7 @@ type TokenTests() =
     [<Fact>]
     member __.``To String (debug)`` () =
         let token = Token(generator, ReadOnlyMemory())
-        Assert.Equal("Token(Children: 0, Memory: 0)", token.ToString())
+        Assert.Equal("Child Count = 0, Memory Length = 0", token.ToString())
         ()
 
     [<Fact>]
