@@ -1,6 +1,10 @@
 # Binary
 
 Summary:
+
+![GitHub repo size](https://img.shields.io/github/repo-size/afxres/binary)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/afxres/binary/dotnet-tests)
+
 | Package                       | Version        | Downloads        | Descriptions        |
 | :---------------------------- | :------------- | :--------------- | :------------------ |
 | [`Mikodev.Binary`][PC]        | ![version][VC] | ![downloads][IC] | Main package        |
@@ -126,7 +130,7 @@ Output layout:
 
 [PC]:https://www.nuget.org/packages/Mikodev.Binary/
 [PF]:https://www.nuget.org/packages/Mikodev.Binary.FSharp/
-[VC]:https://img.shields.io/nuget/v/Mikodev.Binary
-[VF]:https://img.shields.io/nuget/v/Mikodev.Binary.FSharp
+[VC]:https://img.shields.io/nuget/vpre/Mikodev.Binary
+[VF]:https://img.shields.io/nuget/vpre/Mikodev.Binary.FSharp
 [IC]:https://img.shields.io/nuget/dt/Mikodev.Binary
 [IF]:https://img.shields.io/nuget/dt/Mikodev.Binary.FSharp
