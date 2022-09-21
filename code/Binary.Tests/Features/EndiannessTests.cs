@@ -139,7 +139,7 @@ public class EndiannessTests
         var bravo = assemblyTypes.Single(x => x.Name is "OldConverterCreator").GetField("Types", BindingFlags.Static | BindingFlags.NonPublic);
         var delta = Assert.IsType<ImmutableArray<Type>>(alpha?.GetValue(null));
         var hotel = Assert.IsType<ImmutableArray<Type>>(bravo?.GetValue(null));
-        var additionalTypes = new Type[]
+        var additionalTypes = new List<Type>
         {
 #if NET7_0_OR_GREATER
             typeof(Int128),

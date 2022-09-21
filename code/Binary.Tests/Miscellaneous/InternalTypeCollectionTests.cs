@@ -40,7 +40,6 @@ public class InternalTypeCollectionTests
         Assert.Equal(expected.Select(x => x.GetType()).ToHashSet(), actual.Values.Select(x => x.GetType()).ToHashSet());
     }
 
-#if NET7_0_OR_GREATER
     [Fact(DisplayName = "Raw Converter Creator Shared Converters")]
     public void RawConverterCreatorSharedConverters()
     {
@@ -59,5 +58,4 @@ public class InternalTypeCollectionTests
         Assert.Equal(expected.Keys, actual.Keys);
         Assert.Equal(expected.Values.Select(x => x.GetType()).ToHashSet(), actual.Values.Select(x => x.GetType()).ToHashSet());
     }
-#endif
 }
