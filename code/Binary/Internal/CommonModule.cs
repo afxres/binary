@@ -12,9 +12,7 @@ using System.Reflection;
 internal static class CommonModule
 {
     internal const string DebuggerDisplayValue = "{ToString(),nq}";
-#if NET7_0_OR_GREATER
-    internal const string RequiresDynamicCodeMessage = "Require dynamic code for binary serialization.";
-#endif
+
     internal const string RequiresUnreferencedCodeMessage = "Require public members for binary serialization.";
 
     internal const BindingFlags PublicInstanceBindingFlags = BindingFlags.Instance | BindingFlags.Public;

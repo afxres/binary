@@ -40,18 +40,12 @@ public static class Generator
         return (IConverterCreator)item;
     }
 
-#if NET7_0_OR_GREATER
-    [RequiresDynamicCode(CommonModule.RequiresDynamicCodeMessage)]
-#endif
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public static IGenerator CreateDefault()
     {
         return CreateDefaultBuilder().Build();
     }
 
-#if NET7_0_OR_GREATER
-    [RequiresDynamicCode(CommonModule.RequiresDynamicCodeMessage)]
-#endif
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public static IGeneratorBuilder CreateDefaultBuilder()
     {
