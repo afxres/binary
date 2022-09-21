@@ -11,7 +11,6 @@ using UInt64 = System.UInt64;
 
 internal static class LittleEndianFallback
 {
-#if NET7_0_OR_GREATER
     private struct Raw128Data
     {
         public UInt64 Lower;
@@ -21,7 +20,7 @@ internal static class LittleEndianFallback
 
     private static T Decode128<T>(ref byte source) where T : unmanaged
     {
-        Debug.Assert(typeof(T) == typeof(Int128) || typeof(T) == typeof(UInt128));
+        Debug.Assert(Unsafe.SizeOf<T>() is 16);
         var result = default(T);
         Unsafe.As<T, Raw128Data>(ref result).Lower = BinaryPrimitives.ReadUInt64LittleEndian(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref source, 0), sizeof(UInt64)));
         Unsafe.As<T, Raw128Data>(ref result).Upper = BinaryPrimitives.ReadUInt64LittleEndian(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref source, 8), sizeof(UInt64)));
@@ -30,11 +29,10 @@ internal static class LittleEndianFallback
 
     private static void Encode128<T>(ref byte target, T item) where T : unmanaged
     {
-        Debug.Assert(typeof(T) == typeof(Int128) || typeof(T) == typeof(UInt128));
+        Debug.Assert(Unsafe.SizeOf<T>() is 16);
         BinaryPrimitives.WriteUInt64LittleEndian(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, 0), sizeof(UInt64)), Unsafe.As<T, Raw128Data>(ref item).Lower);
         BinaryPrimitives.WriteUInt64LittleEndian(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, 8), sizeof(UInt64)), Unsafe.As<T, Raw128Data>(ref item).Upper);
     }
-#endif
 
     internal static T Decode<T>(ref byte source) where T : unmanaged
     {
@@ -50,9 +48,7 @@ internal static class LittleEndianFallback
             case 0x02: return MakeCast(BinaryPrimitives.ReadUInt16LittleEndian(MakeSpan(ref source)));
             case 0x04: return MakeCast(BinaryPrimitives.ReadUInt32LittleEndian(MakeSpan(ref source)));
             case 0x08: return MakeCast(BinaryPrimitives.ReadUInt64LittleEndian(MakeSpan(ref source)));
-#if NET7_0_OR_GREATER
             case 0x10: return Decode128<T>(ref source);
-#endif
             default: throw new NotSupportedException();
         }
     }
@@ -71,9 +67,7 @@ internal static class LittleEndianFallback
             case 0x02: BinaryPrimitives.WriteUInt16LittleEndian(MakeSpan(ref target), MakeCast<UInt16>(item)); break;
             case 0x04: BinaryPrimitives.WriteUInt32LittleEndian(MakeSpan(ref target), MakeCast<UInt32>(item)); break;
             case 0x08: BinaryPrimitives.WriteUInt64LittleEndian(MakeSpan(ref target), MakeCast<UInt64>(item)); break;
-#if NET7_0_OR_GREATER
             case 0x10: Encode128(ref target, item); break;
-#endif
             default: throw new NotSupportedException();
         }
     }
