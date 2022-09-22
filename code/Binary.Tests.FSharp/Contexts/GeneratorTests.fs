@@ -227,18 +227,16 @@ type BadConverterCreatorInterfaceImplementation () =
 [<Fact>]
 let ``Bad Creator (item type mismatch)`` () =
     let generator = Generator.CreateDefaultBuilder().AddConverterCreator(BadConverterCreator()).Build()
-    let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter typeof<BadType> |> ignore)
+    let error = Assert.Throws<InvalidOperationException>(fun () -> generator.GetConverter typeof<BadType> |> ignore)
     let message = sprintf "Can not convert '%O' to '%O', converter creator type: %O" (generator.GetConverter<int>().GetType()) typeof<Converter<BadType>> typeof<BadConverterCreator>
-    Assert.Null(error.ParamName)
     Assert.Equal(message, error.Message)
     ()
 
 [<Fact>]
 let ``Bad Creator (not a subclass)`` () =
     let generator = Generator.CreateDefaultBuilder().AddConverterCreator(BadConverterCreatorInterfaceImplementation()).Build()
-    let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter typeof<BadType> |> ignore)
+    let error = Assert.Throws<InvalidOperationException>(fun () -> generator.GetConverter typeof<BadType> |> ignore)
     let message = sprintf "Can not convert '%O' to '%O', converter creator type: %O" typeof<BadConverterInterfaceImplementation> typeof<Converter<BadType>> typeof<BadConverterCreatorInterfaceImplementation>
-    Assert.Null(error.ParamName)
     Assert.Equal(message, error.Message)
     ()
 

@@ -87,14 +87,14 @@ internal static class CommonModule
 
     internal static IConverter GetConverter(IConverter? converter, Type type, Type? creator)
     {
-        var action = (string text) => creator is null ? text : $"{text}, converter creator type: {creator}";
         var target = typeof(Converter<>).MakeGenericType(type);
-        if (converter is null)
-            throw new ArgumentException(action.Invoke($"Can not convert null to '{target}'"));
-        var actual = converter.GetType();
-        if (target.IsAssignableFrom(actual) is false)
-            throw new ArgumentException(action.Invoke($"Can not convert '{actual}' to '{target}'"));
-        return converter;
+        if (converter is not null && target.IsAssignableFrom(converter.GetType()))
+            return converter;
+        var actual = converter is null ? "null" : $"'{converter.GetType()}'";
+        var result = $"Can not convert {actual} to '{target}'";
+        if (creator is not null)
+            result = $"{result}, converter creator type: {creator}";
+        throw new InvalidOperationException(result);
     }
 
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
