@@ -101,10 +101,9 @@ internal static class FallbackCollectionMethods
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static IConverter GetConverter(IGeneratorContext context, Func<IGeneratorContext, IConverter> func, ImmutableArray<Type> types)
     {
-        var source = Expression.Parameter(typeof(IGeneratorContext), "context");
         var method = func.Method.GetGenericMethodDefinition().MakeGenericMethod(types.ToArray());
-        var lambda = Expression.Lambda<Func<IGeneratorContext, IConverter>>(Expression.Call(method, source), source);
-        return lambda.Compile().Invoke(context);
+        var target = (Func<IGeneratorContext, IConverter>)Delegate.CreateDelegate(typeof(Func<IGeneratorContext, IConverter>), method);
+        return target.Invoke(context);
     }
 
     private static Func<Expression, Expression>? GetConstructorOrDefault([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type, Type enumerable)
