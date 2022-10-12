@@ -14,9 +14,9 @@ public class GeneratorTests
     {
         var method = ReflectionExtensions.GetMethodNotNull(typeof(Generator), "Create", BindingFlags.Static | BindingFlags.NonPublic);
         var create = (Func<string, string, IConverterCreator>)Delegate.CreateDelegate(typeof(Func<string, string, IConverterCreator>), method);
-        var error = Assert.Throws<ArgumentException>(() => create.Invoke("VirtualStaticsInInterfaces", typeName));
-        Assert.Null(error.ParamName);
-        Assert.Equal($"Create instance error, type: {typeName}", error.Message);
+        var result = create.Invoke("VirtualStaticsInInterfaces", typeName);
+        Assert.NotNull(result);
+        Assert.Equal("OldConverterCreator", result.GetType().Name);
     }
 
     [Theory(DisplayName = "Internal Create Instance Default")]

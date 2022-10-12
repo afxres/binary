@@ -31,13 +31,9 @@ public static class Generator
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     static IConverterCreator Create(string featureName, string typeName)
     {
-        if (RuntimeFeature.IsSupported(featureName) is false)
-            return new OldConverterCreator();
-        var type = typeof(IConverter).Assembly.GetType(typeName);
-        var item = type is null ? null : Activator.CreateInstance(type);
-        if (item is null)
-            throw new ArgumentException($"Create instance error, type: {typeName}");
-        return (IConverterCreator)item;
+        if (RuntimeFeature.IsSupported(featureName) && typeof(IConverter).Assembly.GetType(typeName) is { } type && Activator.CreateInstance(type) is { } result)
+            return (IConverterCreator)result;
+        return new OldConverterCreator();
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
