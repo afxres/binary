@@ -47,9 +47,9 @@ public class CodeContractsTests
         var converterParameters = parameters.Where(x => x.Member is MethodInfo && typeof(IConverter).IsAssignableFrom(x.Member.DeclaringType)).ToList();
         var converterExpectedParameters = converterParameters.Where(x => !x.Member.Name.StartsWith("Throw") && Equals(x.ParameterType.Name, names)).ToList();
         var ignoredParameters = converterExpectedParameters.Where(x => !x.ParameterType.IsByRef).ToList();
-        var knownIssues = new[] { "BitArrayConverter", "IPAddressConverter", "IPEndPointConverter" };
+        var knownIssues = new[] { "BitArrayConverter", "IPAddressConverter", "IPEndPointConverter", "VersionConverter" };
         var parametersWithIssue = ignoredParameters.Where(x => knownIssues.Contains(x.Member.ReflectedType?.Name)).ToList();
-        Assert.Equal(8, parametersWithIssue.Count);
+        Assert.Equal(12, parametersWithIssue.Count);
         var parametersWithoutIssue = ignoredParameters.Except(parametersWithIssue).ToList();
         Assert.Empty(parametersWithoutIssue);
     }

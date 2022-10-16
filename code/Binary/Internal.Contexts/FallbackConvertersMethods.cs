@@ -17,6 +17,7 @@ internal static class FallbackConvertersMethods
             new IPAddressConverter(),
             new IPEndPointConverter(),
             new StringConverter(),
+            new VersionConverter(),
         };
         SharedConverters = converters.ToImmutableDictionary(Converter.GetGenericArgument);
     }
