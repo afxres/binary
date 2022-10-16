@@ -4,7 +4,6 @@ using Mikodev.Binary.Creators;
 using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Contexts;
 using Mikodev.Binary.Legacies;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -31,8 +30,8 @@ public static class Generator
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     static IConverterCreator Create(string featureName, string typeName)
     {
-        if (RuntimeFeature.IsSupported(featureName) && typeof(IConverter).Assembly.GetType(typeName) is { } type && Activator.CreateInstance(type) is { } result)
-            return (IConverterCreator)result;
+        if (RuntimeFeature.IsSupported(featureName) && typeof(IConverter).Assembly.GetType(typeName) is { } type)
+            return (IConverterCreator)CommonModule.CreateInstance(type, null);
         return new OldConverterCreator();
     }
 
