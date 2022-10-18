@@ -3,7 +3,6 @@
 using Mikodev.Binary.Internal;
 using System;
 using System.Buffers.Binary;
-using System.Diagnostics;
 using System.Net;
 
 internal sealed class IPEndPointConverter : Converter<IPEndPoint?>
@@ -18,9 +17,8 @@ internal sealed class IPEndPointConverter : Converter<IPEndPoint?>
         {
             if (item is null)
                 return 0;
-            var result = item.Address.TryWriteBytes(span, out var actual);
-            Debug.Assert(result);
-            Debug.Assert(actual is 4 or 16);
+            if (item.Address.TryWriteBytes(span.Slice(0, span.Length - sizeof(ushort)), out var actual) is false)
+                ThrowHelper.ThrowTryWriteBytesFailed();
             BinaryPrimitives.WriteUInt16LittleEndian(span.Slice(actual, sizeof(ushort)), (ushort)item.Port);
             return actual + sizeof(ushort);
         };

@@ -1,7 +1,7 @@
 ﻿namespace Mikodev.Binary.Converters;
 
+using Mikodev.Binary.Internal;
 using System;
-using System.Diagnostics;
 using System.Net;
 
 internal sealed class IPAddressConverter : Converter<IPAddress?>
@@ -16,9 +16,8 @@ internal sealed class IPAddressConverter : Converter<IPAddress?>
         {
             if (item is null)
                 return 0;
-            var result = item.TryWriteBytes(span, out var actual);
-            Debug.Assert(result);
-            Debug.Assert(actual is 4 or 16);
+            if (item.TryWriteBytes(span, out var actual) is false)
+                ThrowHelper.ThrowTryWriteBytesFailed();
             return actual;
         };
         EncodeFunction = Invoke;
