@@ -38,6 +38,9 @@ internal static class ThrowHelper
     internal static void ThrowNotEnoughBytes() => throw new ArgumentException("Not enough bytes or byte sequence invalid.");
 
     [DoesNotReturn]
+    internal static void ThrowTryWriteBytesFailed() => throw new InvalidOperationException("Try write bytes failed.");
+
+    [DoesNotReturn]
     internal static void ThrowNotOverride(string auto, string prefix, Type type) => throw new InvalidOperationException($"Method '{auto}' should be overridden if method '{prefix}' has been overridden, type: {type}");
 
     [DoesNotReturn]

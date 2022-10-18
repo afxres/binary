@@ -3,6 +3,8 @@
 using Mikodev.Binary.Internal;
 using System;
 using System.Buffers.Binary;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 internal sealed class VersionConverter : Converter<Version?>
 {
@@ -12,13 +14,16 @@ internal sealed class VersionConverter : Converter<Version?>
 
     static VersionConverter()
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void Encode(Span<byte> span, int offset, int data)
         {
-            BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset * sizeof(int), sizeof(int)), data);
+            BinaryPrimitives.WriteInt32LittleEndian(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(span), offset * sizeof(int)), sizeof(int)), data);
         }
 
         static int Invoke(Span<byte> span, Version? item)
         {
+            if (span.Length < MaxLength)
+                ThrowHelper.ThrowTryWriteBytesFailed();
             if (item is null)
                 return 0;
             Encode(span, 0, item.Major);
@@ -36,20 +41,22 @@ internal sealed class VersionConverter : Converter<Version?>
 
     private static Version? DecodeInternal(ReadOnlySpan<byte> source)
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static int Decode(ReadOnlySpan<byte> span, int offset)
         {
-            return BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset * sizeof(int), sizeof(int)));
+            return BinaryPrimitives.ReadInt32LittleEndian(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(span), offset * sizeof(int)), sizeof(int)));
         }
 
+        var result = default(Version?);
         if (source.Length is 8)
-            return new Version(Decode(source, 0), Decode(source, 1));
-        if (source.Length is 12)
-            return new Version(Decode(source, 0), Decode(source, 1), Decode(source, 2));
-        if (source.Length is 16)
-            return new Version(Decode(source, 0), Decode(source, 1), Decode(source, 2), Decode(source, 3));
-        if (source.Length is not 0)
+            result = new Version(Decode(source, 0), Decode(source, 1));
+        else if (source.Length is 12)
+            result = new Version(Decode(source, 0), Decode(source, 1), Decode(source, 2));
+        else if (source.Length is 16)
+            result = new Version(Decode(source, 0), Decode(source, 1), Decode(source, 2), Decode(source, 3));
+        else if (source.Length is not 0)
             ThrowHelper.ThrowNotEnoughBytes();
-        return null;
+        return result;
     }
 
     public override void Encode(ref Allocator allocator, Version? item) => Allocator.Append(ref allocator, MaxLength, item, EncodeFunction);
