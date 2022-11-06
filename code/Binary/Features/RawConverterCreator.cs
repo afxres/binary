@@ -14,7 +14,7 @@ using System.Text;
 internal sealed class RawConverterCreator : IConverterCreator
 {
     private static readonly ImmutableArray<Type> Types = ImmutableArray.Create(new[]
-{
+    {
         typeof(bool),
         typeof(byte),
         typeof(sbyte),
