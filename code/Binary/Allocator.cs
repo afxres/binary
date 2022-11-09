@@ -83,11 +83,15 @@ public ref partial struct Allocator
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete($"{nameof(Equals)} on {nameof(Allocator)} will always throw an exception.")]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
     public override readonly bool Equals(object? obj) => throw new NotSupportedException();
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete($"{nameof(GetHashCode)} on {nameof(Allocator)} will always throw an exception.")]
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
     public override readonly int GetHashCode() => throw new NotSupportedException();
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override readonly string ToString() => $"{nameof(Length)} = {Length}, {nameof(Capacity)} = {Capacity}, {nameof(MaxCapacity)} = {MaxCapacity}";

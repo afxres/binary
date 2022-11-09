@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-[SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code")]
 internal sealed class GeneratorObjectConverter : Converter<object>
 {
     private readonly IGenerator generator;
@@ -26,12 +25,16 @@ internal sealed class GeneratorObjectConverter : Converter<object>
         if (type == typeof(object))
             ExceptEncode();
         RuntimeHelpers.EnsureSufficientExecutionStack();
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
         return this.generator.GetConverter(type);
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
     }
 
     private Token Result(byte[]? buffer)
     {
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
         return new Token(this.generator, new ReadOnlyMemory<byte>(buffer));
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
     }
 
     public override void Encode(ref Allocator allocator, object? item) => Ensure(item).Encode(ref allocator, item);
