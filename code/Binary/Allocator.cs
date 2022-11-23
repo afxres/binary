@@ -12,7 +12,9 @@ public ref partial struct Allocator
 {
     private readonly IAllocator? underlying;
 
-    private Span<byte> buffer;
+    private ref byte target;
+
+    private int bounds;
 
     private int offset;
 
@@ -20,7 +22,7 @@ public ref partial struct Allocator
 
     public readonly int Length => this.offset;
 
-    public readonly int Capacity => this.buffer.Length;
+    public readonly int Capacity => this.bounds;
 
     public readonly int MaxCapacity => this.limits is 0 ? int.MaxValue : ~this.limits;
 
@@ -28,7 +30,8 @@ public ref partial struct Allocator
     public Allocator(Span<byte> span)
     {
         this.underlying = null;
-        this.buffer = span;
+        this.target = ref MemoryMarshal.GetReference(span);
+        this.bounds = span.Length;
         this.offset = 0;
         this.limits = 0;
     }
@@ -39,7 +42,8 @@ public ref partial struct Allocator
         if (maxCapacity < 0)
             ThrowHelper.ThrowMaxCapacityNegative();
         this.underlying = null;
-        this.buffer = MemoryMarshal.CreateSpan(ref MemoryMarshal.GetReference(span), Math.Min(span.Length, maxCapacity));
+        this.target = ref MemoryMarshal.GetReference(span);
+        this.bounds = Math.Min(span.Length, maxCapacity);
         this.offset = 0;
         this.limits = ~maxCapacity;
     }
@@ -49,7 +53,8 @@ public ref partial struct Allocator
     {
         ArgumentNullException.ThrowIfNull(underlyingAllocator);
         this.underlying = underlyingAllocator;
-        this.buffer = default;
+        this.target = ref Unsafe.NullRef<byte>();
+        this.bounds = 0;
         this.offset = 0;
         this.limits = 0;
     }
@@ -61,7 +66,8 @@ public ref partial struct Allocator
         if (maxCapacity < 0)
             ThrowHelper.ThrowMaxCapacityNegative();
         this.underlying = underlyingAllocator;
-        this.buffer = default;
+        this.target = ref Unsafe.NullRef<byte>();
+        this.bounds = 0;
         this.offset = 0;
         this.limits = ~maxCapacity;
     }
@@ -73,13 +79,12 @@ public ref partial struct Allocator
         if (offset is 0)
             return Array.Empty<byte>();
         var result = new byte[offset];
-        var buffer = this.buffer;
-        Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetArrayDataReference(result), ref MemoryMarshal.GetReference(buffer), (uint)offset);
+        Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetArrayDataReference(result), ref this.target, (uint)offset);
         return result;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public readonly ReadOnlySpan<byte> AsSpan() => MemoryMarshal.CreateReadOnlySpan(ref MemoryMarshal.GetReference(this.buffer), this.offset);
+    public readonly ReadOnlySpan<byte> AsSpan() => MemoryMarshal.CreateReadOnlySpan(ref this.target, this.offset);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     [Obsolete($"{nameof(Equals)} on {nameof(Allocator)} will always throw an exception.")]

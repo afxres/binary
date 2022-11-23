@@ -1,7 +1,6 @@
 ﻿namespace Mikodev.Binary;
 
 using Mikodev.Binary.Internal;
-using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -19,8 +18,8 @@ public ref partial struct Allocator
         if (amount > limits)
             ThrowHelper.ThrowMaxCapacityOverflow();
 
-        var source = allocator.buffer;
-        var cursor = (long)source.Length;
+        var source = allocator.bounds;
+        var cursor = (long)source;
         Debug.Assert(cursor < amount);
         Debug.Assert(cursor < limits);
         const int Capacity = 128;
@@ -38,19 +37,21 @@ public ref partial struct Allocator
         var underlying = allocator.underlying;
         if (underlying is not null)
         {
-            ref var values = ref underlying.Allocate(bounds);
-            var target = MemoryMarshal.CreateSpan(ref values, bounds);
-            allocator.buffer = target;
+            ref var target = ref underlying.Allocate(bounds);
+            allocator.target = ref target;
+            allocator.bounds = bounds;
         }
         else
         {
-            var target = new Span<byte>(new byte[bounds]);
+            ref var target = ref MemoryMarshal.GetArrayDataReference(new byte[bounds]);
             if (offset is not 0)
-                Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetReference(target), ref MemoryMarshal.GetReference(source), (uint)offset);
-            allocator.buffer = target;
+                Unsafe.CopyBlockUnaligned(ref target, ref allocator.target, (uint)offset);
+            allocator.target = ref target;
+            allocator.bounds = bounds;
         }
-        Debug.Assert(offset <= source.Length);
-        Debug.Assert(offset <= allocator.buffer.Length);
+        Debug.Assert(offset >= 0);
+        Debug.Assert(offset <= source);
+        Debug.Assert(offset <= allocator.bounds);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -58,8 +59,7 @@ public ref partial struct Allocator
     {
         Ensure(ref allocator, length);
         var offset = allocator.offset;
-        var buffer = allocator.buffer;
-        return ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
+        return ref Unsafe.Add(ref allocator.target, offset);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -68,8 +68,8 @@ public ref partial struct Allocator
         var offset = allocator.offset;
         Debug.Assert(length >= 0);
         Debug.Assert(offset >= 0);
-        Debug.Assert(offset <= allocator.buffer.Length);
-        Debug.Assert(length <= allocator.buffer.Length - offset);
+        Debug.Assert(offset <= allocator.bounds);
+        Debug.Assert(length <= allocator.bounds - offset);
         allocator.offset = offset + length;
     }
 
@@ -80,8 +80,7 @@ public ref partial struct Allocator
         Ensure(ref allocator, length);
         var offset = allocator.offset;
         allocator.offset = offset + length;
-        var buffer = allocator.buffer;
-        return ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), offset);
+        return ref Unsafe.Add(ref allocator.target, offset);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -101,9 +100,8 @@ public ref partial struct Allocator
         if (result < 0)
             ThrowHelper.ThrowAllocatorInvalid();
         var length = (int)result;
-        var buffer = allocator.buffer;
-        ref var target = ref Unsafe.Add(ref MemoryMarshal.GetReference(buffer), anchor);
-        if (length <= Limits && buffer.Length - offset >= ((-length) & 7))
+        ref var target = ref Unsafe.Add(ref allocator.target, anchor);
+        if (length <= Limits && allocator.bounds - offset >= ((-length) & 7))
         {
             allocator.offset = offset - 3;
             NumberModule.Encode(ref target, (uint)length, numberLength: 1);
@@ -113,13 +111,13 @@ public ref partial struct Allocator
             if (header is 2)
                 Unsafe.WriteUnaligned(ref Unsafe.Add(ref target, 8 + 1), Unsafe.ReadUnaligned<long>(ref Unsafe.Add(ref target, 8 + 4)));
             Debug.Assert(allocator.offset >= 1);
-            Debug.Assert(allocator.offset <= allocator.buffer.Length);
+            Debug.Assert(allocator.offset <= allocator.bounds);
         }
         else
         {
             NumberModule.Encode(ref target, (uint)length, numberLength: 4);
             Debug.Assert(allocator.offset >= 4);
-            Debug.Assert(allocator.offset <= allocator.buffer.Length);
+            Debug.Assert(allocator.offset <= allocator.bounds);
         }
     }
 }
