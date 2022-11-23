@@ -13,12 +13,9 @@ let randomCount = 64
 let MakeConverters<'a> () =
     let types = typeof<IConverter>.Assembly.GetTypes()
     let raw = types |> Array.filter (fun x -> x.Name = "RawConverterCreator") |> Array.exactlyOne |> Activator.CreateInstance :?> IConverterCreator
-    let old = types |> Array.filter (fun x -> x.Name = "OldConverterCreator") |> Array.exactlyOne |> Activator.CreateInstance :?> IConverterCreator
     let r = raw.GetConverter(null, typeof<'a>) :?> Converter<'a>
-    let o = old.GetConverter(null, typeof<'a>) :?> Converter<'a>
     Assert.Contains("Raw", r.GetType().Name)
-    Assert.DoesNotContain("Raw", o.GetType().Name)
-    [ r; o ]
+    [ r; ]
 
 let TestWithSpan (converters : Converter<'a> list) (value : 'a) (size : int) =
     let bufferOrigin = generator.Encode value
@@ -150,11 +147,11 @@ let ``Bool Char Byte SByte`` () =
 let ``Decimal`` () =
     for _ = 0 to randomCount do
         let number : decimal = decimal (Random.Shared.NextDouble())
-        let converter = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "DecimalConverter") |> Array.exactlyOne |> Activator.CreateInstance :?> Converter<decimal>
-        let alpha = converter.Encode number
-        let bravo = Decimal.GetBits(number) |> Array.map (fun x -> BitConverter.GetBytes x) |> Array.concat
-        Assert.Equal<byte>(alpha, bravo)
-        Test number
+        for converter in MakeConverters<decimal> () do
+            let alpha = converter.Encode number
+            let bravo = Decimal.GetBits(number) |> Array.map (fun x -> BitConverter.GetBytes x) |> Array.concat
+            Assert.Equal<byte>(alpha, bravo)
+            Test number
     ()
 
 [<Fact>]

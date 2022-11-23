@@ -4,9 +4,6 @@ using Mikodev.Binary.Features;
 using Mikodev.Binary.Features.Fallback;
 using System.Runtime.CompilerServices;
 
-#if NET6_0
-[System.Runtime.Versioning.RequiresPreviewFeatures]
-#endif
 internal readonly struct LittleEndianRawConverter<T> : IRawConverter<T> where T : unmanaged
 {
     public static int Length => Unsafe.SizeOf<T>();

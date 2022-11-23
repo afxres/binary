@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Legacies;
+﻿namespace Mikodev.Binary.Tests.Features.Converters;
 
 using Mikodev.Binary.Tests.Internal;
 using System;
@@ -10,8 +10,9 @@ public class DateOnlyConverterTests
     [Fact(DisplayName = "Converter Type Name And Length")]
     public void GetConverter()
     {
-        var converter = ReflectionExtensions.CreateInstance<Converter<DateOnly>>("DateOnlyConverter");
-        Assert.Equal("Mikodev.Binary.Legacies.Instance.DateOnlyConverter", converter.GetType().FullName);
+        var creator = ReflectionExtensions.CreateInstance<IConverterCreator>("RawConverterCreator");
+        var converter = Assert.IsAssignableFrom<Converter<DateOnly>>(creator.GetConverter(null!, typeof(DateOnly)));
+        Assert.Matches("RawConverter.*DateOnlyRawConverter", converter.GetType().FullName);
         Assert.Equal(sizeof(int), converter.Length);
     }
 
@@ -21,7 +22,8 @@ public class DateOnlyConverterTests
     public void BasicTest(string data)
     {
         var date = DateOnly.ParseExact(data, "yyyy-MM-dd");
-        var converter = ReflectionExtensions.CreateInstance<Converter<DateOnly>>("DateOnlyConverter");
+        var creator = ReflectionExtensions.CreateInstance<IConverterCreator>("RawConverterCreator");
+        var converter = Assert.IsAssignableFrom<Converter<DateOnly>>(creator.GetConverter(null!, typeof(DateOnly)));
         var buffer = converter.Encode(date);
         Assert.Equal(4, buffer.Length);
         Assert.Equal(4, converter.Length);

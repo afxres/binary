@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Legacies;
+﻿namespace Mikodev.Binary.Tests.Features.Converters;
 
 using Mikodev.Binary.Tests.Internal;
 using System;
@@ -10,8 +10,9 @@ public class GuidConverterTests
     [Fact(DisplayName = "Converter Type Name And Length")]
     public void GetConverter()
     {
-        var converter = ReflectionExtensions.CreateInstance<Converter<Guid>>("GuidConverter");
-        Assert.Equal("Mikodev.Binary.Legacies.Instance.GuidConverter", converter.GetType().FullName);
+        var creator = ReflectionExtensions.CreateInstance<IConverterCreator>("RawConverterCreator");
+        var converter = Assert.IsAssignableFrom<Converter<Guid>>(creator.GetConverter(null!, typeof(Guid)));
+        Assert.Matches("RawConverter.*GuidRawConverter", converter.GetType().FullName);
         Assert.Equal(Unsafe.SizeOf<Guid>(), converter.Length);
     }
 
@@ -21,7 +22,8 @@ public class GuidConverterTests
     public void BasicTest(string data)
     {
         var guid = Guid.Parse(data);
-        var converter = ReflectionExtensions.CreateInstance<Converter<Guid>>("GuidConverter");
+        var creator = ReflectionExtensions.CreateInstance<IConverterCreator>("RawConverterCreator");
+        var converter = Assert.IsAssignableFrom<Converter<Guid>>(creator.GetConverter(null!, typeof(Guid)));
         var buffer = converter.Encode(guid);
         Assert.Equal(16, buffer.Length);
         Assert.Equal(16, converter.Length);
@@ -33,14 +35,14 @@ public class GuidConverterTests
 
     [Theory(DisplayName = "Not Exactly Bytes")]
     [InlineData(0)]
+    [InlineData(13)]
     [InlineData(15)]
-    [InlineData(17)]
     public void NotExactlyBytes(int length)
     {
-        var converter = ReflectionExtensions.CreateInstance<Converter<Guid>>("GuidConverter");
+        var creator = ReflectionExtensions.CreateInstance<IConverterCreator>("RawConverterCreator");
+        var converter = Assert.IsAssignableFrom<Converter<Guid>>(creator.GetConverter(null!, typeof(Guid)));
         var buffer = new byte[length];
-        var origin = Assert.Throws<ArgumentException>(() => new Guid(new ReadOnlySpan<byte>(buffer)));
         var actual = Assert.Throws<ArgumentException>(() => converter.Decode(new ReadOnlySpan<byte>(buffer)));
-        Assert.Equal(origin.Message, actual.Message);
+        Assert.Equal("Not enough bytes or byte sequence invalid.", actual.Message);
     }
 }

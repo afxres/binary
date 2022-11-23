@@ -4,9 +4,6 @@ using Mikodev.Binary.Features;
 using Mikodev.Binary.Internal;
 using System;
 
-#if NET6_0
-[System.Runtime.Versioning.RequiresPreviewFeatures]
-#endif
 internal readonly struct TimeSpanRawConverter : IRawConverter<TimeSpan>
 {
     public static int Length => sizeof(long);

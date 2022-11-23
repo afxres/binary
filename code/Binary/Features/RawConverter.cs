@@ -9,9 +9,6 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-#if NET6_0
-[System.Runtime.Versioning.RequiresPreviewFeatures]
-#endif
 internal sealed class RawConverter<T, U> : Converter<T>, ISequenceAdapterCreator<T> where U : struct, IRawConverter<T>
 {
     public RawConverter() : base(U.Length)

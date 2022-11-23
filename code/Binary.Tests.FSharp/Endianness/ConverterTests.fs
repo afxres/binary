@@ -5,7 +5,6 @@ open System
 open System.Collections.Specialized
 open System.Reflection
 open System.Runtime.CompilerServices
-open System.Runtime.Serialization
 open Xunit
 
 type EnumByte =
@@ -49,15 +48,11 @@ type ConverterTests() =
 
     static let MakeConverters (t : Type) =
         EnsureEnumName t
-        let on = MakeConverter "OldConverterCreator" t true
-        let ol = MakeConverter "OldConverterCreator" t false
         let rn = MakeConverter "RawConverterCreator" t true
         let rl = MakeConverter "RawConverterCreator" t false
-        Assert.Equal("NativeEndianConverter`1", on.GetType().Name)
-        Assert.Equal("LittleEndianConverter`1", ol.GetType().Name)
         Assert.Matches("RawConverter.*NativeEndianRawConverter", rn.GetType().FullName)
         Assert.Matches("RawConverter.*LittleEndianRawConverter", rl.GetType().FullName)
-        [ on; ol; rn; rl; ]
+        [ rn; rl; ]
 
     static member ``Data Alpha`` : (obj array) seq = seq {
         [| box true |]
@@ -183,25 +178,4 @@ type ConverterTests() =
                 let result = converter.DecodeAuto &span
                 Assert.Equal<'T>(item, result)
                 Assert.Equal(i, span.Length)
-        ()
-
-    static member ``Data Not Supported`` : (obj array) seq = seq {
-        [| box struct (1.0, 2.0, 3.0, 4.0) |]
-        [| box struct (1, 2, 3, 4, 5, 6, 7, 8) |]
-    }
-
-    [<Theory>]
-    [<MemberData("Data Not Supported")>]
-    member __.``Encode Not Supported (little endian converter)`` (item : 'T) =
-        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "LittleEndianConverter`1") |> Array.exactlyOne
-        let c = FormatterServices.GetSafeUninitializedObject(t.MakeGenericType(typeof<'T>)) :?> Converter<'T>
-        Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = Allocator() in c.Encode(&allocator, item)) |> ignore
-        ()
-
-    [<Theory>]
-    [<MemberData("Data Not Supported")>]
-    member __.``Decode Not Supported (little endian converter)`` (_ : 'T) =
-        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "LittleEndianConverter`1") |> Array.exactlyOne
-        let c = FormatterServices.GetSafeUninitializedObject(t.MakeGenericType(typeof<'T>)) :?> Converter<'T>
-        Assert.Throws<NotSupportedException>(fun () -> let span = ReadOnlySpan<byte>(Array.zeroCreate 1024) in c.Decode(&span) |> ignore) |> ignore
         ()

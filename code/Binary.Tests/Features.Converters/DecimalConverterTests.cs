@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Legacies;
+﻿namespace Mikodev.Binary.Tests.Features.Converters;
 
 using Mikodev.Binary.Tests.Internal;
 using System;
@@ -12,8 +12,9 @@ public class DecimalConverterTests
     [Fact(DisplayName = "Converter Type Name And Length")]
     public void GetConverter()
     {
-        var converter = ReflectionExtensions.CreateInstance<Converter<decimal>>("DecimalConverter");
-        Assert.Equal("Mikodev.Binary.Legacies.Instance.DecimalConverter", converter.GetType().FullName);
+        var creator = ReflectionExtensions.CreateInstance<IConverterCreator>("RawConverterCreator");
+        var converter = Assert.IsAssignableFrom<Converter<decimal>>(creator.GetConverter(null!, typeof(decimal)));
+        Assert.Matches("RawConverter.*DecimalRawConverter", converter.GetType().FullName);
         Assert.Equal(sizeof(int) * 4, converter.Length);
     }
 
@@ -30,7 +31,8 @@ public class DecimalConverterTests
     [MemberData(nameof(DataNumber))]
     public void BasicTest(decimal number)
     {
-        var converter = ReflectionExtensions.CreateInstance<Converter<decimal>>("DecimalConverter");
+        var creator = ReflectionExtensions.CreateInstance<IConverterCreator>("RawConverterCreator");
+        var converter = Assert.IsAssignableFrom<Converter<decimal>>(creator.GetConverter(null!, typeof(decimal)));
         var buffer = converter.Encode(number);
         Assert.Equal(16, buffer.Length);
         Assert.Equal(16, converter.Length);

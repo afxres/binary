@@ -8,9 +8,6 @@ using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-#if NET6_0
-[System.Runtime.Versioning.RequiresPreviewFeatures]
-#endif
 internal sealed class RawConverterCreator : IConverterCreator
 {
     private static readonly ImmutableArray<Type> Types = ImmutableArray.Create(new[]
@@ -29,10 +26,8 @@ internal sealed class RawConverterCreator : IConverterCreator
         typeof(double),
         typeof(Half),
         typeof(BitVector32),
-#if NET7_0_OR_GREATER
         typeof(Int128),
         typeof(UInt128),
-#endif
     });
 
     private static readonly ImmutableDictionary<Type, IConverter> SharedConverters;

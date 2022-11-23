@@ -8,7 +8,6 @@ using System.Numerics;
 using System.Reflection;
 using Xunit;
 
-#if NET7_0_OR_GREATER
 public class LargeIntegerTests
 {
     private static Converter<T> CreateConverter<T>(bool isNative)
@@ -83,4 +82,3 @@ public class LargeIntegerTests
         BinaryIntegerBasicTest(size, item, little, "LittleEndianRawConverter`1");
     }
 }
-#endif

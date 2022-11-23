@@ -17,13 +17,8 @@ internal static class SharedModule
         if (length is 0)
             return 0;
         const int Limits = 32;
-#if NET7_0_OR_GREATER
         if ((uint)length <= Limits)
             return encoding.GetMaxByteCount(length);
-#else
-        if ((uint)length <= Limits && ReferenceEquals(encoding, Encoding))
-            return (length + 1) * 3;
-#endif
         return encoding.GetByteCount(span);
     }
 }
