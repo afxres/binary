@@ -84,14 +84,14 @@ internal sealed class BitArrayConverter : VariableDirectEncodeConverter<BitArray
 
     internal struct Functions : IVariableDirectEncodeConverterFunctions<BitArray?>
     {
-        public static void Encode(ref Allocator allocator, BitArray? item)
-        {
-            EncodeInternal(ref allocator, item);
-        }
-
         public static BitArray? Decode(in ReadOnlySpan<byte> span)
         {
             return DecodeInternal(in span);
+        }
+
+        public static void Encode(ref Allocator allocator, BitArray? item)
+        {
+            EncodeInternal(ref allocator, item);
         }
     }
 }

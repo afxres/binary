@@ -7,25 +7,22 @@ using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-internal sealed class VersionConverter : VariableWriterEncodeConverter<Version?, VersionConverter.Functions>
+internal sealed class VersionConverter : VariablePrefixEncodeConverter<Version?, VersionConverter.Functions>
 {
-    internal struct Functions : IVariableWriterEncodeConverterFunctions<Version?>
-    {
-        private const int MaxLength = 16;
+    private const int MaxLength = 16;
 
-        public static int GetMaxLength(Version? item)
+    private static readonly AllocatorWriter<Version?> EncodeFunction;
+
+    static VersionConverter()
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void Encode(Span<byte> span, int offset, int data)
         {
-            return MaxLength;
+            BinaryPrimitives.WriteInt32LittleEndian(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(span), offset * sizeof(int)), sizeof(int)), data);
         }
 
-        public static int Encode(Span<byte> span, Version? item)
+        static int Invoke(Span<byte> span, Version? item)
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static void Encode(Span<byte> span, int offset, int data)
-            {
-                BinaryPrimitives.WriteInt32LittleEndian(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(span), offset * sizeof(int)), sizeof(int)), data);
-            }
-
             if (span.Length < MaxLength)
                 ThrowHelper.ThrowTryWriteBytesFailed();
             if (item is null)
@@ -40,25 +37,44 @@ internal sealed class VersionConverter : VariableWriterEncodeConverter<Version?,
             Encode(span, 3, item.Revision);
             return 16;
         }
+        EncodeFunction = Invoke;
+    }
 
+    private static Version? DecodeInternal(ReadOnlySpan<byte> source)
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static int Decode(ReadOnlySpan<byte> span, int offset)
+        {
+            return BinaryPrimitives.ReadInt32LittleEndian(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(span), offset * sizeof(int)), sizeof(int)));
+        }
+
+        var result = default(Version?);
+        if (source.Length is 8)
+            result = new Version(Decode(source, 0), Decode(source, 1));
+        else if (source.Length is 12)
+            result = new Version(Decode(source, 0), Decode(source, 1), Decode(source, 2));
+        else if (source.Length is 16)
+            result = new Version(Decode(source, 0), Decode(source, 1), Decode(source, 2), Decode(source, 3));
+        else if (source.Length is not 0)
+            ThrowHelper.ThrowNotEnoughBytes();
+        return result;
+    }
+
+    internal struct Functions : IVariablePrefixEncodeConverterFunctions<Version?>
+    {
         public static Version? Decode(in ReadOnlySpan<byte> span)
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            static int Decode(ReadOnlySpan<byte> span, int offset)
-            {
-                return BinaryPrimitives.ReadInt32LittleEndian(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(span), offset * sizeof(int)), sizeof(int)));
-            }
+            return DecodeInternal(span);
+        }
 
-            var item = default(Version?);
-            if (span.Length is 8)
-                item = new Version(Decode(span, 0), Decode(span, 1));
-            else if (span.Length is 12)
-                item = new Version(Decode(span, 0), Decode(span, 1), Decode(span, 2));
-            else if (span.Length is 16)
-                item = new Version(Decode(span, 0), Decode(span, 1), Decode(span, 2), Decode(span, 3));
-            else if (span.Length is not 0)
-                ThrowHelper.ThrowNotEnoughBytes();
-            return item;
+        public static void Encode(ref Allocator allocator, Version? item)
+        {
+            Allocator.Append(ref allocator, MaxLength, item, EncodeFunction);
+        }
+
+        public static void EncodeWithLengthPrefix(ref Allocator allocator, Version? item)
+        {
+            Allocator.AppendWithLengthPrefix(ref allocator, MaxLength, item, EncodeFunction);
         }
     }
 }

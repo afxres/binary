@@ -49,7 +49,7 @@ public class CodeContractsTests
         var ignoredParameters = converterExpectedParameters.Where(x => !x.ParameterType.IsByRef).ToList();
         var knownIssues = new[] { "BitArrayConverter", "IPAddressConverter", "IPEndPointConverter", "VersionConverter", "BigIntegerConverter" };
         var parametersWithIssue = ignoredParameters.Where(x => knownIssues.Contains(x.Member.ReflectedType?.Name)).ToList();
-        Assert.All(parametersWithIssue, x => Assert.Equal("BitArrayConverter", x.Member.DeclaringType!.Name));
+        Assert.All(parametersWithIssue, x => Assert.Equal("Mikodev.Binary.Converters", x.Member.DeclaringType!.Namespace));
         var parametersWithoutIssue = ignoredParameters.Except(parametersWithIssue).ToList();
         Assert.Empty(parametersWithoutIssue);
     }

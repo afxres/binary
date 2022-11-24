@@ -21,7 +21,7 @@ public class VersionConverterInternalTests
     [MemberData(nameof(DataNotEnoughSpace))]
     public void NotEnoughSpace(int length, Version? data)
     {
-        var functor = ReflectionExtensions.CreateDelegate<AllocatorWriter<Version?>>(x => x.FullName!.EndsWith(".VersionConverter+Functions"), "Encode");
+        var functor = ReflectionExtensions.CreateDelegate<AllocatorWriter<Version?>>(x => x.Name is "VersionConverter", x => x.Name.Contains("Invoke"));
         var error = Assert.Throws<InvalidOperationException>(() => functor.Invoke(new Span<byte>(new byte[length]), data));
         Assert.Equal("Try write bytes failed.", error.Message);
     }

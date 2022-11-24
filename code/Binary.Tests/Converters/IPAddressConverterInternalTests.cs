@@ -18,7 +18,7 @@ public class IPAddressConverterInternalTests
     [MemberData(nameof(DataNotEnoughSpace))]
     public void NotEnoughSpace(int length, IPAddress? data)
     {
-        var functor = ReflectionExtensions.CreateDelegate<AllocatorWriter<IPAddress?>>(x => x.FullName!.EndsWith(".IPAddressConverter+Functions"), "Encode");
+        var functor = ReflectionExtensions.CreateDelegate<AllocatorWriter<IPAddress?>>(x => x.Name is "IPAddressConverter", x => x.Name.Contains("Invoke"));
         var error = Assert.Throws<InvalidOperationException>(() => functor.Invoke(new Span<byte>(new byte[length]), data));
         Assert.Equal("Try write bytes failed.", error.Message);
     }

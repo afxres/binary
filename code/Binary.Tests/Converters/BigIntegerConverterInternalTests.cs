@@ -20,7 +20,7 @@ public class BigIntegerConverterInternalTests
     [MemberData(nameof(DataNotEnoughSpace))]
     public void NotEnoughSpace(int length, BigInteger data)
     {
-        var functor = ReflectionExtensions.CreateDelegate<AllocatorWriter<BigInteger>>(x => x.FullName!.EndsWith(".BigIntegerConverter+Functions"), "Encode");
+        var functor = ReflectionExtensions.CreateDelegate<AllocatorWriter<BigInteger>>(x => x.Name is "BigIntegerConverter", x => x.Name.Contains("Invoke"));
         var error = Assert.Throws<InvalidOperationException>(() => functor.Invoke(new Span<byte>(new byte[length]), data));
         Assert.Equal("Try write bytes failed.", error.Message);
     }

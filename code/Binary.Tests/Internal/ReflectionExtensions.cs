@@ -9,10 +9,10 @@ using Xunit;
 [DebuggerStepThrough]
 internal static class ReflectionExtensions
 {
-    internal static TDelegate CreateDelegate<TDelegate>(Func<Type, bool> typeFilter, string methodName) where TDelegate : Delegate
+    internal static TDelegate CreateDelegate<TDelegate>(Func<Type, bool> typeFilter, Func<MethodInfo, bool> methodFilter) where TDelegate : Delegate
     {
         var type = typeof(IConverter).Assembly.GetTypes().Single(typeFilter);
-        var method = GetMethodNotNull(type, methodName, BindingFlags.Static | BindingFlags.Public);
+        var method = type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Single(methodFilter);
         var functor = Delegate.CreateDelegate(typeof(TDelegate), method);
         return (TDelegate)functor;
     }

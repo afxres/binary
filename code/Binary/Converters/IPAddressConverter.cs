@@ -5,31 +5,47 @@ using Mikodev.Binary.Internal;
 using System;
 using System.Net;
 
-internal sealed class IPAddressConverter : VariableWriterEncodeConverter<IPAddress?, IPAddressConverter.Functions>
+internal sealed class IPAddressConverter : VariablePrefixEncodeConverter<IPAddress?, IPAddressConverter.Functions>
 {
-    internal struct Functions : IVariableWriterEncodeConverterFunctions<IPAddress?>
+    private const int MaxLength = 16;
+
+    private static readonly AllocatorWriter<IPAddress?> EncodeFunction;
+
+    static IPAddressConverter()
     {
-        private const int MaxLength = 16;
-
-        public static int GetMaxLength(IPAddress? item)
-        {
-            return MaxLength;
-        }
-
-        public static int Encode(Span<byte> span, IPAddress? item)
+        static int Invoke(Span<byte> span, IPAddress? item)
         {
             if (item is null)
                 return 0;
             if (item.TryWriteBytes(span, out var actual) is false)
                 ThrowHelper.ThrowTryWriteBytesFailed();
             return actual;
-        }
+        };
+        EncodeFunction = Invoke;
+    }
 
+    private static IPAddress? DecodeInternal(ReadOnlySpan<byte> span)
+    {
+        if (span.Length is 0)
+            return null;
+        return new IPAddress(span);
+    }
+
+    internal struct Functions : IVariablePrefixEncodeConverterFunctions<IPAddress?>
+    {
         public static IPAddress? Decode(in ReadOnlySpan<byte> span)
         {
-            if (span.Length is 0)
-                return null;
-            return new IPAddress(span);
+            return DecodeInternal(span);
+        }
+
+        public static void Encode(ref Allocator allocator, IPAddress? item)
+        {
+            Allocator.Append(ref allocator, MaxLength, item, EncodeFunction);
+        }
+
+        public static void EncodeWithLengthPrefix(ref Allocator allocator, IPAddress? item)
+        {
+            Allocator.AppendWithLengthPrefix(ref allocator, MaxLength, item, EncodeFunction);
         }
     }
 }
