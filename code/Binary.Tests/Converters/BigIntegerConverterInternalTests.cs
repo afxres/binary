@@ -3,9 +3,7 @@
 using Mikodev.Binary.Tests.Internal;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Reflection;
 using Xunit;
 
 public class BigIntegerConverterInternalTests
@@ -22,11 +20,7 @@ public class BigIntegerConverterInternalTests
     [MemberData(nameof(DataNotEnoughSpace))]
     public void NotEnoughSpace(int length, BigInteger data)
     {
-        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BigIntegerConverter");
-        var field = ReflectionExtensions.GetFieldNotNull(type, "EncodeFunction", BindingFlags.Static | BindingFlags.NonPublic);
-        var functor = field.GetValue(null) as AllocatorWriter<BigInteger>;
-        Assert.NotNull(functor);
-
+        var functor = ReflectionExtensions.CreateDelegate<AllocatorWriter<BigInteger>>(x => x.FullName!.EndsWith(".BigIntegerConverter+Functions"), "Encode");
         var error = Assert.Throws<InvalidOperationException>(() => functor.Invoke(new Span<byte>(new byte[length]), data));
         Assert.Equal("Try write bytes failed.", error.Message);
     }

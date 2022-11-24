@@ -1,19 +1,23 @@
 ﻿namespace Mikodev.Binary.Converters;
 
+using Mikodev.Binary.Features.Contexts;
 using Mikodev.Binary.Internal;
 using System;
 using System.Buffers.Binary;
 using System.Net;
 
-internal sealed class IPEndPointConverter : Converter<IPEndPoint?>
+internal sealed class IPEndPointConverter : VariableWriterEncodeConverter<IPEndPoint?, IPEndPointConverter.Functions>
 {
-    private const int MaxLength = 18;
-
-    private static readonly AllocatorWriter<IPEndPoint?> EncodeFunction;
-
-    static IPEndPointConverter()
+    internal struct Functions : IVariableWriterEncodeConverterFunctions<IPEndPoint?>
     {
-        static int Invoke(Span<byte> span, IPEndPoint? item)
+        private const int MaxLength = 18;
+
+        public static int GetMaxLength(IPEndPoint? item)
+        {
+            return MaxLength;
+        }
+
+        public static int Encode(Span<byte> span, IPEndPoint? item)
         {
             if (item is null)
                 return 0;
@@ -21,32 +25,19 @@ internal sealed class IPEndPointConverter : Converter<IPEndPoint?>
                 ThrowHelper.ThrowTryWriteBytesFailed();
             BinaryPrimitives.WriteUInt16LittleEndian(span.Slice(actual, sizeof(ushort)), (ushort)item.Port);
             return actual + sizeof(ushort);
-        };
-        EncodeFunction = Invoke;
+        }
+
+        public static IPEndPoint? Decode(in ReadOnlySpan<byte> span)
+        {
+            var limits = span.Length;
+            if (limits is 0)
+                return null;
+            var offset = limits - sizeof(ushort);
+            if (offset < 0)
+                ThrowHelper.ThrowNotEnoughBytes();
+            var header = new IPAddress(span.Slice(0, offset));
+            var number = BinaryPrimitives.ReadUInt16LittleEndian(span.Slice(offset));
+            return new IPEndPoint(header, number);
+        }
     }
-
-    private static IPEndPoint? DecodeInternal(ReadOnlySpan<byte> span)
-    {
-        var limits = span.Length;
-        if (limits is 0)
-            return null;
-        var offset = limits - sizeof(ushort);
-        if (offset < 0)
-            ThrowHelper.ThrowNotEnoughBytes();
-        var header = new IPAddress(span.Slice(0, offset));
-        var number = BinaryPrimitives.ReadUInt16LittleEndian(span.Slice(offset));
-        return new IPEndPoint(header, number);
-    }
-
-    public override void Encode(ref Allocator allocator, IPEndPoint? item) => Allocator.Append(ref allocator, MaxLength, item, EncodeFunction);
-
-    public override void EncodeAuto(ref Allocator allocator, IPEndPoint? item) => Allocator.AppendWithLengthPrefix(ref allocator, MaxLength, item, EncodeFunction);
-
-    public override void EncodeWithLengthPrefix(ref Allocator allocator, IPEndPoint? item) => Allocator.AppendWithLengthPrefix(ref allocator, MaxLength, item, EncodeFunction);
-
-    public override IPEndPoint? Decode(in ReadOnlySpan<byte> span) => DecodeInternal(span);
-
-    public override IPEndPoint? DecodeAuto(ref ReadOnlySpan<byte> span) => DecodeInternal(Converter.DecodeWithLengthPrefix(ref span));
-
-    public override IPEndPoint? DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => DecodeInternal(Converter.DecodeWithLengthPrefix(ref span));
 }

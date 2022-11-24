@@ -40,16 +40,16 @@ public class CodeContractsTests
         var inRefUnexpected = inRefParameters.Except(inRefExpected).Select(x => x.Member).ToList();
 
         Assert.NotEmpty(inRefExpected);
-        Assert.All(inRefExpected, x => Assert.EndsWith(nameof(IConverter.Decode), x.Member.Name));
+        Assert.All(inRefExpected, x => Assert.Contains("Decode", x.Member.Name));
         Assert.NotEmpty(inRefUnexpected);
-        Assert.All(inRefUnexpected, x => Assert.True(Assert.IsAssignableFrom<Type>(x.DeclaringType).IsSubclassOf(typeof(Delegate))));
+        Assert.All(inRefUnexpected, x => Assert.True(x.DeclaringType!.Name.Contains("Functions") || x.DeclaringType!.IsSubclassOf(typeof(Delegate))));
 
         var converterParameters = parameters.Where(x => x.Member is MethodInfo && typeof(IConverter).IsAssignableFrom(x.Member.DeclaringType)).ToList();
         var converterExpectedParameters = converterParameters.Where(x => !x.Member.Name.StartsWith("Throw") && Equals(x.ParameterType.Name, names)).ToList();
         var ignoredParameters = converterExpectedParameters.Where(x => !x.ParameterType.IsByRef).ToList();
         var knownIssues = new[] { "BitArrayConverter", "IPAddressConverter", "IPEndPointConverter", "VersionConverter", "BigIntegerConverter" };
         var parametersWithIssue = ignoredParameters.Where(x => knownIssues.Contains(x.Member.ReflectedType?.Name)).ToList();
-        Assert.Equal(14, parametersWithIssue.Count);
+        Assert.All(parametersWithIssue, x => Assert.Equal("BitArrayConverter", x.Member.DeclaringType!.Name));
         var parametersWithoutIssue = ignoredParameters.Except(parametersWithIssue).ToList();
         Assert.Empty(parametersWithoutIssue);
     }

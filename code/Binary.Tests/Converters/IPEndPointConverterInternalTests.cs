@@ -3,9 +3,7 @@
 using Mikodev.Binary.Tests.Internal;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Reflection;
 using Xunit;
 
 public class IPEndPointConverterInternalTests
@@ -22,11 +20,7 @@ public class IPEndPointConverterInternalTests
     [MemberData(nameof(DataNotEnoughSpace))]
     public void NotEnoughSpace(int length, IPEndPoint? data)
     {
-        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "IPEndPointConverter");
-        var field = ReflectionExtensions.GetFieldNotNull(type, "EncodeFunction", BindingFlags.Static | BindingFlags.NonPublic);
-        var functor = field.GetValue(null) as AllocatorWriter<IPEndPoint?>;
-        Assert.NotNull(functor);
-
+        var functor = ReflectionExtensions.CreateDelegate<AllocatorWriter<IPEndPoint?>>(x => x.FullName!.EndsWith(".IPEndPointConverter+Functions"), "Encode");
         var error = Assert.Throws<InvalidOperationException>(() => functor.Invoke(new Span<byte>(new byte[length]), data));
         Assert.Equal("Try write bytes failed.", error.Message);
     }

@@ -1,38 +1,29 @@
 ﻿namespace Mikodev.Binary.Converters;
 
+using Mikodev.Binary.Features.Contexts;
 using Mikodev.Binary.Internal;
 using System;
 using System.Numerics;
 
-internal sealed class BigIntegerConverter : Converter<BigInteger>
+internal sealed class BigIntegerConverter : VariableWriterEncodeConverter<BigInteger, BigIntegerConverter.Functions>
 {
-    private static readonly AllocatorWriter<BigInteger> EncodeFunction;
-
-    static BigIntegerConverter()
+    internal struct Functions : IVariableWriterEncodeConverterFunctions<BigInteger>
     {
-        static int Invoke(Span<byte> span, BigInteger item)
+        public static int GetMaxLength(BigInteger item)
+        {
+            return item.GetByteCount();
+        }
+
+        public static int Encode(Span<byte> span, BigInteger item)
         {
             if (item.TryWriteBytes(span, out var actual) is false)
                 ThrowHelper.ThrowTryWriteBytesFailed();
             return actual;
         }
-        EncodeFunction = Invoke;
+
+        public static BigInteger Decode(in ReadOnlySpan<byte> span)
+        {
+            return new BigInteger(span);
+        }
     }
-
-    private static BigInteger DecodeInternal(ReadOnlySpan<byte> span)
-    {
-        return new BigInteger(span);
-    }
-
-    public override void Encode(ref Allocator allocator, BigInteger item) => Allocator.Append(ref allocator, item.GetByteCount(), item, EncodeFunction);
-
-    public override void EncodeAuto(ref Allocator allocator, BigInteger item) => Allocator.AppendWithLengthPrefix(ref allocator, item.GetByteCount(), item, EncodeFunction);
-
-    public override void EncodeWithLengthPrefix(ref Allocator allocator, BigInteger item) => Allocator.AppendWithLengthPrefix(ref allocator, item.GetByteCount(), item, EncodeFunction);
-
-    public override BigInteger Decode(in ReadOnlySpan<byte> span) => DecodeInternal(span);
-
-    public override BigInteger DecodeAuto(ref ReadOnlySpan<byte> span) => DecodeInternal(Converter.DecodeWithLengthPrefix(ref span));
-
-    public override BigInteger DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => DecodeInternal(Converter.DecodeWithLengthPrefix(ref span));
 }

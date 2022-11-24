@@ -18,8 +18,8 @@ public class BitArrayConverterInternalTests
     public BitArrayConverterInternalTests()
     {
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BitArrayConverter");
-        var encode = type.GetMethod("EncodeInternal", BindingFlags.Static | BindingFlags.NonPublic);
-        var decode = type.GetMethod("DecodeInternal", BindingFlags.Static | BindingFlags.NonPublic);
+        var encode = type.GetMethod("EncodeContents", BindingFlags.Static | BindingFlags.NonPublic);
+        var decode = type.GetMethod("DecodeContents", BindingFlags.Static | BindingFlags.NonPublic);
         this.encode = (EncodeFunction)Delegate.CreateDelegate(typeof(EncodeFunction), encode ?? throw new Exception());
         this.decode = (DecodeFunction)Delegate.CreateDelegate(typeof(DecodeFunction), decode ?? throw new Exception());
     }

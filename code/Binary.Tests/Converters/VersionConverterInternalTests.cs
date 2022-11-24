@@ -3,8 +3,6 @@
 using Mikodev.Binary.Tests.Internal;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using Xunit;
 
 public class VersionConverterInternalTests
@@ -23,11 +21,7 @@ public class VersionConverterInternalTests
     [MemberData(nameof(DataNotEnoughSpace))]
     public void NotEnoughSpace(int length, Version? data)
     {
-        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "VersionConverter");
-        var field = ReflectionExtensions.GetFieldNotNull(type, "EncodeFunction", BindingFlags.Static | BindingFlags.NonPublic);
-        var functor = field.GetValue(null) as AllocatorWriter<Version?>;
-        Assert.NotNull(functor);
-
+        var functor = ReflectionExtensions.CreateDelegate<AllocatorWriter<Version?>>(x => x.FullName!.EndsWith(".VersionConverter+Functions"), "Encode");
         var error = Assert.Throws<InvalidOperationException>(() => functor.Invoke(new Span<byte>(new byte[length]), data));
         Assert.Equal("Try write bytes failed.", error.Message);
     }

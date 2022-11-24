@@ -1,44 +1,35 @@
 ﻿namespace Mikodev.Binary.Converters;
 
+using Mikodev.Binary.Features.Contexts;
 using Mikodev.Binary.Internal;
 using System;
 using System.Net;
 
-internal sealed class IPAddressConverter : Converter<IPAddress?>
+internal sealed class IPAddressConverter : VariableWriterEncodeConverter<IPAddress?, IPAddressConverter.Functions>
 {
-    private const int MaxLength = 16;
-
-    private static readonly AllocatorWriter<IPAddress?> EncodeFunction;
-
-    static IPAddressConverter()
+    internal struct Functions : IVariableWriterEncodeConverterFunctions<IPAddress?>
     {
-        static int Invoke(Span<byte> span, IPAddress? item)
+        private const int MaxLength = 16;
+
+        public static int GetMaxLength(IPAddress? item)
+        {
+            return MaxLength;
+        }
+
+        public static int Encode(Span<byte> span, IPAddress? item)
         {
             if (item is null)
                 return 0;
             if (item.TryWriteBytes(span, out var actual) is false)
                 ThrowHelper.ThrowTryWriteBytesFailed();
             return actual;
-        };
-        EncodeFunction = Invoke;
+        }
+
+        public static IPAddress? Decode(in ReadOnlySpan<byte> span)
+        {
+            if (span.Length is 0)
+                return null;
+            return new IPAddress(span);
+        }
     }
-
-    private static IPAddress? DecodeInternal(ReadOnlySpan<byte> span)
-    {
-        if (span.Length is 0)
-            return null;
-        return new IPAddress(span);
-    }
-
-    public override void Encode(ref Allocator allocator, IPAddress? item) => Allocator.Append(ref allocator, MaxLength, item, EncodeFunction);
-
-    public override void EncodeAuto(ref Allocator allocator, IPAddress? item) => Allocator.AppendWithLengthPrefix(ref allocator, MaxLength, item, EncodeFunction);
-
-    public override void EncodeWithLengthPrefix(ref Allocator allocator, IPAddress? item) => Allocator.AppendWithLengthPrefix(ref allocator, MaxLength, item, EncodeFunction);
-
-    public override IPAddress? Decode(in ReadOnlySpan<byte> span) => DecodeInternal(span);
-
-    public override IPAddress? DecodeAuto(ref ReadOnlySpan<byte> span) => DecodeInternal(Converter.DecodeWithLengthPrefix(ref span));
-
-    public override IPAddress? DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span) => DecodeInternal(Converter.DecodeWithLengthPrefix(ref span));
 }

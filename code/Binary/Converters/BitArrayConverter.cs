@@ -1,5 +1,6 @@
 ﻿namespace Mikodev.Binary.Converters;
 
+using Mikodev.Binary.Features.Contexts;
 using Mikodev.Binary.Internal;
 using System;
 using System.Buffers.Binary;
@@ -7,7 +8,7 @@ using System.Collections;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-internal sealed class BitArrayConverter : Converter<BitArray?>
+internal sealed class BitArrayConverter : VariableDirectEncodeConverter<BitArray?, BitArrayConverter.Functions>
 {
     private static uint FilterFunction(uint buffer, int remain)
     {
@@ -18,7 +19,7 @@ internal sealed class BitArrayConverter : Converter<BitArray?>
         return buffer;
     }
 
-    private static void EncodeInternal(Span<byte> target, ReadOnlySpan<int> source, int length)
+    private static void EncodeContents(Span<byte> target, ReadOnlySpan<int> source, int length)
     {
         var bounds = length >> 5;
         for (var i = 0; i < bounds; i++, target = target.Slice(4))
@@ -32,7 +33,7 @@ internal sealed class BitArrayConverter : Converter<BitArray?>
             target[i] = (byte)(buffer >> (i * 8));
     }
 
-    private static void DecodeInternal(Span<int> target, ReadOnlySpan<byte> source, int length)
+    private static void DecodeContents(Span<int> target, ReadOnlySpan<byte> source, int length)
     {
         var bounds = length >> 5;
         for (var i = 0; i < bounds; i++, source = source.Slice(4))
@@ -47,7 +48,7 @@ internal sealed class BitArrayConverter : Converter<BitArray?>
         target[bounds] = (int)FilterFunction(buffer, remain);
     }
 
-    public override void Encode(ref Allocator allocator, BitArray? item)
+    private static void EncodeInternal(ref Allocator allocator, BitArray? item)
     {
         if (item is null)
             return;
@@ -60,10 +61,10 @@ internal sealed class BitArrayConverter : Converter<BitArray?>
             return;
         var required = (int)(((uint)length + 7U) >> 3);
         var buffer = MemoryMarshal.CreateSpan(ref Allocator.Assign(ref allocator, required), required);
-        EncodeInternal(buffer, source, length);
+        EncodeContents(buffer, source, length);
     }
 
-    public override BitArray? Decode(in ReadOnlySpan<byte> span)
+    private static BitArray? DecodeInternal(in ReadOnlySpan<byte> span)
     {
         if (span.Length is 0)
             return null;
@@ -77,7 +78,20 @@ internal sealed class BitArrayConverter : Converter<BitArray?>
         var length = checked((int)(((ulong)cursor.Length << 3) - (uint)margin));
         var result = new BitArray(length);
         var target = NativeModule.AsSpan(result);
-        DecodeInternal(target, cursor, length);
+        DecodeContents(target, cursor, length);
         return result;
+    }
+
+    internal struct Functions : IVariableDirectEncodeConverterFunctions<BitArray?>
+    {
+        public static void Encode(ref Allocator allocator, BitArray? item)
+        {
+            EncodeInternal(ref allocator, item);
+        }
+
+        public static BitArray? Decode(in ReadOnlySpan<byte> span)
+        {
+            return DecodeInternal(in span);
+        }
     }
 }

@@ -14,7 +14,7 @@ public class InternalTypeCollectionTests
     public void FallbackConvertersMethodsSharedConverters()
     {
         var expected = typeof(IConverter).Assembly.GetTypes()
-            .Where(x => x.Namespace is "Mikodev.Binary.Converters")
+            .Where(x => x.Namespace is "Mikodev.Binary.Converters" && x.IsValueType is false)
             .Select(x => Assert.IsAssignableFrom<IConverter>(Activator.CreateInstance(x, null)))
             .ToImmutableDictionary(Converter.GetGenericArgument);
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "FallbackConvertersMethods");
