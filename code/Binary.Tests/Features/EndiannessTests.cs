@@ -113,7 +113,7 @@ public class EndiannessTests
     public void InternalLittleEndianConverterInvalidType<T>(int length, T data)
     {
         Assert.Equal(length, Unsafe.SizeOf<T>());
-        var converterOpenType = typeof(IConverter).Assembly.GetTypes().Single(x => x.FullName.EndsWith("LittleEndianConverter`1+Functions"));
+        var converterOpenType = typeof(IConverter).Assembly.GetTypes().Single(x => x.FullName?.EndsWith("LittleEndianConverter`1+Functions") is true);
         var converterType = converterOpenType.MakeGenericType(typeof(T));
         var decodeFunctor = (Decode<T>)Delegate.CreateDelegate(typeof(Decode<T>), converterType, "Decode");
         var encodeFunctor = (Encode<T>)Delegate.CreateDelegate(typeof(Encode<T>), converterType, "Encode");
