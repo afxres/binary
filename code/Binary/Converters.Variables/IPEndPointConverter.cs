@@ -1,5 +1,6 @@
-﻿namespace Mikodev.Binary.Converters;
+﻿namespace Mikodev.Binary.Converters.Variables;
 
+using Mikodev.Binary;
 using Mikodev.Binary.Features.Contexts;
 using Mikodev.Binary.Internal;
 using System;
@@ -39,7 +40,7 @@ internal sealed class IPEndPointConverter : VariablePrefixEncodeConverter<IPEndP
         return new IPEndPoint(header, number);
     }
 
-    internal struct Functions : IVariablePrefixEncodeConverterFunctions<IPEndPoint?>
+    internal readonly struct Functions : IVariablePrefixEncodeConverterFunctions<IPEndPoint?>
     {
         public static IPEndPoint? Decode(in ReadOnlySpan<byte> span)
         {

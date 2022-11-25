@@ -1,6 +1,6 @@
 ﻿namespace Mikodev.Binary.Features.Adapters;
 
-using Mikodev.Binary.Features;
+using Mikodev.Binary.Features.Contexts;
 using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Sequence;
 using System;
@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-internal sealed class RawConverterSequenceAdapter<T, U> : SequenceAdapter<T> where U : struct, IRawConverter<T>
+internal sealed class DirectMemoryAdapter<T, U> : SequenceAdapter<T> where U : struct, IConstantConverterFunctions<T>
 {
     public override void Encode(ref Allocator allocator, ReadOnlySpan<T> item)
     {

@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Features.Converters;
+﻿namespace Mikodev.Binary.Tests.Converters.Constants;
 
 using Mikodev.Binary.Tests.Internal;
 using System;
@@ -10,9 +10,8 @@ public class TimeOnlyConverterTests
     [Fact(DisplayName = "Converter Type Name And Length")]
     public void GetConverter()
     {
-        var creator = ReflectionExtensions.CreateInstance<IConverterCreator>("RawConverterCreator");
-        var converter = Assert.IsAssignableFrom<Converter<TimeOnly>>(creator.GetConverter(null!, typeof(TimeOnly)));
-        Assert.Matches("RawConverter.*TimeOnlyRawConverter", converter.GetType().FullName);
+        var converter = ReflectionExtensions.CreateInstance<Converter<TimeOnly>>("TimeOnlyConverter");
+        Assert.Equal("TimeOnlyConverter", converter.GetType().Name);
         Assert.Equal(sizeof(long), converter.Length);
     }
 
@@ -22,8 +21,7 @@ public class TimeOnlyConverterTests
     public void BasicTest(string data)
     {
         var time = TimeOnly.ParseExact(data, "HH:mm:ss");
-        var creator = ReflectionExtensions.CreateInstance<IConverterCreator>("RawConverterCreator");
-        var converter = Assert.IsAssignableFrom<Converter<TimeOnly>>(creator.GetConverter(null!, typeof(TimeOnly)));
+        var converter = ReflectionExtensions.CreateInstance<Converter<TimeOnly>>("TimeOnlyConverter");
         var buffer = converter.Encode(time);
         Assert.Equal(8, buffer.Length);
         Assert.Equal(8, converter.Length);

@@ -2,7 +2,6 @@
 
 using Mikodev.Binary.Tests.Internal;
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
@@ -14,7 +13,7 @@ public class InternalTypeCollectionTests
     public void FallbackConvertersMethodsSharedConverters()
     {
         var expected = typeof(IConverter).Assembly.GetTypes()
-            .Where(x => x.Namespace is "Mikodev.Binary.Converters" && x.IsValueType is false)
+            .Where(x => x.Namespace?.StartsWith("Mikodev.Binary.Converters") is true && x.IsValueType is false)
             .Select(x => Assert.IsAssignableFrom<IConverter>(Activator.CreateInstance(x, null)))
             .ToImmutableDictionary(Converter.GetGenericArgument);
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "FallbackConvertersMethods");
@@ -36,24 +35,5 @@ public class InternalTypeCollectionTests
         var field = typeof(Generator).GetFieldNotNull("SharedConverterCreators", BindingFlags.Static | BindingFlags.NonPublic);
         var actual = Assert.IsAssignableFrom<ImmutableDictionary<string, IConverterCreator>>(field.GetValue(null));
         Assert.Equal(expected.Select(x => x.GetType()).ToHashSet(), actual.Values.Select(x => x.GetType()).ToHashSet());
-    }
-
-    [Fact(DisplayName = "Raw Converter Creator Shared Converters")]
-    public void RawConverterCreatorSharedConverters()
-    {
-        var rawConverterType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "RawConverter`2");
-        var expectedQuery =
-            from i in typeof(IConverter).Assembly.GetTypes()
-            where i.Namespace is "Mikodev.Binary.Features.Instance" && i.IsGenericType is false
-            let k = i.GetInterfaces().Single().GetGenericArguments().Single()
-            let t = rawConverterType.MakeGenericType(k, i)
-            let v = Assert.IsAssignableFrom<IConverter>(Activator.CreateInstance(t, null))
-            select KeyValuePair.Create(k, v);
-        var expected = expectedQuery.ToImmutableDictionary();
-        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "RawConverterCreator");
-        var field = type.GetFieldNotNull("SharedConverters", BindingFlags.Static | BindingFlags.NonPublic);
-        var actual = Assert.IsAssignableFrom<ImmutableDictionary<Type, IConverter>>(field.GetValue(null));
-        Assert.Equal(expected.Keys, actual.Keys);
-        Assert.Equal(expected.Values.Select(x => x.GetType()).ToHashSet(), actual.Values.Select(x => x.GetType()).ToHashSet());
     }
 }

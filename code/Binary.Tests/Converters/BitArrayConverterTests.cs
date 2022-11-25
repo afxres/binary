@@ -12,7 +12,7 @@ public class BitArrayConverterTests
     {
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<BitArray>();
-        Assert.Equal("Mikodev.Binary.Converters.BitArrayConverter", converter.GetType().FullName);
+        Assert.Equal("Mikodev.Binary.Converters.Variables.BitArrayConverter", converter.GetType().FullName);
         Assert.Equal(0, converter.Length);
     }
 

@@ -5,7 +5,7 @@ using Xunit;
 
 public class ConverterThrowTests
 {
-    private const string ConverterTypeName = "RawConverter`2";
+    private const string ConverterTypeName = "NativeEndianConverter`1";
 
     private const string NotEnoughBytesMessage = "Not enough bytes or byte sequence invalid.";
 

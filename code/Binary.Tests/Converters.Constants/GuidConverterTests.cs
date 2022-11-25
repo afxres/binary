@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Features.Converters;
+﻿namespace Mikodev.Binary.Tests.Converters.Constants;
 
 using Mikodev.Binary.Tests.Internal;
 using System;
@@ -10,9 +10,8 @@ public class GuidConverterTests
     [Fact(DisplayName = "Converter Type Name And Length")]
     public void GetConverter()
     {
-        var creator = ReflectionExtensions.CreateInstance<IConverterCreator>("RawConverterCreator");
-        var converter = Assert.IsAssignableFrom<Converter<Guid>>(creator.GetConverter(null!, typeof(Guid)));
-        Assert.Matches("RawConverter.*GuidRawConverter", converter.GetType().FullName);
+        var converter = ReflectionExtensions.CreateInstance<Converter<Guid>>("GuidConverter");
+        Assert.Equal("GuidConverter", converter.GetType().Name);
         Assert.Equal(Unsafe.SizeOf<Guid>(), converter.Length);
     }
 
@@ -22,8 +21,7 @@ public class GuidConverterTests
     public void BasicTest(string data)
     {
         var guid = Guid.Parse(data);
-        var creator = ReflectionExtensions.CreateInstance<IConverterCreator>("RawConverterCreator");
-        var converter = Assert.IsAssignableFrom<Converter<Guid>>(creator.GetConverter(null!, typeof(Guid)));
+        var converter = ReflectionExtensions.CreateInstance<Converter<Guid>>("GuidConverter");
         var buffer = converter.Encode(guid);
         Assert.Equal(16, buffer.Length);
         Assert.Equal(16, converter.Length);
@@ -39,8 +37,7 @@ public class GuidConverterTests
     [InlineData(15)]
     public void NotExactlyBytes(int length)
     {
-        var creator = ReflectionExtensions.CreateInstance<IConverterCreator>("RawConverterCreator");
-        var converter = Assert.IsAssignableFrom<Converter<Guid>>(creator.GetConverter(null!, typeof(Guid)));
+        var converter = ReflectionExtensions.CreateInstance<Converter<Guid>>("GuidConverter");
         var buffer = new byte[length];
         var actual = Assert.Throws<ArgumentException>(() => converter.Decode(new ReadOnlySpan<byte>(buffer)));
         Assert.Equal("Not enough bytes or byte sequence invalid.", actual.Message);

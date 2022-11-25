@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Features;
+﻿namespace Mikodev.Binary.Features.Contexts;
 
 using Mikodev.Binary.Features.Adapters;
 using Mikodev.Binary.Internal;
@@ -9,9 +9,9 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-internal sealed class RawConverter<T, U> : Converter<T>, ISequenceAdapterCreator<T> where U : struct, IRawConverter<T>
+internal abstract class ConstantConverter<T, U> : Converter<T>, ISequenceAdapterCreator<T> where U : struct, IConstantConverterFunctions<T>
 {
-    public RawConverter() : base(U.Length)
+    public ConstantConverter() : base(U.Length)
     {
         Debug.Assert(U.Length >= 1);
         Debug.Assert(U.Length <= 16);
@@ -67,6 +67,6 @@ internal sealed class RawConverter<T, U> : Converter<T>, ISequenceAdapterCreator
     {
         if (default(U) is ISequenceAdapterCreator<T> result)
             return result.GetAdapter();
-        return new RawConverterSequenceAdapter<T, U>();
+        return new DirectMemoryAdapter<T, U>();
     }
 }

@@ -1,7 +1,7 @@
 ﻿namespace Mikodev.Binary;
 
 using Mikodev.Binary.Creators;
-using Mikodev.Binary.Features;
+using Mikodev.Binary.Creators.Endianness;
 using Mikodev.Binary.Internal.Contexts;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -19,7 +19,7 @@ public static class Generator
             new NullableConverterCreator(),
             new PriorityQueueConverterCreator(),
             new UriConverterCreator(),
-            new RawConverterCreator(),
+            new DetectEndianConverterCreator(),
         };
         SharedConverterCreators = creators.ToImmutableDictionary(x => x.GetType().Name);
     }

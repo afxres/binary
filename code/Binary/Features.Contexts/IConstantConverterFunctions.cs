@@ -1,6 +1,6 @@
-﻿namespace Mikodev.Binary.Features;
+﻿namespace Mikodev.Binary.Features.Contexts;
 
-internal interface IRawConverter<T>
+internal interface IConstantConverterFunctions<T>
 {
     static abstract int Length { get; }
 

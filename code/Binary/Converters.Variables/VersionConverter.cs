@@ -1,5 +1,6 @@
-﻿namespace Mikodev.Binary.Converters;
+﻿namespace Mikodev.Binary.Converters.Variables;
 
+using Mikodev.Binary;
 using Mikodev.Binary.Features.Contexts;
 using Mikodev.Binary.Internal;
 using System;
@@ -60,7 +61,7 @@ internal sealed class VersionConverter : VariablePrefixEncodeConverter<Version?,
         return result;
     }
 
-    internal struct Functions : IVariablePrefixEncodeConverterFunctions<Version?>
+    internal readonly struct Functions : IVariablePrefixEncodeConverterFunctions<Version?>
     {
         public static Version? Decode(in ReadOnlySpan<byte> span)
         {

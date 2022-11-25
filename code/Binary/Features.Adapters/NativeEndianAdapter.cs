@@ -6,7 +6,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-internal sealed class NativeEndianSequenceAdapter<T> : SequenceAdapter<T> where T : unmanaged
+internal sealed class NativeEndianAdapter<T> : SequenceAdapter<T> where T : unmanaged
 {
     public override void Encode(ref Allocator allocator, ReadOnlySpan<T> item)
     {

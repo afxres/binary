@@ -26,9 +26,7 @@ public class IntegrationTests
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter(data.GetType());
         var converterType = converter.GetType();
-        var rawConverterTypeName = $"{data.GetType().Name}RawConverter";
-        Assert.Equal("RawConverter`2", converterType.Name);
-        Assert.Contains(rawConverterTypeName, converterType.FullName);
+        Assert.Equal(data.GetType().Name + "Converter", converterType.Name);
         Assert.Equal(length, converter.Length);
         var buffer = converter.Encode(data);
         var result = converter.Decode(buffer);

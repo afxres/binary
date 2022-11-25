@@ -11,11 +11,8 @@ let generator = Generator.CreateDefault()
 let randomCount = 64
 
 let MakeConverters<'a> () =
-    let types = typeof<IConverter>.Assembly.GetTypes()
-    let raw = types |> Array.filter (fun x -> x.Name = "RawConverterCreator") |> Array.exactlyOne |> Activator.CreateInstance :?> IConverterCreator
-    let r = raw.GetConverter(null, typeof<'a>) :?> Converter<'a>
-    Assert.Contains("Raw", r.GetType().Name)
-    [ r; ]
+    let converter = generator.GetConverter<'a>()
+    [ converter; ]
 
 let TestWithSpan (converters : Converter<'a> list) (value : 'a) (size : int) =
     let bufferOrigin = generator.Encode value

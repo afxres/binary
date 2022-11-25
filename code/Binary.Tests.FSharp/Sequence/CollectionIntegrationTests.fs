@@ -136,10 +136,10 @@ let TestSequence<'a when 'a : null> (encoderName : string) (decoderName : string
 [<Fact>]
 let ``Collection Integration Test (span-like collection, null or empty collection test)`` () =
     Test generator "VariableAdapter`1" "ArraySegmentBuilder`1" (ArraySegment<string>())
-    Test generator "RawConverterSequenceAdapter`2" "MemoryBuilder`1" (Memory<TimeSpan>())
-    Test generator "NativeEndianSequenceAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<int>())
-    Test generator "NativeEndianSequenceAdapter`1" "ImmutableArrayBuilder`1" (ImmutableArray<double>())
-    TestNull "NativeEndianSequenceAdapter`1" "ArrayBuilder`1" (Array.zeroCreate<int> 0)
+    Test generator "DirectMemoryAdapter`2" "MemoryBuilder`1" (Memory<TimeSpan>())
+    Test generator "NativeEndianAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<int>())
+    Test generator "NativeEndianAdapter`1" "ImmutableArrayBuilder`1" (ImmutableArray<double>())
+    TestNull "NativeEndianAdapter`1" "ArrayBuilder`1" (Array.zeroCreate<int> 0)
     TestNull "VariableAdapter`1" "ListBuilder`1" (ResizeArray<string>())
     ()
 
@@ -178,8 +178,8 @@ let ``Collection Integration Test (dictionary, null or empty collection test, de
 
 [<Fact>]
 let ``Collection Integration Test (span-like collection)`` () =
-    Test (Generator.CreateDefault()) "NativeEndianSequenceAdapter`1" "MemoryBuilder`1" (Memory<single>())
-    Test (Generator.CreateDefaultBuilder().Build()) "NativeEndianSequenceAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<double>())
+    Test (Generator.CreateDefault()) "NativeEndianAdapter`1" "MemoryBuilder`1" (Memory<single>())
+    Test (Generator.CreateDefaultBuilder().Build()) "NativeEndianAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<double>())
     Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<int32>(4)).Build()) "ConstantAdapter`1" "MemoryBuilder`1" (Memory<int32>())
     Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<int64>(8)).Build()) "ConstantAdapter`1" "ReadOnlyMemoryBuilder`1" (ReadOnlyMemory<int64>())
     Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<int64>(8)).Build()) "ConstantAdapter`1" "ImmutableArrayBuilder`1" (ImmutableArray<int64>())

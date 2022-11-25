@@ -1,5 +1,6 @@
-﻿namespace Mikodev.Binary.Converters;
+﻿namespace Mikodev.Binary.Converters.Variables;
 
+using Mikodev.Binary;
 using Mikodev.Binary.Features.Contexts;
 using Mikodev.Binary.Internal;
 using System;
@@ -82,7 +83,7 @@ internal sealed class BitArrayConverter : VariableDirectEncodeConverter<BitArray
         return result;
     }
 
-    internal struct Functions : IVariableDirectEncodeConverterFunctions<BitArray?>
+    internal readonly struct Functions : IVariableDirectEncodeConverterFunctions<BitArray?>
     {
         public static BitArray? Decode(in ReadOnlySpan<byte> span)
         {

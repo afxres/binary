@@ -54,9 +54,9 @@ type SpanLikeTests () =
         ()
 
     static member ``Data Bravo`` : (obj array) seq = seq {
-        yield [| typeof<ArraySegment<int>>; "NativeEndianSequenceAdapter`1" |]
+        yield [| typeof<ArraySegment<int>>; "NativeEndianAdapter`1" |]
         yield [| typeof<Memory<struct (int * int)>>; "ConstantAdapter`1" |]
-        yield [| typeof<Memory<TimeSpan>>; "RawConverterSequenceAdapter`2" |]
+        yield [| typeof<Memory<TimeSpan>>; "DirectMemoryAdapter`2" |]
         yield [| typeof<ReadOnlyMemory<string>>; "VariableAdapter`1" |]
     }
 

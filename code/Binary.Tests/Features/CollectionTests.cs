@@ -36,8 +36,8 @@ public class CollectionTests
     public void NativeTypeArrayImplementation<T>(T data)
     {
         var converter = generator.GetConverter<T[]>();
-        Assert.Equal("RawConverter`2", generator.GetConverter<T>().GetType().Name);
-        _ = AssertAdapterTypeName(converter, "NativeEndianSequenceAdapter`1");
+        Assert.Equal("NativeEndianConverter`1", generator.GetConverter<T>().GetType().Name);
+        _ = AssertAdapterTypeName(converter, "NativeEndianAdapter`1");
         var source = Enumerable.Repeat(data, 16).ToArray();
         for (var i = 0; i < source.Length; i++)
         {
@@ -64,8 +64,8 @@ public class CollectionTests
     public void CommonTypeArrayImplementation<T>(T data)
     {
         var converter = generator.GetConverter<T[]>();
-        Assert.Equal("RawConverter`2", generator.GetConverter<T>().GetType().Name);
-        _ = AssertAdapterTypeName(converter, "RawConverterSequenceAdapter`2");
+        Assert.Equal($"{typeof(T).Name}Converter", generator.GetConverter<T>().GetType().Name);
+        _ = AssertAdapterTypeName(converter, "DirectMemoryAdapter`2");
         var source = Enumerable.Repeat(data, 16).ToArray();
         for (var i = 0; i < source.Length; i++)
         {
@@ -76,15 +76,15 @@ public class CollectionTests
         }
     }
 
-    [Theory(DisplayName = "Unsafe Raw Adapter Overflow Test")]
+    [Theory(DisplayName = "Unsafe Adapter Overflow Test")]
     [MemberData(nameof(SimpleObjectData))]
-    public void UnsafeRawAdapterOverflowTest<T>(T data)
+    public void UnsafeAdapterOverflowTest<T>(T data)
     {
         // ignore it
         _ = data;
         var converter = generator.GetConverter<T[]>();
-        Assert.Equal("RawConverter`2", generator.GetConverter<T>().GetType().Name);
-        var adapter = AssertAdapterTypeName(converter, "RawConverterSequenceAdapter`2");
+        Assert.Equal($"{typeof(T).Name}Converter", generator.GetConverter<T>().GetType().Name);
+        var adapter = AssertAdapterTypeName(converter, "DirectMemoryAdapter`2");
         var functor = (Encode<T>)Delegate.CreateDelegate(typeof(Encode<T>), adapter, "Encode");
         var error = Assert.Throws<OverflowException>(() =>
         {

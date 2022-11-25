@@ -1,5 +1,6 @@
-﻿namespace Mikodev.Binary.Converters;
+﻿namespace Mikodev.Binary.Converters.Variables;
 
+using Mikodev.Binary;
 using Mikodev.Binary.Features.Contexts;
 using Mikodev.Binary.Internal;
 using System;
@@ -25,7 +26,7 @@ internal sealed class BigIntegerConverter : VariablePrefixEncodeConverter<BigInt
         return new BigInteger(span);
     }
 
-    internal struct Functions : IVariablePrefixEncodeConverterFunctions<BigInteger>
+    internal readonly struct Functions : IVariablePrefixEncodeConverterFunctions<BigInteger>
     {
         public static BigInteger Decode(in ReadOnlySpan<byte> span)
         {

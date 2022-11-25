@@ -48,10 +48,10 @@ type ConverterTests() =
 
     static let MakeConverters (t : Type) =
         EnsureEnumName t
-        let rn = MakeConverter "RawConverterCreator" t true
-        let rl = MakeConverter "RawConverterCreator" t false
-        Assert.Matches("RawConverter.*NativeEndianRawConverter", rn.GetType().FullName)
-        Assert.Matches("RawConverter.*LittleEndianRawConverter", rl.GetType().FullName)
+        let rn = MakeConverter "DetectEndianConverterCreator" t true
+        let rl = MakeConverter "DetectEndianConverterCreator" t false
+        Assert.Matches(".*NativeEndianConverter`1.*", rn.GetType().FullName)
+        Assert.Matches(".*LittleEndianConverter`1.*", rl.GetType().FullName)
         [ rn; rl; ]
 
     static member ``Data Alpha`` : (obj array) seq = seq {

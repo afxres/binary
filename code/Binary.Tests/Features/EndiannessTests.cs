@@ -61,8 +61,7 @@ public class EndiannessTests
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<T>();
         var converterType = converter.GetType();
-        Assert.Equal("RawConverter`2", converterType.Name);
-        Assert.Contains("NativeEndianRawConverter`1", converterType.FullName);
+        Assert.Equal("NativeEndianConverter`1", converterType.Name);
         Assert.Equal(length, converter.Length);
         var buffer = converter.Encode(data);
         var result = converter.Decode(buffer);
@@ -74,13 +73,12 @@ public class EndiannessTests
     [MemberData(nameof(NumberData))]
     public void InternalNativeEndianConverterInfo<T>(int length, T data)
     {
-        var creatorType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "RawConverterCreator");
+        var creatorType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "DetectEndianConverterCreator");
         var creatorInvokeMethod = creatorType.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name.Contains("Invoke"));
         var creatorInvokeFunctor = (Func<Type, bool, IConverter>)Delegate.CreateDelegate(typeof(Func<Type, bool, IConverter>), creatorInvokeMethod);
         var converter = (Converter<T>)creatorInvokeFunctor.Invoke(typeof(T), true);
         var converterType = converter.GetType();
-        Assert.Equal("RawConverter`2", converterType.Name);
-        Assert.Contains("NativeEndianRawConverter`1", converterType.FullName);
+        Assert.Equal("NativeEndianConverter`1", converterType.Name);
         Assert.Equal(length, converter.Length);
         var buffer = converter.Encode(data);
         var result = converter.Decode(buffer);
@@ -92,13 +90,12 @@ public class EndiannessTests
     [MemberData(nameof(NumberData))]
     public void InternalLittleEndianConverterInfo<T>(int length, T data)
     {
-        var creatorType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "RawConverterCreator");
+        var creatorType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "DetectEndianConverterCreator");
         var creatorInvokeMethod = creatorType.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name.Contains("Invoke"));
         var creatorInvokeFunctor = (Func<Type, bool, IConverter>)Delegate.CreateDelegate(typeof(Func<Type, bool, IConverter>), creatorInvokeMethod);
         var converter = (Converter<T>)creatorInvokeFunctor.Invoke(typeof(T), false);
         var converterType = converter.GetType();
-        Assert.Equal("RawConverter`2", converterType.Name);
-        Assert.Contains("LittleEndianRawConverter`1", converterType.FullName);
+        Assert.Equal("LittleEndianConverter`1", converterType.Name);
         Assert.Equal(length, converter.Length);
         var buffer = converter.Encode(data);
         var result = converter.Decode(buffer);
@@ -116,7 +113,7 @@ public class EndiannessTests
     public void InternalLittleEndianConverterInvalidType<T>(int length, T data)
     {
         Assert.Equal(length, Unsafe.SizeOf<T>());
-        var converterOpenType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "LittleEndianRawConverter`1");
+        var converterOpenType = typeof(IConverter).Assembly.GetTypes().Single(x => x.FullName.EndsWith("LittleEndianConverter`1+Functions"));
         var converterType = converterOpenType.MakeGenericType(typeof(T));
         var decodeFunctor = (Decode<T>)Delegate.CreateDelegate(typeof(Decode<T>), converterType, "Decode");
         var encodeFunctor = (Encode<T>)Delegate.CreateDelegate(typeof(Encode<T>), converterType, "Encode");
