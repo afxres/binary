@@ -13,6 +13,12 @@ internal static class NamedObjectTemplates
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static bool HasIndexData(ReadOnlySpan<long> data, int index)
+    {
+        return data[index] is not 0;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static ReadOnlySpan<byte> GetIndexSpan(ReadOnlySpan<byte> span, ReadOnlySpan<long> data, int index)
     {
         Debug.Assert(span.Length is not 0);

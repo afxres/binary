@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 internal static class FallbackAttributesMethods
 {
@@ -20,7 +21,7 @@ internal static class FallbackAttributesMethods
             throw new ArgumentException($"Multiple attributes found, type: {type}");
 
         var attribute = attributes.FirstOrDefault();
-        var selection = GetAttributes(type, attribute);
+        var selection = GetAttributes(type, attribute, out var requiredInfo);
 
         if (attribute is ConverterAttribute or ConverterCreatorAttribute)
             return GetConverter(context, type, null, attribute);
@@ -35,17 +36,34 @@ internal static class FallbackAttributesMethods
         if (attribute is TupleObjectAttribute)
             return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, ContextMethods.GetMemberInitializers(properties));
 
+        var required = properties.Select(x => requiredInfo[x]).ToImmutableArray();
         var instance = (Converter<string>)context.GetConverter(typeof(string));
         var memories = names.Select(x => new ReadOnlyMemory<byte>(instance.Encode(x))).ToImmutableArray();
         var dictionary = BinaryObject.Create(memories);
         if (dictionary is null)
             throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {type}, string converter type: {instance.GetType()}");
-        return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, properties, names, memories, dictionary);
+        return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, properties, names, memories, required, dictionary);
     }
 
-    private static ImmutableArray<(PropertyInfo Property, Attribute? Key, Attribute? Act)> GetAttributes([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type type, Attribute? attribute)
+    private static ImmutableArray<(PropertyInfo Property, Attribute? Key, Attribute? Act)> GetAttributes([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type type, Attribute? attribute, out ImmutableDictionary<PropertyInfo, bool> flag)
     {
-        var builder = ImmutableArray.CreateBuilder<(PropertyInfo, Attribute?, Attribute?)>();
+        var requiredType = GetAttributes(type, x => x is RequiredMemberAttribute).Any();
+        bool IsRequiredOrDefault(PropertyInfo property, Attribute? key)
+        {
+            if (requiredType is false)
+                return true;
+            var requiredProperty = GetAttributes(property, x => x is RequiredMemberAttribute).Any();
+            if (requiredProperty is false)
+                return false;
+            if (attribute is NamedObjectAttribute && key is not NamedKeyAttribute)
+                throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' for required member, property name: {property.Name}, type: {type}");
+            if (attribute is TupleObjectAttribute && key is not TupleKeyAttribute)
+                throw new ArgumentException($"Require '{nameof(TupleKeyAttribute)}' for required member, property name: {property.Name}, type: {type}");
+            return true;
+        }
+
+        var valuesBuilder = ImmutableDictionary.CreateBuilder<PropertyInfo, bool>();
+        var resultBuilder = ImmutableArray.CreateBuilder<(PropertyInfo, Attribute?, Attribute?)>();
         foreach (var property in type.GetProperties(CommonModule.PublicInstanceBindingFlags).OrderBy(x => x.Name))
         {
             var keys = GetAttributes(property, a => a is NamedKeyAttribute or TupleKeyAttribute);
@@ -67,9 +85,11 @@ internal static class FallbackAttributesMethods
                 throw new ArgumentException($"Require '{nameof(NamedObjectAttribute)}' for '{nameof(NamedKeyAttribute)}', property name: {property.Name}, type: {type}");
             if (key is TupleKeyAttribute && attribute is not TupleObjectAttribute)
                 throw new ArgumentException($"Require '{nameof(TupleObjectAttribute)}' for '{nameof(TupleKeyAttribute)}', property name: {property.Name}, type: {type}");
-            builder.Add((property, key, act));
+            valuesBuilder.Add(property, IsRequiredOrDefault(property, key));
+            resultBuilder.Add((property, key, act));
         }
-        return builder.ToImmutable();
+        flag = valuesBuilder.ToImmutable();
+        return resultBuilder.ToImmutable();
     }
 
     private static ImmutableArray<Attribute> GetAttributes(MemberInfo member, Func<Attribute, bool> filter)

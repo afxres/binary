@@ -15,7 +15,11 @@ internal delegate T NamedObjectDecodeDelegate<out T>(ReadOnlySpan<byte> span, Re
 
 internal sealed class NamedObjectConverter<T> : Converter<T?>
 {
-    private readonly int capacity;
+    private readonly int memberCapacity;
+
+    private readonly int memberRequired;
+
+    private readonly ImmutableArray<bool> required;
 
     private readonly ImmutableArray<string> names;
 
@@ -25,12 +29,15 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
 
     private readonly NamedObjectDecodeDelegate<T> decode;
 
-    public NamedObjectConverter(EncodeDelegate<T> encode, NamedObjectDecodeDelegate<T> decode, ImmutableArray<string> names, ByteViewDictionary<int> dictionary)
+    public NamedObjectConverter(EncodeDelegate<T> encode, NamedObjectDecodeDelegate<T> decode, ImmutableArray<string> names, ImmutableArray<bool> required, ByteViewDictionary<int> dictionary)
     {
         Debug.Assert(dictionary is not null);
         Debug.Assert(names.Any());
+        Debug.Assert(names.Length == required.Length);
         this.names = names;
-        this.capacity = names.Length;
+        this.required = required;
+        this.memberRequired = required.Count(x => x is true);
+        this.memberCapacity = required.Length;
         this.dictionary = dictionary;
         this.encode = encode;
         this.decode = decode;
@@ -41,6 +48,21 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
 
     [DebuggerStepThrough, DoesNotReturn]
     private T ExceptNotFound(int i) => throw new ArgumentException($"Named key '{this.names[i]}' does not exist, type: {typeof(T)}");
+
+    [DebuggerStepThrough, DoesNotReturn]
+    private T ExceptNotFound(ReadOnlySpan<long> span)
+    {
+        var cursor = -1;
+        var required = this.required;
+        for (var i = 0; i < span.Length; i++)
+        {
+            if (span[i] is not 0 || required[i] is false)
+                continue;
+            cursor = i;
+            break;
+        }
+        return ExceptNotFound(cursor);
+    }
 
     public override void Encode(ref Allocator allocator, T? item)
     {
@@ -60,9 +82,10 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
             ThrowHelper.ThrowNotEnoughBytes();
 
         // maybe 'StackOverflowException', just let it crash
-        var remain = this.capacity;
+        var required = this.required;
+        var remain = this.memberRequired;
         var record = this.dictionary;
-        var values = (stackalloc long[remain]);
+        var values = (stackalloc long[this.memberCapacity]);
         ref var source = ref MemoryMarshal.GetReference(span);
 
         var limits = span.Length;
@@ -82,12 +105,16 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
                 if (handle is not 0)
                     return ExceptKeyFound(cursor);
                 handle = NamedObjectTemplates.GetIndexData(offset, length);
+                if (required[cursor] is false)
+                    continue;
                 remain--;
             }
         }
 
+        Debug.Assert(remain >= 0);
+        Debug.Assert(remain <= this.memberCapacity);
         if (remain is not 0)
-            return ExceptNotFound(values.IndexOf(0));
+            return ExceptNotFound(values);
         return decode.Invoke(span, values);
     }
 }

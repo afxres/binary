@@ -13,6 +13,10 @@ using System.Reflection;
 
 internal static class ContextMethodsOfNamedObject
 {
+    private delegate bool EnsureMethodDelegate<T>(T? item);
+
+    private delegate bool ExistsMethodDelegate(ReadOnlySpan<long> data, int index);
+
     private delegate void AppendMethodDelegate(ref Allocator allocator, ReadOnlySpan<byte> span);
 
     private delegate ReadOnlySpan<byte> CreateMethodDelegate(byte[]? data);
@@ -25,42 +29,54 @@ internal static class ContextMethodsOfNamedObject
 
     private static readonly MethodInfo InvokeMethodInfo = new InvokeMethodDelegate(NamedObjectTemplates.GetIndexSpan).Method;
 
-    internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<PropertyInfo> properties, ImmutableArray<string> names, ImmutableArray<ReadOnlyMemory<byte>> memories, ByteViewDictionary<int> dictionary)
+    private static readonly MethodInfo ExistsMethodInfo = new ExistsMethodDelegate(NamedObjectTemplates.HasIndexData).Method;
+
+    private static readonly MethodInfo EnsureMethodInfo = new EnsureMethodDelegate<object>(BridgeModule.NotDefaultValue).Method.GetGenericMethodDefinition();
+
+    internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<PropertyInfo> properties, ImmutableArray<string> names, ImmutableArray<ReadOnlyMemory<byte>> memories, ImmutableArray<bool> required, ByteViewDictionary<int> dictionary)
     {
         Debug.Assert(properties.Length == names.Length);
         Debug.Assert(properties.Length == memories.Length);
+        Debug.Assert(properties.Length == required.Length);
         Debug.Assert(properties.Length == converters.Length);
-        var encode = GetEncodeDelegateAsNamedObject(type, converters, properties, memories);
-        var decode = GetDecodeDelegateAsNamedObject(type, converters, constructor);
-        var converterArguments = new object?[] { encode, decode, names, dictionary };
+        var encode = GetEncodeDelegateAsNamedObject(type, converters, properties, memories, required);
+        var decode = GetDecodeDelegateAsNamedObject(type, converters, required, constructor);
+        var converterArguments = new object?[] { encode, decode, names, required, dictionary };
         var converterType = typeof(NamedObjectConverter<>).MakeGenericType(type);
         var converter = CommonModule.CreateInstance(converterType, converterArguments);
         return (IConverter)converter;
     }
 
-    private static Delegate GetEncodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<PropertyInfo> properties, ImmutableArray<ReadOnlyMemory<byte>> memories)
+    private static Delegate GetEncodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<PropertyInfo> properties, ImmutableArray<ReadOnlyMemory<byte>> memories, ImmutableArray<bool> required)
     {
+        static void Action(ref Allocator allocator, ReadOnlyMemory<byte> memory) => Converter.EncodeWithLengthPrefix(ref allocator, memory.Span);
+        static byte[] Handle(ReadOnlyMemory<byte> memory) => Allocator.Invoke(memory, Action);
+
         var item = Expression.Parameter(type, "item");
         var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
-        var expressions = new List<Expression>();
+        var result = new List<Expression>();
 
         for (var i = 0; i < properties.Length; i++)
         {
             var property = properties[i];
             var converter = converters[i];
-            var buffer = Allocator.Invoke(memories[i], (ref Allocator allocator, ReadOnlyMemory<byte> data) => Converter.EncodeWithLengthPrefix(ref allocator, data.Span));
-            var methodInfo = Converter.GetMethod(converter, nameof(IConverter.EncodeWithLengthPrefix));
+            var invoke = new List<Expression>();
+            var target = Expression.Property(item, property);
             // append named key with length prefix (cached), then append value with length prefix
-            expressions.Add(Expression.Call(AppendMethodInfo, allocator, Expression.Call(CreateMethodInfo, Expression.Constant(buffer))));
-            expressions.Add(Expression.Call(Expression.Constant(converter), methodInfo, allocator, Expression.Property(item, property)));
+            invoke.Add(Expression.Call(AppendMethodInfo, allocator, Expression.Call(CreateMethodInfo, Expression.Constant(Handle(memories[i])))));
+            invoke.Add(Expression.Call(Expression.Constant(converter), Converter.GetMethod(converter, nameof(IConverter.EncodeWithLengthPrefix)), allocator, target));
+            if (required[i])
+                result.AddRange(invoke);
+            else
+                result.Add(Expression.IfThen(Expression.Call(EnsureMethodInfo.MakeGenericMethod(property.PropertyType), target), Expression.Block(invoke)));
         }
 
         var delegateType = typeof(EncodeDelegate<>).MakeGenericType(type);
-        var lambda = Expression.Lambda(delegateType, Expression.Block(expressions), allocator, item);
+        var lambda = Expression.Lambda(delegateType, Expression.Block(result), allocator, item);
         return lambda.Compile();
     }
 
-    private static Delegate? GetDecodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ContextObjectConstructor? constructor)
+    private static Delegate? GetDecodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<bool> required, ContextObjectConstructor? constructor)
     {
         ImmutableArray<Expression> Initialize(ImmutableArray<ParameterExpression> parameters)
         {
@@ -71,10 +87,14 @@ internal static class ContextMethodsOfNamedObject
             for (var i = 0; i < converters.Length; i++)
             {
                 var converter = converters[i];
+                var cursor = Expression.Constant(i);
                 var method = Converter.GetMethod(converter, nameof(IConverter.Decode));
-                var invoke = Expression.Call(InvokeMethodInfo, source, values, Expression.Constant(i));
+                var invoke = Expression.Call(InvokeMethodInfo, source, values, cursor);
                 var decode = Expression.Call(Expression.Constant(converter), method, invoke);
-                result.Add(decode);
+                if (required[i])
+                    result.Add(decode);
+                else
+                    result.Add(Expression.Condition(Expression.Call(ExistsMethodInfo, values, cursor), decode, Expression.Default(method.ReturnType)));
             }
             Debug.Assert(converters.Length == result.Count);
             Debug.Assert(converters.Length == result.Capacity);
