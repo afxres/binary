@@ -1,5 +1,6 @@
 ﻿namespace Mikodev.Binary.Tests.Converters;
 
+using Mikodev.Binary.Tests.Contexts;
 using System;
 using System.Collections;
 using System.Linq;
@@ -42,6 +43,8 @@ public class BitArrayConverterTests
                 var result = converter.Decode(encode);
                 Assert.Equal(k, result.Count);
                 Assert.Equal(source.Cast<bool>(), result.Cast<bool>());
+
+                ConverterTests.TestVariableEncodeDecodeMethods(converter, source);
             }
         }
     }

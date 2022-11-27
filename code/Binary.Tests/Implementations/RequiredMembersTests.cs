@@ -69,7 +69,7 @@ public class RequiredMembersTests
     public void MissingNamedKey()
     {
         var generator = Generator.CreateDefault();
-        var error = Assert.Throws<ArgumentException>(() => generator.GetConverter<MissingNamedKeyOnRequiredObject>());
+        var error = Assert.Throws<ArgumentException>(generator.GetConverter<MissingNamedKeyOnRequiredObject>);
         var message = $"Require 'NamedKeyAttribute' for required member, property name: Id, type: {typeof(MissingNamedKeyOnRequiredObject)}";
         Assert.Equal(message, error.Message);
     }
@@ -78,7 +78,7 @@ public class RequiredMembersTests
     public void MissingTupleKey()
     {
         var generator = Generator.CreateDefault();
-        var error = Assert.Throws<ArgumentException>(() => generator.GetConverter<MissingTupleKeyOnRequiredObject>());
+        var error = Assert.Throws<ArgumentException>(generator.GetConverter<MissingTupleKeyOnRequiredObject>);
         var message = $"Require 'TupleKeyAttribute' for required member, property name: Flag, type: {typeof(MissingTupleKeyOnRequiredObject)}";
         Assert.Equal(message, error.Message);
     }

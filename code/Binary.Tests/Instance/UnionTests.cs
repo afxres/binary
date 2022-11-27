@@ -43,7 +43,7 @@ public class UnionTests
         Assert.True(flag);
         Assert.Empty(items);
 
-        var error = Assert.Throws<ArgumentException>(() => this.generator.GetConverter<EmptyUnion>());
+        var error = Assert.Throws<ArgumentException>(this.generator.GetConverter<EmptyUnion>);
         var message = $"No available union case found, type: {type}";
         Assert.Equal(message, error.Message);
     }

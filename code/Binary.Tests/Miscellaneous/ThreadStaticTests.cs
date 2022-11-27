@@ -172,7 +172,7 @@ public class ThreadStaticTests
         const int Limits = 16;
         var result = Enumerable.Range(0, Limits).SelectMany(x => TestGroup()).ToList();
         Assert.Equal(Limits * 3, result.Count);
-        Assert.All(result, x => Assert.True(x));
+        Assert.All(result, Assert.True);
     }
 
     [Fact(DisplayName = "Nested Encode")]
@@ -223,7 +223,7 @@ public class ThreadStaticTests
         const int Limits = 12;
         var result = Enumerable.Range(0, Limits).SelectMany(x => TestGroup()).ToList();
         Assert.Equal(Limits * 3, result.Count);
-        Assert.All(result, x => Assert.True(x));
+        Assert.All(result, Assert.True);
     }
 
     [Fact(DisplayName = "Invoke With Exception")]
@@ -256,7 +256,7 @@ public class ThreadStaticTests
         const int Limits = 8;
         var result = Enumerable.Range(0, Limits).SelectMany(x => TestGroup()).ToList();
         Assert.Equal(Limits * 2, result.Count);
-        Assert.All(result, x => Assert.True(x));
+        Assert.All(result, Assert.True);
     }
 
     [Fact(DisplayName = "Encode With Exception")]
@@ -291,6 +291,6 @@ public class ThreadStaticTests
         const int Limits = 6;
         var result = Enumerable.Range(0, Limits).SelectMany(x => TestGroup()).ToList();
         Assert.Equal(Limits * 2, result.Count);
-        Assert.All(result, x => Assert.True(x));
+        Assert.All(result, Assert.True);
     }
 }

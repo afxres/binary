@@ -1,5 +1,6 @@
 ﻿namespace Mikodev.Binary.Tests.Converters;
 
+using Mikodev.Binary.Tests.Contexts;
 using System;
 using System.Collections.Generic;
 using Xunit;
@@ -35,27 +36,7 @@ public class VersionConverterTests
         var result = converter.Decode(buffer);
         Assert.Equal(data, result);
 
-        var a = Allocator.Invoke(data, (ref Allocator allocator, Version? item) => converter.Encode(ref allocator, item));
-        var b = Allocator.Invoke(data, (ref Allocator allocator, Version? item) => converter.EncodeAuto(ref allocator, item));
-        var c = Allocator.Invoke(data, (ref Allocator allocator, Version? item) => converter.EncodeWithLengthPrefix(ref allocator, item));
-        Assert.Equal(buffer, a);
-        Assert.Equal(b, c);
-
-        var i = new ReadOnlySpan<byte>(a);
-        var j = new ReadOnlySpan<byte>(b);
-        var k = new ReadOnlySpan<byte>(c);
-        Assert.False(j.IsEmpty);
-        Assert.False(k.IsEmpty);
-
-        var x = converter.Decode(in i);
-        var y = converter.DecodeAuto(ref j);
-        var z = converter.DecodeWithLengthPrefix(ref k);
-        Assert.Equal(data, x);
-        Assert.Equal(data, y);
-        Assert.Equal(data, z);
-
-        Assert.True(j.IsEmpty);
-        Assert.True(k.IsEmpty);
+        ConverterTests.TestVariableEncodeDecodeMethods(converter, data);
     }
 
     [Fact(DisplayName = "Null Value & Empty Bytes")]

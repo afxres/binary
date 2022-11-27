@@ -44,13 +44,13 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
     }
 
     [DebuggerStepThrough, DoesNotReturn]
-    private T ExceptKeyFound(int i) => throw new ArgumentException($"Named key '{this.names[i]}' already exists, type: {typeof(T)}");
+    private void ExceptKeyFound(int i) => throw new ArgumentException($"Named key '{this.names[i]}' already exists, type: {typeof(T)}");
 
     [DebuggerStepThrough, DoesNotReturn]
-    private T ExceptNotFound(int i) => throw new ArgumentException($"Named key '{this.names[i]}' does not exist, type: {typeof(T)}");
+    private void ExceptNotFound(int i) => throw new ArgumentException($"Named key '{this.names[i]}' does not exist, type: {typeof(T)}");
 
     [DebuggerStepThrough, DoesNotReturn]
-    private T ExceptNotFound(ReadOnlySpan<long> span)
+    private void ExceptNotFound(ReadOnlySpan<long> span)
     {
         var cursor = -1;
         var required = this.required;
@@ -61,7 +61,7 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
             cursor = i;
             break;
         }
-        return ExceptNotFound(cursor);
+        ExceptNotFound(cursor);
     }
 
     public override void Encode(ref Allocator allocator, T? item)
@@ -103,7 +103,7 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
             {
                 ref var handle = ref values[cursor];
                 if (handle is not 0)
-                    return ExceptKeyFound(cursor);
+                    ExceptKeyFound(cursor);
                 handle = NamedObjectTemplates.GetIndexData(offset, length);
                 if (required[cursor] is false)
                     continue;
@@ -114,7 +114,7 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
         Debug.Assert(remain >= 0);
         Debug.Assert(remain <= this.memberCapacity);
         if (remain is not 0)
-            return ExceptNotFound(values);
+            ExceptNotFound(values);
         return decode.Invoke(span, values);
     }
 }
