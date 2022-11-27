@@ -65,26 +65,26 @@ internal static class FallbackPrimitivesMethods
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static IConverter GetValueTupleConverter(IGeneratorContext context, Type type)
     {
-        static void Fields(Type type, Action<FieldInfo> action)
+        static void Invoke(Type type, Action<FieldInfo> action)
         {
-            var names = Names.Take(type.GetGenericArguments().Length);
-            var fields = names.Select(x => CommonModule.GetPublicInstanceField(type, x)).ToList();
-            fields.ForEach(action);
+            foreach (var i in Names.Take(type.GetGenericArguments().Length))
+                action.Invoke(CommonModule.GetPublicInstanceField(type, i));
+            return;
         }
 
         static void Expand(IGeneratorContext context, List<(Type, ContextMemberInitializer, IConverter)> result, FieldInfo field, ContextMemberInitializer parent)
         {
             var type = field.FieldType;
-            var func = new ContextMemberInitializer(x => Expression.Field(parent.Invoke(x), field));
+            var init = new ContextMemberInitializer(x => Expression.Field(parent.Invoke(x), field));
             var converter = context.GetConverter(type);
             if (type.IsValueType && IsTupleOrValueTuple(type) && converter.GetType() == typeof(TupleObjectConverter<>).MakeGenericType(type))
-                Fields(type, x => Expand(context, result, x, func));
+                Invoke(type, x => Expand(context, result, x, init));
             else
-                result.Add((type, func.Invoke, converter));
+                result.Add((type, init, converter));
         }
 
         var result = new List<(Type Type, ContextMemberInitializer Member, IConverter Converter)>();
-        Fields(type, x => Expand(context, result, x, v => v));
+        Invoke(type, x => Expand(context, result, x, v => v));
         var members = result.Select(x => x.Member).ToImmutableArray();
         var converters = result.Select(x => x.Converter).ToImmutableArray();
         var constructor = new ContextObjectConstructor((delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, members));
