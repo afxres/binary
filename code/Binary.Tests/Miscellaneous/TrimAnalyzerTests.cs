@@ -57,7 +57,6 @@ public class TrimAnalyzerTests
         var types = typeof(IConverter).Assembly.GetTypes();
         var members = types.SelectMany(x => x.GetMembers(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)).ToList();
         var memberAttributes = members.ToImmutableDictionary(x => x, x => x.GetCustomAttributes(true).Cast<Attribute>().ToList());
-        var memberAttributeTypes = memberAttributes.Values.SelectMany(x => x).Select(x => x.GetType()).Distinct().ToList();
         var memberWithKnownAttributes = memberAttributes.Where(x => x.Value.Any(x => x is RequiresUnreferencedCodeAttribute)).ToImmutableDictionary();
         var messages = memberWithKnownAttributes.Select(x => x.Value.OfType<RequiresUnreferencedCodeAttribute>().Single().Message).ToHashSet();
         var message = Assert.Single(messages);

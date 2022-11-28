@@ -27,16 +27,16 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
 
     private readonly EncodeDelegate<T> encode;
 
-    private readonly NamedObjectDecodeDelegate<T> decode;
+    private readonly NamedObjectDecodeDelegate<T>? decode;
 
-    public NamedObjectConverter(EncodeDelegate<T> encode, NamedObjectDecodeDelegate<T> decode, ImmutableArray<string> names, ImmutableArray<bool> required, ByteViewDictionary<int> dictionary)
+    public NamedObjectConverter(EncodeDelegate<T> encode, NamedObjectDecodeDelegate<T>? decode, ImmutableArray<string> names, ImmutableArray<bool> required, ByteViewDictionary<int> dictionary)
     {
         Debug.Assert(dictionary is not null);
         Debug.Assert(names.Any());
         Debug.Assert(names.Length == required.Length);
         this.names = names;
         this.required = required;
-        this.memberRequired = required.Count(x => x is true);
+        this.memberRequired = required.Count(x => x);
         this.memberCapacity = required.Length;
         this.dictionary = dictionary;
         this.encode = encode;
