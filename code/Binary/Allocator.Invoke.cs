@@ -49,7 +49,6 @@ public ref partial struct Allocator
             allocator.target = ref target;
             allocator.bounds = bounds;
         }
-        Debug.Assert(offset >= 0);
         Debug.Assert(offset <= source);
         Debug.Assert(offset <= allocator.bounds);
     }

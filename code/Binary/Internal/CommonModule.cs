@@ -88,7 +88,7 @@ internal static class CommonModule
     internal static IConverter GetConverter(IConverter? converter, Type type, Type? creator)
     {
         var target = typeof(Converter<>).MakeGenericType(type);
-        if (converter is not null && target.IsAssignableFrom(converter.GetType()))
+        if (converter is not null && target.IsInstanceOfType(converter))
             return converter;
         var actual = converter is null ? "null" : $"'{converter.GetType()}'";
         var result = $"Can not convert {actual} to '{target}'";

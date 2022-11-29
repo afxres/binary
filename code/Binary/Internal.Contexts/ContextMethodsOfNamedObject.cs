@@ -13,7 +13,7 @@ using System.Reflection;
 
 internal static class ContextMethodsOfNamedObject
 {
-    private delegate bool EnsureMethodDelegate<T>(T? item);
+    private delegate bool EnsureMethodDelegate<in T>(T? item);
 
     private delegate bool ExistsMethodDelegate(ReadOnlySpan<long> data, int index);
 
