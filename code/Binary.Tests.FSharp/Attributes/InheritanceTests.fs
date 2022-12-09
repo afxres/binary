@@ -91,10 +91,10 @@ type Juliet () =
     member val A = 0 with get, set
 
 [<Theory>]
-[<InlineData(typeof<Juliet>, "I", 0)>]
-let ``Tuple Key Duplicated`` (t : Type, propertyName : string, key : int) =
+[<InlineData(typeof<Juliet>, 0)>]
+let ``Tuple Key Duplicated`` (t : Type, key : int) =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-    let message = sprintf "Tuple key '%d' already exists, property name: %s, type: %O" key propertyName t
+    let message = sprintf "Tuple key '%d' already exists, type: %O" key t
     Assert.Equal(message, error.Message)
     ()
 
@@ -110,10 +110,10 @@ type Lima () =
     member val A = 0 with get, set
 
 [<Theory>]
-[<InlineData(typeof<Lima>, "K", "item")>]
-let ``Named Key Duplicated`` (t : Type, propertyName : string, key : string) =
+[<InlineData(typeof<Lima>, "item")>]
+let ``Named Key Duplicated`` (t : Type, key : string) =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-    let message = sprintf "Named key '%s' already exists, property name: %s, type: %O" key propertyName t
+    let message = sprintf "Named key '%s' already exists, type: %O" key t
     Assert.Equal(message, error.Message)
     ()
 
