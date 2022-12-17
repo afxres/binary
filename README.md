@@ -3,7 +3,7 @@
 Summary:
 
 ![GitHub repo size](https://img.shields.io/github/repo-size/afxres/binary)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/afxres/binary/dotnet-tests)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/afxres/binary/dotnet-tests.yml?branch=main)
 
 | Package                       | Version        | Downloads        | Descriptions        |
 | :---------------------------- | :------------- | :--------------- | :------------------ |
