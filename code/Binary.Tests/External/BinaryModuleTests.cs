@@ -11,19 +11,31 @@ using Xunit;
 
 public class BinaryModuleTests
 {
-    private delegate int HashCode(ref byte source, int length);
+    private struct LongDataSlot
+    {
+        public ulong Head;
+
+        public ulong Tail;
+    }
 
     private delegate int Capacity(int capacity);
 
+    private delegate uint HashCode(ref byte source, int length);
+
     private delegate bool Equality(ref byte source, int length, byte[] buffer);
 
-    private delegate long LongData(ref byte source, int length);
-
-    private static T GetInternalDelegate<T>(string name) where T : Delegate
+    private static MethodInfo GetInternalMethod(string name)
     {
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryModule");
         Assert.NotNull(type);
         var method = type.GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+        return method;
+    }
+
+    private static T GetInternalDelegate<T>(string name) where T : Delegate
+    {
+        var method = GetInternalMethod(name);
         Assert.NotNull(method);
         return (T)Delegate.CreateDelegate(typeof(T), Assert.IsAssignableFrom<MethodInfo>(method));
     }
@@ -43,9 +55,11 @@ public class BinaryModuleTests
         return GetInternalDelegate<Capacity>("GetCapacity");
     }
 
-    private static LongData GetLongDataDelegate()
+    private static unsafe delegate*<ref byte, int, LongDataSlot> GetLongDataDelegate()
     {
-        return GetInternalDelegate<LongData>("GetLongData");
+        var method = GetInternalMethod("GetLongData");
+        var handle = method.MethodHandle;
+        return (delegate*<ref byte, int, LongDataSlot>)handle.GetFunctionPointer();
     }
 
     [Theory(DisplayName = "Equality (length mismatch)")]
@@ -117,7 +131,7 @@ public class BinaryModuleTests
     {
         var names = typeof(object).Assembly.GetTypes().Select(x => x.Name).Distinct().ToArray();
         var function = GetHashCodeDelegate();
-        var result = new List<int>(names.Length);
+        var result = new List<uint>(names.Length);
         foreach (var i in names)
         {
             var buffer = Encoding.UTF8.GetBytes(i);
@@ -141,7 +155,7 @@ public class BinaryModuleTests
     {
         var function = GetHashCodeDelegate();
         var result = function.Invoke(ref MemoryMarshal.GetReference<byte>(default), 0);
-        Assert.Equal(0, result);
+        Assert.Equal(0U, result);
     }
 
     [Fact(DisplayName = "Prime Table")]
@@ -207,58 +221,71 @@ public class BinaryModuleTests
     }
 
     [Fact(DisplayName = "Long Data (zero length)")]
-    public void LongDataZeroLength()
+    public unsafe void LongDataZeroLength()
     {
         var function = GetLongDataDelegate();
-        var result = function.Invoke(ref MemoryMarshal.GetReference<byte>(default), 0);
-        Assert.Equal(0L, result);
+        var result = function(ref MemoryMarshal.GetReference<byte>(default), 0);
+        Assert.Equal(0UL, result.Head);
+        Assert.Equal(0UL, result.Tail);
     }
 
     [Fact(DisplayName = "Long Data (all possible sizes)")]
-    public void LongDataAllPossibleSizes()
+    public unsafe void LongDataAllPossibleSizes()
     {
         var function = GetLongDataDelegate();
-        var origin = "12345678";
-        var values = new List<string>();
-        for (var i = 0; i <= 8; i++)
+        var origin = "123456789ABCDEF";
+        var ignore = new List<string>();
+        for (var length = 0; length <= 15; length++)
         {
-            var source = origin.Substring(0, i);
-            var buffer = Encoding.UTF8.GetBytes(source.ToString()).AsSpan();
-            var result = function.Invoke(ref MemoryMarshal.GetReference(buffer), buffer.Length);
-            var target = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<long, byte>(ref result), sizeof(long));
-            var direct = Encoding.UTF8.GetString(target);
-            var actual = direct.Trim('\0');
-            if (BitConverter.IsLittleEndian)
-                Assert.Equal(source, actual);
+            var source = origin.Substring(0, length);
+            var buffer = Encoding.UTF8.GetBytes(source.ToString());
+            var result = function(ref MemoryMarshal.GetArrayDataReference(buffer), buffer.Length);
+            Assert.Equal((uint)length, (uint)(result.Tail & 0xFFUL));
+
+            var headSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<ulong, byte>(ref result.Head), sizeof(long));
+            var tailSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<ulong, byte>(ref result.Tail), sizeof(long));
+            var headPart = (length & 8) is 0 ? Array.Empty<byte>() : headSpan.ToArray();
+            var tailPart = tailSpan.Slice(1, length & 7).ToArray();
+            var expect = Enumerable.Concat(tailPart, headPart).ToArray();
+            var actual = Encoding.UTF8.GetString(expect);
+            Assert.Equal(source, actual);
             var expected = source.ToCharArray().ToHashSet();
             var response = actual.ToCharArray().ToHashSet();
             Assert.Equal(expected, response);
-            values.Add(actual);
+            ignore.Add(actual);
         }
-        Assert.Equal(9, values.Count);
-        Assert.Equal(string.Empty, values.First());
-        Assert.Equal(origin, values.Last());
+        Assert.Equal(16, ignore.Count);
+        Assert.Equal(string.Empty, ignore.First());
+        Assert.Equal(origin, ignore.Last());
     }
 
     [Fact(DisplayName = "Long Data (random bytes)")]
-    public void LongDataRandomBytes()
+    public unsafe void LongDataRandomBytes()
     {
         var function = GetLongDataDelegate();
         var random = new Random();
-        var values = new List<(long, byte[])>();
-        for (var i = 1; i <= 8; i++)
+        var ignore = new List<byte[]>();
+        for (var length = 1; length <= 15; length++)
         {
             for (var k = 0; k < 1024; k++)
             {
-                var source = new byte[i];
-                random.NextBytes(source);
-                var result = function.Invoke(ref MemoryMarshal.GetReference(new Span<byte>(source)), source.Length);
-                var target = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<long, byte>(ref result), sizeof(long));
-                Assert.True(target.Slice(i).ToArray().All(x => x is 0));
-                Assert.True(target.Slice(0, i).SequenceEqual(source));
-                values.Add((result, source));
+                var buffer = new byte[length];
+                random.NextBytes(buffer);
+                var result = function(ref MemoryMarshal.GetArrayDataReference(buffer), buffer.Length);
+                Assert.Equal((uint)length, (uint)(result.Tail & 0xFFUL));
+
+                var headSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<ulong, byte>(ref result.Head), sizeof(long));
+                var tailSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<ulong, byte>(ref result.Tail), sizeof(long));
+                var headPart = (length & 8) is 0 ? Array.Empty<byte>() : headSpan.ToArray();
+                var tailPart = tailSpan.Slice(1, length & 7).ToArray();
+                var expect = Enumerable.Concat(tailPart, headPart).ToArray();
+                Assert.Equal(buffer, expect);
+
+                var remain = tailSpan.Slice(1 + (length & 7));
+                Assert.True(remain.IsEmpty || remain.ToArray().All(x => x is 0));
+                ignore.Add(buffer);
             }
         }
-        Assert.Equal(8192, values.Count);
+        Assert.Equal(15360, ignore.Count);
     }
 }

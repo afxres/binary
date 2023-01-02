@@ -22,7 +22,7 @@ internal sealed class HashCodeDictionary<T> : ByteViewDictionary<T>
         var buckets = this.buckets;
         var records = this.records;
         var hash = BinaryModule.GetHashCode(ref source, length);
-        var next = buckets[(int)((uint)hash % (uint)buckets.Length)];
+        var next = buckets[(int)(hash % (uint)buckets.Length)];
         while ((uint)next < (uint)records.Length)
         {
             ref readonly var slot = ref records[next];

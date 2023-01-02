@@ -2,7 +2,7 @@
 
 internal struct LongDataSlot
 {
-    public long Data;
+    public ulong Head;
 
-    public int Size;
+    public ulong Tail;
 }

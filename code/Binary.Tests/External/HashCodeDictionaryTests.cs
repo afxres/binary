@@ -11,7 +11,7 @@ using Xunit;
 
 public class HashCodeDictionaryTests
 {
-    private delegate int HashCode(ref byte source, int length);
+    private delegate uint HashCode(ref byte source, int length);
 
     private delegate object CreateDictionary<T>(ImmutableArray<KeyValuePair<ReadOnlyMemory<byte>, T>> items, T? @default);
 
@@ -63,7 +63,7 @@ public class HashCodeDictionaryTests
             buffers.Add(buffer);
         }
 
-        var codes = new List<int>();
+        var codes = new List<uint>();
         foreach (var i in buffers)
         {
             var length = i.Length;

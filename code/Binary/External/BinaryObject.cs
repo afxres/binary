@@ -14,7 +14,7 @@ internal static class BinaryObject
 
     internal const int DataFallback = -1;
 
-    internal const int LongDataLimits = sizeof(long);
+    internal const int LongDataLimits = 15;
 
     internal static ByteViewDictionary<int>? Create(ImmutableArray<ReadOnlyMemory<byte>> items)
     {
@@ -27,9 +27,9 @@ internal static class BinaryObject
 
     private static LongDataDictionary? CreateLongDataDictionary(ImmutableArray<ReadOnlyMemory<byte>> items)
     {
-        static long Select(ReadOnlySpan<byte> span) => BinaryModule.GetLongData(ref MemoryMarshal.GetReference(span), span.Length);
-        var records = items.Select(x => new LongDataSlot { Data = Select(x.Span), Size = x.Length }).ToArray();
-        if (records.Select(x => (x.Data, x.Size)).Distinct().Count() != items.Length)
+        static LongDataSlot Invoke(ReadOnlySpan<byte> span) => BinaryModule.GetLongData(ref MemoryMarshal.GetReference(span), span.Length);
+        var records = items.Select(x => Invoke(x.Span)).ToArray();
+        if (records.DistinctBy(x => (x.Head, x.Tail)).Count() != items.Length)
             return null;
         return new LongDataDictionary(records);
     }
@@ -47,7 +47,7 @@ internal static class BinaryObject
             var length = buffer.Length;
             ref var source = ref MemoryMarshal.GetArrayDataReference(buffer);
             var hash = BinaryModule.GetHashCode(ref source, length);
-            ref var next = ref buckets[(int)((uint)hash % (uint)buckets.Length)];
+            ref var next = ref buckets[(int)(hash % (uint)buckets.Length)];
             while ((uint)next < (uint)records.Length)
             {
                 ref var slot = ref records[next];

@@ -6,14 +6,14 @@ using System.Linq;
 
 internal sealed class LongDataDictionary : ByteViewDictionary<int>
 {
-    private readonly LongDataSlot[] slots;
+    private readonly LongDataSlot[] bits;
 
-    public LongDataDictionary(LongDataSlot[] slots)
+    public LongDataDictionary(LongDataSlot[] bits)
     {
-        Debug.Assert(slots.Any());
-        Debug.Assert(slots.All(x => (uint)x.Size <= BinaryObject.LongDataLimits));
-        Debug.Assert(slots.Length <= BinaryObject.ItemLimits);
-        this.slots = slots;
+        Debug.Assert(bits.Any());
+        Debug.Assert(bits.All(x => (uint)(x.Tail & 0xFF) <= BinaryObject.LongDataLimits));
+        Debug.Assert(bits.Length <= BinaryObject.ItemLimits);
+        this.bits = bits;
     }
 
     public override int GetValue(ref byte source, int length)
@@ -21,9 +21,9 @@ internal sealed class LongDataDictionary : ByteViewDictionary<int>
         if ((uint)length > BinaryObject.LongDataLimits)
             return BinaryObject.DataFallback;
         var data = BinaryModule.GetLongData(ref source, length);
-        var slots = this.slots;
-        for (var i = 0; i < slots.Length; i++)
-            if (data == slots[i].Data && length == slots[i].Size)
+        var bits = this.bits;
+        for (var i = 0; i < bits.Length; i++)
+            if (data.Head == bits[i].Head && data.Tail == bits[i].Tail)
                 return i;
         return BinaryObject.DataFallback;
     }

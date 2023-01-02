@@ -1,11 +1,14 @@
 ﻿namespace Mikodev.Binary.External;
 
+using Mikodev.Binary.External.Contexts;
 using Mikodev.Binary.Internal;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using UInt32 = System.UInt32;
+using UInt64 = System.UInt64;
 
 internal static class BinaryModule
 {
@@ -24,6 +27,9 @@ internal static class BinaryModule
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static T Load<T>(ref byte source) => Unsafe.ReadUnaligned<T>(ref source);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static T Load<T>(ref byte source, int offset) => Unsafe.ReadUnaligned<T>(ref Unsafe.Add(ref source, offset));
+
     internal static int GetCapacity(int capacity)
     {
         var result = Primes.FirstOrDefault(x => x >= capacity);
@@ -33,14 +39,14 @@ internal static class BinaryModule
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static int GetHashCode(ref byte source, int length)
+    internal static uint GetHashCode(ref byte source, int length)
     {
         var result = (uint)length;
         for (; length >= 4; length -= 4, source = ref Unsafe.Add(ref source, 4))
             result = Join(result, Load<uint>(ref source));
         for (; length >= 1; length -= 1, source = ref Unsafe.Add(ref source, 1))
             result = Join(result, Load<byte>(ref source));
-        return (int)result;
+        return result;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -61,15 +67,15 @@ internal static class BinaryModule
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static long GetLongData(ref byte source, int length)
+    internal static LongDataSlot GetLongData(ref byte source, int length)
     {
         Debug.Assert(length >= 0);
-        Debug.Assert(length <= 8);
-        if (length is 8)
-            return Load<long>(ref source);
-        var result = (length & 4) is 0 ? 0 : (ulong)Load<uint>(ref Unsafe.Add(ref source, length & 3));
+        Debug.Assert(length <= 15);
+        var head = (length & 8) is 0 ? 0UL : Load<UInt64>(ref source, length & 7);
+        var tail = (length & 4) is 0 ? 0UL : Load<UInt32>(ref source, length & 3);
         for (var i = (length & 3) - 1; i >= 0; i--)
-            result = (result << 8) | Load<byte>(ref Unsafe.Add(ref source, i));
-        return (long)result;
+            tail = (tail << 8) | Load<byte>(ref source, i);
+        tail = (tail << 8) | (uint)length;
+        return new LongDataSlot { Head = head, Tail = tail };
     }
 }

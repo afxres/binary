@@ -4,6 +4,7 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Xunit;
@@ -62,10 +63,10 @@ public class LongDataDictionaryTests
         }
     }
 
-    [Theory(DisplayName = "Long Key")]
+    [Theory(DisplayName = "Long Key Length Invalid")]
     [InlineData(int.MinValue)]
     [InlineData(-1)]
-    [InlineData(9)]
+    [InlineData(16)]
     [InlineData(int.MaxValue)]
     public void DictionaryQueryLengthOverflow(int length)
     {
@@ -75,7 +76,7 @@ public class LongDataDictionaryTests
         var result = create.Invoke(arguments);
         var query = GetGetValueDelegate(result);
         Assert.NotNull(result);
-        var actual = query.Invoke(ref MemoryMarshal.GetReference<byte>(default), length);
+        var actual = query.Invoke(ref Unsafe.NullRef<byte>(), length);
         Assert.Equal(-1, actual);
     }
 

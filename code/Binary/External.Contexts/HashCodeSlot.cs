@@ -4,7 +4,7 @@ internal struct HashCodeSlot<T>
 {
     public byte[] Head;
 
-    public int Hash;
+    public uint Hash;
 
     public int Next;
 
