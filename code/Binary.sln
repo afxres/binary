@@ -45,6 +45,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.CollectionDecode
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.AllocatorStringTests", "Benchmarks.AllocatorStringTests\Benchmarks.AllocatorStringTests.csproj", "{3249A207-7B39-488E-A1A6-08534B49120B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks.BinaryDictionaryTests", "Benchmarks.BinaryDictionaryTests\Benchmarks.BinaryDictionaryTests.csproj", "{FE0F51D7-BB3B-43F1-8AE0-A9260B1FE736}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -131,6 +133,10 @@ Global
 		{3249A207-7B39-488E-A1A6-08534B49120B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3249A207-7B39-488E-A1A6-08534B49120B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3249A207-7B39-488E-A1A6-08534B49120B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE0F51D7-BB3B-43F1-8AE0-A9260B1FE736}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE0F51D7-BB3B-43F1-8AE0-A9260B1FE736}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE0F51D7-BB3B-43F1-8AE0-A9260B1FE736}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE0F51D7-BB3B-43F1-8AE0-A9260B1FE736}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -151,6 +157,7 @@ Global
 		{68182CCE-0B48-49ED-8457-05D521457F04} = {969F75DF-879E-42A1-8FA2-C049EAFFE30C}
 		{4819DC40-E976-4F59-9544-0B5CB9446B3A} = {969F75DF-879E-42A1-8FA2-C049EAFFE30C}
 		{3249A207-7B39-488E-A1A6-08534B49120B} = {969F75DF-879E-42A1-8FA2-C049EAFFE30C}
+		{FE0F51D7-BB3B-43F1-8AE0-A9260B1FE736} = {969F75DF-879E-42A1-8FA2-C049EAFFE30C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {733A8CC2-948C-4B6C-A8D1-A458A3447EB2}
