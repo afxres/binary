@@ -7,8 +7,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using UInt32 = System.UInt32;
-using UInt64 = System.UInt64;
+using BIN1 = System.Byte;
+using BIN2 = System.UInt16;
+using BIN4 = System.UInt32;
+using BIN8 = System.UInt64;
 
 internal static class BinaryModule
 {
@@ -57,12 +59,15 @@ internal static class BinaryModule
         if (length is 0)
             return true;
         ref var origin = ref MemoryMarshal.GetArrayDataReference(buffer);
-        for (; length >= 4; length -= 4, source = ref Unsafe.Add(ref source, 4), origin = ref Unsafe.Add(ref origin, 4))
-            if (Load<uint>(ref source) != Load<uint>(ref origin))
+        for (; length >= 8; length -= 8, source = ref Unsafe.Add(ref source, 8), origin = ref Unsafe.Add(ref origin, 8))
+            if (Load<BIN8>(ref source) != Load<BIN8>(ref origin))
                 return false;
-        for (; length >= 1; length -= 1, source = ref Unsafe.Add(ref source, 1), origin = ref Unsafe.Add(ref origin, 1))
-            if (Load<byte>(ref source) != Load<byte>(ref origin))
-                return false;
+        if ((length & 4) is not 0 && Load<BIN4>(ref source, length & 3) != Load<BIN4>(ref origin, length & 3))
+            return false;
+        if ((length & 2) is not 0 && Load<BIN2>(ref source, length & 1) != Load<BIN2>(ref origin, length & 1))
+            return false;
+        if ((length & 1) is not 0 && Load<BIN1>(ref source, length & 0) != Load<BIN1>(ref origin, length & 0))
+            return false;
         return true;
     }
 
@@ -71,11 +76,12 @@ internal static class BinaryModule
     {
         Debug.Assert(length >= 0);
         Debug.Assert(length <= 15);
-        var head = (length & 8) is 0 ? 0UL : Load<UInt64>(ref source, length & 7);
-        var tail = (length & 4) is 0 ? 0UL : Load<UInt32>(ref source, length & 3);
-        for (var i = (length & 3) - 1; i >= 0; i--)
-            tail = (tail << 8) | Load<byte>(ref source, i);
-        tail = (tail << 8) | (uint)length;
-        return new LongDataSlot { Head = head, Tail = tail };
+        var head = (length & 8) is 0 ? 0UL : Load<BIN8>(ref source, length & 7);
+        var tail = (length & 4) is 0 ? 0UL : Load<BIN4>(ref source, length & 3);
+        if ((length & 2) is not 0)
+            tail = (tail << 0x10) | Load<BIN2>(ref source, length & 1);
+        if ((length & 1) is not 0)
+            tail = (tail << 0x08) | Load<BIN1>(ref source, length & 0);
+        return new LongDataSlot { Head = head, Tail = (tail << 0x08) | (uint)length };
     }
 }

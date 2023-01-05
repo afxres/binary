@@ -5,33 +5,33 @@ using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using UInt16 = System.UInt16;
-using UInt32 = System.UInt32;
-using UInt64 = System.UInt64;
+using BIN2 = System.UInt16;
+using BIN4 = System.UInt32;
+using BIN8 = System.UInt64;
 
 internal static class LittleEndianFallback
 {
     private struct Raw128Data
     {
-        public UInt64 Lower;
+        public ulong Lower;
 
-        public UInt64 Upper;
+        public ulong Upper;
     }
 
     private static T Decode128<T>(ref byte source) where T : unmanaged
     {
         Debug.Assert(Unsafe.SizeOf<T>() is 16);
         var result = default(T);
-        Unsafe.As<T, Raw128Data>(ref result).Lower = BinaryPrimitives.ReadUInt64LittleEndian(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref source, 0), sizeof(UInt64)));
-        Unsafe.As<T, Raw128Data>(ref result).Upper = BinaryPrimitives.ReadUInt64LittleEndian(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref source, 8), sizeof(UInt64)));
+        Unsafe.As<T, Raw128Data>(ref result).Lower = BinaryPrimitives.ReadUInt64LittleEndian(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref source, 0), sizeof(ulong)));
+        Unsafe.As<T, Raw128Data>(ref result).Upper = BinaryPrimitives.ReadUInt64LittleEndian(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref source, 8), sizeof(ulong)));
         return result;
     }
 
     private static void Encode128<T>(ref byte target, T item) where T : unmanaged
     {
         Debug.Assert(Unsafe.SizeOf<T>() is 16);
-        BinaryPrimitives.WriteUInt64LittleEndian(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, 0), sizeof(UInt64)), Unsafe.As<T, Raw128Data>(ref item).Lower);
-        BinaryPrimitives.WriteUInt64LittleEndian(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, 8), sizeof(UInt64)), Unsafe.As<T, Raw128Data>(ref item).Upper);
+        BinaryPrimitives.WriteUInt64LittleEndian(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, 0), sizeof(ulong)), Unsafe.As<T, Raw128Data>(ref item).Lower);
+        BinaryPrimitives.WriteUInt64LittleEndian(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, 8), sizeof(ulong)), Unsafe.As<T, Raw128Data>(ref item).Upper);
     }
 
     internal static T Decode<T>(ref byte source) where T : unmanaged
@@ -64,9 +64,9 @@ internal static class LittleEndianFallback
         switch (Unsafe.SizeOf<T>())
         {
             case 0x01: Unsafe.WriteUnaligned(ref target, item); break;
-            case 0x02: BinaryPrimitives.WriteUInt16LittleEndian(MakeSpan(ref target), MakeCast<UInt16>(item)); break;
-            case 0x04: BinaryPrimitives.WriteUInt32LittleEndian(MakeSpan(ref target), MakeCast<UInt32>(item)); break;
-            case 0x08: BinaryPrimitives.WriteUInt64LittleEndian(MakeSpan(ref target), MakeCast<UInt64>(item)); break;
+            case 0x02: BinaryPrimitives.WriteUInt16LittleEndian(MakeSpan(ref target), MakeCast<BIN2>(item)); break;
+            case 0x04: BinaryPrimitives.WriteUInt32LittleEndian(MakeSpan(ref target), MakeCast<BIN4>(item)); break;
+            case 0x08: BinaryPrimitives.WriteUInt64LittleEndian(MakeSpan(ref target), MakeCast<BIN8>(item)); break;
             case 0x10: Encode128(ref target, item); break;
             default: throw new NotSupportedException();
         }

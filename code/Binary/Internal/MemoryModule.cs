@@ -5,9 +5,9 @@ using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Int16 = System.Int16;
-using Int32 = System.Int32;
-using Int64 = System.Int64;
+using NUM2 = System.Int16;
+using NUM4 = System.Int32;
+using NUM8 = System.Int64;
 
 internal static class MemoryModule
 {
@@ -37,9 +37,9 @@ internal static class MemoryModule
     {
         return item switch
         {
-            Int16 => swap is false ? item : (T)(object)BinaryPrimitives.ReverseEndianness((Int16)(object)item),
-            Int32 => swap is false ? item : (T)(object)BinaryPrimitives.ReverseEndianness((Int32)(object)item),
-            Int64 => swap is false ? item : (T)(object)BinaryPrimitives.ReverseEndianness((Int64)(object)item),
+            NUM2 => swap is false ? item : (T)(object)BinaryPrimitives.ReverseEndianness((NUM2)(object)item),
+            NUM4 => swap is false ? item : (T)(object)BinaryPrimitives.ReverseEndianness((NUM4)(object)item),
+            NUM8 => swap is false ? item : (T)(object)BinaryPrimitives.ReverseEndianness((NUM8)(object)item),
             _ => throw new NotSupportedException(),
         };
     }
