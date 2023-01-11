@@ -2,7 +2,7 @@
 
 using System;
 
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
 public sealed class NamedKeyAttribute : Attribute
 {
     public string Key { get; }

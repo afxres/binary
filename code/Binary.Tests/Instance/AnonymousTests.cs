@@ -22,7 +22,7 @@ public class AnonymousTests
     {
         var a = new { };
         var error = Assert.Throws<ArgumentException>(() => this.generator.GetConverter(a));
-        var message = $"No available property found, type: {a.GetType()}";
+        var message = $"No available member found, type: {a.GetType()}";
         Assert.Equal(message, error.Message);
     }
 

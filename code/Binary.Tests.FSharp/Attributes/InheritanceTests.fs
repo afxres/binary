@@ -47,7 +47,7 @@ type Tango() =
 [<InlineData(typeof<Foxtrot>, "NamedObjectAttribute", "NamedKeyAttribute", "D")>]
 let ``Require Object Attribute For Key Attribute`` (t: Type, required : string, existed : string, propertyName : string) =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-    let message = sprintf "Require '%s' for '%s', property name: %s, type: %O" required existed propertyName t
+    let message = sprintf "Require '%s' for '%s', member name: %s, type: %O" required existed propertyName t
     Assert.Equal(message, error.Message)
     ()
 
@@ -73,8 +73,8 @@ type Hotel () =
 let ``Multiple Attributes On Base Class Property`` (t : Type, propertyName : string) =
     let thisError = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t |> ignore)
     let baseError = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t.BaseType |> ignore)
-    let thisMessage = sprintf "Multiple attributes found, property name: %s, type: %O" propertyName t
-    let baseMessage = sprintf "Multiple attributes found, property name: %s, type: %O" propertyName t.BaseType
+    let thisMessage = sprintf "Multiple attributes found, member name: %s, type: %O" propertyName t
+    let baseMessage = sprintf "Multiple attributes found, member name: %s, type: %O" propertyName t.BaseType
     Assert.Equal(thisMessage, thisError.Message)
     Assert.Equal(baseMessage, baseError.Message)
     ()
@@ -133,7 +133,7 @@ let ``Require Object Attribute On This Class For Base Class Key Attribute`` (t: 
     // ensure base class works
     generator.GetConverter t.BaseType |> ignore
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-    let message = sprintf "Require '%s' for '%s', property name: %s, type: %O" required existed propertyName t
+    let message = sprintf "Require '%s' for '%s', member name: %s, type: %O" required existed propertyName t
     Assert.Equal(message, error.Message)
     ()
 

@@ -24,11 +24,6 @@ internal static class ContextMethods
         return source.All(x => x > 0) ? source.Sum() : 0;
     }
 
-    internal static ImmutableArray<ContextMemberInitializer> GetMemberInitializers(ImmutableArray<PropertyInfo> properties)
-    {
-        return properties.Select(x => new ContextMemberInitializer(e => Expression.Property(e, x))).ToImmutableArray();
-    }
-
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static Delegate GetDecodeDelegate(Type delegateType, ContextObjectInitializer initializer, ConstructorInfo constructor)
     {

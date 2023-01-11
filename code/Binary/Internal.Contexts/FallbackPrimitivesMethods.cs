@@ -59,7 +59,8 @@ internal static class FallbackPrimitivesMethods
         var converters = types.Select(context.GetConverter).ToImmutableArray();
         var properties = names.Select(x => CommonModule.GetPublicInstanceProperty(type, x)).ToImmutableArray();
         var constructor = new ContextObjectConstructor((delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, constructorInfo));
-        return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, ContextMethods.GetMemberInitializers(properties));
+        var initializers = properties.Select(x => new ContextMemberInitializer(e => Expression.Property(e, x))).ToImmutableArray();
+        return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, initializers);
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]

@@ -136,7 +136,7 @@ type ThrowTests() =
     [<MemberData("Data Alpha")>]
     member __.``No Available Property``(t : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        Assert.Equal(sprintf "No available property found, type: %O" t, error.Message)
+        Assert.Equal(sprintf "No available member found, type: %O" t, error.Message)
         ()
 
     static member ``Data No Public Getter`` = [|
@@ -150,7 +150,7 @@ type ThrowTests() =
     [<MemberData("Data No Public Getter")>]
     member __.``No Available Getter`` (t : Type, name : string) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        Assert.Equal(sprintf "No available getter found, property name: %s, type: %O" name t, error.Message)
+        Assert.Equal(sprintf "No available getter found, member name: %s, type: %O" name t, error.Message)
         ()
 
     static member ``Data Delegate`` = [|

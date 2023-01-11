@@ -33,13 +33,13 @@ internal static class ContextMethodsOfNamedObject
 
     private static readonly MethodInfo EnsureMethodInfo = new EnsureMethodDelegate<object>(BridgeModule.NotDefaultValue).Method.GetGenericMethodDefinition();
 
-    internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<PropertyInfo> properties, ImmutableArray<string> names, ImmutableArray<ReadOnlyMemory<byte>> memories, ImmutableArray<bool> required, ByteViewDictionary<int> dictionary)
+    internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<ContextMemberInitializer> members, ImmutableArray<string> names, ImmutableArray<ReadOnlyMemory<byte>> memories, ImmutableArray<bool> required, ByteViewDictionary<int> dictionary)
     {
-        Debug.Assert(properties.Length == names.Length);
-        Debug.Assert(properties.Length == memories.Length);
-        Debug.Assert(properties.Length == required.Length);
-        Debug.Assert(properties.Length == converters.Length);
-        var encode = GetEncodeDelegateAsNamedObject(type, converters, properties, memories, required);
+        Debug.Assert(members.Length == names.Length);
+        Debug.Assert(members.Length == memories.Length);
+        Debug.Assert(members.Length == required.Length);
+        Debug.Assert(members.Length == converters.Length);
+        var encode = GetEncodeDelegateAsNamedObject(type, converters, members, memories, required);
         var decode = GetDecodeDelegateAsNamedObject(type, converters, required, constructor);
         var converterArguments = new object?[] { encode, decode, names, required, dictionary };
         var converterType = typeof(NamedObjectConverter<>).MakeGenericType(type);
@@ -47,7 +47,7 @@ internal static class ContextMethodsOfNamedObject
         return (IConverter)converter;
     }
 
-    private static Delegate GetEncodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<PropertyInfo> properties, ImmutableArray<ReadOnlyMemory<byte>> memories, ImmutableArray<bool> required)
+    private static Delegate GetEncodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<ContextMemberInitializer> members, ImmutableArray<ReadOnlyMemory<byte>> memories, ImmutableArray<bool> required)
     {
         static void Action(ref Allocator allocator, ReadOnlyMemory<byte> memory) => Converter.EncodeWithLengthPrefix(ref allocator, memory.Span);
         static byte[] Handle(ReadOnlyMemory<byte> memory) => Allocator.Invoke(memory, Action);
@@ -56,19 +56,18 @@ internal static class ContextMethodsOfNamedObject
         var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
         var result = new List<Expression>();
 
-        for (var i = 0; i < properties.Length; i++)
+        for (var i = 0; i < members.Length; i++)
         {
-            var property = properties[i];
             var converter = converters[i];
             var invoke = new List<Expression>();
-            var target = Expression.Property(item, property);
+            var target = members[i].Invoke(item);
             // append named key with length prefix (cached), then append value with length prefix
             invoke.Add(Expression.Call(AppendMethodInfo, allocator, Expression.Call(CreateMethodInfo, Expression.Constant(Handle(memories[i])))));
             invoke.Add(Expression.Call(Expression.Constant(converter), Converter.GetMethod(converter, nameof(IConverter.EncodeWithLengthPrefix)), allocator, target));
             if (required[i])
                 result.AddRange(invoke);
             else
-                result.Add(Expression.IfThen(Expression.Call(EnsureMethodInfo.MakeGenericMethod(property.PropertyType), target), Expression.Block(invoke)));
+                result.Add(Expression.IfThen(Expression.Call(EnsureMethodInfo.MakeGenericMethod(target.Type), target), Expression.Block(invoke)));
         }
 
         var delegateType = typeof(EncodeDelegate<>).MakeGenericType(type);

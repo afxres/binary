@@ -583,9 +583,9 @@ type AttributeTests() =
             Assert.False(attribute.Inherited)
             Assert.False(attribute.AllowMultiple)
             map.Add(i, attribute.ValidOn)
-        let a = AttributeTargets.Property
+        let a = AttributeTargets.Property ||| AttributeTargets.Field
         let b = AttributeTargets.Class ||| AttributeTargets.Struct ||| AttributeTargets.Enum ||| AttributeTargets.Interface
-        let c = AttributeTargets.Class ||| AttributeTargets.Struct ||| AttributeTargets.Enum ||| AttributeTargets.Interface ||| AttributeTargets.Property
+        let c = AttributeTargets.Class ||| AttributeTargets.Struct ||| AttributeTargets.Enum ||| AttributeTargets.Interface ||| AttributeTargets.Property ||| AttributeTargets.Field
         Assert.Equal(a, map.[typeof<NamedKeyAttribute>])
         Assert.Equal(a, map.[typeof<TupleKeyAttribute>])
         Assert.Equal(b, map.[typeof<NamedObjectAttribute>])
@@ -789,7 +789,7 @@ type AttributeTests() =
     [<InlineData(typeof<ClassWithMultipleAttributesOnProperty02>, "Data")>]
     member __.``Multiple Attributes On Property`` (t : Type, propertyName : string) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Multiple attributes found, property name: %s, type: %O" propertyName t
+        let message = sprintf "Multiple attributes found, member name: %s, type: %O" propertyName t
         Assert.Equal(message, error.Message)
         ()
 
@@ -798,7 +798,7 @@ type AttributeTests() =
     [<InlineData(typeof<ClassWithOnlyConverterCreatorAttribute>, "ConverterCreatorAttribute", "Collection")>]
     member __.``Require Key Attribute`` (t : Type, attributeName : string, propertyName : string) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Require 'NamedKeyAttribute' or 'TupleKeyAttribute' for '%s', property name: %s, type: %O" attributeName propertyName t
+        let message = sprintf "Require 'NamedKeyAttribute' or 'TupleKeyAttribute' for '%s', member name: %s, type: %O" attributeName propertyName t
         Assert.Equal(message, error.Message)
         ()
 
@@ -811,7 +811,7 @@ type AttributeTests() =
     [<InlineData(typeof<ClassMissAttribute06>, "TupleObjectAttribute", "TupleKeyAttribute", "Query")>]
     member __.``Require Object Attribute For Key Attribute`` (t: Type, required : string, existed : string, propertyName : string) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t |> ignore)
-        let message = sprintf "Require '%s' for '%s', property name: %s, type: %O" required existed propertyName t
+        let message = sprintf "Require '%s' for '%s', member name: %s, type: %O" required existed propertyName t
         Assert.Equal(message, error.Message)
         ()
 
@@ -845,7 +845,7 @@ type AttributeTests() =
     [<InlineData(typeof<ClassAsNamedObjectWithNullOrEmptyKey02>, "Empty")>]
     member __.``Name Key Null Or Empty`` (t : Type, propertyName : string) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Named key can not be null or empty, property name: %s, type: %O" propertyName t
+        let message = sprintf "Named key can not be null or empty, member name: %s, type: %O" propertyName t
         Assert.Equal(message, error.Message)
         ()
 
@@ -867,7 +867,7 @@ type AttributeTests() =
     [<InlineData(typeof<ClassWithBadConverterAttributeOnPropertyInherit02>, typeof<InvalidCastException>, "Bravo")>]
     member __.``Converter Attribute On Property With Invalid Type`` (t : Type, errorType : Type, propertyName : string) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Can not get custom converter via attribute, property name: %s, type: %O" propertyName t
+        let message = sprintf "Can not get custom converter via attribute, member name: %s, type: %O" propertyName t
         Assert.Equal(message, error.Message)
         let innerError = error.InnerException
         Assert.IsType(errorType, innerError)
@@ -891,7 +891,7 @@ type AttributeTests() =
     [<InlineData(typeof<ClassWithBadConverterCreatorAttributeOnPropertyInherit02>, typeof<MissingMethodException>, "Echo")>]
     member __.``Converter Creator Attribute On Property With Invalid Type`` (t : Type, errorType : Type, propertyName : string) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Can not get custom converter creator via attribute, property name: %s, type: %O" propertyName t
+        let message = sprintf "Can not get custom converter creator via attribute, member name: %s, type: %O" propertyName t
         Assert.Equal(message, error.Message)
         let innerError = error.InnerException
         Assert.IsType(errorType, innerError)
@@ -902,7 +902,7 @@ type AttributeTests() =
     [<InlineData(typeof<EmptyStructAsNamedObject>)>]
     member __.``Empty Type As Named Object`` (t : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = $"No available property found, type: {t}"
+        let message = $"No available member found, type: {t}"
         Assert.Equal(message, error.Message)
         Assert.Null error.ParamName
         Assert.Null error.InnerException
@@ -914,7 +914,7 @@ type AttributeTests() =
     [<InlineData(typeof<EmptyStructAsTupleObject>)>]
     member __.``Empty Type As Tuple Object`` (t : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = $"No available property found, type: {t}"
+        let message = $"No available member found, type: {t}"
         Assert.Equal(message, error.Message)
         Assert.Null error.ParamName
         Assert.Null error.InnerException
