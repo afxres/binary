@@ -7,6 +7,10 @@ using Xunit;
 
 public class RequiredMembersTests
 {
+    // non-required members with default value will be ignore in encoded bytes
+    // if type does not have any required member, all members will be treated as required member
+    // should we treat init-only properties as required members?
+
     private class SimplePartialRequiredObject
     {
         public required int Id { get; init; }

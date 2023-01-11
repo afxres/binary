@@ -4,7 +4,6 @@ using System;
 using Xunit;
 
 #pragma warning disable IDE0051 // Remove unused private members
-
 public class PropertyTests
 {
     private class Class
@@ -99,3 +98,4 @@ public class PropertyTests
         Assert.Equal(b, Value.StaticB);
     }
 }
+#pragma warning restore IDE0051 // Remove unused private members
