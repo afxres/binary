@@ -32,7 +32,7 @@ internal sealed class MetaMemberInfo
 
     public ContextMemberInitializer Initializer => this.initializer;
 
-    public Type Type => member is FieldInfo field ? field.FieldType : ((PropertyInfo)member).PropertyType;
+    public Type Type => this.member is FieldInfo field ? field.FieldType : ((PropertyInfo)this.member).PropertyType;
 
     public MetaMemberInfo(MemberInfo member, Attribute? key, Attribute? conversion, bool required)
     {
