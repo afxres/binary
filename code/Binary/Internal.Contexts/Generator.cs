@@ -30,15 +30,9 @@ internal sealed class Generator : IGenerator
         ArgumentNullException.ThrowIfNull(type);
         if (this.converters.TryGetValue(type, out var result))
             return result;
-        var context = new GeneratorContext(this.creators, this.converters);
-        try
-        {
-            return context.GetConverter(type);
-        }
-        finally
-        {
-            context.Destroy();
-        }
+        // auto dispose context to prevent reuse
+        using var source = new GeneratorContext(this.creators, this.converters);
+        return source.GetConverter(type);
     }
 
     public override string ToString() => $"Converter Count = {this.converters.Count}, Converter Creator Count = {this.creators.Length}";

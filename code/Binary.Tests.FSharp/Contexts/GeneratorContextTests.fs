@@ -33,7 +33,7 @@ type FakeConverterCreator() =
             raise (NotSupportedException Key)
 
 [<Fact>]
-let ``Generator Context Destroyed`` () =
+let ``Generator Context Disposed`` () =
     let creator = FakeConverterCreator()
     let converter = FakeConverter()
     Assert.Null creator.Context
@@ -45,5 +45,5 @@ let ``Generator Context Destroyed`` () =
     let context = creator.Context
     Assert.NotNull context
     let bravo = Assert.Throws<InvalidOperationException>(fun () -> context.GetConverter typeof<Fake> |> ignore)
-    Assert.Equal("Generator context has been destroyed!", bravo.Message)
+    Assert.Equal("Generator context has been disposed!", bravo.Message)
     ()

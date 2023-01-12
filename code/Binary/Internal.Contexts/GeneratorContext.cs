@@ -8,9 +8,9 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-internal sealed class GeneratorContext : IGeneratorContext
+internal sealed class GeneratorContext : IGeneratorContext, IDisposable
 {
-    private bool destroyed = false;
+    private bool disposed = false;
 
     private readonly HashSet<Type> types = new HashSet<Type>();
 
@@ -24,16 +24,16 @@ internal sealed class GeneratorContext : IGeneratorContext
         this.converters = converters;
     }
 
-    public void Destroy()
+    public void Dispose()
     {
-        this.destroyed = true;
+        this.disposed = true;
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public IConverter GetConverter(Type type)
     {
-        if (this.destroyed)
-            throw new InvalidOperationException("Generator context has been destroyed!");
+        if (this.disposed)
+            throw new InvalidOperationException("Generator context has been disposed!");
         var converter = GetOrCreateConverter(type);
         Debug.Assert(converter is not null);
         Debug.Assert(Converter.GetGenericArgument(converter) == type);
