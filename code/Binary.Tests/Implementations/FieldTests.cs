@@ -5,6 +5,7 @@ using Xunit;
 
 #pragma warning disable IDE0051 // Remove unused private members
 #pragma warning disable IDE0044 // Add readonly modifier
+#pragma warning disable CS0169  // The field '...' is never used
 public class FieldTests
 {
     private class TestClass
@@ -72,5 +73,6 @@ public class FieldTests
         Assert.Equal(immutable, TestValue.PublicStatic);
     }
 }
+#pragma warning restore CS0169  // The field '...' is never used
 #pragma warning restore IDE0044 // Add readonly modifier
 #pragma warning restore IDE0051 // Remove unused private members
