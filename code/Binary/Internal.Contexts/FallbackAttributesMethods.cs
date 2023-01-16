@@ -21,13 +21,16 @@ internal static class FallbackAttributesMethods
             throw new ArgumentException($"Multiple attributes found, type: {type}");
 
         var attribute = attributes.FirstOrDefault();
-        var typeInfo = new MetaTypeInfo(type, attribute, GetAttributes(type, x => x is RequiredMemberAttribute).Any());
+        var required = GetAttributes(type, x => x is RequiredMemberAttribute).Any();
+        var typeInfo = new MetaTypeInfo(type, attribute, required);
         var memberInfoArrayUnsorted = GetMemberVariables(typeInfo);
 
         if (attribute is ConverterAttribute or ConverterCreatorAttribute)
             return GetConverter(context, type, null, attribute);
         if (memberInfoArrayUnsorted.IsEmpty)
             throw new ArgumentException($"No available member found, type: {type}");
+        if (memberInfoArrayUnsorted.All(x => x.IsOptional))
+            throw new ArgumentException($"No available required member found, type: {type}");
 
         var members = GetSortedMembers(typeInfo, memberInfoArrayUnsorted, out var names);
         var converters = members.Select(x => GetConverter(context, type, x, x.ConverterOrConverterCreatorAttribute)).ToImmutableArray();
@@ -37,13 +40,13 @@ internal static class FallbackAttributesMethods
         if (attribute is TupleObjectAttribute)
             return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, initializers);
 
-        var required = members.Select(x => x.IsRequiredOrDefault).ToImmutableArray();
+        var optional = members.Select(x => x.IsOptional).ToImmutableArray();
         var instance = (Converter<string>)context.GetConverter(typeof(string));
         var memories = names.Select(x => new ReadOnlyMemory<byte>(instance.Encode(x))).ToImmutableArray();
         var dictionary = BinaryObject.Create(memories);
         if (dictionary is null)
             throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {type}, string converter type: {instance.GetType()}");
-        return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, initializers, names, memories, required, dictionary);
+        return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, initializers, names, memories, optional, dictionary);
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
@@ -75,25 +78,25 @@ internal static class FallbackAttributesMethods
                 throw new ArgumentException($"Require '{nameof(NamedObjectAttribute)}' for '{nameof(NamedKeyAttribute)}', member name: {member.Name}, type: {type}");
             if (key is TupleKeyAttribute && typeInfo.IsTupleObject is false)
                 throw new ArgumentException($"Require '{nameof(TupleObjectAttribute)}' for '{nameof(TupleKeyAttribute)}', member name: {member.Name}, type: {type}");
-            var required = GetMemberRequiredOrDefault(typeInfo, member, key);
-            var memberInfo = new MetaMemberInfo(member, key, conversion, required);
+            var optional = GetMemberIsOptional(typeInfo, member, key);
+            var memberInfo = new MetaMemberInfo(member, key, conversion, optional);
             result.Add(memberInfo);
         }
         return result.ToImmutable();
     }
 
-    private static bool GetMemberRequiredOrDefault(MetaTypeInfo typeInfo, MemberInfo member, Attribute? key)
+    private static bool GetMemberIsOptional(MetaTypeInfo typeInfo, MemberInfo member, Attribute? key)
     {
         if (typeInfo.IsRequired is false)
-            return true;
+            return false;
         var required = GetAttributes(member, x => x is RequiredMemberAttribute).Any();
         if (required is false)
-            return false;
+            return true;
         if (typeInfo.IsNamedObject && key is not NamedKeyAttribute)
             throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' for required member, member name: {member.Name}, type: {typeInfo.Type}");
         if (typeInfo.IsTupleObject && key is not TupleKeyAttribute)
             throw new ArgumentException($"Require '{nameof(TupleKeyAttribute)}' for required member, member name: {member.Name}, type: {typeInfo.Type}");
-        return true;
+        return false;
     }
 
     private static ImmutableArray<Attribute> GetAttributes(MemberInfo member, Func<Attribute, bool> filter)

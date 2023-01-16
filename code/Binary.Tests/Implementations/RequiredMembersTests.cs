@@ -132,4 +132,21 @@ public class RequiredMembersTests
         Assert.Null(b.ParamName);
         Assert.Equal(n, b.Message);
     }
+
+    private class NoPublicRequiredMember
+    {
+        internal required int InternalRequiredMember { get; set; }
+
+        public string? PublicMember { get; set; }
+    }
+
+    [Fact(DisplayName = "Missing Public Required Member")]
+    public void NoPublicRequiredMemberTest()
+    {
+        var generator = Generator.CreateDefault();
+        var error = Assert.Throws<ArgumentException>(generator.GetConverter<NoPublicRequiredMember>);
+        var message = $"No available required member found, type: {typeof(NoPublicRequiredMember)}";
+        Assert.Null(error.ParamName);
+        Assert.Equal(message, error.Message);
+    }
 }

@@ -33,21 +33,21 @@ internal static class ContextMethodsOfNamedObject
 
     private static readonly MethodInfo EnsureMethodInfo = new EnsureMethodDelegate<object>(BridgeModule.NotDefaultValue).Method.GetGenericMethodDefinition();
 
-    internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<ContextMemberInitializer> members, ImmutableArray<string> names, ImmutableArray<ReadOnlyMemory<byte>> memories, ImmutableArray<bool> required, ByteViewDictionary<int> dictionary)
+    internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<ContextMemberInitializer> members, ImmutableArray<string> names, ImmutableArray<ReadOnlyMemory<byte>> memories, ImmutableArray<bool> optional, ByteViewDictionary<int> dictionary)
     {
         Debug.Assert(members.Length == names.Length);
         Debug.Assert(members.Length == memories.Length);
-        Debug.Assert(members.Length == required.Length);
+        Debug.Assert(members.Length == optional.Length);
         Debug.Assert(members.Length == converters.Length);
-        var encode = GetEncodeDelegateAsNamedObject(type, converters, members, memories, required);
-        var decode = GetDecodeDelegateAsNamedObject(type, converters, required, constructor);
-        var converterArguments = new object?[] { encode, decode, names, required, dictionary };
+        var encode = GetEncodeDelegateAsNamedObject(type, converters, members, memories, optional);
+        var decode = GetDecodeDelegateAsNamedObject(type, converters, optional, constructor);
+        var converterArguments = new object?[] { encode, decode, names, optional, dictionary };
         var converterType = typeof(NamedObjectConverter<>).MakeGenericType(type);
         var converter = CommonModule.CreateInstance(converterType, converterArguments);
         return (IConverter)converter;
     }
 
-    private static Delegate GetEncodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<ContextMemberInitializer> members, ImmutableArray<ReadOnlyMemory<byte>> memories, ImmutableArray<bool> required)
+    private static Delegate GetEncodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<ContextMemberInitializer> members, ImmutableArray<ReadOnlyMemory<byte>> memories, ImmutableArray<bool> optional)
     {
         static void Action(ref Allocator allocator, ReadOnlyMemory<byte> memory) => Converter.EncodeWithLengthPrefix(ref allocator, memory.Span);
         static byte[] Handle(ReadOnlyMemory<byte> memory) => Allocator.Invoke(memory, Action);
@@ -64,7 +64,7 @@ internal static class ContextMethodsOfNamedObject
             // append named key with length prefix (cached), then append value with length prefix
             invoke.Add(Expression.Call(AppendMethodInfo, allocator, Expression.Call(CreateMethodInfo, Expression.Constant(Handle(memories[i])))));
             invoke.Add(Expression.Call(Expression.Constant(converter), Converter.GetMethod(converter, nameof(IConverter.EncodeWithLengthPrefix)), allocator, target));
-            if (required[i])
+            if (optional[i] is false)
                 result.AddRange(invoke);
             else
                 result.Add(Expression.IfThen(Expression.Call(EnsureMethodInfo.MakeGenericMethod(target.Type), target), Expression.Block(invoke)));
@@ -75,7 +75,7 @@ internal static class ContextMethodsOfNamedObject
         return lambda.Compile();
     }
 
-    private static Delegate? GetDecodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<bool> required, ContextObjectConstructor? constructor)
+    private static Delegate? GetDecodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<bool> optional, ContextObjectConstructor? constructor)
     {
         ImmutableArray<Expression> Initialize(ImmutableArray<ParameterExpression> parameters)
         {
@@ -90,7 +90,7 @@ internal static class ContextMethodsOfNamedObject
                 var method = Converter.GetMethod(converter, nameof(IConverter.Decode));
                 var invoke = Expression.Call(InvokeMethodInfo, source, values, cursor);
                 var decode = Expression.Call(Expression.Constant(converter), method, invoke);
-                if (required[i])
+                if (optional[i] is false)
                     result.Add(decode);
                 else
                     result.Add(Expression.Condition(Expression.Call(ExistsMethodInfo, values, cursor), decode, Expression.Default(method.ReturnType)));

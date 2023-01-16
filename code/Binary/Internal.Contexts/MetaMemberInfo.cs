@@ -8,7 +8,7 @@ using System.Reflection;
 
 internal sealed class MetaMemberInfo
 {
-    private readonly bool required;
+    private readonly bool optional;
 
     private readonly Attribute? key;
 
@@ -20,7 +20,7 @@ internal sealed class MetaMemberInfo
 
     private readonly ContextMemberInitializer initializer;
 
-    public bool IsRequiredOrDefault => this.required;
+    public bool IsOptional => this.optional;
 
     public bool IsWriteable => this.setter is not null || this.member is FieldInfo;
 
@@ -34,7 +34,7 @@ internal sealed class MetaMemberInfo
 
     public Type Type => this.member is FieldInfo field ? field.FieldType : ((PropertyInfo)this.member).PropertyType;
 
-    public MetaMemberInfo(MemberInfo member, Attribute? key, Attribute? conversion, bool required)
+    public MetaMemberInfo(MemberInfo member, Attribute? key, Attribute? conversion, bool optional)
     {
         static ContextMemberInitializer Invoke(MemberInfo member)
         {
@@ -48,7 +48,7 @@ internal sealed class MetaMemberInfo
         Debug.Assert(member is FieldInfo || ((PropertyInfo)member).GetGetMethod() is not null);
         Debug.Assert(key is null or NamedKeyAttribute or TupleKeyAttribute);
         Debug.Assert(conversion is null or ConverterAttribute or ConverterCreatorAttribute);
-        this.required = required;
+        this.optional = optional;
         this.key = key;
         this.conversion = conversion;
         this.member = member;

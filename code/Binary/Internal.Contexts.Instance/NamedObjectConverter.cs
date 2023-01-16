@@ -19,7 +19,7 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
 
     private readonly int memberRequired;
 
-    private readonly ImmutableArray<bool> required;
+    private readonly ImmutableArray<bool> optional;
 
     private readonly ImmutableArray<string> names;
 
@@ -29,15 +29,16 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
 
     private readonly NamedObjectDecodeDelegate<T>? decode;
 
-    public NamedObjectConverter(EncodeDelegate<T> encode, NamedObjectDecodeDelegate<T>? decode, ImmutableArray<string> names, ImmutableArray<bool> required, ByteViewDictionary<int> dictionary)
+    public NamedObjectConverter(EncodeDelegate<T> encode, NamedObjectDecodeDelegate<T>? decode, ImmutableArray<string> names, ImmutableArray<bool> optional, ByteViewDictionary<int> dictionary)
     {
         Debug.Assert(dictionary is not null);
-        Debug.Assert(names.Any());
-        Debug.Assert(names.Length == required.Length);
+        Debug.Assert(optional.Any());
+        Debug.Assert(optional.Any(x => x is false));
+        Debug.Assert(optional.Length == names.Length);
         this.names = names;
-        this.required = required;
-        this.memberRequired = required.Count(x => x);
-        this.memberCapacity = required.Length;
+        this.optional = optional;
+        this.memberRequired = optional.Count(x => x is false);
+        this.memberCapacity = optional.Length;
         this.dictionary = dictionary;
         this.encode = encode;
         this.decode = decode;
@@ -53,10 +54,10 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
     private void ExceptNotFound(ReadOnlySpan<long> span)
     {
         var cursor = -1;
-        var required = this.required;
+        var optional = this.optional;
         for (var i = 0; i < span.Length; i++)
         {
-            if (span[i] is not 0 || required[i] is false)
+            if (span[i] is not 0 || optional[i])
                 continue;
             cursor = i;
             break;
@@ -82,7 +83,7 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
             ThrowHelper.ThrowNotEnoughBytes();
 
         // maybe 'StackOverflowException', just let it crash
-        var required = this.required;
+        var optional = this.optional;
         var remain = this.memberRequired;
         var record = this.dictionary;
         var values = (stackalloc long[this.memberCapacity]);
@@ -105,7 +106,7 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
                 if (handle is not 0)
                     ExceptKeyFound(cursor);
                 handle = NamedObjectTemplates.GetIndexData(offset, length);
-                if (required[cursor] is false)
+                if (optional[cursor])
                     continue;
                 remain--;
             }
