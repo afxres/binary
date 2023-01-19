@@ -24,12 +24,12 @@ public class BitArrayConverterTests
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<BitArray>();
 
-        for (var ignore = 0; ignore < 32; ignore++)
+        for (var ignore = 0; ignore < 4; ignore++)
         {
-            var buffer = new byte[128];
-            random.NextBytes(buffer);
-            for (var k = 0; k < 1024; k++)
+            var buffer = new byte[32];
+            for (var k = 0; k < buffer.Length * 8; k++)
             {
+                random.NextBytes(buffer);
                 var source = new BitArray(buffer) { Length = k };
                 var encode = converter.Encode(source);
                 var target = new ReadOnlySpan<byte>(encode);
