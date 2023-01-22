@@ -7,10 +7,22 @@ using System;
 using System.Buffers.Binary;
 using System.Collections;
 using System.Diagnostics;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 internal sealed class BitArrayConverter : VariableDirectEncodeConverter<BitArray?, BitArrayConverter.Functions>
 {
+    private static readonly Func<BitArray, int[]> AccessFunction;
+
+    static BitArrayConverter()
+    {
+        var field = typeof(BitArray).GetField("m_array", BindingFlags.Instance | BindingFlags.NonPublic);
+        var parameter = Expression.Parameter(typeof(BitArray), "array");
+        var lambda = Expression.Lambda<Func<BitArray, int[]>>(Expression.Field(parameter, field!), parameter);
+        AccessFunction = lambda.Compile();
+    }
+
     private static uint FilterFunction(uint buffer, int remain)
     {
         Debug.Assert((uint)remain < 32);
@@ -54,7 +66,7 @@ internal sealed class BitArrayConverter : VariableDirectEncodeConverter<BitArray
         if (item is null)
             return;
         var length = item.Count;
-        var source = NativeModule.AsSpan(item);
+        var source = AccessFunction.Invoke(item);
         var margin = (-length) & 7;
         Debug.Assert((uint)margin < 8);
         Converter.Encode(ref allocator, margin);
@@ -78,7 +90,7 @@ internal sealed class BitArrayConverter : VariableDirectEncodeConverter<BitArray
             ThrowHelper.ThrowNotEnoughBytes();
         var length = checked((int)(((ulong)cursor.Length << 3) - (uint)margin));
         var result = new BitArray(length);
-        var target = NativeModule.AsSpan(result);
+        var target = AccessFunction.Invoke(result);
         DecodeContents(target, cursor, length);
         return result;
     }

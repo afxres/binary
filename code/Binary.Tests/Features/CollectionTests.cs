@@ -15,12 +15,12 @@ public class CollectionTests
 
     private delegate void Encode<T>(ref Allocator allocator, ReadOnlySpan<T> item);
 
-    private static object AssertAdapterTypeName(IConverter converter, string adapterTypeName)
+    private static object AssertFieldTypeName(IConverter converter, string fieldName, string typeName)
     {
-        var adapterField = Assert.IsAssignableFrom<FieldInfo>(converter.GetType().GetField("invoke", BindingFlags.Instance | BindingFlags.NonPublic));
+        var adapterField = Assert.IsAssignableFrom<FieldInfo>(converter.GetType().GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic));
         var adapter = Assert.IsAssignableFrom<object>(adapterField.GetValue(converter));
         var adapterType = adapter.GetType();
-        Assert.Equal(adapterTypeName, adapterType.Name);
+        Assert.Equal(typeName, adapterType.Name);
         return adapter;
     }
 
@@ -37,7 +37,8 @@ public class CollectionTests
     {
         var converter = generator.GetConverter<T[]>();
         Assert.Equal("NativeEndianConverter`1", generator.GetConverter<T>().GetType().Name);
-        _ = AssertAdapterTypeName(converter, "NativeEndianAdapter`1");
+        _ = AssertFieldTypeName(converter, "encoder", "NativeEndianEncoder`1");
+        _ = AssertFieldTypeName(converter, "decoder", "NativeEndianDecoder`1");
         var source = Enumerable.Repeat(data, 16).ToArray();
         for (var i = 0; i < source.Length; i++)
         {
@@ -65,7 +66,8 @@ public class CollectionTests
     {
         var converter = generator.GetConverter<T[]>();
         Assert.Equal($"{typeof(T).Name}Converter", generator.GetConverter<T>().GetType().Name);
-        _ = AssertAdapterTypeName(converter, "DirectMemoryAdapter`2");
+        _ = AssertFieldTypeName(converter, "encoder", "ConstantEncoder`2");
+        _ = AssertFieldTypeName(converter, "decoder", "ConstantDecoder`2");
         var source = Enumerable.Repeat(data, 16).ToArray();
         for (var i = 0; i < source.Length; i++)
         {
@@ -84,8 +86,9 @@ public class CollectionTests
         _ = data;
         var converter = generator.GetConverter<T[]>();
         Assert.Equal($"{typeof(T).Name}Converter", generator.GetConverter<T>().GetType().Name);
-        var adapter = AssertAdapterTypeName(converter, "DirectMemoryAdapter`2");
-        var functor = (Encode<T>)Delegate.CreateDelegate(typeof(Encode<T>), adapter, "Encode");
+        var encoder = AssertFieldTypeName(converter, "encoder", "ConstantEncoder`2");
+        _ = AssertFieldTypeName(converter, "decoder", "ConstantDecoder`2");
+        var functor = (Encode<T>)Delegate.CreateDelegate(typeof(Encode<T>), encoder, "Encode");
         var error = Assert.Throws<OverflowException>(() =>
         {
             // Max capacity is zero

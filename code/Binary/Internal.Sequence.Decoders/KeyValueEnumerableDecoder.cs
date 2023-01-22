@@ -23,9 +23,8 @@ internal sealed class KeyValueEnumerableDecoder<K, V>
         var limits = span.Length;
         if (limits is 0)
             return Array.Empty<KeyValuePair<K, V>>();
-        const int Capacity = 8;
-        var capacity = SequenceMethods.GetCapacity<KeyValuePair<K, V>>(limits, this.itemLength, Capacity);
-        var memory = new MemoryBuffer<KeyValuePair<K, V>>(capacity);
+        var capacity = SequenceMethods.GetCapacity<KeyValuePair<K, V>>(limits, this.itemLength, SequenceMethods.FallbackCapacity);
+        var result = new List<KeyValuePair<K, V>>(capacity);
         var body = span;
         var init = this.init;
         var tail = this.tail;
@@ -33,8 +32,8 @@ internal sealed class KeyValueEnumerableDecoder<K, V>
         {
             var head = init.DecodeAuto(ref body);
             var next = tail.DecodeAuto(ref body);
-            MemoryBuffer<KeyValuePair<K, V>>.Add(ref memory, new KeyValuePair<K, V>(head, next));
+            result.Add(new KeyValuePair<K, V>(head, next));
         }
-        return memory.GetEnumerable();
+        return result;
     }
 }

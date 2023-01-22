@@ -3,7 +3,6 @@
 open Mikodev.Binary
 open System
 open System.Linq
-open System.Reflection
 open System.Runtime.InteropServices
 open Xunit
 
@@ -51,23 +50,6 @@ type SpanLikeTests () =
         let result = converter.Decode buffer
         Assert.Equal<'a>(item, result)
         Assert.Equal(capacity, result.Array.Length)
-        ()
-
-    static member ``Data Bravo`` : (obj array) seq = seq {
-        yield [| typeof<ArraySegment<int>>; "NativeEndianAdapter`1" |]
-        yield [| typeof<Memory<struct (int * int)>>; "ConstantAdapter`1" |]
-        yield [| typeof<Memory<TimeSpan>>; "DirectMemoryAdapter`2" |]
-        yield [| typeof<ReadOnlyMemory<string>>; "VariableAdapter`1" |]
-    }
-
-    [<Theory(DisplayName = "Validate Adapter Type")>]
-    [<MemberData("Data Bravo")>]
-    member __.``Validate Adapter Type`` (t : Type, name : string) =
-        let converter = generator.GetConverter t
-        let adapterField = converter.GetType().GetField("invoke", BindingFlags.Instance ||| BindingFlags.NonPublic)
-        let adapter = adapterField.GetValue(converter)
-        let adapterTypeName = adapter.GetType().Name
-        Assert.StartsWith(name, adapterTypeName)
         ()
 
     static member ``Data Slice`` : (obj array) seq = seq {

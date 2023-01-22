@@ -1,23 +1,32 @@
 ﻿namespace Mikodev.Binary.Internal.Sequence.Decoders;
 
-using Mikodev.Binary.Internal.Sequence;
+using Mikodev.Binary.Internal.SpanLike;
+using Mikodev.Binary.Internal.SpanLike.Builders;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 internal sealed class EnumerableDecoder<T, E> where T : IEnumerable<E>
 {
-    private readonly SequenceAdapter<E> invoke;
+    private readonly Converter<E> converter;
+
+    private readonly SpanLikeDecoder<E>? decoder;
 
     public EnumerableDecoder(Converter<E> converter)
     {
-        Debug.Assert(converter is not null);
-        Debug.Assert(converter.Length >= 0);
-        this.invoke = SequenceAdapter.Create(converter);
+        var decoder = SpanLikeContext.GetDecoderOrDefault(converter);
+        this.decoder = decoder;
+        this.converter = converter;
     }
 
     public T Decode(ReadOnlySpan<byte> span)
     {
-        return (T)this.invoke.Decode(span).GetEnumerable();
+        if (span.Length is 0)
+            return (T)(object)Array.Empty<E>();
+        var decoder = this.decoder;
+        if (decoder is null)
+            return (T)(object)SpanLikeMethods.GetList(this.converter, span);
+        var result = default(E[]);
+        decoder.Decode(ArrayDecoderContext<E>.Instance, ref result, span);
+        return (T)(object)result;
     }
 }

@@ -6,22 +6,24 @@ using System.Runtime.CompilerServices;
 
 internal static class SequenceMethods
 {
+    internal const int FallbackCapacity = 8;
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static int GetCapacity<T>(int byteLength, int itemLength, int fallbackCapacity)
+    internal static int GetCapacity<E>(int byteLength, int itemLength, int fallbackCapacity)
     {
         Debug.Assert(byteLength > 0);
         Debug.Assert(fallbackCapacity > 0);
-        return itemLength > 0 ? GetCapacity<T>(byteLength, itemLength) : fallbackCapacity;
+        return itemLength > 0 ? GetCapacity<E>(byteLength, itemLength) : fallbackCapacity;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static int GetCapacity<T>(int byteLength, int itemLength)
+    internal static int GetCapacity<E>(int byteLength, int itemLength)
     {
         Debug.Assert(byteLength > 0);
         Debug.Assert(itemLength > 0);
         var quotient = Math.DivRem(byteLength, itemLength, out var remainder);
         if (remainder is not 0)
-            ThrowHelper.ThrowNotEnoughBytesCollection<T>(byteLength);
+            ThrowHelper.ThrowNotEnoughBytesCollection<E>(byteLength);
         return quotient;
     }
 }

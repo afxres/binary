@@ -2,14 +2,14 @@
 
 using Mikodev.Binary.Features.Adapters;
 using Mikodev.Binary.Internal;
-using Mikodev.Binary.Internal.Sequence;
-using Mikodev.Binary.Internal.Sequence.Contexts;
+using Mikodev.Binary.Internal.SpanLike;
+using Mikodev.Binary.Internal.SpanLike.Contexts;
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-internal abstract class ConstantConverter<T, U> : Converter<T>, ISequenceAdapterCreator<T> where U : struct, IConstantConverterFunctions<T>
+internal abstract class ConstantConverter<T, U> : Converter<T>, ISpanLikeEncoderProvider<T>, ISpanLikeDecoderProvider<T> where U : struct, IConstantConverterFunctions<T>
 {
     public ConstantConverter() : base(U.Length)
     {
@@ -63,10 +63,17 @@ internal abstract class ConstantConverter<T, U> : Converter<T>, ISequenceAdapter
         U.Encode(ref Unsafe.Add(ref target, prefix), item);
     }
 
-    SequenceAdapter<T> ISequenceAdapterCreator<T>.GetAdapter()
+    SpanLikeEncoder<T> ISpanLikeEncoderProvider<T>.GetEncoder()
     {
-        if (default(U) is ISequenceAdapterCreator<T> result)
-            return result.GetAdapter();
-        return new DirectMemoryAdapter<T, U>();
+        if (default(U) is ISpanLikeEncoderProvider<T> provider)
+            return provider.GetEncoder();
+        return new ConstantEncoder<T, U>();
+    }
+
+    SpanLikeDecoder<T> ISpanLikeDecoderProvider<T>.GetDecoder()
+    {
+        if (default(U) is ISpanLikeDecoderProvider<T> provider)
+            return provider.GetDecoder();
+        return new ConstantDecoder<T, U>();
     }
 }
