@@ -27,7 +27,7 @@ internal static class FallbackAttributesMethods
 
         if (attribute is ConverterAttribute or ConverterCreatorAttribute)
             return GetConverter(context, type, null, attribute);
-        if (memberInfoArrayUnsorted.IsEmpty)
+        if (memberInfoArrayUnsorted.Length is 0)
             throw new ArgumentException($"No available member found, type: {type}");
         if (memberInfoArrayUnsorted.All(x => x.IsOptional))
             throw new ArgumentException($"No available required member found, type: {type}");
