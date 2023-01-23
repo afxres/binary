@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 internal static class SpanLikeMethods
 {
@@ -45,6 +46,7 @@ internal static class SpanLikeMethods
 
     internal static E[] GetArray<E>(Converter<E> converter, ReadOnlySpan<byte> span, out int actual)
     {
+        [MethodImpl(MethodImplOptions.NoInlining)]
         static void Expand(ref E[] buffer, E item)
         {
             var cursor = buffer.Length;
