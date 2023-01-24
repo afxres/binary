@@ -206,7 +206,7 @@ internal static class FallbackAttributesMethods
         Debug.Assert(members.Any());
         if (type.IsAbstract || type.IsInterface)
             return null;
-        if ((type.IsValueType || type.GetConstructor(Type.EmptyTypes) is not null) && members.All(x => x.IsWriteable))
+        if ((type.IsValueType || type.GetConstructor(Type.EmptyTypes) is not null) && members.All(x => x.IsReadOnly is false))
             return (delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, initializers);
 
         static string Select(string? text) =>
@@ -229,7 +229,7 @@ internal static class FallbackAttributesMethods
             if (result.Length is 0 || result.Length != parameters.Length)
                 continue;
             var except = members.Except(result).ToImmutableArray();
-            if (except.Any(x => x.IsWriteable is false))
+            if (except.Any(x => x.IsReadOnly))
                 continue;
             collection.Add((i, result, except));
         }

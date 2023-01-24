@@ -10,19 +10,19 @@ internal sealed class MetaMemberInfo
 {
     private readonly bool optional;
 
+    private readonly bool @readonly;
+
     private readonly Attribute? key;
 
     private readonly Attribute? conversion;
 
     private readonly MemberInfo member;
 
-    private readonly MethodInfo? setter;
-
     private readonly ContextMemberInitializer initializer;
 
     public bool IsOptional => this.optional;
 
-    public bool IsWriteable => this.setter is not null || this.member is FieldInfo;
+    public bool IsReadOnly => this.@readonly;
 
     public string Name => this.member.Name;
 
@@ -44,15 +44,14 @@ internal sealed class MetaMemberInfo
             return e => Expression.Property(e, property);
         }
 
-        Debug.Assert(member is FieldInfo or PropertyInfo);
         Debug.Assert(member is FieldInfo || ((PropertyInfo)member).GetGetMethod() is not null);
         Debug.Assert(key is null or NamedKeyAttribute or TupleKeyAttribute);
         Debug.Assert(conversion is null or ConverterAttribute or ConverterCreatorAttribute);
         this.optional = optional;
+        this.@readonly = member is PropertyInfo property && property.GetSetMethod() is null;
         this.key = key;
         this.conversion = conversion;
         this.member = member;
-        this.setter = (member as PropertyInfo)?.GetSetMethod();
         this.initializer = Invoke(member);
     }
 }
