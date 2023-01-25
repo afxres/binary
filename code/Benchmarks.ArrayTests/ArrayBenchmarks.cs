@@ -30,16 +30,19 @@ public class ArrayBenchmarks
     [AllowNull]
     private Converter<Memory<int>> memoryConverter;
 
-    [Params("constant", "variable")]
+    [Params("constant", "variable", "internal")]
     public string? Flag;
 
     [GlobalSetup]
     public void Setup()
     {
-        var converter = this.Flag == "constant"
-            ? new ConstantNativeConverter<int>()
-            : new VariableNativeConverter<int>() as Converter<int>;
-        var generator = Generator.CreateDefaultBuilder().AddConverter(converter).Build();
+        var builder = Generator.CreateDefaultBuilder();
+        var flag = this.Flag;
+        if (flag is "constant")
+            _ = builder.AddConverter(new ConstantNativeConverter<int>());
+        else if (flag is "variable")
+            _ = builder.AddConverter(new VariableNativeConverter<int>());
+        var generator = builder.Build();
 
         this.array01 = new[] { 1313 };
         this.list01 = new List<int> { 1313 };
