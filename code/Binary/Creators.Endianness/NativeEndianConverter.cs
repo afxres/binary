@@ -4,11 +4,12 @@ using Mikodev.Binary.Features.Adapters;
 using Mikodev.Binary.Features.Contexts;
 using Mikodev.Binary.Internal.SpanLike;
 using Mikodev.Binary.Internal.SpanLike.Contexts;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 internal sealed class NativeEndianConverter<T> : ConstantConverter<T, NativeEndianConverter<T>.Functions> where T : unmanaged
 {
-    internal readonly struct Functions : IConstantConverterFunctions<T>, ISpanLikeEncoderProvider<T>, ISpanLikeDecoderProvider<T[]>
+    internal readonly struct Functions : IConstantConverterFunctions<T>, ISpanLikeEncoderProvider<T>, ISpanLikeDecoderProvider<T[]>, ISpanLikeDecoderProvider<List<T>>
     {
         public static int Length => Unsafe.SizeOf<T>();
 
@@ -19,5 +20,7 @@ internal sealed class NativeEndianConverter<T> : ConstantConverter<T, NativeEndi
         SpanLikeEncoder<T> ISpanLikeEncoderProvider<T>.GetEncoder() => new NativeEndianEncoder<T>();
 
         SpanLikeDecoder<T[]> ISpanLikeDecoderProvider<T[]>.GetDecoder() => new NativeEndianDecoder<T>();
+
+        SpanLikeDecoder<List<T>> ISpanLikeDecoderProvider<List<T>>.GetDecoder() => new NativeEndianListDecoder<T>();
     }
 }

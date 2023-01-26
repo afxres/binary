@@ -112,7 +112,7 @@ internal static class FallbackSequentialMethods
 
     private static SpanLikeConverter<List<E>, E> GetListConverter<E>(Converter<E> converter)
     {
-        return GetConverter(converter, new ListAdapter<E>(), x => new ListDecoder<E>(x));
+        return GetConverter(converter, new ListAdapter<E>(), x => SpanLikeContext.GetDecoderOrDefault<List<E>, E>(converter) ?? new ListDecoder<E>(x));
     }
 
     private static SpanLikeConverter<Memory<E>, E> GetMemoryConverter<E>(Converter<E> converter)

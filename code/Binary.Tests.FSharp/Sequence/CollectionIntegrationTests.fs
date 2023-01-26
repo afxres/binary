@@ -147,9 +147,9 @@ let ``Collection Integration Test (span-like collection, null or empty collectio
     TestNull "FallbackConstantEncoder`1" "ArrayDecoder`3" (Array.zeroCreate<struct (int16 * int64)> 0)
     TestNull "FallbackVariableEncoder`1" "ListDecoder`1" (ResizeArray<string>())
     TestNull "ConstantEncoder`2" "ConstantDecoder`2" (Array.zeroCreate<DateTime> 0)
-    TestNull "ConstantEncoder`2" "ListDecoder`1" (ResizeArray<DateTime>())
+    TestNull "ConstantEncoder`2" "ConstantListDecoder`2" (ResizeArray<DateTime>())
     TestNull "NativeEndianEncoder`1" "NativeEndianDecoder`1" (Array.zeroCreate<int> 0)
-    TestNull "NativeEndianEncoder`1" "ListDecoder`1" (ResizeArray<int>())
+    TestNull "NativeEndianEncoder`1" "NativeEndianListDecoder`1" (ResizeArray<int>())
     ()
 
 [<Fact>]

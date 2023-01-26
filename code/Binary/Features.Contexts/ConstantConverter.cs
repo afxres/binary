@@ -5,11 +5,12 @@ using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.SpanLike;
 using Mikodev.Binary.Internal.SpanLike.Contexts;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-internal abstract class ConstantConverter<T, U> : Converter<T>, ISpanLikeEncoderProvider<T>, ISpanLikeDecoderProvider<T[]> where U : struct, IConstantConverterFunctions<T>
+internal abstract class ConstantConverter<T, U> : Converter<T>, ISpanLikeEncoderProvider<T>, ISpanLikeDecoderProvider<T[]>, ISpanLikeDecoderProvider<List<T>> where U : struct, IConstantConverterFunctions<T>
 {
     public ConstantConverter() : base(U.Length)
     {
@@ -75,5 +76,12 @@ internal abstract class ConstantConverter<T, U> : Converter<T>, ISpanLikeEncoder
         if (default(U) is ISpanLikeDecoderProvider<T[]> provider)
             return provider.GetDecoder();
         return new ConstantDecoder<T, U>();
+    }
+
+    SpanLikeDecoder<List<T>> ISpanLikeDecoderProvider<List<T>>.GetDecoder()
+    {
+        if (default(U) is ISpanLikeDecoderProvider<List<T>> provider)
+            return provider.GetDecoder();
+        return new ConstantListDecoder<T, U>();
     }
 }
