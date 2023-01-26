@@ -13,7 +13,7 @@ internal sealed partial class SpanLikeConverter<T, E>
 
     private void EncodeWithLengthPrefixConstant(ref Allocator allocator, T? item)
     {
-        var result = this.builder.Handle(item);
+        var result = this.adapter.Invoke(item);
         var number = checked(this.itemLength * result.Length);
         var numberLength = NumberModule.EncodeLength((uint)number);
         NumberModule.Encode(ref Allocator.Assign(ref allocator, numberLength), (uint)number, numberLength);
@@ -24,7 +24,7 @@ internal sealed partial class SpanLikeConverter<T, E>
 
     private void EncodeWithLengthPrefixVariable(ref Allocator allocator, T? item)
     {
-        var result = this.builder.Handle(item);
+        var result = this.adapter.Invoke(item);
         var anchor = Allocator.Anchor(ref allocator, sizeof(int));
         this.encoder.Encode(ref allocator, result);
         Allocator.FinishAnchor(ref allocator, anchor);

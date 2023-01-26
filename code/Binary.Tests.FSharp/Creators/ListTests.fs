@@ -57,8 +57,8 @@ type ListTests () =
         let alphaDecoder = alpha.GetType().GetField("decode", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(alpha) |> unbox<Delegate>
         Assert.Contains("lambda", alphaDecoder.Method.Name)
         let bravo = generator.GetConverter<'a ResizeArray>()
-        let bravoBuilder = bravo.GetType().GetField("builder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(bravo)
-        Assert.Equal("ListBuilder`1", bravoBuilder.GetType().Name)
+        let bravoBuilder = bravo.GetType().GetField("decoder", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue(bravo)
+        Assert.Equal("ListDecoder`1", bravoBuilder.GetType().Name)
 
         let buffer = bravo.Encode (ResizeArray array)
         Assert.Equal<byte>(buffer, alpha.Encode (ResizeArray array))

@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 internal sealed class NativeEndianConverter<T> : ConstantConverter<T, NativeEndianConverter<T>.Functions> where T : unmanaged
 {
-    internal readonly struct Functions : IConstantConverterFunctions<T>, ISpanLikeEncoderProvider<T>, ISpanLikeDecoderProvider<T>
+    internal readonly struct Functions : IConstantConverterFunctions<T>, ISpanLikeEncoderProvider<T>, ISpanLikeDecoderProvider<T[]>
     {
         public static int Length => Unsafe.SizeOf<T>();
 
@@ -18,6 +18,6 @@ internal sealed class NativeEndianConverter<T> : ConstantConverter<T, NativeEndi
 
         SpanLikeEncoder<T> ISpanLikeEncoderProvider<T>.GetEncoder() => new NativeEndianEncoder<T>();
 
-        SpanLikeDecoder<T> ISpanLikeDecoderProvider<T>.GetDecoder() => new NativeEndianDecoder<T>();
+        SpanLikeDecoder<T[]> ISpanLikeDecoderProvider<T[]>.GetDecoder() => new NativeEndianDecoder<T>();
     }
 }

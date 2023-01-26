@@ -35,15 +35,6 @@ internal static class SpanLikeMethods
         return result.Count == result.Capacity ? result.MoveToImmutable() : result.ToImmutable();
     }
 
-    internal static E[] GetArray<E>(Converter<E> converter, ReadOnlySpan<byte> span)
-    {
-        Debug.Assert(span.Length is not 0);
-        var result = GetArray(converter, span, out var actual);
-        if (result.Length != actual)
-            Array.Resize(ref result, actual);
-        return result;
-    }
-
     internal static E[] GetArray<E>(Converter<E> converter, ReadOnlySpan<byte> span, out int actual)
     {
         [MethodImpl(MethodImplOptions.NoInlining)]

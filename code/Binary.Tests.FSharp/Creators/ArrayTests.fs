@@ -58,7 +58,7 @@ type ArrayTests () =
     [<MemberData("Data Alpha")>]
     member __.``Non Array Type`` (t : Type) =
         let methodType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "FallbackSequentialMethods") |> Array.exactlyOne
-        let method = methodType.GetMethod("GetConverter", BindingFlags.Static ||| BindingFlags.NonPublic)
+        let method = methodType.GetMethod("GetConverter", BindingFlags.Static ||| BindingFlags.NonPublic, [| typeof<IGeneratorContext>; typeof<Type> |])
         let converter = method.Invoke(null, [| null; box t |])
         Assert.Null converter
         ()
@@ -67,7 +67,7 @@ type ArrayTests () =
     [<MemberData("Data Bravo")>]
     member __.``Non SZ Array`` (o : obj) =
         let methodType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "FallbackSequentialMethods") |> Array.exactlyOne
-        let method = methodType.GetMethod("GetConverter", BindingFlags.Static ||| BindingFlags.NonPublic)
+        let method = methodType.GetMethod("GetConverter", BindingFlags.Static ||| BindingFlags.NonPublic, [| typeof<IGeneratorContext>; typeof<Type> |])
         let t = o.GetType()
         Assert.True t.IsArray
         let error = Assert.Throws<TargetInvocationException>(fun () -> method.Invoke(null, [| null; box t |]) |> ignore)

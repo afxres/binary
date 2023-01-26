@@ -5,7 +5,7 @@ using Mikodev.Binary.Internal.SpanLike.Encoders;
 
 internal static class SpanLikeContext
 {
-    public static SpanLikeEncoder<E> GetEncoder<E>(Converter<E> converter)
+    internal static SpanLikeEncoder<E> GetEncoder<E>(Converter<E> converter)
     {
         if (converter is ISpanLikeEncoderProvider<E> provider)
             return provider.GetEncoder();
@@ -14,9 +14,9 @@ internal static class SpanLikeContext
             : new FallbackConstantEncoder<E>(converter);
     }
 
-    public static SpanLikeDecoder<E>? GetDecoderOrDefault<E>(Converter<E> converter)
+    internal static SpanLikeDecoder<T>? GetDecoderOrDefault<T, E>(Converter<E> converter)
     {
-        if (converter is ISpanLikeDecoderProvider<E> provider)
+        if (converter is ISpanLikeDecoderProvider<T> provider)
             return provider.GetDecoder();
         return null;
     }

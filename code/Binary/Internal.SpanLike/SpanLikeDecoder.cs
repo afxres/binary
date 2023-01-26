@@ -1,9 +1,8 @@
 ﻿namespace Mikodev.Binary.Internal.SpanLike;
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 
-internal abstract class SpanLikeDecoder<E>
+internal abstract class SpanLikeDecoder<T>
 {
-    public abstract void Decode<T>(SpanLikeDecoderContext<T, E> context, [NotNull] ref T? collection, ReadOnlySpan<byte> span) where T : class;
+    public abstract T Invoke(ReadOnlySpan<byte> span);
 }
