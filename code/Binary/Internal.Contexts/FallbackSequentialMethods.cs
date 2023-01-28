@@ -5,6 +5,7 @@ using Mikodev.Binary.Internal.SpanLike.Adapters;
 using Mikodev.Binary.Internal.SpanLike.Builders;
 using Mikodev.Binary.Internal.SpanLike.Contexts;
 using Mikodev.Binary.Internal.SpanLike.Decoders;
+using Mikodev.Binary.Internal.SpanLike.Encoders;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -83,45 +84,60 @@ internal static class FallbackSequentialMethods
             : new ArrayForwardDecoder<T, E, B>(source);
     }
 
+    private static SpanLikeEncoder<T> GetEncoder<T, E, A>(Converter<E> converter) where A : struct, ISpanLikeAdapter<T, E>
+    {
+        var source = SpanLikeContext.GetEncoderOrDefault(converter);
+        if (source is not null)
+            return new ConstantForwardEncoder<T, E, A>(source, converter.Length);
+        return converter.Length is 0
+            ? new VariableEncoder<T, E, A>(converter)
+            : new ConstantEncoder<T, E, A>(converter);
+    }
+
     private static object GetConverter<E>(object method, object data)
     {
         return ((Func<Converter<E>, object>)method).Invoke((Converter<E>)data);
     }
 
-    private static SpanLikeConverter<T, E> GetConverter<T, E>(Converter<E> converter, SpanLikeAdapter<T, E> adapter, Func<Converter<E>, SpanLikeDecoder<T>> func)
+    private static SpanLikeConverter<E[]> GetArrayConverter<E>(Converter<E> converter)
     {
-        var decoder = func.Invoke(converter);
-        var encoder = SpanLikeContext.GetEncoder(converter);
-        return new SpanLikeConverter<T, E>(encoder, decoder, adapter, converter);
+        var decoder = GetDecoder<E[], E, ArrayBuilder<E>>(converter);
+        var encoder = GetEncoder<E[], E, ArrayAdapter<E>>(converter);
+        return new SpanLikeConverter<E[]>(encoder, decoder);
     }
 
-    private static SpanLikeConverter<E[], E> GetArrayConverter<E>(Converter<E> converter)
+    private static SpanLikeConverter<ArraySegment<E>> GetArraySegmentConverter<E>(Converter<E> converter)
     {
-        return GetConverter(converter, new ArrayAdapter<E>(), GetDecoder<E[], E, ArrayBuilder<E>>);
+        var decoder = GetDecoder<ArraySegment<E>, E, ArraySegmentBuilder<E>>(converter);
+        var encoder = GetEncoder<ArraySegment<E>, E, ArraySegmentAdapter<E>>(converter);
+        return new SpanLikeConverter<ArraySegment<E>>(encoder, decoder);
     }
 
-    private static SpanLikeConverter<ArraySegment<E>, E> GetArraySegmentConverter<E>(Converter<E> converter)
+    private static SpanLikeConverter<ImmutableArray<E>> GetImmutableArrayConverter<E>(Converter<E> converter)
     {
-        return GetConverter(converter, new ArraySegmentAdapter<E>(), GetDecoder<ArraySegment<E>, E, ArraySegmentBuilder<E>>);
+        var decoder = new ImmutableArrayDecoder<E>(converter);
+        var encoder = GetEncoder<ImmutableArray<E>, E, ImmutableArrayAdapter<E>>(converter);
+        return new SpanLikeConverter<ImmutableArray<E>>(encoder, decoder);
     }
 
-    private static SpanLikeConverter<ImmutableArray<E>, E> GetImmutableArrayConverter<E>(Converter<E> converter)
+    private static SpanLikeConverter<List<E>> GetListConverter<E>(Converter<E> converter)
     {
-        return GetConverter(converter, new ImmutableArrayAdapter<E>(), x => new ImmutableArrayDecoder<E>(x));
+        var decoder = SpanLikeContext.GetDecoderOrDefault<List<E>, E>(converter) ?? new ListDecoder<E>(converter);
+        var encoder = GetEncoder<List<E>, E, ListAdapter<E>>(converter);
+        return new SpanLikeConverter<List<E>>(encoder, decoder);
     }
 
-    private static SpanLikeConverter<List<E>, E> GetListConverter<E>(Converter<E> converter)
+    private static SpanLikeConverter<Memory<E>> GetMemoryConverter<E>(Converter<E> converter)
     {
-        return GetConverter(converter, new ListAdapter<E>(), x => SpanLikeContext.GetDecoderOrDefault<List<E>, E>(converter) ?? new ListDecoder<E>(x));
+        var decoder = GetDecoder<Memory<E>, E, MemoryBuilder<E>>(converter);
+        var encoder = GetEncoder<Memory<E>, E, MemoryAdapter<E>>(converter);
+        return new SpanLikeConverter<Memory<E>>(encoder, decoder);
     }
 
-    private static SpanLikeConverter<Memory<E>, E> GetMemoryConverter<E>(Converter<E> converter)
+    private static SpanLikeConverter<ReadOnlyMemory<E>> GetReadOnlyMemoryConverter<E>(Converter<E> converter)
     {
-        return GetConverter(converter, new MemoryAdapter<E>(), GetDecoder<Memory<E>, E, MemoryBuilder<E>>);
-    }
-
-    private static SpanLikeConverter<ReadOnlyMemory<E>, E> GetReadOnlyMemoryConverter<E>(Converter<E> converter)
-    {
-        return GetConverter(converter, new ReadOnlyMemoryAdapter<E>(), GetDecoder<ReadOnlyMemory<E>, E, ReadOnlyMemoryBuilder<E>>);
+        var decoder = GetDecoder<ReadOnlyMemory<E>, E, ReadOnlyMemoryBuilder<E>>(converter);
+        var encoder = GetEncoder<ReadOnlyMemory<E>, E, ReadOnlyMemoryAdapter<E>>(converter);
+        return new SpanLikeConverter<ReadOnlyMemory<E>>(encoder, decoder);
     }
 }

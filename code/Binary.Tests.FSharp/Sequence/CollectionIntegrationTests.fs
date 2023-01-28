@@ -61,19 +61,24 @@ let TestDecodeWithLengthPrefix (converter : Converter<'a>) =
         ()
     ()
 
-let TestFieldTypeName<'a> (converter : Converter<'a>) (fieldName : string) (fieldTypeName : string) =
-    let field = converter.GetType().GetField(fieldName, BindingFlags.Instance ||| BindingFlags.NonPublic)
-    let fieldValue = field.GetValue(converter)
-    Assert.Equal(fieldTypeName, fieldValue.GetType().Name)
+let rec TestFieldTypeName (instance : obj) (fieldName : string) (fieldTypeName : string) =
+    let field = instance.GetType().GetField(fieldName, BindingFlags.Instance ||| BindingFlags.NonPublic)
+    let fieldValue = field.GetValue(instance)
+    let fieldActualTypeName = fieldValue.GetType().Name
+    if (fieldTypeName.StartsWith "->") then
+        Assert.Contains("Forward", fieldActualTypeName)
+        TestFieldTypeName fieldValue fieldName (fieldTypeName.Substring 2)
+    else
+        Assert.Equal(fieldTypeName, fieldActualTypeName)
     ()
 
 let Test<'a> (generator : IGenerator) (encoderName : string) (decoderName : string) (collection : 'a) =
     let converter = generator.GetConverter<'a>()
-    Assert.Equal("SpanLikeConverter`2", converter.GetType().Name)
+    Assert.Equal("SpanLikeConverter`1", converter.GetType().Name)
 
     // test internal field name
-    TestFieldTypeName<'a> converter "encoder" encoderName
-    TestFieldTypeName<'a> converter "decoder" decoderName
+    TestFieldTypeName converter "encoder" encoderName
+    TestFieldTypeName converter "decoder" decoderName
 
     // test encode empty
     TestEncode converter collection
@@ -137,27 +142,27 @@ let TestSequence<'a when 'a : null> (encoderName : string) (decoderName : string
 
 [<Fact>]
 let ``Collection Integration Test (span-like collection, null or empty collection test)`` () =
-    Test generator "FallbackConstantEncoder`1" "ArrayDecoder`3" (ArraySegment<struct (int * int64)>())
-    Test generator "FallbackVariableEncoder`1" "ArrayDecoder`3" (ArraySegment<string>())
-    Test generator "ConstantEncoder`2" "ConstantDecoder`2" (Array.zeroCreate<TimeSpan> 0)
-    Test generator "ConstantEncoder`2" "ArrayForwardDecoder`3" (Memory<TimeSpan>())
-    Test generator "NativeEndianEncoder`1" "NativeEndianDecoder`1" (Array.zeroCreate<double> 0)
-    Test generator "NativeEndianEncoder`1" "ArrayForwardDecoder`3" (ReadOnlyMemory<int>())
-    Test generator "NativeEndianEncoder`1" "ImmutableArrayDecoder`1" (ImmutableArray<int>.Empty)
-    TestNull "FallbackConstantEncoder`1" "ArrayDecoder`3" (Array.zeroCreate<struct (int16 * int64)> 0)
-    TestNull "FallbackVariableEncoder`1" "ListDecoder`1" (ResizeArray<string>())
-    TestNull "ConstantEncoder`2" "ConstantDecoder`2" (Array.zeroCreate<DateTime> 0)
-    TestNull "ConstantEncoder`2" "ConstantListDecoder`2" (ResizeArray<DateTime>())
-    TestNull "NativeEndianEncoder`1" "NativeEndianDecoder`1" (Array.zeroCreate<int> 0)
-    TestNull "NativeEndianEncoder`1" "NativeEndianListDecoder`1" (ResizeArray<int>())
+    Test generator "ConstantEncoder`3" "ArrayDecoder`3" (ArraySegment<struct (int * int64)>())
+    Test generator "VariableEncoder`3" "ArrayDecoder`3" (ArraySegment<string>())
+    Test generator "->ConstantEncoder`2" "ConstantDecoder`2" (Array.zeroCreate<TimeSpan> 0)
+    Test generator "->ConstantEncoder`2" "->ConstantDecoder`2" (Memory<TimeSpan>())
+    Test generator "->NativeEndianEncoder`1" "NativeEndianDecoder`1" (Array.zeroCreate<double> 0)
+    Test generator "->NativeEndianEncoder`1" "->NativeEndianDecoder`1" (ReadOnlyMemory<int>())
+    Test generator "->NativeEndianEncoder`1" "ImmutableArrayDecoder`1" (ImmutableArray<int>.Empty)
+    TestNull "ConstantEncoder`3" "ArrayDecoder`3" (Array.zeroCreate<struct (int16 * int64)> 0)
+    TestNull "VariableEncoder`3" "ListDecoder`1" (ResizeArray<string>())
+    TestNull "->ConstantEncoder`2" "ConstantDecoder`2" (Array.zeroCreate<DateTime> 0)
+    TestNull "->ConstantEncoder`2" "ConstantListDecoder`2" (ResizeArray<DateTime>())
+    TestNull "->NativeEndianEncoder`1" "NativeEndianDecoder`1" (Array.zeroCreate<int> 0)
+    TestNull "->NativeEndianEncoder`1" "NativeEndianListDecoder`1" (ResizeArray<int>())
     ()
 
 [<Fact>]
 let ``Collection Integration Test (span-like collection, custom converter)`` () =
-    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<int64>(8)).Build()) "FallbackConstantEncoder`1" "ArrayDecoder`3" (ReadOnlyMemory<int64>())
-    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<uint64>(0)).Build()) "FallbackVariableEncoder`1" "ArrayDecoder`3" (ReadOnlyMemory<uint64>())
-    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<string>(0)).Build()) "FallbackVariableEncoder`1" "ListDecoder`1" (ResizeArray<string>())
-    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<string>(0)).Build()) "FallbackVariableEncoder`1" "ImmutableArrayDecoder`1" (ImmutableArray<string>.Empty)
+    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<int64>(8)).Build()) "ConstantEncoder`3" "ArrayDecoder`3" (ReadOnlyMemory<int64>())
+    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<uint64>(0)).Build()) "VariableEncoder`3" "ArrayDecoder`3" (ReadOnlyMemory<uint64>())
+    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<string>(0)).Build()) "VariableEncoder`3" "ListDecoder`1" (ResizeArray<string>())
+    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<string>(0)).Build()) "VariableEncoder`3" "ImmutableArrayDecoder`1" (ImmutableArray<string>.Empty)
     ()
 
 [<Fact>]

@@ -1,8 +1,8 @@
 ﻿namespace Mikodev.Binary.Internal.SpanLike;
 
-using System;
-
-internal abstract class SpanLikeEncoder<E>
+internal abstract class SpanLikeEncoder<T>
 {
-    public abstract void Encode(ref Allocator allocator, ReadOnlySpan<E> item);
+    public abstract void Encode(ref Allocator allocator, T? item);
+
+    public abstract void EncodeWithLengthPrefix(ref Allocator allocator, T? item);
 }

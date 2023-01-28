@@ -2,5 +2,5 @@
 
 internal interface ISpanLikeEncoderProvider<E>
 {
-    SpanLikeEncoder<E> GetEncoder();
+    SpanLikeForwardEncoder<E> GetEncoder();
 }

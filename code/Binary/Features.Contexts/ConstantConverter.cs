@@ -64,13 +64,6 @@ internal abstract class ConstantConverter<T, U> : Converter<T>, ISpanLikeEncoder
         U.Encode(ref Unsafe.Add(ref target, prefix), item);
     }
 
-    SpanLikeEncoder<T> ISpanLikeEncoderProvider<T>.GetEncoder()
-    {
-        if (default(U) is ISpanLikeEncoderProvider<T> provider)
-            return provider.GetEncoder();
-        return new ConstantEncoder<T, U>();
-    }
-
     SpanLikeDecoder<T[]> ISpanLikeDecoderProvider<T[]>.GetDecoder()
     {
         if (default(U) is ISpanLikeDecoderProvider<T[]> provider)
@@ -83,5 +76,12 @@ internal abstract class ConstantConverter<T, U> : Converter<T>, ISpanLikeEncoder
         if (default(U) is ISpanLikeDecoderProvider<List<T>> provider)
             return provider.GetDecoder();
         return new ConstantListDecoder<T, U>();
+    }
+
+    SpanLikeForwardEncoder<T> ISpanLikeEncoderProvider<T>.GetEncoder()
+    {
+        if (default(U) is ISpanLikeEncoderProvider<T> provider)
+            return provider.GetEncoder();
+        return new ConstantEncoder<T, U>();
     }
 }

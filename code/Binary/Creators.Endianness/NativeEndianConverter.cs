@@ -17,10 +17,10 @@ internal sealed class NativeEndianConverter<T> : ConstantConverter<T, NativeEndi
 
         public static void Encode(ref byte target, T item) => Unsafe.WriteUnaligned(ref target, item);
 
-        SpanLikeEncoder<T> ISpanLikeEncoderProvider<T>.GetEncoder() => new NativeEndianEncoder<T>();
-
         SpanLikeDecoder<T[]> ISpanLikeDecoderProvider<T[]>.GetDecoder() => new NativeEndianDecoder<T>();
 
         SpanLikeDecoder<List<T>> ISpanLikeDecoderProvider<List<T>>.GetDecoder() => new NativeEndianListDecoder<T>();
+
+        SpanLikeForwardEncoder<T> ISpanLikeEncoderProvider<T>.GetEncoder() => new NativeEndianEncoder<T>();
     }
 }
