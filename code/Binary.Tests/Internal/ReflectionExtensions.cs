@@ -41,6 +41,17 @@ internal static class ReflectionExtensions
         return result;
     }
 
+    internal static object GetFieldValueNotNull(this object instance, string name, BindingFlags flags)
+    {
+        var type = instance.GetType();
+        var result = type.GetField(name, flags);
+        if (result is null)
+            throw new MissingFieldException();
+        var target = result.GetValue(instance);
+        Assert.NotNull(target);
+        return target;
+    }
+
     internal static T CreateInstance<T>(string typeName)
     {
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name == typeName);
