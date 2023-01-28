@@ -17,21 +17,17 @@ internal static class ContextMethodsOfNamedObject
 
     private delegate bool ExistsMethodDelegate(ReadOnlySpan<long> data, int index);
 
-    private delegate void AppendMethodDelegate(ref Allocator allocator, ReadOnlySpan<byte> span);
-
-    private delegate ReadOnlySpan<byte> CreateMethodDelegate(byte[]? data);
+    private delegate void AppendMethodDelegate(ref Allocator allocator, byte[] data);
 
     private delegate ReadOnlySpan<byte> InvokeMethodDelegate(ReadOnlySpan<byte> span, ReadOnlySpan<long> data, int index);
 
-    private static readonly MethodInfo AppendMethodInfo = new AppendMethodDelegate(Allocator.Append).Method;
-
-    private static readonly MethodInfo CreateMethodInfo = new CreateMethodDelegate(BridgeModule.CreateReadOnlySpan).Method;
+    private static readonly MethodInfo AppendMethodInfo = new AppendMethodDelegate(NamedObjectTemplates.Append).Method;
 
     private static readonly MethodInfo InvokeMethodInfo = new InvokeMethodDelegate(NamedObjectTemplates.GetIndexSpan).Method;
 
     private static readonly MethodInfo ExistsMethodInfo = new ExistsMethodDelegate(NamedObjectTemplates.HasIndexData).Method;
 
-    private static readonly MethodInfo EnsureMethodInfo = new EnsureMethodDelegate<object>(BridgeModule.NotDefaultValue).Method.GetGenericMethodDefinition();
+    private static readonly MethodInfo EnsureMethodInfo = new EnsureMethodDelegate<object>(NamedObjectTemplates.NotDefaultValue).Method.GetGenericMethodDefinition();
 
     internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<ContextMemberInitializer> members, ImmutableArray<string> names, ImmutableArray<ReadOnlyMemory<byte>> memories, ImmutableArray<bool> optional, ByteViewDictionary<int> dictionary)
     {
@@ -62,7 +58,7 @@ internal static class ContextMethodsOfNamedObject
             var invoke = new List<Expression>();
             var target = members[i].Invoke(item);
             // append named key with length prefix (cached), then append value with length prefix
-            invoke.Add(Expression.Call(AppendMethodInfo, allocator, Expression.Call(CreateMethodInfo, Expression.Constant(Handle(memories[i])))));
+            invoke.Add(Expression.Call(AppendMethodInfo, allocator, Expression.Constant(Handle(memories[i]))));
             invoke.Add(Expression.Call(Expression.Constant(converter), Converter.GetMethod(converter, nameof(IConverter.EncodeWithLengthPrefix)), allocator, target));
             if (optional[i] is false)
                 result.AddRange(invoke);

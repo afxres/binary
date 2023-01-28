@@ -1,8 +1,10 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts.Template;
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 internal static class NamedObjectTemplates
 {
@@ -26,5 +28,19 @@ internal static class NamedObjectTemplates
         var item = data[index];
         var body = span.Slice((int)(item >> 32), (int)item);
         return body;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static bool NotDefaultValue<T>(T? item)
+    {
+        return EqualityComparer<T>.Default.Equals(item, default) is false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static void Append(ref Allocator allocator, byte[] data)
+    {
+        Debug.Assert(data is not null);
+        Debug.Assert(data.Length is not 0);
+        Unsafe.CopyBlockUnaligned(ref Allocator.Assign(ref allocator, data.Length), ref MemoryMarshal.GetArrayDataReference(data), (uint)data.Length);
     }
 }
