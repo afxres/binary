@@ -49,16 +49,16 @@ public sealed class Token : IDynamicMetaObjectProvider
         var generator = origin.generator;
         var memory = origin.memory;
         var decode = origin.decode;
-        var body = memory.Span;
+        var intent = memory.Span;
 
         try
         {
             var builder = ImmutableDictionary.CreateBuilder<string, Token>();
-            while (body.Length is not 0)
+            while (intent.Length is not 0)
             {
-                var header = Converter.DecodeWithLengthPrefix(ref body);
-                var buffer = Converter.DecodeWithLengthPrefix(ref body);
-                var offset = memory.Length - buffer.Length - body.Length;
+                var header = Converter.DecodeWithLengthPrefix(ref intent);
+                var buffer = Converter.DecodeWithLengthPrefix(ref intent);
+                var offset = memory.Length - buffer.Length - intent.Length;
                 var target = memory.Slice(offset, buffer.Length);
                 var source = decode.Invoke(in header);
                 var result = new Token(generator, target, origin, decode);

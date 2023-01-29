@@ -30,16 +30,16 @@ internal sealed class PriorityQueueConverter<E, P> : Converter<PriorityQueue<E, 
 
     public override PriorityQueue<E, P> Decode(in ReadOnlySpan<byte> span)
     {
-        var item = new PriorityQueue<E, P>();
         var init = this.init;
         var tail = this.tail;
-        var body = span;
-        while (body.Length is not 0)
+        var result = new PriorityQueue<E, P>();
+        var intent = span;
+        while (intent.Length is not 0)
         {
-            var head = init.DecodeAuto(ref body);
-            var next = tail.DecodeAuto(ref body);
-            item.Enqueue(head, next);
+            var head = init.DecodeAuto(ref intent);
+            var next = tail.DecodeAuto(ref intent);
+            result.Enqueue(head, next);
         }
-        return item;
+        return result;
     }
 }

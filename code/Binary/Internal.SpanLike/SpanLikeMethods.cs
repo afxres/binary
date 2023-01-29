@@ -4,34 +4,35 @@ using Mikodev.Binary.Internal.Sequence;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 internal static class SpanLikeMethods
 {
     internal static List<E> GetList<E>(Converter<E> converter, ReadOnlySpan<byte> span)
     {
-        Debug.Assert(span.Length is not 0);
         var limits = span.Length;
+        if (limits is 0)
+            return new List<E>();
         var length = converter.Length;
         var capacity = SequenceMethods.GetCapacity<E>(limits, length, SequenceMethods.FallbackCapacity);
         var result = new List<E>(capacity);
-        var body = span;
-        while (body.Length is not 0)
-            result.Add(converter.DecodeAuto(ref body));
+        var intent = span;
+        while (intent.Length is not 0)
+            result.Add(converter.DecodeAuto(ref intent));
         return result;
     }
 
     internal static ImmutableArray<E> GetImmutableArray<E>(Converter<E> converter, ReadOnlySpan<byte> span)
     {
-        Debug.Assert(span.Length is not 0);
         var limits = span.Length;
+        if (limits is 0)
+            return ImmutableArray<E>.Empty;
         var length = converter.Length;
         var capacity = SequenceMethods.GetCapacity<E>(limits, length, SequenceMethods.FallbackCapacity);
         var result = ImmutableArray.CreateBuilder<E>(capacity);
-        var body = span;
-        while (body.Length is not 0)
-            result.Add(converter.DecodeAuto(ref body));
+        var intent = span;
+        while (intent.Length is not 0)
+            result.Add(converter.DecodeAuto(ref intent));
         return result.Count == result.Capacity ? result.MoveToImmutable() : result.ToImmutable();
     }
 
@@ -45,16 +46,21 @@ internal static class SpanLikeMethods
             buffer[cursor] = item;
         }
 
-        Debug.Assert(span.Length is not 0);
         var limits = span.Length;
+        if (limits is 0)
+        {
+            actual = 0;
+            return Array.Empty<E>();
+        }
+
         var length = converter.Length;
         var capacity = SequenceMethods.GetCapacity<E>(limits, length, SequenceMethods.FallbackCapacity);
         var result = new E[capacity];
         var cursor = 0;
-        var body = span;
-        while (body.Length is not 0)
+        var intent = span;
+        while (intent.Length is not 0)
         {
-            var item = converter.DecodeAuto(ref body);
+            var item = converter.DecodeAuto(ref intent);
             if ((uint)cursor < (uint)result.Length)
                 result[cursor] = item;
             else

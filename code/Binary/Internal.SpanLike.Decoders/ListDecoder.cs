@@ -14,8 +14,6 @@ internal sealed class ListDecoder<E> : SpanLikeDecoder<List<E>>
 
     public override List<E> Invoke(ReadOnlySpan<byte> span)
     {
-        if (span.Length is 0)
-            return new List<E>();
         return SpanLikeMethods.GetList(this.converter, span);
     }
 }

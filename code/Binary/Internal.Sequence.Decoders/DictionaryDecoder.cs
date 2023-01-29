@@ -24,16 +24,16 @@ internal sealed class DictionaryDecoder<K, V> where K : notnull
         if (limits is 0)
             return new Dictionary<K, V>();
         var capacity = SequenceMethods.GetCapacity<KeyValuePair<K, V>>(limits, this.itemLength, SequenceMethods.FallbackCapacity);
-        var item = new Dictionary<K, V>(capacity);
-        var body = span;
         var init = this.init;
         var tail = this.tail;
-        while (body.Length is not 0)
+        var result = new Dictionary<K, V>(capacity);
+        var intent = span;
+        while (intent.Length is not 0)
         {
-            var head = init.DecodeAuto(ref body);
-            var next = tail.DecodeAuto(ref body);
-            item.Add(head, next);
+            var head = init.DecodeAuto(ref intent);
+            var next = tail.DecodeAuto(ref intent);
+            result.Add(head, next);
         }
-        return item;
+        return result;
     }
 }

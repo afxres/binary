@@ -16,15 +16,16 @@ internal sealed class LinkedListConverter<T> : Converter<LinkedList<T>>
         var converter = this.converter;
         for (var i = item.First; i is not null; i = i.Next)
             converter.EncodeAuto(ref allocator, i.Value);
+        return;
     }
 
     public override LinkedList<T> Decode(in ReadOnlySpan<byte> span)
     {
-        var body = span;
-        var list = new LinkedList<T>();
         var converter = this.converter;
-        while (body.Length is not 0)
-            _ = list.AddLast(converter.DecodeAuto(ref body));
-        return list;
+        var result = new LinkedList<T>();
+        var intent = span;
+        while (intent.Length is not 0)
+            _ = result.AddLast(converter.DecodeAuto(ref intent));
+        return result;
     }
 }

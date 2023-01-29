@@ -14,8 +14,6 @@ internal sealed class ImmutableArrayDecoder<E> : SpanLikeDecoder<ImmutableArray<
 
     public override ImmutableArray<E> Invoke(ReadOnlySpan<byte> span)
     {
-        if (span.Length is 0)
-            return ImmutableArray<E>.Empty;
         return SpanLikeMethods.GetImmutableArray(this.converter, span);
     }
 }

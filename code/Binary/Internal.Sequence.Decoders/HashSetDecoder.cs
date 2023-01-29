@@ -11,11 +11,11 @@ internal sealed class HashSetDecoder<E>
 
     public HashSet<E> Decode(ReadOnlySpan<byte> span)
     {
-        var body = span;
-        var item = new HashSet<E>();
         var converter = this.converter;
-        while (body.Length is not 0)
-            _ = item.Add(converter.DecodeAuto(ref body));
-        return item;
+        var result = new HashSet<E>();
+        var intent = span;
+        while (intent.Length is not 0)
+            _ = result.Add(converter.DecodeAuto(ref intent));
+        return result;
     }
 }

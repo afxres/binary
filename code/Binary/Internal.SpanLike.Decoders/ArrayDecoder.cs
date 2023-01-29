@@ -2,6 +2,7 @@
 
 using Mikodev.Binary.Internal.SpanLike.Contexts;
 using System;
+using System.Diagnostics;
 
 internal sealed class ArrayDecoder<T, E, B> : SpanLikeDecoder<T> where B : struct, ISpanLikeBuilder<T, E>
 {
@@ -14,8 +15,8 @@ internal sealed class ArrayDecoder<T, E, B> : SpanLikeDecoder<T> where B : struc
 
     public override T Invoke(ReadOnlySpan<byte> span)
     {
-        if (span.Length is 0)
-            return B.Invoke(Array.Empty<E>(), 0);
-        return B.Invoke(SpanLikeMethods.GetArray(this.converter, span, out var actual), actual);
+        var result = SpanLikeMethods.GetArray(this.converter, span, out var actual);
+        Debug.Assert(result.Length is not 0 || ReferenceEquals(result, Array.Empty<E>()));
+        return B.Invoke(result, actual);
     }
 }

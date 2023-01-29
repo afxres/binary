@@ -167,11 +167,11 @@ let ``Collection Integration Test (span-like collection, custom converter)`` () 
 
 [<Fact>]
 let ``Collection Integration Test (collection, null or empty collection test, default interface implementation test)`` () =
-    TestSequence<IList<_>> "EnumerableEncoder`2" "EnumerableDecoder`2" (Array.zeroCreate<int> 0)
-    TestSequence<ICollection<_>> "EnumerableEncoder`2" "EnumerableDecoder`2" (Array.zeroCreate<int> 0)
-    TestSequence<IEnumerable<_>> "EnumerableEncoder`2" "EnumerableDecoder`2" (ResizeArray<string>())
-    TestSequence<IReadOnlyList<_>> "EnumerableEncoder`2" "EnumerableDecoder`2" (ResizeArray<string>())
-    TestSequence<IReadOnlyCollection<_>> "EnumerableEncoder`2" "EnumerableDecoder`2" (Array.zeroCreate<int> 0)
+    TestSequence<IList<_>> "EnumerableEncoder`2" "NativeEndianDecoder`1" (Array.zeroCreate<int> 0)
+    TestSequence<ICollection<_>> "EnumerableEncoder`2" "ConstantDecoder`2" (Array.zeroCreate<TimeSpan> 0)
+    TestSequence<IEnumerable<_>> "EnumerableEncoder`2" "ListDecoder`1" (Array.zeroCreate<string> 0)
+    TestSequence<IReadOnlyList<_>> "EnumerableEncoder`2" "NativeEndianDecoder`1" (ResizeArray<int>())
+    TestSequence<IReadOnlyCollection<_>> "EnumerableEncoder`2" "ListDecoder`1" (ResizeArray<string>())
 
     TestSequence<Queue<_>> "<lambda-encoder>" "<lambda-decoder>" (Queue<int> 0)
     TestSequence<ImmutableList<_>> "<lambda-encoder>" "<lambda-decoder>" (ImmutableList.Create<string>())

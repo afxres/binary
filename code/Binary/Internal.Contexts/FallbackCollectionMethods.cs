@@ -4,6 +4,8 @@ using Mikodev.Binary.Components;
 using Mikodev.Binary.Internal.Sequence;
 using Mikodev.Binary.Internal.Sequence.Decoders;
 using Mikodev.Binary.Internal.Sequence.Encoders;
+using Mikodev.Binary.Internal.SpanLike;
+using Mikodev.Binary.Internal.SpanLike.Decoders;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -129,9 +131,19 @@ internal static class FallbackCollectionMethods
         return lambda.Compile();
     }
 
-    private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, E>(Converter<E> converter, Func<Expression, Expression> method) where T : IEnumerable<E>
+    private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, E>(Converter<E> converter, Func<Expression, Expression>? method) where T : IEnumerable<E>
     {
-        return GetDecodeDelegate<T, IEnumerable<E>, IEnumerable<E>>(new EnumerableDecoder<IEnumerable<E>, E>(converter).Decode, method);
+        DecodePassSpanDelegate<IEnumerable<E>> Invoke()
+        {
+            if (SpanLikeContext.GetDecoderOrDefault<E[], E>(converter) is { } result)
+                return result.Invoke;
+            return new ListDecoder<E>(converter).Invoke;
+        }
+
+        var target = Invoke();
+        if (method is null)
+            return GetDecodeDelegate<T, IEnumerable<E>>(target);
+        return GetDecodeDelegate<T, IEnumerable<E>, IEnumerable<E>>(target, method);
     }
 
     private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
@@ -143,7 +155,7 @@ internal static class FallbackCollectionMethods
     private static DecodePassSpanDelegate<T>? GetDecodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
     {
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), ArrayOrListAssignableDefinitions.Contains))
-            return new EnumerableDecoder<T, E>(converter).Decode;
+            return GetDecodeDelegate<T, E>(converter, null);
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), HashSetAssignableDefinitions.Contains))
             return GetDecodeDelegate<T, HashSet<E>>(new HashSetDecoder<E>(converter).Decode);
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } result)
