@@ -23,7 +23,6 @@ internal static class FallbackConvertersMethods
             new TimeOnlyConverter(),
             new TimeSpanConverter(),
             new BigIntegerConverter(),
-            new BitArrayConverter(),
             new IPAddressConverter(),
             new IPEndPointConverter(),
             new VersionConverter(),
