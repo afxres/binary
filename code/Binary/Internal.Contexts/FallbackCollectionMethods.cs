@@ -104,7 +104,7 @@ internal static class FallbackCollectionMethods
     private static IConverter GetConverter(IGeneratorContext context, Func<IGeneratorContext, IConverter> func, ImmutableArray<Type> types)
     {
         var method = func.Method.GetGenericMethodDefinition().MakeGenericMethod(types.ToArray());
-        var target = (Func<IGeneratorContext, IConverter>)Delegate.CreateDelegate(typeof(Func<IGeneratorContext, IConverter>), method);
+        var target = CommonModule.CreateDelegate<Func<IGeneratorContext, IConverter>>(null, method);
         return target.Invoke(context);
     }
 
@@ -120,7 +120,7 @@ internal static class FallbackCollectionMethods
 
     private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, R>(DecodePassSpanDelegate<R> decode)
     {
-        return (DecodePassSpanDelegate<T>)Delegate.CreateDelegate(typeof(DecodePassSpanDelegate<T>), decode.Target, decode.Method);
+        return CommonModule.CreateDelegate<DecodePassSpanDelegate<T>>(decode.Target, decode.Method);
     }
 
     private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, R, I>(DecodePassSpanDelegate<R> decode, Func<Expression, Expression> method)

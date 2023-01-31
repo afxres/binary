@@ -22,6 +22,11 @@ internal static class CommonModule
         return type.IsGenericType ? func.Invoke(type.GetGenericTypeDefinition()) : default;
     }
 
+    internal static T CreateDelegate<T>(object? target, MethodInfo method) where T : MulticastDelegate
+    {
+        return (T)Delegate.CreateDelegate(typeof(T), target, method);
+    }
+
     internal static object CreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type, object?[]? arguments)
     {
         var result = Activator.CreateInstance(type, arguments);

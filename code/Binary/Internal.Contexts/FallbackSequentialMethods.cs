@@ -29,7 +29,7 @@ internal static class FallbackSequentialMethods
         }
 
         var array = Info(GetArrayConverter);
-        var unbox = new Func<object, object, object>(GetConverter<object>).Method.GetGenericMethodDefinition();
+        var unbox = new Func<MethodInfo, object, object>(GetConverter<object>).Method.GetGenericMethodDefinition();
         var create = ImmutableDictionary.CreateRange(new Dictionary<Type, MethodInfo>
         {
             [typeof(List<>)] = Info(GetListConverter),
@@ -60,10 +60,8 @@ internal static class FallbackSequentialMethods
             return null;
         var itemType = method.GetGenericArguments().Single();
         var itemConverter = context.GetConverter(itemType);
-        var functorType = typeof(Func<,>).MakeGenericType(typeof(Converter<>).MakeGenericType(itemType), typeof(object));
-        var functor = Delegate.CreateDelegate(functorType, method);
-        var creator = (Func<object, object, object>)Delegate.CreateDelegate(typeof(Func<object, object, object>), UnboxCreateMethod.MakeGenericMethod(itemType));
-        var converter = creator.Invoke(functor, itemConverter);
+        var creator = CommonModule.CreateDelegate<Func<MethodInfo, object, object>>(null, UnboxCreateMethod.MakeGenericMethod(itemType));
+        var converter = creator.Invoke(method, itemConverter);
         return (IConverter)converter;
     }
 
@@ -94,9 +92,11 @@ internal static class FallbackSequentialMethods
             : new ConstantEncoder<T, E, A>(converter);
     }
 
-    private static object GetConverter<E>(object method, object data)
+    private static object GetConverter<E>(MethodInfo method, object data)
     {
-        return ((Func<Converter<E>, object>)method).Invoke((Converter<E>)data);
+        var converter = (Converter<E>)data;
+        var target = CommonModule.CreateDelegate<Func<Converter<E>, object>>(null, method);
+        return target.Invoke(converter);
     }
 
     private static SpanLikeConverter<E[]> GetArrayConverter<E>(Converter<E> converter)
