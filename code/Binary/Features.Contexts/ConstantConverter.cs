@@ -12,11 +12,29 @@ using System.Runtime.InteropServices;
 
 internal abstract class ConstantConverter<T, U> : Converter<T>, ISpanLikeEncoderProvider<T>, ISpanLikeDecoderProvider<T[]>, ISpanLikeDecoderProvider<List<T>> where U : struct, IConstantConverterFunctions<T>
 {
+    private readonly SpanLikeForwardEncoder<T> encoder;
+
+    private readonly SpanLikeDecoder<T[]> decoder;
+
+    private readonly SpanLikeDecoder<List<T>> decoderForList;
+
     public ConstantConverter() : base(U.Length)
     {
         Debug.Assert(U.Length >= 1);
         Debug.Assert(U.Length <= 16);
         Debug.Assert(NumberModule.EncodeLength((uint)U.Length) is 1);
+        var encoder = default(U) is ISpanLikeEncoderProvider<T> providerEncoder
+            ? providerEncoder.GetEncoder()
+            : new ConstantEncoder<T, U>();
+        var decoder = default(U) is ISpanLikeDecoderProvider<T[]> providerDecoder
+            ? providerDecoder.GetDecoder()
+            : new ConstantDecoder<T, U>();
+        var decoderForList = default(U) is ISpanLikeDecoderProvider<List<T>> providerDecoderForList
+            ? providerDecoderForList.GetDecoder()
+            : new ConstantListDecoder<T, U>();
+        this.encoder = encoder;
+        this.decoder = decoder;
+        this.decoderForList = decoderForList;
     }
 
     public override T Decode(byte[]? buffer)
@@ -64,24 +82,18 @@ internal abstract class ConstantConverter<T, U> : Converter<T>, ISpanLikeEncoder
         U.Encode(ref Unsafe.Add(ref target, prefix), item);
     }
 
+    SpanLikeForwardEncoder<T> ISpanLikeEncoderProvider<T>.GetEncoder()
+    {
+        return this.encoder;
+    }
+
     SpanLikeDecoder<T[]> ISpanLikeDecoderProvider<T[]>.GetDecoder()
     {
-        if (default(U) is ISpanLikeDecoderProvider<T[]> provider)
-            return provider.GetDecoder();
-        return new ConstantDecoder<T, U>();
+        return this.decoder;
     }
 
     SpanLikeDecoder<List<T>> ISpanLikeDecoderProvider<List<T>>.GetDecoder()
     {
-        if (default(U) is ISpanLikeDecoderProvider<List<T>> provider)
-            return provider.GetDecoder();
-        return new ConstantListDecoder<T, U>();
-    }
-
-    SpanLikeForwardEncoder<T> ISpanLikeEncoderProvider<T>.GetEncoder()
-    {
-        if (default(U) is ISpanLikeEncoderProvider<T> provider)
-            return provider.GetEncoder();
-        return new ConstantEncoder<T, U>();
+        return this.decoderForList;
     }
 }
