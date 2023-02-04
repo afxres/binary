@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-public class MultidimensionalArrayTests
+public class MultidimensionalArrayConverterTests
 {
     public static IEnumerable<object[]> Array2DData()
     {
@@ -20,7 +20,7 @@ public class MultidimensionalArrayTests
         yield return new object[] { bravo };
     }
 
-    [Theory(DisplayName = "Array2D Converter Test")]
+    [Theory(DisplayName = "Array2D Test")]
     [MemberData(nameof(Array2DData))]
     public void Array2DTest<T>(T[,] values)
     {

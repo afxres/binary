@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 
 public class VariableBoundArrayConverterCreator : IConverterCreator
 {
-    [RequiresUnreferencedCode("Require unreferenced multidimensional array types for binary serialization.")]
+    [RequiresUnreferencedCode("Require unreferenced variable bound array types for binary serialization.")]
     public IConverter? GetConverter(IGeneratorContext context, Type type)
     {
         if (type.IsVariableBoundArray is false)

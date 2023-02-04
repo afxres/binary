@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 public sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T : class
 {
     /* Variable Bound Array Converter
-     * Layout: lower bound for all ranks | length for all ranks | Array data ...
+     * Layout: length for all ranks | lower bound for all ranks | array data ...
      */
 
     private readonly int rank;
@@ -50,9 +50,9 @@ public sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T : 
         var lengthList = (stackalloc int[rank]);
         var origin = (Array)(object)item;
         for (var i = 0; i < rank; i++)
-            Converter.Encode(ref allocator, startsList[i] = origin.GetLowerBound(i));
-        for (var i = 0; i < rank; i++)
             Converter.Encode(ref allocator, lengthList[i] = origin.GetLength(i));
+        for (var i = 0; i < rank; i++)
+            Converter.Encode(ref allocator, startsList[i] = origin.GetLowerBound(i));
         var source = GetArrayDataSpan(lengthList, origin);
         var converter = this.converter;
         foreach (var i in source)
@@ -69,9 +69,9 @@ public sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T : 
         var lengthList = new int[rank];
         var intent = span;
         for (var i = 0; i < rank; i++)
-            startsList[i] = Converter.Decode(ref intent);
-        for (var i = 0; i < rank; i++)
             lengthList[i] = Converter.Decode(ref intent);
+        for (var i = 0; i < rank; i++)
+            startsList[i] = Converter.Decode(ref intent);
         var item = Array.CreateInstance(typeof(E), lengthList, startsList);
         var target = GetArrayDataSpan(lengthList, item);
         var converter = this.converter;
