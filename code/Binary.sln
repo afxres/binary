@@ -45,7 +45,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.CollectionDecode
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.AllocatorStringTests", "Benchmarks.AllocatorStringTests\Benchmarks.AllocatorStringTests.csproj", "{3249A207-7B39-488E-A1A6-08534B49120B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmarks.BinaryDictionaryTests", "Benchmarks.BinaryDictionaryTests\Benchmarks.BinaryDictionaryTests.csproj", "{FE0F51D7-BB3B-43F1-8AE0-A9260B1FE736}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmarks.BinaryDictionaryTests", "Benchmarks.BinaryDictionaryTests\Benchmarks.BinaryDictionaryTests.csproj", "{FE0F51D7-BB3B-43F1-8AE0-A9260B1FE736}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Binary.Experimental", "Binary.Experimental\Binary.Experimental.csproj", "{A1647D46-2B15-4581-8268-A2045700FA15}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Binary.Experimental.Tests", "Binary.Experimental.Tests\Binary.Experimental.Tests.csproj", "{4D924606-A23B-4A1B-BACA-8CFF9EE3BD93}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -137,6 +141,14 @@ Global
 		{FE0F51D7-BB3B-43F1-8AE0-A9260B1FE736}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE0F51D7-BB3B-43F1-8AE0-A9260B1FE736}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE0F51D7-BB3B-43F1-8AE0-A9260B1FE736}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1647D46-2B15-4581-8268-A2045700FA15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1647D46-2B15-4581-8268-A2045700FA15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1647D46-2B15-4581-8268-A2045700FA15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1647D46-2B15-4581-8268-A2045700FA15}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D924606-A23B-4A1B-BACA-8CFF9EE3BD93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D924606-A23B-4A1B-BACA-8CFF9EE3BD93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D924606-A23B-4A1B-BACA-8CFF9EE3BD93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D924606-A23B-4A1B-BACA-8CFF9EE3BD93}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
