@@ -4,18 +4,22 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-public sealed class MultidimensionalArrayUnsafeConverter<T, E> : Converter<T?> where T : class
+public sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T : class
 {
+    /* Variable Bound Array Converter
+     * Layout: lower bound for all ranks | length for all ranks | Array data ...
+     */
+
     private readonly int rank;
 
     private readonly Converter<E> converter;
 
-    public MultidimensionalArrayUnsafeConverter(Converter<E> converter)
+    public VariableBoundArrayConverter(Converter<E> converter)
     {
         ArgumentNullException.ThrowIfNull(converter);
         var type = typeof(T);
-        if (type.IsArray is false)
-            throw new ArgumentException($"Require array type, type: {type}");
+        if (type.IsVariableBoundArray is false)
+            throw new ArgumentException($"Require variable bound array type, type: {type}");
         var rank = type.GetArrayRank();
         this.rank = rank;
         this.converter = converter;
@@ -42,10 +46,14 @@ public sealed class MultidimensionalArrayUnsafeConverter<T, E> : Converter<T?> w
         if (item is null)
             return;
         var rank = this.rank;
+        var startsList = (stackalloc int[rank]);
         var lengthList = (stackalloc int[rank]);
+        var origin = (Array)(object)item;
         for (var i = 0; i < rank; i++)
-            Converter.Encode(ref allocator, lengthList[i] = ((Array)(object)item).GetLength(i));
-        var source = GetArrayDataSpan(lengthList, (Array)(object)item);
+            Converter.Encode(ref allocator, startsList[i] = origin.GetLowerBound(i));
+        for (var i = 0; i < rank; i++)
+            Converter.Encode(ref allocator, lengthList[i] = origin.GetLength(i));
+        var source = GetArrayDataSpan(lengthList, origin);
         var converter = this.converter;
         foreach (var i in source)
             converter.EncodeAuto(ref allocator, i);
@@ -57,11 +65,14 @@ public sealed class MultidimensionalArrayUnsafeConverter<T, E> : Converter<T?> w
         if (span.Length is 0)
             return null;
         var rank = this.rank;
+        var startsList = new int[rank];
         var lengthList = new int[rank];
         var intent = span;
         for (var i = 0; i < rank; i++)
+            startsList[i] = Converter.Decode(ref intent);
+        for (var i = 0; i < rank; i++)
             lengthList[i] = Converter.Decode(ref intent);
-        var item = Array.CreateInstance(typeof(E), lengthList);
+        var item = Array.CreateInstance(typeof(E), lengthList, startsList);
         var target = GetArrayDataSpan(lengthList, item);
         var converter = this.converter;
         for (var i = 0; i < target.Length; i++)
