@@ -6,7 +6,7 @@ using Mikodev.Binary.Internal;
 using System;
 using System.Numerics;
 
-internal sealed class BigIntegerConverter : VariablePrefixEncodeConverter<BigInteger, BigIntegerConverter.Functions>
+internal sealed class BigIntegerConverter : VariableConverter<BigInteger, BigIntegerConverter.Functions>
 {
     private static readonly AllocatorWriter<BigInteger> EncodeFunction;
 
@@ -26,7 +26,7 @@ internal sealed class BigIntegerConverter : VariablePrefixEncodeConverter<BigInt
         return new BigInteger(span);
     }
 
-    internal readonly struct Functions : IVariablePrefixEncodeConverterFunctions<BigInteger>
+    internal readonly struct Functions : IVariableConverterFunctions<BigInteger>
     {
         public static BigInteger Decode(in ReadOnlySpan<byte> span)
         {

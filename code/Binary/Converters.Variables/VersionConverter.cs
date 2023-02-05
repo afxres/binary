@@ -8,7 +8,7 @@ using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-internal sealed class VersionConverter : VariablePrefixEncodeConverter<Version?, VersionConverter.Functions>
+internal sealed class VersionConverter : VariableConverter<Version?, VersionConverter.Functions>
 {
     private const int MaxLength = 16;
 
@@ -61,7 +61,7 @@ internal sealed class VersionConverter : VariablePrefixEncodeConverter<Version?,
         return result;
     }
 
-    internal readonly struct Functions : IVariablePrefixEncodeConverterFunctions<Version?>
+    internal readonly struct Functions : IVariableConverterFunctions<Version?>
     {
         public static Version? Decode(in ReadOnlySpan<byte> span)
         {

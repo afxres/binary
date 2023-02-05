@@ -6,7 +6,7 @@ using Mikodev.Binary.Internal;
 using System;
 using System.Net;
 
-internal sealed class IPAddressConverter : VariablePrefixEncodeConverter<IPAddress?, IPAddressConverter.Functions>
+internal sealed class IPAddressConverter : VariableConverter<IPAddress?, IPAddressConverter.Functions>
 {
     private const int MaxLength = 16;
 
@@ -32,7 +32,7 @@ internal sealed class IPAddressConverter : VariablePrefixEncodeConverter<IPAddre
         return new IPAddress(span);
     }
 
-    internal readonly struct Functions : IVariablePrefixEncodeConverterFunctions<IPAddress?>
+    internal readonly struct Functions : IVariableConverterFunctions<IPAddress?>
     {
         public static IPAddress? Decode(in ReadOnlySpan<byte> span)
         {

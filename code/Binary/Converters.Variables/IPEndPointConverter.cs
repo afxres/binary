@@ -7,7 +7,7 @@ using System;
 using System.Buffers.Binary;
 using System.Net;
 
-internal sealed class IPEndPointConverter : VariablePrefixEncodeConverter<IPEndPoint?, IPEndPointConverter.Functions>
+internal sealed class IPEndPointConverter : VariableConverter<IPEndPoint?, IPEndPointConverter.Functions>
 {
     private const int MaxLength = 18;
 
@@ -40,7 +40,7 @@ internal sealed class IPEndPointConverter : VariablePrefixEncodeConverter<IPEndP
         return new IPEndPoint(header, number);
     }
 
-    internal readonly struct Functions : IVariablePrefixEncodeConverterFunctions<IPEndPoint?>
+    internal readonly struct Functions : IVariableConverterFunctions<IPEndPoint?>
     {
         public static IPEndPoint? Decode(in ReadOnlySpan<byte> span)
         {
