@@ -18,6 +18,7 @@ public static class Generator
             new LinkedListConverterCreator(),
             new NullableConverterCreator(),
             new PriorityQueueConverterCreator(),
+            new ReadOnlySequenceConverterCreator(),
             new UriConverterCreator(),
             new VariableBoundArrayConverterCreator(),
             new DetectEndianConverterCreator(),
