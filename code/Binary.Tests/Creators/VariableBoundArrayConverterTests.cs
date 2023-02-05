@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Experimental.Tests;
+﻿namespace Mikodev.Binary.Tests.Creators;
 
 using System;
 using System.Collections.Generic;
@@ -40,9 +40,9 @@ public class VariableBoundArrayConverterTests
     [MemberData(nameof(Array2DNonZeroBasedData))]
     public void Array2DTest<T>(T[,] values)
     {
-        var generator = Generator.CreateDefaultBuilder().AddConverterCreator(new VariableBoundArrayConverterCreator()).Build();
+        var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<T[,]>();
-        Assert.Equal(typeof(VariableBoundArrayConverter<T[,], T>), converter.GetType());
+        Assert.Equal("VariableBoundArrayConverter`2", converter.GetType().Name);
         var buffer = converter.Encode(values);
         var result = converter.Decode(buffer);
         Assert.False(ReferenceEquals(values, result));

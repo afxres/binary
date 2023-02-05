@@ -1,10 +1,11 @@
-﻿namespace Mikodev.Binary.Experimental;
+﻿namespace Mikodev.Binary.Creators;
 
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-public sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T : class
+internal sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T : class
 {
     /* Variable Bound Array Converter
      * Layout: length for all ranks | lower bound for all ranks | array data ...
@@ -16,16 +17,14 @@ public sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T : 
 
     public VariableBoundArrayConverter(Converter<E> converter)
     {
-        ArgumentNullException.ThrowIfNull(converter);
-        var type = typeof(T);
-        if (type.IsVariableBoundArray is false)
-            throw new ArgumentException($"Require variable bound array type, type: {type}");
-        var rank = type.GetArrayRank();
+        Debug.Assert(converter is not null);
+        Debug.Assert(typeof(T).IsVariableBoundArray);
+        var rank = typeof(T).GetArrayRank();
         this.rank = rank;
         this.converter = converter;
     }
 
-    private static int GetTotalItemCount(scoped ReadOnlySpan<int> lengthList)
+    private static int GetArraySpanSize(scoped ReadOnlySpan<int> lengthList)
     {
         var result = 1;
         foreach (var i in lengthList)
@@ -35,7 +34,7 @@ public sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T : 
 
     private static Span<E> GetArrayDataSpan(scoped ReadOnlySpan<int> lengthList, Array item)
     {
-        var length = GetTotalItemCount(lengthList);
+        var length = GetArraySpanSize(lengthList);
         if (length is 0)
             return default;
         return MemoryMarshal.CreateSpan(ref Unsafe.As<byte, E>(ref MemoryMarshal.GetArrayDataReference(item)), length);

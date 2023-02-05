@@ -19,6 +19,7 @@ public static class Generator
             new NullableConverterCreator(),
             new PriorityQueueConverterCreator(),
             new UriConverterCreator(),
+            new VariableBoundArrayConverterCreator(),
             new DetectEndianConverterCreator(),
         };
         SharedConverterCreators = creators.ToImmutableDictionary(x => x.GetType().Name);
