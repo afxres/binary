@@ -232,4 +232,22 @@ public class CodeContractsTests
         Assert.True(groups.ContainsKey(NullabilityState.Nullable));
         Assert.All(groups[NullabilityState.Unknown], x => Assert.True(x.Key.Member.DeclaringType?.IsSubclassOf(typeof(Delegate))));
     }
+
+    [Fact(DisplayName = "Public Method With Non-ByRef Ref-Like Type Parameter Should Be Scoped")]
+    public void PublicMethodWithNonByRefRefLikeTypeShouldBeScoped()
+    {
+        var publicTypes = typeof(IConverter).Assembly.GetTypes().Where(x => x.IsPublic).ToList();
+        var publicMethods = publicTypes.SelectMany(x => x.GetMethods()).ToList();
+        var parameters = publicMethods.SelectMany(x => x.GetParameters()).ToList();
+        var matches = parameters.Where(x => x.ParameterType.IsByRef is false && x.ParameterType.IsByRefLike).ToList();
+        Assert.NotEmpty(matches);
+        var hostTypes = matches.Select(x => x.Member.ReflectedType).Distinct().ToList();
+        Assert.Equal(4, hostTypes.Count);
+        foreach (var parameter in matches)
+        {
+            var attributes = parameter.GetCustomAttributes();
+            var attribute = Assert.Single(attributes, x => x.GetType().Name is "ScopedRefAttribute");
+            Assert.Equal("System.Runtime.CompilerServices", attribute.GetType().Namespace);
+        }
+    }
 }

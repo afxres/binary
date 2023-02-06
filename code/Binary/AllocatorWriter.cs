@@ -1,3 +1,3 @@
 ﻿namespace Mikodev.Binary;
 
-public delegate int AllocatorWriter<in T>(System.Span<byte> span, T data);
+public delegate int AllocatorWriter<in T>(scoped System.Span<byte> span, T data);

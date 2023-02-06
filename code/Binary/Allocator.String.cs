@@ -9,7 +9,7 @@ using System.Text;
 
 public ref partial struct Allocator
 {
-    public static void Append(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding)
+    public static void Append(ref Allocator allocator, scoped ReadOnlySpan<char> span, Encoding encoding)
     {
         ArgumentNullException.ThrowIfNull(encoding);
         var targetLimits = SharedModule.GetMaxByteCount(span, encoding);
@@ -21,7 +21,7 @@ public ref partial struct Allocator
         FinishCreate(ref allocator, targetLength);
     }
 
-    public static void AppendWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<char> span, Encoding encoding)
+    public static void AppendWithLengthPrefix(ref Allocator allocator, scoped ReadOnlySpan<char> span, Encoding encoding)
     {
         ArgumentNullException.ThrowIfNull(encoding);
         var targetLimits = SharedModule.GetMaxByteCount(span, encoding);

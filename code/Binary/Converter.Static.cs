@@ -43,7 +43,7 @@ public static class Converter
         return length;
     }
 
-    public static void EncodeWithLengthPrefix(ref Allocator allocator, ReadOnlySpan<byte> span)
+    public static void EncodeWithLengthPrefix(ref Allocator allocator, scoped ReadOnlySpan<byte> span)
     {
         var length = span.Length;
         var numberLength = NumberModule.EncodeLength((uint)length);

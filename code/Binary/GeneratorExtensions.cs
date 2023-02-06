@@ -22,7 +22,7 @@ public static class GeneratorExtensions
     public static object? Decode(this IGenerator generator, byte[]? buffer, Type type) => generator.GetConverter(type).Decode(buffer);
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    public static object? Decode(this IGenerator generator, ReadOnlySpan<byte> span, Type type) => generator.GetConverter(type).Decode(in span);
+    public static object? Decode(this IGenerator generator, scoped ReadOnlySpan<byte> span, Type type) => generator.GetConverter(type).Decode(in span);
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public static T Decode<T>(this IGenerator generator, byte[]? buffer) => generator.GetConverter<T>().Decode(buffer);
@@ -31,8 +31,8 @@ public static class GeneratorExtensions
     public static T Decode<T>(this IGenerator generator, byte[]? buffer, T? anonymous) => generator.Decode<T>(buffer);
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    public static T Decode<T>(this IGenerator generator, ReadOnlySpan<byte> span) => generator.GetConverter<T>().Decode(in span);
+    public static T Decode<T>(this IGenerator generator, scoped ReadOnlySpan<byte> span) => generator.GetConverter<T>().Decode(in span);
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    public static T Decode<T>(this IGenerator generator, ReadOnlySpan<byte> span, T? anonymous) => generator.Decode<T>(span);
+    public static T Decode<T>(this IGenerator generator, scoped ReadOnlySpan<byte> span, T? anonymous) => generator.Decode<T>(span);
 }
