@@ -24,22 +24,6 @@ internal sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T 
         this.converter = converter;
     }
 
-    private static int GetArraySpanSize(scoped ReadOnlySpan<int> lengthList)
-    {
-        var result = 1;
-        foreach (var i in lengthList)
-            result = checked(result * i);
-        return result;
-    }
-
-    private static Span<E> GetArrayDataSpan(scoped ReadOnlySpan<int> lengthList, Array item)
-    {
-        var length = GetArraySpanSize(lengthList);
-        if (length is 0)
-            return default;
-        return MemoryMarshal.CreateSpan(ref Unsafe.As<byte, E>(ref MemoryMarshal.GetArrayDataReference(item)), length);
-    }
-
     public override void Encode(ref Allocator allocator, T? item)
     {
         if (item is null)
@@ -52,7 +36,7 @@ internal sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T 
             Converter.Encode(ref allocator, lengthList[i] = origin.GetLength(i));
         for (var i = 0; i < rank; i++)
             Converter.Encode(ref allocator, startsList[i] = origin.GetLowerBound(i));
-        var source = GetArrayDataSpan(lengthList, origin);
+        var source = MemoryMarshal.CreateSpan(ref Unsafe.As<byte, E>(ref MemoryMarshal.GetArrayDataReference(origin)), origin.Length);
         var converter = this.converter;
         foreach (var i in source)
             converter.EncodeAuto(ref allocator, i);
@@ -71,11 +55,11 @@ internal sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T 
             lengthList[i] = Converter.Decode(ref intent);
         for (var i = 0; i < rank; i++)
             startsList[i] = Converter.Decode(ref intent);
-        var item = Array.CreateInstance(typeof(E), lengthList, startsList);
-        var target = GetArrayDataSpan(lengthList, item);
+        var result = Array.CreateInstance(typeof(E), lengthList, startsList);
+        var target = MemoryMarshal.CreateSpan(ref Unsafe.As<byte, E>(ref MemoryMarshal.GetArrayDataReference(result)), result.Length);
         var converter = this.converter;
         for (var i = 0; i < target.Length; i++)
             target[i] = converter.DecodeAuto(ref intent);
-        return (T)(object)item;
+        return (T)(object)result;
     }
 }
