@@ -26,4 +26,12 @@ internal sealed class KeyValueEnumerableEncoder<T, K, V> where T : IEnumerable<K
             tail.EncodeAuto(ref allocator, i.Value);
         }
     }
+
+    public void EncodeKeyValuePairAuto(ref Allocator allocator, KeyValuePair<K, V> pair)
+    {
+        var init = this.init;
+        var tail = this.tail;
+        init.EncodeAuto(ref allocator, pair.Key);
+        tail.EncodeAuto(ref allocator, pair.Value);
+    }
 }

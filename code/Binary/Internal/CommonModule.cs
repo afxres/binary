@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 
 internal static class CommonModule
@@ -78,11 +77,6 @@ internal static class CommonModule
         if (result is null)
             throw new MissingMethodException($"Constructor not found, type: {type}");
         return result;
-    }
-
-    internal static PropertyInfo GetProperty<T, E>(Expression<Func<T, E>> expression)
-    {
-        return (PropertyInfo)((MemberExpression)expression.Body).Member;
     }
 
     internal static IConverter GetConverter(IConverter? converter, Type type, Type? creator)

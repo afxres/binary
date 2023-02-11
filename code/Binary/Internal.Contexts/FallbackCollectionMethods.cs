@@ -183,48 +183,7 @@ internal static class FallbackCollectionMethods
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    private static EncodeDelegate<T?> GetEncodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
-    {
-        Func<Expression, Expression, Expression> Invoke()
-        {
-            var member = Expression.Constant(converter);
-            var method = Converter.GetMethod(converter, nameof(IConverter.EncodeAuto));
-            var invoke = new Func<Expression, Expression, Expression>((allocator, current) => Expression.Call(member, method, allocator, current));
-            return invoke;
-        }
-
-        var handle = new Lazy<Func<Expression, Expression, Expression>>(Invoke);
-        var result = GetEncodeDelegate<T>(typeof(E), handle);
-        return result ?? new EnumerableEncoder<T, E>(converter).Encode;
-    }
-
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    private static EncodeDelegate<T?> GetEncodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
-    {
-        Func<Expression, Expression, Expression> Invoke()
-        {
-            var initMember = Expression.Constant(init);
-            var tailMember = Expression.Constant(tail);
-            var initMethod = Converter.GetMethod(init, nameof(IConverter.EncodeAuto));
-            var tailMethod = Converter.GetMethod(tail, nameof(IConverter.EncodeAuto));
-            var initProperty = CommonModule.GetProperty<KeyValuePair<K, V>, K>(x => x.Key);
-            var tailProperty = CommonModule.GetProperty<KeyValuePair<K, V>, V>(x => x.Value);
-            var assign = Expression.Variable(typeof(KeyValuePair<K, V>), "current");
-            var invoke = new Func<Expression, Expression, Expression>((allocator, current) => Expression.Block(
-                new[] { assign },
-                Expression.Assign(assign, current),
-                Expression.Call(initMember, initMethod, allocator, Expression.Property(assign, initProperty)),
-                Expression.Call(tailMember, tailMethod, allocator, Expression.Property(assign, tailProperty))));
-            return invoke;
-        }
-
-        var handle = new Lazy<Func<Expression, Expression, Expression>>(Invoke);
-        var result = GetEncodeDelegate<T>(typeof(KeyValuePair<K, V>), handle);
-        return result ?? new KeyValueEnumerableEncoder<T, K, V>(init, tail).Encode;
-    }
-
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    private static EncodeDelegate<T?>? GetEncodeDelegate<T>(Type elementType, Lazy<Func<Expression, Expression, Expression>> handle)
+    private static EncodeDelegate<T?>? GetEncodeDelegate<T, E>(EncodeDelegate<E> adapter)
     {
         var initial = typeof(T).GetMethods(CommonModule.PublicInstanceBindingFlags).FirstOrDefault(x => x.Name is "GetEnumerator" && x.GetParameters().Length is 0);
         if (initial is null)
@@ -232,26 +191,24 @@ internal static class FallbackCollectionMethods
         var enumeratorType = initial.ReturnType;
         if (enumeratorType.IsValueType is false)
             return null;
-        var dispose = enumeratorType.GetMethods(CommonModule.PublicInstanceBindingFlags).FirstOrDefault(x => x.Name is "Dispose" && x.GetParameters().Length is 0 && x.ReturnType == typeof(void));
-        var functor = enumeratorType.GetMethods(CommonModule.PublicInstanceBindingFlags).FirstOrDefault(x => x.Name is "MoveNext" && x.GetParameters().Length is 0 && x.ReturnType == typeof(bool));
-        var current = enumeratorType.GetProperties(CommonModule.PublicInstanceBindingFlags).FirstOrDefault(x => x.Name is "Current" && x.GetGetMethod() is { } method && method.GetParameters().Length is 0 && x.PropertyType == elementType);
+        var methods = enumeratorType.GetMethods(CommonModule.PublicInstanceBindingFlags);
+        var properties = enumeratorType.GetProperties(CommonModule.PublicInstanceBindingFlags);
+        var dispose = methods.FirstOrDefault(x => x.Name is "Dispose" && x.GetParameters().Length is 0 && x.ReturnType == typeof(void));
+        var functor = methods.FirstOrDefault(x => x.Name is "MoveNext" && x.GetParameters().Length is 0 && x.ReturnType == typeof(bool));
+        var current = properties.FirstOrDefault(x => x.Name is "Current" && x.GetGetMethod() is { } method && method.GetParameters().Length is 0 && x.PropertyType == typeof(E));
         if (functor is null || current is null)
             return null;
 
         var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
         var collection = Expression.Parameter(typeof(T), "collection");
         var enumerator = Expression.Variable(enumeratorType, "enumerator");
-        var assign = Expression.Assign(enumerator, Expression.Call(collection, initial));
         var target = Expression.Label("target");
-        var origin = Expression.Loop(
-            Expression.IfThenElse(
-                Expression.Call(enumerator, functor),
-                handle.Value.Invoke(allocator, Expression.Property(enumerator, current)),
-                Expression.Break(target)),
-            target);
+        var encode = Expression.Call(Expression.Constant(adapter.Target), adapter.Method, allocator, Expression.Property(enumerator, current));
+        var origin = Expression.Loop(Expression.IfThenElse(Expression.Call(enumerator, functor), encode, Expression.Break(target)), target);
         var source = dispose is null
             ? origin as Expression
             : Expression.TryFinally(origin, Expression.Call(enumerator, dispose));
+        var assign = Expression.Assign(enumerator, Expression.Call(collection, initial));
         var result = Expression.Block(new[] { enumerator }, assign, source);
         var ensure = typeof(T).IsValueType
             ? result as Expression
@@ -264,7 +221,7 @@ internal static class FallbackCollectionMethods
     private static IConverter GetConverter<T, E>(IGeneratorContext context) where T : IEnumerable<E>
     {
         var converter = (Converter<E>)context.GetConverter(typeof(E));
-        var encode = GetEncodeDelegate<T, E>(converter);
+        var encode = GetEncodeDelegate<T, E>(converter.EncodeAuto) ?? new EnumerableEncoder<T, E>(converter).Encode;
         var decode = GetDecodeDelegate<T, E>(converter);
         return new SequenceConverter<T>(encode, decode);
     }
@@ -274,7 +231,8 @@ internal static class FallbackCollectionMethods
     {
         var init = (Converter<K>)context.GetConverter(typeof(K));
         var tail = (Converter<V>)context.GetConverter(typeof(V));
-        var encode = GetEncodeDelegate<T, K, V>(init, tail);
+        var source = new KeyValueEnumerableEncoder<T, K, V>(init, tail);
+        var encode = GetEncodeDelegate<T, KeyValuePair<K, V>>(source.EncodeKeyValuePairAuto) ?? source.Encode;
         var decode = GetDecodeDelegate<T, K, V>(init, tail);
         return new SequenceConverter<T>(encode, decode);
     }
