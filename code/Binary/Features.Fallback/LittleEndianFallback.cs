@@ -34,6 +34,7 @@ internal static class LittleEndianFallback
         BinaryPrimitives.WriteUInt64LittleEndian(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, 8), sizeof(ulong)), Unsafe.As<T, Raw128Data>(ref item).Upper);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static T Decode<T>(ref byte source) where T : unmanaged
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -53,6 +54,7 @@ internal static class LittleEndianFallback
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void Encode<T>(ref byte target, T item) where T : unmanaged
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
