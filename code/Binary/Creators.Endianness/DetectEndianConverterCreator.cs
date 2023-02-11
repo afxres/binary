@@ -4,9 +4,8 @@ using Mikodev.Binary.Internal;
 using System;
 using System.Collections.Immutable;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using System.Numerics;
 
 internal sealed class DetectEndianConverterCreator : IConverterCreator
 {
@@ -14,49 +13,49 @@ internal sealed class DetectEndianConverterCreator : IConverterCreator
 
     static DetectEndianConverterCreator()
     {
-        var little = new IConverter[]
+        static void Register<T>(ImmutableDictionary<Type, (IConverter, IConverter)>.Builder builder) where T : unmanaged
         {
-            new LittleEndianConverter<bool>(),
-            new LittleEndianConverter<byte>(),
-            new LittleEndianConverter<sbyte>(),
-            new LittleEndianConverter<char>(),
-            new LittleEndianConverter<short>(),
-            new LittleEndianConverter<int>(),
-            new LittleEndianConverter<long>(),
-            new LittleEndianConverter<ushort>(),
-            new LittleEndianConverter<uint>(),
-            new LittleEndianConverter<ulong>(),
-            new LittleEndianConverter<float>(),
-            new LittleEndianConverter<double>(),
-            new LittleEndianConverter<Half>(),
-            new LittleEndianConverter<BitVector32>(),
-            new LittleEndianConverter<Int128>(),
-            new LittleEndianConverter<UInt128>(),
-        };
+            var little = new LittleEndianConverter<T>();
+            var native = new NativeEndianConverter<T>();
+            builder.Add(typeof(T), (little, native));
+        }
 
-        var native = new IConverter[]
+        static void RegisterRepeat<T, E>(ImmutableDictionary<Type, (IConverter, IConverter)>.Builder builder) where T : unmanaged where E : unmanaged
         {
-            new NativeEndianConverter<bool>(),
-            new NativeEndianConverter<byte>(),
-            new NativeEndianConverter<sbyte>(),
-            new NativeEndianConverter<char>(),
-            new NativeEndianConverter<short>(),
-            new NativeEndianConverter<int>(),
-            new NativeEndianConverter<long>(),
-            new NativeEndianConverter<ushort>(),
-            new NativeEndianConverter<uint>(),
-            new NativeEndianConverter<ulong>(),
-            new NativeEndianConverter<float>(),
-            new NativeEndianConverter<double>(),
-            new NativeEndianConverter<Half>(),
-            new NativeEndianConverter<BitVector32>(),
-            new NativeEndianConverter<Int128>(),
-            new NativeEndianConverter<UInt128>(),
-        };
+            var little = new RepeatLittleEndianConverter<T, E>();
+            var native = new NativeEndianConverter<T>();
+            builder.Add(typeof(T), (little, native));
+        }
 
-        Debug.Assert(little.Length == native.Length);
-        Debug.Assert(little.Select(Converter.GetGenericArgument).SequenceEqual(native.Select(Converter.GetGenericArgument)));
-        SharedConverters = little.Zip(native, (a, b) => (Little: a, b)).ToImmutableDictionary(x => Converter.GetGenericArgument(x.Little));
+        var builder = ImmutableDictionary.CreateBuilder<Type, (IConverter, IConverter)>();
+
+        Register<bool>(builder);
+        Register<byte>(builder);
+        Register<sbyte>(builder);
+        Register<char>(builder);
+        Register<short>(builder);
+        Register<int>(builder);
+        Register<long>(builder);
+        Register<ushort>(builder);
+        Register<uint>(builder);
+        Register<ulong>(builder);
+        Register<float>(builder);
+        Register<double>(builder);
+        Register<Half>(builder);
+        Register<BitVector32>(builder);
+        Register<Int128>(builder);
+        Register<UInt128>(builder);
+
+        RegisterRepeat<Complex, double>(builder);
+        RegisterRepeat<Matrix3x2, float>(builder);
+        RegisterRepeat<Matrix4x4, float>(builder);
+        RegisterRepeat<Plane, float>(builder);
+        RegisterRepeat<Quaternion, float>(builder);
+        RegisterRepeat<Vector2, float>(builder);
+        RegisterRepeat<Vector3, float>(builder);
+        RegisterRepeat<Vector4, float>(builder);
+
+        SharedConverters = builder.ToImmutable();
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]

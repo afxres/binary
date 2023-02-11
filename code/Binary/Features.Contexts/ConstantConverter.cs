@@ -21,7 +21,7 @@ internal abstract class ConstantConverter<T, U> : Converter<T>, ISpanLikeEncoder
     public ConstantConverter() : base(U.Length)
     {
         Debug.Assert(U.Length >= 1);
-        Debug.Assert(U.Length <= 16);
+        Debug.Assert(U.Length <= 64);
         Debug.Assert(NumberModule.EncodeLength((uint)U.Length) is 1);
         var encoder = default(U) is ISpanLikeEncoderProvider<T> providerEncoder
             ? providerEncoder.GetEncoder()

@@ -47,7 +47,7 @@ public class InternalTypeCollectionTests
         {
             Assert.Equal(key, Converter.GetGenericArgument(little));
             Assert.Equal(key, Converter.GetGenericArgument(native));
-            Assert.Equal("LittleEndianConverter`1", little.GetType().Name);
+            Assert.True(little.GetType().Name is "LittleEndianConverter`1" or "RepeatLittleEndianConverter`2");
             Assert.Equal("NativeEndianConverter`1", native.GetType().Name);
         }
     }
