@@ -6,6 +6,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
+using System.Reflection;
 using Xunit;
 
 public class DynamicTests
@@ -165,7 +166,8 @@ public class DynamicTests
     [Fact(DisplayName = "Dynamic Keys (null instance)")]
     public void DynamicKeysNullValue()
     {
-        var type = typeof(Converter).Assembly.GetTypes().Single(x => x.Name is "TokenDynamicMetaObject");
+        var types = typeof(Token).GetNestedTypes(BindingFlags.NonPublic);
+        var type = types.Single(x => x.Name is "MetaObject");
         var instance = Assert.IsAssignableFrom<DynamicMetaObject>(Activator.CreateInstance(type, new object?[] { Expression.Parameter(typeof(Token)), null }));
         var keys = instance.GetDynamicMemberNames();
         Assert.Equal(Array.Empty<string>(), keys);

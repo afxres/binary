@@ -4,7 +4,6 @@ open Mikodev.Binary
 open System
 open System.Collections.Generic
 open System.Collections.Immutable
-open System.Diagnostics
 open System.Dynamic
 open System.Linq.Expressions
 open System.Reflection
@@ -248,52 +247,11 @@ type TokenTests() =
         Assert.Equal(0, dictionary.Count)
         ()
 
-    [<Fact>]
-    member __.``Debugger Proxy (property attribute)`` () =
-        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "TokenDebuggerTypeProxy") |> Array.exactlyOne
-        let property = t.GetProperty("Items")
-        let attribute = property.GetCustomAttributes() |> Seq.choose (fun x -> match x with | :? DebuggerBrowsableAttribute as a -> Some a | _ -> None) |> Seq.exactlyOne
-        Assert.Equal(DebuggerBrowsableState.RootHidden, attribute.State)
-        ()
-
-    [<Fact>]
-    member __.``Debugger Proxy (token null)`` () =
-        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "TokenDebuggerTypeProxy") |> Array.exactlyOne
-        let proxy = Activator.CreateInstance(t, [| box null |])
-        let items = t.GetProperty("Items").GetValue(proxy) :?> KeyValuePair<string, Token>[]
-        Assert.Equal(0, items.Length)
-        ()
-
-    [<Fact>]
-    member __.``Debugger Proxy (token from empty bytes)`` () =
-        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "TokenDebuggerTypeProxy") |> Array.exactlyOne
-        let token = Token(generator, ReadOnlyMemory())
-        let proxy = Activator.CreateInstance(t, [| box token |])
-        let items = t.GetProperty("Items").GetValue(proxy) :?> KeyValuePair<string, Token>[]
-        Assert.Equal(0, items.Length)
-        ()
-
     static member ``Anonymous Objects`` : (obj array) seq = seq {
         [| box {| id = 1 |} |]
         [| box {| name = "one"; data = Double.Epsilon |} |]
         [| box {| guid = Guid.NewGuid(); flag = true; context = {| text = "Hello, world" |} |} |]
     }
-
-    [<Theory>]
-    [<MemberData("Anonymous Objects")>]
-    member __.``Debugger Proxy (token from object)`` (item : obj) =
-        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "TokenDebuggerTypeProxy") |> Array.exactlyOne
-        let buffer = generator.Encode item
-        let token = Token(generator, ReadOnlyMemory buffer)
-        let proxy = Activator.CreateInstance(t, [| box token |])
-        let items = t.GetProperty("Items").GetValue(proxy) :?> KeyValuePair<string, Token>[]
-        let r = items |> Array.map (|KeyValue|) |> dict
-        let d = token.Children
-        Assert.Equal(d.Count, items.Length)
-        Assert.Equal(d.Count, r.Count)
-        Assert.Equal<string>(d.Keys |> SortedSet, r.Keys |> SortedSet)
-        Assert.All(d.Keys, fun x -> Assert.True(obj.ReferenceEquals(d.[x], r.[x])))
-        ()
 
     [<Theory>]
     [<MemberData("Anonymous Objects")>]

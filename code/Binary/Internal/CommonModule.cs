@@ -80,11 +80,6 @@ internal static class CommonModule
         return result;
     }
 
-    internal static MethodInfo GetMethod<T, E>(Expression<Func<T, E>> expression)
-    {
-        return ((MethodCallExpression)expression.Body).Method;
-    }
-
     internal static PropertyInfo GetProperty<T, E>(Expression<Func<T, E>> expression)
     {
         return (PropertyInfo)((MemberExpression)expression.Body).Member;

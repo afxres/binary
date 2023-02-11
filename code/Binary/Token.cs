@@ -14,8 +14,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 
 [DebuggerDisplay(CommonModule.DebuggerDisplayValue)]
-[DebuggerTypeProxy(typeof(TokenDebuggerTypeProxy))]
-public sealed class Token : IDynamicMetaObjectProvider
+public sealed partial class Token : IDynamicMetaObjectProvider
 {
     private readonly IGenerator generator;
 
@@ -90,7 +89,23 @@ public sealed class Token : IDynamicMetaObjectProvider
         throw new KeyNotFoundException($"Key '{key}' not found.", source.Error);
     }
 
-    DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => new TokenDynamicMetaObject(parameter, this);
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
+    private static T GetValue<T>(Token origin)
+    {
+        var span = origin.memory.Span;
+        var converter = (Converter<T>)origin.generator.GetConverter(typeof(T));
+        return converter.Decode(in span);
+    }
+
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
+    private static object? GetValue(Token origin, Type type)
+    {
+        var span = origin.memory.Span;
+        var converter = origin.generator.GetConverter(type);
+        return converter.Decode(in span);
+    }
+
+    DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => new MetaObject(parameter, this);
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public Token(IGenerator generator, ReadOnlyMemory<byte> memory) : this(generator, memory, null, GetDelegate(generator)) { }
@@ -98,13 +113,13 @@ public sealed class Token : IDynamicMetaObjectProvider
     public Token this[string key] => GetToken(this, key);
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    public object? As(Type type) => this.generator.GetConverter(type).Decode(this.memory.Span);
+    public object? As(Type type) => GetValue(this, type);
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    public T As<T>() => ((Converter<T>)this.generator.GetConverter(typeof(T))).Decode(this.memory.Span);
+    public T As<T>() => GetValue<T>(this);
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    public T As<T>(T? anonymous) => As<T>();
+    public T As<T>(T? anonymous) => GetValue<T>(this);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public override bool Equals(object? obj) => ReferenceEquals(this, obj);
