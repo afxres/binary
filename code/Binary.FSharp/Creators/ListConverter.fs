@@ -9,7 +9,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
     inherit Converter<'T list>(0)
 
     [<Literal>]
-    let capacity = 4
+    let capacity = 8
 
     let constant = converter.Length > 0
 
