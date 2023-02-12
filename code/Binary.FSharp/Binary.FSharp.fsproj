@@ -10,7 +10,7 @@
     <Company>Mikodev</Company>
     <Copyright>Mikodev $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
     <Product>Mikodev.Binary</Product>
-    <Version>5.4.0</Version>
+    <Version>5.5.0</Version>
     <PackageTags>binary dynamic serialization fsharp</PackageTags>
     <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
