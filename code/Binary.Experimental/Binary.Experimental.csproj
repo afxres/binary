@@ -4,7 +4,7 @@
     <TargetFrameworks>net7.0</TargetFrameworks>
     <AssemblyName>Mikodev.Binary.Experimental</AssemblyName>
     <RootNamespace>Mikodev.Binary.Experimental</RootNamespace>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>11.0</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
