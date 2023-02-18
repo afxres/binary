@@ -30,16 +30,13 @@ public sealed class BitArrayConverter : Converter<BitArray?>
     {
         [DoesNotReturn]
         [DebuggerStepThrough]
-        static BitArray Except() => throw new ArgumentException($"Invalid padding byte(s), type: {typeof(BitArray)}");
+        static BitArray Except() => throw new ArgumentException($"Invalid header or not enough bytes, type: {typeof(BitArray)}");
 
-        var limits = span.Length;
-        if (limits is 0)
+        if (span.Length is 0)
             return null;
         var intent = span;
         var header = (uint)Converter.Decode(ref intent);
-        if (intent.IsEmpty)
-            return header is 0 ? new BitArray(0) : Except();
-        if (header >= 8)
+        if (header > 7 || (intent.Length is 0 && header is not 0))
             return Except();
         var buffer = intent.ToArray();
         var result = new BitArray(buffer);

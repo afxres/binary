@@ -41,7 +41,7 @@ public class BitArrayConverterTests
         var converter = new BitArrayConverter();
         var error = Assert.Throws<ArgumentException>(() => converter.Decode(bytes));
         Assert.Null(error.ParamName);
-        Assert.Equal($"Invalid padding byte(s), type: {typeof(BitArray)}", error.Message);
+        Assert.Equal($"Invalid header or not enough bytes, type: {typeof(BitArray)}", error.Message);
     }
 
     [Fact(DisplayName = "Encode Decode Random Data (bit length: 0..128, loop count: 16)")]
