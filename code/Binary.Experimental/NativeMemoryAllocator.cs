@@ -13,11 +13,7 @@ public sealed class NativeMemoryAllocator : IAllocator, IDisposable
     {
         if (this.disposed)
             throw new ObjectDisposedException(nameof(NativeMemoryAllocator));
-        var location = NativeMemory.Realloc(this.location, (uint)required);
-        if (location is null)
-            throw new OutOfMemoryException();
-        this.location = location;
-        return ref *(byte*)location;
+        return ref *(byte*)(this.location = NativeMemory.Realloc(this.location, (uint)required));
     }
 
     public unsafe void Dispose()
