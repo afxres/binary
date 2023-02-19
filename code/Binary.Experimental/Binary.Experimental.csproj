@@ -5,6 +5,7 @@
     <AssemblyName>Mikodev.Binary.Experimental</AssemblyName>
     <RootNamespace>Mikodev.Binary.Experimental</RootNamespace>
     <LangVersion>11.0</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
