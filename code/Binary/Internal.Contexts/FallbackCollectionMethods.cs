@@ -8,6 +8,7 @@ using Mikodev.Binary.Internal.SpanLike;
 using Mikodev.Binary.Internal.SpanLike.Decoders;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -47,6 +48,8 @@ internal static class FallbackCollectionMethods
             [typeof(ImmutableQueue<>)] = Info(ImmutableQueue.CreateRange),
             [typeof(ImmutableSortedDictionary<,>)] = Info(ImmutableSortedDictionary.CreateRange),
             [typeof(ImmutableSortedSet<>)] = Info(ImmutableSortedSet.CreateRange),
+            [typeof(FrozenDictionary<,>)] = Info(SequenceMethods.GetFrozenDictionary),
+            [typeof(FrozenSet<>)] = Info(SequenceMethods.GetFrozenSet),
         });
 
         var invalid = ImmutableArray.Create(new[]
