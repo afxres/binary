@@ -12,7 +12,7 @@ internal sealed class NativeEndianDecoder<E> : SpanLikeDecoder<E[]> where E : un
     {
         if (span.Length is 0)
             return Array.Empty<E>();
-        var result = new E[SequenceMethods.GetCapacity<E>(span.Length, Unsafe.SizeOf<E>())];
+        var result = new E[SequenceContext.GetCapacity<E>(span.Length, Unsafe.SizeOf<E>())];
         Unsafe.CopyBlockUnaligned(ref Unsafe.As<E, byte>(ref MemoryMarshal.GetArrayDataReference(result)), ref MemoryMarshal.GetReference(span), (uint)span.Length);
         return result;
     }

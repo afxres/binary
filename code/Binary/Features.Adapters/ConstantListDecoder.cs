@@ -14,7 +14,7 @@ internal sealed class ConstantListDecoder<E, U> : SpanLikeDecoder<List<E>> where
     {
         if (span.Length is 0)
             return new List<E>();
-        var capacity = SequenceMethods.GetCapacity<E>(span.Length, U.Length);
+        var capacity = SequenceContext.GetCapacity<E>(span.Length, U.Length);
         var result = new List<E>(capacity);
         ref var source = ref MemoryMarshal.GetReference(span);
         for (var i = 0; i < capacity; i++)

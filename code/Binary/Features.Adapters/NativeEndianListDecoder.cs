@@ -13,7 +13,7 @@ internal sealed class NativeEndianListDecoder<E> : SpanLikeDecoder<List<E>> wher
     {
         if (span.Length is 0)
             return new List<E>();
-        var capacity = SequenceMethods.GetCapacity<E>(span.Length, Unsafe.SizeOf<E>());
+        var capacity = SequenceContext.GetCapacity<E>(span.Length, Unsafe.SizeOf<E>());
         var result = new List<E>(capacity);
         ref var source = ref MemoryMarshal.GetReference(span);
         for (var i = 0; i < capacity; i++)

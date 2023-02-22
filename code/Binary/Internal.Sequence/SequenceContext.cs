@@ -4,16 +4,15 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-internal static class SequenceMethods
+internal static class SequenceContext
 {
-    internal const int FallbackCapacity = 8;
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static int GetCapacity<E>(int byteLength, int itemLength, int fallbackCapacity)
+    internal static int GetCapacityOrDefault<E>(int byteLength, int itemLength)
     {
         Debug.Assert(byteLength > 0);
-        Debug.Assert(fallbackCapacity > 0);
-        return itemLength > 0 ? GetCapacity<E>(byteLength, itemLength) : fallbackCapacity;
+        Debug.Assert(itemLength >= 0);
+        const int FallbackCapacity = 8;
+        return itemLength > 0 ? GetCapacity<E>(byteLength, itemLength) : FallbackCapacity;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

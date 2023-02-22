@@ -23,7 +23,7 @@ internal sealed class DictionaryDecoder<K, V> where K : notnull
         var limits = span.Length;
         if (limits is 0)
             return new Dictionary<K, V>();
-        var capacity = SequenceMethods.GetCapacity<KeyValuePair<K, V>>(limits, this.itemLength, SequenceMethods.FallbackCapacity);
+        var capacity = SequenceContext.GetCapacityOrDefault<KeyValuePair<K, V>>(limits, this.itemLength);
         var init = this.init;
         var tail = this.tail;
         var result = new Dictionary<K, V>(capacity);

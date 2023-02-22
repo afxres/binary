@@ -14,7 +14,7 @@ internal static class SpanLikeMethods
         if (limits is 0)
             return new List<E>();
         var length = converter.Length;
-        var capacity = SequenceMethods.GetCapacity<E>(limits, length, SequenceMethods.FallbackCapacity);
+        var capacity = SequenceContext.GetCapacityOrDefault<E>(limits, length);
         var result = new List<E>(capacity);
         var intent = span;
         while (intent.Length is not 0)
@@ -28,7 +28,7 @@ internal static class SpanLikeMethods
         if (limits is 0)
             return ImmutableArray<E>.Empty;
         var length = converter.Length;
-        var capacity = SequenceMethods.GetCapacity<E>(limits, length, SequenceMethods.FallbackCapacity);
+        var capacity = SequenceContext.GetCapacityOrDefault<E>(limits, length);
         var result = ImmutableArray.CreateBuilder<E>(capacity);
         var intent = span;
         while (intent.Length is not 0)
@@ -54,7 +54,7 @@ internal static class SpanLikeMethods
         }
 
         var length = converter.Length;
-        var capacity = SequenceMethods.GetCapacity<E>(limits, length, SequenceMethods.FallbackCapacity);
+        var capacity = SequenceContext.GetCapacityOrDefault<E>(limits, length);
         var result = new E[capacity];
         var cursor = 0;
         var intent = span;
