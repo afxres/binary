@@ -17,9 +17,9 @@ public class ValueEnumeratorDictionaryTests
         yield return new object[] { source.Select(x => KeyValuePair.Create(x.ToString(), x.ToString())).ToList() };
     }
 
-    [Theory(DisplayName = "Value Enumerator Dictionary Test")]
+    [Theory(DisplayName = "Value Enumerator System Dictionary Test")]
     [MemberData(nameof(KeyValuePairData))]
-    public void EncodeDecode<K, V>(List<KeyValuePair<K, V>> values) where K : notnull
+    public void EncodeDecodeSystemDictionary<K, V>(List<KeyValuePair<K, V>> values) where K : notnull
     {
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<Dictionary<K, V>>();
