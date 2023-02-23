@@ -39,16 +39,16 @@ public sealed class CustomValueEnumeratorDictionary<K, V> : IReadOnlyDictionary<
         {
             get
             {
-                source.CurrentCallCount += 1;
-                return source.Items[index];
+                this.source.CurrentCallCount += 1;
+                return this.source.Items[this.index];
             }
         }
 
         public bool MoveNext()
         {
-            source.MoveNextCallCount += 1;
+            this.source.MoveNextCallCount += 1;
             var index = this.index + 1;
-            if ((uint)index >= (uint)source.Items.Count)
+            if ((uint)index >= (uint)this.source.Items.Count)
                 return false;
             this.index = index;
             return true;

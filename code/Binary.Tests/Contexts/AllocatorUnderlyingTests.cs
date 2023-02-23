@@ -16,8 +16,8 @@ public class AllocatorUnderlyingTests
         public ref byte Allocate(int required)
         {
             var currentArray = new byte[required];
-            var previousArray = AllocatedArrays.LastOrDefault().AsSpan();
-            AllocatedArrays.Add(currentArray);
+            var previousArray = this.AllocatedArrays.LastOrDefault().AsSpan();
+            this.AllocatedArrays.Add(currentArray);
             previousArray.CopyTo(currentArray);
             return ref MemoryMarshal.GetArrayDataReference(currentArray);
         }

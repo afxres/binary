@@ -24,7 +24,7 @@ public class ConverterThrowTests
     [InlineData(2.0, 7)]
     public void DecodeNotEnoughBytes<T>(T data, int length)
     {
-        var converter = generator.GetConverter<T>();
+        var converter = this.generator.GetConverter<T>();
         Assert.Equal(ConverterTypeName, converter.GetType().Name);
         var origin = converter.Encode(data);
         var buffer = origin[0..length];
@@ -43,7 +43,7 @@ public class ConverterThrowTests
     [InlineData(2.0, 7)]
     public void DecodeAutoNotEnoughBytes<T>(T data, int length)
     {
-        var converter = generator.GetConverter<T>();
+        var converter = this.generator.GetConverter<T>();
         Assert.Equal(ConverterTypeName, converter.GetType().Name);
         var origin = converter.Encode(data);
         var buffer = origin[0..length];
@@ -64,7 +64,7 @@ public class ConverterThrowTests
     [InlineData(2.0, 7)]
     public void DecodeWithLengthPrefixIncorrectPrefix<T>(T data, int length)
     {
-        var converter = generator.GetConverter<T>();
+        var converter = this.generator.GetConverter<T>();
         Assert.Equal(ConverterTypeName, converter.GetType().Name);
         var origin = converter.Encode(data);
         var allocator = new Allocator();
@@ -88,7 +88,7 @@ public class ConverterThrowTests
     [InlineData(2.0, 7)]
     public void DecodeWithLengthPrefixNotEnoughBytes<T>(T data, int length)
     {
-        var converter = generator.GetConverter<T>();
+        var converter = this.generator.GetConverter<T>();
         Assert.Equal(ConverterTypeName, converter.GetType().Name);
         var origin = converter.Encode(data);
         var allocator = new Allocator();

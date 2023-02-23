@@ -30,7 +30,7 @@ public class ArithmeticOverflowTests
         var expand = (ArrayResizeDelegate<byte>)Delegate.CreateDelegate(typeof(ArrayResizeDelegate<byte>), method.MakeGenericMethod(typeof(byte)));
         var buffer = new byte[0x4000_0000];
         var error = Assert.Throws<OverflowException>(() => expand.Invoke(ref buffer, 0));
-        output.WriteLine(error.StackTrace);
+        this.output.WriteLine(error.StackTrace);
     }
 
     private delegate void FeaturesConstantEncoderEncodeDelegate<E>(ref Allocator allocator, ReadOnlySpan<E> span);
@@ -54,7 +54,7 @@ public class ArithmeticOverflowTests
             var allocator = new Allocator();
             method.Invoke(ref allocator, source);
         });
-        output.WriteLine(error.StackTrace);
+        this.output.WriteLine(error.StackTrace);
     }
 
     private readonly struct FakeValue { }
@@ -88,7 +88,7 @@ public class ArithmeticOverflowTests
             var allocator = new Allocator();
             method.Invoke(ref allocator, source);
         });
-        output.WriteLine(error.StackTrace);
+        this.output.WriteLine(error.StackTrace);
     }
 
     private sealed class UnsafeRawListData<T>
@@ -117,6 +117,6 @@ public class ArithmeticOverflowTests
             var allocator = new Allocator();
             method.Invoke(ref allocator, source);
         });
-        output.WriteLine(error.StackTrace);
+        this.output.WriteLine(error.StackTrace);
     }
 }

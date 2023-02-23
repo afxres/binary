@@ -35,8 +35,8 @@ public class CollectionTests
     [InlineData(1.0)]
     public void NativeTypeArrayImplementation<T>(T data)
     {
-        var converter = generator.GetConverter<T[]>();
-        Assert.Equal("NativeEndianConverter`1", generator.GetConverter<T>().GetType().Name);
+        var converter = this.generator.GetConverter<T[]>();
+        Assert.Equal("NativeEndianConverter`1", this.generator.GetConverter<T>().GetType().Name);
         var forward = AssertFieldTypeName(converter, "encoder", "ConstantForwardEncoder`3");
         _ = AssertFieldTypeName(forward, "encoder", "NativeEndianEncoder`1");
         _ = AssertFieldTypeName(converter, "decoder", "NativeEndianDecoder`1");
@@ -65,8 +65,8 @@ public class CollectionTests
     [MemberData(nameof(SimpleObjectData))]
     public void CommonTypeArrayImplementation<T>(T data)
     {
-        var converter = generator.GetConverter<T[]>();
-        Assert.Equal($"{typeof(T).Name}Converter", generator.GetConverter<T>().GetType().Name);
+        var converter = this.generator.GetConverter<T[]>();
+        Assert.Equal($"{typeof(T).Name}Converter", this.generator.GetConverter<T>().GetType().Name);
         var forward = AssertFieldTypeName(converter, "encoder", "ConstantForwardEncoder`3");
         _ = AssertFieldTypeName(forward, "encoder", "ConstantEncoder`2");
         _ = AssertFieldTypeName(converter, "decoder", "ConstantDecoder`2");
@@ -86,8 +86,8 @@ public class CollectionTests
     {
         // ignore it
         _ = data;
-        var converter = generator.GetConverter<T[]>();
-        Assert.Equal($"{typeof(T).Name}Converter", generator.GetConverter<T>().GetType().Name);
+        var converter = this.generator.GetConverter<T[]>();
+        Assert.Equal($"{typeof(T).Name}Converter", this.generator.GetConverter<T>().GetType().Name);
         var forward = AssertFieldTypeName(converter, "encoder", "ConstantForwardEncoder`3");
         var encoder = AssertFieldTypeName(forward, "encoder", "ConstantEncoder`2");
         _ = AssertFieldTypeName(converter, "decoder", "ConstantDecoder`2");
