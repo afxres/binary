@@ -15,9 +15,7 @@ internal delegate T NamedObjectDecodeDelegate<out T>(ReadOnlySpan<byte> span, Re
 
 internal sealed class NamedObjectConverter<T> : Converter<T?>
 {
-    private readonly int memberCapacity;
-
-    private readonly int memberRequired;
+    private readonly int required;
 
     private readonly ImmutableArray<bool> optional;
 
@@ -37,8 +35,7 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
         Debug.Assert(optional.Length == names.Length);
         this.names = names;
         this.optional = optional;
-        this.memberRequired = optional.Count(x => x is false);
-        this.memberCapacity = optional.Length;
+        this.required = optional.Count(x => x is false);
         this.dictionary = dictionary;
         this.encode = encode;
         this.decode = decode;
@@ -84,9 +81,9 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
 
         // maybe 'StackOverflowException', just let it crash
         var optional = this.optional;
-        var remain = this.memberRequired;
+        var remain = this.required;
         var record = this.dictionary;
-        var values = (stackalloc long[this.memberCapacity]);
+        var values = (stackalloc long[optional.Length]);
         ref var source = ref MemoryMarshal.GetReference(span);
 
         var limits = span.Length;
@@ -113,7 +110,7 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
         }
 
         Debug.Assert(remain >= 0);
-        Debug.Assert(remain <= this.memberCapacity);
+        Debug.Assert(remain <= optional.Length);
         if (remain is not 0)
             ExceptNotFound(values);
         return decode.Invoke(span, values);
