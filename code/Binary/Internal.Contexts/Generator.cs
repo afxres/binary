@@ -16,9 +16,7 @@ internal sealed class Generator : IGenerator
 
     public Generator(ImmutableArray<IConverterCreator> creators, ImmutableDictionary<Type, IConverter> converters)
     {
-        var builder = creators.ToBuilder();
-        builder.Reverse();
-        this.creators = builder.ToImmutable();
+        this.creators = creators;
         this.converters = new ConcurrentDictionary<Type, IConverter>(converters) { [typeof(object)] = new GeneratorObjectConverter(this) };
         Debug.Assert(this.converters.All(x => x.Value is not null));
         Debug.Assert(this.creators.Length is 0 || this.creators.All(x => x is not null));

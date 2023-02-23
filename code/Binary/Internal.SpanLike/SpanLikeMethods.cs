@@ -33,7 +33,7 @@ internal static class SpanLikeMethods
         var intent = span;
         while (intent.Length is not 0)
             result.Add(converter.DecodeAuto(ref intent));
-        return result.Count == result.Capacity ? result.MoveToImmutable() : result.ToImmutable();
+        return result.DrainToImmutable();
     }
 
     internal static E[] GetArray<E>(Converter<E> converter, ReadOnlySpan<byte> span, out int actual)

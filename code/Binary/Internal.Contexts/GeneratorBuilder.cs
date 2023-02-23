@@ -1,15 +1,16 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts;
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 
 [DebuggerDisplay(CommonModule.DebuggerDisplayValue)]
 internal sealed class GeneratorBuilder : IGeneratorBuilder
 {
-    private readonly ImmutableArray<IConverterCreator>.Builder creators = ImmutableArray.CreateBuilder<IConverterCreator>();
+    private readonly LinkedList<IConverterCreator> creators = new LinkedList<IConverterCreator>();
 
-    private readonly ImmutableDictionary<Type, IConverter>.Builder converters = ImmutableDictionary.CreateBuilder<Type, IConverter>();
+    private readonly Dictionary<Type, IConverter> converters = new Dictionary<Type, IConverter>();
 
     public IGeneratorBuilder AddConverter(IConverter converter)
     {
@@ -24,11 +25,11 @@ internal sealed class GeneratorBuilder : IGeneratorBuilder
     public IGeneratorBuilder AddConverterCreator(IConverterCreator creator)
     {
         ArgumentNullException.ThrowIfNull(creator);
-        this.creators.Add(creator);
+        _ = this.creators.AddFirst(creator);
         return this;
     }
 
-    public IGenerator Build() => new Generator(this.creators.ToImmutable(), this.converters.ToImmutable());
+    public IGenerator Build() => new Generator(this.creators.ToImmutableArray(), this.converters.ToImmutableDictionary());
 
     public override string ToString() => $"Converter Count = {this.converters.Count}, Converter Creator Count = {this.creators.Count}";
 }

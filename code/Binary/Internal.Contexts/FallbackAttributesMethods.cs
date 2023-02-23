@@ -82,7 +82,7 @@ internal static class FallbackAttributesMethods
             var memberInfo = new MetaMemberInfo(member, key, conversion, optional);
             result.Add(memberInfo);
         }
-        return result.ToImmutable();
+        return result.DrainToImmutable();
     }
 
     private static bool GetMemberIsOptional(MetaTypeInfo typeInfo, MemberInfo member, Attribute? key)
