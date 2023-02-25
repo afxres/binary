@@ -48,7 +48,7 @@ internal sealed class MetaMemberInfo
         Debug.Assert(key is null or NamedKeyAttribute or TupleKeyAttribute);
         Debug.Assert(conversion is null or ConverterAttribute or ConverterCreatorAttribute);
         this.optional = optional;
-        this.@readonly = member is PropertyInfo property && property.GetSetMethod() is null;
+        this.@readonly = (member is FieldInfo field && field.IsInitOnly) || (member is PropertyInfo property && property.GetSetMethod() is null);
         this.key = key;
         this.conversion = conversion;
         this.member = member;
