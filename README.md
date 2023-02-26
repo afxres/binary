@@ -31,6 +31,17 @@ let result = generator.Decode(buffer, anonymous = source)
 printfn "%A" result
 ```
 
+Supported types:
+| Category      | Details                                                                                                                         | Comment                                  |
+|---------------|---------------------------------------------------------------------------------------------------------------------------------|------------------------------------------|
+| Primitive     | ``(U)Int(16,32,64,128)``, ``Boolean``, ``Byte``, ``Char``, ``Decimal``, ``Double``, ``Half``, ``SByte``, ``Single``, ``String`` | Default encoding of string is 'UTF-8'    |
+| Data & Time   | ``DateOnly``, ``DateTime``, ``DateTimeOffset``, ``TimeOnly``, ``TimeSpan``                                                      |                                          |
+| Numeric       | ``BigInteger``, ``Complex``, ``Matrix3x2``, ``Matrix4x4``, ``Plane``, ``Quaternion``, ``Vector2``, ``Vector3``, ``Vector4``     |                                          |
+| Memory        | ``Memory<>``, ``ReadOnlyMemory<>``, ``ReadOnlySequence<>``                                                                      | Multidimensional arrays are supported    |
+| Miscellaneous | ``BitVector32``, ``Guid``, ``IPAddress``, ``IPEndPoint``, ``Nullable<>``, ``PriorityQueue<,>``, ``Rune``, ``Uri``, ``Version``  |                                          |
+| Tuple         | ``KeyValuePair<,>``, ``Tuple<...>``, ``ValueTuple<...>``                                                                        | Tuple can not be null                    |
+| Collection    | Implements ``IEnumerable<>`` and have a constructor accept ``IEnumerable<>`` as parameter                                       | Stack types are explicitly not supported |
+
 ## Implement custom converters
 
 Data model:
