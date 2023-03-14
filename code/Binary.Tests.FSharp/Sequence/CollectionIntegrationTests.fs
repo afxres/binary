@@ -179,16 +179,16 @@ let ``Collection Integration Test (collection, null or empty collection test, de
     TestSequence<IImmutableList<_>> "EnumerableEncoder`2" "<lambda-decoder>" (ImmutableList.Create<int>())
     TestSequence<IImmutableQueue<_>> "EnumerableEncoder`2" "<lambda-decoder>" (ImmutableQueue.Create<string>())
 
-    TestSequence<HashSet<_>> "<lambda-encoder>" "HashSetDecoder`1" (HashSet<int64>())
-    TestSequence<HashSet<_>> "<lambda-encoder>" "HashSetDecoder`1" (HashSet<string>())
+    TestSequence<HashSet<_>> "HashSetEncoder`1" "HashSetDecoder`1" (HashSet<int64>())
+    TestSequence<HashSet<_>> "HashSetEncoder`1" "HashSetDecoder`1" (HashSet<string>())
     TestSequence<ISet<_>> "EnumerableEncoder`2" "HashSetDecoder`1" (HashSet<TimeSpan>())
     TestSequence<IReadOnlySet<_>> "EnumerableEncoder`2" "HashSetDecoder`1" (HashSet<TimeOnly>())
     ()
 
 [<Fact>]
 let ``Collection Integration Test (dictionary, null or empty collection test, default interface implementation test)`` () =
-    TestSequence<Dictionary<_, _>> "<lambda-encoder>" "DictionaryDecoder`2" (Dictionary<int16, int64>())
-    TestSequence<Dictionary<_, _>> "<lambda-encoder>" "DictionaryDecoder`2" (Dictionary<string, int>())
+    TestSequence<Dictionary<_, _>> "DictionaryEncoder`2" "DictionaryDecoder`2" (Dictionary<int16, int64>())
+    TestSequence<Dictionary<_, _>> "DictionaryEncoder`2" "DictionaryDecoder`2" (Dictionary<string, int>())
     TestSequence<IDictionary<_, _>> "KeyValueEnumerableEncoder`3" "DictionaryDecoder`2" (Dictionary<int, string>())
     TestSequence<IReadOnlyDictionary<_, _>> "KeyValueEnumerableEncoder`3" "DictionaryDecoder`2" (Dictionary<string, int>())
     TestSequence<SortedList<_, _>> "KeyValueEnumerableEncoder`3" "<lambda-decoder>" (SortedList<string, int>())

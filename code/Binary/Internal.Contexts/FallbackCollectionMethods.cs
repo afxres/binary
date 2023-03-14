@@ -186,6 +186,23 @@ internal static class FallbackCollectionMethods
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
+    private static EncodeDelegate<T?> GetEncodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
+    {
+        if (typeof(T) == typeof(HashSet<E>))
+            return (EncodeDelegate<T?>)(object)new EncodeDelegate<HashSet<E>?>(new HashSetEncoder<E>(converter).Encode);
+        return GetEncodeDelegate<T, E>(converter.EncodeAuto) ?? new EnumerableEncoder<T, E>(converter).Encode;
+    }
+
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
+    private static EncodeDelegate<T?> GetEncodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
+    {
+        if (typeof(T) == typeof(Dictionary<K, V>))
+            return (EncodeDelegate<T?>)(object)new EncodeDelegate<Dictionary<K, V>>(new DictionaryEncoder<K, V>(init, tail).Encode);
+        var source = new KeyValueEnumerableEncoder<T, K, V>(init, tail);
+        return GetEncodeDelegate<T, KeyValuePair<K, V>>(source.EncodeKeyValuePairAuto) ?? source.Encode;
+    }
+
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static EncodeDelegate<T?>? GetEncodeDelegate<T, E>(EncodeDelegate<E> adapter)
     {
         var initial = typeof(T).GetMethods(CommonModule.PublicInstanceBindingFlags).FirstOrDefault(x => x.Name is "GetEnumerator" && x.GetParameters().Length is 0);
@@ -224,7 +241,7 @@ internal static class FallbackCollectionMethods
     private static IConverter GetConverter<T, E>(IGeneratorContext context) where T : IEnumerable<E>
     {
         var converter = (Converter<E>)context.GetConverter(typeof(E));
-        var encode = GetEncodeDelegate<T, E>(converter.EncodeAuto) ?? new EnumerableEncoder<T, E>(converter).Encode;
+        var encode = GetEncodeDelegate<T, E>(converter);
         var decode = GetDecodeDelegate<T, E>(converter);
         return new SequenceConverter<T>(encode, decode);
     }
@@ -234,8 +251,7 @@ internal static class FallbackCollectionMethods
     {
         var init = (Converter<K>)context.GetConverter(typeof(K));
         var tail = (Converter<V>)context.GetConverter(typeof(V));
-        var source = new KeyValueEnumerableEncoder<T, K, V>(init, tail);
-        var encode = GetEncodeDelegate<T, KeyValuePair<K, V>>(source.EncodeKeyValuePairAuto) ?? source.Encode;
+        var encode = GetEncodeDelegate<T, K, V>(init, tail);
         var decode = GetDecodeDelegate<T, K, V>(init, tail);
         return new SequenceConverter<T>(encode, decode);
     }
