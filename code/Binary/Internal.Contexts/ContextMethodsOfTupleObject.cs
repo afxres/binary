@@ -2,6 +2,7 @@
 
 using Mikodev.Binary.Components;
 using Mikodev.Binary.Internal.Contexts.Instance;
+using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -17,7 +18,7 @@ internal static class ContextMethodsOfTupleObject
         var encodeAuto = GetEncodeDelegateAsTupleObject(type, converters, members, auto: true);
         var decode = GetDecodeDelegateAsTupleObject(type, converters, constructor, auto: false);
         var decodeAuto = GetDecodeDelegateAsTupleObject(type, converters, constructor, auto: true);
-        var itemLength = ContextMethods.GetItemLength(converters);
+        var itemLength = TupleObject.GetTupleObjectLength(converters);
         var converterArguments = new object?[] { encode, encodeAuto, decode, decodeAuto, itemLength };
         var converterType = typeof(TupleObjectConverter<>).MakeGenericType(type);
         var converter = CommonModule.CreateInstance(converterType, converterArguments);

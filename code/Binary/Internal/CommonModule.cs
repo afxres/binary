@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 
 internal static class CommonModule
 {
@@ -28,10 +29,19 @@ internal static class CommonModule
 
     internal static object CreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type, object?[]? arguments)
     {
-        var result = Activator.CreateInstance(type, arguments);
-        if (result is null)
-            throw new InvalidOperationException($"Invalid null instance detected, type: {type}");
-        return result;
+        try
+        {
+            var result = Activator.CreateInstance(type, arguments);
+            if (result is null)
+                throw new InvalidOperationException($"Invalid null instance detected, type: {type}");
+            return result;
+        }
+        catch (TargetInvocationException e)
+        {
+            if (e.InnerException is { } inner)
+                ExceptionDispatchInfo.Throw(inner);
+            throw;
+        }
     }
 
     internal static bool TryGetInterfaceArguments([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type, Type definition, [MaybeNullWhen(false)] out Type[] arguments)
@@ -92,15 +102,14 @@ internal static class CommonModule
     }
 
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    internal static IConverter? GetConverter(IGeneratorContext context, Type type, Type typeDefinition, Type converterDefinition, Func<ImmutableArray<IConverter>, ImmutableArray<object>>? argumentsHandler)
+    internal static IConverter? GetConverter(IGeneratorContext context, Type type, Type typeDefinition, Type converterDefinition)
     {
         Debug.Assert(converterDefinition.IsGenericTypeDefinition);
         Debug.Assert(converterDefinition.GetGenericArguments().Length == typeDefinition.GetGenericArguments().Length);
         if (type.IsGenericType is false || type.GetGenericTypeDefinition() != typeDefinition)
             return null;
         var arguments = type.GetGenericArguments();
-        var converters = arguments.Select(context.GetConverter).ToImmutableArray();
-        var converterArguments = argumentsHandler is null ? converters.Cast<object>().ToArray() : argumentsHandler.Invoke(converters).ToArray();
+        var converterArguments = arguments.Select(context.GetConverter).Cast<object>().ToArray();
         var converterType = converterDefinition.MakeGenericType(arguments);
         var converter = CreateInstance(converterType, converterArguments);
         return (IConverter)converter;

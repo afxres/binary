@@ -11,8 +11,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-internal delegate T NamedObjectDecodeDelegate<out T>(ReadOnlySpan<byte> span, ReadOnlySpan<long> data);
-
 internal sealed class NamedObjectConverter<T> : Converter<T?>
 {
     private readonly int required;
@@ -21,24 +19,28 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
 
     private readonly ImmutableArray<string> names;
 
+    private readonly AllocatorAction<T> encode;
+
     private readonly ByteViewDictionary<int> dictionary;
 
-    private readonly EncodeDelegate<T> encode;
+    private readonly NamedObjectConstructor<T>? decode;
 
-    private readonly NamedObjectDecodeDelegate<T>? decode;
-
-    public NamedObjectConverter(EncodeDelegate<T> encode, NamedObjectDecodeDelegate<T>? decode, ImmutableArray<string> names, ImmutableArray<bool> optional, ByteViewDictionary<int> dictionary)
+    public NamedObjectConverter(AllocatorAction<T> encode, NamedObjectConstructor<T>? decode, Converter<string> converter, ImmutableArray<string> names, ImmutableArray<bool> optional)
     {
-        Debug.Assert(dictionary is not null);
+        Debug.Assert(encode is not null);
+        Debug.Assert(converter is not null);
         Debug.Assert(optional.Any());
         Debug.Assert(optional.Any(x => x is false));
         Debug.Assert(optional.Length == names.Length);
+        var dictionary = BinaryObject.Create(names.Select(x => new ReadOnlyMemory<byte>(converter.Encode(x))).ToImmutableArray());
+        if (dictionary is null)
+            throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {typeof(T)}, string converter type: {converter.GetType()}");
         this.names = names;
+        this.encode = encode;
+        this.decode = decode;
         this.optional = optional;
         this.required = optional.Count(x => x is false);
         this.dictionary = dictionary;
-        this.encode = encode;
-        this.decode = decode;
     }
 
     [DebuggerStepThrough, DoesNotReturn]
@@ -83,7 +85,7 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
         var optional = this.optional;
         var remain = this.required;
         var record = this.dictionary;
-        var values = (stackalloc long[optional.Length]);
+        var slices = (stackalloc long[optional.Length]);
         ref var source = ref MemoryMarshal.GetReference(span);
 
         var limits = span.Length;
@@ -94,12 +96,12 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
             offset += length;
             length = NumberModule.DecodeEnsureBuffer(ref source, ref offset, limits);
             var cursor = record.GetValue(ref Unsafe.Add(ref source, offset), length);
-            Debug.Assert(cursor is -1 || (uint)cursor < (uint)values.Length);
+            Debug.Assert(cursor is -1 || (uint)cursor < (uint)slices.Length);
             offset += length;
             length = NumberModule.DecodeEnsureBuffer(ref source, ref offset, limits);
-            if ((uint)cursor < (uint)values.Length)
+            if ((uint)cursor < (uint)slices.Length)
             {
-                ref var handle = ref values[cursor];
+                ref var handle = ref slices[cursor];
                 if (handle is not 0)
                     ExceptKeyFound(cursor);
                 handle = NamedObjectTemplates.GetIndexData(offset, length);
@@ -112,7 +114,7 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
         Debug.Assert(remain >= 0);
         Debug.Assert(remain <= optional.Length);
         if (remain is not 0)
-            ExceptNotFound(values);
-        return decode.Invoke(span, values);
+            ExceptNotFound(slices);
+        return decode.Invoke(new NamedObjectConstructorParameter(span, slices));
     }
 }

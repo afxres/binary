@@ -1,5 +1,6 @@
 ﻿namespace Mikodev.Binary.Creators;
 
+using Mikodev.Binary.Components;
 using System;
 using System.Collections.Generic;
 
@@ -9,7 +10,7 @@ internal sealed class KeyValuePairConverter<K, V> : Converter<KeyValuePair<K, V>
 
     private readonly Converter<V> tail;
 
-    public KeyValuePairConverter(Converter<K> init, Converter<V> tail, int itemLength) : base(itemLength)
+    public KeyValuePairConverter(Converter<K> init, Converter<V> tail) : base(TupleObject.GetTupleObjectLength(new IConverter[] { init, tail }))
     {
         this.init = init;
         this.tail = tail;

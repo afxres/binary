@@ -72,6 +72,7 @@ public class CodeContractsTests
         {
             "Mikodev.Binary",
             "Mikodev.Binary.Attributes",
+            "Mikodev.Binary.Components",
         };
         var types = new HashSet<Type>(typeof(IConverter).Assembly.GetTypes());
         var alpha = new HashSet<Type>(types.Where(x => array.Contains(x.Namespace) && !x.IsNested));
@@ -242,7 +243,7 @@ public class CodeContractsTests
         var matches = parameters.Where(x => x.ParameterType.IsByRef is false && x.ParameterType.IsByRefLike).ToList();
         Assert.NotEmpty(matches);
         var hostTypes = matches.Select(x => x.Member.ReflectedType).Distinct().ToList();
-        Assert.Equal(4, hostTypes.Count);
+        Assert.Equal(5, hostTypes.Count);
         foreach (var parameter in matches)
         {
             var attributes = parameter.GetCustomAttributes();

@@ -1,6 +1,6 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts.Instance;
 
-using Mikodev.Binary.Components;
+using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Diagnostics;
 

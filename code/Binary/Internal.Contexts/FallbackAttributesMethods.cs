@@ -1,7 +1,6 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts;
 
 using Mikodev.Binary.Attributes;
-using Mikodev.Binary.External;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -41,12 +40,8 @@ internal static class FallbackAttributesMethods
             return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, initializers);
 
         var optional = members.Select(x => x.IsOptional).ToImmutableArray();
-        var instance = (Converter<string>)context.GetConverter(typeof(string));
-        var memories = names.Select(x => new ReadOnlyMemory<byte>(instance.Encode(x))).ToImmutableArray();
-        var dictionary = BinaryObject.Create(memories);
-        if (dictionary is null)
-            throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {type}, string converter type: {instance.GetType()}");
-        return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, initializers, names, memories, optional, dictionary);
+        var encoding = (Converter<string>)context.GetConverter(typeof(string));
+        return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, initializers, names, optional, encoding);
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]

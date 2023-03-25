@@ -573,7 +573,7 @@ type AttributeTests() =
     [<Fact>]
     member __.``Attributes All Public & Sealed & Not Allow Multiple & Not Inherited`` () =
         let assemblyTypes = typeof<IConverter>.Assembly.GetTypes()
-        let types = assemblyTypes |> Array.where (fun x -> x.Namespace <> null && x.Namespace.EndsWith("Attributes") && x.IsSubclassOf(typeof<Attribute>))
+        let types = assemblyTypes |> Array.where (fun x -> x.Namespace <> null && x.Namespace.EndsWith("Attributes") && x.Name.StartsWith("SourceGenerator") = false && x.IsSubclassOf(typeof<Attribute>))
         Assert.Equal(6, types.Length)
         let map = Dictionary<Type, AttributeTargets>()
         for i in types do

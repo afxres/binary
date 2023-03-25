@@ -1,6 +1,6 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts;
 
-using Mikodev.Binary.Components;
+using Mikodev.Binary.Internal.Metadata;
 using Mikodev.Binary.Internal.Sequence;
 using Mikodev.Binary.Internal.Sequence.Decoders;
 using Mikodev.Binary.Internal.Sequence.Encoders;
@@ -149,9 +149,9 @@ internal static class FallbackCollectionMethods
         return GetDecodeDelegate<T, IEnumerable<E>, IEnumerable<E>>(target, method);
     }
 
-    private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail, int itemLength, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
+    private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
     {
-        return GetDecodeDelegate<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail, itemLength).Decode, method);
+        return GetDecodeDelegate<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail).Decode, method);
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
@@ -172,15 +172,14 @@ internal static class FallbackCollectionMethods
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static DecodePassSpanDelegate<T>? GetDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
     {
-        var itemLength = ContextMethods.GetItemLength(ImmutableArray.Create<IConverter>(init, tail));
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), DictionaryAssignableDefinitions.Contains))
-            return GetDecodeDelegate<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode);
+            return GetDecodeDelegate<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail).Decode);
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } result)
-            return GetDecodeDelegate<T, K, V>(init, tail, itemLength, x => Expression.Call(result.MakeGenericMethod(typeof(K), typeof(V)), x));
+            return GetDecodeDelegate<T, K, V>(init, tail, x => Expression.Call(result.MakeGenericMethod(typeof(K), typeof(V)), x));
         if (GetConstructorOrDefault(typeof(T), typeof(IDictionary<K, V>)) is { } target)
-            return GetDecodeDelegate<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail, itemLength).Decode, target);
+            return GetDecodeDelegate<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail).Decode, target);
         if (GetConstructorOrDefault(typeof(T), typeof(IEnumerable<KeyValuePair<K, V>>)) is { } method)
-            return GetDecodeDelegate<T, K, V>(init, tail, itemLength, method);
+            return GetDecodeDelegate<T, K, V>(init, tail, method);
         else
             return null;
     }

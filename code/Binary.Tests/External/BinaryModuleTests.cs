@@ -24,6 +24,8 @@ public class BinaryModuleTests
 
     private delegate bool Equality(ref byte source, int length, byte[] buffer);
 
+    private delegate ReadOnlySpan<int> GetPrimes();
+
     private static MethodInfo GetInternalMethod(string name)
     {
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryModule");
@@ -162,10 +164,14 @@ public class BinaryModuleTests
     public void PrimeTable()
     {
         var systemType = typeof(Dictionary<,>).Assembly.GetTypes().Single(x => x.Namespace is "System.Collections" && x.Name is "HashHelpers");
+        var systemMembers = systemType.GetProperties(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
         Assert.NotNull(systemType);
-        var systemField = systemType.GetFields(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public).Single(x => x.Name.Contains("primes"));
-        Assert.NotNull(systemField);
-        var systemPrimeTable = Assert.IsAssignableFrom<IReadOnlyList<int>>(systemField.GetValue(null));
+        var systemMember = systemMembers.Single(x => x.Name.Contains("primes", StringComparison.InvariantCultureIgnoreCase));
+        Assert.NotNull(systemMember);
+        var getMethod = systemMember.GetGetMethod(nonPublic: true);
+        Assert.NotNull(getMethod);
+        var getPrimes = (GetPrimes)Delegate.CreateDelegate(typeof(GetPrimes), getMethod);
+        var systemPrimeTable = getPrimes.Invoke().ToArray();
 
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryModule");
         var field = Assert.IsAssignableFrom<FieldInfo>(type.GetField("Primes", BindingFlags.Static | BindingFlags.NonPublic));

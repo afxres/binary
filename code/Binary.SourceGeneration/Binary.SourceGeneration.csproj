@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>11</LangVersion>
+    <AssemblyName>Mikodev.Binary.SourceGeneration</AssemblyName>
+    <RootNamespace>Mikodev.Binary.SourceGeneration</RootNamespace>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <AnalyzerLanguage>cs</AnalyzerLanguage>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.6.0-1.final" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

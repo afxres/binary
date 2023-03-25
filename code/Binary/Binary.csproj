@@ -27,4 +27,9 @@
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Binary.SourceGeneration\Binary.SourceGeneration.csproj" ReferenceOutputAssembly="false" PackAsAnalyzer="true" />
+    <None Include="..\Binary.SourceGeneration\bin\$(Configuration)\netstandard2.0\Mikodev.Binary.SourceGeneration.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
+
 </Project>

@@ -17,13 +17,6 @@ internal delegate ImmutableArray<Expression> ContextObjectInitializer(ImmutableA
 
 internal static class ContextMethods
 {
-    internal static int GetItemLength(ImmutableArray<IConverter> values)
-    {
-        Debug.Assert(values.Any());
-        var source = values.Select(x => x.Length).ToList();
-        return source.All(x => x > 0) ? source.Sum() : 0;
-    }
-
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static Delegate GetDecodeDelegate(Type delegateType, ContextObjectInitializer initializer, ConstructorInfo constructor)
     {

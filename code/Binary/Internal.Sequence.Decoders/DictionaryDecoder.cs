@@ -1,5 +1,6 @@
 ﻿namespace Mikodev.Binary.Internal.Sequence.Decoders;
 
+using Mikodev.Binary.Components;
 using System;
 using System.Collections.Generic;
 
@@ -11,11 +12,11 @@ internal sealed class DictionaryDecoder<K, V> where K : notnull
 
     private readonly Converter<V> tail;
 
-    public DictionaryDecoder(Converter<K> init, Converter<V> tail, int itemLength)
+    public DictionaryDecoder(Converter<K> init, Converter<V> tail)
     {
         this.init = init;
         this.tail = tail;
-        this.itemLength = itemLength;
+        this.itemLength = TupleObject.GetTupleObjectLength(new IConverter[] { init, tail });
     }
 
     public Dictionary<K, V> Decode(ReadOnlySpan<byte> span)

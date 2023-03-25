@@ -10,6 +10,6 @@ internal sealed class ReadOnlySequenceConverterCreator : IConverterCreator
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public IConverter? GetConverter(IGeneratorContext context, Type type)
     {
-        return CommonModule.GetConverter(context, type, typeof(ReadOnlySequence<>), typeof(ReadOnlySequenceConverter<>), null);
+        return CommonModule.GetConverter(context, type, typeof(ReadOnlySequence<>), typeof(ReadOnlySequenceConverter<>));
     }
 }

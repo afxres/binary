@@ -1,5 +1,6 @@
 ﻿namespace Mikodev.Binary.Internal.Sequence.Decoders;
 
+using Mikodev.Binary.Components;
 using System;
 using System.Collections.Generic;
 
@@ -11,18 +12,18 @@ internal sealed class KeyValueEnumerableDecoder<K, V>
 
     private readonly Converter<V> tail;
 
-    public KeyValueEnumerableDecoder(Converter<K> init, Converter<V> tail, int itemLength)
+    public KeyValueEnumerableDecoder(Converter<K> init, Converter<V> tail)
     {
         this.init = init;
         this.tail = tail;
-        this.itemLength = itemLength;
+        this.itemLength = TupleObject.GetTupleObjectLength(new IConverter[] { init, tail });
     }
 
-    public IEnumerable<KeyValuePair<K, V>> Decode(ReadOnlySpan<byte> span)
+    public List<KeyValuePair<K, V>> Decode(ReadOnlySpan<byte> span)
     {
         var limits = span.Length;
         if (limits is 0)
-            return Array.Empty<KeyValuePair<K, V>>();
+            return new List<KeyValuePair<K, V>>();
         var capacity = SequenceContext.GetCapacityOrDefault<KeyValuePair<K, V>>(limits, this.itemLength);
         var init = this.init;
         var tail = this.tail;

@@ -1,0 +1,20 @@
+{
+  "profiles": {
+    "Debug Attribute Tests": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\Binary.SourceGeneration.AttributeTests\\Binary.SourceGeneration.AttributeTests.csproj"
+    },
+    "Debug Named Object Tests": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\Binary.SourceGeneration.NamedObjectTests\\Binary.SourceGeneration.NamedObjectTests.csproj"
+    },
+    "Debug Tuple Object Tests": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\Binary.SourceGeneration.TupleObjectTests\\Binary.SourceGeneration.TupleObjectTests.csproj"
+    },
+    "Debug Collection Tests": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\Binary.SourceGeneration.CollectionTests\\Binary.SourceGeneration.CollectionTests.csproj"
+    }
+  }
+}

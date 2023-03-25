@@ -6,7 +6,7 @@ using Mikodev.Binary.Internal.Contexts;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
-public static class Generator
+public static partial class Generator
 {
     private static readonly ImmutableDictionary<string, IConverterCreator> SharedConverterCreators;
 
