@@ -12,9 +12,7 @@ public sealed partial class Token
     {
         private static readonly MethodInfo IndexerMethodInfo = new Func<Token, string, Token>(GetToken).Method;
 
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
         private static readonly MethodInfo ConvertMethodInfo = new Func<Token, object>(GetValue<object>).Method.GetGenericMethodDefinition();
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
 
         public MetaObject(Expression parameter, object value) : base(parameter, BindingRestrictions.Empty, value) { }
 

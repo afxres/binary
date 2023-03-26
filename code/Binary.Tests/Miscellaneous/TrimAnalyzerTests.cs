@@ -1,7 +1,6 @@
 ﻿namespace Mikodev.Binary.Tests.Miscellaneous;
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -10,15 +9,12 @@ using Xunit;
 
 public class TrimAnalyzerTests
 {
-    private static bool MemberFilter(MemberInfo member)
+    private static bool MemberFilter(MemberInfo member) => member switch
     {
-        return member switch
-        {
-            ConstructorInfo constructor => constructor.ReflectedType?.IsPublic is true && constructor.IsPublic,
-            MethodInfo method => method.ReflectedType?.IsPublic is true && method.IsPublic,
-            _ => throw new NotSupportedException(),
-        };
-    }
+        ConstructorInfo constructor => constructor.ReflectedType?.IsPublic is true && constructor.IsPublic,
+        MethodInfo method => method.ReflectedType?.IsPublic is true && method.IsPublic,
+        _ => throw new NotSupportedException(),
+    };
 
     [Fact(DisplayName = "Known 'RequiresUnreferencedCodeAttribute' Members")]
     public void KnownRequiresUnreferencedCodeMembers()
@@ -35,20 +31,8 @@ public class TrimAnalyzerTests
 
         var memberWithKnownAttributes = memberAttributes.Where(x => x.Value.Any(x => x is RequiresUnreferencedCodeAttribute)).ToImmutableDictionary();
         var publicTypeMemberWithKnownAttributes = memberWithKnownAttributes.Where(x => MemberFilter(x.Key)).ToImmutableDictionary();
-        Assert.NotEmpty(publicTypeMemberWithKnownAttributes);
+        Assert.Empty(publicTypeMemberWithKnownAttributes);
         Assert.True(publicTypeMemberWithKnownAttributes.Count < memberWithKnownAttributes.Count);
-
-        var publicExpectedKnownTypes = new HashSet<Type>()
-        {
-            typeof(IConverterCreator),
-            typeof(IGenerator),
-            typeof(IGeneratorContext),
-            typeof(GeneratorExtensions),
-            typeof(Token),
-        };
-        var publicActualKnownTypes = publicTypeMemberWithKnownAttributes.Select(x => x.Key.DeclaringType!).ToHashSet();
-        Assert.NotEmpty(publicActualKnownTypes);
-        Assert.Equal(publicExpectedKnownTypes, publicActualKnownTypes);
     }
 
     [Fact(DisplayName = "Known 'RequiresUnreferencedCodeAttribute' Message")]
