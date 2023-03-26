@@ -147,4 +147,28 @@ public static class Constants
         category: DiagnosticCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor RequirePublicInstanceMember { get; } = new DiagnosticDescriptor(
+        id: "BINSRCGEN46",
+        title: "Require Public Instance Member.",
+        messageFormat: "Require public instance member, member name: {0}, type: {1}",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor RequireNotIndexer { get; } = new DiagnosticDescriptor(
+        id: "BINSRCGEN47",
+        title: "Require Not Indexer.",
+        messageFormat: "Require not an indexer, type: {0}",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor RequirePublicGetter { get; } = new DiagnosticDescriptor(
+        id: "BINSRCGEN48",
+        title: "Require Public Getter.",
+        messageFormat: "Require a public getter, member name: {0}, type: {1}",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }

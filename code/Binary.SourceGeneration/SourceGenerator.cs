@@ -84,6 +84,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
                 includedTypes.Add(includedType, i);
             else
                 context.ReportDiagnostic(Diagnostic.Create(Constants.IncludeTypeDuplicated, Symbols.GetLocation(i), new[] { includedType.Name }));
+            context.CancellationToken.ThrowIfCancellationRequested();
         }
 
         var pending = new Queue<ITypeSymbol>(includedTypes.Keys);
@@ -94,7 +95,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         {
             try
             {
-                Symbols.ValidateTypeAttributes(generator, symbol);
+                Symbols.ValidateType(generator, symbol);
                 context.CancellationToken.ThrowIfCancellationRequested();
                 var creator = TypeHandlers.Select(h => h.Invoke(generator, symbol)).OfType<string>().FirstOrDefault();
                 if (creator is null && includedTypes.TryGetValue(symbol, out var attribute) is true)

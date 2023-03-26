@@ -18,7 +18,6 @@ public sealed partial class NamedObjectConverterContext
 
     private static void GetNamedMember(SourceGeneratorContext context, ISymbol member, bool isTypeRequired, SortedDictionary<string, SymbolNamedMemberInfo> dictionary)
     {
-        Symbols.ValidateMemberAttributes(context, member);
         if (member.IsStatic || member.DeclaredAccessibility is not Accessibility.Public)
             return;
         if (member is IPropertySymbol property && property.IsIndexer)

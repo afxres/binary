@@ -21,7 +21,6 @@ public sealed partial class TupleObjectConverterContext
 
     private static void GetCustomTupleMember(SourceGeneratorContext context, ISymbol member, SortedDictionary<int, SymbolTupleMemberInfo> dictionary)
     {
-        Symbols.ValidateMemberAttributes(context, member);
         if (member.IsStatic || member.DeclaredAccessibility is not Accessibility.Public)
             return;
         if (member is IPropertySymbol property && property.IsIndexer)
