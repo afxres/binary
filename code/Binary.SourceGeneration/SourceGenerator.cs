@@ -53,6 +53,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         if (include is null)
             return;
 
+        var cancellation = context.CancellationToken;
         foreach (var declaration in declarations)
         {
             var model = compilation.GetSemanticModel(declaration.SyntaxTree);
@@ -63,6 +64,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
                 context.ReportDiagnostic(Diagnostic.Create(descriptor, Symbols.GetLocation(type), new[] { type.Name }));
             else
                 Invoke(compilation, context, type, include);
+            cancellation.ThrowIfCancellationRequested();
         }
     }
 
@@ -70,6 +72,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
     {
         var includedTypes = new Dictionary<ITypeSymbol, AttributeData>(SymbolEqualityComparer.Default);
         var attributes = type.GetAttributes();
+        var cancellation = context.CancellationToken;
         foreach (var i in attributes)
         {
             var attribute = i.AttributeClass;
@@ -84,7 +87,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
                 includedTypes.Add(includedType, i);
             else
                 context.ReportDiagnostic(Diagnostic.Create(Constants.IncludeTypeDuplicated, Symbols.GetLocation(i), new[] { includedType.Name }));
-            context.CancellationToken.ThrowIfCancellationRequested();
+            cancellation.ThrowIfCancellationRequested();
         }
 
         var pending = new Queue<ITypeSymbol>(includedTypes.Keys);
@@ -96,11 +99,11 @@ public sealed class SourceGenerator : IIncrementalGenerator
             try
             {
                 Symbols.ValidateType(generator, symbol);
-                context.CancellationToken.ThrowIfCancellationRequested();
                 var creator = TypeHandlers.Select(h => h.Invoke(generator, symbol)).OfType<string>().FirstOrDefault();
                 if (creator is null && includedTypes.TryGetValue(symbol, out var attribute) is true)
                     context.ReportDiagnostic(Diagnostic.Create(Constants.NoConverterGenerated, Symbols.GetLocation(attribute), new[] { symbol.Name }));
                 handled.Add(symbol, creator);
+                cancellation.ThrowIfCancellationRequested();
             }
             catch (SourceGeneratorException) { }
         }
@@ -111,6 +114,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
             if (handled.ContainsKey(symbol))
                 continue;
             Handle(symbol);
+            cancellation.ThrowIfCancellationRequested();
         }
 
         AppendConverterCreators(context, generator, handled);
@@ -119,6 +123,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
     private static void AppendConverterCreators(SourceProductionContext context, SourceGeneratorContext generation, IDictionary<ITypeSymbol, string?> creators)
     {
         var builder = new StringBuilder();
+        var cancellation = context.CancellationToken;
         builder.AppendIndent(0, $"namespace {generation.Namespace};");
         builder.AppendIndent();
         builder.AppendIndent(0, $"using _IDictionary = global::System.Collections.Immutable.ImmutableDictionary<global::System.Type, global::Mikodev.Binary.IConverterCreator>;");
@@ -135,7 +140,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
                 continue;
             var key = Symbols.GetSymbolFullName(i.Key);
             builder.AppendIndent(2, $"{{ typeof({key}), new {creator}() }},");
-            context.CancellationToken.ThrowIfCancellationRequested();
+            cancellation.ThrowIfCancellationRequested();
         }
         builder.AppendIndent(1, $"}});");
         builder.AppendIndent(0, $"}}");
