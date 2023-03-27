@@ -48,8 +48,9 @@ type ConverterTests() =
 
     static let MakeConverters (t : Type) =
         EnsureEnumName t
-        let rn = MakeConverter "DetectEndianConverterCreator" t true
-        let rl = MakeConverter "DetectEndianConverterCreator" t false
+        let creatorName = if t.IsEnum then "DetectEndianEnumConverterCreator" else "DetectEndianConverterCreator"
+        let rn = MakeConverter creatorName t true
+        let rl = MakeConverter creatorName t false
         Assert.Matches(".*NativeEndianConverter`1.*", rn.GetType().FullName)
         Assert.Matches(".*LittleEndianConverter`1.*", rl.GetType().FullName)
         [ rn; rl; ]

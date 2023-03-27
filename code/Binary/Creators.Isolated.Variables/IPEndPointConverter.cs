@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Converters.Variables;
+﻿namespace Mikodev.Binary.Creators.Isolated.Variables;
 
 using Mikodev.Binary;
 using Mikodev.Binary.Features.Contexts;

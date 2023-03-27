@@ -73,8 +73,10 @@ type ThrowTests() =
     let outofrange = ArgumentOutOfRangeException().Message
 
     let GeneratorBuilder() =
-        let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "GeneratorBuilder") |> Array.exactlyOne
-        let builder = Activator.CreateInstance(t)
+        let fallbackType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "GeneratorContextFallback") |> Array.exactlyOne
+        let fallback = Activator.CreateInstance(fallbackType)
+        let builderType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "GeneratorBuilder") |> Array.exactlyOne
+        let builder = Activator.CreateInstance(builderType, [| box fallback |])
         builder :?> IGeneratorBuilder
 
     member private __.Test<'a> () =

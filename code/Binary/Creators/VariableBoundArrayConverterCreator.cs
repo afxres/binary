@@ -4,9 +4,9 @@ using Mikodev.Binary.Internal;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
+[RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
 internal sealed class VariableBoundArrayConverterCreator : IConverterCreator
 {
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public IConverter? GetConverter(IGeneratorContext context, Type type)
     {
         if (type.IsVariableBoundArray is false || type.GetElementType() is not { } itemType)

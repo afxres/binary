@@ -20,9 +20,9 @@ public class TrimAnalyzerTests
     public void KnownRequiresUnreferencedCodeMembers()
     {
         var types = typeof(IConverter).Assembly.GetTypes();
-        var classAttributes = types.ToImmutableDictionary(x => x, x => x.GetCustomAttributes(true).Cast<Attribute>().ToList());
-        var classAttributeTypes = classAttributes.Values.SelectMany(x => x).Select(x => x.GetType()).Distinct().ToList();
-        Assert.DoesNotContain(typeof(RequiresUnreferencedCodeAttribute), classAttributeTypes);
+        var classAttributes = types.ToDictionary(x => x, x => x.GetCustomAttributes(true).OfType<RequiresUnreferencedCodeAttribute>().SingleOrDefault());
+        var classAttributeTypes = classAttributes.Where(x => x.Value is not null).ToDictionary(x => x.Key, x => x.Value);
+        Assert.All(classAttributeTypes, x => Assert.False(x.Key.IsPublic));
 
         var members = types.SelectMany(x => x.GetMembers(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)).ToList();
         var memberAttributes = members.ToImmutableDictionary(x => x, x => x.GetCustomAttributes(true).Cast<Attribute>().ToList());
@@ -31,8 +31,9 @@ public class TrimAnalyzerTests
 
         var memberWithKnownAttributes = memberAttributes.Where(x => x.Value.Any(x => x is RequiresUnreferencedCodeAttribute)).ToImmutableDictionary();
         var publicTypeMemberWithKnownAttributes = memberWithKnownAttributes.Where(x => MemberFilter(x.Key)).ToImmutableDictionary();
-        Assert.Empty(publicTypeMemberWithKnownAttributes);
+        Assert.NotEmpty(publicTypeMemberWithKnownAttributes);
         Assert.True(publicTypeMemberWithKnownAttributes.Count < memberWithKnownAttributes.Count);
+        Assert.All(publicTypeMemberWithKnownAttributes, x => Assert.StartsWith("CreateDefault", x.Key.Name));
     }
 
     [Fact(DisplayName = "Known 'RequiresUnreferencedCodeAttribute' Message")]

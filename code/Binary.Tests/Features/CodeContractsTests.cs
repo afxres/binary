@@ -10,12 +10,14 @@ public class CodeContractsTests
     public void ConverterTypeName()
     {
         var types = typeof(IConverter).Assembly.GetTypes()
-            .Where(x => x.Namespace?.StartsWith("Mikodev.Binary.Converters") is true && x.IsGenericTypeDefinition is false && x.IsAssignableTo(typeof(IConverter)))
+            .Where(x => x.IsAbstract is false && x.IsGenericTypeDefinition is false && x.IsAssignableTo(typeof(IConverter)))
             .ToList();
         Assert.NotEmpty(types);
         foreach (var i in types)
         {
             var parameter = i.BaseType!.GetGenericArguments().First();
+            if (parameter == typeof(object))
+                continue;
             var expectedName = parameter.Name + "Converter";
             Assert.Equal(expectedName, i.Name);
         }

@@ -12,7 +12,7 @@ public class BigIntegerConverterTests
     {
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<BigInteger>();
-        Assert.Equal("Mikodev.Binary.Converters.Variables.BigIntegerConverter", converter.GetType().FullName);
+        Assert.Equal("BigIntegerConverter", converter.GetType().Name);
         Assert.Equal(0, converter.Length);
     }
 

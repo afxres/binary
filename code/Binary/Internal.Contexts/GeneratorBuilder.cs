@@ -1,5 +1,6 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts;
 
+using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -11,6 +12,12 @@ internal sealed class GeneratorBuilder : IGeneratorBuilder
     private readonly LinkedList<IConverterCreator> creators = new LinkedList<IConverterCreator>();
 
     private readonly Dictionary<Type, IConverter> converters = new Dictionary<Type, IConverter>();
+
+    private readonly IGeneratorContextFallback? fallback;
+
+    public GeneratorBuilder() { }
+
+    public GeneratorBuilder(IGeneratorContextFallback? fallback) => this.fallback = fallback;
 
     public IGeneratorBuilder AddConverter(IConverter converter)
     {
@@ -29,7 +36,7 @@ internal sealed class GeneratorBuilder : IGeneratorBuilder
         return this;
     }
 
-    public IGenerator Build() => new Generator(this.creators.ToImmutableArray(), this.converters.ToImmutableDictionary());
+    public IGenerator Build() => new Generator(this.creators.ToImmutableArray(), this.converters.ToImmutableDictionary(), this.fallback);
 
     public override string ToString() => $"Converter Count = {this.converters.Count}, Converter Creator Count = {this.creators.Count}";
 }

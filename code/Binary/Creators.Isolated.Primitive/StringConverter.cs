@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Converters;
+﻿namespace Mikodev.Binary.Creators.Isolated.Primitive;
 
 using Mikodev.Binary.Internal;
 using System;

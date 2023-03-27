@@ -1,10 +1,8 @@
 ﻿namespace Mikodev.Binary.Creators.Endianness;
 
-using Mikodev.Binary.Internal;
 using System;
 using System.Collections.Immutable;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 
 internal sealed class DetectEndianConverterCreator : IConverterCreator
@@ -58,21 +56,13 @@ internal sealed class DetectEndianConverterCreator : IConverterCreator
         SharedConverters = builder.ToImmutable();
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public IConverter? GetConverter(IGeneratorContext context, Type type)
     {
         static IConverter? Invoke(Type type, bool native)
         {
             if (SharedConverters.TryGetValue(type, out var result))
                 return native ? result.Native : result.Little;
-            if (type.IsEnum is false)
-                return null;
-            var definition = native
-                ? typeof(NativeEndianConverter<>)
-                : typeof(LittleEndianConverter<>);
-            var converterType = definition.MakeGenericType(type);
-            var converter = CommonModule.CreateInstance(converterType, null);
-            return (IConverter)converter;
+            return null;
         }
 
         return Invoke(type, BitConverter.IsLittleEndian);

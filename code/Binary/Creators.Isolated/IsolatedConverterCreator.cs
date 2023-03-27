@@ -1,16 +1,16 @@
-﻿namespace Mikodev.Binary.Internal.Contexts;
+﻿namespace Mikodev.Binary.Creators.Isolated;
 
-using Mikodev.Binary.Converters;
-using Mikodev.Binary.Converters.Constants;
-using Mikodev.Binary.Converters.Variables;
+using Mikodev.Binary.Creators.Isolated.Constants;
+using Mikodev.Binary.Creators.Isolated.Primitive;
+using Mikodev.Binary.Creators.Isolated.Variables;
 using System;
 using System.Collections.Immutable;
 
-internal static class FallbackConvertersMethods
+internal sealed class IsolatedConverterCreator : IConverterCreator
 {
     private static readonly ImmutableDictionary<Type, IConverter> SharedConverters;
 
-    static FallbackConvertersMethods()
+    static IsolatedConverterCreator()
     {
         var converters = new IConverter[]
         {
@@ -31,7 +31,7 @@ internal static class FallbackConvertersMethods
         SharedConverters = converters.ToImmutableDictionary(Converter.GetGenericArgument);
     }
 
-    internal static IConverter? GetConverter(Type type)
+    public IConverter? GetConverter(IGeneratorContext context, Type type)
     {
         return SharedConverters.GetValueOrDefault(type);
     }

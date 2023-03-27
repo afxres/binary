@@ -1,16 +1,17 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts;
 
+using Mikodev.Binary.Internal.Metadata;
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 
 internal sealed class GeneratorContext : IGeneratorContext, IDisposable
 {
     private bool disposed = false;
+
+    private readonly IGeneratorContextFallback? fallback;
 
     private readonly HashSet<Type> types = new HashSet<Type>();
 
@@ -18,8 +19,9 @@ internal sealed class GeneratorContext : IGeneratorContext, IDisposable
 
     private readonly ConcurrentDictionary<Type, IConverter> converters;
 
-    public GeneratorContext(ImmutableArray<IConverterCreator> creators, ConcurrentDictionary<Type, IConverter> converters)
+    public GeneratorContext(ImmutableArray<IConverterCreator> creators, ConcurrentDictionary<Type, IConverter> converters, IGeneratorContextFallback? fallback = null)
     {
+        this.fallback = fallback;
         this.creators = creators;
         this.converters = converters;
     }
@@ -29,7 +31,6 @@ internal sealed class GeneratorContext : IGeneratorContext, IDisposable
         this.disposed = true;
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public IConverter GetConverter(Type type)
     {
         if (this.disposed)
@@ -40,7 +41,6 @@ internal sealed class GeneratorContext : IGeneratorContext, IDisposable
         return this.converters.GetOrAdd(type, converter);
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private IConverter GetOrCreateConverter(Type type)
     {
         if (type.IsByRef)
@@ -62,26 +62,8 @@ internal sealed class GeneratorContext : IGeneratorContext, IDisposable
             if ((converter = creator.GetConverter(this, type)) is not null)
                 return CommonModule.GetConverter(converter, type, creator.GetType());
 
-        if ((converter = FallbackConvertersMethods.GetConverter(type)) is not null)
-            return converter;
-        if ((converter = FallbackPrimitivesMethods.GetConverter(this, type)) is not null)
-            return converter;
-        if ((converter = FallbackSequentialMethods.GetConverter(this, type)) is not null)
-            return converter;
-
-        if (type == typeof(Delegate) || type.IsSubclassOf(typeof(Delegate)))
-            throw new ArgumentException($"Invalid delegate type: {type}");
-        if (type.Assembly == typeof(IConverter).Assembly)
-            throw new ArgumentException($"Invalid internal type: {type}");
-
-        if ((converter = FallbackCollectionMethods.GetConverter(this, type)) is not null)
-            return converter;
-
-        if (type == typeof(IEnumerable) || typeof(IEnumerable).IsAssignableFrom(type))
-            throw new ArgumentException($"Invalid non-generic collection type: {type}");
-        if (type.Assembly == typeof(object).Assembly)
-            throw new ArgumentException($"Invalid system type: {type}");
-
-        return FallbackAttributesMethods.GetConverter(this, type);
+        if (this.fallback is { } fallback)
+            return fallback.GetConverter(type, this);
+        throw new NotSupportedException();
     }
 }

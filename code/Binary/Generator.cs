@@ -2,39 +2,40 @@
 
 using Mikodev.Binary.Creators;
 using Mikodev.Binary.Creators.Endianness;
+using Mikodev.Binary.Creators.Isolated;
+using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Contexts;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 
 public static partial class Generator
 {
-    private static readonly ImmutableDictionary<string, IConverterCreator> SharedConverterCreators;
-
-    static Generator()
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
+    private static IEnumerable<IConverterCreator> GetConverterCreators()
     {
-        var creators = new List<IConverterCreator>
-        {
-            new KeyValuePairConverterCreator(),
-            new LinkedListConverterCreator(),
-            new NullableConverterCreator(),
-            new PriorityQueueConverterCreator(),
-            new ReadOnlySequenceConverterCreator(),
-            new UriConverterCreator(),
-            new VariableBoundArrayConverterCreator(),
-            new DetectEndianConverterCreator(),
-        };
-        SharedConverterCreators = creators.ToImmutableDictionary(x => x.GetType().Name);
+        yield return new KeyValuePairConverterCreator();
+        yield return new LinkedListConverterCreator();
+        yield return new NullableConverterCreator();
+        yield return new PriorityQueueConverterCreator();
+        yield return new ReadOnlySequenceConverterCreator();
+        yield return new UriConverterCreator();
+        yield return new VariableBoundArrayConverterCreator();
+        yield return new IsolatedConverterCreator();
+        yield return new DetectEndianConverterCreator();
+        yield return new DetectEndianEnumConverterCreator();
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public static IGenerator CreateDefault()
     {
         return CreateDefaultBuilder().Build();
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public static IGeneratorBuilder CreateDefaultBuilder()
     {
-        var builder = new GeneratorBuilder();
-        foreach (var creator in SharedConverterCreators.Values)
+        var builder = new GeneratorBuilder(new GeneratorContextFallback());
+        foreach (var creator in GetConverterCreators())
             _ = builder.AddConverterCreator(creator);
         return builder;
     }

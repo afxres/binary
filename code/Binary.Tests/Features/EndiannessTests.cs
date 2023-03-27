@@ -73,7 +73,8 @@ public class EndiannessTests
     [MemberData(nameof(NumberData))]
     public void InternalNativeEndianConverterInfo<T>(int length, T data)
     {
-        var creatorType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "DetectEndianConverterCreator");
+        var creatorName = typeof(T).IsEnum ? "DetectEndianEnumConverterCreator" : "DetectEndianConverterCreator";
+        var creatorType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name == creatorName);
         var creatorInvokeMethod = creatorType.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name.Contains("Invoke"));
         var creatorInvokeFunctor = (Func<Type, bool, IConverter>)Delegate.CreateDelegate(typeof(Func<Type, bool, IConverter>), creatorInvokeMethod);
         var converter = (Converter<T>)creatorInvokeFunctor.Invoke(typeof(T), true);
@@ -90,7 +91,8 @@ public class EndiannessTests
     [MemberData(nameof(NumberData))]
     public void InternalLittleEndianConverterInfo<T>(int length, T data)
     {
-        var creatorType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "DetectEndianConverterCreator");
+        var creatorName = typeof(T).IsEnum ? "DetectEndianEnumConverterCreator" : "DetectEndianConverterCreator";
+        var creatorType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name == creatorName);
         var creatorInvokeMethod = creatorType.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name.Contains("Invoke"));
         var creatorInvokeFunctor = (Func<Type, bool, IConverter>)Delegate.CreateDelegate(typeof(Func<Type, bool, IConverter>), creatorInvokeMethod);
         var converter = (Converter<T>)creatorInvokeFunctor.Invoke(typeof(T), false);

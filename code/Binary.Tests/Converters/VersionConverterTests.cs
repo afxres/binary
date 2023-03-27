@@ -12,7 +12,7 @@ public class VersionConverterTests
     {
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<Version>();
-        Assert.Equal("Mikodev.Binary.Converters.Variables.VersionConverter", converter.GetType().FullName);
+        Assert.Equal("VersionConverter", converter.GetType().Name);
         Assert.Equal(0, converter.Length);
     }
 

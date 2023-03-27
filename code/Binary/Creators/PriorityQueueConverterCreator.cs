@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
+[RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
 internal sealed class PriorityQueueConverterCreator : IConverterCreator
 {
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public IConverter? GetConverter(IGeneratorContext context, Type type)
     {
         return CommonModule.GetConverter(context, type, typeof(PriorityQueue<,>), typeof(PriorityQueueConverter<,>));
