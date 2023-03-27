@@ -4,5 +4,5 @@ using System;
 
 internal interface IGeneratorContextFallback
 {
-    IConverter GetConverter(Type type, IGeneratorContext context);
+    IConverter GetConverter(IGeneratorContext context, Type type);
 }

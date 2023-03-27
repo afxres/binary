@@ -8,7 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
 internal sealed class GeneratorContextFallback : IGeneratorContextFallback
 {
-    public IConverter GetConverter(Type type, IGeneratorContext context)
+    public IConverter GetConverter(IGeneratorContext context, Type type)
     {
         IConverter? converter;
         if ((converter = FallbackPrimitivesMethods.GetConverter(context, type)) is not null)

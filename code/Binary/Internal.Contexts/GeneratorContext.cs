@@ -63,7 +63,7 @@ internal sealed class GeneratorContext : IGeneratorContext, IDisposable
                 return CommonModule.GetConverter(converter, type, creator.GetType());
 
         if (this.fallback is { } fallback)
-            return fallback.GetConverter(type, this);
-        throw new NotSupportedException();
+            return fallback.GetConverter(this, type);
+        throw new NotSupportedException($"Invalid type: {type}");
     }
 }
