@@ -729,29 +729,29 @@ type AttributeTests() =
         ()
 
     [<Theory>]
-    [<InlineData(typeof<ClassWithBadConverter>, typeof<Converter<ClassWithBadConverter>>, typeof<BadConverter<int64>>)>]
-    [<InlineData(typeof<ClassAsNamedObjectWithBadConverterOnProperty>, typeof<Converter<int>>, typeof<BadConverter<string>>)>]
+    [<InlineData(typeof<ClassWithBadConverter>, typeof<ClassWithBadConverter>, typeof<BadConverter<int64>>)>]
+    [<InlineData(typeof<ClassAsNamedObjectWithBadConverterOnProperty>, typeof<int>, typeof<BadConverter<string>>)>]
     member __.``Converter Attribute With Invalid Converter`` (t : Type, expectedType : Type, converterType : Type) =
         let error = Assert.Throws<InvalidOperationException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Can not convert '%O' to '%O'" converterType expectedType
+        let message = $"Invalid converter, expected: converter for '{expectedType}', actual: {converterType}"
         Assert.Equal(message, error.Message)
         ()
 
     [<Theory>]
-    [<InlineData(typeof<ClassWithNullConverterCreator>, typeof<Converter<ClassWithNullConverterCreator>>, typeof<NullConverterCreator>)>]
-    [<InlineData(typeof<ClassAsTupleObjectWithNullConverterCreatorOnProperty>, typeof<Converter<int64>>, typeof<AnotherNullConverterCreator>)>]
+    [<InlineData(typeof<ClassWithNullConverterCreator>, typeof<ClassWithNullConverterCreator>, typeof<NullConverterCreator>)>]
+    [<InlineData(typeof<ClassAsTupleObjectWithNullConverterCreatorOnProperty>, typeof<int64>, typeof<AnotherNullConverterCreator>)>]
     member __.``Converter Creator Attribute With Null Converter`` (t : Type, expectedType : Type, creatorType : Type) =
         let error = Assert.Throws<InvalidOperationException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Can not convert null to '%O', converter creator type: %O" expectedType creatorType
+        let message = $"Invalid converter, expected: converter for '{expectedType}', actual: null, converter creator type: {creatorType}"
         Assert.Equal(message, error.Message)
         ()
 
     [<Theory>]
-    [<InlineData(typeof<ClassWithBadConverterCreator>, typeof<Converter<ClassWithBadConverterCreator>>, typeof<BadConverter<int16>>, typeof<BadConverterCreator<int16>>)>]
-    [<InlineData(typeof<ClassAsTupleObjectWithBadConverterCreatorOnProperty>, typeof<Converter<double>>, typeof<BadConverter<single>>, typeof<BadConverterCreator<single>>)>]
+    [<InlineData(typeof<ClassWithBadConverterCreator>, typeof<ClassWithBadConverterCreator>, typeof<BadConverter<int16>>, typeof<BadConverterCreator<int16>>)>]
+    [<InlineData(typeof<ClassAsTupleObjectWithBadConverterCreatorOnProperty>, typeof<double>, typeof<BadConverter<single>>, typeof<BadConverterCreator<single>>)>]
     member __.``Converter Creator Attribute With Invalid Converter`` (t : Type, expectedType : Type, converterType : Type, creatorType : Type) =
         let error = Assert.Throws<InvalidOperationException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Can not convert '%O' to '%O', converter creator type: %O" converterType expectedType creatorType
+        let message = $"Invalid converter, expected: converter for '{expectedType}', actual: {converterType}, converter creator type: {creatorType}"
         Assert.Equal(message, error.Message)
         ()
 
