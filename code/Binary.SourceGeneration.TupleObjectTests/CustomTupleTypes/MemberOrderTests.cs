@@ -87,7 +87,7 @@ public class MemberOrderTests
     [MemberData(nameof(UnorderedMembersData))]
     public void MemberOrderTest<T, R>(T source, R sample)
     {
-        var builder = Generator.CreateDefaultBuilder();
+        var builder = Generator.CreateAotBuilder();
         foreach (var pair in MemberOrderSourceGeneratorContext.ConverterCreators)
             _ = builder.AddConverterCreator(pair.Value);
         var generator = builder.Build();
@@ -95,26 +95,27 @@ public class MemberOrderTests
         Assert.Equal(converter.GetType().Assembly, typeof(MemberOrderSourceGeneratorContext).Assembly);
         Assert.Equal(0, converter.Length);
 
-        var converterSample = generator.GetConverter<R>();
-        Assert.Equal("TupleObjectConverter`1", converterSample.GetType().Name);
-        Assert.Equal(typeof(IConverter).Assembly, converterSample.GetType().Assembly);
+        var generatorSecond = Generator.CreateDefault();
+        var converterSecond = generatorSecond.GetConverter<R>();
+        Assert.Equal("TupleObjectConverter`1", converterSecond.GetType().Name);
+        Assert.Equal(typeof(IConverter).Assembly, converterSecond.GetType().Assembly);
 
         var a = converter.Encode(source);
-        var b = converterSample.Encode(sample);
+        var b = converterSecond.Encode(sample);
         Assert.Equal(a, b);
 
-        var c = converterSample.Decode(a);
+        var c = converterSecond.Decode(a);
         var d = converter.Decode(b);
         Assert.Equal(source, d);
         Assert.Equal(sample, c);
 
         var h = Allocator.Invoke(source, converter.EncodeAuto);
-        var i = Allocator.Invoke(sample, converterSample.EncodeAuto);
+        var i = Allocator.Invoke(sample, converterSecond.EncodeAuto);
         Assert.Equal(h, i);
 
         var j = new ReadOnlySpan<byte>(h);
         var k = new ReadOnlySpan<byte>(i);
-        var l = converterSample.DecodeAuto(ref j);
+        var l = converterSecond.DecodeAuto(ref j);
         var m = converter.DecodeAuto(ref k);
 
         Assert.Equal(0, j.Length);

@@ -18,7 +18,7 @@ public class LargeTupleTests
         Assert.Contains(typeof(Tuple<long, UInt128, Int128>), creators.Keys);
         Assert.Contains(typeof(Tuple<byte, sbyte, ushort, short, uint, int, ulong, Tuple<long, UInt128, Int128>>), creators.Keys);
 
-        var builder = Generator.CreateDefaultBuilder();
+        var builder = Generator.CreateAotBuilder();
         foreach (var i in creators)
             _ = builder.AddConverterCreator(i.Value);
         var generator = builder.Build();

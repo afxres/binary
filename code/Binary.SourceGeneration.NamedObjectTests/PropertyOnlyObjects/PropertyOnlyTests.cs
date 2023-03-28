@@ -62,7 +62,7 @@ public class PropertyOnlyTests
     [MemberData(nameof(ValueData))]
     public void EncodeDecodeTest<T>(T source)
     {
-        var builder = Generator.CreateDefaultBuilder();
+        var builder = Generator.CreateAotBuilder();
         foreach (var i in PropertyOnlySourceGeneratorContext.ConverterCreators)
             _ = builder.AddConverterCreator(i.Value);
         var generator = builder.Build();
@@ -76,17 +76,17 @@ public class PropertyOnlyTests
         Assert.NotNull(encodeTarget);
         Assert.Equal(encodeTarget.GetType().Assembly, typeof(PropertyOnlySourceGeneratorContext).Assembly);
 
-        var generatorOriginal = Generator.CreateDefault();
-        var converterOriginal = generatorOriginal.GetConverter<T>();
-        Assert.Equal("NamedObjectConverter`1", converterOriginal.GetType().Name);
+        var generatorSecond = Generator.CreateDefault();
+        var converterSecond = generatorSecond.GetConverter<T>();
+        Assert.Equal("NamedObjectConverter`1", converterSecond.GetType().Name);
 
         var buffer = converter.Encode(source);
-        var bufferExpected = converterOriginal.Encode(source);
+        var bufferExpected = converterSecond.Encode(source);
         Assert.Equal(bufferExpected.Length, buffer.Length);
 
         // swap input byte arrays for decode
         var result = converter.Decode(bufferExpected);
-        var resultExpected = converterOriginal.Decode(buffer);
+        var resultExpected = converterSecond.Decode(buffer);
         Assert.Equal(source, result);
         Assert.Equal(source, resultExpected);
     }

@@ -81,7 +81,7 @@ public class RequiredMembersTests
     [MemberData(nameof(PropertyOnlyRequiredMemberSetData))]
     public void EncodeDecodeTest<T>(IEnumerable<string> expectedKeys, T source)
     {
-        var builder = Generator.CreateDefaultBuilder();
+        var builder = Generator.CreateAotBuilder();
         foreach (var i in RequiredMembersSourceGeneratorContext.ConverterCreators)
             _ = builder.AddConverterCreator(i.Value);
         var generator = builder.Build();

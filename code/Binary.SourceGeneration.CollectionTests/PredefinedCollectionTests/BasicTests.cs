@@ -51,7 +51,7 @@ public class BasicTests
     [MemberData(nameof(ImmutableArrayData))]
     public void EncodeDecode<T, E>(T source, IEnumerable<E> expected, string pattern) where T : IEnumerable<E>
     {
-        var builder = Generator.CreateDefaultBuilder();
+        var builder = Generator.CreateAotBuilder();
         foreach (var i in BasicSourceGeneratorContext.ConverterCreators)
             _ = builder.AddConverterCreator(i.Value);
         var generator = builder.Build();
@@ -60,13 +60,14 @@ public class BasicTests
         Assert.True(converterType.Assembly == typeof(IConverter).Assembly);
         Assert.Matches(pattern, converterType.FullName);
 
+        var generatorSecond = Generator.CreateDefault();
         var buffer = converter.Encode(source);
-        var bufferExpected = generator.Encode(expected.ToArray());
-        Assert.Equal(bufferExpected, buffer);
+        var bufferSecond = generatorSecond.Encode(expected.ToArray());
+        Assert.Equal(bufferSecond, buffer);
 
-        var result = converter.Decode(bufferExpected);
-        var resultExpected = generator.Decode<E[]>(buffer);
+        var result = converter.Decode(bufferSecond);
+        var resultSecond = generatorSecond.Decode<E[]>(buffer);
         Assert.Equal(expected, result);
-        Assert.Equal(expected, resultExpected);
+        Assert.Equal(expected, resultSecond);
     }
 }
