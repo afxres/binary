@@ -16,7 +16,7 @@ public static partial class Symbols
         if (type is not INamedTypeSymbol symbol)
             return null;
 
-        var constructors = symbol.InstanceConstructors;
+        var constructors = symbol.InstanceConstructors.Where(x => x.DeclaredAccessibility is Accessibility.Public).ToList();
         var hasDefaultConstructor = symbol.IsValueType || constructors.Any(x => x.Parameters.Length is 0);
         if (hasDefaultConstructor && members.All(x => x.IsReadOnly is false))
             return new SymbolConstructorInfo<T>(members, ImmutableArray<T>.Empty);

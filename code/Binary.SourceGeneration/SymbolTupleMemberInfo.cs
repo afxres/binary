@@ -4,5 +4,7 @@ using Microsoft.CodeAnalysis;
 
 public class SymbolTupleMemberInfo : SymbolMemberInfo
 {
-    public SymbolTupleMemberInfo(ISymbol symbol, ITypeSymbol type, string name, bool @readonly) : base(symbol, type, name, @readonly) { }
+    public SymbolTupleMemberInfo(IFieldSymbol field) : base(field) { }
+
+    public SymbolTupleMemberInfo(IPropertySymbol property) : base(property) { }
 }

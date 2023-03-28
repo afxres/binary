@@ -12,10 +12,10 @@ public sealed partial class TupleObjectConverterContext
 
     private static SymbolTupleMemberInfo? GetTupleMember(ISymbol member)
     {
-        if (member is IFieldSymbol fieldSymbol)
-            return new SymbolTupleMemberInfo(member, fieldSymbol.Type, fieldSymbol.Name, fieldSymbol.IsReadOnly);
-        if (member is IPropertySymbol propertySymbol)
-            return new SymbolTupleMemberInfo(member, propertySymbol.Type, propertySymbol.Name, propertySymbol.IsReadOnly);
+        if (member is IFieldSymbol field)
+            return new SymbolTupleMemberInfo(field);
+        if (member is IPropertySymbol property)
+            return new SymbolTupleMemberInfo(property);
         return null;
     }
 

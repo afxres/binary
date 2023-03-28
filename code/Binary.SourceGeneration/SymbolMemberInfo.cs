@@ -1,7 +1,6 @@
 ﻿namespace Mikodev.Binary.SourceGeneration;
 
 using Microsoft.CodeAnalysis;
-using System.Diagnostics;
 
 public class SymbolMemberInfo
 {
@@ -13,12 +12,19 @@ public class SymbolMemberInfo
 
     public bool IsReadOnly { get; }
 
-    public SymbolMemberInfo(ISymbol symbol, ITypeSymbol type, string name, bool @readonly)
+    public SymbolMemberInfo(IFieldSymbol field)
     {
-        Debug.Assert(string.IsNullOrEmpty(name) is false);
-        Symbol = symbol;
-        TypeSymbol = type;
-        Name = name;
-        IsReadOnly = @readonly;
+        Name = field.Name;
+        Symbol = field;
+        TypeSymbol = field.Type;
+        IsReadOnly = field.IsReadOnly;
+    }
+
+    public SymbolMemberInfo(IPropertySymbol property)
+    {
+        Name = property.Name;
+        Symbol = property;
+        TypeSymbol = property.Type;
+        IsReadOnly = property.SetMethod?.DeclaredAccessibility is not Accessibility.Public;
     }
 }

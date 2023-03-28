@@ -8,7 +8,13 @@ public class SymbolNamedMemberInfo : SymbolMemberInfo
 
     public string NamedKeyLiteral { get; }
 
-    public SymbolNamedMemberInfo(ISymbol symbol, ITypeSymbol type, string name, bool @readonly, string namedKeyLiteral, bool optional) : base(symbol, type, name, @readonly)
+    public SymbolNamedMemberInfo(IFieldSymbol field, string namedKeyLiteral, bool optional) : base(field)
+    {
+        IsOptional = optional;
+        NamedKeyLiteral = namedKeyLiteral;
+    }
+
+    public SymbolNamedMemberInfo(IPropertySymbol property, string namedKeyLiteral, bool optional) : base(property)
     {
         IsOptional = optional;
         NamedKeyLiteral = namedKeyLiteral;

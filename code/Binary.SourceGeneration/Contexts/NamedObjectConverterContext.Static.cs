@@ -10,9 +10,9 @@ public sealed partial class NamedObjectConverterContext
     private static SymbolNamedMemberInfo? GetNamedMember(ISymbol member, string literal, bool isTypeRequired)
     {
         if (member is IFieldSymbol field)
-            return new SymbolNamedMemberInfo(member, field.Type, field.Name, field.IsReadOnly, literal, isTypeRequired && (field.IsRequired is false));
+            return new SymbolNamedMemberInfo(field, literal, isTypeRequired && (field.IsRequired is false));
         if (member is IPropertySymbol property)
-            return new SymbolNamedMemberInfo(member, property.Type, property.Name, property.IsReadOnly, literal, isTypeRequired && (property.IsRequired is false));
+            return new SymbolNamedMemberInfo(property, literal, isTypeRequired && (property.IsRequired is false));
         return null;
     }
 
