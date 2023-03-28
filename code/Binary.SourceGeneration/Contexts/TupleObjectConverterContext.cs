@@ -61,33 +61,32 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
 
     private void AppendDecodeMethod(StringBuilder builder, bool auto)
     {
+        var members = this.members;
+        var constructor = this.constructor;
         var modifier = auto ? "ref" : "in";
         var methodName = auto ? "DecodeAuto" : "Decode";
-        var constructor = this.constructor;
-        if (constructor is null)
-        {
-            builder.AppendIndent();
-            builder.AppendIndent(2, $"public override _TSelf {methodName}({modifier} _TSpan span) => throw new System.NotSupportedException();");
-            CancellationToken.ThrowIfCancellationRequested();
-            return;
-        }
-
-        var members = this.members;
         builder.AppendIndent();
         builder.AppendIndent(2, $"public override _TSelf {methodName}({modifier} _TSpan span)");
         builder.AppendIndent(2, $"{{");
-        if (auto is false)
-            builder.AppendIndent(3, $"var body = span;");
-        var bufferName = auto ? "span" : "body";
-        for (var i = 0; i < members.Length; i++)
+        if (constructor is null)
         {
-            var last = (i == members.Length - 1);
-            var method = (auto || last is false) ? "DecodeAuto" : "Decode";
-            var keyword = (auto is false && last) ? "in" : "ref";
-            builder.AppendIndent(3, $"var var{i} = this.cvt{i}.{method}({keyword} {bufferName});");
-            CancellationToken.ThrowIfCancellationRequested();
+            builder.AppendIndent(3, $"throw new System.NotSupportedException($\"No suitable constructor found, type: {{typeof(_TSelf)}}\");");
         }
-        constructor.AppendCreateInstance(builder, CancellationToken);
+        else
+        {
+            if (auto is false)
+                builder.AppendIndent(3, $"var body = span;");
+            var bufferName = auto ? "span" : "body";
+            for (var i = 0; i < members.Length; i++)
+            {
+                var last = (i == members.Length - 1);
+                var method = (auto || last is false) ? "DecodeAuto" : "Decode";
+                var keyword = (auto is false && last) ? "in" : "ref";
+                builder.AppendIndent(3, $"var var{i} = this.cvt{i}.{method}({keyword} {bufferName});");
+                CancellationToken.ThrowIfCancellationRequested();
+            }
+            constructor.AppendCreateInstance(builder, CancellationToken);
+        }
         builder.AppendIndent(2, $"}}");
     }
 

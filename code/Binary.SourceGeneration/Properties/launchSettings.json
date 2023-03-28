@@ -4,6 +4,10 @@
       "commandName": "DebugRoslynComponent",
       "targetProject": "..\\Binary.SourceGeneration.AttributeTests\\Binary.SourceGeneration.AttributeTests.csproj"
     },
+    "Debug Object Cross Tests": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\Binary.SourceGeneration.ObjectCrossTests\\Binary.SourceGeneration.ObjectCrossTests.csproj"
+    },
     "Debug Named Object Tests": {
       "commandName": "DebugRoslynComponent",
       "targetProject": "..\\Binary.SourceGeneration.NamedObjectTests\\Binary.SourceGeneration.NamedObjectTests.csproj"
