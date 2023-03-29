@@ -8,6 +8,18 @@ public class NoAvailableMemberFoundTests
 {
     public static IEnumerable<object[]> NoAvailableMemberData()
     {
+        var plainObject =
+            """
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<PlainClass>]
+            public partial class TestSourceGeneratorContext { }
+
+            public class PlainClass { }
+            """;
         var namedObject =
             """
             namespace Tests;
@@ -34,13 +46,14 @@ public class NoAvailableMemberFoundTests
             [TupleObject]
             public class AnotherTupleClass { }
             """;
-        yield return new object[] { namedObject, "NamedObject", "TestNamedClass" };
-        yield return new object[] { tupleObject, "TupleObject", "AnotherTupleClass" };
+        yield return new object[] { plainObject, "PlainClass" };
+        yield return new object[] { namedObject, "TestNamedClass" };
+        yield return new object[] { tupleObject, "AnotherTupleClass" };
     }
 
     [Theory(DisplayName = "No Available Member Found")]
     [MemberData(nameof(NoAvailableMemberData))]
-    public void NoAvailableMemberTest(string source, string location, string typeName)
+    public void NoAvailableMemberTest(string source, string typeName)
     {
         var compilation = CompilationModule.CreateCompilation(source);
         var generator = new SourceGenerator();
@@ -48,6 +61,6 @@ public class NoAvailableMemberFoundTests
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
         Assert.EndsWith($"No available member found, type: {typeName}", diagnostic.ToString());
-        Assert.Contains(location, diagnostic.Location.GetSourceText());
+        Assert.Contains(typeName, diagnostic.Location.GetSourceText());
     }
 }

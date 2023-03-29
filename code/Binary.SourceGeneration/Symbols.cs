@@ -75,4 +75,47 @@ public static partial class Symbols
             context.Throw(Constants.RequireConverterCreatorType, GetLocation(attribute), null);
         return type;
     }
+
+    public static bool IsIgnoredType(SourceGeneratorContext context, ITypeSymbol symbol)
+    {
+        if (symbol.TypeKind is TypeKind.Delegate)
+            return true;
+        if (SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, context.GetNamedTypeSymbol(Constants.IConverterTypeName)?.ContainingAssembly))
+            return true;
+        var objectSymbol = context.Compilation.GetSpecialType(SpecialType.System_Object);
+        if (SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, objectSymbol.ContainingAssembly))
+            return true;
+        var enumerableSymbol = context.Compilation.GetSpecialType(SpecialType.System_Collections_IEnumerable);
+        if (symbol.AllInterfaces.Any(x => SymbolEqualityComparer.Default.Equals(x, enumerableSymbol)))
+            return true;
+        return false;
+    }
+
+    public static bool IsTypeWithRequiredModifier(ITypeSymbol symbol)
+    {
+        static bool Filter(ISymbol member) => member switch
+        {
+            IFieldSymbol field => field.IsRequired,
+            IPropertySymbol property => property.IsRequired,
+            _ => false,
+        };
+
+        return symbol.GetMembers().Any(Filter);
+    }
+
+    public static ImmutableArray<ISymbol> GetObjectMembers(ITypeSymbol symbol)
+    {
+        var builder = ImmutableArray.CreateBuilder<ISymbol>();
+        foreach (var member in symbol.GetMembers())
+        {
+            if (member.IsStatic || member.DeclaredAccessibility is not Accessibility.Public)
+                continue;
+            if (member is IPropertySymbol property && property.IsIndexer)
+                continue;
+            if (member is not IFieldSymbol and not IPropertySymbol)
+                continue;
+            builder.Add(member);
+        }
+        return builder.ToImmutable();
+    }
 }

@@ -135,4 +135,40 @@ public class SourceGeneratorContextTests
         Assert.EndsWith("No converter generated, type: String", diagnostic.ToString());
         Assert.Contains("SourceGeneratorInclude<string>", diagnostic.Location.GetSourceText());
     }
+
+    [Fact(DisplayName = "No Converter Generated (explicitly ignored types)")]
+    public void NoConverterGeneratedExplicitlyIgnored()
+    {
+        var source =
+            """
+            namespace SomeTest;
+            
+            using Mikodev.Binary.Attributes;
+            
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<int>]
+            [SourceGeneratorInclude<string>]
+            [SourceGeneratorInclude<object>]
+            [SourceGeneratorInclude<System.Delegate>]
+            [SourceGeneratorInclude<System.Action>]
+            [SourceGeneratorInclude<System.Func<int>>]
+            [SourceGeneratorInclude<Mikodev.Binary.Token>]
+            [SourceGeneratorInclude<Mikodev.Binary.IConverter>]
+            [SourceGeneratorInclude<Mikodev.Binary.Converter<int>>]
+            [SourceGeneratorInclude<System.Collections.IEnumerable>]
+            [SourceGeneratorInclude<System.Collections.ArrayList>]
+            [SourceGeneratorInclude<System.Collections.Hashtable>]
+            public partial class WhateverContext { }
+            """;
+        var compilation = CompilationModule.CreateCompilation(source);
+        var generator = new SourceGenerator();
+        _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
+        Assert.Equal(12, diagnostics.Length);
+        foreach (var diagnostic in diagnostics)
+        {
+            Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+            Assert.Contains("No converter generated", diagnostic.ToString());
+            Assert.Contains("SourceGeneratorInclude", diagnostic.Location.GetSourceText());
+        }
+    }
 }

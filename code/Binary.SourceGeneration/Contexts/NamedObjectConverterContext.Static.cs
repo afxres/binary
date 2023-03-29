@@ -1,27 +1,23 @@
 ﻿namespace Mikodev.Binary.SourceGeneration.Contexts;
 
 using Microsoft.CodeAnalysis;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
 public sealed partial class NamedObjectConverterContext
 {
-    private static SymbolNamedMemberInfo? GetNamedMember(ISymbol member, string literal, bool isTypeRequired)
+    private static SymbolNamedMemberInfo GetNamedMember(ISymbol member, string literal, bool isTypeRequired)
     {
         if (member is IFieldSymbol field)
             return new SymbolNamedMemberInfo(field, literal, isTypeRequired && (field.IsRequired is false));
-        if (member is IPropertySymbol property)
-            return new SymbolNamedMemberInfo(property, literal, isTypeRequired && (property.IsRequired is false));
-        return null;
+        else
+            return new SymbolNamedMemberInfo((IPropertySymbol)member, literal, isTypeRequired && (((IPropertySymbol)member).IsRequired is false));
     }
 
-    private static void GetNamedMember(SourceGeneratorContext context, ISymbol member, bool isTypeRequired, SortedDictionary<string, SymbolNamedMemberInfo> dictionary)
+    private static void GetCustomNamedMember(SourceGeneratorContext context, ISymbol member, bool isTypeRequired, SortedDictionary<string, SymbolNamedMemberInfo> dictionary)
     {
-        if (member.IsStatic || member.DeclaredAccessibility is not Accessibility.Public)
-            return;
-        if (member is IPropertySymbol property && property.IsIndexer)
-            return;
         var attributes = member.GetAttributes();
         var attribute = attributes.FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.NamedKeyAttributeTypeName));
         if (attribute is null)
@@ -30,33 +26,34 @@ public sealed partial class NamedObjectConverterContext
         if (string.IsNullOrEmpty(key))
             context.Throw(Constants.NamedKeyNullOrEmpty, Symbols.GetLocation(attribute), null);
         var info = GetNamedMember(member, Symbols.ToLiteral(key), isTypeRequired);
-        if (info is null)
-            return;
         if (dictionary.ContainsKey(key))
             context.Throw(Constants.NamedKeyDuplicated, Symbols.GetLocation(attribute), new object[] { key });
         dictionary.Add(key, info);
     }
 
-    private static bool IsRequired(ISymbol member) => member switch
+    private static void GetSimpleNamedMember(ISymbol member, bool isTypeRequired, SortedDictionary<string, SymbolNamedMemberInfo> dictionary)
     {
-        IFieldSymbol field => field.IsRequired,
-        IPropertySymbol property => property.IsRequired,
-        _ => false,
-    };
+        var key = member.Name;
+        var info = GetNamedMember(member, Symbols.ToLiteral(key), isTypeRequired);
+        dictionary.Add(key, info);
+    }
 
     public static string? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
     {
-        if (symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.NamedObjectAttributeTypeName)) is not { } attribute)
+        var attribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.NamedObjectAttributeTypeName));
+        if (attribute is null && Symbols.IsIgnoredType(context, symbol))
             return null;
-
-        var required = symbol.GetMembers().Any(IsRequired);
-        var memberDictionary = new SortedDictionary<string, SymbolNamedMemberInfo>();
-        foreach (var i in symbol.GetMembers())
-            GetNamedMember(context, i, required, memberDictionary);
-        var members = memberDictionary.Values.ToImmutableArray();
+        var required = Symbols.IsTypeWithRequiredModifier(symbol);
+        var dictionary = new SortedDictionary<string, SymbolNamedMemberInfo>();
+        var selector = attribute is null
+            ? new Action<ISymbol>(x => GetSimpleNamedMember(x, required, dictionary))
+            : (x => GetCustomNamedMember(context, x, required, dictionary));
+        foreach (var i in Symbols.GetObjectMembers(symbol))
+            selector.Invoke(i);
+        var members = dictionary.Values.ToImmutableArray();
         // let compiler report it if required member not set (linq expression generator will report if required member not set)
         if (members.Length is 0)
-            context.Throw(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { symbol.Name });
+            context.Throw(Constants.NoAvailableMemberFound, Symbols.GetLocation(symbol), new object[] { symbol.Name });
         var closure = new NamedObjectConverterContext(context, symbol, members);
         closure.Invoke();
         return closure.ConverterCreatorTypeName;

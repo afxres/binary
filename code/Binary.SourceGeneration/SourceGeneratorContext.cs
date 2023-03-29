@@ -34,11 +34,16 @@ public class SourceGeneratorContext
         this.referencedTypes.Enqueue(type);
     }
 
-    public bool Equals(ISymbol? symbol, string typeName)
+    public INamedTypeSymbol? GetNamedTypeSymbol(string typeName)
     {
         if (Resources.TryGetValue(typeName, out var type) is false)
             Resources.Add(typeName, type = Compilation.GetTypeByMetadataName(typeName));
-        return SymbolEqualityComparer.Default.Equals(symbol, (INamedTypeSymbol?)type);
+        return (INamedTypeSymbol?)type;
+    }
+
+    public bool Equals(ISymbol? symbol, string typeName)
+    {
+        return SymbolEqualityComparer.Default.Equals(symbol, GetNamedTypeSymbol(typeName));
     }
 
     public void Throw(DiagnosticDescriptor descriptor, Location? location, object?[]? arguments)
