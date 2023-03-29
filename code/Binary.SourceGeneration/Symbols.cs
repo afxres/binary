@@ -44,14 +44,6 @@ public static partial class Symbols
         return null;
     }
 
-    public static ImmutableArray<AttributeData> GetAttributes(SourceGeneratorContext context, ISymbol symbol, params string[] attributesTypes)
-    {
-        var attributes = symbol.GetAttributes()
-            .Where(i => attributesTypes.Any(x => context.Equals(i.AttributeClass, x)))
-            .ToImmutableArray();
-        return attributes;
-    }
-
     public static ITypeSymbol? GetConverterType(SourceGeneratorContext context, ISymbol symbol)
     {
         var attribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.ConverterAttributeTypeName));

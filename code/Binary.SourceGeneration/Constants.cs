@@ -171,4 +171,20 @@ public static class Constants
         category: DiagnosticCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor RequireNamedObjectAttribute { get; } = new DiagnosticDescriptor(
+        id: "BINSRCGEN51",
+        title: "Require 'NamedObjectAttribute'.",
+        messageFormat: "Require 'NamedObjectAttribute' for 'NamedKeyAttribute', this attribute will be ignored, member name: {0}, type: {1}",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor RequireTupleObjectAttribute { get; } = new DiagnosticDescriptor(
+        id: "BINSRCGEN52",
+        title: "Require 'TupleObjectAttribute'.",
+        messageFormat: "Require 'TupleObjectAttribute' for 'TupleKeyAttribute', this attribute will be ignored, member name: {0}, type: {1}",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
 }
