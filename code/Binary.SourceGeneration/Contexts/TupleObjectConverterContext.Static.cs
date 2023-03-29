@@ -1,7 +1,6 @@
 ﻿namespace Mikodev.Binary.SourceGeneration.Contexts;
 
 using Microsoft.CodeAnalysis;
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -66,11 +65,15 @@ public sealed partial class TupleObjectConverterContext
         if (system is false && attribute is null)
             return null;
         var dictionary = new SortedDictionary<int, SymbolTupleMemberInfo>();
-        var selector = system
-            ? new Action<ISymbol>(x => GetSystemTupleMember(x, dictionary))
-            : (x => GetCustomTupleMember(context, x, dictionary));
-        foreach (var i in Symbols.GetObjectMembers(symbol))
-            selector.Invoke(i);
+        var cancellation = context.SourceProductionContext.CancellationToken;
+        foreach (var member in Symbols.GetObjectMembers(symbol))
+        {
+            if (system)
+                GetSystemTupleMember(member, dictionary);
+            else
+                GetCustomTupleMember(context, member, dictionary);
+            cancellation.ThrowIfCancellationRequested();
+        }
         var members = dictionary.Values.ToImmutableArray();
         if (members.Length is 0)
             context.Throw(Constants.NoAvailableMemberFound, Symbols.GetLocation(symbol), new object[] { symbol.Name });

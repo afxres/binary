@@ -1,7 +1,6 @@
 ﻿namespace Mikodev.Binary.SourceGeneration.Contexts;
 
 using Microsoft.CodeAnalysis;
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -45,11 +44,15 @@ public sealed partial class NamedObjectConverterContext
             return null;
         var required = Symbols.IsTypeWithRequiredModifier(symbol);
         var dictionary = new SortedDictionary<string, SymbolNamedMemberInfo>();
-        var selector = attribute is null
-            ? new Action<ISymbol>(x => GetSimpleNamedMember(x, required, dictionary))
-            : (x => GetCustomNamedMember(context, x, required, dictionary));
-        foreach (var i in Symbols.GetObjectMembers(symbol))
-            selector.Invoke(i);
+        var cancellation = context.SourceProductionContext.CancellationToken;
+        foreach (var member in Symbols.GetObjectMembers(symbol))
+        {
+            if (attribute is null)
+                GetSimpleNamedMember(member, required, dictionary);
+            else
+                GetCustomNamedMember(context, member, required, dictionary);
+            cancellation.ThrowIfCancellationRequested();
+        }
         var members = dictionary.Values.ToImmutableArray();
         // let compiler report it if required member not set (linq expression generator will report if required member not set)
         if (members.Length is 0)

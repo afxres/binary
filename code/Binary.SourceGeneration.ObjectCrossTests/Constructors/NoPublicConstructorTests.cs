@@ -8,6 +8,7 @@ using Xunit;
 [SourceGeneratorContext]
 [SourceGeneratorInclude<NoPublicConstructorNamedObject>]
 [SourceGeneratorInclude<NoPublicConstructorTupleObject>]
+[SourceGeneratorInclude<NoPublicConstructorPlainObject>]
 public partial class NoPublicConstructorGeneratorContext { }
 
 [NamedObject]
@@ -19,8 +20,6 @@ public class NoPublicConstructorNamedObject
     private NoPublicConstructorNamedObject() => throw new NotSupportedException();
 
     internal NoPublicConstructorNamedObject(int id) => Id = id;
-
-    public static NoPublicConstructorNamedObject Create(int id) => new NoPublicConstructorNamedObject(id);
 }
 
 [TupleObject]
@@ -32,16 +31,24 @@ public class NoPublicConstructorTupleObject
     private NoPublicConstructorTupleObject() => throw new NotSupportedException();
 
     internal NoPublicConstructorTupleObject(string? name) => Name = name;
+}
 
-    public static NoPublicConstructorTupleObject Create(string? name) => new NoPublicConstructorTupleObject(name);
+public class NoPublicConstructorPlainObject
+{
+    public double Data;
+
+    private NoPublicConstructorPlainObject() => throw new NotSupportedException();
+
+    internal NoPublicConstructorPlainObject(double data) => this.Data = data;
 }
 
 public class NoPublicConstructorTests
 {
     public static IEnumerable<object[]> NoPublicConstructorData()
     {
-        yield return new object[] { NoPublicConstructorNamedObject.Create(-3) };
-        yield return new object[] { NoPublicConstructorTupleObject.Create("Invalid") };
+        yield return new object[] { new NoPublicConstructorNamedObject(-3) };
+        yield return new object[] { new NoPublicConstructorTupleObject("Invalid") };
+        yield return new object[] { new NoPublicConstructorPlainObject(6.6) };
     }
 
     [Theory(DisplayName = "No Public Constructor Test")]
