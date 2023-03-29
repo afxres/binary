@@ -8,8 +8,10 @@ using Xunit;
 [SourceGeneratorContext]
 [SourceGeneratorInclude<TestNamedObject>]
 [SourceGeneratorInclude<TestTupleObject>]
+[SourceGeneratorInclude<TestPlainObject>]
 public partial class ConstructorGeneratorContext { }
 
+#pragma warning disable IDE0051 // Remove unused private members
 [NamedObject]
 public class TestNamedObject : IEquatable<TestNamedObject?>
 {
@@ -29,9 +31,7 @@ public class TestNamedObject : IEquatable<TestNamedObject?>
         Id = id;
     }
 
-#pragma warning disable IDE0051 // Remove unused private members
     private TestNamedObject(int id, string name, string role) => throw new NotSupportedException();
-#pragma warning restore IDE0051 // Remove unused private members
 
     internal TestNamedObject(string name, string role, int id) => throw new NotSupportedException();
 
@@ -66,9 +66,7 @@ public class TestTupleObject : IEquatable<TestTupleObject?>
 
     public TestTupleObject(long key) => throw new NotSupportedException();
 
-#pragma warning disable IDE0051 // Remove unused private members
     private TestTupleObject(long key, int priority, string message) => throw new NotSupportedException();
-#pragma warning restore IDE0051 // Remove unused private members
 
     internal TestTupleObject(string message, int priority, long key) => throw new NotSupportedException();
 
@@ -79,6 +77,36 @@ public class TestTupleObject : IEquatable<TestTupleObject?>
     public override int GetHashCode() => HashCode.Combine(Key, Priority, Message);
 }
 
+public class TestPlainObject : IEquatable<TestPlainObject?>
+{
+    public readonly short Identity;
+
+    public string? Content { get; set; }
+
+    public Uri HelpLink { get; set; }
+
+    private TestPlainObject(string? content, short identity, Uri helpLink) => throw new NotSupportedException();
+
+    internal TestPlainObject(short identity, string? content, Uri helpLink) => throw new NotSupportedException();
+
+    public TestPlainObject(string? content, Uri helpLink) => throw new NotSupportedException();
+
+    public TestPlainObject(Uri helpLink, short identity)
+    {
+        this.Identity = identity;
+        HelpLink = helpLink;
+    }
+
+    public TestPlainObject(short identity, string? content, Uri helpLink, Guid whatIsThis) => throw new NotSupportedException();
+
+    public bool Equals(TestPlainObject? other) => other is not null && this.Identity == other.Identity && Content == other.Content && EqualityComparer<Uri>.Default.Equals(HelpLink, other.HelpLink);
+
+    public override bool Equals(object? obj) => Equals(obj as TestPlainObject);
+
+    public override int GetHashCode() => HashCode.Combine(this.Identity, Content, HelpLink);
+}
+#pragma warning restore IDE0051 // Remove unused private members
+
 public class ConstructorTests
 {
     public static IEnumerable<object[]> ConstructorData()
@@ -87,6 +115,8 @@ public class ConstructorTests
         yield return new object[] { new TestNamedObject(10) { Name = "Alpha", Role = "Administrator" } };
         yield return new object[] { new TestTupleObject(255, 1L) { Message = "Error" } };
         yield return new object[] { new TestTupleObject(127, 3L) { Message = "Warning" } };
+        yield return new object[] { new TestPlainObject(new Uri("https://github.com/"), 4096) { Content = "Nice!" } };
+        yield return new object[] { new TestPlainObject(new Uri("https://www.bing.com/"), 6666) { Content = "Bravo!" } };
     }
 
     [Theory(DisplayName = "Constructor Test")]
