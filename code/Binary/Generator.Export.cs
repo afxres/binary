@@ -8,6 +8,7 @@ using Mikodev.Binary.Internal.Sequence.Decoders;
 using Mikodev.Binary.Internal.Sequence.Encoders;
 using Mikodev.Binary.Internal.SpanLike.Decoders;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
@@ -17,13 +18,13 @@ public static partial class Generator
     {
         static Converter<E> Invoke(bool native)
         {
+            if (typeof(E).IsEnum is false)
+                throw new ArgumentException($"Require an enumeration type!");
             return native
                 ? new NativeEndianConverter<E>()
                 : new LittleEndianConverter<E>();
         }
 
-        if (typeof(E).IsEnum is false)
-            throw new ArgumentException($"Require an enumeration type!");
         return Invoke(BitConverter.IsLittleEndian);
     }
 
@@ -63,17 +64,36 @@ public static partial class Generator
         return FallbackSequentialMethods.GetReadOnlyMemoryConverter(converter);
     }
 
+    public static Converter<KeyValuePair<K, V>> GetKeyValuePairConverter<K, V>(Converter<K> key, Converter<V> value)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(value);
+        return new KeyValuePairConverter<K, V>(key, value);
+    }
+
     public static Converter<LinkedList<E>> GetLinkedListConverter<E>(Converter<E> converter)
     {
         ArgumentNullException.ThrowIfNull(converter);
         return new LinkedListConverter<E>(converter);
     }
 
-    public static Converter<PriorityQueue<E, P>> GetPriorityQueueConverter<E, P>(Converter<E> e, Converter<P> p)
+    public static Converter<T?> GetNullableConverter<T>(Converter<T> converter) where T : struct
     {
-        ArgumentNullException.ThrowIfNull(e);
-        ArgumentNullException.ThrowIfNull(p);
-        return new PriorityQueueConverter<E, P>(e, p);
+        ArgumentNullException.ThrowIfNull(converter);
+        return new NullableConverter<T>(converter);
+    }
+
+    public static Converter<PriorityQueue<E, P>> GetPriorityQueueConverter<E, P>(Converter<E> element, Converter<P> priority)
+    {
+        ArgumentNullException.ThrowIfNull(element);
+        ArgumentNullException.ThrowIfNull(priority);
+        return new PriorityQueueConverter<E, P>(element, priority);
+    }
+
+    public static Converter<ReadOnlySequence<E>> GetReadOnlySequenceConverter<E>(Converter<E> converter)
+    {
+        ArgumentNullException.ThrowIfNull(converter);
+        return new ReadOnlySequenceConverter<E>(converter);
     }
 
     public static Converter<HashSet<E>> GetHashSetConverter<E>(Converter<E> converter)
