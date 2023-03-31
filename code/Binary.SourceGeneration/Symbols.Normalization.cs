@@ -55,19 +55,25 @@ public static partial class Symbols
 
     public static string GetOutputFullName(ITypeSymbol symbol)
     {
-        const string GlobalPrefix = "global::";
-        var fullName = GetSymbolFullName(symbol);
-        var target = new StringBuilder(fullName);
-        if (fullName.StartsWith(GlobalPrefix))
-            _ = target.Remove(0, GlobalPrefix.Length);
-        _ = target.Replace(GlobalPrefix, "g_");
-        _ = target.Replace(".", "_");
-        _ = target.Replace("[", "_a_");
-        _ = target.Replace("]", "_a_");
-        _ = target.Replace(",", "_c_");
-        _ = target.Replace(" ", "_s_");
-        _ = target.Replace("<", "_l_");
-        _ = target.Replace(">", "_r_");
+        var prefix = symbol.ContainingNamespace.ToDisplayString(FullDisplayFormat);
+        var target = new StringBuilder(prefix);
+        _ = target.Replace(Constants.GlobalNamespacePrefix, string.Empty);
+        _ = target.Replace('.', '_');
+        _ = target.Append('_');
+        _ = target.Append(symbol.Name);
+        if (symbol is INamedTypeSymbol type && type.IsGenericType)
+        {
+            _ = target.Append("_l_");
+            var arguments = type.TypeArguments;
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                _ = target.Append(GetOutputFullName(arguments[i]));
+                if (i == arguments.Length - 1)
+                    break;
+                _ = target.Append("_c_");
+            }
+            _ = target.Append("_r");
+        }
         var result = target.ToString();
         return result;
     }

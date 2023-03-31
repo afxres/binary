@@ -4,6 +4,8 @@ using Microsoft.CodeAnalysis;
 
 public static class Constants
 {
+    public const string GlobalNamespacePrefix = "global::";
+
     public const string SourceGeneratorContextAttributeTypeName = "Mikodev.Binary.Attributes.SourceGeneratorContextAttribute";
 
     public const string SourceGeneratorIncludeAttributeTypeName = "Mikodev.Binary.Attributes.SourceGeneratorIncludeAttribute`1";

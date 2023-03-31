@@ -33,9 +33,9 @@ public abstract class SymbolConverterContext
         CancellationToken = context.SourceProductionContext.CancellationToken;
         TypeAliases = aliases;
         HintNameUnit = output;
-        ClosureTypeName = $"{output}Closure";
-        ConverterTypeName = $"{output}Converter";
-        ConverterCreatorTypeName = $"{output}ConverterCreator";
+        ClosureTypeName = $"{output}_Closure";
+        ConverterTypeName = $"{output}_Converter";
+        ConverterCreatorTypeName = $"{output}_ConverterCreator";
     }
 
     protected void AppendFileHead(StringBuilder builder)

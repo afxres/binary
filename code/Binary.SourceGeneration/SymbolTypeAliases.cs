@@ -17,11 +17,10 @@ public class SymbolTypeAliases
 
         public Record(string fullName, string suffix, SymbolTypeAliasesFlags flags)
         {
-            const string GlobalPrefix = "global::";
-            var globalName = fullName.StartsWith(GlobalPrefix) ? fullName : $"{GlobalPrefix}{fullName}";
+            var globalName = fullName.StartsWith(Constants.GlobalNamespacePrefix) ? fullName : $"{Constants.GlobalNamespacePrefix}{fullName}";
             Suffix = suffix;
             FullName = (flags & SymbolTypeAliasesFlags.Type) is 0 ? null : globalName;
-            ConverterFullName = (flags & SymbolTypeAliasesFlags.ConverterType) is 0 ? null : $"{GlobalPrefix}{Constants.ConverterTypeName}<{globalName}>";
+            ConverterFullName = (flags & SymbolTypeAliasesFlags.ConverterType) is 0 ? null : $"{Constants.GlobalNamespacePrefix}{Constants.ConverterTypeName}<{globalName}>";
         }
     }
 
