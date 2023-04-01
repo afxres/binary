@@ -23,10 +23,10 @@ public sealed partial class NamedObjectConverterContext
             return;
         var key = attribute.ConstructorArguments.FirstOrDefault().Value as string ?? string.Empty;
         if (string.IsNullOrEmpty(key))
-            context.Throw(Constants.NamedKeyNullOrEmpty, Symbols.GetLocation(attribute), null);
+            throw new SourceGeneratorException(Constants.NamedKeyNullOrEmpty, Symbols.GetLocation(attribute), null);
         var info = GetNamedMember(member, Symbols.ToLiteral(key), isTypeRequired);
         if (dictionary.ContainsKey(key))
-            context.Throw(Constants.NamedKeyDuplicated, Symbols.GetLocation(attribute), new object[] { key });
+            throw new SourceGeneratorException(Constants.NamedKeyDuplicated, Symbols.GetLocation(attribute), new object[] { key });
         dictionary.Add(key, info);
     }
 
@@ -56,7 +56,7 @@ public sealed partial class NamedObjectConverterContext
         var members = dictionary.Values.ToImmutableArray();
         // let compiler report it if required member not set (linq expression generator will report if required member not set)
         if (members.Length is 0)
-            context.Throw(Constants.NoAvailableMemberFound, Symbols.GetLocation(symbol), new object[] { symbol.Name });
+            throw new SourceGeneratorException(Constants.NoAvailableMemberFound, Symbols.GetLocation(symbol), new object[] { symbol.Name });
         var closure = new NamedObjectConverterContext(context, symbol, members);
         closure.Invoke();
         return closure.ConverterCreatorTypeName;

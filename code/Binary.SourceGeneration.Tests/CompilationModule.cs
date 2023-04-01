@@ -2,6 +2,7 @@
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -19,6 +20,9 @@ internal class CompilationModule
         references.Add(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
         references.Add(MetadataReference.CreateFromFile(typeof(IConverter).Assembly.Location));
         references.Add(MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Runtime")).Location));
+        references.Add(MetadataReference.CreateFromFile(typeof(ImmutableArray<object>).Assembly.Location));
+        references.Add(MetadataReference.CreateFromFile(typeof(LinkedList<object>).Assembly.Location));
+        references.Add(MetadataReference.CreateFromFile(typeof(ReadOnlySequence<object>).Assembly.Location));
 
         var compilation = CSharpCompilation.Create(
             AssemblyName,

@@ -4,6 +4,8 @@ using Microsoft.CodeAnalysis;
 
 public static class Constants
 {
+    public const string LambdaIdFunction = "static x => x";
+
     public const string GlobalNamespacePrefix = "global::";
 
     public const string SourceGeneratorContextAttributeTypeName = "Mikodev.Binary.Attributes.SourceGeneratorContextAttribute";

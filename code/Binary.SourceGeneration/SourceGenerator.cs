@@ -18,6 +18,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         AttributeConverterContext.Invoke,
         AttributeConverterCreatorContext.Invoke,
         GenericConverterContext.Invoke,
+        CollectionConverterContext.Invoke,
         TupleObjectConverterContext.Invoke,
         NamedObjectConverterContext.Invoke,
     };
@@ -105,7 +106,13 @@ public sealed class SourceGenerator : IIncrementalGenerator
                 handled.Add(symbol, creator);
                 cancellation.ThrowIfCancellationRequested();
             }
-            catch (SourceGeneratorException) { }
+            catch (SourceGeneratorException e)
+            {
+                if (e.Diagnostic is { } diagnostic)
+                    context.ReportDiagnostic(diagnostic);
+                handled.Add(symbol, null);
+                cancellation.ThrowIfCancellationRequested();
+            }
         }
 
         while (pending.Count is not 0)

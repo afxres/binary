@@ -52,7 +52,7 @@ public static partial class Symbols
         var argument = attribute.ConstructorArguments.Single();
         var type = argument.Value as ITypeSymbol;
         if (type is null || type.AllInterfaces.Any(x => context.Equals(x, Constants.IConverterTypeName)) is false)
-            context.Throw(Constants.RequireConverterType, GetLocation(attribute), null);
+            throw new SourceGeneratorException(Constants.RequireConverterType, GetLocation(attribute), null);
         return type;
     }
 
@@ -64,7 +64,7 @@ public static partial class Symbols
         var argument = attribute.ConstructorArguments.Single();
         var type = argument.Value as ITypeSymbol;
         if (type is null || type.AllInterfaces.Any(x => context.Equals(x, Constants.IConverterCreatorTypeName)) is false)
-            context.Throw(Constants.RequireConverterCreatorType, GetLocation(attribute), null);
+            throw new SourceGeneratorException(Constants.RequireConverterCreatorType, GetLocation(attribute), null);
         return type;
     }
 

@@ -25,7 +25,7 @@ public sealed partial class TupleObjectConverterContext
             return;
         var info = GetTupleMember(member);
         if (dictionary.ContainsKey(key))
-            context.Throw(Constants.TupleKeyDuplicated, Symbols.GetLocation(attribute), new object[] { key });
+            throw new SourceGeneratorException(Constants.TupleKeyDuplicated, Symbols.GetLocation(attribute), new object[] { key });
         dictionary.Add(key, info);
     }
 
@@ -76,7 +76,7 @@ public sealed partial class TupleObjectConverterContext
         }
         var members = dictionary.Values.ToImmutableArray();
         if (members.Length is 0)
-            context.Throw(Constants.NoAvailableMemberFound, Symbols.GetLocation(symbol), new object[] { symbol.Name });
+            throw new SourceGeneratorException(Constants.NoAvailableMemberFound, Symbols.GetLocation(symbol), new object[] { symbol.Name });
         var closure = new TupleObjectConverterContext(context, symbol, members);
         closure.Invoke();
         return closure.ConverterCreatorTypeName;

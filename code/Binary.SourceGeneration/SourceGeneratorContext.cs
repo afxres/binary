@@ -45,11 +45,4 @@ public class SourceGeneratorContext
     {
         return SymbolEqualityComparer.Default.Equals(symbol, GetNamedTypeSymbol(typeName));
     }
-
-    public void Throw(DiagnosticDescriptor descriptor, Location? location, object?[]? arguments)
-    {
-        var diagnostic = Diagnostic.Create(descriptor, location, arguments);
-        SourceProductionContext.ReportDiagnostic(diagnostic);
-        throw new SourceGeneratorException();
-    }
 }
