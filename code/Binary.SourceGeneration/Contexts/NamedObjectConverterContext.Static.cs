@@ -52,7 +52,12 @@ public sealed partial class NamedObjectConverterContext
         var members = dictionary.Values.ToImmutableArray();
         // let compiler report it if required member not set (linq expression generator will report if required member not set)
         if (members.Length is 0)
+        {
+            // do not report error for plain object
+            if (attribute is null)
+                return null;
             throw new SourceGeneratorException(Constants.NoAvailableMemberFound, Symbols.GetLocation(symbol), new object[] { symbol.Name });
+        }
         var closure = new NamedObjectConverterContext(context, symbol, members);
         closure.Invoke();
         return closure.ConverterCreatorTypeName;
