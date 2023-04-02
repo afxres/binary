@@ -49,11 +49,7 @@ public static partial class Symbols
         var attribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.ConverterAttributeTypeName));
         if (attribute is null)
             return null;
-        var argument = attribute.ConstructorArguments.Single();
-        var type = argument.Value as ITypeSymbol;
-        if (type is null || type.AllInterfaces.Any(x => context.Equals(x, Constants.IConverterTypeName)) is false)
-            throw new SourceGeneratorException(Constants.RequireConverterType, GetLocation(attribute), null);
-        return type;
+        return attribute.ConstructorArguments.Single().Value as ITypeSymbol;
     }
 
     public static ITypeSymbol? GetConverterCreatorType(SourceGeneratorContext context, ISymbol symbol)
@@ -61,11 +57,7 @@ public static partial class Symbols
         var attribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.ConverterCreatorAttributeTypeName));
         if (attribute is null)
             return null;
-        var argument = attribute.ConstructorArguments.Single();
-        var type = argument.Value as ITypeSymbol;
-        if (type is null || type.AllInterfaces.Any(x => context.Equals(x, Constants.IConverterCreatorTypeName)) is false)
-            throw new SourceGeneratorException(Constants.RequireConverterCreatorType, GetLocation(attribute), null);
-        return type;
+        return attribute.ConstructorArguments.Single().Value as ITypeSymbol;
     }
 
     public static bool IsIgnoredType(SourceGeneratorContext context, ITypeSymbol symbol)

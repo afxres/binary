@@ -21,12 +21,8 @@ public sealed partial class NamedObjectConverterContext
         var attribute = attributes.FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.NamedKeyAttributeTypeName));
         if (attribute is null)
             return;
-        var key = attribute.ConstructorArguments.FirstOrDefault().Value as string ?? string.Empty;
-        if (string.IsNullOrEmpty(key))
-            throw new SourceGeneratorException(Constants.NamedKeyNullOrEmpty, Symbols.GetLocation(attribute), null);
+        var key = (string)attribute.ConstructorArguments.Single().Value!;
         var info = GetNamedMember(member, Symbols.ToLiteral(key), isTypeRequired);
-        if (dictionary.ContainsKey(key))
-            throw new SourceGeneratorException(Constants.NamedKeyDuplicated, Symbols.GetLocation(attribute), new object[] { key });
         dictionary.Add(key, info);
     }
 

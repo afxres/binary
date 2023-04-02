@@ -21,11 +21,10 @@ public sealed partial class TupleObjectConverterContext
     {
         var attributes = member.GetAttributes();
         var attribute = attributes.FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.TupleKeyAttributeTypeName));
-        if (attribute is null || attribute.ConstructorArguments.FirstOrDefault().Value is not int key)
+        if (attribute is null)
             return;
+        var key = (int)attribute.ConstructorArguments.Single().Value!;
         var info = GetTupleMember(member);
-        if (dictionary.ContainsKey(key))
-            throw new SourceGeneratorException(Constants.TupleKeyDuplicated, Symbols.GetLocation(attribute), new object[] { key });
         dictionary.Add(key, info);
     }
 

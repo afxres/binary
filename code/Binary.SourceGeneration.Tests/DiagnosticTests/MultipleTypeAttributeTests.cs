@@ -2,6 +2,7 @@
 
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 public class MultipleTypeAttributeTests
@@ -62,7 +63,7 @@ public class MultipleTypeAttributeTests
         var compilation = CompilationModule.CreateCompilation(source);
         var generator = new SourceGenerator();
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
-        var diagnostic = Assert.Single(diagnostics);
+        var diagnostic = Assert.Single(diagnostics.Where(x => x.ToString().Contains("Multiple attributes")));
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
         Assert.EndsWith($"Multiple attributes found, type: {typeName}", diagnostic.ToString());
         Assert.Contains(typeName, diagnostic.Location.GetSourceText());

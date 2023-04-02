@@ -2,6 +2,7 @@
 
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 public class MultipleMemberAttributeTests
@@ -37,9 +38,13 @@ public class MultipleMemberAttributeTests
         var compilation = CompilationModule.CreateCompilation(source);
         var generator = new SourceGenerator();
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
-        var diagnostic = Assert.Single(diagnostics);
+        var diagnostic = Assert.Single(diagnostics.Where(x => x.ToString().Contains("Multiple attributes")));
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
         Assert.EndsWith($"Multiple attributes found, member name: {memberName}, type: {typeName}", diagnostic.ToString());
         Assert.Contains(memberName, diagnostic.Location.GetSourceText());
+
+        // not important
+        _ = Assert.Single(diagnostics.Where(x => x.ToString().Contains("Require converter type")));
+        _ = Assert.Single(diagnostics.Where(x => x.ToString().Contains("Require converter creator type")));
     }
 }
