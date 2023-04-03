@@ -30,13 +30,11 @@ public sealed partial class TupleObjectConverterContext
 
     private static void GetSystemTupleMember(ISymbol member, SortedDictionary<int, SymbolTupleMemberInfo> dictionary)
     {
-        var cursor = SystemTupleMemberNames.IndexOf(member.Name);
-        if (cursor is -1)
+        var key = SystemTupleMemberNames.IndexOf(member.Name);
+        if (key is -1)
             return;
         var info = GetTupleMember(member);
-        if (info is null)
-            return;
-        dictionary.Add(cursor, info);
+        dictionary.Add(key, info);
     }
 
     private static bool IsSystemTuple(SourceGeneratorContext context, ITypeSymbol type)
@@ -75,7 +73,7 @@ public sealed partial class TupleObjectConverterContext
         }
         var members = dictionary.Values.ToImmutableArray();
         if (members.Length is 0)
-            throw new SourceGeneratorException(Constants.NoAvailableMemberFound, Symbols.GetLocation(symbol), new object[] { symbol.Name });
+            throw new SourceGeneratorException(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { symbol.Name });
         var closure = new TupleObjectConverterContext(context, symbol, members);
         closure.Invoke();
         return closure.ConverterCreatorTypeName;

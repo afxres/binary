@@ -56,7 +56,7 @@ public sealed partial class NamedObjectConverterContext
             // do not report error for plain object
             if (attribute is null)
                 return null;
-            throw new SourceGeneratorException(Constants.NoAvailableMemberFound, Symbols.GetLocation(symbol), new object[] { symbol.Name });
+            throw new SourceGeneratorException(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { symbol.Name });
         }
         var closure = new NamedObjectConverterContext(context, symbol, members);
         closure.Invoke();

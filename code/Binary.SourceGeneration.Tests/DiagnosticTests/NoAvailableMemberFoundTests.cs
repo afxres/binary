@@ -34,8 +34,8 @@ public class NoAvailableMemberFoundTests
             [TupleObject]
             public class AnotherTupleClass { }
             """;
-        yield return new object[] { namedObject, "TestNamedClass" };
-        yield return new object[] { tupleObject, "AnotherTupleClass" };
+        yield return new object[] { namedObject, "NamedObject", "TestNamedClass" };
+        yield return new object[] { tupleObject, "TupleObject", "AnotherTupleClass" };
     }
 
     public static IEnumerable<object[]> NoAvailableMemberReferencedTypeData()
@@ -78,14 +78,14 @@ public class NoAvailableMemberFoundTests
             [TupleObject]
             public class R2Object { }
             """;
-        yield return new object[] { a, "L2Object" };
-        yield return new object[] { b, "R2Object" };
+        yield return new object[] { a, "NamedObject", "L2Object" };
+        yield return new object[] { b, "TupleObject", "R2Object" };
     }
 
     [Theory(DisplayName = "No Available Member Found")]
     [MemberData(nameof(NoAvailableMemberData))]
     [MemberData(nameof(NoAvailableMemberReferencedTypeData))]
-    public void NoAvailableMemberTest(string source, string typeName)
+    public void NoAvailableMemberTest(string source, string location, string typeName)
     {
         var compilation = CompilationModule.CreateCompilation(source);
         var generator = new SourceGenerator();
@@ -93,7 +93,7 @@ public class NoAvailableMemberFoundTests
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
         Assert.EndsWith($"No available member found, type: {typeName}", diagnostic.ToString());
-        Assert.Contains(typeName, diagnostic.Location.GetSourceText());
+        Assert.Contains(location, diagnostic.Location.GetSourceText());
     }
 
     public static IEnumerable<object[]> NoAvailableMemberPlainObjectData()
