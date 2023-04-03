@@ -1,6 +1,10 @@
 ﻿namespace Mikodev.Binary.Tests.Contexts;
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using Xunit;
 
 public class GeneratorAotTests
@@ -18,5 +22,101 @@ public class GeneratorAotTests
         var generator = Generator.CreateAot();
         var error = Assert.Throws<NotSupportedException>(generator.GetConverter<ValueType>);
         Assert.Equal($"Invalid type: {typeof(ValueType)}", error.Message);
+    }
+
+    [Fact(DisplayName = "Argument Null Test")]
+    public void ArgumentNullTest()
+    {
+        static Type[] GetArgs2(MethodInfo i) => i.Name.Contains("Enumerable") || i.Name.Contains("Dictionary")
+            ? new[] { typeof(IEnumerable<int>), typeof(int) }
+            : new[] { typeof(int), typeof(int) };
+
+        var a = new[] { typeof(int), typeof(int) };
+        var b = new[] { typeof(IEnumerable<int>), typeof(int) };
+        var methods = typeof(Generator).GetMethods().Where(x => x.Name.Contains("Converter")).ToList();
+        var group1 = methods.Where(x => x.GetGenericArguments().Length is 1).ToList();
+        var group2 = methods.Where(x => x.GetGenericArguments().Length is 2).ToList();
+        var group3 = methods.Where(x => x.GetGenericArguments().Length is 3).ToList();
+
+        var group1Methods = group1.Select(x => x.MakeGenericMethod(typeof(int))).ToList();
+        var group2Methods = group2.Select(x => x.MakeGenericMethod(GetArgs2(x))).ToList();
+        var group3Methods = group3.Select(x => x.MakeGenericMethod(typeof(IDictionary<int, int>), typeof(int), typeof(int))).ToList();
+        var result = group1Methods.Concat(group2Methods).Concat(group3Methods).ToList();
+        Assert.NotEmpty(group1Methods);
+        Assert.NotEmpty(group2Methods);
+        Assert.NotEmpty(group3Methods);
+
+        foreach (var i in result)
+        {
+            var parameters = i.GetParameters();
+            if (parameters.Length is 0)
+                continue;
+            ArgumentTests.ArgumentNullExceptionTest(i);
+        }
+    }
+
+    public static IEnumerable<object[]> EnumData()
+    {
+        yield return new object[] { DayOfWeek.Sunday };
+        yield return new object[] { ConsoleKey.Clear };
+        yield return new object[] { ConsoleColor.White };
+    }
+
+    [Theory(DisplayName = "Get Enum Converter Test")]
+    [MemberData(nameof(EnumData))]
+    public void GetEnumConverterTest<T>(T source) where T : unmanaged
+    {
+        var converter = Generator.GetEnumConverter<T>();
+        Assert.Equal(Unsafe.SizeOf<T>(), converter.Length);
+        var converterType = converter.GetType();
+        Assert.Equal("NativeEndianConverter`1", converterType.Name);
+
+        var buffer = converter.Encode(source);
+        Assert.Equal(Unsafe.SizeOf<T>(), buffer.Length);
+        var result = converter.Decode(buffer);
+        Assert.Equal(source, result);
+    }
+
+    [Theory(DisplayName = "Get Enum Converter Internal Test")]
+    [MemberData(nameof(EnumData))]
+    public void GetEnumConverterInternalTest<T>(T source) where T : unmanaged
+    {
+        var method = typeof(Generator).GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
+            .Single(x => x.Name.Contains("Invoke") && x.GetParameters().Select(x => x.ParameterType).SequenceEqual(new[] { typeof(bool) }));
+        var invoke = (Func<bool, Converter<T>>)Delegate.CreateDelegate(typeof(Func<bool, Converter<T>>), method.MakeGenericMethod(typeof(T)));
+
+        var converterNative = invoke.Invoke(true);
+        var converterLittle = invoke.Invoke(false);
+        var converterNativeType = converterNative.GetType();
+        var converterLittleType = converterLittle.GetType();
+        Assert.Equal(Unsafe.SizeOf<T>(), converterNative.Length);
+        Assert.Equal(Unsafe.SizeOf<T>(), converterLittle.Length);
+        Assert.Equal("NativeEndianConverter`1", converterNativeType.Name);
+        Assert.Equal("LittleEndianConverter`1", converterLittleType.Name);
+
+        var bufferNative = converterNative.Encode(source);
+        var bufferLittle = converterLittle.Encode(source);
+        Assert.Equal(bufferNative, bufferLittle);
+
+        var resultNative = converterNative.Decode(bufferNative);
+        var resultLittle = converterLittle.Decode(bufferLittle);
+        Assert.Equal(source, resultNative);
+        Assert.Equal(source, resultLittle);
+    }
+
+    public static IEnumerable<object[]> NonEnumData()
+    {
+        yield return new object[] { 0 };
+        yield return new object[] { 1L };
+    }
+
+    [Theory(DisplayName = "Get Enum Converter Invalid Type")]
+    [MemberData(nameof(NonEnumData))]
+    public void GetEnumConverterInvalidType<T>(T source) where T : unmanaged
+    {
+        _ = source;
+        var error = Assert.Throws<ArgumentException>(Generator.GetEnumConverter<T>);
+        Assert.Null(error.ParamName);
+        Assert.Equal("Require an enumeration type!", error.Message);
     }
 }
