@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Mikodev.Binary.SourceGeneration.Contexts;
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -13,7 +12,9 @@ using System.Text;
 [Generator]
 public sealed class SourceGenerator : IIncrementalGenerator
 {
-    private static readonly IEnumerable<Func<SourceGeneratorContext, ITypeSymbol, string?>> TypeHandlers = new List<Func<SourceGeneratorContext, ITypeSymbol, string?>>
+    private delegate object? TypeHandler(SourceGeneratorContext context, ITypeSymbol symbol);
+
+    private static readonly ImmutableArray<TypeHandler> TypeHandlers = ImmutableArray.CreateRange(new TypeHandler[]
     {
         AttributeConverterContext.Invoke,
         AttributeConverterCreatorContext.Invoke,
@@ -21,7 +22,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         CollectionConverterContext.Invoke,
         TupleObjectConverterContext.Invoke,
         NamedObjectConverterContext.Invoke,
-    };
+    });
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
@@ -69,13 +70,14 @@ public sealed class SourceGenerator : IIncrementalGenerator
         }
     }
 
-    private static void Invoke(Compilation compilation, SourceProductionContext context, INamedTypeSymbol type, INamedTypeSymbol include)
+    private static ImmutableDictionary<ITypeSymbol, AttributeData> GetIncludedTypes(SourceProductionContext context, INamedTypeSymbol type, INamedTypeSymbol include)
     {
-        var includedTypes = new Dictionary<ITypeSymbol, AttributeData>(SymbolEqualityComparer.Default);
+        var builder = ImmutableDictionary.CreateBuilder<ITypeSymbol, AttributeData>(SymbolEqualityComparer.Default);
         var attributes = type.GetAttributes();
         var cancellation = context.CancellationToken;
         foreach (var i in attributes)
         {
+            cancellation.ThrowIfCancellationRequested();
             var attribute = i.AttributeClass;
             if (attribute is null || attribute.IsGenericType is false)
                 continue;
@@ -84,50 +86,53 @@ public sealed class SourceGenerator : IIncrementalGenerator
                 continue;
             if (attribute.TypeArguments.Single() is not ITypeSymbol includedType)
                 continue;
-            if (includedTypes.ContainsKey(includedType) is false)
-                includedTypes.Add(includedType, i);
+            if (builder.ContainsKey(includedType) is false)
+                builder.Add(includedType, i);
             else
                 context.ReportDiagnostic(Diagnostic.Create(Constants.IncludeTypeDuplicated, Symbols.GetLocation(i), new[] { includedType.Name }));
             cancellation.ThrowIfCancellationRequested();
         }
+        return builder.ToImmutable();
+    }
 
+    private static void Invoke(Compilation compilation, SourceProductionContext context, INamedTypeSymbol type, INamedTypeSymbol include)
+    {
+        var includedTypes = GetIncludedTypes(context, type, include);
         var pending = new Queue<ITypeSymbol>(includedTypes.Keys);
         var handled = new Dictionary<ITypeSymbol, string?>(SymbolEqualityComparer.Default);
         var generator = new SourceGeneratorContext(type, compilation, context, pending);
 
-        void Handle(ITypeSymbol symbol)
+        string? Handle(ITypeSymbol symbol)
         {
-            try
-            {
-                Symbols.ValidateType(generator, symbol);
-                var creator = TypeHandlers.Select(h => h.Invoke(generator, symbol)).OfType<string>().FirstOrDefault();
-                if (creator is null && includedTypes.TryGetValue(symbol, out var attribute) is true)
-                    context.ReportDiagnostic(Diagnostic.Create(Constants.NoConverterGenerated, Symbols.GetLocation(attribute), new[] { symbol.Name }));
-                handled.Add(symbol, creator);
-                cancellation.ThrowIfCancellationRequested();
-            }
-            catch (SourceGeneratorException e)
-            {
-                if (e.Diagnostic is { } diagnostic)
-                    context.ReportDiagnostic(diagnostic);
-                handled.Add(symbol, null);
-                cancellation.ThrowIfCancellationRequested();
-            }
+            if (Symbols.Validate(generator, symbol) is false)
+                return null;
+            var result = TypeHandlers.Select(h => h.Invoke(generator, symbol)).FirstOrDefault(x => x is not null);
+            if (result is string target)
+                return target;
+            var diagnostic = ((Diagnostic?)result) ?? (includedTypes.TryGetValue(symbol, out var attribute)
+                ? Diagnostic.Create(Constants.NoConverterGenerated, Symbols.GetLocation(attribute), new[] { symbol.Name })
+                : null);
+            if (diagnostic is not null)
+                context.ReportDiagnostic(diagnostic);
+            return null;
         }
 
+        var cancellation = context.CancellationToken;
         while (pending.Count is not 0)
         {
+            cancellation.ThrowIfCancellationRequested();
             var symbol = pending.Dequeue();
             if (handled.ContainsKey(symbol))
                 continue;
-            Handle(symbol);
+            var result = Handle(symbol);
+            handled.Add(symbol, result);
             cancellation.ThrowIfCancellationRequested();
         }
 
         AppendConverterCreators(context, generator, handled);
     }
 
-    private static void AppendConverterCreators(SourceProductionContext context, SourceGeneratorContext generation, IDictionary<ITypeSymbol, string?> creators)
+    private static void AppendConverterCreators(SourceProductionContext context, SourceGeneratorContext generation, IReadOnlyDictionary<ITypeSymbol, string?> creators)
     {
         var builder = new StringBuilder();
         var cancellation = context.CancellationToken;
@@ -143,6 +148,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         builder.AppendIndent(1, $"{{");
         foreach (var i in creators)
         {
+            cancellation.ThrowIfCancellationRequested();
             if (i.Value is not { } creator)
                 continue;
             var key = Symbols.GetSymbolFullName(i.Key);

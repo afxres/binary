@@ -55,7 +55,7 @@ public sealed partial class TupleObjectConverterContext
         return (types as IEnumerable<ISymbol>)?.Any(x => SymbolEqualityComparer.Default.Equals(x, symbol.ConstructUnboundGenericType())) is true;
     }
 
-    public static string? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
+    public static object? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
     {
         var system = IsSystemTuple(context, symbol);
         var attribute = system ? null : symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.TupleObjectAttributeTypeName));
@@ -73,7 +73,7 @@ public sealed partial class TupleObjectConverterContext
         }
         var members = dictionary.Values.ToImmutableArray();
         if (members.Length is 0)
-            throw new SourceGeneratorException(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { symbol.Name });
+            return Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { symbol.Name });
         var closure = new TupleObjectConverterContext(context, symbol, members);
         closure.Invoke();
         return closure.ConverterCreatorTypeName;

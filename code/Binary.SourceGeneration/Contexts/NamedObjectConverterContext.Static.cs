@@ -33,7 +33,7 @@ public sealed partial class NamedObjectConverterContext
         dictionary.Add(key, info);
     }
 
-    public static string? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
+    public static object? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
     {
         var attribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.NamedObjectAttributeTypeName));
         if (attribute is null && Symbols.IsIgnoredType(context, symbol))
@@ -50,14 +50,10 @@ public sealed partial class NamedObjectConverterContext
             cancellation.ThrowIfCancellationRequested();
         }
         var members = dictionary.Values.ToImmutableArray();
+        // do not report error for plain object
         // let compiler report it if required member not set (linq expression generator will report if required member not set)
         if (members.Length is 0)
-        {
-            // do not report error for plain object
-            if (attribute is null)
-                return null;
-            throw new SourceGeneratorException(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { symbol.Name });
-        }
+            return attribute is null ? null : (object)Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { symbol.Name });
         var closure = new NamedObjectConverterContext(context, symbol, members);
         closure.Invoke();
         return closure.ConverterCreatorTypeName;
