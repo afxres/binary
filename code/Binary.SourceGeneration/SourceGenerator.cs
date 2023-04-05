@@ -51,11 +51,8 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
         if (declarations.IsDefaultOrEmpty)
             return;
-        var include = compilation.GetTypeByMetadataName(Constants.SourceGeneratorIncludeAttributeTypeName)?.ConstructUnboundGenericType();
-        if (include is null)
-            return;
-
         var cancellation = context.CancellationToken;
+        var include = compilation.GetTypeByMetadataName(Constants.SourceGeneratorIncludeAttributeTypeName)?.ConstructUnboundGenericType();
         foreach (var declaration in declarations)
         {
             var model = compilation.GetSemanticModel(declaration.SyntaxTree);
@@ -70,7 +67,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         }
     }
 
-    private static ImmutableDictionary<ITypeSymbol, AttributeData> GetIncludedTypes(SourceProductionContext context, INamedTypeSymbol type, INamedTypeSymbol include)
+    private static ImmutableDictionary<ITypeSymbol, AttributeData> GetIncludedTypes(SourceProductionContext context, INamedTypeSymbol type, INamedTypeSymbol? include)
     {
         var builder = ImmutableDictionary.CreateBuilder<ITypeSymbol, AttributeData>(SymbolEqualityComparer.Default);
         var attributes = type.GetAttributes();
@@ -84,8 +81,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
             var definitions = attribute.ConstructUnboundGenericType();
             if (SymbolEqualityComparer.Default.Equals(definitions, include) is false)
                 continue;
-            if (attribute.TypeArguments.Single() is not ITypeSymbol includedType)
-                continue;
+            var includedType = attribute.TypeArguments.Single();
             if (builder.ContainsKey(includedType) is false)
                 builder.Add(includedType, i);
             else
@@ -95,7 +91,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         return builder.ToImmutable();
     }
 
-    private static void Invoke(Compilation compilation, SourceProductionContext context, INamedTypeSymbol type, INamedTypeSymbol include)
+    private static void Invoke(Compilation compilation, SourceProductionContext context, INamedTypeSymbol type, INamedTypeSymbol? include)
     {
         var includedTypes = GetIncludedTypes(context, type, include);
         var pending = new Queue<ITypeSymbol>(includedTypes.Keys);

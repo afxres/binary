@@ -396,6 +396,118 @@ public class CompilationTests
                 }
             }
             """;
+        var b =
+            """
+            namespace TestNamespace;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<NoSuitableConstructor>]
+            public partial class TestGeneratorContext { }
+
+            public class NoSuitableConstructor
+            {
+                public int Id { get; }
+
+                public string Name { get; }
+
+                public NoSuitableConstructor(int id)
+                {
+                    Id = id;
+                }
+            }
+            """;
+        var c =
+            """
+            namespace TestNamespace;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<MiscellaneousMembers>]
+            public partial class TestGeneratorContext { }
+
+            public class MiscellaneousMembers
+            {
+                public int Id;
+
+                public string Name { get; set; }
+
+                internal int Internal;
+
+                private string Private { get; set; }
+
+                public static int PublicStatic;
+
+                internal static string InternalStatic { get; set; }
+
+                public int this[int key] => key;
+
+                internal string this[string key] => key;
+            }
+            """;
+        var d =
+            """
+            namespace TestNamespace;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<SameName>]
+            public partial class TestGeneratorContext { }
+
+            public class SameName
+            {
+                public int ID { get; }
+
+                public string Id { get; }
+            }
+            """;
+        var e =
+            """
+            namespace TestNamespace;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<ConstructorTypeMismatch>]
+            public partial class TestGeneratorContext { }
+
+            public class ConstructorTypeMismatch
+            {
+                public int Id { get; set; }
+
+                public string Number { get; set; }
+
+                public ConstructorTypeMismatch(string id, int number) => throw new System.NotSupportedException();
+            }
+            """;
+        yield return new object[] { a };
+        yield return new object[] { b };
+        yield return new object[] { c };
+        yield return new object[] { d };
+        yield return new object[] { e };
+    }
+
+    public static IEnumerable<object[]> ContextWithMiscellaneousAttributesData()
+    {
+        var a =
+            """
+            namespace TestNamespace;
+
+            using Mikodev.Binary.Attributes;
+            using System;
+            using System.Collections.Generic;
+
+            [AttributeUsage(AttributeTargets.All)]
+            public sealed class TestAttribute<T> : Attribute { }
+
+            [TestAttribute<int>]
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<List<int>>]
+            public partial class TestGeneratorContext { }
+            """;
         yield return new object[] { a };
     }
 
@@ -411,6 +523,7 @@ public class CompilationTests
     [MemberData(nameof(CustomNamedObjectData))]
     [MemberData(nameof(CustomTupleObjectData))]
     [MemberData(nameof(CustomPlainObjectData))]
+    [MemberData(nameof(ContextWithMiscellaneousAttributesData))]
     public void CompilationTest(string source)
     {
         Assert.Contains("SourceGeneratorContext", source);

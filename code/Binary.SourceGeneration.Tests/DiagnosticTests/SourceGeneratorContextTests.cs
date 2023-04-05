@@ -157,7 +157,7 @@ public class SourceGeneratorContextTests
             [SourceGeneratorInclude<Mikodev.Binary.Converter<int>>]
             [SourceGeneratorInclude<System.Collections.IEnumerable>]
             [SourceGeneratorInclude<System.Collections.ArrayList>]
-            [SourceGeneratorInclude<System.Collections.Hashtable>]
+            [SourceGeneratorInclude<System.Collections.BitArray>]
             public partial class WhateverContext { }
             """;
         var compilation = CompilationModule.CreateCompilation(source);

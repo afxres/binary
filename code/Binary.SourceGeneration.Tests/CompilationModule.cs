@@ -15,15 +15,19 @@ internal class CompilationModule
 
     public static Compilation CreateCompilation(string source)
     {
-        const string AssemblyName = "TestAssembly";
-        var references = new List<MetadataReference>();
-        references.Add(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
-        references.Add(MetadataReference.CreateFromFile(typeof(IConverter).Assembly.Location));
-        references.Add(MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Runtime")).Location));
-        references.Add(MetadataReference.CreateFromFile(typeof(ImmutableArray<object>).Assembly.Location));
-        references.Add(MetadataReference.CreateFromFile(typeof(LinkedList<object>).Assembly.Location));
-        references.Add(MetadataReference.CreateFromFile(typeof(ReadOnlySequence<object>).Assembly.Location));
+        var builder = ImmutableArray.CreateBuilder<MetadataReference>();
+        builder.Add(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
+        builder.Add(MetadataReference.CreateFromFile(typeof(IConverter).Assembly.Location));
+        builder.Add(MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Runtime")).Location));
+        builder.Add(MetadataReference.CreateFromFile(typeof(ImmutableArray<object>).Assembly.Location));
+        builder.Add(MetadataReference.CreateFromFile(typeof(LinkedList<object>).Assembly.Location));
+        builder.Add(MetadataReference.CreateFromFile(typeof(ReadOnlySequence<object>).Assembly.Location));
+        return CreateCompilation(source, builder.ToImmutable());
+    }
 
+    public static Compilation CreateCompilation(string source, ImmutableArray<MetadataReference> references)
+    {
+        const string AssemblyName = "TestAssembly";
         var compilation = CSharpCompilation.Create(
             AssemblyName,
             syntaxTrees: new[] { CSharpSyntaxTree.ParseText(source, ParseOptions) },
