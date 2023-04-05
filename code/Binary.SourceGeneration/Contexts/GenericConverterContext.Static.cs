@@ -1,7 +1,6 @@
 ﻿namespace Mikodev.Binary.SourceGeneration.Contexts;
 
 using Microsoft.CodeAnalysis;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -41,8 +40,8 @@ public partial class GenericConverterContext
         const string TupleLikeResourceKey = "TupleLike";
         if (context.Resources.TryGetValue(TupleLikeResourceKey, out var types) is false)
             context.Resources.Add(TupleLikeResourceKey, types = CreateResource(context.Compilation));
-        var unbounded = symbol.ConstructUnboundGenericType();
-        if ((types as IEnumerable<ISymbol>)?.FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x, unbounded)) is { } definition)
+        var unbound = symbol.ConstructUnboundGenericType();
+        if (((ImmutableArray<INamedTypeSymbol>)types).FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x, unbound)) is { } definition)
             return (definition.Name, symbol.TypeArguments);
         return null;
     }

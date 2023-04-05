@@ -7,6 +7,8 @@ public class SourceGeneratorContext
 {
     private readonly Queue<ITypeSymbol> referencedTypes;
 
+    private readonly Dictionary<string, ITypeSymbol?> types = new Dictionary<string, ITypeSymbol?>();
+
     public string HintNameUnit { get; }
 
     public string Name { get; }
@@ -17,7 +19,7 @@ public class SourceGeneratorContext
 
     public SourceProductionContext SourceProductionContext { get; }
 
-    public Dictionary<object, object?> Resources { get; } = new Dictionary<object, object?>();
+    public Dictionary<string, object> Resources { get; } = new Dictionary<string, object>();
 
     public SourceGeneratorContext(INamedTypeSymbol type, Compilation compilation, SourceProductionContext sourceProductionContext, Queue<ITypeSymbol> referencedTypes)
     {
@@ -36,8 +38,9 @@ public class SourceGeneratorContext
 
     public INamedTypeSymbol? GetNamedTypeSymbol(string typeName)
     {
-        if (Resources.TryGetValue(typeName, out var type) is false)
-            Resources.Add(typeName, type = Compilation.GetTypeByMetadataName(typeName));
+        var types = this.types;
+        if (types.TryGetValue(typeName, out var type) is false)
+            types.Add(typeName, type = Compilation.GetTypeByMetadataName(typeName));
         return (INamedTypeSymbol?)type;
     }
 

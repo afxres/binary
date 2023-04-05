@@ -1,7 +1,6 @@
 ﻿namespace Mikodev.Binary.SourceGeneration.Contexts;
 
 using Microsoft.CodeAnalysis;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 
 public partial class CollectionConverterContext
@@ -56,7 +55,8 @@ public partial class CollectionConverterContext
         const string CollectionResourceKey = "Collection";
         if (context.Resources.TryGetValue(CollectionResourceKey, out var result) is false)
             context.Resources.Add(CollectionResourceKey, result = CreateResource(context.Compilation));
-        if ((result as IReadOnlyDictionary<INamedTypeSymbol, (SourceType SourceType, string MethodBody)>)?.TryGetValue(symbol.ConstructUnboundGenericType(), out var definition) is true)
+        var unbound = symbol.ConstructUnboundGenericType();
+        if (((ImmutableDictionary<INamedTypeSymbol, (SourceType SourceType, string MethodBody)>)result).TryGetValue(unbound, out var definition) is true)
             return (definition.SourceType, definition.MethodBody, symbol.TypeArguments);
         return null;
     }

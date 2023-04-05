@@ -37,22 +37,25 @@ public sealed partial class TupleObjectConverterContext
         dictionary.Add(key, info);
     }
 
+    private static ImmutableArray<INamedTypeSymbol> CreateResource(Compilation compilation)
+    {
+        return Enumerable.Range(1, 8)
+            .Select(x => compilation.GetTypeByMetadataName($"System.Tuple`{x}")?.ConstructUnboundGenericType())
+            .OfType<INamedTypeSymbol>()
+            .ToImmutableArray();
+    }
+
     private static bool IsSystemTuple(SourceGeneratorContext context, ITypeSymbol type)
     {
         if (type.IsTupleType)
             return true;
         if (type is not INamedTypeSymbol symbol || symbol.IsGenericType is false)
             return false;
-        const string SystemTupleTypeKey = "System.Tuple";
-        if (context.Resources.TryGetValue(SystemTupleTypeKey, out var types) is false)
-        {
-            types = Enumerable.Range(1, 8)
-                .Select(x => context.Compilation.GetTypeByMetadataName($"System.Tuple`{x}")?.ConstructUnboundGenericType())
-                .OfType<INamedTypeSymbol>()
-                .ToImmutableArray();
-            context.Resources.Add(SystemTupleTypeKey, types);
-        }
-        return (types as IEnumerable<ISymbol>)?.Any(x => SymbolEqualityComparer.Default.Equals(x, symbol.ConstructUnboundGenericType())) is true;
+        const string SystemTupleResourceKey = "System.Tuple";
+        if (context.Resources.TryGetValue(SystemTupleResourceKey, out var types) is false)
+            context.Resources.Add(SystemTupleResourceKey, types = CreateResource(context.Compilation));
+        var unbound = symbol.ConstructUnboundGenericType();
+        return ((ImmutableArray<INamedTypeSymbol>)types).Any(x => SymbolEqualityComparer.Default.Equals(x, unbound)) is true;
     }
 
     public static object? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
