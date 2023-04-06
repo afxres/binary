@@ -4,6 +4,7 @@ Summary:
 
 ![GitHub repo size](https://img.shields.io/github/repo-size/afxres/binary)
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/afxres/binary/dotnet-tests.yml?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/afxres/binary/badge.svg?branch=main)](https://coveralls.io/github/afxres/binary?branch=main)
 
 | Package                       | Version        | Downloads        | Descriptions        |
 | :---------------------------- | :------------- | :--------------- | :------------------ |
@@ -33,7 +34,7 @@ printfn "%A" result
 
 Supported types:
 | Category      | Details                                                                                                                         | Comment                                  |
-|---------------|---------------------------------------------------------------------------------------------------------------------------------|------------------------------------------|
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
 | Primitive     | ``(U)Int(16,32,64,128)``, ``Boolean``, ``Byte``, ``Char``, ``Decimal``, ``Double``, ``Half``, ``SByte``, ``Single``, ``String`` | Default encoding of string is 'UTF-8'    |
 | Data & Time   | ``DateOnly``, ``DateTime``, ``DateTimeOffset``, ``TimeOnly``, ``TimeSpan``                                                      |                                          |
 | Numeric       | ``BigInteger``, ``Complex``, ``Matrix3x2``, ``Matrix4x4``, ``Plane``, ``Quaternion``, ``Vector2``, ``Vector3``, ``Vector4``     |                                          |

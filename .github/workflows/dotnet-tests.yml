@@ -2,31 +2,26 @@ name: dotnet-tests
 "on": push
 jobs:
   build:
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-    runs-on: "${{ matrix.os }}"
-    defaults:
-      run:
-        working-directory: code
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Setup .NET 8.0
-        uses: actions/setup-dotnet@v2
+      - uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 8.0.x
-          include-prerelease: true
+          dotnet-version: "8.0.x"
+          dotnet-quality: "preview"
 
-      - name: Restore
-        run: dotnet restore
-      - name: Build (Debug)
-        run: dotnet build --no-restore -c Debug
-      - name: Build (Release)
-        run: dotnet build --no-restore -c Release
+      - name: Test
+        run: |
+          cd code
+          dotnet restore
+          dotnet build --no-restore
+          dotnet test --no-restore -f net8.0 --collect:"XPlat Code Coverage;Format=lcov"
 
-      - name: "Test (.NET 8.0, Debug)"
-        run: dotnet test --no-restore -v normal -f net8.0 -c Debug
-      - name: "Test (.NET 8.0, Release)"
-        run: dotnet test --no-restore -v normal -f net8.0 -c Release
+      - name: Coverage
+        run: |
+          sudo apt-get install -y lcov
+          mkdir -p coverage
+          find . -name coverage.info -exec echo -a {} \; | xargs lcov -o coverage/lcov.info
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
