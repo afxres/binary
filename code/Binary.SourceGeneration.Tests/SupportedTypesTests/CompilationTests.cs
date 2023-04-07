@@ -9,6 +9,7 @@ public class CompilationTests
     {
         var a =
             """
+            // span-like collections
             namespace TestNamespace;
 
             using Mikodev.Binary.Attributes;
@@ -31,6 +32,7 @@ public class CompilationTests
     {
         var a =
             """
+            // common generic types
             namespace TestNamespace;
 
             using Mikodev.Binary.Attributes;
@@ -53,6 +55,7 @@ public class CompilationTests
     {
         var a =
             """
+            // common collections
             namespace TestNamespace;
 
             using Mikodev.Binary.Attributes;
@@ -71,6 +74,7 @@ public class CompilationTests
     {
         var a =
             """
+            // common collection interfaces
             namespace TestNamespace;
 
             using Mikodev.Binary.Attributes;
@@ -95,6 +99,7 @@ public class CompilationTests
     {
         var a =
             """
+            // immutable collections
             namespace TestNamespace;
 
             using Mikodev.Binary.Attributes;
@@ -120,6 +125,7 @@ public class CompilationTests
     {
         var a =
             """
+            // system tuple types
             namespace TestNamespace;
 
             using Mikodev.Binary.Attributes;
@@ -141,6 +147,7 @@ public class CompilationTests
     {
         var a =
             """
+            // custom converter on type
             namespace TestNamespace;
 
             using Mikodev.Binary;
@@ -163,6 +170,7 @@ public class CompilationTests
             """;
         var b =
             """
+            // custom converter on member
             namespace TestNamespace;
 
             using Mikodev.Binary;
@@ -194,6 +202,7 @@ public class CompilationTests
     {
         var a =
             """
+            // custom converter creator on type
             namespace TestNamespace;
 
             using Mikodev.Binary;
@@ -214,6 +223,7 @@ public class CompilationTests
             """;
         var b =
             """
+            // custom converter creator on member
             namespace TestNamespace;
 
             using Mikodev.Binary;
@@ -243,6 +253,7 @@ public class CompilationTests
     {
         var a =
             """
+            // named object
             namespace TestNamespace;
 
             using Mikodev.Binary.Attributes;
@@ -273,6 +284,7 @@ public class CompilationTests
             """;
         var b =
             """
+            // named object with non-public setter
             namespace TestNamespace;
 
             using Mikodev.Binary.Attributes;
@@ -290,6 +302,7 @@ public class CompilationTests
             """;
         var c =
             """
+            // named object with required members
             namespace TestNamespace;
 
             using Mikodev.Binary.Attributes;
@@ -323,6 +336,7 @@ public class CompilationTests
     {
         var a =
             """
+            // tuple object
             namespace TestNamespace;
 
             using Mikodev.Binary.Attributes;
@@ -353,6 +367,7 @@ public class CompilationTests
             """;
         var b =
             """
+            // tuple object with readonly property
             namespace TestNamespace;
 
             using Mikodev.Binary.Attributes;
@@ -376,6 +391,7 @@ public class CompilationTests
     {
         var a =
             """
+            // plain object
             namespace TestNamespace;
 
             using Mikodev.Binary.Attributes;
@@ -398,6 +414,7 @@ public class CompilationTests
             """;
         var b =
             """
+            // plain object with non-public setter
             namespace TestNamespace;
 
             using Mikodev.Binary.Attributes;
@@ -420,6 +437,7 @@ public class CompilationTests
             """;
         var c =
             """
+            // plain object with miscellaneous members
             namespace TestNamespace;
 
             using Mikodev.Binary.Attributes;
@@ -449,6 +467,7 @@ public class CompilationTests
             """;
         var d =
             """
+            // plain object member name conflicts
             namespace TestNamespace;
 
             using Mikodev.Binary.Attributes;
@@ -466,6 +485,7 @@ public class CompilationTests
             """;
         var e =
             """
+            // plain object without suitable constructor
             namespace TestNamespace;
 
             using Mikodev.Binary.Attributes;
@@ -494,6 +514,7 @@ public class CompilationTests
     {
         var a =
             """
+            // context with miscellaneous attributes
             namespace TestNamespace;
 
             using Mikodev.Binary.Attributes;
@@ -511,6 +532,28 @@ public class CompilationTests
         yield return new object[] { a };
     }
 
+    public static IEnumerable<object[]> NamedTupleData()
+    {
+        var a =
+            """
+            // named tuple
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<(int, string)>]
+            [SourceGeneratorInclude<TypeWithNamedTupleAlpha>]
+            public partial class TestGeneratorContext { }
+
+            public class TypeWithNamedTupleAlpha
+            {
+                public (int Id, string Name) Person;
+            }
+            """;
+        yield return new object[] { a };
+    }
+
     [Theory(DisplayName = "Compilation Test")]
     [MemberData(nameof(SpanLikeTypesData))]
     [MemberData(nameof(CommonGenericTypesData))]
@@ -524,6 +567,7 @@ public class CompilationTests
     [MemberData(nameof(CustomTupleObjectData))]
     [MemberData(nameof(CustomPlainObjectData))]
     [MemberData(nameof(ContextWithMiscellaneousAttributesData))]
+    [MemberData(nameof(NamedTupleData))]
     public void CompilationTest(string source)
     {
         Assert.Contains("SourceGeneratorContext", source);

@@ -118,6 +118,8 @@ public sealed class SourceGenerator : IIncrementalGenerator
         {
             cancellation.ThrowIfCancellationRequested();
             var symbol = pending.Dequeue();
+            if (symbol.IsTupleType)
+                symbol = ((INamedTypeSymbol)symbol).TupleUnderlyingType ?? symbol;
             if (handled.ContainsKey(symbol))
                 continue;
             var result = Handle(symbol);
