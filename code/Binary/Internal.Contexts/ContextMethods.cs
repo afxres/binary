@@ -21,7 +21,7 @@ internal static class ContextMethods
     internal static Delegate GetDecodeDelegate(Type delegateType, ContextObjectInitializer initializer, ConstructorInfo constructor)
     {
         var parameters = constructor.GetParameters();
-        Debug.Assert(parameters.Any());
+        Debug.Assert(parameters.Length is not 0);
         var objectIndexes = Enumerable.Range(0, parameters.Length).ToImmutableArray();
         return GetDecodeDelegate(delegateType, initializer, constructor, objectIndexes, ImmutableArray.Create<ContextMemberInitializer>(), ImmutableArray.Create<int>());
     }
@@ -38,7 +38,7 @@ internal static class ContextMethods
     internal static Delegate GetDecodeDelegate(Type delegateType, ContextObjectInitializer initializer, ConstructorInfo? constructor, ImmutableArray<int> objectIndexes, ImmutableArray<ContextMemberInitializer> members, ImmutableArray<int> memberIndexes)
     {
         var delegateInvoke = CommonModule.GetPublicInstanceMethod(delegateType, "Invoke");
-        Debug.Assert(delegateInvoke.GetParameters().Length is 1 or 2);
+        Debug.Assert(delegateInvoke.GetParameters().Length is 1);
         var type = delegateInvoke.ReturnType;
         var parameterTypes = delegateInvoke.GetParameters().Select(x => x.ParameterType).ToList();
         var parameters = parameterTypes.Select((x, i) => Expression.Parameter(x, $"arg{i}")).ToImmutableArray();

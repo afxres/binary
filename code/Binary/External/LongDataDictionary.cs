@@ -10,7 +10,7 @@ internal sealed class LongDataDictionary : ByteViewDictionary<int>
 
     public LongDataDictionary(LongDataSlot[] bits)
     {
-        Debug.Assert(bits.Any());
+        Debug.Assert(bits.Length is not 0);
         Debug.Assert(bits.All(x => (uint)(x.Tail & 0xFF) <= BinaryObject.LongDataLimits));
         Debug.Assert(bits.Length <= BinaryObject.ItemLimits);
         this.bits = bits;

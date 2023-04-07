@@ -58,10 +58,10 @@ internal static class FallbackAttributesMethods
             var key = keyAttributes.FirstOrDefault();
             var conversionAttributes = GetAttributes(member, a => a is ConverterAttribute or ConverterCreatorAttribute);
             var conversion = conversionAttributes.FirstOrDefault();
-            var indexer = property?.GetIndexParameters().Any();
-            if (indexer is true && (key ?? conversion) is { } instance)
+            var indexer = property is not null && property.GetIndexParameters().Length is not 0;
+            if (indexer && (key ?? conversion) is { } instance)
                 throw new ArgumentException($"Can not apply '{instance.GetType().Name}' to an indexer, type: {type}");
-            if (indexer is true)
+            if (indexer)
                 continue;
             if (property is not null && property.GetGetMethod() is null)
                 throw new ArgumentException($"No available getter found, member name: {member.Name}, type: {type}");
@@ -163,7 +163,7 @@ internal static class FallbackAttributesMethods
 
     private static ImmutableArray<MetaMemberInfo> GetSortedMembers(Type type, ImmutableDictionary<MetaMemberInfo, NamedKeyAttribute> collection, out ImmutableArray<string> list)
     {
-        Debug.Assert(collection.Any());
+        Debug.Assert(collection.Count is not 0);
         var map = new SortedDictionary<string, MetaMemberInfo>();
         foreach (var (member, attribute) in collection)
         {
@@ -180,7 +180,7 @@ internal static class FallbackAttributesMethods
 
     private static ImmutableArray<MetaMemberInfo> GetSortedMembers(Type type, ImmutableDictionary<MetaMemberInfo, TupleKeyAttribute> collection)
     {
-        Debug.Assert(collection.Any());
+        Debug.Assert(collection.Count is not 0);
         var map = new SortedDictionary<int, MetaMemberInfo>();
         foreach (var (member, attribute) in collection)
         {
