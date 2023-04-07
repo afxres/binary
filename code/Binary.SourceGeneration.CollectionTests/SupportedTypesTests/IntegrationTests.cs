@@ -35,6 +35,26 @@ using Xunit;
 [SourceGeneratorInclude<IDictionary<int, string>>]
 [SourceGeneratorInclude<IReadOnlyDictionary<int, long>>]
 [SourceGeneratorInclude<IReadOnlyDictionary<int, string>>]
+[SourceGeneratorInclude<ImmutableDictionary<short, long>>]
+[SourceGeneratorInclude<ImmutableDictionary<string, int>>]
+[SourceGeneratorInclude<ImmutableHashSet<int>>]
+[SourceGeneratorInclude<ImmutableHashSet<string>>]
+[SourceGeneratorInclude<ImmutableList<int>>]
+[SourceGeneratorInclude<ImmutableList<string>>]
+[SourceGeneratorInclude<ImmutableQueue<int>>]
+[SourceGeneratorInclude<ImmutableQueue<string>>]
+[SourceGeneratorInclude<ImmutableSortedDictionary<int, long>>]
+[SourceGeneratorInclude<ImmutableSortedDictionary<int, string>>]
+[SourceGeneratorInclude<ImmutableSortedSet<int>>]
+[SourceGeneratorInclude<ImmutableSortedSet<string>>]
+[SourceGeneratorInclude<IImmutableDictionary<short, long>>]
+[SourceGeneratorInclude<IImmutableDictionary<string, int>>]
+[SourceGeneratorInclude<IImmutableList<int>>]
+[SourceGeneratorInclude<IImmutableList<string>>]
+[SourceGeneratorInclude<IImmutableQueue<int>>]
+[SourceGeneratorInclude<IImmutableQueue<string>>]
+[SourceGeneratorInclude<IImmutableSet<int>>]
+[SourceGeneratorInclude<IImmutableSet<string>>]
 public partial class IntegrationGeneratorContext { }
 
 public class IntegrationTests
@@ -53,8 +73,25 @@ public class IntegrationTests
         yield return new object[] { new LinkedList<string>(new[] { "4" }), "4", "LinkedListConverter`1.*String" };
     }
 
+    public static IEnumerable<object[]> ImmutableCollectionTypesData()
+    {
+        yield return new object[] { ImmutableDictionary.CreateRange(new[] { new KeyValuePair<short, long>(10, 20) }), new KeyValuePair<short, long>(10, 20), "SequenceConverter`1.*ImmutableDictionary`2.*Int16.*Int64" };
+        yield return new object[] { ImmutableDictionary.CreateRange(new[] { new KeyValuePair<string, int>("text", 4) }), new KeyValuePair<string, int>("text", 4), "SequenceConverter`1.*ImmutableDictionary`2.*String.*Int32" };
+        yield return new object[] { ImmutableHashSet.Create(1), 1, "SequenceConverter`1.*ImmutableHashSet`1.*Int32" };
+        yield return new object[] { ImmutableHashSet.Create("2"), "2", "SequenceConverter`1.*ImmutableHashSet`1.*String" };
+        yield return new object[] { ImmutableList.Create(3), 3, "SequenceConverter`1.*ImmutableList`1.*Int32" };
+        yield return new object[] { ImmutableList.Create("4"), "4", "SequenceConverter`1.*ImmutableList`1.*String" };
+        yield return new object[] { ImmutableQueue.Create(5), 5, "SequenceConverter`1.*ImmutableQueue`1.*Int32" };
+        yield return new object[] { ImmutableQueue.Create("6"), "6", "SequenceConverter`1.*ImmutableQueue`1.*String" };
+        yield return new object[] { ImmutableSortedDictionary.CreateRange(new[] { new KeyValuePair<int, long>(40, 60) }), new KeyValuePair<int, long>(40, 60), "SequenceConverter`1.*ImmutableSortedDictionary`2.*Int32.*Int64" };
+        yield return new object[] { ImmutableSortedDictionary.CreateRange(new[] { new KeyValuePair<int, string>(6, "sorted") }), new KeyValuePair<int, string>(6, "sorted"), "SequenceConverter`1.*ImmutableSortedDictionary`2.*Int32.*String" };
+        yield return new object[] { ImmutableSortedSet.Create(7), 7, "SequenceConverter`1.*ImmutableSortedSet`1.*Int32" };
+        yield return new object[] { ImmutableSortedSet.Create("8"), "8", "SequenceConverter`1.*ImmutableSortedSet`1.*String" };
+    }
+
     [Theory(DisplayName = "Encode Decode Test")]
     [MemberData(nameof(EnumerableTypesData))]
+    [MemberData(nameof(ImmutableCollectionTypesData))]
     public void EncodeDecodeTest<T, E>(T source, E element, string pattern) where T : IEnumerable<E>
     {
         var generator = Generator.CreateAotBuilder()
@@ -121,12 +158,36 @@ public class IntegrationTests
         yield return new object[] { typeof(IReadOnlyDictionary<int, string>), f, new KeyValuePair<int, string>(7, "8"), "SequenceConverter`1.*IReadOnlyDictionary`2.*Int32.*String" };
     }
 
+    public static IEnumerable<object[]> ImmutableCollectionInterfaceData()
+    {
+        var a = ImmutableDictionary.CreateRange(new[] { new KeyValuePair<short, long>(10, 20) });
+        var b = ImmutableDictionary.CreateRange(new[] { new KeyValuePair<string, int>("text", 4) });
+        yield return new object[] { typeof(IImmutableDictionary<short, long>), a, new KeyValuePair<short, long>(10, 20), "SequenceConverter`1.*IImmutableDictionary`2.*Int16.*Int64" };
+        yield return new object[] { typeof(IImmutableDictionary<string, int>), b, new KeyValuePair<string, int>("text", 4), "SequenceConverter`1.*IImmutableDictionary`2.*String.*Int32" };
+
+        var c = ImmutableList.Create(1);
+        var d = ImmutableList.Create("2");
+        yield return new object[] { typeof(IImmutableList<int>), c, 1, "SequenceConverter`1.*IImmutableList`1.*Int32" };
+        yield return new object[] { typeof(IImmutableList<string>), d, "2", "SequenceConverter`1.*IImmutableList`1.*String" };
+
+        var e = ImmutableQueue.Create(3);
+        var f = ImmutableQueue.Create("4");
+        yield return new object[] { typeof(IImmutableQueue<int>), e, 3, "SequenceConverter`1.*IImmutableQueue`1.*Int32" };
+        yield return new object[] { typeof(IImmutableQueue<string>), f, "4", "SequenceConverter`1.*IImmutableQueue`1.*String" };
+
+        var g = ImmutableHashSet.Create(5);
+        var h = ImmutableHashSet.Create("6");
+        yield return new object[] { typeof(IImmutableSet<int>), g, 5, "SequenceConverter`1.*IImmutableSet`1.*Int32" };
+        yield return new object[] { typeof(IImmutableSet<string>), h, "6", "SequenceConverter`1.*IImmutableSet`1.*String" };
+    }
+
     [Theory(DisplayName = "Collection Interface Encode Decode Test")]
     [MemberData(nameof(CollectionInterfaceData))]
+    [MemberData(nameof(ImmutableCollectionInterfaceData))]
     public void CollectionInterfaceEncodeDecodeTest<T, E>(Type interfaceType, T source, E element, string pattern) where T : IEnumerable<E>
     {
         Assert.True(interfaceType.IsInterface);
-        Assert.Equal("System.Collections.Generic", interfaceType.Namespace);
+        Assert.StartsWith("System.Collections", interfaceType.Namespace);
         var method = new Action<IEnumerable<object>, object, string>(EncodeDecodeTest).Method;
         var target = method.GetGenericMethodDefinition().MakeGenericMethod(new Type[] { interfaceType, typeof(E) });
         var result = target.Invoke(this, new object?[] { source, element, pattern });
