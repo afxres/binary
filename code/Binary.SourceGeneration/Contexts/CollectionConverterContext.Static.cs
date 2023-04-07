@@ -52,9 +52,9 @@ public partial class CollectionConverterContext
     {
         if (type is not INamedTypeSymbol symbol || symbol.IsGenericType is false)
             return null;
-        const string CollectionResourceKey = "Collection";
-        if (context.Resources.TryGetValue(CollectionResourceKey, out var result) is false)
-            context.Resources.Add(CollectionResourceKey, result = CreateResource(context.Compilation));
+        const string ResourceKey = "Collections";
+        if (context.Resources.TryGetValue(ResourceKey, out var result) is false)
+            context.Resources.Add(ResourceKey, result = CreateResource(context.Compilation));
         var unbound = symbol.ConstructUnboundGenericType();
         if (((ImmutableDictionary<INamedTypeSymbol, (SourceType SourceType, string MethodBody)>)result).TryGetValue(unbound, out var definition) is true)
             return (definition.SourceType, definition.MethodBody, symbol.TypeArguments);

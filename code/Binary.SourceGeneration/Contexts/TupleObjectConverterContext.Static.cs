@@ -51,9 +51,9 @@ public sealed partial class TupleObjectConverterContext
             return true;
         if (type is not INamedTypeSymbol symbol || symbol.IsGenericType is false)
             return false;
-        const string SystemTupleResourceKey = "System.Tuple";
-        if (context.Resources.TryGetValue(SystemTupleResourceKey, out var types) is false)
-            context.Resources.Add(SystemTupleResourceKey, types = CreateResource(context.Compilation));
+        const string ResourceKey = "Tuple";
+        if (context.Resources.TryGetValue(ResourceKey, out var types) is false)
+            context.Resources.Add(ResourceKey, types = CreateResource(context.Compilation));
         var unbound = symbol.ConstructUnboundGenericType();
         return ((ImmutableArray<INamedTypeSymbol>)types).Any(x => SymbolEqualityComparer.Default.Equals(x, unbound)) is true;
     }

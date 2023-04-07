@@ -4,6 +4,14 @@
       "commandName": "DebugRoslynComponent",
       "targetProject": "..\\Binary.SourceGeneration.AttributeTests\\Binary.SourceGeneration.AttributeTests.csproj"
     },
+    "Debug Collection Tests": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\Binary.SourceGeneration.CollectionTests\\Binary.SourceGeneration.CollectionTests.csproj"
+    },
+    "Debug Common Type Tests": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\Binary.SourceGeneration.CommonTypeTests\\Binary.SourceGeneration.CommonTypeTests.csproj"
+    },
     "Debug Object Cross Tests": {
       "commandName": "DebugRoslynComponent",
       "targetProject": "..\\Binary.SourceGeneration.ObjectCrossTests\\Binary.SourceGeneration.ObjectCrossTests.csproj"
@@ -15,10 +23,6 @@
     "Debug Tuple Object Tests": {
       "commandName": "DebugRoslynComponent",
       "targetProject": "..\\Binary.SourceGeneration.TupleObjectTests\\Binary.SourceGeneration.TupleObjectTests.csproj"
-    },
-    "Debug Collection Tests": {
-      "commandName": "DebugRoslynComponent",
-      "targetProject": "..\\Binary.SourceGeneration.CollectionTests\\Binary.SourceGeneration.CollectionTests.csproj"
     }
   }
 }

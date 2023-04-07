@@ -18,6 +18,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
     {
         AttributeConverterContext.Invoke,
         AttributeConverterCreatorContext.Invoke,
+        EnumConverterContext.Invoke,
         GenericConverterContext.Invoke,
         CollectionConverterContext.Invoke,
         TupleObjectConverterContext.Invoke,

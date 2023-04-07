@@ -37,9 +37,9 @@ public partial class GenericConverterContext
             return ("Array", ImmutableArray.Create(array.ElementType));
         if (type is not INamedTypeSymbol symbol || symbol.IsGenericType is false)
             return null;
-        const string TupleLikeResourceKey = "TupleLike";
-        if (context.Resources.TryGetValue(TupleLikeResourceKey, out var types) is false)
-            context.Resources.Add(TupleLikeResourceKey, types = CreateResource(context.Compilation));
+        const string ResourceKey = "Generic";
+        if (context.Resources.TryGetValue(ResourceKey, out var types) is false)
+            context.Resources.Add(ResourceKey, types = CreateResource(context.Compilation));
         var unbound = symbol.ConstructUnboundGenericType();
         if (((ImmutableArray<INamedTypeSymbol>)types).FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x, unbound)) is { } definition)
             return (definition.Name, symbol.TypeArguments);
