@@ -28,6 +28,24 @@ public class CompilationTests
         yield return new object[] { a };
     }
 
+    public static IEnumerable<object[]> EnumTypesData()
+    {
+        var a =
+            """
+            // enum types
+            namespace TestNamespace;
+
+            using Mikodev.Binary.Attributes;
+            using System;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<DayOfWeek>]
+            [SourceGeneratorInclude<DateTimeKind>]
+            public partial class TestGeneratorContext { }
+            """;
+        yield return new object[] { a };
+    }
+
     public static IEnumerable<object[]> CommonGenericTypesData()
     {
         var a =
@@ -556,6 +574,7 @@ public class CompilationTests
 
     [Theory(DisplayName = "Compilation Test")]
     [MemberData(nameof(SpanLikeTypesData))]
+    [MemberData(nameof(EnumTypesData))]
     [MemberData(nameof(CommonGenericTypesData))]
     [MemberData(nameof(CommonCollectionTypesData))]
     [MemberData(nameof(CommonCollectionInterfaceTypesData))]
