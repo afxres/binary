@@ -62,7 +62,7 @@ public static partial class Symbols
 
     public static bool IsIgnoredType(SourceGeneratorContext context, ITypeSymbol symbol)
     {
-        if (symbol.TypeKind is TypeKind.Delegate)
+        if (symbol.TypeKind is not TypeKind.Class and not TypeKind.Interface and not TypeKind.Struct)
             return true;
         if (SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, context.GetNamedTypeSymbol(Constants.IConverterTypeName)?.ContainingAssembly))
             return true;

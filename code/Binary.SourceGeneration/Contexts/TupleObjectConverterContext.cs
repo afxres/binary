@@ -11,14 +11,14 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
 
     private readonly SymbolConstructorInfo<SymbolTupleMemberInfo>? constructor;
 
-    private TupleObjectConverterContext(SourceGeneratorContext context, ITypeSymbol symbol, ImmutableArray<SymbolTupleMemberInfo> members) : base(context, symbol)
+    private TupleObjectConverterContext(SourceGeneratorContext context, ITypeSymbol symbol, ImmutableArray<SymbolTupleMemberInfo> members, SymbolConstructorInfo<SymbolTupleMemberInfo>? constructor) : base(context, symbol)
     {
         TypeAliases.Add("System.ReadOnlySpan<byte>", "Span", SymbolTypeAliasesFlags.Type);
         TypeAliases.Add(Constants.AllocatorTypeName, "Allocator", SymbolTypeAliasesFlags.Type);
         for (var i = 0; i < members.Length; i++)
             TypeAliases.Add(members[i].TypeSymbol, i.ToString());
         this.members = members;
-        this.constructor = Symbols.GetConstructor(symbol, members);
+        this.constructor = constructor;
     }
 
     private void AppendConstructor(StringBuilder builder)

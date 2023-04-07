@@ -1,7 +1,6 @@
 ﻿namespace Mikodev.Binary.SourceGeneration.Contexts;
 
 using Microsoft.CodeAnalysis;
-using System;
 using System.Collections.Immutable;
 using System.Text;
 
@@ -27,15 +26,7 @@ public partial class CollectionConverterContext : SymbolConverterContext
         var sourceType = this.sourceType;
         var methodBody = this.methodBody;
         var elements = this.elements;
-
-        var delegateName = sourceType switch
-        {
-            SourceType.List => "System.Func<System.Collections.Generic.List<_T0>, _TSelf>",
-            SourceType.HashSet => "System.Func<System.Collections.Generic.HashSet<_T0>, _TSelf>",
-            SourceType.Dictionary => "System.Func<System.Collections.Generic.Dictionary<_T0, _T1>, _TSelf>",
-            SourceType.ListKeyValuePair => "System.Func<System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<_T0, _T1>>, _TSelf>",
-            _ => throw new NotSupportedException(),
-        };
+        var delegateName = DelegateTypeNames[sourceType];
 
         for (var i = 0; i < elements.Length; i++)
         {

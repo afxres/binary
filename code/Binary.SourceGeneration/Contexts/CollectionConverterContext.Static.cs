@@ -16,6 +16,18 @@ public partial class CollectionConverterContext
         ListKeyValuePair,
     }
 
+    private static readonly ImmutableDictionary<SourceType, string> DelegateTypeNames;
+
+    static CollectionConverterContext()
+    {
+        var builder = ImmutableDictionary.CreateBuilder<SourceType, string>();
+        builder.Add(SourceType.List, "System.Func<System.Collections.Generic.List<_T0>, _TSelf>");
+        builder.Add(SourceType.HashSet, "System.Func<System.Collections.Generic.HashSet<_T0>, _TSelf>");
+        builder.Add(SourceType.Dictionary, "System.Func<System.Collections.Generic.Dictionary<_T0, _T1>, _TSelf>");
+        builder.Add(SourceType.ListKeyValuePair, "System.Func<System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<_T0, _T1>>, _TSelf>");
+        DelegateTypeNames = builder.ToImmutable();
+    }
+
     private static ImmutableDictionary<INamedTypeSymbol, (SourceType, string)> CreateResource(Compilation compilation)
     {
         var builder = ImmutableDictionary.CreateBuilder<INamedTypeSymbol, (SourceType, string)>(SymbolEqualityComparer.Default);

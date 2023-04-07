@@ -11,7 +11,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
 
     private readonly SymbolConstructorInfo<SymbolNamedMemberInfo>? constructor;
 
-    private NamedObjectConverterContext(SourceGeneratorContext context, ITypeSymbol symbol, ImmutableArray<SymbolNamedMemberInfo> members) : base(context, symbol)
+    private NamedObjectConverterContext(SourceGeneratorContext context, ITypeSymbol symbol, ImmutableArray<SymbolNamedMemberInfo> members, SymbolConstructorInfo<SymbolNamedMemberInfo>? constructor) : base(context, symbol)
     {
         TypeAliases.Add("System.String", "String");
         TypeAliases.Add("System.ReadOnlySpan<byte>", "Span", SymbolTypeAliasesFlags.Type);
@@ -19,7 +19,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         for (var i = 0; i < members.Length; i++)
             TypeAliases.Add(members[i].TypeSymbol, i.ToString());
         this.members = members;
-        this.constructor = Symbols.GetConstructor(symbol, members);
+        this.constructor = constructor;
     }
 
     private void AppendConstructor(StringBuilder builder)

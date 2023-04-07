@@ -12,11 +12,8 @@ public static class SystemExtensions
         _ = builder.AppendLine();
     }
 
-    public static void AppendIndent(this StringBuilder builder, int indent, string line)
+    public static void AppendIndent(this StringBuilder builder, byte indent, string line)
     {
-        const int MaxLoop = 16;
-        if ((uint)indent > MaxLoop)
-            throw new ArgumentOutOfRangeException(nameof(indent));
         var current = new StringBuilder();
         for (var i = 0; i < indent; i++)
             _ = current.Append("    ");
@@ -25,16 +22,13 @@ public static class SystemExtensions
         _ = builder.AppendLine();
     }
 
-    public static void AppendIndent(this StringBuilder builder, int indent, string head, string tail, int count, Func<int, string> func)
+    public static void AppendIndent(this StringBuilder builder, byte indent, string head, string tail, int count, Func<int, string> func)
     {
         AppendIndent(builder, indent, head, tail, Enumerable.Range(0, count).ToList(), func);
     }
 
-    public static void AppendIndent<T>(this StringBuilder builder, int indent, string head, string tail, IReadOnlyList<T> values, Func<T, string> func)
+    public static void AppendIndent<T>(this StringBuilder builder, byte indent, string head, string tail, IReadOnlyList<T> values, Func<T, string> func)
     {
-        const int MaxLoop = 16;
-        if ((uint)indent > MaxLoop)
-            throw new ArgumentOutOfRangeException(nameof(indent));
         var current = new StringBuilder();
         for (var i = 0; i < indent; i++)
             _ = current.Append("    ");
