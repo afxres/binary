@@ -137,7 +137,7 @@ public class RequirePublicInstanceMemberTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"Require public instance member, member name: {memberName}, type: {typeName}", diagnostic.ToString());
+        Assert.EndsWith($"Require public instance member, member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
         Assert.Contains(memberName, diagnostic.Location.GetSourceText());
     }
 }

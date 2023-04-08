@@ -26,7 +26,7 @@ public static partial class Symbols
 
         if (attributes.Length > 1)
         {
-            diagnostics.Add(Diagnostic.Create(Constants.MultipleTypeAttributesFound, GetLocation(symbol), new object[] { symbol.Name }));
+            diagnostics.Add(Diagnostic.Create(Constants.MultipleAttributesFoundOnType, GetLocation(symbol), new object[] { GetDiagnosticName(symbol) }));
         }
         else
         {
@@ -120,20 +120,27 @@ public static partial class Symbols
         ValidateTupleKey(tupleKeyAttribute, diagnostics, tupleKeys);
         cancellation.ThrowIfCancellationRequested();
 
+        var memberName = member.Name;
+        var containingTypeName = GetDiagnosticName(member.ContainingType);
         if (member.IsStatic || member.DeclaredAccessibility is not Accessibility.Public)
-            diagnostics.Add(Diagnostic.Create(Constants.RequirePublicInstanceMember, GetLocation(member), new object[] { member.Name, member.ContainingType.Name }));
+            diagnostics.Add(Diagnostic.Create(Constants.RequirePublicInstanceMember, GetLocation(member), new object[] { memberName, containingTypeName }));
         else if (member is IPropertySymbol { IsIndexer: true })
-            diagnostics.Add(Diagnostic.Create(Constants.RequireNotIndexer, GetLocation(member), new object[] { member.ContainingType.Name }));
+            diagnostics.Add(Diagnostic.Create(Constants.RequireNotIndexer, GetLocation(member), new object[] { containingTypeName }));
         else if (member is IPropertySymbol property && property.GetMethod?.DeclaredAccessibility is not Accessibility.Public)
-            diagnostics.Add(Diagnostic.Create(Constants.RequirePublicGetter, GetLocation(member), new object[] { member.Name, member.ContainingType.Name }));
+            diagnostics.Add(Diagnostic.Create(Constants.RequirePublicGetter, GetLocation(member), new object[] { memberName, containingTypeName }));
         cancellation.ThrowIfCancellationRequested();
 
         if (converterAttribute is not null && converterCreatorAttribute is not null)
-            diagnostics.Add(Diagnostic.Create(Constants.MultipleMemberAttributesFound, GetLocation(member), new object[] { member.Name, member.ContainingType.Name }));
+            diagnostics.Add(Diagnostic.Create(Constants.MultipleAttributesFoundOnMember, GetLocation(member), new object[] { memberName, containingTypeName }));
         if (namedKeyAttribute is not null && context.Equals(typeAttribute, Constants.NamedObjectAttributeTypeName) is false)
-            diagnostics.Add(Diagnostic.Create(Constants.RequireNamedObjectAttribute, GetLocation(namedKeyAttribute), new object[] { member.Name, member.ContainingType.Name }));
+            diagnostics.Add(Diagnostic.Create(Constants.RequireNamedObjectAttribute, GetLocation(namedKeyAttribute), new object[] { memberName, containingTypeName }));
         if (tupleKeyAttribute is not null && context.Equals(typeAttribute, Constants.TupleObjectAttributeTypeName) is false)
-            diagnostics.Add(Diagnostic.Create(Constants.RequireTupleObjectAttribute, GetLocation(tupleKeyAttribute), new object[] { member.Name, member.ContainingType.Name }));
+            diagnostics.Add(Diagnostic.Create(Constants.RequireTupleObjectAttribute, GetLocation(tupleKeyAttribute), new object[] { memberName, containingTypeName }));
+        cancellation.ThrowIfCancellationRequested();
+
+        var memberType = (member as IPropertySymbol)?.Type ?? ((IFieldSymbol)member).Type;
+        if (IsTypeSupported(memberType) is false)
+            diagnostics.Add(Diagnostic.Create(Constants.RequireSupportedTypeForMember, GetLocation(member), new object[] { GetDiagnosticName(memberType), memberName, containingTypeName }));
         cancellation.ThrowIfCancellationRequested();
     }
 }

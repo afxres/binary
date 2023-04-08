@@ -61,7 +61,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
             if (type is null)
                 continue;
             if (Ensure(declaration, type) is { } descriptor)
-                context.ReportDiagnostic(Diagnostic.Create(descriptor, Symbols.GetLocation(type), new[] { type.Name }));
+                context.ReportDiagnostic(Diagnostic.Create(descriptor, Symbols.GetLocation(type), new object[] { Symbols.GetDiagnosticName(type) }));
             else
                 Invoke(compilation, context, type, include);
             cancellation.ThrowIfCancellationRequested();
@@ -83,10 +83,12 @@ public sealed class SourceGenerator : IIncrementalGenerator
             if (SymbolEqualityComparer.Default.Equals(definitions, include) is false)
                 continue;
             var includedType = attribute.TypeArguments.Single();
-            if (builder.ContainsKey(includedType) is false)
-                builder.Add(includedType, i);
+            if (Symbols.IsTypeSupported(includedType) is false)
+                context.ReportDiagnostic(Diagnostic.Create(Constants.RequireSupportedTypeForIncludeAttribute, Symbols.GetLocation(i), new object[] { Symbols.GetDiagnosticName(includedType) }));
+            else if (builder.ContainsKey(includedType))
+                context.ReportDiagnostic(Diagnostic.Create(Constants.IncludeTypeDuplicated, Symbols.GetLocation(i), new object[] { Symbols.GetDiagnosticName(includedType) }));
             else
-                context.ReportDiagnostic(Diagnostic.Create(Constants.IncludeTypeDuplicated, Symbols.GetLocation(i), new[] { includedType.Name }));
+                builder.Add(includedType, i);
             cancellation.ThrowIfCancellationRequested();
         }
         return builder.ToImmutable();
@@ -107,7 +109,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
             if (result is string target)
                 return target;
             var diagnostic = ((Diagnostic?)result) ?? (includedTypes.TryGetValue(symbol, out var attribute)
-                ? Diagnostic.Create(Constants.NoConverterGenerated, Symbols.GetLocation(attribute), new[] { symbol.Name })
+                ? Diagnostic.Create(Constants.NoConverterGenerated, Symbols.GetLocation(attribute), new object[] { Symbols.GetDiagnosticName(symbol) })
                 : null);
             if (diagnostic is not null)
                 context.ReportDiagnostic(diagnostic);

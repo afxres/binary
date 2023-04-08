@@ -55,7 +55,7 @@ public class RequireNotIndexerTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"Require not an indexer, type: {typeName}", diagnostic.ToString());
+        Assert.EndsWith($"Require not an indexer, containing type: {typeName}", diagnostic.ToString());
         Assert.Equal("this", diagnostic.Location.GetSourceText());
     }
 }

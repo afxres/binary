@@ -62,8 +62,6 @@ public static partial class Symbols
 
     public static bool IsIgnoredType(SourceGeneratorContext context, ITypeSymbol symbol)
     {
-        if (symbol.TypeKind is not TypeKind.Class and not TypeKind.Interface and not TypeKind.Struct)
-            return true;
         if (SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, context.GetNamedTypeSymbol(Constants.IConverterTypeName)?.ContainingAssembly))
             return true;
         var objectSymbol = context.Compilation.GetSpecialType(SpecialType.System_Object);
@@ -87,6 +85,11 @@ public static partial class Symbols
         return symbol.GetMembers().Any(Filter);
     }
 
+    public static bool IsTypeSupported(ITypeSymbol symbol)
+    {
+        return symbol.TypeKind is TypeKind.Array or TypeKind.Class or TypeKind.Enum or TypeKind.Interface or TypeKind.Struct;
+    }
+
     public static ImmutableArray<ISymbol> GetObjectMembers(ITypeSymbol symbol)
     {
         var builder = ImmutableArray.CreateBuilder<ISymbol>();
@@ -94,9 +97,13 @@ public static partial class Symbols
         {
             if (member.IsStatic || member.DeclaredAccessibility is not Accessibility.Public)
                 continue;
-            if (member is IPropertySymbol property && property.IsIndexer)
+            var property = member as IPropertySymbol;
+            if (property is not null && property.IsIndexer)
                 continue;
-            if (member is not IFieldSymbol and not IPropertySymbol)
+            var memberType = property?.Type ?? (member as IFieldSymbol)?.Type;
+            if (memberType is null)
+                continue;
+            if (IsTypeSupported(memberType) is false)
                 continue;
             builder.Add(member);
         }

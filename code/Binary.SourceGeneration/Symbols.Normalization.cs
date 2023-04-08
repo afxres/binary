@@ -13,6 +13,12 @@ public static partial class Symbols
         genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
         miscellaneousOptions: SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers);
 
+    public static SymbolDisplayFormat FullDisplayFormatNoNamespace { get; } = new SymbolDisplayFormat(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypes,
+        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
+        miscellaneousOptions: SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers);
+
     public static string ToLiteral(string input)
     {
         return SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(input)).ToFullString();
@@ -29,6 +35,11 @@ public static partial class Symbols
         if (reference is not null)
             return Location.Create(reference.SyntaxTree, reference.Span);
         return Location.None;
+    }
+
+    public static string GetDiagnosticName(ITypeSymbol symbol)
+    {
+        return symbol.ToDisplayString(FullDisplayFormatNoNamespace);
     }
 
     public static string GetSymbolFullName(ITypeSymbol typeSymbol)

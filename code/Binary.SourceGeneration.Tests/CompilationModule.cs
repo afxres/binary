@@ -32,7 +32,7 @@ internal class CompilationModule
             AssemblyName,
             syntaxTrees: new[] { CSharpSyntaxTree.ParseText(source, ParseOptions) },
             references: references.ToArray(),
-            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true));
         var diagnostics = compilation.GetDiagnostics();
         Assert.Empty(diagnostics.Where(x => x.Severity is DiagnosticSeverity.Error));
         return compilation;

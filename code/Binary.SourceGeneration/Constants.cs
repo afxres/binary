@@ -120,7 +120,7 @@ public static class Constants
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    public static DiagnosticDescriptor MultipleTypeAttributesFound { get; } = new DiagnosticDescriptor(
+    public static DiagnosticDescriptor MultipleAttributesFoundOnType { get; } = new DiagnosticDescriptor(
         id: "BINSRCGEN42",
         title: "Multiple Attributes Found.",
         messageFormat: "Multiple attributes found, type: {0}",
@@ -128,10 +128,10 @@ public static class Constants
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    public static DiagnosticDescriptor MultipleMemberAttributesFound { get; } = new DiagnosticDescriptor(
+    public static DiagnosticDescriptor MultipleAttributesFoundOnMember { get; } = new DiagnosticDescriptor(
         id: "BINSRCGEN43",
         title: "Multiple Attributes Found.",
-        messageFormat: "Multiple attributes found, member name: {0}, type: {1}",
+        messageFormat: "Multiple attributes found, member name: {0}, containing type: {1}",
         category: DiagnosticCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -155,7 +155,7 @@ public static class Constants
     public static DiagnosticDescriptor RequirePublicInstanceMember { get; } = new DiagnosticDescriptor(
         id: "BINSRCGEN46",
         title: "Require Public Instance Member.",
-        messageFormat: "Require public instance member, member name: {0}, type: {1}",
+        messageFormat: "Require public instance member, member name: {0}, containing type: {1}",
         category: DiagnosticCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -163,7 +163,7 @@ public static class Constants
     public static DiagnosticDescriptor RequireNotIndexer { get; } = new DiagnosticDescriptor(
         id: "BINSRCGEN47",
         title: "Require Not Indexer.",
-        messageFormat: "Require not an indexer, type: {0}",
+        messageFormat: "Require not an indexer, containing type: {0}",
         category: DiagnosticCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -171,7 +171,7 @@ public static class Constants
     public static DiagnosticDescriptor RequirePublicGetter { get; } = new DiagnosticDescriptor(
         id: "BINSRCGEN48",
         title: "Require Public Getter.",
-        messageFormat: "Require a public getter, member name: {0}, type: {1}",
+        messageFormat: "Require a public getter, member name: {0}, containing type: {1}",
         category: DiagnosticCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -179,7 +179,7 @@ public static class Constants
     public static DiagnosticDescriptor RequireNamedObjectAttribute { get; } = new DiagnosticDescriptor(
         id: "BINSRCGEN51",
         title: "Require 'NamedObjectAttribute'.",
-        messageFormat: "Require 'NamedObjectAttribute' for 'NamedKeyAttribute', this attribute will be ignored, member name: {0}, type: {1}",
+        messageFormat: "Require 'NamedObjectAttribute' for 'NamedKeyAttribute', this attribute will be ignored, member name: {0}, containing type: {1}",
         category: DiagnosticCategory,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
@@ -187,8 +187,24 @@ public static class Constants
     public static DiagnosticDescriptor RequireTupleObjectAttribute { get; } = new DiagnosticDescriptor(
         id: "BINSRCGEN52",
         title: "Require 'TupleObjectAttribute'.",
-        messageFormat: "Require 'TupleObjectAttribute' for 'TupleKeyAttribute', this attribute will be ignored, member name: {0}, type: {1}",
+        messageFormat: "Require 'TupleObjectAttribute' for 'TupleKeyAttribute', this attribute will be ignored, member name: {0}, containing type: {1}",
         category: DiagnosticCategory,
         defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor RequireSupportedTypeForIncludeAttribute { get; } = new DiagnosticDescriptor(
+        id: "BINSRCGEN53",
+        title: "Require Supported Type.",
+        messageFormat: "Require supported type (array, class, enum, interface or struct), type: {0}",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor RequireSupportedTypeForMember { get; } = new DiagnosticDescriptor(
+        id: "BINSRCGEN54",
+        title: "Require Supported Type.",
+        messageFormat: "Require supported type (array, class, enum, interface or struct), type: {0}, member name: {1}, containing type: {2}",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 }

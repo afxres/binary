@@ -84,7 +84,7 @@ public class RequireNamedObjectAttributeTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
-        Assert.EndsWith($"Require 'NamedObjectAttribute' for 'NamedKeyAttribute', this attribute will be ignored, member name: {memberName}, type: {typeName}", diagnostic.ToString());
+        Assert.EndsWith($"Require 'NamedObjectAttribute' for 'NamedKeyAttribute', this attribute will be ignored, member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
         Assert.Matches(@"NamedKey\(.*\)", diagnostic.Location.GetSourceText());
     }
 }

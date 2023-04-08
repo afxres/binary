@@ -65,7 +65,7 @@ public class SourceGeneratorContextTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith("Require not nested type for source generator context, type: NestedSourceGeneratorContext", diagnostic.ToString());
+        Assert.EndsWith("Require not nested type for source generator context, type: Outer.NestedSourceGeneratorContext", diagnostic.ToString());
         Assert.Contains("NestedSourceGeneratorContext", diagnostic.Location.GetSourceText());
     }
 
@@ -86,7 +86,7 @@ public class SourceGeneratorContextTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith("Require not generic type for source generator context, type: GenericSourceGeneratorContext", diagnostic.ToString());
+        Assert.EndsWith("Require not generic type for source generator context, type: GenericSourceGeneratorContext<T>", diagnostic.ToString());
         Assert.Contains("GenericSourceGeneratorContext", diagnostic.Location.GetSourceText());
     }
 
@@ -110,7 +110,7 @@ public class SourceGeneratorContextTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
-        Assert.EndsWith("Type inclusion duplicated, type: List", diagnostic.ToString());
+        Assert.EndsWith("Type inclusion duplicated, type: List<Int32>", diagnostic.ToString());
         Assert.Contains("SourceGeneratorInclude<List<int>>", diagnostic.Location.GetSourceText());
     }
 
@@ -150,8 +150,6 @@ public class SourceGeneratorContextTests
             [SourceGeneratorInclude<string>]
             [SourceGeneratorInclude<object>]
             [SourceGeneratorInclude<System.Delegate>]
-            [SourceGeneratorInclude<System.Action>]
-            [SourceGeneratorInclude<System.Func<int>>]
             [SourceGeneratorInclude<Mikodev.Binary.Token>]
             [SourceGeneratorInclude<Mikodev.Binary.IConverter>]
             [SourceGeneratorInclude<Mikodev.Binary.Converter<int>>]
@@ -163,7 +161,7 @@ public class SourceGeneratorContextTests
         var compilation = CompilationModule.CreateCompilation(source);
         var generator = new SourceGenerator();
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
-        Assert.Equal(12, diagnostics.Length);
+        Assert.Equal(10, diagnostics.Length);
         foreach (var diagnostic in diagnostics)
         {
             Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
