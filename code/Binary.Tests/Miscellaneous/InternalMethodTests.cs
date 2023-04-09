@@ -13,7 +13,7 @@ public class InternalMethodTests
         var invoke = typeof(T).GetMethodNotNull("Invoke", BindingFlags.Instance | BindingFlags.Public);
         var parameterTypes = invoke.GetParameters().Select(x => x.ParameterType).ToArray();
         var type = typeof(Converter).Assembly.GetTypes().Single(x => x.Name is "CommonModule");
-        var method = type.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name == methodName && x.GetParameters().Select(p => p.ParameterType).SequenceEqual(parameterTypes));
+        var method = type.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name.Contains(methodName) && x.GetParameters().Select(p => p.ParameterType).SequenceEqual(parameterTypes));
         return (T)Delegate.CreateDelegate(typeof(T), method);
     }
 
@@ -77,6 +77,17 @@ public class InternalMethodTests
         var error = Assert.Throws<InvalidOperationException>(() => invoke.Invoke(type, arguments));
         var message = $"Invalid null instance detected, type: {type}";
         Assert.Equal(message, error.Message);
+    }
+
+    [Fact(DisplayName = "Create Instance Internal Invoke Method Test")]
+    public void CreateInstanceInternalInvokeMethodTest()
+    {
+        var invoke = GetCommonModuleMethod<Func<Func<object>, object>>("Invoke");
+        var a = Assert.Throws<NotSupportedException>(() => invoke.Invoke(() => throw new TargetInvocationException(new NotSupportedException("Text 01"))));
+        Assert.Equal("Text 01", a.Message);
+        var b = Assert.Throws<TargetInvocationException>(() => invoke.Invoke(() => throw new TargetInvocationException("Text 02", null)));
+        Assert.Null(b.InnerException);
+        Assert.Equal("Text 02", b.Message);
     }
 
     [Theory(DisplayName = "Make Upper Case Invariant")]

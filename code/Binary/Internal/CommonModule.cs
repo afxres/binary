@@ -29,19 +29,24 @@ internal static class CommonModule
 
     internal static object CreateInstance([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type, object?[]? arguments)
     {
-        try
+        static object? Invoke(Func<object?> func)
         {
-            var result = Activator.CreateInstance(type, arguments);
-            if (result is null)
-                throw new InvalidOperationException($"Invalid null instance detected, type: {type}");
-            return result;
+            try
+            {
+                return func.Invoke();
+            }
+            catch (TargetInvocationException e)
+            {
+                if (e.InnerException is { } inner)
+                    ExceptionDispatchInfo.Throw(inner);
+                throw;
+            }
         }
-        catch (TargetInvocationException e)
-        {
-            if (e.InnerException is { } inner)
-                ExceptionDispatchInfo.Throw(inner);
-            throw;
-        }
+
+        var result = Invoke(() => Activator.CreateInstance(type, arguments));
+        if (result is null)
+            throw new InvalidOperationException($"Invalid null instance detected, type: {type}");
+        return result;
     }
 
     internal static bool TryGetInterfaceArguments([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type, Type definition, [MaybeNullWhen(false)] out Type[] arguments)
