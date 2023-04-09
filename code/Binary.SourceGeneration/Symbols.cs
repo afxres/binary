@@ -87,6 +87,8 @@ public static partial class Symbols
 
     public static bool IsTypeSupported(ITypeSymbol symbol)
     {
+        if (symbol.IsRefLikeType)
+            return false;
         return symbol.TypeKind is TypeKind.Array or TypeKind.Class or TypeKind.Enum or TypeKind.Interface or TypeKind.Struct;
     }
 

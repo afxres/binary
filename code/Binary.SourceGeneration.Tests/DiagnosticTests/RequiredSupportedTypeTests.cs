@@ -110,9 +110,31 @@ public class RequiredSupportedTypeTests
                 public delegate*<T> Pointer { get; set; }
             }
             """;
+        var d =
+            """
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+            using System;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<Hotel>]
+            public partial class TestGeneratorContext { }
+
+            [NamedObject]
+            public class Hotel
+            {
+                [NamedKey("id")]
+                public string Id;
+
+                [NamedKey("span")]
+                public Span<byte> Buffer => throw new NotSupportedException();
+            }
+            """;
         yield return new object[] { a, "Comparison<String>", "Method", "Alpha" };
         yield return new object[] { b, "Int32*", "Function", "Bravo" };
         yield return new object[] { c, "delegate*<String>", "Pointer", "Delta<String>" };
+        yield return new object[] { d, "Span<Byte>", "Buffer", "Hotel" };
     }
 
     [Theory(DisplayName = "Require Supported Type For Member")]
