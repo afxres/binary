@@ -60,7 +60,7 @@ public static partial class Symbols
         return attribute.ConstructorArguments.Single().Value as ITypeSymbol;
     }
 
-    public static bool IsIgnoredType(SourceGeneratorContext context, ITypeSymbol symbol)
+    public static bool IsTypeUnsupported(SourceGeneratorContext context, ITypeSymbol symbol)
     {
         if (SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, context.GetNamedTypeSymbol(Constants.IConverterTypeName)?.ContainingAssembly))
             return true;
@@ -92,6 +92,11 @@ public static partial class Symbols
         return symbol.TypeKind is TypeKind.Array or TypeKind.Class or TypeKind.Enum or TypeKind.Interface or TypeKind.Struct;
     }
 
+    public static bool IsPropertyReturnsByRefOrReturnsByRefReadonly(IPropertySymbol property)
+    {
+        return property.ReturnsByRef || property.ReturnsByRefReadonly;
+    }
+
     public static ImmutableArray<ISymbol> GetObjectMembers(ITypeSymbol symbol)
     {
         var builder = ImmutableArray.CreateBuilder<ISymbol>();
@@ -101,6 +106,9 @@ public static partial class Symbols
                 continue;
             var property = member as IPropertySymbol;
             if (property is not null && property.IsIndexer)
+                continue;
+            // support by reference properties or not? (linq expression generator not support by reference properties)
+            if (property is not null && IsPropertyReturnsByRefOrReturnsByRefReadonly(property))
                 continue;
             var memberType = property?.Type ?? (member as IFieldSymbol)?.Type;
             if (memberType is null)

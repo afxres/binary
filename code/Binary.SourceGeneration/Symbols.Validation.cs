@@ -122,11 +122,12 @@ public static partial class Symbols
 
         var memberName = member.Name;
         var containingTypeName = GetDiagnosticName(member.ContainingType);
+        var property = member as IPropertySymbol;
         if (member.IsStatic || member.DeclaredAccessibility is not Accessibility.Public)
             diagnostics.Add(Diagnostic.Create(Constants.RequirePublicInstanceMember, GetLocation(member), new object[] { memberName, containingTypeName }));
-        else if (member is IPropertySymbol { IsIndexer: true })
+        else if (property is not null && property.IsIndexer)
             diagnostics.Add(Diagnostic.Create(Constants.RequireNotIndexer, GetLocation(member), new object[] { containingTypeName }));
-        else if (member is IPropertySymbol property && property.GetMethod?.DeclaredAccessibility is not Accessibility.Public)
+        else if (property is not null && property.GetMethod?.DeclaredAccessibility is not Accessibility.Public)
             diagnostics.Add(Diagnostic.Create(Constants.RequirePublicGetter, GetLocation(member), new object[] { memberName, containingTypeName }));
         cancellation.ThrowIfCancellationRequested();
 
@@ -138,7 +139,11 @@ public static partial class Symbols
             diagnostics.Add(Diagnostic.Create(Constants.RequireTupleObjectAttribute, GetLocation(tupleKeyAttribute), new object[] { memberName, containingTypeName }));
         cancellation.ThrowIfCancellationRequested();
 
-        var memberType = (member as IPropertySymbol)?.Type ?? ((IFieldSymbol)member).Type;
+        if (property is not null && IsPropertyReturnsByRefOrReturnsByRefReadonly(property))
+            diagnostics.Add(Diagnostic.Create(Constants.RequireNotByReferenceProperty, GetLocation(member), new object[] { memberName, containingTypeName }));
+        cancellation.ThrowIfCancellationRequested();
+
+        var memberType = property?.Type ?? ((IFieldSymbol)member).Type;
         if (IsTypeSupported(memberType) is false)
             diagnostics.Add(Diagnostic.Create(Constants.RequireSupportedTypeForMember, GetLocation(member), new object[] { GetDiagnosticName(memberType), memberName, containingTypeName }));
         cancellation.ThrowIfCancellationRequested();

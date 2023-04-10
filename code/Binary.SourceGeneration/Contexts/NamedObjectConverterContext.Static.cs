@@ -36,7 +36,7 @@ public sealed partial class NamedObjectConverterContext
     public static object? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
     {
         var attribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.NamedObjectAttributeTypeName));
-        if (attribute is null && Symbols.IsIgnoredType(context, symbol))
+        if (attribute is null && Symbols.IsTypeUnsupported(context, symbol))
             return null;
         var required = Symbols.IsTypeWithRequiredModifier(symbol);
         var dictionary = new SortedDictionary<string, SymbolNamedMemberInfo>();
@@ -51,7 +51,7 @@ public sealed partial class NamedObjectConverterContext
         }
         var members = dictionary.Values.ToImmutableArray();
         // do not report error for plain object
-        // let compiler report it if required member not set (linq expression generator will report if required member not set)
+        // let compiler report it if required member not set. (linq expression generator will report if required member not set)
         if (members.Length is 0)
             return attribute is null ? null : (object)Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetDiagnosticName(symbol) });
         var constructor = Symbols.GetConstructor(symbol, members);

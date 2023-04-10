@@ -207,4 +207,12 @@ public static class Constants
         category: DiagnosticCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor RequireNotByReferenceProperty { get; } = new DiagnosticDescriptor(
+        id: "BINSRCGEN55",
+        title: "Require Not By Reference Property.",
+        messageFormat: "Require not by reference property, member name: {0}, containing type: {1}",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }
