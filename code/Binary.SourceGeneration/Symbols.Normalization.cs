@@ -68,7 +68,7 @@ public static partial class Symbols
     {
         var prefix = symbol.ContainingNamespace.ToDisplayString(FullDisplayFormat);
         var target = new StringBuilder(prefix);
-        _ = target.Replace(Constants.GlobalNamespacePrefix, string.Empty);
+        _ = target.Replace(Constants.GlobalNamespace, string.Empty);
         _ = target.Replace('.', '_');
         _ = target.Append('_');
         _ = target.Append(symbol.Name);
