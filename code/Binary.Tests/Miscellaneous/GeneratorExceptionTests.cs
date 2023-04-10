@@ -5,6 +5,7 @@ using Xunit;
 
 public class GeneratorExceptionTests
 {
+#pragma warning disable CS0649 // Field '...' is never assigned to, and will always have its default value
     private unsafe class ClassWithPointerMember
     {
         public int* Pointer;
@@ -14,6 +15,7 @@ public class GeneratorExceptionTests
     {
         public delegate*<long, long> FunctionPointer;
     }
+#pragma warning restore CS0649 // Field '...' is never assigned to, and will always have its default value
 
     [Fact(DisplayName = "Invalid Pointer Type")]
     public void InvalidPointerType()
