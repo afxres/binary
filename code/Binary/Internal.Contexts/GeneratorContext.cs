@@ -49,6 +49,8 @@ internal sealed class GeneratorContext : IGeneratorContext, IDisposable
             throw new ArgumentException($"Invalid byref-like type: {type}");
         if (type.IsPointer)
             throw new ArgumentException($"Invalid pointer type: {type}");
+        if (type.IsFunctionPointer)
+            throw new ArgumentException($"Invalid function pointer type: {type}");
         if (type.IsAbstract && type.IsSealed)
             throw new ArgumentException($"Invalid static type: {type}");
         if (type.IsGenericTypeDefinition || type.IsGenericParameter)
