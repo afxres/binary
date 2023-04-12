@@ -65,9 +65,10 @@ internal static class FallbackSequentialMethods
         return (IConverter)converter;
     }
 
+    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static MethodInfo GetArrayMethodInfo(Type type, Type elementType)
     {
-        if (type != elementType.MakeArrayType())
+        if (type.IsSZArray is false)
             throw new NotSupportedException($"Only single dimensional zero based arrays are supported, type: {type}");
         return ArrayCreateMethod.MakeGenericMethod(elementType);
     }
