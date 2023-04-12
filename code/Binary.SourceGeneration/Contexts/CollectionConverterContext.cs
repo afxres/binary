@@ -28,7 +28,6 @@ public partial class CollectionConverterContext : SymbolConverterContext
         var methodBody = this.methodBody;
         var elements = this.elements;
 
-
         var delegateName = sourceType switch
         {
             SourceType.List => $"System.Func<System.Collections.Generic.List<{GetTypeFullName(0)}>, {SymbolTypeFullName}>",
