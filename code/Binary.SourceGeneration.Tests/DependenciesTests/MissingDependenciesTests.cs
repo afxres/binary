@@ -1,7 +1,9 @@
 ﻿namespace Mikodev.Binary.SourceGeneration.Tests.DependenciesTests;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Reflection;
 using Xunit;
 
@@ -50,7 +52,13 @@ public class MissingDependenciesTests
         builder.Add(MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Runtime")).Location));
         var compilation = CompilationModule.CreateCompilation(source, builder.ToImmutable());
         var generator = new SourceGenerator();
-        _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
+        var driver = CSharpGeneratorDriver.Create(generators: new[] { generator.AsSourceGenerator() }, parseOptions: CompilationModule.ParseOptions);
+        _ = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var outputDiagnostics);
+        var diagnostics = compilation.GetDiagnostics();
+        var outputCompilationDiagnostics = outputCompilation.GetDiagnostics();
         Assert.Empty(diagnostics);
+        Assert.Empty(outputDiagnostics);
+        Assert.NotEmpty(outputCompilationDiagnostics);
+        Assert.Contains("Immutable", outputCompilationDiagnostics.Select(x => x.Location.GetSourceText()));
     }
 }

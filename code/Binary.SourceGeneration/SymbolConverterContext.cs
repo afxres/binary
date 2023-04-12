@@ -43,9 +43,9 @@ public abstract class SymbolConverterContext
 
     protected void AddType(int key, ITypeSymbol symbol)
     {
-        var type = Symbols.GetSymbolFullName(symbol);
-        var converter = $"{Constants.GlobalNamespace}{Constants.ConverterTypeName}<{type}>";
-        FullNameResources.Add(key, (type, converter));
+        var fullName = Symbols.GetSymbolFullName(symbol);
+        var converter = $"{Constants.GlobalNamespace}{Constants.ConverterTypeName}<{fullName}>";
+        FullNameResources.Add(key, (fullName, converter));
     }
 
     protected string GetTypeFullName(int key)

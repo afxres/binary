@@ -18,6 +18,8 @@ public class CompilationTests
             using System.Collections.Immutable;
 
             [SourceGeneratorContext]
+            [SourceGeneratorInclude<int[]>]
+            [SourceGeneratorInclude<string[]>]
             [SourceGeneratorInclude<List<int>>]
             [SourceGeneratorInclude<Memory<string>>]
             [SourceGeneratorInclude<ArraySegment<int>>]

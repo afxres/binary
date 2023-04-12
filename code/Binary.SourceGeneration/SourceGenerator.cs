@@ -161,8 +161,8 @@ public sealed class SourceGenerator : IIncrementalGenerator
         foreach (var content in targets)
         {
             cancellation.ThrowIfCancellationRequested();
-            var key = Symbols.GetSymbolFullName(content.Symbol);
-            builder.AppendIndent(2, $"{{ typeof({key}), new {content.ConverterCreatorTypeName}() }},");
+            var fullName = Symbols.GetSymbolFullName(content.Symbol);
+            builder.AppendIndent(2, $"{{ typeof({fullName}), new {content.ConverterCreatorTypeName}() }},");
             cancellation.ThrowIfCancellationRequested();
         }
         builder.AppendIndent(1, $"}});");

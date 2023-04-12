@@ -11,7 +11,7 @@ using Xunit;
 
 internal class CompilationModule
 {
-    private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(kind: SourceCodeKind.Regular, documentationMode: DocumentationMode.Parse);
+    public static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(kind: SourceCodeKind.Regular, documentationMode: DocumentationMode.Parse);
 
     public static Compilation CreateCompilation(string source)
     {
@@ -43,7 +43,9 @@ internal class CompilationModule
         var driver = CSharpGeneratorDriver.Create(generators: generators.Select(g => g.AsSourceGenerator()), parseOptions: ParseOptions);
         _ = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out outputDiagnostics);
         var diagnostics = compilation.GetDiagnostics();
+        var outputCompilationDiagnostics = outputCompilation.GetDiagnostics();
         Assert.Empty(diagnostics.Where(x => x.Severity is DiagnosticSeverity.Error));
+        Assert.Empty(outputCompilationDiagnostics.Where(x => x.Severity is DiagnosticSeverity.Error));
         return outputCompilation;
     }
 }

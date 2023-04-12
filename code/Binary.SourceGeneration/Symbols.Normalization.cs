@@ -42,49 +42,95 @@ public static partial class Symbols
         return symbol.ToDisplayString(FullDisplayFormatNoNamespace);
     }
 
-    public static string GetSymbolFullName(ITypeSymbol typeSymbol)
+    public static string GetSymbolFullName(ITypeSymbol symbol)
     {
-        if (typeSymbol is not INamedTypeSymbol symbol || symbol.IsGenericType is false)
-            return typeSymbol.ToDisplayString(FullDisplayFormat);
-        var @namespace = symbol.ContainingNamespace.ToDisplayString(FullDisplayFormat);
-        var builder = new StringBuilder(@namespace);
-        _ = builder.Append(".");
-        _ = builder.Append(typeSymbol.Name);
-        _ = builder.Append("<");
-        var arguments = symbol.TypeArguments;
-        for (var i = 0; i < arguments.Length; i++)
+        static void Invoke(StringBuilder target, ITypeSymbol symbol)
         {
-            _ = builder.Append(GetSymbolFullName(arguments[i]));
-            if (i == arguments.Length - 1)
-                break;
-            _ = builder.Append(", ");
+            if (symbol is IArrayTypeSymbol array)
+                InvokeArrayTypeSymbol(target, array);
+            else
+                InvokeNamedTypeSymbol(target, (INamedTypeSymbol)symbol);
         }
-        _ = builder.Append(">");
-        var result = builder.ToString();
+
+        static void InvokeArrayTypeSymbol(StringBuilder target, IArrayTypeSymbol symbol)
+        {
+            Invoke(target, symbol.ElementType);
+            _ = target.Append('[');
+            for (var i = 0; i < symbol.Rank - 1; i++)
+                _ = target.Append(',');
+            _ = target.Append(']');
+        }
+
+        static void InvokeNamedTypeSymbol(StringBuilder target, INamedTypeSymbol symbol)
+        {
+            _ = target.Append(Constants.GlobalNamespace);
+            var @namespace = symbol.ContainingNamespace;
+            if (@namespace.IsGlobalNamespace is false)
+                _ = target.Append(@namespace.ToDisplayString() + ".");
+            _ = target.Append(symbol.Name);
+            if (symbol.IsGenericType is false)
+                return;
+            _ = target.Append("<");
+            var arguments = symbol.TypeArguments;
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                Invoke(target, arguments[i]);
+                if (i == arguments.Length - 1)
+                    break;
+                _ = target.Append(", ");
+            }
+            _ = target.Append(">");
+        }
+
+        var target = new StringBuilder();
+        Invoke(target, symbol);
+        var result = target.ToString();
         return result;
     }
 
     public static string GetOutputFullName(ITypeSymbol symbol)
     {
-        var prefix = symbol.ContainingNamespace.ToDisplayString(FullDisplayFormat);
-        var target = new StringBuilder(prefix);
-        _ = target.Replace(Constants.GlobalNamespace, string.Empty);
-        _ = target.Replace('.', '_');
-        _ = target.Append('_');
-        _ = target.Append(symbol.Name);
-        if (symbol is INamedTypeSymbol type && type.IsGenericType)
+        static void Invoke(StringBuilder target, ITypeSymbol symbol)
         {
-            _ = target.Append("_l_");
-            var arguments = type.TypeArguments;
-            for (var i = 0; i < arguments.Length; i++)
-            {
-                _ = target.Append(GetOutputFullName(arguments[i]));
-                if (i == arguments.Length - 1)
-                    break;
-                _ = target.Append("_c_");
-            }
-            _ = target.Append("_r");
+            if (symbol is IArrayTypeSymbol array)
+                InvokeArrayTypeSymbol(target, array);
+            else
+                InvokeNamedTypeSymbol(target, (INamedTypeSymbol)symbol);
         }
+
+        static void InvokeArrayTypeSymbol(StringBuilder target, IArrayTypeSymbol symbol)
+        {
+            _ = target.Append("Array");
+            if (symbol.Rank is not 1)
+                _ = target.Append($"{symbol.Rank}D");
+            _ = target.Append('_');
+            Invoke(target, symbol.ElementType);
+        }
+
+        static void InvokeNamedTypeSymbol(StringBuilder target, INamedTypeSymbol symbol)
+        {
+            var @namespace = symbol.ContainingNamespace;
+            if (@namespace.IsGlobalNamespace is false)
+                _ = target.Append(@namespace.ToDisplayString() + ".");
+            _ = target.Replace('.', '_');
+            _ = target.Append(symbol.Name);
+            if (symbol is INamedTypeSymbol type && type.IsGenericType)
+            {
+                _ = target.Append("_l_");
+                var arguments = type.TypeArguments;
+                for (var i = 0; i < arguments.Length; i++)
+                {
+                    Invoke(target, arguments[i]);
+                    if (i == arguments.Length - 1)
+                        break;
+                    _ = target.Append("_c_");
+                }
+                _ = target.Append("_r");
+            }
+        }
+
+        var target = new StringBuilder();
+        Invoke(target, symbol);
         var result = target.ToString();
         return result;
     }

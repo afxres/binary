@@ -24,7 +24,8 @@ public class SymbolConstructorInfo<T> where T : SymbolMemberInfo
     {
         var constructorOnly = ConstructorParameters.Length == Members.Length;
         var tail = constructorOnly ? ");" : ")";
-        builder.AppendIndent(3, $"var result = new {Symbols.GetSymbolFullName(Symbol)}(", tail, ConstructorParameters, x => $"var{Members.IndexOf(x)}");
+        var fullName = Symbols.GetSymbolFullName(Symbol);
+        builder.AppendIndent(3, $"var result = new {fullName}(", tail, ConstructorParameters, x => $"var{Members.IndexOf(x)}");
         if (constructorOnly is false)
         {
             builder.AppendIndent(3, $"{{");
