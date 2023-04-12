@@ -9,20 +9,14 @@ public partial class EnumConverterContext : SymbolConverterContext
 
     private void AppendConverterCreatorBody(StringBuilder builder)
     {
-        builder.AppendIndent(3, $"var converter = Mikodev.Binary.Generator.GetEnumConverter<_TSelf>();");
+        builder.AppendIndent(3, $"var converter = Mikodev.Binary.Generator.GetEnumConverter<{SymbolTypeFullName}>();");
         builder.AppendIndent(3, $"return ({Constants.IConverterTypeName})converter;");
     }
 
-    private void Invoke()
+    protected override void Invoke(StringBuilder builder)
     {
-        var builder = new StringBuilder();
-        AppendFileHead(builder);
-
         AppendConverterCreatorHead(builder);
         AppendConverterCreatorBody(builder);
         AppendConverterCreatorTail(builder);
-
-        AppendFileTail(builder);
-        Finish(builder);
     }
 }

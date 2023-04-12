@@ -14,7 +14,7 @@ public partial class GenericConverterContext : SymbolConverterContext
     private GenericConverterContext(SourceGeneratorContext context, ITypeSymbol symbol, string name, ImmutableArray<ITypeSymbol> elements) : base(context, symbol)
     {
         for (var i = 0; i < elements.Length; i++)
-            TypeAliases.Add(elements[i], i.ToString());
+            AddType(i, elements[i]);
         this.name = name;
         this.elements = elements;
     }
@@ -26,7 +26,7 @@ public partial class GenericConverterContext : SymbolConverterContext
         for (var i = 0; i < elements.Length; i++)
         {
             var element = elements[i];
-            AppendAssignConverterExplicit(builder, element, $"cvt{i}", $"_C{i}", $"_T{i}");
+            AppendAssignConverterExplicit(builder, element, $"cvt{i}", $"{GetConverterTypeFullName(i)}", GetTypeFullName(i));
             CancellationToken.ThrowIfCancellationRequested();
         }
 
@@ -34,16 +34,10 @@ public partial class GenericConverterContext : SymbolConverterContext
         builder.AppendIndent(3, $"return ({Constants.IConverterTypeName})converter;");
     }
 
-    private void Invoke()
+    protected override void Invoke(StringBuilder builder)
     {
-        var builder = new StringBuilder();
-        AppendFileHead(builder);
-
         AppendConverterCreatorHead(builder);
         AppendConverterCreatorBody(builder);
         AppendConverterCreatorTail(builder);
-
-        AppendFileTail(builder);
-        Finish(builder);
     }
 }

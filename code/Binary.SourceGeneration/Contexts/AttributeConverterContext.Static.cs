@@ -4,12 +4,10 @@ using Microsoft.CodeAnalysis;
 
 public partial class AttributeConverterContext
 {
-    public static string? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
+    public static SymbolConverterContent? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
     {
         if (Symbols.GetConverterType(context, symbol) is not { } type)
             return null;
-        var closure = new AttributeConverterContext(context, symbol, type);
-        closure.Invoke();
-        return closure.ConverterCreatorTypeName;
+        return new AttributeConverterContext(context, symbol, type).Invoke();
     }
 }

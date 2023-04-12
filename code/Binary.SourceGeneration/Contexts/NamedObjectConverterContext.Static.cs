@@ -55,8 +55,6 @@ public sealed partial class NamedObjectConverterContext
         if (members.Length is 0)
             return attribute is null ? null : (object)Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetDiagnosticName(symbol) });
         var constructor = Symbols.GetConstructor(symbol, members);
-        var closure = new NamedObjectConverterContext(context, symbol, members, constructor);
-        closure.Invoke();
-        return closure.ConverterCreatorTypeName;
+        return new NamedObjectConverterContext(context, symbol, members, constructor).Invoke();
     }
 }

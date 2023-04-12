@@ -15,21 +15,15 @@ public partial class AttributeConverterContext : SymbolConverterContext
 
     private void AppendConverterCreatorBody(StringBuilder builder)
     {
-        AppendAssignConverterExplicitConverter(builder, this.converter, "converter", "_CSelf");
+        AppendAssignConverterExplicitConverter(builder, this.converter, "converter", SymbolConverterTypeFullName);
         builder.AppendIndent(3, $"return ({Constants.IConverterTypeName})converter;");
         CancellationToken.ThrowIfCancellationRequested();
     }
 
-    private void Invoke()
+    protected override void Invoke(StringBuilder builder)
     {
-        var builder = new StringBuilder();
-        AppendFileHead(builder);
-
         AppendConverterCreatorHead(builder);
         AppendConverterCreatorBody(builder);
         AppendConverterCreatorTail(builder);
-
-        AppendFileTail(builder);
-        Finish(builder);
     }
 }

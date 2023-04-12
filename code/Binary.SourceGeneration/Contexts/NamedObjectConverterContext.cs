@@ -13,11 +13,8 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
 
     private NamedObjectConverterContext(SourceGeneratorContext context, ITypeSymbol symbol, ImmutableArray<SymbolNamedMemberInfo> members, SymbolConstructorInfo<SymbolNamedMemberInfo>? constructor) : base(context, symbol)
     {
-        TypeAliases.Add("System.String", "String");
-        TypeAliases.Add("System.ReadOnlySpan<byte>", "Span", typeOnly: true);
-        TypeAliases.Add(Constants.AllocatorTypeName, "Allocator", typeOnly: true);
         for (var i = 0; i < members.Length; i++)
-            TypeAliases.Add(members[i].TypeSymbol, i.ToString());
+            AddType(i, members[i].TypeSymbol);
         this.members = members;
         this.constructor = constructor;
     }
@@ -25,7 +22,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
     private void AppendConstructor(StringBuilder builder)
     {
         var members = this.members;
-        builder.AppendIndent(2, $"public {ClosureTypeName}(", ")", members.Length, x => $"byte[] key{x}, _C{x} arg{x}");
+        builder.AppendIndent(2, $"public {ClosureTypeName}(", ")", members.Length, i => $"byte[] key{i}, {GetConverterTypeFullName(i)} arg{i}");
         builder.AppendIndent(2, $"{{");
         for (var i = 0; i < members.Length; i++)
         {
@@ -41,23 +38,23 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
     {
         var members = this.members;
         builder.AppendIndent();
-        builder.AppendIndent(2, $"public void Encode(ref _TAllocator allocator, _TSelf item)");
+        builder.AppendIndent(2, $"public void Encode(ref {Constants.AllocatorTypeName} allocator, {SymbolTypeFullName} item)");
         builder.AppendIndent(2, $"{{");
         for (var i = 0; i < members.Length; i++)
         {
             var member = members[i];
             if (member.IsOptional is false)
             {
-                builder.AppendIndent(3, $"_TAllocator.Append(ref allocator, new _TSpan(this.key{i}));");
+                builder.AppendIndent(3, $"{Constants.AllocatorTypeName}.Append(ref allocator, new global::System.ReadOnlySpan<byte>(this.key{i}));");
                 builder.AppendIndent(3, $"this.cvt{i}.EncodeWithLengthPrefix(ref allocator, item.{member.Name});");
                 CancellationToken.ThrowIfCancellationRequested();
             }
             else
             {
                 builder.AppendIndent(3, $"var loc{i} = item.{member.Name};");
-                builder.AppendIndent(3, $"if ({Constants.EqualityComparerTypeName}<_T{i}>.Default.Equals(loc{i}, default) is false)");
+                builder.AppendIndent(3, $"if ({Constants.EqualityComparerTypeName}<{GetTypeFullName(i)}>.Default.Equals(loc{i}, default) is false)");
                 builder.AppendIndent(3, $"{{");
-                builder.AppendIndent(4, $"_TAllocator.Append(ref allocator, this.key{i});");
+                builder.AppendIndent(4, $"{Constants.AllocatorTypeName}.Append(ref allocator, this.key{i});");
                 builder.AppendIndent(4, $"this.cvt{i}.EncodeWithLengthPrefix(ref allocator, loc{i});");
                 builder.AppendIndent(3, $"}}");
                 CancellationToken.ThrowIfCancellationRequested();
@@ -73,7 +70,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             return;
         var members = this.members;
         builder.AppendIndent();
-        builder.AppendIndent(2, $"public _TSelf Decode(scoped Mikodev.Binary.Components.NamedObjectConstructorParameter parameter)");
+        builder.AppendIndent(2, $"public {SymbolTypeFullName} Decode(scoped Mikodev.Binary.Components.NamedObjectConstructorParameter parameter)");
         builder.AppendIndent(2, $"{{");
 
         for (var i = 0; i < members.Length; i++)
@@ -97,7 +94,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         {
             builder.AppendIndent(2, $"private readonly byte[] key{i};");
             builder.AppendIndent();
-            builder.AppendIndent(2, $"private readonly _C{i} cvt{i};");
+            builder.AppendIndent(2, $"private readonly {GetConverterTypeFullName(i)} cvt{i};");
             builder.AppendIndent();
             CancellationToken.ThrowIfCancellationRequested(); ;
         }
@@ -110,24 +107,21 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
 
         builder.AppendIndent(3, $"var names = new string[] {{ ", $" }};", members, x => x.NamedKeyLiteral);
         builder.AppendIndent(3, $"var optional = new bool[] {{ ", $" }};", members, x => x.IsOptional ? "true" : "false");
-        builder.AppendIndent(3, $"var stringConverter = (_CString)context.GetConverter(typeof(_TString));");
+        builder.AppendIndent(3, $"var stringConverter = ({Constants.ConverterTypeName}<string>)context.GetConverter(typeof(string));");
         for (var i = 0; i < members.Length; i++)
         {
             var member = members[i];
-            AppendAssignConverter(builder, member, $"cvt{i}", $"_C{i}", $"_T{i}");
-            builder.AppendIndent(3, $"var key{i} = _TAllocator.Invoke({member.NamedKeyLiteral}, stringConverter.EncodeWithLengthPrefix);");
+            AppendAssignConverter(builder, member, $"cvt{i}", $"{GetConverterTypeFullName(i)}", GetTypeFullName(i));
+            builder.AppendIndent(3, $"var key{i} = {Constants.AllocatorTypeName}.Invoke({member.NamedKeyLiteral}, stringConverter.EncodeWithLengthPrefix);");
             CancellationToken.ThrowIfCancellationRequested(); ;
         }
         builder.AppendIndent(3, $"var closure = new {ClosureTypeName}(", ");", members.Length, x => $"key{x}, cvt{x}");
-        builder.AppendIndent(3, $"var converter = Mikodev.Binary.Components.NamedObject.GetNamedObjectConverter<_TSelf>(closure.Encode, {decoder}, stringConverter, names, optional);");
+        builder.AppendIndent(3, $"var converter = Mikodev.Binary.Components.NamedObject.GetNamedObjectConverter<{SymbolTypeFullName}>(closure.Encode, {decoder}, stringConverter, names, optional);");
         builder.AppendIndent(3, $"return ({Constants.IConverterTypeName})converter;");
     }
 
-    private void Invoke()
+    protected override void Invoke(StringBuilder builder)
     {
-        var builder = new StringBuilder();
-        AppendFileHead(builder);
-
         AppendClosureHead(builder);
         AppendFields(builder);
         AppendConstructor(builder);
@@ -139,8 +133,5 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         AppendConverterCreatorHead(builder);
         AppendConverterCreatorBody(builder);
         AppendConverterCreatorTail(builder);
-
-        AppendFileTail(builder);
-        Finish(builder);
     }
 }

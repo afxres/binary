@@ -1,17 +1,23 @@
 ﻿namespace Mikodev.Binary.SourceGeneration;
 
 using Microsoft.CodeAnalysis;
-using System.IO;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
 public abstract class SymbolConverterContext
 {
-    protected ITypeSymbol TypeSymbol { get; }
+    protected const int SymbolFullNameKey = -1;
+
+    protected Dictionary<int, (string TypeFullName, string ConverterTypeFullName)> FullNameResources { get; } = new Dictionary<int, (string, string)>();
+
+    protected ITypeSymbol Symbol { get; }
+
+    protected string SymbolTypeFullName { get; }
+
+    protected string SymbolConverterTypeFullName { get; }
 
     protected SourceGeneratorContext SourceGeneratorContext { get; }
-
-    protected SymbolTypeAliases TypeAliases { get; }
 
     protected CancellationToken CancellationToken { get; }
 
@@ -25,33 +31,34 @@ public abstract class SymbolConverterContext
 
     protected SymbolConverterContext(SourceGeneratorContext context, ITypeSymbol symbol)
     {
-        var aliases = new SymbolTypeAliases();
         var output = Symbols.GetOutputFullName(symbol);
-        aliases.Add(symbol, "Self");
-        TypeSymbol = symbol;
+        AddType(SymbolFullNameKey, symbol);
+        Symbol = symbol;
+        SymbolTypeFullName = GetTypeFullName(SymbolFullNameKey);
+        SymbolConverterTypeFullName = GetConverterTypeFullName(SymbolFullNameKey);
         SourceGeneratorContext = context;
         CancellationToken = context.SourceProductionContext.CancellationToken;
-        TypeAliases = aliases;
         HintNameUnit = output;
         ClosureTypeName = $"{output}_Closure";
         ConverterTypeName = $"{output}_Converter";
         ConverterCreatorTypeName = $"{output}_ConverterCreator";
     }
 
-    protected void AppendFileHead(StringBuilder builder)
+    protected void AddType(int key, ITypeSymbol symbol)
     {
-        builder.AppendIndent(0, $"namespace {SourceGeneratorContext.Namespace};");
-        builder.AppendIndent();
-        TypeAliases.AppendAliases(builder);
-
-        builder.AppendIndent();
-        builder.AppendIndent(0, $"partial class {SourceGeneratorContext.Name}");
-        builder.AppendIndent(0, $"{{");
+        var type = Symbols.GetSymbolFullName(symbol);
+        var converter = $"{Constants.GlobalNamespace}{Constants.ConverterTypeName}<{type}>";
+        FullNameResources.Add(key, (type, converter));
     }
 
-    protected void AppendFileTail(StringBuilder builder)
+    protected string GetTypeFullName(int key)
     {
-        builder.AppendIndent(0, $"}}");
+        return FullNameResources[key].TypeFullName;
+    }
+
+    protected string GetConverterTypeFullName(int key)
+    {
+        return FullNameResources[key].ConverterTypeFullName;
     }
 
     protected void AppendClosureHead(StringBuilder builder)
@@ -67,7 +74,7 @@ public abstract class SymbolConverterContext
 
     protected void AppendConverterHead(StringBuilder builder)
     {
-        builder.AppendIndent(1, $"private sealed class {ConverterTypeName} : _CSelf");
+        builder.AppendIndent(1, $"private sealed class {ConverterTypeName} : {GetConverterTypeFullName(-1)}");
         builder.AppendIndent(1, $"{{");
     }
 
@@ -83,7 +90,7 @@ public abstract class SymbolConverterContext
 
         builder.AppendIndent(2, $"public {Constants.IConverterTypeName} GetConverter({Constants.IGeneratorContextTypeName} context, System.Type type)");
         builder.AppendIndent(2, $"{{");
-        builder.AppendIndent(3, $"if (type != typeof(_TSelf))");
+        builder.AppendIndent(3, $"if (type != typeof({GetTypeFullName(-1)}))");
         builder.AppendIndent(4, $"return null;");
     }
 
@@ -124,10 +131,13 @@ public abstract class SymbolConverterContext
             AppendAssignConverterExplicit(builder, member.TypeSymbol, variableName, converterTypeAlias, memberTypeAlias);
     }
 
-    protected void Finish(StringBuilder builder)
+    protected abstract void Invoke(StringBuilder builder);
+
+    protected SymbolConverterContent Invoke()
     {
+        var builder = new StringBuilder();
+        Invoke(builder);
         var code = builder.ToString();
-        var file = Path.Combine(SourceGeneratorContext.HintNameUnit, $"{HintNameUnit}.g.cs");
-        SourceGeneratorContext.SourceProductionContext.AddSource(file, code);
+        return new SymbolConverterContent(Symbol, ConverterCreatorTypeName, code);
     }
 }

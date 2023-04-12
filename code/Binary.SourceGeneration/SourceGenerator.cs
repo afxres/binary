@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Mikodev.Binary.SourceGeneration.Contexts;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -98,15 +99,15 @@ public sealed class SourceGenerator : IIncrementalGenerator
     {
         var includedTypes = GetIncludedTypes(context, type, include);
         var pending = new Queue<ITypeSymbol>(includedTypes.Keys);
-        var handled = new Dictionary<ITypeSymbol, string?>(SymbolEqualityComparer.Default);
+        var handled = new Dictionary<ITypeSymbol, SymbolConverterContent?>(SymbolEqualityComparer.Default);
         var generator = new SourceGeneratorContext(type, compilation, context, pending);
 
-        string? Handle(ITypeSymbol symbol)
+        SymbolConverterContent? Handle(ITypeSymbol symbol)
         {
             if (Symbols.Validate(generator, symbol) is false)
                 return null;
             var result = TypeHandlers.Select(h => h.Invoke(generator, symbol)).FirstOrDefault(x => x is not null);
-            if (result is string target)
+            if (result is SymbolConverterContent target)
                 return target;
             var diagnostic = ((Diagnostic?)result) ?? (includedTypes.TryGetValue(symbol, out var attribute)
                 ? Diagnostic.Create(Constants.NoConverterGenerated, Symbols.GetLocation(attribute), new object[] { Symbols.GetDiagnosticName(symbol) })
@@ -130,33 +131,35 @@ public sealed class SourceGenerator : IIncrementalGenerator
             cancellation.ThrowIfCancellationRequested();
         }
 
-        AppendConverterCreators(context, generator, handled);
+        AppendConverterCreators(context, generator, handled.Values.OfType<SymbolConverterContent>());
     }
 
-    private static void AppendConverterCreators(SourceProductionContext context, SourceGeneratorContext generation, IReadOnlyDictionary<ITypeSymbol, string?> creators)
+    private static void AppendConverterCreators(SourceProductionContext context, SourceGeneratorContext generation, IEnumerable<SymbolConverterContent> creators)
     {
         var builder = new StringBuilder();
         var cancellation = context.CancellationToken;
+        var targets = creators.OrderBy(x => x.ConverterCreatorTypeName, StringComparer.CurrentCultureIgnoreCase).ToList();
         builder.AppendIndent(0, $"namespace {generation.Namespace};");
-        builder.AppendIndent();
-        builder.AppendIndent(0, $"using _IDictionary = global::System.Collections.Immutable.ImmutableDictionary<global::System.Type, global::Mikodev.Binary.IConverterCreator>;");
-        builder.AppendIndent(0, $"using _SDictionary = global::System.Collections.Immutable.ImmutableDictionary;");
-        builder.AppendIndent(0, $"using _TDictionary = global::System.Collections.Generic.Dictionary<global::System.Type, global::Mikodev.Binary.IConverterCreator>;");
         builder.AppendIndent();
         builder.AppendIndent(0, $"partial class {generation.Name}");
         builder.AppendIndent(0, $"{{");
-        builder.AppendIndent(1, $"public static _IDictionary ConverterCreators {{ get; }} = _SDictionary.CreateRange(new _TDictionary");
+        builder.AppendIndent(1, $"public static global::System.Collections.Immutable.ImmutableDictionary<global::System.Type, global::Mikodev.Binary.IConverterCreator> ConverterCreators {{ get; }} = global::System.Collections.Immutable.ImmutableDictionary.CreateRange(new global::System.Collections.Generic.Dictionary<global::System.Type, global::Mikodev.Binary.IConverterCreator>");
         builder.AppendIndent(1, $"{{");
-        foreach (var i in creators)
+        foreach (var content in targets)
         {
             cancellation.ThrowIfCancellationRequested();
-            if (i.Value is not { } creator)
-                continue;
-            var key = Symbols.GetSymbolFullName(i.Key);
-            builder.AppendIndent(2, $"{{ typeof({key}), new {creator}() }},");
+            var key = Symbols.GetSymbolFullName(content.Symbol);
+            builder.AppendIndent(2, $"{{ typeof({key}), new {content.ConverterCreatorTypeName}() }},");
             cancellation.ThrowIfCancellationRequested();
         }
         builder.AppendIndent(1, $"}});");
+
+        foreach (var content in targets)
+        {
+            cancellation.ThrowIfCancellationRequested();
+            builder.AppendIndent();
+            _ = builder.Append(content.Code);
+        }
         builder.AppendIndent(0, $"}}");
 
         var code = builder.ToString();

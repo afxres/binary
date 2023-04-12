@@ -46,12 +46,10 @@ public partial class GenericConverterContext
         return null;
     }
 
-    public static string? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
+    public static SymbolConverterContent? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
     {
         if (GetInfo(context, symbol) is not (var name, var elements))
             return null;
-        var closure = new GenericConverterContext(context, symbol, name, elements);
-        closure.Invoke();
-        return closure.ConverterCreatorTypeName;
+        return new GenericConverterContext(context, symbol, name, elements).Invoke();
     }
 }
