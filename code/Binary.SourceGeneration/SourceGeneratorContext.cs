@@ -7,27 +7,20 @@ public class SourceGeneratorContext
 {
     private readonly Queue<ITypeSymbol> referencedTypes;
 
-    private readonly Dictionary<string, ITypeSymbol?> types = new Dictionary<string, ITypeSymbol?>();
+    private readonly Dictionary<string, ITypeSymbol?> types;
 
-    public string HintNameUnit { get; }
-
-    public string Name { get; }
-
-    public string Namespace { get; }
+    public Dictionary<string, object> Resources { get; }
 
     public Compilation Compilation { get; }
 
     public SourceProductionContext SourceProductionContext { get; }
 
-    public Dictionary<string, object> Resources { get; } = new Dictionary<string, object>();
-
     public SourceGeneratorContext(INamedTypeSymbol type, Compilation compilation, SourceProductionContext sourceProductionContext, Queue<ITypeSymbol> referencedTypes)
     {
-        Name = type.Name;
-        Namespace = type.ContainingNamespace.ToDisplayString();
+        Resources = new Dictionary<string, object>();
         Compilation = compilation;
         SourceProductionContext = sourceProductionContext;
-        HintNameUnit = Symbols.GetOutputFullName(type);
+        this.types = new Dictionary<string, ITypeSymbol?>();
         this.referencedTypes = referencedTypes;
     }
 

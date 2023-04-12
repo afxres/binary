@@ -21,8 +21,6 @@ public abstract class SymbolConverterContext
 
     protected CancellationToken CancellationToken { get; }
 
-    protected string HintNameUnit { get; }
-
     protected string ClosureTypeName { get; }
 
     protected string ConverterTypeName { get; }
@@ -38,7 +36,6 @@ public abstract class SymbolConverterContext
         SymbolConverterTypeFullName = GetConverterTypeFullName(SymbolFullNameKey);
         SourceGeneratorContext = context;
         CancellationToken = context.SourceProductionContext.CancellationToken;
-        HintNameUnit = output;
         ClosureTypeName = $"{output}_Closure";
         ConverterTypeName = $"{output}_Converter";
         ConverterCreatorTypeName = $"{output}_ConverterCreator";

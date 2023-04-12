@@ -55,6 +55,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
             return;
         var cancellation = context.CancellationToken;
         var include = compilation.GetTypeByMetadataName(Constants.SourceGeneratorIncludeAttributeTypeName)?.ConstructUnboundGenericType();
+        var types = new List<INamedTypeSymbol>();
         foreach (var declaration in declarations)
         {
             var model = compilation.GetSemanticModel(declaration.SyntaxTree);
@@ -64,8 +65,19 @@ public sealed class SourceGenerator : IIncrementalGenerator
             if (Ensure(declaration, type) is { } descriptor)
                 context.ReportDiagnostic(Diagnostic.Create(descriptor, Symbols.GetLocation(type), new object[] { Symbols.GetDiagnosticName(type) }));
             else
-                Invoke(compilation, context, type, include);
+                types.Add(type);
             cancellation.ThrowIfCancellationRequested();
+        }
+
+        foreach (var i in types.GroupBy(x => x.Name, StringComparer.InvariantCulture))
+        {
+            var index = 0;
+            foreach (var type in i.OrderBy(x => x.ContainingNamespace.ToDisplayString(), StringComparer.InvariantCulture))
+            {
+                var file = $"{i.Key}.{index}.g.cs";
+                Invoke(compilation, context, file, type, include);
+                index++;
+            }
         }
     }
 
@@ -95,7 +107,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         return builder.ToImmutable();
     }
 
-    private static void Invoke(Compilation compilation, SourceProductionContext context, INamedTypeSymbol type, INamedTypeSymbol? include)
+    private static void Invoke(Compilation compilation, SourceProductionContext context, string file, INamedTypeSymbol type, INamedTypeSymbol? include)
     {
         var includedTypes = GetIncludedTypes(context, type, include);
         var pending = new Queue<ITypeSymbol>(includedTypes.Keys);
@@ -131,17 +143,18 @@ public sealed class SourceGenerator : IIncrementalGenerator
             cancellation.ThrowIfCancellationRequested();
         }
 
-        AppendConverterCreators(context, generator, handled.Values.OfType<SymbolConverterContent>());
+        AppendConverterCreators(context, file, type, handled.Values.OfType<SymbolConverterContent>());
     }
 
-    private static void AppendConverterCreators(SourceProductionContext context, SourceGeneratorContext generation, IEnumerable<SymbolConverterContent> creators)
+    private static void AppendConverterCreators(SourceProductionContext context, string file, INamedTypeSymbol type, IEnumerable<SymbolConverterContent> creators)
     {
         var builder = new StringBuilder();
         var cancellation = context.CancellationToken;
         var targets = creators.OrderBy(x => x.ConverterCreatorTypeName, StringComparer.CurrentCultureIgnoreCase).ToList();
-        builder.AppendIndent(0, $"namespace {generation.Namespace};");
+
+        builder.AppendIndent(0, $"namespace {type.ContainingNamespace.ToDisplayString()};");
         builder.AppendIndent();
-        builder.AppendIndent(0, $"partial class {generation.Name}");
+        builder.AppendIndent(0, $"partial class {type.Name}");
         builder.AppendIndent(0, $"{{");
         builder.AppendIndent(1, $"public static global::System.Collections.Immutable.ImmutableDictionary<global::System.Type, global::Mikodev.Binary.IConverterCreator> ConverterCreators {{ get; }} = global::System.Collections.Immutable.ImmutableDictionary.CreateRange(new global::System.Collections.Generic.Dictionary<global::System.Type, global::Mikodev.Binary.IConverterCreator>");
         builder.AppendIndent(1, $"{{");
@@ -153,17 +166,15 @@ public sealed class SourceGenerator : IIncrementalGenerator
             cancellation.ThrowIfCancellationRequested();
         }
         builder.AppendIndent(1, $"}});");
-
         foreach (var content in targets)
         {
-            cancellation.ThrowIfCancellationRequested();
             builder.AppendIndent();
             _ = builder.Append(content.Code);
+            cancellation.ThrowIfCancellationRequested();
         }
         builder.AppendIndent(0, $"}}");
 
         var code = builder.ToString();
-        var file = $"{generation.HintNameUnit}.g.cs";
         context.AddSource(file, code);
     }
 }
