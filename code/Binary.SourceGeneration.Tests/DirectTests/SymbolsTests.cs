@@ -62,9 +62,17 @@ public class SymbolsTests
                 public double[,,,] Items;
             }
             """;
-        yield return new object[] { a, "Array", "global::System.Int32[,]", "Array2D_System_Int32" };
-        yield return new object[] { b, "Value", "global::System.String[]", "Array_System_String" };
-        yield return new object[] { c, "Items", "global::System.Double[,,,]", "Array4D_System_Double" };
+        var d =
+            """
+            class Hotel
+            {
+                public int[][] Entry;
+            }
+            """;
+        yield return new object[] { a, "Array", "global::System.Int32[,]", "System_Array2D_l_System_Int32_r" };
+        yield return new object[] { b, "Value", "global::System.String[]", "System_Array_l_System_String_r" };
+        yield return new object[] { c, "Items", "global::System.Double[,,,]", "System_Array4D_l_System_Double_r" };
+        yield return new object[] { d, "Entry", "global::System.Int32[][]", "System_Array_l_System_Array_l_System_Int32_r_r" };
     }
 
     public static IEnumerable<object[]> GlobalNamespaceTypeData()

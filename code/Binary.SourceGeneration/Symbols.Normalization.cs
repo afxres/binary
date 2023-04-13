@@ -100,19 +100,19 @@ public static partial class Symbols
 
         static void InvokeArrayTypeSymbol(StringBuilder target, IArrayTypeSymbol symbol)
         {
-            _ = target.Append("Array");
+            _ = target.Append("System_Array");
             if (symbol.Rank is not 1)
                 _ = target.Append($"{symbol.Rank}D");
-            _ = target.Append('_');
+            _ = target.Append("_l_");
             Invoke(target, symbol.ElementType);
+            _ = target.Append("_r");
         }
 
         static void InvokeNamedTypeSymbol(StringBuilder target, INamedTypeSymbol symbol)
         {
             var @namespace = symbol.ContainingNamespace;
             if (@namespace.IsGlobalNamespace is false)
-                _ = target.Append(@namespace.ToDisplayString() + ".");
-            _ = target.Replace('.', '_');
+                _ = target.Append(@namespace.ToDisplayString().Replace('.', '_') + "_");
             _ = target.Append(symbol.Name);
             if (symbol is INamedTypeSymbol type && type.IsGenericType)
             {
