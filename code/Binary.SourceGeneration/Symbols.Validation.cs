@@ -14,7 +14,7 @@ public static partial class Symbols
         var namedObjectAttribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.NamedObjectAttributeTypeName));
         var tupleObjectAttribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.TupleObjectAttributeTypeName));
 
-        var cancellation = context.SourceProductionContext.CancellationToken;
+        var cancellation = context.CancellationToken;
         var diagnostics = new List<Diagnostic>();
         var attributes = new[] { converterAttribute, converterCreatorAttribute, namedObjectAttribute, tupleObjectAttribute }
             .OfType<AttributeData>()
@@ -26,7 +26,7 @@ public static partial class Symbols
 
         if (attributes.Length > 1)
         {
-            diagnostics.Add(Diagnostic.Create(Constants.MultipleAttributesFoundOnType, GetLocation(symbol), new object[] { GetDiagnosticName(symbol) }));
+            diagnostics.Add(Diagnostic.Create(Constants.MultipleAttributesFoundOnType, GetLocation(symbol), new object[] { GetSymbolDiagnosticDisplay(symbol) }));
         }
         else
         {
@@ -113,7 +113,7 @@ public static partial class Symbols
             tupleKeyAttribute is null)
             return;
 
-        var cancellation = context.SourceProductionContext.CancellationToken;
+        var cancellation = context.CancellationToken;
         ValidateConverter(context, converterAttribute, diagnostics);
         ValidateConverterCreator(context, converterCreatorAttribute, diagnostics);
         ValidateNamedKey(namedKeyAttribute, diagnostics, namedKeys);
@@ -121,7 +121,7 @@ public static partial class Symbols
         cancellation.ThrowIfCancellationRequested();
 
         var memberName = member.Name;
-        var containingTypeName = GetDiagnosticName(member.ContainingType);
+        var containingTypeName = GetSymbolDiagnosticDisplay(member.ContainingType);
         var property = member as IPropertySymbol;
         if (member.IsStatic || member.DeclaredAccessibility is not Accessibility.Public)
             diagnostics.Add(Diagnostic.Create(Constants.RequirePublicInstanceMember, GetLocation(member), new object[] { memberName, containingTypeName }));
@@ -145,7 +145,7 @@ public static partial class Symbols
 
         var memberType = property?.Type ?? ((IFieldSymbol)member).Type;
         if (IsTypeSupported(memberType) is false)
-            diagnostics.Add(Diagnostic.Create(Constants.RequireSupportedTypeForMember, GetLocation(member), new object[] { GetDiagnosticName(memberType), memberName, containingTypeName }));
+            diagnostics.Add(Diagnostic.Create(Constants.RequireSupportedTypeForMember, GetLocation(member), new object[] { GetSymbolDiagnosticDisplay(memberType), memberName, containingTypeName }));
         cancellation.ThrowIfCancellationRequested();
     }
 }

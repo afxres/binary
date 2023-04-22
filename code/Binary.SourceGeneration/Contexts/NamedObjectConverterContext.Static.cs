@@ -40,7 +40,7 @@ public sealed partial class NamedObjectConverterContext
             return null;
         var required = Symbols.IsTypeWithRequiredModifier(symbol);
         var dictionary = new SortedDictionary<string, SymbolNamedMemberInfo>();
-        var cancellation = context.SourceProductionContext.CancellationToken;
+        var cancellation = context.CancellationToken;
         foreach (var member in Symbols.GetObjectMembers(symbol))
         {
             if (attribute is null)
@@ -53,7 +53,7 @@ public sealed partial class NamedObjectConverterContext
         // do not report error for plain object
         // let compiler report it if required member not set. (linq expression generator will report if required member not set)
         if (members.Length is 0)
-            return attribute is null ? null : (object)Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetDiagnosticName(symbol) });
+            return attribute is null ? null : (object)Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplay(symbol) });
         var constructor = Symbols.GetConstructor(symbol, members);
         return new NamedObjectConverterContext(context, symbol, members, constructor).Invoke();
     }

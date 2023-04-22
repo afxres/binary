@@ -5,7 +5,7 @@ using System;
 using System.Collections.Immutable;
 using System.Text;
 
-public partial class CollectionConverterContext : SymbolConverterContext
+public sealed partial class CollectionConverterContext : SymbolConverterContext
 {
     private readonly SourceType sourceType;
 

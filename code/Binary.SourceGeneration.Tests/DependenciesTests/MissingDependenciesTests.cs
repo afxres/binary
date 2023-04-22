@@ -3,7 +3,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Reflection;
 using Xunit;
 
@@ -59,6 +58,6 @@ public class MissingDependenciesTests
         Assert.Empty(diagnostics);
         Assert.Empty(outputDiagnostics);
         Assert.NotEmpty(outputCompilationDiagnostics);
-        Assert.Contains("Immutable", outputCompilationDiagnostics.Select(x => x.Location.GetSourceText()));
+        Assert.All(outputCompilationDiagnostics, x => Assert.Contains("Immutable", x.Location.GetSourceText()));
     }
 }

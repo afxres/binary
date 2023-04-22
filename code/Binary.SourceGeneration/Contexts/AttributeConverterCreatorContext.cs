@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 using Mikodev.Binary.SourceGeneration;
 using System.Text;
 
-public partial class AttributeConverterCreatorContext : SymbolConverterContext
+public sealed partial class AttributeConverterCreatorContext : SymbolConverterContext
 {
     private readonly ITypeSymbol creator;
 

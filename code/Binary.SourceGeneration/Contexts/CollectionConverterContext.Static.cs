@@ -3,7 +3,7 @@
 using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
 
-public partial class CollectionConverterContext
+public sealed partial class CollectionConverterContext
 {
     private enum SourceType
     {

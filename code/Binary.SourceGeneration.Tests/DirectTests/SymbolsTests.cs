@@ -69,10 +69,10 @@ public class SymbolsTests
                 public int[][] Entry;
             }
             """;
-        yield return new object[] { a, "Array", "global::System.Int32[,]", "System_Array2D_l_System_Int32_r" };
-        yield return new object[] { b, "Value", "global::System.String[]", "System_Array_l_System_String_r" };
-        yield return new object[] { c, "Items", "global::System.Double[,,,]", "System_Array4D_l_System_Double_r" };
-        yield return new object[] { d, "Entry", "global::System.Int32[][]", "System_Array_l_System_Array_l_System_Int32_r_r" };
+        yield return new object[] { a, "Array", "global::System.Int32[,]", "Array2D_l_System_Int32_r" };
+        yield return new object[] { b, "Value", "global::System.String[]", "Array_l_System_String_r" };
+        yield return new object[] { c, "Items", "global::System.Double[,,,]", "Array4D_l_System_Double_r" };
+        yield return new object[] { d, "Entry", "global::System.Int32[][]", "Array_l_Array_l_System_Int32_r_r" };
     }
 
     public static IEnumerable<object[]> GlobalNamespaceTypeData()
@@ -95,13 +95,52 @@ public class SymbolsTests
                 public B<int> Data;
             }
             """;
-        yield return new object[] { a, "Item", "global::A", "A" };
-        yield return new object[] { b, "Data", "global::B<global::System.Int32>", "B_l_System_Int32_r" };
+        yield return new object[] { a, "Item", "global::A", "g_A" };
+        yield return new object[] { b, "Data", "global::B<global::System.Int32>", "g_B_l_System_Int32_r" };
+    }
+
+    public static IEnumerable<object[]> NestedTypeData()
+    {
+        var a =
+            """
+            namespace One.Two;
+
+            class A
+            {
+                public class X
+                {
+                    public class Y { }
+                }
+            }
+
+            class Alpha
+            {
+                public A.X.Y Item;
+            }
+            """;
+        var b =
+            """
+            class B<T>
+            {
+                public class X
+                {
+                    public class Y<R> { }
+                }
+            }
+
+            class Bravo
+            {
+                public B<int>.X.Y<string> Data;
+            }
+            """;
+        yield return new object[] { a, "Item", "global::One.Two.A.X.Y", "One_Two_A_X_Y" };
+        yield return new object[] { b, "Data", "global::B<global::System.Int32>.X.Y<global::System.String>", "g_B_l_System_Int32_r_X_Y_l_System_String_r" };
     }
 
     [Theory(DisplayName = "Get Full Name Test")]
     [MemberData(nameof(ArrayData))]
     [MemberData(nameof(GlobalNamespaceTypeData))]
+    [MemberData(nameof(NestedTypeData))]
     public void GetFullNameTest(string source, string memberName, string symbolFullName, string outputFullName)
     {
         var compilation = CompilationModule.CreateCompilation(source);

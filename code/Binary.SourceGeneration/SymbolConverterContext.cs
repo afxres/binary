@@ -17,9 +17,9 @@ public abstract class SymbolConverterContext
 
     protected string SymbolConverterTypeFullName { get; }
 
-    protected SourceGeneratorContext SourceGeneratorContext { get; }
+    protected CancellationToken CancellationToken => SourceGeneratorContext.CancellationToken;
 
-    protected CancellationToken CancellationToken { get; }
+    protected SourceGeneratorContext SourceGeneratorContext { get; }
 
     protected string ClosureTypeName { get; }
 
@@ -35,7 +35,6 @@ public abstract class SymbolConverterContext
         SymbolTypeFullName = GetTypeFullName(SymbolFullNameKey);
         SymbolConverterTypeFullName = GetConverterTypeFullName(SymbolFullNameKey);
         SourceGeneratorContext = context;
-        CancellationToken = context.SourceProductionContext.CancellationToken;
         ClosureTypeName = $"{output}_Closure";
         ConverterTypeName = $"{output}_Converter";
         ConverterCreatorTypeName = $"{output}_ConverterCreator";
@@ -135,6 +134,6 @@ public abstract class SymbolConverterContext
         var builder = new StringBuilder();
         Invoke(builder);
         var code = builder.ToString();
-        return new SymbolConverterContent(Symbol, ConverterCreatorTypeName, code);
+        return new SymbolConverterContent(ConverterCreatorTypeName, code);
     }
 }

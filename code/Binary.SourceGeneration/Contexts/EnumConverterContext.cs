@@ -3,7 +3,7 @@
 using Microsoft.CodeAnalysis;
 using System.Text;
 
-public partial class EnumConverterContext : SymbolConverterContext
+public sealed partial class EnumConverterContext : SymbolConverterContext
 {
     public EnumConverterContext(SourceGeneratorContext context, ITypeSymbol symbol) : base(context, symbol) { }
 

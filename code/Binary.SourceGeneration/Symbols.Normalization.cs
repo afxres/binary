@@ -7,17 +7,11 @@ using System.Text;
 
 public static partial class Symbols
 {
-    public static SymbolDisplayFormat FullDisplayFormat { get; } = new SymbolDisplayFormat(
-        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
-        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
-        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
-        miscellaneousOptions: SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers);
-
-    public static SymbolDisplayFormat FullDisplayFormatNoNamespace { get; } = new SymbolDisplayFormat(
+    public static SymbolDisplayFormat SymbolDiagnosticDisplayFormat { get; } = new SymbolDisplayFormat(
         globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypes,
         genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
-        miscellaneousOptions: SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers);
+        miscellaneousOptions: SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers | SymbolDisplayMiscellaneousOptions.ExpandNullable);
 
     public static string ToLiteral(string input)
     {
@@ -37,9 +31,9 @@ public static partial class Symbols
         return Location.None;
     }
 
-    public static string GetDiagnosticName(ITypeSymbol symbol)
+    public static string GetSymbolDiagnosticDisplay(ITypeSymbol symbol)
     {
-        return symbol.ToDisplayString(FullDisplayFormatNoNamespace);
+        return symbol.ToDisplayString(SymbolDiagnosticDisplayFormat);
     }
 
     public static string GetSymbolFullName(ITypeSymbol symbol)
@@ -63,15 +57,23 @@ public static partial class Symbols
 
         static void InvokeNamedTypeSymbol(StringBuilder target, INamedTypeSymbol symbol)
         {
-            _ = target.Append(Constants.GlobalNamespace);
+            var containing = symbol.ContainingType;
             var @namespace = symbol.ContainingNamespace;
-            if (@namespace.IsGlobalNamespace is false)
-                _ = target.Append(@namespace.ToDisplayString() + ".");
+            if (containing is not null)
+                Invoke(target, containing);
+            else if (@namespace.IsGlobalNamespace)
+                _ = target.Append(Constants.GlobalNamespace);
+            else
+                _ = target.Append(Constants.GlobalNamespace + @namespace.ToDisplayString());
+
+            if (containing is not null || @namespace.IsGlobalNamespace is false)
+                _ = target.Append('.');
             _ = target.Append(symbol.Name);
-            if (symbol.IsGenericType is false)
-                return;
-            _ = target.Append("<");
             var arguments = symbol.TypeArguments;
+            if (arguments.Length is 0)
+                return;
+
+            _ = target.Append("<");
             for (var i = 0; i < arguments.Length; i++)
             {
                 Invoke(target, arguments[i]);
@@ -100,7 +102,7 @@ public static partial class Symbols
 
         static void InvokeArrayTypeSymbol(StringBuilder target, IArrayTypeSymbol symbol)
         {
-            _ = target.Append("System_Array");
+            _ = target.Append("Array");
             if (symbol.Rank is not 1)
                 _ = target.Append($"{symbol.Rank}D");
             _ = target.Append("_l_");
@@ -110,23 +112,31 @@ public static partial class Symbols
 
         static void InvokeNamedTypeSymbol(StringBuilder target, INamedTypeSymbol symbol)
         {
+            var containing = symbol.ContainingType;
             var @namespace = symbol.ContainingNamespace;
-            if (@namespace.IsGlobalNamespace is false)
-                _ = target.Append(@namespace.ToDisplayString().Replace('.', '_') + "_");
+            if (containing is not null)
+                Invoke(target, containing);
+            else if (@namespace.IsGlobalNamespace)
+                _ = target.Append("g_");
+            else
+                _ = target.Append(@namespace.ToDisplayString().Replace('.', '_'));
+
+            if (containing is not null || @namespace.IsGlobalNamespace is false)
+                _ = target.Append('_');
             _ = target.Append(symbol.Name);
-            if (symbol is INamedTypeSymbol type && type.IsGenericType)
+            var arguments = symbol.TypeArguments;
+            if (arguments.Length is 0)
+                return;
+
+            _ = target.Append("_l_");
+            for (var i = 0; i < arguments.Length; i++)
             {
-                _ = target.Append("_l_");
-                var arguments = type.TypeArguments;
-                for (var i = 0; i < arguments.Length; i++)
-                {
-                    Invoke(target, arguments[i]);
-                    if (i == arguments.Length - 1)
-                        break;
-                    _ = target.Append("_c_");
-                }
-                _ = target.Append("_r");
+                Invoke(target, arguments[i]);
+                if (i == arguments.Length - 1)
+                    break;
+                _ = target.Append("_c_");
             }
+            _ = target.Append("_r");
         }
 
         var target = new StringBuilder();

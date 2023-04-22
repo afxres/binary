@@ -65,7 +65,7 @@ public sealed partial class TupleObjectConverterContext
         if (system is false && attribute is null)
             return null;
         var dictionary = new SortedDictionary<int, SymbolTupleMemberInfo>();
-        var cancellation = context.SourceProductionContext.CancellationToken;
+        var cancellation = context.CancellationToken;
         foreach (var member in Symbols.GetObjectMembers(symbol))
         {
             if (system)
@@ -76,7 +76,7 @@ public sealed partial class TupleObjectConverterContext
         }
         var members = dictionary.Values.ToImmutableArray();
         if (members.Length is 0)
-            return Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetDiagnosticName(symbol) });
+            return Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplay(symbol) });
         var constructor = Symbols.GetConstructor(symbol, members);
         return new TupleObjectConverterContext(context, symbol, members, constructor).Invoke();
     }

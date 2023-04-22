@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
 using System.Linq;
 
-public partial class GenericConverterContext
+public sealed partial class GenericConverterContext
 {
     private static ImmutableArray<INamedTypeSymbol> CreateResource(Compilation compilation)
     {

@@ -2,7 +2,7 @@
 
 using Microsoft.CodeAnalysis;
 
-public partial class AttributeConverterContext
+public sealed partial class AttributeConverterContext
 {
     public static SymbolConverterContent? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
     {

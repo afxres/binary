@@ -5,7 +5,7 @@ using Mikodev.Binary.SourceGeneration;
 using System.Collections.Immutable;
 using System.Text;
 
-public partial class GenericConverterContext : SymbolConverterContext
+public sealed partial class GenericConverterContext : SymbolConverterContext
 {
     private readonly string name;
 

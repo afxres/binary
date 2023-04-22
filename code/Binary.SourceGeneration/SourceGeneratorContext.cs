@@ -2,6 +2,7 @@
 
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
+using System.Threading;
 
 public class SourceGeneratorContext
 {
@@ -13,9 +14,11 @@ public class SourceGeneratorContext
 
     public Compilation Compilation { get; }
 
+    public CancellationToken CancellationToken => SourceProductionContext.CancellationToken;
+
     public SourceProductionContext SourceProductionContext { get; }
 
-    public SourceGeneratorContext(INamedTypeSymbol type, Compilation compilation, SourceProductionContext sourceProductionContext, Queue<ITypeSymbol> referencedTypes)
+    public SourceGeneratorContext(Compilation compilation, SourceProductionContext sourceProductionContext, Queue<ITypeSymbol> referencedTypes)
     {
         Resources = new Dictionary<string, object>();
         Compilation = compilation;
