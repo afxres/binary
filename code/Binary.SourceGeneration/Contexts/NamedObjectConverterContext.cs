@@ -52,7 +52,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             else
             {
                 builder.AppendIndent(3, $"var loc{i} = item.{member.Name};");
-                builder.AppendIndent(3, $"if ({Constants.EqualityComparerTypeName}<{GetTypeFullName(i)}>.Default.Equals(loc{i}, default) is false)");
+                builder.AppendIndent(3, $"if (System.Collections.Generic.EqualityComparer<{GetTypeFullName(i)}>.Default.Equals(loc{i}, default) is false)");
                 builder.AppendIndent(3, $"{{");
                 builder.AppendIndent(4, $"{Constants.AllocatorTypeName}.Append(ref allocator, this.key{i});");
                 builder.AppendIndent(4, $"this.cvt{i}.EncodeWithLengthPrefix(ref allocator, loc{i});");

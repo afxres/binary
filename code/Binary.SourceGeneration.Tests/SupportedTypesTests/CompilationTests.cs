@@ -208,8 +208,10 @@ public class CompilationTests
                 public override void Encode(ref Allocator allocator, T? item) => throw new NotSupportedException();
             }
 
+            [TupleObject]
             public class Bravo
             {
+                [TupleKey(0)]
                 [Converter(typeof(FakeConverter<int>))]
                 public int Data { get; set; }
             }
@@ -259,8 +261,10 @@ public class CompilationTests
                 public IConverter? GetConverter(IGeneratorContext context, Type type) => throw new NotSupportedException();
             }
 
+            [NamedObject]
             public class Bravo
             {
+                [NamedKey("data")]
                 [ConverterCreator(typeof(FakeConverterCreator<string>))]
                 public string Data { get; set; }
             }

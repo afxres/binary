@@ -78,7 +78,7 @@ public class RequirePublicInstanceMemberTests
             [TupleObject]
             public class Bravo
             {
-                [TupleKey(1)]
+                [TupleKey(0)]
                 public static string? StaticField;
             }
             """;
@@ -118,7 +118,7 @@ public class RequirePublicInstanceMemberTests
             [TupleObject]
             public class Bravo
             {
-                [TupleKey(-1)]
+                [TupleKey(0)]
                 internal static string? InternalStaticField;
             }
             """;

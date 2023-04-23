@@ -30,7 +30,7 @@ public static partial class Symbols
         }
         else
         {
-            var tupleKeys = new HashSet<int>();
+            var tupleKeys = new SortedSet<int>();
             var namedKeys = new HashSet<string>();
             var typeAttribute = attributes.SingleOrDefault()?.AttributeClass;
             foreach (var i in symbol.GetMembers())
@@ -39,6 +39,10 @@ public static partial class Symbols
                     continue;
                 ValidateMember(context, i, typeAttribute, diagnostics, namedKeys, tupleKeys);
                 cancellation.ThrowIfCancellationRequested();
+            }
+            if (tupleKeys.Count is not 0 && (tupleKeys.Min is not 0 || tupleKeys.Max != tupleKeys.Count - 1))
+            {
+                diagnostics.Add(Diagnostic.Create(Constants.TupleKeyNotSequential, GetLocation(symbol), new object[] { GetSymbolDiagnosticDisplay(symbol) }));
             }
         }
 
@@ -90,7 +94,7 @@ public static partial class Symbols
         return;
     }
 
-    private static void ValidateTupleKey(AttributeData? attribute, List<Diagnostic> diagnostics, HashSet<int> keys)
+    private static void ValidateTupleKey(AttributeData? attribute, List<Diagnostic> diagnostics, SortedSet<int> keys)
     {
         if (attribute is null)
             return;
@@ -100,7 +104,7 @@ public static partial class Symbols
         return;
     }
 
-    private static void ValidateMember(SourceGeneratorContext context, ISymbol member, INamedTypeSymbol? typeAttribute, List<Diagnostic> diagnostics, HashSet<string> namedKeys, HashSet<int> tupleKeys)
+    private static void ValidateMember(SourceGeneratorContext context, ISymbol member, INamedTypeSymbol? typeAttribute, List<Diagnostic> diagnostics, HashSet<string> namedKeys, SortedSet<int> tupleKeys)
     {
         var converterAttribute = member.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.ConverterAttributeTypeName));
         var converterCreatorAttribute = member.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.ConverterCreatorAttributeTypeName));
@@ -146,6 +150,13 @@ public static partial class Symbols
         var memberType = property?.Type ?? ((IFieldSymbol)member).Type;
         if (IsTypeSupported(memberType) is false)
             diagnostics.Add(Diagnostic.Create(Constants.RequireSupportedTypeForMember, GetLocation(member), new object[] { GetSymbolDiagnosticDisplay(memberType), memberName, containingTypeName }));
+        cancellation.ThrowIfCancellationRequested();
+
+        var hasKey = namedKeyAttribute is not null || tupleKeyAttribute is not null;
+        if (hasKey is false && converterAttribute is not null)
+            diagnostics.Add(Diagnostic.Create(Constants.RequireKeyAttributeForConverterAttribute, GetLocation(converterAttribute), new object[] { memberName, containingTypeName }));
+        if (hasKey is false && converterCreatorAttribute is not null)
+            diagnostics.Add(Diagnostic.Create(Constants.RequireKeyAttributeForConverterCreatorAttribute, GetLocation(converterCreatorAttribute), new object[] { memberName, containingTypeName }));
         cancellation.ThrowIfCancellationRequested();
     }
 }

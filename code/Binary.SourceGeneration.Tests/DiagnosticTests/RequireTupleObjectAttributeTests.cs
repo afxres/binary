@@ -22,7 +22,7 @@ public class RequireTupleObjectAttributeTests
             [NamedObject]
             public class Delta
             {
-                [TupleKey(1)]
+                [TupleKey(0)]
                 public Guid Entry;
 
                 [NamedKey("valid")]
@@ -49,7 +49,7 @@ public class RequireTupleObjectAttributeTests
             [ConverterCreator(typeof(TestConverterCreator))]
             public class Hotel
             {
-                [TupleKey(3)]
+                [TupleKey(0)]
                 public long Value;
             }
             """;

@@ -780,7 +780,7 @@ type AttributeTests() =
     [<InlineData(typeof<ClassWithNoSequentialTupleKey04>)>]
     member __.``Tuple Key Not Sequential`` (t : Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = sprintf "Tuple key must be start at zero and must be sequential, type: %O" t
+        let message = sprintf "Tuple key must start at zero and must be sequential, type: %O" t
         Assert.Equal(message, error.Message)
         ()
 

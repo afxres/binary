@@ -189,9 +189,9 @@ internal static class FallbackAttributesMethods
                 throw new ArgumentException($"Tuple key '{key}' already exists, type: {type}");
             map.Add(key, member);
         }
-        var keys = map.Keys.ToList();
+        var keys = map.Keys;
         if (keys.First() is not 0 || keys.Last() != keys.Count - 1)
-            throw new ArgumentException($"Tuple key must be start at zero and must be sequential, type: {type}");
+            throw new ArgumentException($"Tuple key must start at zero and must be sequential, type: {type}");
         return map.Values.ToImmutableArray();
     }
 
