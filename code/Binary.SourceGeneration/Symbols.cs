@@ -7,6 +7,25 @@ using System.Linq;
 
 public static partial class Symbols
 {
+    public static IMethodSymbol? GetConstructor(INamedTypeSymbol type, INamedTypeSymbol argument)
+    {
+        static bool Filter(IMethodSymbol method, INamedTypeSymbol @interface)
+        {
+            if (method.DeclaredAccessibility is not Accessibility.Public)
+                return false;
+            var parameters = method.Parameters;
+            if (parameters.Length is not 1)
+                return false;
+            var parameter = parameters.Single();
+            return SymbolEqualityComparer.Default.Equals(parameter.Type, @interface);
+        }
+
+        if (type.IsAbstract)
+            return null;
+        var result = type.InstanceConstructors.FirstOrDefault(x => Filter(x, argument));
+        return result;
+    }
+
     public static SymbolConstructorInfo<T>? GetConstructor<T>(ITypeSymbol type, ImmutableArray<T> members) where T : SymbolMemberInfo
     {
         static string Select(string? text) =>

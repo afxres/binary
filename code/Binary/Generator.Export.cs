@@ -112,6 +112,13 @@ public static partial class Generator
         return new SequenceConverter<Dictionary<K, V>>(encoder.Encode, decoder.Decode);
     }
 
+    public static Converter<T> GetEnumerableConverter<T, E>(Converter<E> converter) where T : IEnumerable<E>
+    {
+        ArgumentNullException.ThrowIfNull(converter);
+        var encoder = new EnumerableEncoder<T, E>(converter);
+        return new SequenceConverter<T>(encoder.Encode, null);
+    }
+
     public static Converter<T> GetEnumerableConverter<T, E>(Converter<E> converter, Func<List<E>, T> constructor) where T : IEnumerable<E>
     {
         ArgumentNullException.ThrowIfNull(converter);
@@ -128,6 +135,14 @@ public static partial class Generator
         var encoder = new EnumerableEncoder<T, E>(converter);
         var decoder = new HashSetDecoder<E>(converter);
         return new SequenceConverter<T>(encoder.Encode, span => constructor.Invoke(decoder.Decode(span)));
+    }
+
+    public static Converter<T> GetEnumerableConverter<T, K, V>(Converter<K> key, Converter<V> value) where T : IEnumerable<KeyValuePair<K, V>> where K : notnull
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(value);
+        var encoder = new KeyValueEnumerableEncoder<T, K, V>(key, value);
+        return new SequenceConverter<T>(encoder.Encode, null);
     }
 
     public static Converter<T> GetEnumerableConverter<T, K, V>(Converter<K> key, Converter<V> value, Func<List<KeyValuePair<K, V>>, T> constructor) where T : IEnumerable<KeyValuePair<K, V>> where K : notnull

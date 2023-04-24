@@ -1,8 +1,8 @@
 ﻿namespace Mikodev.Binary.SourceGeneration.Contexts;
 
 using Microsoft.CodeAnalysis;
-using System;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
 
 public sealed partial class CollectionConverterContext : SymbolConverterContext
@@ -34,7 +34,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
             SourceType.HashSet => $"System.Func<System.Collections.Generic.HashSet<{GetTypeFullName(0)}>, {SymbolTypeFullName}>",
             SourceType.Dictionary => $"System.Func<System.Collections.Generic.Dictionary<{GetTypeFullName(0)}, {GetTypeFullName(1)}>, {SymbolTypeFullName}>",
             SourceType.ListKeyValuePair => $"System.Func<System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<{GetTypeFullName(0)}, {GetTypeFullName(1)}>>, {SymbolTypeFullName}>",
-            _ => throw new NotSupportedException(),
+            _ => null,
         };
 
         for (var i = 0; i < elements.Length; i++)
@@ -44,8 +44,15 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
             CancellationToken.ThrowIfCancellationRequested();
         }
 
-        builder.AppendIndent(3, $"var constructor = new {delegateName}({methodBody});");
-        builder.AppendIndent(3, $"var converter = Mikodev.Binary.Generator.GetEnumerableConverter(", ", constructor);", elements.Length, x => $"cvt{x}");
+        var tail = delegateName is null ? ");" : $", constructor);";
+        var types = string.Join(", ", new[] { SymbolTypeFullName }.Concat(elements.Select((_, i) => GetTypeFullName(i))));
+        if (delegateName is not null)
+        {
+            if (string.IsNullOrEmpty(methodBody))
+                methodBody = $"static x => new {SymbolTypeFullName}(x)";
+            builder.AppendIndent(3, $"var constructor = new {delegateName}({methodBody});");
+        }
+        builder.AppendIndent(3, $"var converter = Mikodev.Binary.Generator.GetEnumerableConverter<{types}>(", tail, elements.Length, x => $"cvt{x}");
         builder.AppendIndent(3, $"return ({Constants.IConverterTypeName})converter;");
     }
 

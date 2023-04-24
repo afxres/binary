@@ -178,6 +178,8 @@ internal static class FallbackCollectionMethods
             return GetDecodeDelegate<T, K, V>(init, tail, x => Expression.Call(result.MakeGenericMethod(typeof(K), typeof(V)), x));
         if (GetConstructorOrDefault(typeof(T), typeof(IDictionary<K, V>)) is { } target)
             return GetDecodeDelegate<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail).Decode, target);
+        if (GetConstructorOrDefault(typeof(T), typeof(IReadOnlyDictionary<K, V>)) is { } second)
+            return GetDecodeDelegate<T, Dictionary<K, V>, IReadOnlyDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail).Decode, second);
         if (GetConstructorOrDefault(typeof(T), typeof(IEnumerable<KeyValuePair<K, V>>)) is { } method)
             return GetDecodeDelegate<T, K, V>(init, tail, method);
         else
