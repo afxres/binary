@@ -351,9 +351,35 @@ public class CompilationTests
                 public required string RProperty { get; set; }
             }
             """;
+        var d =
+            """
+            // custom named object with ignored members
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<Hotel>]
+            partial class TestGeneratorContext { }
+
+            [NamedObject]
+            class Hotel
+            {
+                [NamedKey("id")]
+                public int Id;
+
+                public double Ignore;
+
+                [NamedKey("tag")]
+                public string Tag { get; set; }
+
+                public short Hidden { get; set; }
+            }
+            """;
         yield return new object[] { a };
         yield return new object[] { b };
         yield return new object[] { c };
+        yield return new object[] { d };
     }
 
     public static IEnumerable<object[]> CustomTupleObjectData()
@@ -407,8 +433,37 @@ public class CompilationTests
                 public int Id { get; }
             }
             """;
+        var c =
+            """
+            // custom tuple object with ignored members
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<Delta>]
+            partial class TestGeneratorContext { }
+
+            [TupleObject]
+            class Delta
+            {
+                [TupleKey(0)]
+                public int Integer;
+
+                public byte Ignore { get; set; }
+
+                [TupleKey(1)]
+                public long Result { get; set; }
+
+                public short Padding;
+
+                [TupleKey(2)]
+                public short Tail;
+            }
+            """;
         yield return new object[] { a };
         yield return new object[] { b };
+        yield return new object[] { c };
     }
 
     public static IEnumerable<object[]> CustomPlainObjectData()
