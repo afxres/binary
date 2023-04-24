@@ -38,10 +38,48 @@ Supported types:
 | Primitive     | ``(U)Int(16,32,64,128)``, ``Boolean``, ``Byte``, ``Char``, ``Decimal``, ``Double``, ``Half``, ``SByte``, ``Single``, ``String`` | Default encoding of string is 'UTF-8'    |
 | Data & Time   | ``DateOnly``, ``DateTime``, ``DateTimeOffset``, ``TimeOnly``, ``TimeSpan``                                                      |                                          |
 | Numeric       | ``BigInteger``, ``Complex``, ``Matrix3x2``, ``Matrix4x4``, ``Plane``, ``Quaternion``, ``Vector2``, ``Vector3``, ``Vector4``     |                                          |
-| Memory        | ``Memory<>``, ``ReadOnlyMemory<>``, ``ReadOnlySequence<>``                                                                      | Multidimensional arrays are supported    |
+| Memory        | ``T[...]``, ``Memory<>``, ``ReadOnlyMemory<>``, ``ReadOnlySequence<>``                                                          |                                          |
 | Miscellaneous | ``BitVector32``, ``Guid``, ``IPAddress``, ``IPEndPoint``, ``Nullable<>``, ``PriorityQueue<,>``, ``Rune``, ``Uri``, ``Version``  |                                          |
 | Tuple         | ``KeyValuePair<,>``, ``Tuple<...>``, ``ValueTuple<...>``                                                                        | Tuple can not be null                    |
 | Collection    | Implements ``IEnumerable<>`` and have a constructor accept ``IEnumerable<>`` as parameter                                       | Stack types are explicitly not supported |
+
+## AOT Support
+
+AOT support (via source generator) is now generally available.  
+For example, we have a data model like this:
+```csharp
+class Person
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; }
+}
+```
+
+Then create a partial type with ``SourceGeneratorContextAttribute`` and include this data model:
+```csharp
+namespace SomeNamespace;
+
+using Mikodev.Binary.Attributes;
+
+[SourceGeneratorContext]
+[SourceGeneratorInclude<Person>]
+partial class SomeSourceGeneratorContext { }
+```
+
+This will generate a property named ``ConverterCreators`` witch contains all generated converter creators.  
+Just add those converter creators and it will work.
+```csharp
+var generator = Generator.CreateAotBuilder()
+    .AddConverterCreators(SomeSourceGeneratorContext.ConverterCreators.Values)
+    .Build();
+var converter = generator.GetConverter<Person>();
+var person = new Person { Id = 1, Name = "Someone" };
+var buffer = converter.Encode(person);
+var result = converter.Decode(buffer);
+Console.WriteLine(result.Id);   // 1
+Console.WriteLine(result.Name); // Someone
+```
 
 ## Implement custom converters
 
