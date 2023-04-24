@@ -152,13 +152,14 @@ public sealed class SourceGenerator : IIncrementalGenerator
     {
         var inclusions = entry.CurrentInclusions;
         var context = entry.SourceProductionContext;
+        var cancellation = context.CancellationToken;
         var pending = new Queue<ITypeSymbol>(inclusions.Keys);
         var handled = new SortedDictionary<string, SymbolConverterContent?>(StringComparer.InvariantCulture);
-        var generator = new SourceGeneratorContext(entry.Compilation, context, pending);
+        var generator = new SourceGeneratorContext(entry.Compilation, pending, cancellation);
 
         SymbolConverterContent? Handle(ITypeSymbol symbol)
         {
-            if (Symbols.Validate(generator, symbol) is false)
+            if (Symbols.Validate(generator, symbol, context) is false)
                 return null;
             var result = TypeHandlers.Select(h => h.Invoke(generator, symbol)).FirstOrDefault(x => x is not null);
             if (result is SymbolConverterContent target)
@@ -171,7 +172,6 @@ public sealed class SourceGenerator : IIncrementalGenerator
             return null;
         }
 
-        var cancellation = context.CancellationToken;
         while (pending.Count is not 0)
         {
             cancellation.ThrowIfCancellationRequested();

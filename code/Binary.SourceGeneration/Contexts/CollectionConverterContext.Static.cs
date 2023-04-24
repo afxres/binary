@@ -27,25 +27,36 @@ public sealed partial class CollectionConverterContext
 
         public INamedTypeSymbol? UnboundIReadOnlyDictionaryTypeSymbol { get; }
 
-        public ImmutableDictionary<INamedTypeSymbol, (SourceType SourceType, string MethodBody)> Dictionary { get; }
+        public ImmutableDictionary<INamedTypeSymbol, (SourceType SourceType, string MethodBody)> SupportedTypeSymbols { get; }
 
-        public Resource(ImmutableDictionary<INamedTypeSymbol, (SourceType, string)> dictionary, INamedTypeSymbol? unboundIEnumerableTypeSymbol, INamedTypeSymbol? unboundIDictionaryTypeSymbol, INamedTypeSymbol? unboundIReadOnlyDictionaryTypeSymbol)
+        public ImmutableHashSet<INamedTypeSymbol> UnsupportedTypeSymbols { get; }
+
+        public Resource(ImmutableDictionary<INamedTypeSymbol, (SourceType, string)> supported, ImmutableHashSet<INamedTypeSymbol> unsupported, INamedTypeSymbol? enumerable, INamedTypeSymbol? dictionary, INamedTypeSymbol? readonlyDictionary)
         {
-            Dictionary = dictionary;
-            UnboundIEnumerableTypeSymbol = unboundIEnumerableTypeSymbol;
-            UnboundIDictionaryTypeSymbol = unboundIDictionaryTypeSymbol;
-            UnboundIReadOnlyDictionaryTypeSymbol = unboundIReadOnlyDictionaryTypeSymbol;
+            SupportedTypeSymbols = supported;
+            UnsupportedTypeSymbols = unsupported;
+            UnboundIEnumerableTypeSymbol = enumerable;
+            UnboundIDictionaryTypeSymbol = dictionary;
+            UnboundIReadOnlyDictionaryTypeSymbol = readonlyDictionary;
         }
     }
 
     private static Resource CreateResource(Compilation compilation)
     {
-        var builder = ImmutableDictionary.CreateBuilder<INamedTypeSymbol, (SourceType, string)>(SymbolEqualityComparer.Default);
+        var supportedBuilder = ImmutableDictionary.CreateBuilder<INamedTypeSymbol, (SourceType, string)>(SymbolEqualityComparer.Default);
         void Add(string name, SourceType source, string method)
         {
-            if (compilation.GetTypeByMetadataName(name)?.ConstructUnboundGenericType() is not { } type)
+            if (compilation.GetTypeByMetadataName(name) is not { } type)
                 return;
-            builder.Add(type, (source, method));
+            supportedBuilder.Add(type.ConstructUnboundGenericType(), (source, method));
+        }
+
+        var unsupportedBuilder = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+        void AddUnsupported(string name)
+        {
+            if (compilation.GetTypeByMetadataName(name) is not { } type)
+                return;
+            _ = unsupportedBuilder.Add(type.IsGenericType ? type.ConstructUnboundGenericType() : type);
         }
 
         Add("System.Collections.Generic.IList`1", SourceType.List, Constants.LambdaIdFunction);
@@ -68,11 +79,18 @@ public sealed partial class CollectionConverterContext
         Add("System.Collections.Immutable.ImmutableSortedDictionary`2", SourceType.ListKeyValuePair, "System.Collections.Immutable.ImmutableSortedDictionary.CreateRange");
         Add("System.Collections.Immutable.ImmutableSortedSet`1", SourceType.List, "System.Collections.Immutable.ImmutableSortedSet.CreateRange");
 
-        var dictionary = builder.ToImmutable();
-        var unboundIEnumerableTypeSymbol = dictionary.Keys.First(x => x.Name is "IEnumerable");
-        var unboundIDictionaryTypeSymbol = dictionary.Keys.First(x => x.Name is "IDictionary");
-        var unboundIReadOnlyDictionaryTypeSymbol = dictionary.Keys.First(x => x.Name is "IReadOnlyDictionary");
-        return new Resource(dictionary, unboundIEnumerableTypeSymbol, unboundIDictionaryTypeSymbol, unboundIReadOnlyDictionaryTypeSymbol);
+        AddUnsupported("System.String");
+        AddUnsupported("System.Collections.Generic.Stack`1");
+        AddUnsupported("System.Collections.Concurrent.ConcurrentStack`1");
+        AddUnsupported("System.Collections.Immutable.ImmutableStack`1");
+        AddUnsupported("System.Collections.Immutable.IImmutableStack`1");
+
+        var supported = supportedBuilder.ToImmutable();
+        var unsupported = unsupportedBuilder.ToImmutable();
+        var enumerable = supported.Keys.FirstOrDefault(x => x.Name is "IEnumerable");
+        var dictionary = supported.Keys.FirstOrDefault(x => x.Name is "IDictionary");
+        var readonlyDictionary = supported.Keys.FirstOrDefault(x => x.Name is "IReadOnlyDictionary");
+        return new Resource(supported, unsupported, enumerable, dictionary, readonlyDictionary);
     }
 
     private static (SourceType SourceType, string MethodBody, ImmutableArray<ITypeSymbol> Elements)? GetInfo(INamedTypeSymbol symbol, Resource resource)
@@ -115,15 +133,17 @@ public sealed partial class CollectionConverterContext
         if (context.Resources.TryGetValue(ResourceKey, out var result) is false)
             context.Resources.Add(ResourceKey, result = CreateResource(context.Compilation));
         var resource = (Resource)result;
-        if (symbol.IsGenericType && resource.Dictionary.TryGetValue(symbol.ConstructUnboundGenericType(), out var definition) is true)
+        var unbound = symbol.IsGenericType ? symbol.ConstructUnboundGenericType() : null;
+        var unboundOrOriginal = unbound ?? symbol;
+        if (resource.UnsupportedTypeSymbols.Contains(unboundOrOriginal))
+            return null;
+        if (unbound is not null && resource.SupportedTypeSymbols.TryGetValue(unbound, out var definition) is true)
             return (definition.SourceType, definition.MethodBody, symbol.TypeArguments);
         return GetInfo(symbol, resource);
     }
 
     public static SymbolConverterContent? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
     {
-        if (SymbolEqualityComparer.Default.Equals(symbol, context.Compilation.GetSpecialType(SpecialType.System_String)))
-            return null;
         if (GetInfo(context, symbol) is not (var sourceName, var methodBody, var elements))
             return null;
         return new CollectionConverterContext(context, symbol, sourceName, methodBody, elements).Invoke();

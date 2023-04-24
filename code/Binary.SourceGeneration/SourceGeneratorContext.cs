@@ -14,15 +14,13 @@ public class SourceGeneratorContext
 
     public Compilation Compilation { get; }
 
-    public CancellationToken CancellationToken => SourceProductionContext.CancellationToken;
+    public CancellationToken CancellationToken { get; }
 
-    public SourceProductionContext SourceProductionContext { get; }
-
-    public SourceGeneratorContext(Compilation compilation, SourceProductionContext sourceProductionContext, Queue<ITypeSymbol> referencedTypes)
+    public SourceGeneratorContext(Compilation compilation, Queue<ITypeSymbol> referencedTypes, CancellationToken cancellation)
     {
         Resources = new Dictionary<string, object>();
         Compilation = compilation;
-        SourceProductionContext = sourceProductionContext;
+        CancellationToken = cancellation;
         this.types = new Dictionary<string, ITypeSymbol?>();
         this.referencedTypes = referencedTypes;
     }

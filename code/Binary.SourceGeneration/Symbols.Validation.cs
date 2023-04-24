@@ -7,7 +7,7 @@ using System.Linq;
 
 public static partial class Symbols
 {
-    public static bool Validate(SourceGeneratorContext context, ITypeSymbol symbol)
+    public static bool Validate(SourceGeneratorContext context, ITypeSymbol symbol, SourceProductionContext production)
     {
         var converterAttribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.ConverterAttributeTypeName));
         var converterCreatorAttribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.ConverterCreatorAttributeTypeName));
@@ -48,7 +48,6 @@ public static partial class Symbols
 
         if (diagnostics.Count is 0)
             return true;
-        var production = context.SourceProductionContext;
         foreach (var i in diagnostics)
             production.ReportDiagnostic(i);
         return false;
