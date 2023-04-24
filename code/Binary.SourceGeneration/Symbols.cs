@@ -32,6 +32,8 @@ public static partial class Symbols
             text?.ToUpperInvariant()
             ?? string.Empty;
 
+        if (type.IsAbstract)
+            return null;
         if (type is not INamedTypeSymbol symbol)
             return null;
 
