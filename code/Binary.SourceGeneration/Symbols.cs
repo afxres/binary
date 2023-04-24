@@ -7,7 +7,7 @@ using System.Linq;
 
 public static partial class Symbols
 {
-    public static IMethodSymbol? GetConstructor(INamedTypeSymbol type, INamedTypeSymbol argument)
+    public static IMethodSymbol? GetConstructor(ITypeSymbol type, INamedTypeSymbol argument)
     {
         static bool Filter(IMethodSymbol method, INamedTypeSymbol @interface)
         {
@@ -22,7 +22,9 @@ public static partial class Symbols
 
         if (type.IsAbstract)
             return null;
-        var result = type.InstanceConstructors.FirstOrDefault(x => Filter(x, argument));
+        if (type is not INamedTypeSymbol symbol)
+            return null;
+        var result = symbol.InstanceConstructors.FirstOrDefault(x => Filter(x, argument));
         return result;
     }
 

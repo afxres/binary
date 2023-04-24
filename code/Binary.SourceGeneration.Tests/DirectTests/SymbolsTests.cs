@@ -17,28 +17,6 @@ public class SymbolsTests
         Assert.True(result.Kind is LocationKind.None);
     }
 
-    [Fact(DisplayName = "Get Constructor Invalid Symbol Type Test")]
-    public void GetConstructorInvalidSymbolTypeTest()
-    {
-        var source =
-            """
-            class Alpha
-            {
-                public int[] Array;
-            }
-            """;
-        var compilation = CompilationModule.CreateCompilation(source);
-        var tree = compilation.SyntaxTrees.First();
-        var model = compilation.GetSemanticModel(tree);
-        var nodes = tree.GetRoot().DescendantNodes();
-        var declaration = nodes.OfType<ClassDeclarationSyntax>().Last();
-        var symbol = model.GetDeclaredSymbol(declaration);
-        Assert.NotNull(symbol);
-        var memberType = Assert.IsAssignableFrom<IFieldSymbol>(symbol.GetMembers().Single(x => x.Name is "Array")).Type;
-        var result = Symbols.GetConstructor<SymbolNamedMemberInfo>(memberType, ImmutableArray.Create<SymbolNamedMemberInfo>());
-        Assert.Null(result);
-    }
-
     public static IEnumerable<object[]> ArrayData()
     {
         var a =
@@ -157,5 +135,155 @@ public class SymbolsTests
         var b = Symbols.GetOutputFullName(memberType);
         Assert.Equal(symbolFullName, a);
         Assert.Equal(outputFullName, b);
+    }
+
+    public static IEnumerable<object[]> GetConstructorByArgumentNotFoundData()
+    {
+        var a =
+            """
+            abstract class Alpha
+            {
+                public Alpha() { }
+            }
+            """;
+        var b =
+            """
+            interface IAlpha { }
+            """;
+        var c =
+            """
+            class Bravo
+            {
+                private Bravo() { }
+
+                internal Bravo(Bravo a) { }
+
+                public Bravo(int a) { }
+
+                public Bravo(int a, int b) { }
+            }
+            """;
+        yield return new object[] { a, "Alpha" };
+        yield return new object[] { b, "IAlpha" };
+        yield return new object[] { c, "Bravo" };
+    }
+
+    [Theory(DisplayName = "Get Constructor By Argument Not Found Test")]
+    [MemberData(nameof(GetConstructorByArgumentNotFoundData))]
+    public void GetConstructorByArgumentNotFoundTest(string source, string typeName)
+    {
+        var compilation = CompilationModule.CreateCompilation(source);
+        var tree = compilation.SyntaxTrees.First();
+        var model = compilation.GetSemanticModel(tree);
+        var nodes = tree.GetRoot().DescendantNodes();
+        var declaration = nodes.OfType<TypeDeclarationSyntax>().Single();
+        var symbol = model.GetDeclaredSymbol(declaration);
+        Assert.NotNull(symbol);
+        Assert.Equal(typeName, symbol.Name);
+
+        var a = Symbols.GetConstructor(symbol, symbol);
+        var b = Symbols.GetConstructor(compilation.CreateArrayTypeSymbol(symbol, 1), symbol);
+        Assert.Null(a);
+        Assert.Null(b);
+    }
+
+    public static IEnumerable<object[]> GetConstructorByArgumentData()
+    {
+        var a =
+            """
+            class Delta
+            {
+                private Delta() { }
+
+                internal Delta(string a) { }
+
+                public Delta(int a) { }
+
+                public Delta(Delta another) { }
+
+                public Delta(int a, int b) { }
+            }
+            """;
+        var b =
+            """
+            struct Hotel
+            {
+                public Hotel(Hotel structure) { }
+            }
+            """;
+        yield return new object[] { a, "Delta", "another" };
+        yield return new object[] { b, "Hotel", "structure" };
+    }
+
+    [Theory(DisplayName = "Get Constructor By Argument Test")]
+    [MemberData(nameof(GetConstructorByArgumentData))]
+    public void GetConstructorByArgumentTest(string source, string typeName, string parameterName)
+    {
+        var compilation = CompilationModule.CreateCompilation(source);
+        var tree = compilation.SyntaxTrees.First();
+        var model = compilation.GetSemanticModel(tree);
+        var nodes = tree.GetRoot().DescendantNodes();
+        var declaration = nodes.OfType<TypeDeclarationSyntax>().Single();
+        var symbol = model.GetDeclaredSymbol(declaration);
+        Assert.NotNull(symbol);
+        Assert.Equal(typeName, symbol.Name);
+
+        var result = Symbols.GetConstructor(symbol, symbol);
+        Assert.NotNull(result);
+        Assert.Equal(MethodKind.Constructor, result.MethodKind);
+        Assert.Equal(Accessibility.Public, result.DeclaredAccessibility);
+        var parameter = Assert.Single(result.Parameters);
+        Assert.Equal(parameterName, parameter.Name);
+    }
+
+    public static IEnumerable<object[]> GetConstructorByMemberNotFoundData()
+    {
+        var a =
+            """
+            abstract class Alpha
+            {
+                public int Id { get; set; }
+
+                public Alpha(int id)
+                {
+                    Id = id;
+                }
+            }
+            """;
+        var b =
+            """
+            interface IAlpha
+            {
+                string Name { get; }
+            }
+            """;
+        yield return new object[] { a, "Alpha", new string[] { "Id" } };
+        yield return new object[] { b, "IAlpha", new string[] { "Name" } };
+    }
+
+    [Theory(DisplayName = "Get Constructor By Member Not Found Test")]
+    [MemberData(nameof(GetConstructorByMemberNotFoundData))]
+    public void GetConstructorByMemberNotFoundTest(string source, string typeName, string[] memberNames)
+    {
+        var compilation = CompilationModule.CreateCompilation(source);
+        var tree = compilation.SyntaxTrees.First();
+        var model = compilation.GetSemanticModel(tree);
+        var nodes = tree.GetRoot().DescendantNodes();
+        var declaration = nodes.OfType<TypeDeclarationSyntax>().Single();
+        var symbol = model.GetDeclaredSymbol(declaration);
+        Assert.NotNull(symbol);
+        Assert.Equal(typeName, symbol.Name);
+        var memberSymbols = nodes.OfType<MemberDeclarationSyntax>()
+            .Select(x => model.GetDeclaredSymbol(x))
+            .OfType<IPropertySymbol>()
+            .Where(x => memberNames.Contains(x.Name))
+            .ToList();
+        var members = memberSymbols.Select(x => new SymbolTupleMemberInfo(x)).ToImmutableArray();
+        Assert.NotEmpty(members);
+
+        var a = Symbols.GetConstructor(symbol, members);
+        var b = Symbols.GetConstructor(compilation.CreateArrayTypeSymbol(symbol, 1), members);
+        Assert.Null(a);
+        Assert.Null(b);
     }
 }
