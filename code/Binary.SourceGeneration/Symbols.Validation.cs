@@ -48,18 +48,10 @@ public static partial class Symbols
 
         if (diagnostics.Count is 0)
             return true;
-
-        var error = false;
         var production = context.SourceProductionContext;
         foreach (var i in diagnostics)
-        {
-            if (i.Severity is DiagnosticSeverity.Error)
-                error = true;
             production.ReportDiagnostic(i);
-            cancellation.ThrowIfCancellationRequested();
-        }
-
-        return error is false;
+        return false;
     }
 
     private static void ValidateConverter(SourceGeneratorContext context, AttributeData? attribute, List<Diagnostic> diagnostics)

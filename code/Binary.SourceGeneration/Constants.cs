@@ -213,17 +213,17 @@ public static class Constants
     public static DiagnosticDescriptor RequireNamedObjectAttribute { get; } = new DiagnosticDescriptor(
         id: "BINSRCGEN53",
         title: "Require 'NamedObjectAttribute'.",
-        messageFormat: "Require 'NamedObjectAttribute' for 'NamedKeyAttribute', this attribute will be ignored, member name: {0}, containing type: {1}",
+        messageFormat: "Require 'NamedObjectAttribute' for 'NamedKeyAttribute', member name: {0}, containing type: {1}",
         category: DiagnosticCategory,
-        defaultSeverity: DiagnosticSeverity.Warning,
+        defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
     public static DiagnosticDescriptor RequireTupleObjectAttribute { get; } = new DiagnosticDescriptor(
         id: "BINSRCGEN54",
         title: "Require 'TupleObjectAttribute'.",
-        messageFormat: "Require 'TupleObjectAttribute' for 'TupleKeyAttribute', this attribute will be ignored, member name: {0}, containing type: {1}",
+        messageFormat: "Require 'TupleObjectAttribute' for 'TupleKeyAttribute', member name: {0}, containing type: {1}",
         category: DiagnosticCategory,
-        defaultSeverity: DiagnosticSeverity.Warning,
+        defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
     public static DiagnosticDescriptor RequireConverterType { get; } = new DiagnosticDescriptor(

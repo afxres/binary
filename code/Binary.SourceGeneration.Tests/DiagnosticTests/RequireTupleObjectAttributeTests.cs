@@ -65,8 +65,8 @@ public class RequireTupleObjectAttributeTests
         var generator = new SourceGenerator();
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
-        Assert.EndsWith($"Require 'TupleObjectAttribute' for 'TupleKeyAttribute', this attribute will be ignored, member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
+        Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
+        Assert.EndsWith($"Require 'TupleObjectAttribute' for 'TupleKeyAttribute', member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
         Assert.Matches(@"TupleKey\(.*\)", diagnostic.Location.GetSourceText());
     }
 }
