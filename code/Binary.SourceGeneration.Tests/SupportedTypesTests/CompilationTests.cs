@@ -578,6 +578,171 @@ public class CompilationTests
         yield return new object[] { a };
     }
 
+    public static IEnumerable<object[]> CustomCollectionData()
+    {
+        var a =
+            """
+            // custom enumerable
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+            using System;
+            using System.Collections;
+            using System.Collections.Generic;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<CustomEnumerable<int>>]
+            partial class TestGeneratorContext { }
+
+            class CustomEnumerable<T> : IEnumerable<T>
+            {
+                public CustomEnumerable(IEnumerable<T> values) => throw new NotSupportedException();
+
+                IEnumerator IEnumerable.GetEnumerator() => throw new NotSupportedException();
+
+                IEnumerator<T> IEnumerable<T>.GetEnumerator() => throw new NotSupportedException();
+            }
+            """;
+        var b =
+            """
+            // custom dictionary
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+            using System;
+            using System.Collections;
+            using System.Collections.Generic;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<CustomDictionary<int, string>>]
+            partial class TestGeneratorContext { }
+
+            class CustomDictionary<K, V> : IDictionary<K, V>
+            {
+                public CustomDictionary(IDictionary<K, V> values) => throw new NotSupportedException();
+
+                void IDictionary<K, V>.Add(K key, V value) => throw new NotSupportedException();
+
+                bool IDictionary<K, V>.ContainsKey(K key) => throw new NotSupportedException();
+
+                bool IDictionary<K, V>.Remove(K key) => throw new NotSupportedException();
+
+                bool IDictionary<K, V>.TryGetValue(K key, out V value) => throw new NotSupportedException();
+
+                V IDictionary<K, V>.this[K key] { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+
+                ICollection<K> IDictionary<K, V>.Keys => throw new NotSupportedException();
+
+                ICollection<V> IDictionary<K, V>.Values => throw new NotSupportedException();
+
+                void ICollection<KeyValuePair<K, V>>.Add(KeyValuePair<K, V> item) => throw new NotSupportedException();
+
+                void ICollection<KeyValuePair<K, V>>.Clear() => throw new NotSupportedException();
+
+                bool ICollection<KeyValuePair<K, V>>.Contains(KeyValuePair<K, V> item) => throw new NotSupportedException();
+
+                void ICollection<KeyValuePair<K, V>>.CopyTo(KeyValuePair<K, V>[] array, int arrayIndex) => throw new NotSupportedException();
+
+                bool ICollection<KeyValuePair<K, V>>.Remove(KeyValuePair<K, V> item) => throw new NotSupportedException();
+
+                int ICollection<KeyValuePair<K, V>>.Count => throw new NotSupportedException();
+
+                bool ICollection<KeyValuePair<K, V>>.IsReadOnly => throw new NotSupportedException();
+
+                IEnumerator<KeyValuePair<K, V>> IEnumerable<KeyValuePair<K, V>>.GetEnumerator() => throw new NotSupportedException();
+
+                IEnumerator IEnumerable.GetEnumerator() => throw new NotSupportedException();
+            }
+            """;
+        var c =
+            """
+            // custom readonly dictionary
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+            using System;
+            using System.Collections;
+            using System.Collections.Generic;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<CustomReadOnlyDictionary<string, int>>]
+            partial class TestGeneratorContext { }
+
+            class CustomReadOnlyDictionary<K, V> : IReadOnlyDictionary<K, V>
+            {
+                public CustomReadOnlyDictionary(IReadOnlyDictionary<K, V> values) => throw new NotSupportedException();
+
+                bool IReadOnlyDictionary<K, V>.ContainsKey(K key) => throw new NotSupportedException();
+
+                bool IReadOnlyDictionary<K, V>.TryGetValue(K key, out V value) => throw new NotSupportedException();
+
+                V IReadOnlyDictionary<K, V>.this[K key] => throw new NotSupportedException();
+
+                IEnumerable<K> IReadOnlyDictionary<K, V>.Keys => throw new NotSupportedException();
+
+                IEnumerable<V> IReadOnlyDictionary<K, V>.Values => throw new NotSupportedException();
+
+                int IReadOnlyCollection<KeyValuePair<K, V>>.Count => throw new NotSupportedException();
+
+                IEnumerator<KeyValuePair<K, V>> IEnumerable<KeyValuePair<K, V>>.GetEnumerator() => throw new NotSupportedException();
+
+                IEnumerator IEnumerable.GetEnumerator() => throw new NotSupportedException();
+            }
+            """;
+        yield return new object[] { a };
+        yield return new object[] { b };
+        yield return new object[] { c };
+    }
+
+    public static IEnumerable<object[]> CustomInterfaceOrAbstractCollectionData()
+    {
+        var a =
+            """
+            // custom enumerable interface
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+            using System.Collections.Generic;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<ICustomEnumerable<int>>]
+            partial class TestGeneratorContext { }
+
+            interface ICustomEnumerable<T> : IEnumerable<T> { }
+            """;
+        var b =
+            """
+            // custom dictionary interface
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+            using System.Collections.Generic;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<ICustomDictionary<int, string>>]
+            partial class TestGeneratorContext { }
+
+            interface ICustomDictionary<K, V> : IDictionary<K, V> { }
+            """;
+        var c =
+            """
+            // custom readonly dictionary interface
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+            using System.Collections.Generic;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<ICustomReadOnlyDictionary<string, int>>]
+            partial class TestGeneratorContext { }
+
+            interface ICustomReadOnlyDictionary<K, V> : IReadOnlyDictionary<K, V> { }
+            """;
+        yield return new object[] { a };
+        yield return new object[] { b };
+        yield return new object[] { c };
+    }
+
     [Theory(DisplayName = "Compilation Test")]
     [MemberData(nameof(SpanLikeTypesData))]
     [MemberData(nameof(EnumTypesData))]
@@ -593,6 +758,8 @@ public class CompilationTests
     [MemberData(nameof(CustomPlainObjectData))]
     [MemberData(nameof(ContextWithMiscellaneousAttributesData))]
     [MemberData(nameof(NamedTupleData))]
+    [MemberData(nameof(CustomCollectionData))]
+    [MemberData(nameof(CustomInterfaceOrAbstractCollectionData))]
     public void CompilationTest(string source)
     {
         Assert.Contains("SourceGeneratorContext", source);
