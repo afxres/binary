@@ -105,7 +105,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
         for (var i = 0; i < members.Length; i++)
         {
             var member = members[i];
-            AppendAssignConverter(builder, member, $"cvt{i}", $"{GetConverterTypeFullName(i)}", GetTypeFullName(i));
+            AppendAssignConverter(builder, member, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i));
             CancellationToken.ThrowIfCancellationRequested();
         }
 

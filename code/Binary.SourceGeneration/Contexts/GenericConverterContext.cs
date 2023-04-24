@@ -26,7 +26,7 @@ public sealed partial class GenericConverterContext : SymbolConverterContext
         for (var i = 0; i < elements.Length; i++)
         {
             var element = elements[i];
-            AppendAssignConverterExplicit(builder, element, $"cvt{i}", $"{GetConverterTypeFullName(i)}", GetTypeFullName(i));
+            AppendAssignConverterExplicit(builder, element, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i));
             CancellationToken.ThrowIfCancellationRequested();
         }
 

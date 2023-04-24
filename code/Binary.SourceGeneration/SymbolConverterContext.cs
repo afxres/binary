@@ -70,7 +70,7 @@ public abstract class SymbolConverterContext
 
     protected void AppendConverterHead(StringBuilder builder)
     {
-        builder.AppendIndent(1, $"private sealed class {ConverterTypeName} : {GetConverterTypeFullName(-1)}");
+        builder.AppendIndent(1, $"private sealed class {ConverterTypeName} : {SymbolConverterTypeFullName}");
         builder.AppendIndent(1, $"{{");
     }
 
@@ -86,7 +86,7 @@ public abstract class SymbolConverterContext
 
         builder.AppendIndent(2, $"public {Constants.IConverterTypeName} GetConverter({Constants.IGeneratorContextTypeName} context, System.Type type)");
         builder.AppendIndent(2, $"{{");
-        builder.AppendIndent(3, $"if (type != typeof({GetTypeFullName(-1)}))");
+        builder.AppendIndent(3, $"if (type != typeof({SymbolTypeFullName}))");
         builder.AppendIndent(4, $"return null;");
     }
 

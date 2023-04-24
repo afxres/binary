@@ -111,7 +111,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         for (var i = 0; i < members.Length; i++)
         {
             var member = members[i];
-            AppendAssignConverter(builder, member, $"cvt{i}", $"{GetConverterTypeFullName(i)}", GetTypeFullName(i));
+            AppendAssignConverter(builder, member, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i));
             builder.AppendIndent(3, $"var key{i} = {Constants.AllocatorTypeName}.Invoke({member.NamedKeyLiteral}, stringConverter.EncodeWithLengthPrefix);");
             CancellationToken.ThrowIfCancellationRequested(); ;
         }
