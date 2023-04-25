@@ -32,9 +32,10 @@ internal static class ContextMethodsOfNamedObject
         Debug.Assert(members.Length == names.Length);
         Debug.Assert(members.Length == optional.Length);
         Debug.Assert(members.Length == converters.Length);
+        var dictionary = NamedObjectArguments.GetDictionary(type, encoding, names);
         var encode = GetEncodeDelegateAsNamedObject(type, converters, members, names, optional, encoding);
         var decode = GetDecodeDelegateAsNamedObject(type, converters, optional, constructor);
-        var converterArguments = new object?[] { encode, decode, encoding, names, optional };
+        var converterArguments = new object?[] { encode, decode, dictionary, names, optional };
         var converterType = typeof(NamedObjectConverter<>).MakeGenericType(type);
         var converter = CommonModule.CreateInstance(converterType, converterArguments);
         return (IConverter)converter;

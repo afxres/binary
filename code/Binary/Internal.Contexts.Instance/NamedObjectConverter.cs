@@ -25,16 +25,13 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
 
     private readonly NamedObjectConstructor<T>? decode;
 
-    public NamedObjectConverter(AllocatorAction<T> encode, NamedObjectConstructor<T>? decode, Converter<string> converter, ImmutableArray<string> names, ImmutableArray<bool> optional)
+    public NamedObjectConverter(AllocatorAction<T> encode, NamedObjectConstructor<T>? decode, ByteViewDictionary<int> dictionary, ImmutableArray<string> names, ImmutableArray<bool> optional)
     {
         Debug.Assert(encode is not null);
-        Debug.Assert(converter is not null);
+        Debug.Assert(dictionary is not null);
         Debug.Assert(optional.Any());
         Debug.Assert(optional.Any(x => x is false));
         Debug.Assert(optional.Length == names.Length);
-        var dictionary = BinaryObject.Create(names.Select(x => new ReadOnlyMemory<byte>(converter.Encode(x))).ToImmutableArray());
-        if (dictionary is null)
-            throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {typeof(T)}, string converter type: {converter.GetType()}");
         this.names = names;
         this.encode = encode;
         this.decode = decode;

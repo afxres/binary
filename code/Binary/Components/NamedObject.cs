@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary.Components;
 
 using Mikodev.Binary.Internal.Contexts.Instance;
+using Mikodev.Binary.Internal.Contexts.Template;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -19,6 +20,7 @@ public static class NamedObject
             throw new ArgumentException($"Collection is empty.");
         if (alpha.Length != bravo.Length)
             throw new ArgumentException($"Collection lengths not match.");
-        return new NamedObjectConverter<T>(action, constructor, converter, alpha, bravo);
+        var dictionary = NamedObjectArguments.GetDictionary(typeof(T), converter, alpha);
+        return new NamedObjectConverter<T>(action, constructor, dictionary, alpha, bravo);
     }
 }
