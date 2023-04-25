@@ -59,6 +59,8 @@ public sealed partial class CollectionConverterContext
             _ = unsupportedBuilder.Add(type.IsGenericType ? type.ConstructUnboundGenericType() : type);
         }
 
+        Add("System.Collections.Frozen.FrozenSet`1", SourceType.List, "static x => System.Collections.Frozen.FrozenSet.ToFrozenSet(x, true)");
+        Add("System.Collections.Frozen.FrozenDictionary`2", SourceType.ListKeyValuePair, "static x => System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary(x, true)");
         Add("System.Collections.Generic.IList`1", SourceType.List, Constants.LambdaIdFunction);
         Add("System.Collections.Generic.ICollection`1", SourceType.List, Constants.LambdaIdFunction);
         Add("System.Collections.Generic.IEnumerable`1", SourceType.List, Constants.LambdaIdFunction);

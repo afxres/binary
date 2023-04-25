@@ -115,6 +115,24 @@ public class CompilationTests
         yield return new object[] { a };
     }
 
+    public static IEnumerable<object[]> FrozenCollectionTypesData()
+    {
+        var a =
+            """
+            // frozen collections
+            namespace TestNamespace;
+
+            using Mikodev.Binary.Attributes;
+            using System.Collections.Frozen;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<FrozenDictionary<int, string>>]
+            [SourceGeneratorInclude<FrozenSet<int>>]
+            public partial class TestGeneratorContext { }
+            """;
+        yield return new object[] { a };
+    }
+
     public static IEnumerable<object[]> ImmutableCollectionTypesData()
     {
         var a =
@@ -804,6 +822,7 @@ public class CompilationTests
     [MemberData(nameof(CommonGenericTypesData))]
     [MemberData(nameof(CommonCollectionTypesData))]
     [MemberData(nameof(CommonCollectionInterfaceTypesData))]
+    [MemberData(nameof(FrozenCollectionTypesData))]
     [MemberData(nameof(ImmutableCollectionTypesData))]
     [MemberData(nameof(SystemTupleData))]
     [MemberData(nameof(CustomConverterData))]

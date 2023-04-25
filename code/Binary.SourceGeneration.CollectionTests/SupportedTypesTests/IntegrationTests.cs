@@ -2,6 +2,7 @@
 
 using Mikodev.Binary.Attributes;
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Xunit;
@@ -55,6 +56,10 @@ using Xunit;
 [SourceGeneratorInclude<IImmutableQueue<string>>]
 [SourceGeneratorInclude<IImmutableSet<int>>]
 [SourceGeneratorInclude<IImmutableSet<string>>]
+[SourceGeneratorInclude<FrozenSet<int>>]
+[SourceGeneratorInclude<FrozenSet<string>>]
+[SourceGeneratorInclude<FrozenDictionary<int, string>>]
+[SourceGeneratorInclude<FrozenDictionary<string, int>>]
 public partial class IntegrationGeneratorContext { }
 
 public class IntegrationTests
@@ -119,13 +124,6 @@ public class IntegrationTests
         Assert.Empty(resultEmpty);
         var bufferEmpty = converter.Encode(resultEmpty);
         Assert.Empty(bufferEmpty);
-
-        // actual implementation test
-        var sourceType = source.GetType();
-        var resultType = result.GetType();
-        var resultEmptyType = resultEmpty.GetType();
-        Assert.Equal(sourceType, resultType);
-        Assert.Equal(sourceType, resultEmptyType);
     }
 
     public static IEnumerable<object[]> CollectionInterfaceData()
@@ -181,15 +179,29 @@ public class IntegrationTests
         yield return new object[] { typeof(IImmutableSet<string>), h, "6", "SequenceConverter`1.*IImmutableSet`1.*String" };
     }
 
-    [Theory(DisplayName = "Collection Interface Encode Decode Test")]
+    public static IEnumerable<object[]> FrozenCollectionAbstractClassData()
+    {
+        var a = FrozenDictionary.ToFrozenDictionary(new[] { new KeyValuePair<int, string>(1, "2") }, true);
+        var b = FrozenDictionary.ToFrozenDictionary(new[] { new KeyValuePair<string, int>("3", 4) }, false);
+        yield return new object[] { typeof(FrozenDictionary<int, string>), a, new KeyValuePair<int, string>(1, "2"), "SequenceConverter`1.*FrozenDictionary`2.*Int32.*String" };
+        yield return new object[] { typeof(FrozenDictionary<string, int>), b, new KeyValuePair<string, int>("3", 4), "SequenceConverter`1.*FrozenDictionary`2.*String.*Int32" };
+
+        var c = FrozenSet.ToFrozenSet(new[] { 5 }, true);
+        var d = FrozenSet.ToFrozenSet(new[] { "6" }, false);
+        yield return new object[] { typeof(FrozenSet<int>), c, 5, "SequenceConverter`1.*FrozenSet`1.*Int32" };
+        yield return new object[] { typeof(FrozenSet<string>), d, "6", "SequenceConverter`1.*FrozenSet`1.*String" };
+    }
+
+    [Theory(DisplayName = "Collection Interface Or Abstract Class Encode Decode Test")]
     [MemberData(nameof(CollectionInterfaceData))]
     [MemberData(nameof(ImmutableCollectionInterfaceData))]
-    public void CollectionInterfaceEncodeDecodeTest<T, E>(Type interfaceType, T source, E element, string pattern) where T : IEnumerable<E>
+    [MemberData(nameof(FrozenCollectionAbstractClassData))]
+    public void CollectionInterfaceOrAbstractClassEncodeDecodeTest<T, E>(Type wantedType, T source, E element, string pattern) where T : IEnumerable<E>
     {
-        Assert.True(interfaceType.IsInterface);
-        Assert.StartsWith("System.Collections", interfaceType.Namespace);
+        Assert.True(wantedType.IsAbstract || wantedType.IsInterface);
+        Assert.StartsWith("System.Collections", wantedType.Namespace);
         var method = new Action<IEnumerable<object>, object, string>(EncodeDecodeTest).Method;
-        var target = method.GetGenericMethodDefinition().MakeGenericMethod(new Type[] { interfaceType, typeof(E) });
+        var target = method.GetGenericMethodDefinition().MakeGenericMethod(new Type[] { wantedType, typeof(E) });
         var result = target.Invoke(this, new object?[] { source, element, pattern });
         Assert.Null(result);
     }
