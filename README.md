@@ -21,7 +21,7 @@ Add package (for F# project):
 dotnet add package Mikodev.Binary.FSharp
 ```
 
-Sample code (F#):
+Sample code:
 ```csharp
 using Mikodev.Binary;
 using System;
