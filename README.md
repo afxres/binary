@@ -67,7 +67,7 @@ using Mikodev.Binary.Attributes;
 partial class SomeSourceGeneratorContext { }
 ```
 
-This will generate a property named ``ConverterCreators`` witch contains all generated converter creators.  
+This will generate a property named ``ConverterCreators`` which contains all generated converter creators.  
 Just add those converter creators and it will work.
 ```csharp
 var generator = Generator.CreateAotBuilder()
