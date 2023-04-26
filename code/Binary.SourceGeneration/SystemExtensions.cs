@@ -7,42 +7,44 @@ using System.Text;
 
 public static class SystemExtensions
 {
+    public const int IndentSize = 4;
+
+    public const int MaxIndentLevels = 16;
+
     public static void AppendIndent(this StringBuilder builder)
     {
         _ = builder.AppendLine();
     }
 
-    public static void AppendIndent(this StringBuilder builder, byte indent, string line)
+    public static void AppendIndent(this StringBuilder builder, int indent, string line)
     {
-        var current = new StringBuilder();
-        for (var i = 0; i < indent; i++)
-            _ = current.Append("    ");
-        _ = current.Append(line);
-        _ = builder.Append(current.ToString());
+        if ((uint)indent > MaxIndentLevels)
+            throw new ArgumentOutOfRangeException(nameof(indent));
+        _ = builder.Append(' ', IndentSize * indent);
+        _ = builder.Append(line);
         _ = builder.AppendLine();
     }
 
-    public static void AppendIndent(this StringBuilder builder, byte indent, string head, string tail, int count, Func<int, string> func)
+    public static void AppendIndent(this StringBuilder builder, int indent, string head, string tail, int count, Func<int, string> func)
     {
         AppendIndent(builder, indent, head, tail, Enumerable.Range(0, count).ToList(), func);
     }
 
-    public static void AppendIndent<T>(this StringBuilder builder, byte indent, string head, string tail, IReadOnlyList<T> values, Func<T, string> func)
+    public static void AppendIndent<T>(this StringBuilder builder, int indent, string head, string tail, IReadOnlyList<T> values, Func<T, string> func)
     {
-        var current = new StringBuilder();
-        for (var i = 0; i < indent; i++)
-            _ = current.Append("    ");
-        _ = current.Append(head);
+        if ((uint)indent > MaxIndentLevels)
+            throw new ArgumentOutOfRangeException(nameof(indent));
+        _ = builder.Append(' ', IndentSize * indent);
+        _ = builder.Append(head);
         for (var i = 0; i < values.Count; i++)
         {
             var part = func.Invoke(values[i]);
-            _ = current.Append(part);
+            _ = builder.Append(part);
             if (i == values.Count - 1)
                 continue;
-            _ = current.Append(", ");
+            _ = builder.Append(", ");
         }
-        _ = current.Append(tail);
-        _ = builder.Append(current.ToString());
+        _ = builder.Append(tail);
         _ = builder.AppendLine();
     }
 }

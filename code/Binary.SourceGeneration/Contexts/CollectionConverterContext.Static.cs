@@ -59,17 +59,18 @@ public sealed partial class CollectionConverterContext
             _ = unsupportedBuilder.Add(type.IsGenericType ? type.ConstructUnboundGenericType() : type);
         }
 
+        const string Lambda = "static x => x";
         Add("System.Collections.Frozen.FrozenSet`1", SourceType.List, "static x => System.Collections.Frozen.FrozenSet.ToFrozenSet(x, true)");
         Add("System.Collections.Frozen.FrozenDictionary`2", SourceType.ListKeyValuePair, "static x => System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary(x, true)");
-        Add("System.Collections.Generic.IList`1", SourceType.List, Constants.LambdaIdFunction);
-        Add("System.Collections.Generic.ICollection`1", SourceType.List, Constants.LambdaIdFunction);
-        Add("System.Collections.Generic.IEnumerable`1", SourceType.List, Constants.LambdaIdFunction);
-        Add("System.Collections.Generic.IReadOnlyList`1", SourceType.List, Constants.LambdaIdFunction);
-        Add("System.Collections.Generic.IReadOnlyCollection`1", SourceType.List, Constants.LambdaIdFunction);
-        Add("System.Collections.Generic.ISet`1", SourceType.HashSet, Constants.LambdaIdFunction);
-        Add("System.Collections.Generic.IReadOnlySet`1", SourceType.HashSet, Constants.LambdaIdFunction);
-        Add("System.Collections.Generic.IDictionary`2", SourceType.Dictionary, Constants.LambdaIdFunction);
-        Add("System.Collections.Generic.IReadOnlyDictionary`2", SourceType.Dictionary, Constants.LambdaIdFunction);
+        Add("System.Collections.Generic.IList`1", SourceType.List, Lambda);
+        Add("System.Collections.Generic.ICollection`1", SourceType.List, Lambda);
+        Add("System.Collections.Generic.IEnumerable`1", SourceType.List, Lambda);
+        Add("System.Collections.Generic.IReadOnlyList`1", SourceType.List, Lambda);
+        Add("System.Collections.Generic.IReadOnlyCollection`1", SourceType.List, Lambda);
+        Add("System.Collections.Generic.ISet`1", SourceType.HashSet, Lambda);
+        Add("System.Collections.Generic.IReadOnlySet`1", SourceType.HashSet, Lambda);
+        Add("System.Collections.Generic.IDictionary`2", SourceType.Dictionary, Lambda);
+        Add("System.Collections.Generic.IReadOnlyDictionary`2", SourceType.Dictionary, Lambda);
         Add("System.Collections.Immutable.IImmutableDictionary`2", SourceType.ListKeyValuePair, "System.Collections.Immutable.ImmutableDictionary.CreateRange");
         Add("System.Collections.Immutable.IImmutableList`1", SourceType.List, "System.Collections.Immutable.ImmutableList.CreateRange");
         Add("System.Collections.Immutable.IImmutableQueue`1", SourceType.List, "System.Collections.Immutable.ImmutableQueue.CreateRange");

@@ -57,14 +57,15 @@ public static partial class Symbols
 
         static void InvokeNamedTypeSymbol(StringBuilder target, INamedTypeSymbol symbol)
         {
+            const string Global = "global::";
             var containing = symbol.ContainingType;
             var @namespace = symbol.ContainingNamespace;
             if (containing is not null)
                 Invoke(target, containing);
             else if (@namespace.IsGlobalNamespace)
-                _ = target.Append(Constants.GlobalNamespace);
+                _ = target.Append(Global);
             else
-                _ = target.Append(Constants.GlobalNamespace + @namespace.ToDisplayString());
+                _ = target.Append(Global + @namespace.ToDisplayString());
 
             if (containing is not null || @namespace.IsGlobalNamespace is false)
                 _ = target.Append('.');
@@ -84,10 +85,9 @@ public static partial class Symbols
             _ = target.Append(">");
         }
 
-        var target = new StringBuilder();
-        Invoke(target, symbol);
-        var result = target.ToString();
-        return result;
+        var builder = new StringBuilder();
+        Invoke(builder, symbol);
+        return builder.ToString();
     }
 
     public static string GetOutputFullName(ITypeSymbol symbol)
@@ -139,9 +139,8 @@ public static partial class Symbols
             _ = target.Append("_r");
         }
 
-        var target = new StringBuilder();
-        Invoke(target, symbol);
-        var result = target.ToString();
-        return result;
+        var builder = new StringBuilder();
+        Invoke(builder, symbol);
+        return builder.ToString();
     }
 }
