@@ -42,7 +42,7 @@ public static partial class Symbols
         var constructors = symbol.InstanceConstructors.Where(x => x.DeclaredAccessibility is Accessibility.Public).ToList();
         var hasDefaultConstructor = symbol.IsValueType || constructors.Any(x => x.Parameters.Length is 0);
         if (hasDefaultConstructor && members.All(x => x.IsReadOnly is false))
-            return new SymbolConstructorInfo<T>(symbol, members, ImmutableArray<T>.Empty);
+            return new SymbolConstructorInfo<T>(members, ImmutableArray<T>.Empty);
 
         var selector = new Func<T, string>(x => Select(x.Name));
         if (members.Select(selector).Distinct().Count() != members.Length)
@@ -62,7 +62,7 @@ public static partial class Symbols
             var except = members.Except(result).ToImmutableArray();
             if (except.Any(x => x.IsReadOnly))
                 continue;
-            return new SymbolConstructorInfo<T>(symbol, members, result);
+            return new SymbolConstructorInfo<T>(members, result);
         }
         return null;
     }

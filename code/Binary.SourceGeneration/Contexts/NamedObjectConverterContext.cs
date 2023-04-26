@@ -83,7 +83,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             CancellationToken.ThrowIfCancellationRequested(); ;
         }
 
-        constructor.AppendCreateInstance(builder, CancellationToken);
+        constructor.Append(builder, SymbolTypeFullName, CancellationToken);
         builder.AppendIndent(2, $"}}");
     }
 

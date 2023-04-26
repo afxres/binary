@@ -83,7 +83,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
                 builder.AppendIndent(3, $"var var{i} = this.cvt{i}.{method}({keyword} {bufferName});");
                 CancellationToken.ThrowIfCancellationRequested();
             }
-            constructor.AppendCreateInstance(builder, CancellationToken);
+            constructor.Append(builder, SymbolTypeFullName, CancellationToken);
         }
         builder.AppendIndent(2, $"}}");
     }

@@ -1,39 +1,36 @@
 ﻿namespace Mikodev.Binary.SourceGeneration;
 
-using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
 using System.Text;
 using System.Threading;
 
 public class SymbolConstructorInfo<T> where T : SymbolMemberInfo
 {
-    public ITypeSymbol Symbol { get; }
+    private readonly ImmutableArray<T> members;
 
-    public ImmutableArray<T> Members { get; }
+    private readonly ImmutableArray<T> parameters;
 
-    public ImmutableArray<T> ConstructorParameters { get; }
-
-    public SymbolConstructorInfo(ITypeSymbol symbol, ImmutableArray<T> members, ImmutableArray<T> constructorParameters)
+    public SymbolConstructorInfo(ImmutableArray<T> members, ImmutableArray<T> parameters)
     {
-        Symbol = symbol;
-        Members = members;
-        ConstructorParameters = constructorParameters;
+        this.members = members;
+        this.parameters = parameters;
     }
 
-    public void AppendCreateInstance(StringBuilder builder, CancellationToken cancellation)
+    public void Append(StringBuilder builder, string typeName, CancellationToken cancellation)
     {
-        var constructorOnly = ConstructorParameters.Length == Members.Length;
+        var members = this.members;
+        var parameters = this.parameters;
+        var constructorOnly = parameters.Length == members.Length;
         var tail = constructorOnly ? ");" : ")";
-        var fullName = Symbols.GetSymbolFullName(Symbol);
-        builder.AppendIndent(3, $"var result = new {fullName}(", tail, ConstructorParameters, x => $"var{Members.IndexOf(x)}");
+        builder.AppendIndent(3, $"var result = new {typeName}(", tail, parameters, x => $"var{members.IndexOf(x)}");
         if (constructorOnly is false)
         {
             builder.AppendIndent(3, $"{{");
-            foreach (var i in Members)
+            foreach (var i in members)
             {
-                if (ConstructorParameters.Contains(i))
+                if (parameters.Contains(i))
                     continue;
-                builder.AppendIndent(4, $"{i.Name} = var{Members.IndexOf(i)},");
+                builder.AppendIndent(4, $"{i.Name} = var{members.IndexOf(i)},");
                 cancellation.ThrowIfCancellationRequested();
             }
             builder.AppendIndent(3, $"}};");
