@@ -5,21 +5,16 @@
     <AssemblyName>Mikodev.Binary</AssemblyName>
     <RootNamespace>Mikodev.Binary</RootNamespace>
     <LangVersion>11.0</LangVersion>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Copyright>Mikodev $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
     <Authors>Mikodev</Authors>
     <Company>Mikodev</Company>
-    <Copyright>Mikodev $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
     <Product>Mikodev.Binary</Product>
-    <Version>5.5.0</Version>
+    <Version>5.6.0-beta.1</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageTags>binary dynamic serialization</PackageTags>
     <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/afxres/binary.git</RepositoryUrl>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DebugType>none</DebugType>
-    <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
 
   <PropertyGroup>
