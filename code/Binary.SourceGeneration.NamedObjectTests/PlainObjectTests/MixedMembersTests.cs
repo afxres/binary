@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary.SourceGeneration.NamedObjectTests.PlainObjectTests;
 
 using Mikodev.Binary.Attributes;
+using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
@@ -14,6 +15,12 @@ public partial class MixedMembersSourceGeneratorContext { }
 #pragma warning disable CS0169 // The field '...' is never used
 public class SimpleObject
 {
+    private const int PrivateConstant = 1;
+
+    internal const long InternalConstant = 2;
+
+    public const string PublicConstant = "3";
+
     private int PrivateInstanceField;
 
     internal long InternalInstanceField;
@@ -54,10 +61,10 @@ public class MixedMembersTests
     [Fact(DisplayName = "Plain Object Encode Decode Test")]
     public void PlainObjectEncodeDecodeTest()
     {
-        var builder = Generator.CreateAotBuilder();
-        foreach (var i in MixedMembersSourceGeneratorContext.ConverterCreators)
-            _ = builder.AddConverterCreator(i.Value);
-        var generator = builder.Build();
+        var generator = Generator.CreateAotBuilder()
+            .AddConverterCreators(MixedMembersSourceGeneratorContext.ConverterCreators.Values)
+            .Build();
+        var generatorSecond = Generator.CreateDefault();
 
         SimpleObject.InternalStaticField = 1L;
         SimpleObject.InternalStaticProperty = 2L;
@@ -65,6 +72,7 @@ public class MixedMembersTests
         SimpleObject.PublicStaticProperty = "4";
 
         var converter = generator.GetConverter<SimpleObject>();
+        var converterSecond = generatorSecond.GetConverter<SimpleObject>();
         var source = new SimpleObject
         {
             InternalInstanceField = -3L,
@@ -73,15 +81,24 @@ public class MixedMembersTests
             PublicInstanceProperty = "-3",
         };
         var buffer = converter.Encode(source);
+        var bufferSecond = converterSecond.Encode(source);
         var token = new Token(generator, buffer);
-        var keys = new[] { "PublicInstanceField", "PublicInstanceProperty" };
-        Assert.Equal(keys.ToHashSet(), token.Children.Keys.ToHashSet());
+        var tokenSecond = new Token(generatorSecond, bufferSecond);
+        var keys = new HashSet<string>(new[] { "PublicInstanceField", "PublicInstanceProperty" });
+        Assert.Equal(keys, token.Children.Keys.ToHashSet());
+        Assert.Equal(keys, tokenSecond.Children.Keys.ToHashSet());
 
         var result = converter.Decode(buffer);
         Assert.Equal(source.PublicInstanceField, result.PublicInstanceField);
         Assert.Equal(source.PublicInstanceProperty, result.PublicInstanceProperty);
         Assert.Equal(0L, result.InternalInstanceField);
         Assert.Equal(0L, result.InternalInstanceProperty);
+
+        var resultSecond = converterSecond.Decode(bufferSecond);
+        Assert.Equal(source.PublicInstanceField, resultSecond.PublicInstanceField);
+        Assert.Equal(source.PublicInstanceProperty, resultSecond.PublicInstanceProperty);
+        Assert.Equal(0L, resultSecond.InternalInstanceField);
+        Assert.Equal(0L, resultSecond.InternalInstanceProperty);
 
         Assert.Equal(1L, SimpleObject.InternalStaticField);
         Assert.Equal(2L, SimpleObject.InternalStaticProperty);

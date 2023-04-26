@@ -545,6 +545,10 @@ public class CompilationTests
 
             public class MiscellaneousMembers
             {
+                internal const int InternalConstant = 0;
+
+                public const long Constant = -1;
+
                 public int Id;
 
                 public string Name { get; set; }

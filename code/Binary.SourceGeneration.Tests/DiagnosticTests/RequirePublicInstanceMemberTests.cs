@@ -82,8 +82,26 @@ public class RequirePublicInstanceMemberTests
                 public static string? StaticField;
             }
             """;
+        var c =
+            """
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<Delta>]
+            partial class TestSourceGeneratorContext { }
+
+            [NamedObject]
+            class Delta
+            {
+                [NamedKey("constant")]
+                public const int Constant = 1;
+            }
+            """;
         yield return new object[] { a, "StaticProperty", "Alpha" };
         yield return new object[] { b, "StaticField", "Bravo" };
+        yield return new object[] { c, "Constant", "Delta" };
     }
 
     public static IEnumerable<object[]> NonPublicInstanceMemberData()
