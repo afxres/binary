@@ -22,14 +22,17 @@ dotnet add package Mikodev.Binary.FSharp
 ```
 
 Sample code (F#):
-```fsharp
-open Mikodev.Binary
+```csharp
+using Mikodev.Binary;
+using System;
 
-let generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().Build()
-let source = {| text = "Hello, F#!"; list = [ 1; 0; 2; 4 ] |}
-let buffer = generator.Encode source
-let result = generator.Decode(buffer, anonymous = source)
-printfn "%A" result
+var generator = Generator.CreateDefault();
+var source = new Person("C#", 21);
+var buffer = generator.Encode(source);
+var result = generator.Decode<Person>(buffer);
+Console.WriteLine(result);
+
+record Person(string Name, int Age);
 ```
 
 Supported types:
@@ -84,68 +87,70 @@ Console.WriteLine(result.Name); // Someone
 ## Implement custom converters
 
 Data model:
-```fsharp
-type Person = {
-    Id : int
-    Name : string
-}
+```csharp
+record Person(string Name, int Age);
 ```
 
 A simple converter implementation:
-```fsharp
-type SimplePersonConverter() =
-    inherit Converter<Person>()
+```csharp
+class SimplePersonConverter : Converter<Person>
+{
+    public override void Encode(ref Allocator allocator, Person item)
+    {
+        Allocator.Append(ref allocator, sizeof(int), item.Age, BinaryPrimitives.WriteInt32LittleEndian);
+        Allocator.Append(ref allocator, item.Name.AsSpan(), Encoding.UTF8);
+    }
 
-    override __.Encode(allocator : byref<Allocator>, item : Person) : unit =
-        Allocator.Append(&allocator, sizeof<int>, item.Id,
-            fun span data -> BinaryPrimitives.WriteInt32LittleEndian(span, data))
-        Allocator.Append(&allocator, item.Name.AsSpan(), Encoding.UTF8)
-        ()
-
-    override __.Decode(span : inref<ReadOnlySpan<byte>>) : Person =
-        let id = BinaryPrimitives.ReadInt32LittleEndian(span)
-        let name = Encoding.UTF8.GetString(span.Slice(sizeof<int>))
-        { Id = id; Name = name }
+    public override Person Decode(in ReadOnlySpan<byte> span)
+    {
+        var age = BinaryPrimitives.ReadInt32LittleEndian(span);
+        var name = Encoding.UTF8.GetString(span.Slice(sizeof(int)));
+        return new Person(name, age);
+    }
+}
 ```
 
 Or implement with existing converters via converter creator:
-```fsharp
-type PersonConverter(intConverter : Converter<int>, stringConverter : Converter<string>) =
-    inherit Converter<Person>()
+```csharp
+class SimplePersonConverter(Converter<int> intConverter, Converter<string> stringConverter) : Converter<Person>
+{
+    public override void Encode(ref Allocator allocator, Person item)
+    {
+        intConverter.Encode(ref allocator, item.Age);
+        stringConverter.Encode(ref allocator, item.Name);
+    }
 
-    override __.Encode(allocator : byref<Allocator>, item : Person) : unit =
-        intConverter.Encode(&allocator, item.Id)
-        stringConverter.Encode(&allocator, item.Name)
-        ()
+    public override Person Decode(in ReadOnlySpan<byte> span)
+    {
+        var age = intConverter.Decode(span);
+        var name = stringConverter.Decode(span.Slice(sizeof(int)));
+        return new Person(name, age);
+    }
+}
 
-    override __.Decode(span : inref<ReadOnlySpan<byte>>) : Person =
-        let id = intConverter.Decode(&span)
-        let name = let part = span.Slice(sizeof<int>) in stringConverter.Decode(&part)
-        { Id = id; Name = name }
-
-type PersonConverterCreator() =
-    interface IConverterCreator with
-        member __.GetConverter(context : IGeneratorContext, t : Type) =
-            if t = typeof<Person> then
-                let select = [ typeof<int>; typeof<string> ] |> Seq.map context.GetConverter
-                let values = select |> Seq.cast<obj> |> Seq.toArray
-                let result = Activator.CreateInstance(typeof<PersonConverter>, values)
-                result :?> IConverter
-            else
-                null
+class SimplePersonConverterCreator : IConverterCreator
+{
+    public IConverter? GetConverter(IGeneratorContext context, Type type)
+    {
+        if (type != typeof(Person))
+            return null;
+        var intConverter = (Converter<int>)context.GetConverter(typeof(int));
+        var stringConverter = (Converter<string>)context.GetConverter(typeof(string));
+        return new SimplePersonConverter(intConverter, stringConverter);
+    }
+}
 ```
 
 And use like this:
-```fsharp
-let generator =
-    Generator.CreateDefaultBuilder()
-        .AddConverterCreator(PersonConverterCreator())
-        .Build()
-let person = { Id = 1024; Name = "F#" }
-let buffer = generator.Encode person
-printfn "buffer = %A" buffer
-let result = generator.Decode<Person> buffer
-printfn "result = %A" result
+```csharp
+var generator = Generator.CreateDefaultBuilder()
+    .AddConverterCreator(new SimplePersonConverterCreator())
+    .Build();
+var converter = generator.GetConverter<Person>();
+var source = new Person("C#", 21);
+var buffer = converter.Encode(source);
+var result = converter.Decode(buffer);
+Console.WriteLine(result);
 ```
 
 ## Binary Layout
