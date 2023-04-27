@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary.SourceGeneration.Tests.SupportedTypesTests;
 
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 public class CompilationTests
@@ -844,7 +845,10 @@ public class CompilationTests
         Assert.Contains("SourceGeneratorInclude", source);
         var compilation = CompilationModule.CreateCompilation(source);
         var generator = new SourceGenerator();
-        _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
+        var compilationGenerated = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
+        var syntaxTrees = compilationGenerated.SyntaxTrees;
+        var filePaths = syntaxTrees.Select(x => x.FilePath).ToList();
+        _ = Assert.Single(filePaths, x => x.EndsWith("GeneratorContext.0.g.cs"));
         Assert.Empty(diagnostics);
     }
 }
