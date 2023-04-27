@@ -1,8 +1,6 @@
 ﻿namespace Mikodev.Binary.SourceGeneration;
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 public static class SystemExtensions
@@ -27,20 +25,15 @@ public static class SystemExtensions
 
     public static void AppendIndent(this StringBuilder builder, int indent, string head, string tail, int count, Func<int, string> func)
     {
-        AppendIndent(builder, indent, head, tail, Enumerable.Range(0, count).ToList(), func);
-    }
-
-    public static void AppendIndent<T>(this StringBuilder builder, int indent, string head, string tail, IReadOnlyList<T> values, Func<T, string> func)
-    {
         if ((uint)indent > MaxIndentLevels)
             throw new ArgumentOutOfRangeException(nameof(indent));
         _ = builder.Append(' ', IndentSize * indent);
         _ = builder.Append(head);
-        for (var i = 0; i < values.Count; i++)
+        for (var i = 0; i < count; i++)
         {
-            var part = func.Invoke(values[i]);
+            var part = func.Invoke(i);
             _ = builder.Append(part);
-            if (i == values.Count - 1)
+            if (i == count - 1)
                 continue;
             _ = builder.Append(", ");
         }

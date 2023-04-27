@@ -105,8 +105,8 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         var members = this.members;
         var decoder = this.constructor is null ? "null" : "closure.Decode";
 
-        builder.AppendIndent(3, $"var names = new string[] {{ ", $" }};", members, x => x.NamedKeyLiteral);
-        builder.AppendIndent(3, $"var optional = new bool[] {{ ", $" }};", members, x => x.IsOptional ? "true" : "false");
+        builder.AppendIndent(3, $"var names = new string[] {{ ", $" }};", members.Length, x => members[x].NamedKeyLiteral);
+        builder.AppendIndent(3, $"var optional = new bool[] {{ ", $" }};", members.Length, x => members[x].IsOptional ? "true" : "false");
         builder.AppendIndent(3, $"var stringConverter = ({Constants.ConverterTypeName}<string>)context.GetConverter(typeof(string));");
         for (var i = 0; i < members.Length; i++)
         {

@@ -42,27 +42,26 @@ public static partial class Symbols
         var constructors = symbol.InstanceConstructors.Where(x => x.DeclaredAccessibility is Accessibility.Public).ToList();
         var hasDefaultConstructor = symbol.IsValueType || constructors.Any(x => x.Parameters.Length is 0);
         if (hasDefaultConstructor && members.All(x => x.IsReadOnly is false))
-            return new SymbolConstructorInfo<T>(members, ImmutableArray<T>.Empty);
+            return new SymbolConstructorInfo<T>(members, ImmutableArray<int>.Empty);
 
         var selector = new Func<T, string>(x => Select(x.Name));
         if (members.Select(selector).Distinct().Count() != members.Length)
             return null;
 
         // select constructor with most parameters
-        var dictionary = members.ToDictionary(selector);
+        var dictionary = members.Select((x, i) => (Key: selector.Invoke(x), Index: i)).ToDictionary(x => x.Key, v => v.Index);
         foreach (var i in constructors.OrderByDescending(x => x.Parameters.Length))
         {
             var parameters = i.Parameters;
-            var result = parameters
-                .Select(x => dictionary.TryGetValue(Select(x.Name), out var member) && SymbolEqualityComparer.Default.Equals(member.TypeSymbol, x.Type) ? member : null)
-                .OfType<T>()
+            var indexes = parameters
+                .Select(x => dictionary.TryGetValue(Select(x.Name), out var index) && SymbolEqualityComparer.Default.Equals(members[index].TypeSymbol, x.Type) ? index : -1)
+                .Where(x => x is not -1)
                 .ToImmutableArray();
-            if (result.Length is 0 || result.Length != parameters.Length)
+            if (indexes.Length is 0 || indexes.Length != parameters.Length)
                 continue;
-            var except = members.Except(result).ToImmutableArray();
-            if (except.Any(x => x.IsReadOnly))
+            if (indexes.Length != members.Length && members.Where((_, i) => indexes.Contains(i) is false).Any(x => x.IsReadOnly))
                 continue;
-            return new SymbolConstructorInfo<T>(members, result);
+            return new SymbolConstructorInfo<T>(members, indexes);
         }
         return null;
     }

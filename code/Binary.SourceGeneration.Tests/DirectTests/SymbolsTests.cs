@@ -236,6 +236,93 @@ public class SymbolsTests
         Assert.Equal(parameterName, parameter.Name);
     }
 
+    public static IEnumerable<object[]> GetConstructorByMemberData()
+    {
+        var a =
+            """
+            class Alpha
+            {
+                public int Id { get; set; }
+            }
+            """;
+        var b =
+            """
+            class Bravo
+            {
+                public string Name { get; }
+
+                public Bravo(string name)
+                {
+                    Name = name;
+                }
+            }
+            """;
+        var c =
+            """
+            class Delta
+            {
+                public int Id { get; }
+
+                public string Tag { get; set; }
+
+                public Delta(int id)
+                {
+                    Id = id;
+                }
+            }
+            """;
+        var d =
+            """
+            class Hotel
+            {
+                public int A { get; }
+
+                public int B { get; set; }
+
+                public int C { get; set; }
+
+                public Hotel(int b, int c)
+                {
+                    B = b;
+                    C = c;
+                }
+
+                public Hotel(int a)
+                {
+                    A = a;
+                }
+            }
+            """;
+        yield return new object[] { a, "Alpha", new string[] { "Id" } };
+        yield return new object[] { b, "Bravo", new string[] { "Name" } };
+        yield return new object[] { c, "Delta", new string[] { "Id", "Tag" } };
+        yield return new object[] { d, "Hotel", new string[] { "A", "B", "C" } };
+    }
+
+    [Theory(DisplayName = "Get Constructor By Member")]
+    [MemberData(nameof(GetConstructorByMemberData))]
+    public void GetConstructorByMemberTest(string source, string typeName, string[] memberNames)
+    {
+        var compilation = CompilationModule.CreateCompilation(source);
+        var tree = compilation.SyntaxTrees.First();
+        var model = compilation.GetSemanticModel(tree);
+        var nodes = tree.GetRoot().DescendantNodes();
+        var declaration = nodes.OfType<TypeDeclarationSyntax>().Single();
+        var symbol = model.GetDeclaredSymbol(declaration);
+        Assert.NotNull(symbol);
+        Assert.Equal(typeName, symbol.Name);
+        var memberSymbols = nodes.OfType<MemberDeclarationSyntax>()
+            .Select(x => model.GetDeclaredSymbol(x))
+            .OfType<IPropertySymbol>()
+            .Where(x => memberNames.Contains(x.Name))
+            .ToList();
+        var members = memberSymbols.Select(x => new SymbolTupleMemberInfo(x)).ToImmutableArray();
+        Assert.NotEmpty(members);
+
+        var result = Symbols.GetConstructor(symbol, members);
+        Assert.NotNull(result);
+    }
+
     public static IEnumerable<object[]> GetConstructorByMemberNotFoundData()
     {
         var a =
