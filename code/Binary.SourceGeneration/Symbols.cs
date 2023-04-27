@@ -110,6 +110,10 @@ public static partial class Symbols
 
     public static bool IsTypeSupported(ITypeSymbol symbol)
     {
+        if (symbol is IErrorTypeSymbol)
+            return false;
+        if (symbol.IsStatic)
+            return false;
         if (symbol.IsRefLikeType)
             return false;
         return symbol.TypeKind is TypeKind.Array or TypeKind.Class or TypeKind.Enum or TypeKind.Interface or TypeKind.Struct;
