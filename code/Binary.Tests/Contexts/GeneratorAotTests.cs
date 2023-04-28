@@ -27,9 +27,15 @@ public class GeneratorAotTests
     [Fact(DisplayName = "Argument Null Test")]
     public void ArgumentNullTest()
     {
-        static Type[] GetArgs2(MethodInfo i) => i.Name.Contains("Enumerable") || i.Name.Contains("Dictionary")
-            ? new[] { typeof(IEnumerable<int>), typeof(int) }
-            : new[] { typeof(int), typeof(int) };
+        static Type[] GetArgs2(MethodInfo i)
+        {
+            if (i.Name.Contains("VariableBoundArray"))
+                return new[] { typeof(int[,]), typeof(int) };
+            if (i.Name.Contains("Enumerable") || i.Name.Contains("Dictionary"))
+                return new[] { typeof(IEnumerable<int>), typeof(int) };
+            else
+                return new[] { typeof(int), typeof(int) };
+        }
 
         var a = new[] { typeof(int), typeof(int) };
         var b = new[] { typeof(IEnumerable<int>), typeof(int) };
@@ -118,5 +124,32 @@ public class GeneratorAotTests
         var error = Assert.Throws<ArgumentException>(Generator.GetEnumConverter<T>);
         Assert.Null(error.ParamName);
         Assert.Equal("Require an enumeration type!", error.Message);
+    }
+
+    [Fact(DisplayName = "Get Variable Bound Array Converter Not Array Type")]
+    public void GetVariableBoundArrayConverterNotArrayType()
+    {
+        var converter = Generator.GetEnumConverter<DayOfWeek>();
+        var error = Assert.Throws<ArgumentException>(() => Generator.GetVariableBoundArrayConverter<string, DayOfWeek>(converter));
+        Assert.Null(error.ParamName);
+        Assert.Equal("Require variable bound array type.", error.Message);
+    }
+
+    [Fact(DisplayName = "Get Variable Bound Array Converter Not Variable Bound Array")]
+    public void GetVariableBoundArrayConverterNotVariableBoundArray()
+    {
+        var converter = Generator.GetEnumConverter<DayOfWeek>();
+        var error = Assert.Throws<ArgumentException>(() => Generator.GetVariableBoundArrayConverter<DayOfWeek[], DayOfWeek>(converter));
+        Assert.Null(error.ParamName);
+        Assert.Equal("Require variable bound array type.", error.Message);
+    }
+
+    [Fact(DisplayName = "Get Variable Bound Array Converter Element Type Not Match")]
+    public void GetVariableBoundArrayConverterElementTypeNotMatch()
+    {
+        var converter = Generator.GetEnumConverter<DayOfWeek>();
+        var error = Assert.Throws<ArgumentException>(() => Generator.GetVariableBoundArrayConverter<int[,], DayOfWeek>(converter));
+        Assert.Null(error.ParamName);
+        Assert.Equal("Element type not match.", error.Message);
     }
 }

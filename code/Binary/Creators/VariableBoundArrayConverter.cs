@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -45,6 +46,9 @@ internal sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T 
 
     public override T? Decode(in ReadOnlySpan<byte> span)
     {
+        [UnconditionalSuppressMessage("AotAnalysis", "IL3050:RequiresDynamicCode")]
+        static Array Create(int[] lengths, int[] lowerBounds) => Array.CreateInstance(typeof(E), lengths, lowerBounds);
+
         if (span.Length is 0)
             return null;
         var rank = this.rank;
@@ -55,7 +59,7 @@ internal sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T 
             lengthList[i] = Converter.Decode(ref intent);
         for (var i = 0; i < rank; i++)
             startsList[i] = Converter.Decode(ref intent);
-        var result = Array.CreateInstance(typeof(E), lengthList, startsList);
+        var result = Create(lengthList, startsList);
         var target = MemoryMarshal.CreateSpan(ref Unsafe.As<byte, E>(ref MemoryMarshal.GetArrayDataReference(result)), result.Length);
         var converter = this.converter;
         for (var i = 0; i < target.Length; i++)

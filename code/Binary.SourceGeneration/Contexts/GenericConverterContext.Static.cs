@@ -6,6 +6,13 @@ using System.Linq;
 
 public sealed partial class GenericConverterContext
 {
+    private enum SelfType
+    {
+        Exclude,
+
+        Include,
+    }
+
     private static ImmutableArray<INamedTypeSymbol> CreateResource(Compilation compilation)
     {
         var builder = ImmutableArray.CreateBuilder<INamedTypeSymbol>();
@@ -31,10 +38,10 @@ public sealed partial class GenericConverterContext
         return builder.ToImmutable();
     }
 
-    private static (string Name, ImmutableArray<ITypeSymbol> Elements)? GetInfo(SourceGeneratorContext context, ITypeSymbol type)
+    private static (string Name, ImmutableArray<ITypeSymbol> Elements, SelfType SelfType)? GetInfo(SourceGeneratorContext context, ITypeSymbol type)
     {
-        if (type is IArrayTypeSymbol array && array.IsSZArray)
-            return ("Array", ImmutableArray.Create(array.ElementType));
+        if (type is IArrayTypeSymbol array)
+            return (array.IsSZArray ? "Array" : "VariableBoundArray", ImmutableArray.Create(array.ElementType), array.IsSZArray ? SelfType.Exclude : SelfType.Include);
         if (type is not INamedTypeSymbol symbol || symbol.IsGenericType is false)
             return null;
         const string ResourceKey = "Generic";
@@ -42,14 +49,14 @@ public sealed partial class GenericConverterContext
             context.Resources.Add(ResourceKey, types = CreateResource(context.Compilation));
         var unbound = symbol.ConstructUnboundGenericType();
         if (((ImmutableArray<INamedTypeSymbol>)types).FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x, unbound)) is { } definition)
-            return (definition.Name, symbol.TypeArguments);
+            return (definition.Name, symbol.TypeArguments, SelfType.Exclude);
         return null;
     }
 
     public static SymbolConverterContent? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
     {
-        if (GetInfo(context, symbol) is not (var name, var elements))
+        if (GetInfo(context, symbol) is not (var name, var elements, var self))
             return null;
-        return new GenericConverterContext(context, symbol, name, elements).Invoke();
+        return new GenericConverterContext(context, symbol, name, elements, self).Invoke();
     }
 }

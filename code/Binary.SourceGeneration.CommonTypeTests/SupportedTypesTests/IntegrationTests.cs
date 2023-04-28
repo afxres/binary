@@ -16,6 +16,8 @@ using Xunit;
 [SourceGeneratorInclude<KeyValuePair<string, int>>]
 [SourceGeneratorInclude<int[]>]
 [SourceGeneratorInclude<string[]>]
+[SourceGeneratorInclude<int[,]>]
+[SourceGeneratorInclude<string[,,]>]
 [SourceGeneratorInclude<ArraySegment<int>>]
 [SourceGeneratorInclude<ArraySegment<string>>]
 [SourceGeneratorInclude<Memory<int>>]
@@ -42,6 +44,12 @@ public class IntegrationTests
     {
         yield return new object[] { KeyValuePair.Create(1, "2"), "KeyValuePairConverter`2.*Int32.*String" };
         yield return new object[] { KeyValuePair.Create("3", 4), "KeyValuePairConverter`2.*String.*Int32" };
+    }
+
+    public static IEnumerable<object[]> VariableBoundArrayData()
+    {
+        yield return new object[] { new int[1, 1] { { 1 } }, @"VariableBoundArrayConverter`2.*Int32\[,\].*Int32" };
+        yield return new object[] { new string[1, 1, 1] { { { "2" } } }, @"VariableBoundArrayConverter`2.*String\[,,\].*String" };
     }
 
     public static IEnumerable<object[]> ArrayData()
@@ -83,6 +91,7 @@ public class IntegrationTests
     [Theory(DisplayName = "Get Converter Test")]
     [MemberData(nameof(EnumData))]
     [MemberData(nameof(KeyValuePairData))]
+    [MemberData(nameof(VariableBoundArrayData))]
     [MemberData(nameof(ArrayData))]
     [MemberData(nameof(ArraySegmentData))]
     [MemberData(nameof(MemoryData))]

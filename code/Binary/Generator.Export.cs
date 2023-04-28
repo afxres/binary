@@ -29,6 +29,16 @@ public static partial class Generator
         return Invoke(BitConverter.IsLittleEndian);
     }
 
+    public static Converter<T?> GetVariableBoundArrayConverter<T, E>(Converter<E> converter) where T : class
+    {
+        ArgumentNullException.ThrowIfNull(converter);
+        if (typeof(T).IsVariableBoundArray is false)
+            throw new ArgumentException("Require variable bound array type.");
+        if (typeof(T).GetElementType() != typeof(E))
+            throw new ArgumentException("Element type not match.");
+        return new VariableBoundArrayConverter<T, E>(converter);
+    }
+
     public static Converter<E[]> GetArrayConverter<E>(Converter<E> converter)
     {
         ArgumentNullException.ThrowIfNull(converter);
