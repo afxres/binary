@@ -50,8 +50,7 @@ public static partial class Symbols
         {
             Invoke(target, symbol.ElementType);
             _ = target.Append('[');
-            for (var i = 0; i < symbol.Rank - 1; i++)
-                _ = target.Append(',');
+            _ = target.Append(',', symbol.Rank - 1);
             _ = target.Append(']');
         }
 
