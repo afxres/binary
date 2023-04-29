@@ -2,7 +2,6 @@
 
 using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
-using System.Linq;
 
 public sealed partial class GenericConverterContext
 {
@@ -13,14 +12,14 @@ public sealed partial class GenericConverterContext
         Include,
     }
 
-    private static ImmutableArray<INamedTypeSymbol> CreateResource(Compilation compilation)
+    private static ImmutableHashSet<INamedTypeSymbol> CreateResource(Compilation compilation)
     {
-        var builder = ImmutableArray.CreateBuilder<INamedTypeSymbol>();
+        var builder = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>(SymbolEqualityComparer.Default);
         void Add(string name)
         {
             if (compilation.GetTypeByMetadataName(name)?.ConstructUnboundGenericType() is not { } type)
                 return;
-            builder.Add(type);
+            _ = builder.Add(type);
         }
 
         Add("System.ArraySegment`1");
@@ -45,11 +44,10 @@ public sealed partial class GenericConverterContext
         if (type is not INamedTypeSymbol symbol || symbol.IsGenericType is false)
             return null;
         const string ResourceKey = "Generic";
-        if (context.Resources.TryGetValue(ResourceKey, out var types) is false)
-            context.Resources.Add(ResourceKey, types = CreateResource(context.Compilation));
+        var types = (ImmutableHashSet<INamedTypeSymbol>)context.GetOrCreateResource(ResourceKey, CreateResource);
         var unbound = symbol.ConstructUnboundGenericType();
-        if (((ImmutableArray<INamedTypeSymbol>)types).FirstOrDefault(x => SymbolEqualityComparer.Default.Equals(x, unbound)) is { } definition)
-            return (definition.Name, symbol.TypeArguments, SelfType.Exclude);
+        if (types.Contains(unbound))
+            return (symbol.Name, symbol.TypeArguments, SelfType.Exclude);
         return null;
     }
 

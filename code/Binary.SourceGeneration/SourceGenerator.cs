@@ -61,7 +61,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         context.RegisterSourceOutput(provider, (context, source) => Invoke(source.Left, source.Right, context));
     }
 
-    private static void Invoke(Compilation compilation, ImmutableArray<TypeDeclarationSyntax> declarations, SourceProductionContext context)
+    private static void Invoke(Compilation compilation, ImmutableArray<TypeDeclarationSyntax> declarations, SourceProductionContext production)
     {
         static DiagnosticDescriptor? Ensure(TypeDeclarationSyntax declaration, INamedTypeSymbol type)
         {
@@ -78,7 +78,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
         if (declarations.IsDefaultOrEmpty)
             return;
-        var cancellation = context.CancellationToken;
+        var cancellation = production.CancellationToken;
         var include = compilation.GetTypeByMetadataName(Constants.SourceGeneratorIncludeAttributeTypeName)?.ConstructUnboundGenericType();
 
         var dictionary = new SortedDictionary<string, SortedDictionary<string, INamedTypeSymbol>>(StringComparer.InvariantCulture);
@@ -98,7 +98,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
             if (type is null)
                 continue;
             if (Ensure(declaration, type) is { } descriptor)
-                context.ReportDiagnostic(Diagnostic.Create(descriptor, Symbols.GetLocation(type), new object[] { Symbols.GetSymbolDiagnosticDisplay(type) }));
+                production.ReportDiagnostic(Diagnostic.Create(descriptor, Symbols.GetLocation(type), new object[] { Symbols.GetSymbolDiagnosticDisplay(type) }));
             else
                 Insert(type);
             cancellation.ThrowIfCancellationRequested();
@@ -113,8 +113,8 @@ public sealed class SourceGenerator : IIncrementalGenerator
             {
                 var file = $"{name}.{index}.g.cs";
                 var @namespace = pair.Key;
-                var inclusions = GetInclusions(context, pair.Value, include);
-                var entry = new Entry(compilation, context, @namespace, name, file, inclusions);
+                var inclusions = GetInclusions(production, pair.Value, include);
+                var entry = new Entry(compilation, production, @namespace, name, file, inclusions);
                 cancellation.ThrowIfCancellationRequested();
                 Invoke(entry);
                 index++;
@@ -122,11 +122,11 @@ public sealed class SourceGenerator : IIncrementalGenerator
         }
     }
 
-    private static ImmutableDictionary<ITypeSymbol, AttributeData> GetInclusions(SourceProductionContext context, INamedTypeSymbol type, INamedTypeSymbol? include)
+    private static ImmutableDictionary<ITypeSymbol, AttributeData> GetInclusions(SourceProductionContext production, INamedTypeSymbol type, INamedTypeSymbol? include)
     {
         var builder = ImmutableDictionary.CreateBuilder<ITypeSymbol, AttributeData>(SymbolEqualityComparer.Default);
         var attributes = type.GetAttributes();
-        var cancellation = context.CancellationToken;
+        var cancellation = production.CancellationToken;
         foreach (var i in attributes)
         {
             cancellation.ThrowIfCancellationRequested();
@@ -138,9 +138,9 @@ public sealed class SourceGenerator : IIncrementalGenerator
                 continue;
             var includedType = attribute.TypeArguments.Single();
             if (Symbols.IsTypeSupported(includedType) is false)
-                context.ReportDiagnostic(Diagnostic.Create(Constants.RequireSupportedTypeForIncludeAttribute, Symbols.GetLocation(i), new object[] { Symbols.GetSymbolDiagnosticDisplay(includedType) }));
+                production.ReportDiagnostic(Diagnostic.Create(Constants.RequireSupportedTypeForIncludeAttribute, Symbols.GetLocation(i), new object[] { Symbols.GetSymbolDiagnosticDisplay(includedType) }));
             else if (builder.ContainsKey(includedType))
-                context.ReportDiagnostic(Diagnostic.Create(Constants.IncludeTypeDuplicated, Symbols.GetLocation(i), new object[] { Symbols.GetSymbolDiagnosticDisplay(includedType) }));
+                production.ReportDiagnostic(Diagnostic.Create(Constants.IncludeTypeDuplicated, Symbols.GetLocation(i), new object[] { Symbols.GetSymbolDiagnosticDisplay(includedType) }));
             else
                 builder.Add(includedType, i);
             cancellation.ThrowIfCancellationRequested();
@@ -151,24 +151,24 @@ public sealed class SourceGenerator : IIncrementalGenerator
     private static void Invoke(Entry entry)
     {
         var inclusions = entry.CurrentInclusions;
-        var context = entry.SourceProductionContext;
-        var cancellation = context.CancellationToken;
+        var production = entry.SourceProductionContext;
+        var cancellation = production.CancellationToken;
         var pending = new Queue<ITypeSymbol>(inclusions.Keys);
         var handled = new SortedDictionary<string, SymbolConverterContent?>(StringComparer.InvariantCulture);
-        var generator = new SourceGeneratorContext(entry.Compilation, pending, cancellation);
+        var context = new SourceGeneratorContext(entry.Compilation, pending, cancellation);
 
         SymbolConverterContent? Handle(ITypeSymbol symbol)
         {
-            if (Symbols.Validate(generator, symbol, context) is false)
+            if (Symbols.Validate(context, symbol, production) is false)
                 return null;
-            var result = TypeHandlers.Select(h => h.Invoke(generator, symbol)).FirstOrDefault(x => x is not null);
+            var result = TypeHandlers.Select(h => h.Invoke(context, symbol)).FirstOrDefault(x => x is not null);
             if (result is SymbolConverterContent target)
                 return target;
             var diagnostic = ((Diagnostic?)result) ?? (inclusions.TryGetValue(symbol, out var attribute)
                 ? Diagnostic.Create(Constants.NoConverterGenerated, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplay(symbol) })
                 : null);
             if (diagnostic is not null)
-                context.ReportDiagnostic(diagnostic);
+                production.ReportDiagnostic(diagnostic);
             return null;
         }
 
@@ -176,7 +176,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         {
             cancellation.ThrowIfCancellationRequested();
             var symbol = pending.Dequeue();
-            var key = Symbols.GetSymbolFullName(symbol);
+            var key = context.GetTypeFullName(symbol);
             if (handled.ContainsKey(key))
                 continue;
             var result = Handle(symbol);

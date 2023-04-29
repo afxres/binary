@@ -133,9 +133,7 @@ public sealed partial class CollectionConverterContext
         if (type is not INamedTypeSymbol symbol)
             return null;
         const string ResourceKey = "Collections";
-        if (context.Resources.TryGetValue(ResourceKey, out var result) is false)
-            context.Resources.Add(ResourceKey, result = CreateResource(context.Compilation));
-        var resource = (Resource)result;
+        var resource = (Resource)context.GetOrCreateResource(ResourceKey, CreateResource);
         var unbound = symbol.IsGenericType ? symbol.ConstructUnboundGenericType() : null;
         var unboundOrOriginal = unbound ?? symbol;
         if (resource.UnsupportedTypeSymbols.Contains(unboundOrOriginal))
