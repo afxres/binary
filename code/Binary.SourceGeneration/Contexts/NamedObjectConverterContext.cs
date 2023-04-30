@@ -45,7 +45,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             var member = members[i];
             if (member.IsOptional is false)
             {
-                builder.AppendIndent(3, $"{Constants.AllocatorTypeName}.Append(ref allocator, new global::System.ReadOnlySpan<byte>(this.key{i}));");
+                builder.AppendIndent(3, $"{Constants.AllocatorTypeName}.Append(ref allocator, new System.ReadOnlySpan<byte>(this.key{i}));");
                 builder.AppendIndent(3, $"this.cvt{i}.EncodeWithLengthPrefix(ref allocator, item.{member.Name});");
                 CancellationToken.ThrowIfCancellationRequested();
             }

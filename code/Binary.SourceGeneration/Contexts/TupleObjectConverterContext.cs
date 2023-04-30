@@ -64,7 +64,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
         var modifier = auto ? "ref" : "in";
         var methodName = auto ? "DecodeAuto" : "Decode";
         builder.AppendIndent();
-        builder.AppendIndent(2, $"public override {SymbolTypeFullName} {methodName}({modifier} global::System.ReadOnlySpan<byte> span)");
+        builder.AppendIndent(2, $"public override {SymbolTypeFullName} {methodName}({modifier} System.ReadOnlySpan<byte> span)");
         builder.AppendIndent(2, $"{{");
         if (constructor is null)
         {
