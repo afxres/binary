@@ -8,29 +8,32 @@ public class SymbolConstructorInfo<T> where T : SymbolMemberInfo
 {
     private readonly ImmutableArray<T> members;
 
-    private readonly ImmutableArray<int> parameters;
+    private readonly ImmutableArray<int> objectIndexes;
 
-    public SymbolConstructorInfo(ImmutableArray<T> members, ImmutableArray<int> parameters)
+    private readonly ImmutableArray<int> directIndexes;
+
+    public SymbolConstructorInfo(ImmutableArray<T> members, ImmutableArray<int> objectIndexes, ImmutableArray<int> directIndexes)
     {
         this.members = members;
-        this.parameters = parameters;
+        this.objectIndexes = objectIndexes;
+        this.directIndexes = directIndexes;
     }
 
     public void Append(StringBuilder builder, string typeName, CancellationToken cancellation)
     {
         var members = this.members;
-        var parameters = this.parameters;
-        var constructorOnly = parameters.Length == members.Length;
+        var objectIndexes = this.objectIndexes;
+        var directIndexes = this.directIndexes;
+        var constructorOnly = directIndexes.Length is 0;
         var tail = constructorOnly ? ");" : ")";
-        builder.AppendIndent(3, $"var result = new {typeName}(", tail, parameters.Length, x => $"var{parameters[x]}");
+        builder.AppendIndent(3, $"var result = new {typeName}(", tail, objectIndexes.Length, x => $"var{objectIndexes[x]}");
         if (constructorOnly is false)
         {
             builder.AppendIndent(3, $"{{");
-            for (var i = 0; i < members.Length; i++)
+            foreach (var i in directIndexes)
             {
-                if (parameters.Contains(i))
-                    continue;
-                builder.AppendIndent(4, $"{members[i].Name} = var{i},");
+                var member = members[i];
+                builder.AppendIndent(4, $"{member.Name} = var{i},");
                 cancellation.ThrowIfCancellationRequested();
             }
             builder.AppendIndent(3, $"}};");

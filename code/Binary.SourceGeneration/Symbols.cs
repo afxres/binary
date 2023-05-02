@@ -38,30 +38,32 @@ public static partial class Symbols
             return null;
         if (type is not INamedTypeSymbol symbol)
             return null;
-
-        var constructors = symbol.InstanceConstructors.Where(x => x.DeclaredAccessibility is Accessibility.Public).ToList();
+        var constructors = symbol.InstanceConstructors
+            .Where(x => x.DeclaredAccessibility is Accessibility.Public)
+            .OrderByDescending(x => x.Parameters.Length)
+            .ToList();
         var hasDefaultConstructor = symbol.IsValueType || constructors.Any(x => x.Parameters.Length is 0);
         if (hasDefaultConstructor && members.All(x => x.IsReadOnly is false))
-            return new SymbolConstructorInfo<T>(members, ImmutableArray<int>.Empty);
-
+            return new SymbolConstructorInfo<T>(members, ImmutableArray.Create<int>(), Enumerable.Range(0, members.Length).ToImmutableArray());
         var selector = new Func<T, string>(x => Select(x.Name));
         if (members.Select(selector).Distinct().Count() != members.Length)
             return null;
 
         // select constructor with most parameters
         var dictionary = members.Select((x, i) => (Key: selector.Invoke(x), Index: i)).ToDictionary(x => x.Key, v => v.Index);
-        foreach (var i in constructors.OrderByDescending(x => x.Parameters.Length))
+        foreach (var i in constructors)
         {
             var parameters = i.Parameters;
-            var indexes = parameters
+            var objectIndexes = parameters
                 .Select(x => dictionary.TryGetValue(Select(x.Name), out var index) && SymbolEqualityComparer.Default.Equals(members[index].TypeSymbol, x.Type) ? index : -1)
                 .Where(x => x is not -1)
                 .ToImmutableArray();
-            if (indexes.Length is 0 || indexes.Length != parameters.Length)
+            if (objectIndexes.Length is 0 || objectIndexes.Length != parameters.Length)
                 continue;
-            if (indexes.Length != members.Length && members.Where((_, i) => indexes.Contains(i) is false).Any(x => x.IsReadOnly))
+            var directIndexes = Enumerable.Range(0, members.Length).Except(objectIndexes).ToImmutableArray();
+            if (directIndexes.Any(x => members[x].IsReadOnly))
                 continue;
-            return new SymbolConstructorInfo<T>(members, indexes);
+            return new SymbolConstructorInfo<T>(members, objectIndexes, directIndexes);
         }
         return null;
     }
