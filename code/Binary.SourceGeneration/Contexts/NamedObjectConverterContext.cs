@@ -22,13 +22,13 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
     private void AppendConstructor(StringBuilder builder)
     {
         var members = this.members;
-        builder.AppendIndent(2, $"public {ClosureTypeName}(", ")", members.Length, i => $"byte[] key{i}, {GetConverterTypeFullName(i)} arg{i}");
+        builder.AppendIndent(2, $"public {ClosureTypeName}(", ")", members.Length, i => $"byte[] key{i}, {GetConverterTypeFullName(i)} cvt{i}");
         builder.AppendIndent(2, $"{{");
         for (var i = 0; i < members.Length; i++)
         {
             var member = members[i];
             builder.AppendIndent(3, $"this.key{i} = key{i};");
-            builder.AppendIndent(3, $"this.cvt{i} = arg{i};");
+            builder.AppendIndent(3, $"this.cvt{i} = cvt{i};");
             CancellationToken.ThrowIfCancellationRequested(); ;
         }
         builder.AppendIndent(2, $"}}");

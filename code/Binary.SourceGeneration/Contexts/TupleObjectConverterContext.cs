@@ -22,12 +22,12 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     private void AppendConstructor(StringBuilder builder)
     {
         var members = this.members;
-        builder.AppendIndent(2, $"public {ConverterTypeName}(", ")", members.Length, i => $"{GetConverterTypeFullName(i)} arg{i}");
-        builder.AppendIndent(3, $": base(Mikodev.Binary.Components.TupleObject.GetTupleObjectLength(new {Constants.IConverterTypeName}[] {{ ", $" }}))", members.Length, x => $"arg{x}");
+        builder.AppendIndent(2, $"public {ConverterTypeName}(", ")", members.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
+        builder.AppendIndent(3, $": base(Mikodev.Binary.Components.TupleObject.GetTupleObjectLength(new {Constants.IConverterTypeName}[] {{ ", $" }}))", members.Length, x => $"cvt{x}");
         builder.AppendIndent(2, $"{{");
         for (var i = 0; i < members.Length; i++)
         {
-            builder.AppendIndent(3, $"this.cvt{i} = arg{i};");
+            builder.AppendIndent(3, $"this.cvt{i} = cvt{i};");
             CancellationToken.ThrowIfCancellationRequested();
         }
         builder.AppendIndent(2, $"}}");
