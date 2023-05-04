@@ -11,7 +11,10 @@ using Xunit;
 
 internal class CompilationModule
 {
-    public static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(kind: SourceCodeKind.Regular, documentationMode: DocumentationMode.Parse);
+    public static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(
+        kind: SourceCodeKind.Regular,
+        languageVersion: LanguageVersion.Preview,
+        documentationMode: DocumentationMode.Parse);
 
     public static Compilation CreateCompilation(string source)
     {

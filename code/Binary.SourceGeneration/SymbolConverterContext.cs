@@ -54,28 +54,6 @@ public abstract class SymbolConverterContext
         return FullNameResources[key].ConverterTypeFullName;
     }
 
-    protected void AppendClosureHead(StringBuilder builder)
-    {
-        builder.AppendIndent(1, $"private sealed class {ClosureTypeName}");
-        builder.AppendIndent(1, $"{{");
-    }
-
-    protected void AppendClosureTail(StringBuilder builder)
-    {
-        builder.AppendIndent(1, $"}}");
-    }
-
-    protected void AppendConverterHead(StringBuilder builder)
-    {
-        builder.AppendIndent(1, $"private sealed class {ConverterTypeName} : {SymbolConverterTypeFullName}");
-        builder.AppendIndent(1, $"{{");
-    }
-
-    protected void AppendConverterTail(StringBuilder builder)
-    {
-        builder.AppendIndent(1, $"}}");
-    }
-
     protected void AppendConverterCreatorHead(StringBuilder builder)
     {
         builder.AppendIndent(1, $"private sealed class {ConverterCreatorTypeName} : {Constants.IConverterCreatorTypeName}");

@@ -19,25 +19,24 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
         this.constructor = constructor;
     }
 
-    private void AppendConstructor(StringBuilder builder)
+    private void AppendConverterHead(StringBuilder builder)
     {
         var members = this.members;
-        builder.AppendIndent(2, $"public {ConverterTypeName}(", ")", members.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
-        builder.AppendIndent(3, $": base(Mikodev.Binary.Components.TupleObject.GetTupleObjectLength(new {Constants.IConverterTypeName}[] {{ ", $" }}))", members.Length, x => $"cvt{x}");
-        builder.AppendIndent(2, $"{{");
-        for (var i = 0; i < members.Length; i++)
-        {
-            builder.AppendIndent(3, $"this.cvt{i} = cvt{i};");
-            CancellationToken.ThrowIfCancellationRequested();
-        }
-        builder.AppendIndent(2, $"}}");
+        builder.AppendIndent(1, $"private sealed class {ConverterTypeName}(", ")", members.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
+        builder.AppendIndent(2, $": {SymbolConverterTypeFullName}(Mikodev.Binary.Components.TupleObject.GetTupleObjectLength(new {Constants.IConverterTypeName}[] {{ ", $" }}))", members.Length, x => $"cvt{x}");
+        builder.AppendIndent(1, $"{{");
+        CancellationToken.ThrowIfCancellationRequested();
+    }
+
+    private void AppendConverterTail(StringBuilder builder)
+    {
+        builder.AppendIndent(1, $"}}");
     }
 
     private void AppendEncodeMethod(StringBuilder builder, bool auto)
     {
         var members = this.members;
         var methodName = auto ? "EncodeAuto" : "Encode";
-        builder.AppendIndent();
         builder.AppendIndent(2, $"public override void {methodName}(ref {Constants.AllocatorTypeName} allocator, {SymbolTypeFullName} item)");
         builder.AppendIndent(2, $"{{");
         if (Symbol.IsValueType is false)
@@ -51,7 +50,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
             var last = (i == members.Length - 1);
             var member = members[i];
             var method = (auto || last is false) ? "EncodeAuto" : "Encode";
-            builder.AppendIndent(3, $"this.cvt{i}.{method}(ref allocator, item.{member.Name});");
+            builder.AppendIndent(3, $"cvt{i}.{method}(ref allocator, item.{member.Name});");
             CancellationToken.ThrowIfCancellationRequested();
         }
         builder.AppendIndent(2, $"}}");
@@ -63,7 +62,6 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
         var constructor = this.constructor;
         var modifier = auto ? "ref" : "in";
         var methodName = auto ? "DecodeAuto" : "Decode";
-        builder.AppendIndent();
         builder.AppendIndent(2, $"public override {SymbolTypeFullName} {methodName}({modifier} System.ReadOnlySpan<byte> span)");
         builder.AppendIndent(2, $"{{");
         if (constructor is null)
@@ -80,23 +78,12 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
                 var last = (i == members.Length - 1);
                 var method = (auto || last is false) ? "DecodeAuto" : "Decode";
                 var keyword = (auto is false && last) ? "in" : "ref";
-                builder.AppendIndent(3, $"var var{i} = this.cvt{i}.{method}({keyword} {bufferName});");
+                builder.AppendIndent(3, $"var var{i} = cvt{i}.{method}({keyword} {bufferName});");
                 CancellationToken.ThrowIfCancellationRequested();
             }
             constructor.Append(builder, SymbolTypeFullName, CancellationToken);
         }
         builder.AppendIndent(2, $"}}");
-    }
-
-    private void AppendFields(StringBuilder builder)
-    {
-        var members = this.members;
-        for (var i = 0; i < members.Length; i++)
-        {
-            builder.AppendIndent(2, $"private readonly {GetConverterTypeFullName(i)} cvt{i};");
-            builder.AppendIndent();
-            CancellationToken.ThrowIfCancellationRequested();
-        }
     }
 
     private void AppendConverterCreatorBody(StringBuilder builder)
@@ -116,11 +103,12 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     protected override void Invoke(StringBuilder builder)
     {
         AppendConverterHead(builder);
-        AppendFields(builder);
-        AppendConstructor(builder);
         AppendEncodeMethod(builder, auto: false);
+        builder.AppendIndent();
         AppendEncodeMethod(builder, auto: true);
+        builder.AppendIndent();
         AppendDecodeMethod(builder, auto: false);
+        builder.AppendIndent();
         AppendDecodeMethod(builder, auto: true);
         AppendConverterTail(builder);
         builder.AppendIndent();

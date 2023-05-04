@@ -19,25 +19,22 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         this.constructor = constructor;
     }
 
-    private void AppendConstructor(StringBuilder builder)
+    private void AppendClosureHead(StringBuilder builder)
     {
         var members = this.members;
-        builder.AppendIndent(2, $"public {ClosureTypeName}(", ")", members.Length, i => $"byte[] key{i}, {GetConverterTypeFullName(i)} cvt{i}");
-        builder.AppendIndent(2, $"{{");
-        for (var i = 0; i < members.Length; i++)
-        {
-            var member = members[i];
-            builder.AppendIndent(3, $"this.key{i} = key{i};");
-            builder.AppendIndent(3, $"this.cvt{i} = cvt{i};");
-            CancellationToken.ThrowIfCancellationRequested(); ;
-        }
-        builder.AppendIndent(2, $"}}");
+        builder.AppendIndent(1, $"private sealed class {ClosureTypeName}(", ")", members.Length, i => $"byte[] key{i}, {GetConverterTypeFullName(i)} cvt{i}");
+        builder.AppendIndent(1, $"{{");
+        CancellationToken.ThrowIfCancellationRequested();
+    }
+
+    private void AppendClosureTail(StringBuilder builder)
+    {
+        builder.AppendIndent(1, $"}}");
     }
 
     private void AppendEncodeMethod(StringBuilder builder)
     {
         var members = this.members;
-        builder.AppendIndent();
         builder.AppendIndent(2, $"public void Encode(ref {Constants.AllocatorTypeName} allocator, {SymbolTypeFullName} item)");
         builder.AppendIndent(2, $"{{");
         for (var i = 0; i < members.Length; i++)
@@ -45,8 +42,8 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             var member = members[i];
             if (member.IsOptional is false)
             {
-                builder.AppendIndent(3, $"{Constants.AllocatorTypeName}.Append(ref allocator, new System.ReadOnlySpan<byte>(this.key{i}));");
-                builder.AppendIndent(3, $"this.cvt{i}.EncodeWithLengthPrefix(ref allocator, item.{member.Name});");
+                builder.AppendIndent(3, $"{Constants.AllocatorTypeName}.Append(ref allocator, new System.ReadOnlySpan<byte>(key{i}));");
+                builder.AppendIndent(3, $"cvt{i}.EncodeWithLengthPrefix(ref allocator, item.{member.Name});");
                 CancellationToken.ThrowIfCancellationRequested();
             }
             else
@@ -54,8 +51,8 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
                 builder.AppendIndent(3, $"var var{i} = item.{member.Name};");
                 builder.AppendIndent(3, $"if (System.Collections.Generic.EqualityComparer<{GetTypeFullName(i)}>.Default.Equals(var{i}, default) is false)");
                 builder.AppendIndent(3, $"{{");
-                builder.AppendIndent(4, $"{Constants.AllocatorTypeName}.Append(ref allocator, this.key{i});");
-                builder.AppendIndent(4, $"this.cvt{i}.EncodeWithLengthPrefix(ref allocator, var{i});");
+                builder.AppendIndent(4, $"{Constants.AllocatorTypeName}.Append(ref allocator, key{i});");
+                builder.AppendIndent(4, $"cvt{i}.EncodeWithLengthPrefix(ref allocator, var{i});");
                 builder.AppendIndent(3, $"}}");
                 CancellationToken.ThrowIfCancellationRequested();
             }
@@ -77,27 +74,14 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         {
             var member = members[i];
             if (member.IsOptional is false)
-                builder.AppendIndent(3, $"var var{i} = this.cvt{i}.Decode(parameter.GetValue({i}));");
+                builder.AppendIndent(3, $"var var{i} = cvt{i}.Decode(parameter.GetValue({i}));");
             else
-                builder.AppendIndent(3, $"var var{i} = parameter.HasValue({i}) ? this.cvt{i}.Decode(parameter.GetValue({i})) : default;");
-            CancellationToken.ThrowIfCancellationRequested(); ;
+                builder.AppendIndent(3, $"var var{i} = parameter.HasValue({i}) ? cvt{i}.Decode(parameter.GetValue({i})) : default;");
+            CancellationToken.ThrowIfCancellationRequested();
         }
 
         constructor.Append(builder, SymbolTypeFullName, CancellationToken);
         builder.AppendIndent(2, $"}}");
-    }
-
-    private void AppendFields(StringBuilder builder)
-    {
-        var members = this.members;
-        for (var i = 0; i < members.Length; i++)
-        {
-            builder.AppendIndent(2, $"private readonly byte[] key{i};");
-            builder.AppendIndent();
-            builder.AppendIndent(2, $"private readonly {GetConverterTypeFullName(i)} cvt{i};");
-            builder.AppendIndent();
-            CancellationToken.ThrowIfCancellationRequested(); ;
-        }
     }
 
     private void AppendConverterCreatorBody(StringBuilder builder)
@@ -113,7 +97,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             var member = members[i];
             AppendAssignConverter(builder, member, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i));
             builder.AppendIndent(3, $"var key{i} = {Constants.AllocatorTypeName}.Invoke(names[{i}], encoding.EncodeWithLengthPrefix);");
-            CancellationToken.ThrowIfCancellationRequested(); ;
+            CancellationToken.ThrowIfCancellationRequested();
         }
         builder.AppendIndent(3, $"var closure = new {ClosureTypeName}(", ");", members.Length, x => $"key{x}, cvt{x}");
         builder.AppendIndent(3, $"var converter = Mikodev.Binary.Components.NamedObject.GetNamedObjectConverter<{SymbolTypeFullName}>(closure.Encode, {decoder}, encoding, names, optional);");
@@ -123,8 +107,6 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
     protected override void Invoke(StringBuilder builder)
     {
         AppendClosureHead(builder);
-        AppendFields(builder);
-        AppendConstructor(builder);
         AppendEncodeMethod(builder);
         AppendDecodeMethod(builder);
         AppendClosureTail(builder);
