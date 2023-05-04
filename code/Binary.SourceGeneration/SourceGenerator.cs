@@ -19,22 +19,19 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
         public SourceProductionContext SourceProductionContext { get; }
 
-        public string CurrentContainingNamespace { get; }
-
         public string CurrentTypeName { get; }
 
-        public string CurrentFileName { get; }
+        public string CurrentContainingNamespace { get; }
 
         public ImmutableDictionary<ITypeSymbol, AttributeData> CurrentInclusions { get; }
 
-        public Entry(Compilation compilation, SourceProductionContext sourceProductionContext, string currentContainingNamespace, string currentTypeName, string currentFileName, ImmutableDictionary<ITypeSymbol, AttributeData> currentInclusions)
+        public Entry(Compilation compilation, SourceProductionContext production, string type, string @namespace, ImmutableDictionary<ITypeSymbol, AttributeData> inclusions)
         {
             Compilation = compilation;
-            SourceProductionContext = sourceProductionContext;
-            CurrentContainingNamespace = currentContainingNamespace;
-            CurrentTypeName = currentTypeName;
-            CurrentFileName = currentFileName;
-            CurrentInclusions = currentInclusions;
+            SourceProductionContext = production;
+            CurrentTypeName = type;
+            CurrentContainingNamespace = @namespace;
+            CurrentInclusions = inclusions;
         }
     }
 
@@ -111,12 +108,13 @@ public sealed class SourceGenerator : IIncrementalGenerator
             cancellation.ThrowIfCancellationRequested();
             foreach (var pair in i.Value)
             {
-                var file = $"{name}.{index}.g.cs";
                 var @namespace = pair.Key;
                 var inclusions = GetInclusions(production, pair.Value, include);
-                var entry = new Entry(compilation, production, @namespace, name, file, inclusions);
+                var entry = new Entry(compilation, production, name, @namespace, inclusions);
                 cancellation.ThrowIfCancellationRequested();
-                Invoke(entry);
+                var code = Invoke(entry);
+                var file = $"{name}.{index}.g.cs";
+                production.AddSource(file, code);
                 index++;
             }
         }
@@ -148,7 +146,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         return builder.ToImmutable();
     }
 
-    private static void Invoke(Entry entry)
+    private static string Invoke(Entry entry)
     {
         var inclusions = entry.CurrentInclusions;
         var production = entry.SourceProductionContext;
@@ -184,14 +182,14 @@ public sealed class SourceGenerator : IIncrementalGenerator
             cancellation.ThrowIfCancellationRequested();
         }
 
-        Finish(entry, handled);
+        return Finish(entry, handled);
     }
 
-    private static void Finish(Entry entry, SortedDictionary<string, SymbolConverterContent?> dictionary)
+    private static string Finish(Entry entry, SortedDictionary<string, SymbolConverterContent?> dictionary)
     {
-        var context = entry.SourceProductionContext;
         var builder = new StringBuilder();
-        var cancellation = context.CancellationToken;
+        var production = entry.SourceProductionContext;
+        var cancellation = production.CancellationToken;
 
         builder.AppendIndent(0, $"namespace {entry.CurrentContainingNamespace};");
         builder.AppendIndent();
@@ -219,9 +217,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
             cancellation.ThrowIfCancellationRequested();
         }
         builder.AppendIndent(0, $"}}");
-
         var code = builder.ToString();
-        var file = entry.CurrentFileName;
-        context.AddSource(file, code);
+        return code;
     }
 }
