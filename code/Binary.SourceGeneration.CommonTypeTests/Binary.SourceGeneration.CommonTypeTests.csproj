@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>11</LangVersion>
+    <LangVersion>preview</LangVersion>
     <AssemblyName>Mikodev.Binary.SourceGeneration.CommonTypeTests</AssemblyName>
     <RootNamespace>Mikodev.Binary.SourceGeneration.CommonTypeTests</RootNamespace>
     <Nullable>enable</Nullable>

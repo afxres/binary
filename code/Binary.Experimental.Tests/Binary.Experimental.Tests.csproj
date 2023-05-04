@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Mikodev.Binary.Experimental.Tests</AssemblyName>
     <RootNamespace>Mikodev.Binary.Experimental.Tests</RootNamespace>
-    <LangVersion>11.0</LangVersion>
+    <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
   </PropertyGroup>

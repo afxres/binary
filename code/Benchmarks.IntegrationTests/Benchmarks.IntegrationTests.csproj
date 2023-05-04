@@ -5,7 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Mikodev.Binary.Benchmarks.IntegrationTests</AssemblyName>
     <RootNamespace>Mikodev.Binary.Benchmarks.IntegrationTests</RootNamespace>
-    <LangVersion>11</LangVersion>
+    <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
