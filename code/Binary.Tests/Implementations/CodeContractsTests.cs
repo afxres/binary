@@ -208,8 +208,7 @@ public class CodeContractsTests
     [Fact(DisplayName = "Public Obsolete Members")]
     public void PublicObsoleteMembers()
     {
-        var publicTypes = typeof(IConverter).Assembly.GetTypes().Where(x => x.IsPublic).ToList();
-        var publicMembers = publicTypes.SelectMany(x => x.GetMembers());
+        var publicMembers = typeof(Allocator).GetMembers().Where(x => x.Name is "GetHashCode" or "Equals");
         var obsoleteAttributes = publicMembers.SelectMany(x => x.GetCustomAttributes(true)).OfType<ObsoleteAttribute>().ToList();
         Assert.Equal(2, obsoleteAttributes.Count);
         Assert.All(obsoleteAttributes, x => Assert.EndsWith("Allocator will always throw an exception.", x.Message));

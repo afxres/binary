@@ -116,7 +116,7 @@ internal static class FallbackSequentialMethods
 
     internal static SpanLikeConverter<ImmutableArray<E>> GetImmutableArrayConverter<E>(Converter<E> converter)
     {
-        var decoder = new ImmutableArrayDecoder<E>(converter);
+        var decoder = GetDecoder<ImmutableArray<E>, E, ImmutableArrayBuilder<E>>(converter);
         var encoder = GetEncoder<ImmutableArray<E>, E, ImmutableArrayAdapter<E>>(converter);
         return new SpanLikeConverter<ImmutableArray<E>>(encoder, decoder);
     }

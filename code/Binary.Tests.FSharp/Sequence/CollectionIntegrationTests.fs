@@ -148,7 +148,7 @@ let ``Collection Integration Test (span-like collection, null or empty collectio
     Test generator "->ConstantEncoder`2" "->ConstantDecoder`2" (Memory<TimeSpan>())
     Test generator "->NativeEndianEncoder`1" "NativeEndianDecoder`1" (Array.zeroCreate<double> 0)
     Test generator "->NativeEndianEncoder`1" "->NativeEndianDecoder`1" (ReadOnlyMemory<int>())
-    Test generator "->NativeEndianEncoder`1" "ImmutableArrayDecoder`1" (ImmutableArray<int>.Empty)
+    Test generator "->NativeEndianEncoder`1" "->NativeEndianDecoder`1" (ImmutableArray<int>.Empty)
     TestNull "ConstantEncoder`3" "ArrayDecoder`3" (Array.zeroCreate<struct (int16 * int64)> 0)
     TestNull "VariableEncoder`3" "ListDecoder`1" (ResizeArray<string>())
     TestNull "->ConstantEncoder`2" "ConstantDecoder`2" (Array.zeroCreate<DateTime> 0)
@@ -162,7 +162,7 @@ let ``Collection Integration Test (span-like collection, custom converter)`` () 
     Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<int64>(8)).Build()) "ConstantEncoder`3" "ArrayDecoder`3" (ReadOnlyMemory<int64>())
     Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<uint64>(0)).Build()) "VariableEncoder`3" "ArrayDecoder`3" (ReadOnlyMemory<uint64>())
     Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<string>(0)).Build()) "VariableEncoder`3" "ListDecoder`1" (ResizeArray<string>())
-    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<string>(0)).Build()) "VariableEncoder`3" "ImmutableArrayDecoder`1" (ImmutableArray<string>.Empty)
+    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<string>(0)).Build()) "VariableEncoder`3" "ArrayDecoder`3" (ImmutableArray<string>.Empty)
     ()
 
 [<Fact>]

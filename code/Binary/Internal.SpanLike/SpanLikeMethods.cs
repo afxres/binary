@@ -3,7 +3,6 @@
 using Mikodev.Binary.Internal.Sequence;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
 internal static class SpanLikeMethods
@@ -20,20 +19,6 @@ internal static class SpanLikeMethods
         while (intent.Length is not 0)
             result.Add(converter.DecodeAuto(ref intent));
         return result;
-    }
-
-    internal static ImmutableArray<E> GetImmutableArray<E>(Converter<E> converter, ReadOnlySpan<byte> span)
-    {
-        var limits = span.Length;
-        if (limits is 0)
-            return ImmutableArray<E>.Empty;
-        var length = converter.Length;
-        var capacity = SequenceContext.GetCapacityOrDefault<E>(limits, length);
-        var result = ImmutableArray.CreateBuilder<E>(capacity);
-        var intent = span;
-        while (intent.Length is not 0)
-            result.Add(converter.DecodeAuto(ref intent));
-        return result.DrainToImmutable();
     }
 
     internal static E[] GetArray<E>(Converter<E> converter, ReadOnlySpan<byte> span, out int actual)

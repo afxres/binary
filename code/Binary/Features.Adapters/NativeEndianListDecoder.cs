@@ -15,9 +15,8 @@ internal sealed class NativeEndianListDecoder<E> : SpanLikeDecoder<List<E>> wher
             return new List<E>();
         var capacity = SequenceContext.GetCapacity<E>(span.Length, Unsafe.SizeOf<E>());
         var result = new List<E>(capacity);
-        ref var source = ref MemoryMarshal.GetReference(span);
-        for (var i = 0; i < capacity; i++)
-            result.Add(Unsafe.ReadUnaligned<E>(ref Unsafe.Add(ref source, Unsafe.SizeOf<E>() * i)));
+        CollectionsMarshal.SetCount(result, capacity);
+        Unsafe.CopyBlockUnaligned(ref Unsafe.As<E, byte>(ref MemoryMarshal.GetReference(CollectionsMarshal.AsSpan(result))), ref MemoryMarshal.GetReference(span), (uint)span.Length);
         return result;
     }
 }
