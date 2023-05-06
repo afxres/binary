@@ -30,38 +30,51 @@ public static partial class Symbols
 
     public static SymbolConstructorInfo<T>? GetConstructor<T>(ITypeSymbol type, ImmutableArray<T> members) where T : SymbolMemberInfo
     {
-        static string Select(string? text) =>
-            text?.ToUpperInvariant()
-            ?? string.Empty;
+        static bool ValidateConstructorWithMembers(IMethodSymbol? constructor, ImmutableHashSet<ISymbol> required, ImmutableArray<T> members)
+        {
+            if (members.Any(x => x.IsReadOnly))
+                return false;
+            if (required.Count is 0)
+                return true;
+            if (constructor is not null && constructor.GetAttributes().Any(x => x.AttributeClass?.Name is "SetsRequiredMembersAttribute"))
+                return true;
+            if (required.IsSubsetOf(members.Select(x => x.Symbol)))
+                return true;
+            return false;
+        }
 
         if (type.IsAbstract)
             return null;
         if (type is not INamedTypeSymbol symbol)
             return null;
+        var comparer = StringComparer.InvariantCultureIgnoreCase;
+        var required = symbol.GetMembers().Where(IsMemberRequired).ToImmutableHashSet(SymbolEqualityComparer.Default);
         var constructors = symbol.InstanceConstructors
             .Where(x => x.DeclaredAccessibility is Accessibility.Public)
             .OrderByDescending(x => x.Parameters.Length)
             .ToList();
-        var hasDefaultConstructor = symbol.IsValueType || constructors.Any(x => x.Parameters.Length is 0);
-        if (hasDefaultConstructor && members.All(x => x.IsReadOnly is false))
+        var defaultConstructor = constructors.FirstOrDefault(x => x.Parameters.Length is 0);
+        var hasDefaultConstructor = symbol.IsValueType || defaultConstructor is not null;
+        if (hasDefaultConstructor && ValidateConstructorWithMembers(defaultConstructor, required, members))
             return new SymbolConstructorInfo<T>(members, ImmutableArray.Create<int>(), Enumerable.Range(0, members.Length).ToImmutableArray());
-        var selector = new Func<T, string>(x => Select(x.Name));
-        if (members.Select(selector).Distinct().Count() != members.Length)
+        if (members.Select(x => x.Name).Distinct(comparer).Count() != members.Length)
             return null;
 
         // select constructor with most parameters
-        var dictionary = members.Select((x, i) => (Key: selector.Invoke(x), Index: i)).ToDictionary(x => x.Key, v => v.Index);
+        var dictionary = members.Select((x, i) => (Key: x.Name, Index: i)).ToDictionary(x => x.Key, v => v.Index, comparer);
         foreach (var i in constructors)
         {
             var parameters = i.Parameters;
+            if (parameters.Length is 0)
+                continue;
             var objectIndexes = parameters
-                .Select(x => dictionary.TryGetValue(Select(x.Name), out var index) && SymbolEqualityComparer.Default.Equals(members[index].TypeSymbol, x.Type) ? index : -1)
+                .Select(x => dictionary.TryGetValue(x.Name, out var index) && SymbolEqualityComparer.Default.Equals(members[index].TypeSymbol, x.Type) ? index : -1)
                 .Where(x => x is not -1)
                 .ToImmutableArray();
-            if (objectIndexes.Length is 0 || objectIndexes.Length != parameters.Length)
+            if (objectIndexes.Length != parameters.Length)
                 continue;
             var directIndexes = Enumerable.Range(0, members.Length).Except(objectIndexes).ToImmutableArray();
-            if (directIndexes.Any(x => members[x].IsReadOnly))
+            if (ValidateConstructorWithMembers(i, required, directIndexes.Select(x => members[x]).ToImmutableArray()) is false)
                 continue;
             return new SymbolConstructorInfo<T>(members, objectIndexes, directIndexes);
         }
@@ -97,16 +110,14 @@ public static partial class Symbols
         return false;
     }
 
-    public static bool IsTypeWithRequiredModifier(ITypeSymbol symbol)
+    public static bool IsMemberRequired(ISymbol symbol)
     {
-        static bool Filter(ISymbol member) => member switch
+        return symbol switch
         {
             IFieldSymbol field => field.IsRequired,
             IPropertySymbol property => property.IsRequired,
             _ => false,
         };
-
-        return symbol.GetMembers().Any(Filter);
     }
 
     public static bool IsTypeSupported(ITypeSymbol symbol)

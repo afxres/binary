@@ -299,8 +299,57 @@ public class SymbolsTests
         yield return new object[] { d, "Hotel", new string[] { "A", "B", "C" } };
     }
 
+    public static IEnumerable<object[]> GetConstructorByMemberWithRequiredData()
+    {
+        var a =
+            """
+            class Alpha
+            {
+                public required int A { get; set; }
+
+                public required int B { get; set; }
+            }
+            """;
+        var b =
+            """
+            using System.Diagnostics.CodeAnalysis;
+
+            struct Bravo
+            {
+                public required int A { get; internal set; }
+
+                public required int B { get; internal set; }
+
+                [SetsRequiredMembers]
+                public Bravo(int a, int b) { }
+            }
+            """;
+        var c =
+            """
+            using System.Diagnostics.CodeAnalysis;
+
+            class Delta
+            {
+                public required int X { get; set; }
+
+                public required int Y { get; set; }
+
+                public required int Z { get; set; }
+
+                [SetsRequiredMembers]
+                public Delta() { }
+            }
+            """;
+        yield return new object[] { a, "Alpha", new string[] { "A", "B" } };
+        yield return new object[] { b, "Bravo", new string[] { "A", "B" } };
+        yield return new object[] { c, "Delta", new string[] { "X" } };
+        yield return new object[] { c, "Delta", new string[] { "X", "Y" } };
+        yield return new object[] { c, "Delta", new string[] { "X", "Y", "Z" } };
+    }
+
     [Theory(DisplayName = "Get Constructor By Member")]
     [MemberData(nameof(GetConstructorByMemberData))]
+    [MemberData(nameof(GetConstructorByMemberWithRequiredData))]
     public void GetConstructorByMemberTest(string source, string typeName, string[] memberNames)
     {
         var compilation = CompilationModule.CreateCompilation(source);
@@ -348,8 +397,45 @@ public class SymbolsTests
         yield return new object[] { b, "IAlpha", new string[] { "Name" } };
     }
 
+    public static IEnumerable<object[]> GetConstructorByMemberWithRequiredNotFoundData()
+    {
+        var a =
+            """
+            class Alpha
+            {
+                public required int A { get; set; }
+
+                public required int B { get; set; }
+
+                public required int C { get; set; }
+
+                public required int D { get; set; }
+            }
+            """;
+        var b =
+            """
+            class Bravo
+            {
+                public required int A { get; set; }
+
+                public required int B { get; set; }
+
+                public Bravo(int a, int b)
+                {
+                    A = a;
+                    B = b;
+                }
+            }
+            """;
+        yield return new object[] { a, "Alpha", new string[] { "A" } };
+        yield return new object[] { a, "Alpha", new string[] { "A", "B" } };
+        yield return new object[] { a, "Alpha", new string[] { "A", "B", "C" } };
+        yield return new object[] { b, "Bravo", new string[] { "A", "B" } };
+    }
+
     [Theory(DisplayName = "Get Constructor By Member Not Found Test")]
     [MemberData(nameof(GetConstructorByMemberNotFoundData))]
+    [MemberData(nameof(GetConstructorByMemberWithRequiredNotFoundData))]
     public void GetConstructorByMemberNotFoundTest(string source, string typeName, string[] memberNames)
     {
         var compilation = CompilationModule.CreateCompilation(source);

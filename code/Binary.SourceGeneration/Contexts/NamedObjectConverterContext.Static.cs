@@ -38,7 +38,7 @@ public sealed partial class NamedObjectConverterContext
         var attribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.NamedObjectAttributeTypeName));
         if (attribute is null && Symbols.IsTypeUnsupported(context, symbol))
             return null;
-        var required = Symbols.IsTypeWithRequiredModifier(symbol);
+        var required = symbol.GetMembers().Any(Symbols.IsMemberRequired);
         var dictionary = new SortedDictionary<string, SymbolNamedMemberInfo>();
         var cancellation = context.CancellationToken;
         foreach (var member in Symbols.GetObjectMembers(symbol))
