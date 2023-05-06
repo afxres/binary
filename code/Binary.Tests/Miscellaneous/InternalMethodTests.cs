@@ -89,18 +89,4 @@ public class InternalMethodTests
         Assert.Null(b.InnerException);
         Assert.Equal("Text 02", b.Message);
     }
-
-    [Theory(DisplayName = "Make Upper Case Invariant")]
-    [InlineData(null, "")]
-    [InlineData("Abc", "ABC")]
-    [InlineData("XYZ", "XYZ")]
-    public void MakeUpperCaseInvariant(string origin, string expected)
-    {
-        var type = typeof(Converter).Assembly.GetTypes().Single(x => x.Name is "FallbackAttributesMethods");
-        var method = type.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name.Contains("Select"));
-        var invoke = (Func<string, string>)Delegate.CreateDelegate(typeof(Func<string, string>), method);
-        var result = invoke.Invoke(origin);
-        Assert.Equal(origin?.ToUpperInvariant() ?? string.Empty, result);
-        Assert.Equal(expected, result);
-    }
 }

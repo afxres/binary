@@ -198,36 +198,40 @@ internal static class FallbackAttributesMethods
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static ContextObjectConstructor? GetConstructor(Type type, ImmutableArray<MetaMemberInfo> members, ImmutableArray<ContextMemberInitializer> initializers)
     {
-        static string Select(string? text) =>
-            text?.ToUpperInvariant() ??
-            string.Empty;
+        static bool ValidateMembers(ImmutableArray<MetaMemberInfo> members)
+        {
+            return members.Any(x => x.IsReadOnly) is false;
+        }
 
         Debug.Assert(members.Length is not 0);
         if (type.IsAbstract || type.IsInterface)
             return null;
-        var hasDefaultConstructor = type.IsValueType || type.GetConstructor(Type.EmptyTypes) is not null;
-        if (hasDefaultConstructor && members.All(x => x.IsReadOnly is false))
-            return (delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, initializers);
-        var selector = new Func<MetaMemberInfo, string>(x => Select(x.Name));
-        if (members.DistinctBy(selector).Count() != members.Length)
-            return null;
-
+        var comparer = StringComparer.InvariantCultureIgnoreCase;
         var constructors = type.GetConstructors()
             .Select(x => (Constructor: x, Parameters: x.GetParameters()))
             .OrderByDescending(x => x.Parameters.Length)
             .ToList();
+        var defaultConstructor = constructors.FirstOrDefault(x => x.Parameters.Length is 0).Constructor;
+        var hasDefaultConstructor = type.IsValueType || defaultConstructor is not null;
+        if (hasDefaultConstructor && ValidateMembers(members))
+            return (delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, initializers);
+        if (members.DistinctBy(x => x.Name, comparer).Count() != members.Length)
+            return null;
+
         // select constructor with most parameters
-        var dictionary = members.Select((x, i) => (Key: selector.Invoke(x), Index: i)).ToDictionary(x => x.Key, v => v.Index);
+        var dictionary = members.Select((x, i) => (Key: x.Name, Index: i)).ToDictionary(x => x.Key, v => v.Index, comparer);
         foreach (var (constructor, parameters) in constructors)
         {
+            if (parameters.Length is 0)
+                continue;
             var objectIndexes = parameters
-                .Select(x => dictionary.TryGetValue(Select(x.Name), out var index) && members[index].Type == x.ParameterType ? index : -1)
+                .Select(x => dictionary.TryGetValue(x.Name ?? string.Empty, out var index) && members[index].Type == x.ParameterType ? index : -1)
                 .Where(x => x is not -1)
                 .ToImmutableArray();
-            if (objectIndexes.Length is 0 || objectIndexes.Length != parameters.Length)
+            if (objectIndexes.Length != parameters.Length)
                 continue;
             var directIndexes = Enumerable.Range(0, members.Length).Except(objectIndexes).ToImmutableArray();
-            if (directIndexes.Any(x => members[x].IsReadOnly))
+            if (ValidateMembers(directIndexes.Select(x => members[x]).ToImmutableArray()) is false)
                 continue;
             var directInitializers = directIndexes.Select(x => members[x].Initializer).ToImmutableArray();
             Debug.Assert(members.Length == objectIndexes.Length + directIndexes.Length);
