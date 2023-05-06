@@ -244,7 +244,7 @@ public class BinaryModuleTests
         for (var length = 0; length <= 15; length++)
         {
             var source = origin.Substring(0, length);
-            var buffer = Encoding.UTF8.GetBytes(source.ToString());
+            var buffer = Encoding.UTF8.GetBytes(source);
             var result = function(ref MemoryMarshal.GetArrayDataReference(buffer), buffer.Length);
             Assert.Equal((uint)length, (uint)(result.Tail & 0xFFUL));
 

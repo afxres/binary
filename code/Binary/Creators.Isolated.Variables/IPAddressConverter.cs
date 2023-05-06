@@ -21,7 +21,7 @@ internal sealed class IPAddressConverter : VariableConverter<IPAddress?, IPAddre
             if (item.TryWriteBytes(span, out var actual) is false)
                 ThrowHelper.ThrowTryWriteBytesFailed();
             return actual;
-        };
+        }
         EncodeFunction = Invoke;
     }
 

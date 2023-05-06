@@ -5,7 +5,7 @@ using System.Text;
 
 public sealed partial class EnumConverterContext : SymbolConverterContext
 {
-    public EnumConverterContext(SourceGeneratorContext context, ITypeSymbol symbol) : base(context, symbol) { }
+    private EnumConverterContext(SourceGeneratorContext context, ITypeSymbol symbol) : base(context, symbol) { }
 
     private void AppendConverterCreatorBody(StringBuilder builder)
     {

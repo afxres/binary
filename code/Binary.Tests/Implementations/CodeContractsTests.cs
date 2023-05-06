@@ -34,7 +34,7 @@ public class CodeContractsTests
         var methodBases = members.OfType<MethodBase>().ToList();
         var parameters = methodBases.SelectMany(x => x.GetParameters()).ToList();
 
-        var AttributeName = "System.Runtime.CompilerServices.IsReadOnlyAttribute";
+        const string AttributeName = "System.Runtime.CompilerServices.IsReadOnlyAttribute";
         var inRefParameters = parameters.Where(x => x.GetCustomAttributes()?.Any(a => a.GetType().FullName == AttributeName) is true).ToList();
         var inRefExpected = inRefParameters.Where(x => typeof(IConverter).IsAssignableFrom(x.Member.DeclaringType)).ToList();
         var inRefUnexpected = inRefParameters.Except(inRefExpected).Select(x => x.Member).ToList();

@@ -53,9 +53,9 @@ public sealed class SourceGenerator : IIncrementalGenerator
         var declarations = context.SyntaxProvider.ForAttributeWithMetadataName(
             Constants.SourceGeneratorContextAttributeTypeName,
             (node, _) => node is TypeDeclarationSyntax,
-            (context, _) => (TypeDeclarationSyntax)context.TargetNode);
+            (syntax, _) => (TypeDeclarationSyntax)syntax.TargetNode);
         var provider = context.CompilationProvider.Combine(declarations.Collect());
-        context.RegisterSourceOutput(provider, (context, source) => Invoke(source.Left, source.Right, context));
+        context.RegisterSourceOutput(provider, (production, source) => Invoke(source.Left, source.Right, production));
     }
 
     private static void Invoke(Compilation compilation, ImmutableArray<TypeDeclarationSyntax> declarations, SourceProductionContext production)

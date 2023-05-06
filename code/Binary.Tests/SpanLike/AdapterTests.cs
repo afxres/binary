@@ -51,7 +51,7 @@ public class AdapterTests
         var result = generator.Decode<T>(buffer);
         Assert.Equal(invoke.Invoke(source).ToArray(), invoke.Invoke(result).ToArray());
 
-        if (RuntimeHelpers.IsReferenceOrContainsReferences<E>() is true)
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<E>())
             return;
         var expect = invoke.Invoke(source);
         var actual = adapter.AsSpan.Invoke(source);
@@ -72,7 +72,7 @@ public class AdapterTests
         adapter.Encode.Invoke(ref allocator, source, converter);
         Assert.Equal(0, allocator.Length);
 
-        if (RuntimeHelpers.IsReferenceOrContainsReferences<E>() is true)
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<E>())
             return;
         Assert.Equal(0, adapter.AsSpan.Invoke(source).Length);
     }

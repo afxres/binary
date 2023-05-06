@@ -23,7 +23,7 @@ internal sealed class IPEndPointConverter : VariableConverter<IPEndPoint?, IPEnd
                 ThrowHelper.ThrowTryWriteBytesFailed();
             BinaryPrimitives.WriteUInt16LittleEndian(span.Slice(actual, sizeof(ushort)), (ushort)item.Port);
             return actual + sizeof(ushort);
-        };
+        }
         EncodeFunction = Invoke;
     }
 

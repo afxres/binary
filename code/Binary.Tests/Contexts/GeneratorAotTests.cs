@@ -37,8 +37,6 @@ public class GeneratorAotTests
                 return new[] { typeof(int), typeof(int) };
         }
 
-        var a = new[] { typeof(int), typeof(int) };
-        var b = new[] { typeof(IEnumerable<int>), typeof(int) };
         var methods = typeof(Generator).GetMethods().Where(x => x.Name.Contains("Converter")).ToList();
         var group1 = methods.Where(x => x.GetGenericArguments().Length is 1).ToList();
         var group2 = methods.Where(x => x.GetGenericArguments().Length is 2).ToList();

@@ -1,34 +1,25 @@
 ﻿namespace Mikodev.Binary.SourceGeneration.Contexts;
 
 using Microsoft.CodeAnalysis;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 
 public sealed partial class CollectionConverterContext : SymbolConverterContext
 {
-    private readonly SourceType sourceType;
+    private readonly TypeInfo info;
 
-    private readonly string methodBody;
-
-    private readonly ImmutableArray<ITypeSymbol> elements;
-
-    private CollectionConverterContext(SourceGeneratorContext context, ITypeSymbol symbol, SourceType sourceType, string methodBody, ImmutableArray<ITypeSymbol> elements) : base(context, symbol)
+    private CollectionConverterContext(SourceGeneratorContext context, ITypeSymbol symbol, TypeInfo info) : base(context, symbol)
     {
+        var elements = info.Elements;
         for (var i = 0; i < elements.Length; i++)
             AddType(i, elements[i]);
-        this.elements = elements;
-        this.sourceType = sourceType;
-        this.methodBody = methodBody;
+        this.info = info;
     }
 
     private void AppendConverterCreatorBody(StringBuilder builder)
     {
-        var sourceType = this.sourceType;
-        var methodBody = this.methodBody;
-        var elements = this.elements;
-
-        var delegateName = sourceType switch
+        var info = this.info;
+        var delegateName = info.SourceType switch
         {
             SourceType.List => $"System.Func<System.Collections.Generic.List<{GetTypeFullName(0)}>, {SymbolTypeFullName}>",
             SourceType.HashSet => $"System.Func<System.Collections.Generic.HashSet<{GetTypeFullName(0)}>, {SymbolTypeFullName}>",
@@ -37,6 +28,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
             _ => null,
         };
 
+        var elements = info.Elements;
         for (var i = 0; i < elements.Length; i++)
         {
             var element = elements[i];
@@ -48,6 +40,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
         var types = string.Join(", ", new[] { SymbolTypeFullName }.Concat(elements.Select((_, i) => GetTypeFullName(i))));
         if (delegateName is not null)
         {
+            var methodBody = info.MethodBody;
             if (string.IsNullOrEmpty(methodBody))
                 methodBody = $"static x => new {SymbolTypeFullName}(x)";
             builder.AppendIndent(3, $"var constructor = new {delegateName}({methodBody});");

@@ -51,7 +51,7 @@ public class CollectionDecodeBenchmarks<T> where T : ICollection<int>
             this.directiveDecoder = (Decoder<T>)(object)ReflectionMethods.GetDecoder<LinkedList<int>, int>(this.converter, a => a.AddLast(0));
         else
             throw new NotSupportedException();
-        this.interfaceDecoder = ReflectionMethods.GetDecoder<T, int>(this.converter, a => ((ICollection<int>)a).Add(0));
+        this.interfaceDecoder = ReflectionMethods.GetDecoder<T, int>(this.converter, a => a.Add(0));
         this.constructor = ReflectionMethods.GetConstructor<T, int>();
     }
 

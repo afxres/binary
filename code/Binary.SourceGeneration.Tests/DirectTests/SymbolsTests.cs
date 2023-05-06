@@ -306,7 +306,7 @@ public class SymbolsTests
         var compilation = CompilationModule.CreateCompilation(source);
         var tree = compilation.SyntaxTrees.First();
         var model = compilation.GetSemanticModel(tree);
-        var nodes = tree.GetRoot().DescendantNodes();
+        var nodes = tree.GetRoot().DescendantNodes().ToList();
         var declaration = nodes.OfType<TypeDeclarationSyntax>().Single();
         var symbol = model.GetDeclaredSymbol(declaration);
         Assert.NotNull(symbol);

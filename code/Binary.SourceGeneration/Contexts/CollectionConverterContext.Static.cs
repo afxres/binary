@@ -19,6 +19,22 @@ public sealed partial class CollectionConverterContext
         ListKeyValuePair,
     }
 
+    private class TypeInfo
+    {
+        public SourceType SourceType { get; }
+
+        public string MethodBody { get; }
+
+        public ImmutableArray<ITypeSymbol> Elements { get; }
+
+        public TypeInfo(SourceType sourceType, string methodBody, ImmutableArray<ITypeSymbol> elements)
+        {
+            SourceType = sourceType;
+            MethodBody = methodBody;
+            Elements = elements;
+        }
+    }
+
     private class Resource
     {
         public INamedTypeSymbol? UnboundIEnumerableTypeSymbol { get; }
@@ -96,7 +112,7 @@ public sealed partial class CollectionConverterContext
         return new Resource(supported, unsupported, enumerable, dictionary, readonlyDictionary);
     }
 
-    private static (SourceType SourceType, string MethodBody, ImmutableArray<ITypeSymbol> Elements)? GetInfo(INamedTypeSymbol symbol, Resource resource)
+    private static TypeInfo? GetInfo(INamedTypeSymbol symbol, Resource resource)
     {
         static bool Implements(INamedTypeSymbol current, INamedTypeSymbol? unboundTypeSymbol)
         {
@@ -115,20 +131,20 @@ public sealed partial class CollectionConverterContext
 
         var dictionaryInterface = interfaces.FirstOrDefault(x => Implements(x, resource.UnboundIDictionaryTypeSymbol));
         if (dictionaryInterface is not null && HasConstructor(symbol, dictionaryInterface))
-            return (SourceType.Dictionary, string.Empty, dictionaryInterface.TypeArguments);
+            return new TypeInfo(SourceType.Dictionary, string.Empty, dictionaryInterface.TypeArguments);
         var readonlyDictionaryInterface = interfaces.FirstOrDefault(x => Implements(x, resource.UnboundIReadOnlyDictionaryTypeSymbol));
         if (readonlyDictionaryInterface is not null && HasConstructor(symbol, readonlyDictionaryInterface))
-            return (SourceType.Dictionary, string.Empty, readonlyDictionaryInterface.TypeArguments);
+            return new TypeInfo(SourceType.Dictionary, string.Empty, readonlyDictionaryInterface.TypeArguments);
         var enumerableInterface = enumerableInterfaces.Single();
         var typeArguments = dictionaryInterface?.TypeArguments ?? readonlyDictionaryInterface?.TypeArguments;
         var hasConstructor = HasConstructor(symbol, enumerableInterface);
         var sourceType = hasConstructor
             ? (typeArguments is null ? SourceType.List : SourceType.ListKeyValuePair)
             : SourceType.Null;
-        return (sourceType, string.Empty, typeArguments ?? enumerableInterface.TypeArguments);
+        return new TypeInfo(sourceType, string.Empty, typeArguments ?? enumerableInterface.TypeArguments);
     }
 
-    private static (SourceType SourceType, string MethodBody, ImmutableArray<ITypeSymbol> Elements)? GetInfo(SourceGeneratorContext context, ITypeSymbol type)
+    private static TypeInfo? GetInfo(SourceGeneratorContext context, ITypeSymbol type)
     {
         if (type is not INamedTypeSymbol symbol)
             return null;
@@ -138,15 +154,15 @@ public sealed partial class CollectionConverterContext
         var unboundOrOriginal = unbound ?? symbol;
         if (resource.UnsupportedTypeSymbols.Contains(unboundOrOriginal))
             return null;
-        if (unbound is not null && resource.SupportedTypeSymbols.TryGetValue(unbound, out var definition) is true)
-            return (definition.SourceType, definition.MethodBody, symbol.TypeArguments);
+        if (unbound is not null && resource.SupportedTypeSymbols.TryGetValue(unbound, out var definition))
+            return new TypeInfo(definition.SourceType, definition.MethodBody, symbol.TypeArguments);
         return GetInfo(symbol, resource);
     }
 
     public static SymbolConverterContent? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
     {
-        if (GetInfo(context, symbol) is not (var sourceName, var methodBody, var elements))
+        if (GetInfo(context, symbol) is not { } info)
             return null;
-        return new CollectionConverterContext(context, symbol, sourceName, methodBody, elements).Invoke();
+        return new CollectionConverterContext(context, symbol, info).Invoke();
     }
 }

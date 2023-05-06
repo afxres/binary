@@ -105,7 +105,7 @@ public class NullableConverterTests
 
     [Theory(DisplayName = "Nullable Collection")]
     [MemberData(nameof(CollectionData))]
-    public unsafe void Collection<TCollection>(TCollection collection) where TCollection : notnull
+    public void Collection<TCollection>(TCollection collection) where TCollection : notnull
     {
         var collectionType = collection.GetType();
         var nullableType = collectionType

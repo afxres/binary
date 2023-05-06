@@ -41,6 +41,7 @@ public class ConverterBasicTests
         foreach (var i in knownTypes)
         {
             var (little, native) = actual[i];
+            Assert.Equal("NativeEndianConverter`1", native.GetType().Name);
             Assert.Equal("RepeatLittleEndianConverter`2", little.GetType().Name);
             var fields = i.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             Assert.NotNull(fields);

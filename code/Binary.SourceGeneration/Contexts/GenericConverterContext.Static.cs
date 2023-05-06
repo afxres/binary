@@ -12,6 +12,22 @@ public sealed partial class GenericConverterContext
         Include,
     }
 
+    private class TypeInfo
+    {
+        public string Name { get; }
+
+        public SelfType SelfType { get; }
+
+        public ImmutableArray<ITypeSymbol> Elements { get; }
+
+        public TypeInfo(string name, SelfType selfType, ImmutableArray<ITypeSymbol> elements)
+        {
+            Name = name;
+            SelfType = selfType;
+            Elements = elements;
+        }
+    }
+
     private static ImmutableHashSet<INamedTypeSymbol> CreateResource(Compilation compilation)
     {
         var builder = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>(SymbolEqualityComparer.Default);
@@ -37,24 +53,24 @@ public sealed partial class GenericConverterContext
         return builder.ToImmutable();
     }
 
-    private static (string Name, ImmutableArray<ITypeSymbol> Elements, SelfType SelfType)? GetInfo(SourceGeneratorContext context, ITypeSymbol type)
+    private static TypeInfo? GetInfo(SourceGeneratorContext context, ITypeSymbol type)
     {
         if (type is IArrayTypeSymbol array)
-            return (array.IsSZArray ? "Array" : "VariableBoundArray", ImmutableArray.Create(array.ElementType), array.IsSZArray ? SelfType.Exclude : SelfType.Include);
+            return new TypeInfo(array.IsSZArray ? "Array" : "VariableBoundArray", array.IsSZArray ? SelfType.Exclude : SelfType.Include, ImmutableArray.Create(array.ElementType));
         if (type is not INamedTypeSymbol symbol || symbol.IsGenericType is false)
             return null;
         const string ResourceKey = "Generic";
         var types = (ImmutableHashSet<INamedTypeSymbol>)context.GetOrCreateResource(ResourceKey, CreateResource);
         var unbound = symbol.ConstructUnboundGenericType();
         if (types.Contains(unbound))
-            return (symbol.Name, symbol.TypeArguments, SelfType.Exclude);
+            return new TypeInfo(symbol.Name, SelfType.Exclude, symbol.TypeArguments);
         return null;
     }
 
     public static SymbolConverterContent? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
     {
-        if (GetInfo(context, symbol) is not (var name, var elements, var self))
+        if (GetInfo(context, symbol) is not { } info)
             return null;
-        return new GenericConverterContext(context, symbol, name, elements, self).Invoke();
+        return new GenericConverterContext(context, symbol, info).Invoke();
     }
 }

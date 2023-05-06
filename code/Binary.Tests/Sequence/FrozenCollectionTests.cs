@@ -43,7 +43,7 @@ public class FrozenCollectionTests
 
     public static IEnumerable<object[]> FrozenDictionaryData()
     {
-        var source = Enumerable.Range(0, 100);
+        var source = Enumerable.Range(0, 100).ToList();
         var a = source.Select(x => KeyValuePair.Create(x, x)).ToFrozenDictionary(optimizeForReading: true);
         var b = source.Select(x => KeyValuePair.Create(x, x.ToString())).ToFrozenDictionary(optimizeForReading: true);
         var c = source.Select(x => KeyValuePair.Create(x.ToString(), x)).ToFrozenDictionary(optimizeForReading: true);
@@ -91,7 +91,7 @@ public class FrozenCollectionTests
 
     public static IEnumerable<object[]> FrozenSetData()
     {
-        var source = Enumerable.Range(0, 100);
+        var source = Enumerable.Range(0, 100).ToList();
         var a = source.ToFrozenSet(optimizeForReading: true);
         var b = source.Select(x => x.ToString()).ToFrozenSet(optimizeForReading: true);
         var h = source.ToFrozenSet(optimizeForReading: false);

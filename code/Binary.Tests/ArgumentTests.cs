@@ -29,7 +29,7 @@ public static class ArgumentTests
         return new[] { a };
     }
 
-    private static unsafe IEnumerable<ArgumentNullException> ArgumentNullUnsafeTest<T, U, R>(MethodInfo method) where T : class where U : class
+    private static IEnumerable<ArgumentNullException> ArgumentNullUnsafeTest<T, U, R>(MethodInfo method) where T : class where U : class
     {
         var func = (Func<T, U, R>)Delegate.CreateDelegate(typeof(Func<T, U, R>), method);
         var instance = new object();
@@ -42,7 +42,7 @@ public static class ArgumentTests
         return new[] { a, b };
     }
 
-    private static unsafe IEnumerable<ArgumentNullException> ArgumentNullUnsafeTest<T, U, S, R>(MethodInfo method) where T : class where U : class where S : class
+    private static IEnumerable<ArgumentNullException> ArgumentNullUnsafeTest<T, U, S, R>(MethodInfo method) where T : class where U : class where S : class
     {
         var func = (Func<T, U, S, R>)Delegate.CreateDelegate(typeof(Func<T, U, S, R>), method);
         var instance = new object();
@@ -65,7 +65,7 @@ public static class ArgumentTests
         var test = ArgumentNullTestMethods[parameters.Length - 1].MakeGenericMethod(types);
         var errors = Assert.IsAssignableFrom<IEnumerable<ArgumentNullException>>(test.Invoke(null, new object[] { method }));
         var expectedParameterNames = parameters.Select(x => x.Name).ToList();
-        var exceptionParameterNames = errors.Select(x => x.ParamName).ToList();
-        Assert.Equal(exceptionParameterNames, exceptionParameterNames);
+        var actualParameterNames = errors.Select(x => x.ParamName).ToList();
+        Assert.Equal(expectedParameterNames, actualParameterNames);
     }
 }
