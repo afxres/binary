@@ -28,15 +28,16 @@ public static partial class Symbols
         return result;
     }
 
-    public static SymbolConstructorInfo<T>? GetConstructor<T>(ITypeSymbol type, ImmutableArray<T> members) where T : SymbolMemberInfo
+    public static SymbolConstructorInfo<T>? GetConstructor<T>(SourceGeneratorContext context, ITypeSymbol type, ImmutableArray<T> members) where T : SymbolMemberInfo
     {
-        static bool ValidateConstructorWithMembers(IMethodSymbol? constructor, ImmutableHashSet<ISymbol> required, ImmutableArray<T> members)
+        static bool ValidateConstructorWithMembers(SourceGeneratorContext context, IMethodSymbol? constructor, ImmutableHashSet<ISymbol> required, ImmutableArray<T> members)
         {
+            const string SetsRequiredMembersAttribute = "System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute";
             if (members.Any(x => x.IsReadOnly))
                 return false;
             if (required.Count is 0)
                 return true;
-            if (constructor is not null && constructor.GetAttributes().Any(x => x.AttributeClass?.Name is "SetsRequiredMembersAttribute"))
+            if (constructor is not null && constructor.GetAttributes().Any(x => context.Equals(x.AttributeClass, SetsRequiredMembersAttribute)))
                 return true;
             if (required.IsSubsetOf(members.Select(x => x.Symbol)))
                 return true;
@@ -55,7 +56,7 @@ public static partial class Symbols
             .ToList();
         var defaultConstructor = constructors.FirstOrDefault(x => x.Parameters.Length is 0);
         var hasDefaultConstructor = symbol.IsValueType || defaultConstructor is not null;
-        if (hasDefaultConstructor && ValidateConstructorWithMembers(defaultConstructor, required, members))
+        if (hasDefaultConstructor && ValidateConstructorWithMembers(context, defaultConstructor, required, members))
             return new SymbolConstructorInfo<T>(members, ImmutableArray.Create<int>(), Enumerable.Range(0, members.Length).ToImmutableArray());
         if (members.Select(x => x.Name).Distinct(comparer).Count() != members.Length)
             return null;
@@ -74,7 +75,7 @@ public static partial class Symbols
             if (objectIndexes.Length != parameters.Length)
                 continue;
             var directIndexes = Enumerable.Range(0, members.Length).Except(objectIndexes).ToImmutableArray();
-            if (ValidateConstructorWithMembers(i, required, directIndexes.Select(x => members[x]).ToImmutableArray()) is false)
+            if (ValidateConstructorWithMembers(context, i, required, directIndexes.Select(x => members[x]).ToImmutableArray()) is false)
                 continue;
             return new SymbolConstructorInfo<T>(members, objectIndexes, directIndexes);
         }

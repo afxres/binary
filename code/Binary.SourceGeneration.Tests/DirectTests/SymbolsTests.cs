@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using Xunit;
 
 public class SymbolsTests
@@ -228,11 +229,11 @@ public class SymbolsTests
         Assert.NotNull(symbol);
         Assert.Equal(typeName, symbol.Name);
 
-        var result = Symbols.GetConstructor(symbol, symbol);
-        Assert.NotNull(result);
-        Assert.Equal(MethodKind.Constructor, result.MethodKind);
-        Assert.Equal(Accessibility.Public, result.DeclaredAccessibility);
-        var parameter = Assert.Single(result.Parameters);
+        var constructor = Symbols.GetConstructor(symbol, symbol);
+        Assert.NotNull(constructor);
+        Assert.Equal(MethodKind.Constructor, constructor.MethodKind);
+        Assert.Equal(Accessibility.Public, constructor.DeclaredAccessibility);
+        var parameter = Assert.Single(constructor.Parameters);
         Assert.Equal(parameterName, parameter.Name);
     }
 
@@ -368,8 +369,9 @@ public class SymbolsTests
         var members = memberSymbols.Select(x => new SymbolTupleMemberInfo(x)).ToImmutableArray();
         Assert.NotEmpty(members);
 
-        var result = Symbols.GetConstructor(symbol, members);
-        Assert.NotNull(result);
+        var context = new SourceGeneratorContext(compilation, new Queue<ITypeSymbol>(), CancellationToken.None);
+        var constructor = Symbols.GetConstructor(context, symbol, members);
+        Assert.NotNull(constructor);
     }
 
     public static IEnumerable<object[]> GetConstructorByMemberNotFoundData()
@@ -454,8 +456,9 @@ public class SymbolsTests
         var members = memberSymbols.Select(x => new SymbolTupleMemberInfo(x)).ToImmutableArray();
         Assert.NotEmpty(members);
 
-        var a = Symbols.GetConstructor(symbol, members);
-        var b = Symbols.GetConstructor(compilation.CreateArrayTypeSymbol(symbol, 1), members);
+        var context = new SourceGeneratorContext(compilation, new Queue<ITypeSymbol>(), CancellationToken.None);
+        var a = Symbols.GetConstructor(context, symbol, members);
+        var b = Symbols.GetConstructor(context, compilation.CreateArrayTypeSymbol(symbol, 1), members);
         Assert.Null(a);
         Assert.Null(b);
     }

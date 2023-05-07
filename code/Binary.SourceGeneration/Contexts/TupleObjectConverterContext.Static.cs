@@ -76,7 +76,7 @@ public sealed partial class TupleObjectConverterContext
         var members = dictionary.Values.ToImmutableArray();
         if (members.Length is 0)
             return Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplay(symbol) });
-        var constructor = Symbols.GetConstructor(symbol, members);
+        var constructor = Symbols.GetConstructor(context, symbol, members);
         return new TupleObjectConverterContext(context, symbol, members, constructor).Invoke();
     }
 }
