@@ -19,8 +19,7 @@ public sealed partial class TupleObjectConverterContext
 
     private static void GetCustomTupleMember(SourceGeneratorContext context, ISymbol member, SortedDictionary<int, SymbolTupleMemberInfo> dictionary)
     {
-        var attributes = member.GetAttributes();
-        var attribute = attributes.FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.TupleKeyAttributeTypeName));
+        var attribute = context.GetAttribute(member, Constants.TupleKeyAttributeTypeName);
         if (attribute is null)
             return;
         var key = (int)attribute.ConstructorArguments.Single().Value!;
@@ -60,12 +59,13 @@ public sealed partial class TupleObjectConverterContext
     public static object? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
     {
         var system = IsSystemTuple(context, symbol);
-        var attribute = system ? null : symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.TupleObjectAttributeTypeName));
+        var attribute = system ? null : context.GetAttribute(symbol, Constants.TupleObjectAttributeTypeName);
         if (system is false && attribute is null)
             return null;
+        var typeInfo = context.GetTypeInfo(symbol);
         var dictionary = new SortedDictionary<int, SymbolTupleMemberInfo>();
         var cancellation = context.CancellationToken;
-        foreach (var member in Symbols.GetObjectMembers(symbol))
+        foreach (var member in typeInfo.FilteredMembers)
         {
             if (system)
                 GetSystemTupleMember(member, dictionary);
@@ -76,7 +76,7 @@ public sealed partial class TupleObjectConverterContext
         var members = dictionary.Values.ToImmutableArray();
         if (members.Length is 0)
             return Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplay(symbol) });
-        var constructor = Symbols.GetConstructor(context, symbol, members);
+        var constructor = Symbols.GetConstructor(context, typeInfo, members);
         return new TupleObjectConverterContext(context, symbol, members, constructor).Invoke();
     }
 }

@@ -28,7 +28,7 @@ public static partial class Symbols
         return result;
     }
 
-    public static SymbolConstructorInfo<T>? GetConstructor<T>(SourceGeneratorContext context, ITypeSymbol type, ImmutableArray<T> members) where T : SymbolMemberInfo
+    public static SymbolConstructorInfo<T>? GetConstructor<T>(SourceGeneratorContext context, SymbolTypeInfo typeInfo, ImmutableArray<T> members) where T : SymbolMemberInfo
     {
         static bool ValidateConstructorWithMembers(SourceGeneratorContext context, IMethodSymbol? constructor, ImmutableHashSet<ISymbol> required, ImmutableArray<T> members)
         {
@@ -37,26 +37,28 @@ public static partial class Symbols
                 return false;
             if (required.Count is 0)
                 return true;
-            if (constructor is not null && constructor.GetAttributes().Any(x => context.Equals(x.AttributeClass, SetsRequiredMembersAttribute)))
+            if (constructor is not null && context.GetAttribute(constructor, SetsRequiredMembersAttribute) is not null)
                 return true;
             if (required.IsSubsetOf(members.Select(x => x.Symbol)))
                 return true;
             return false;
         }
 
+        var type = typeInfo.Symbol;
+        var cancellation = context.CancellationToken;
         if (type.IsAbstract)
             return null;
         if (type is not INamedTypeSymbol symbol)
             return null;
         var comparer = StringComparer.InvariantCultureIgnoreCase;
-        var required = symbol.GetMembers().Where(IsMemberRequired).ToImmutableHashSet(SymbolEqualityComparer.Default);
         var constructors = symbol.InstanceConstructors
             .Where(x => x.DeclaredAccessibility is Accessibility.Public)
             .OrderByDescending(x => x.Parameters.Length)
             .ToList();
+        cancellation.ThrowIfCancellationRequested();
         var defaultConstructor = constructors.FirstOrDefault(x => x.Parameters.Length is 0);
         var hasDefaultConstructor = symbol.IsValueType || defaultConstructor is not null;
-        if (hasDefaultConstructor && ValidateConstructorWithMembers(context, defaultConstructor, required, members))
+        if (hasDefaultConstructor && ValidateConstructorWithMembers(context, defaultConstructor, typeInfo.RequiredMembers, members))
             return new SymbolConstructorInfo<T>(members, ImmutableArray.Create<int>(), Enumerable.Range(0, members.Length).ToImmutableArray());
         if (members.Select(x => x.Name).Distinct(comparer).Count() != members.Length)
             return null;
@@ -65,6 +67,7 @@ public static partial class Symbols
         var dictionary = members.Select((x, i) => (Key: x.Name, Index: i)).ToDictionary(x => x.Key, v => v.Index, comparer);
         foreach (var i in constructors)
         {
+            cancellation.ThrowIfCancellationRequested();
             var parameters = i.Parameters;
             if (parameters.Length is 0)
                 continue;
@@ -75,7 +78,7 @@ public static partial class Symbols
             if (objectIndexes.Length != parameters.Length)
                 continue;
             var directIndexes = Enumerable.Range(0, members.Length).Except(objectIndexes).ToImmutableArray();
-            if (ValidateConstructorWithMembers(context, i, required, directIndexes.Select(x => members[x]).ToImmutableArray()) is false)
+            if (ValidateConstructorWithMembers(context, i, typeInfo.RequiredMembers, directIndexes.Select(x => members[x]).ToImmutableArray()) is false)
                 continue;
             return new SymbolConstructorInfo<T>(members, objectIndexes, directIndexes);
         }
@@ -84,7 +87,7 @@ public static partial class Symbols
 
     public static ITypeSymbol? GetConverterType(SourceGeneratorContext context, ISymbol symbol)
     {
-        var attribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.ConverterAttributeTypeName));
+        var attribute = context.GetAttribute(symbol, Constants.ConverterAttributeTypeName);
         if (attribute is null)
             return null;
         return attribute.ConstructorArguments.Single().Value as ITypeSymbol;
@@ -92,7 +95,7 @@ public static partial class Symbols
 
     public static ITypeSymbol? GetConverterCreatorType(SourceGeneratorContext context, ISymbol symbol)
     {
-        var attribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.ConverterCreatorAttributeTypeName));
+        var attribute = context.GetAttribute(symbol, Constants.ConverterCreatorAttributeTypeName);
         if (attribute is null)
             return null;
         return attribute.ConstructorArguments.Single().Value as ITypeSymbol;
@@ -137,10 +140,10 @@ public static partial class Symbols
         return property.ReturnsByRef || property.ReturnsByRefReadonly;
     }
 
-    public static ImmutableArray<ISymbol> GetObjectMembers(ITypeSymbol symbol)
+    public static ImmutableArray<ISymbol> FilterFieldsAndProperties(ImmutableArray<ISymbol> members)
     {
         var builder = ImmutableArray.CreateBuilder<ISymbol>();
-        foreach (var member in symbol.GetMembers())
+        foreach (var member in members)
         {
             if (member.IsStatic || member.DeclaredAccessibility is not Accessibility.Public)
                 continue;
@@ -156,6 +159,31 @@ public static partial class Symbols
             if (IsTypeSupported(memberType) is false)
                 continue;
             builder.Add(member);
+        }
+        return builder.ToImmutable();
+    }
+
+    public static ImmutableArray<ISymbol> GetAllFieldsAndProperties(ITypeSymbol symbol)
+    {
+        var current = symbol;
+        var builder = ImmutableArray.CreateBuilder<ISymbol>();
+        while (current is not null)
+        {
+            var members = current.GetMembers();
+            foreach (var member in members)
+            {
+                var field = member as IFieldSymbol;
+                var property = member as IPropertySymbol;
+                if (field is null && property is null)
+                    continue;
+
+                var indexer = property is not null && property.IsIndexer;
+                var memberName = member.Name;
+                if (indexer is false && builder.FirstOrDefault(x => x.Name == memberName) is { } exists)
+                    continue;
+                builder.Add(member);
+            }
+            current = current.BaseType;
         }
         return builder.ToImmutable();
     }

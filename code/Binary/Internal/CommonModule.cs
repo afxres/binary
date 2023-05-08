@@ -106,11 +106,8 @@ internal static class CommonModule
     }
 
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    internal static ImmutableArray<MemberInfo> GetAllInstanceFieldsAndProperties(Type type, bool includeNonPublic)
+    internal static ImmutableArray<MemberInfo> GetAllFieldsAndProperties(Type type, BindingFlags flags)
     {
-        var flags = includeNonPublic
-            ? BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
-            : BindingFlags.Instance | BindingFlags.Public;
         var current = type;
         var builder = ImmutableArray.CreateBuilder<MemberInfo>();
         while (current is not null)

@@ -9,10 +9,10 @@ public static partial class Symbols
 {
     public static bool Validate(SourceGeneratorContext context, ITypeSymbol symbol, SourceProductionContext production)
     {
-        var converterAttribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.ConverterAttributeTypeName));
-        var converterCreatorAttribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.ConverterCreatorAttributeTypeName));
-        var namedObjectAttribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.NamedObjectAttributeTypeName));
-        var tupleObjectAttribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.TupleObjectAttributeTypeName));
+        var converterAttribute = context.GetAttribute(symbol, Constants.ConverterAttributeTypeName);
+        var converterCreatorAttribute = context.GetAttribute(symbol, Constants.ConverterCreatorAttributeTypeName);
+        var namedObjectAttribute = context.GetAttribute(symbol, Constants.NamedObjectAttributeTypeName);
+        var tupleObjectAttribute = context.GetAttribute(symbol, Constants.TupleObjectAttributeTypeName);
 
         var cancellation = context.CancellationToken;
         var diagnostics = new List<Diagnostic>();
@@ -33,7 +33,8 @@ public static partial class Symbols
             var tupleKeys = new SortedSet<int>();
             var namedKeys = new HashSet<string>();
             var typeAttribute = attributes.SingleOrDefault()?.AttributeClass;
-            foreach (var i in symbol.GetMembers())
+            var typeInfo = context.GetTypeInfo(symbol);
+            foreach (var i in typeInfo.OriginalMembers)
             {
                 if (i is not IFieldSymbol and not IPropertySymbol)
                     continue;
@@ -97,10 +98,10 @@ public static partial class Symbols
 
     private static void ValidateMember(SourceGeneratorContext context, ISymbol member, INamedTypeSymbol? typeAttribute, List<Diagnostic> diagnostics, HashSet<string> namedKeys, SortedSet<int> tupleKeys)
     {
-        var converterAttribute = member.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.ConverterAttributeTypeName));
-        var converterCreatorAttribute = member.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.ConverterCreatorAttributeTypeName));
-        var namedKeyAttribute = member.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.NamedKeyAttributeTypeName));
-        var tupleKeyAttribute = member.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.TupleKeyAttributeTypeName));
+        var converterAttribute = context.GetAttribute(member, Constants.ConverterAttributeTypeName);
+        var converterCreatorAttribute = context.GetAttribute(member, Constants.ConverterCreatorAttributeTypeName);
+        var namedKeyAttribute = context.GetAttribute(member, Constants.NamedKeyAttributeTypeName);
+        var tupleKeyAttribute = context.GetAttribute(member, Constants.TupleKeyAttributeTypeName);
 
         if (converterAttribute is null &&
             converterCreatorAttribute is null &&

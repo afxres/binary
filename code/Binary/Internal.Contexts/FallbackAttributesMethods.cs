@@ -49,7 +49,7 @@ internal static class FallbackAttributesMethods
     {
         var type = typeInfo.Type;
         var builder = ImmutableArray.CreateBuilder<MetaMemberInfo>();
-        var members = CommonModule.GetAllInstanceFieldsAndProperties(type, includeNonPublic: false);
+        var members = CommonModule.GetAllFieldsAndProperties(type, CommonModule.PublicInstanceBindingFlags);
         foreach (var member in members)
         {
             Debug.Assert(member is FieldInfo or PropertyInfo);

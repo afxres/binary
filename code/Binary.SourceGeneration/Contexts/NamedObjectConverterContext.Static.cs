@@ -17,8 +17,7 @@ public sealed partial class NamedObjectConverterContext
 
     private static void GetCustomNamedMember(SourceGeneratorContext context, ISymbol member, bool isTypeRequired, SortedDictionary<string, SymbolNamedMemberInfo> dictionary)
     {
-        var attributes = member.GetAttributes();
-        var attribute = attributes.FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.NamedKeyAttributeTypeName));
+        var attribute = context.GetAttribute(member, Constants.NamedKeyAttributeTypeName);
         if (attribute is null)
             return;
         var key = (string)attribute.ConstructorArguments.Single().Value!;
@@ -35,13 +34,14 @@ public sealed partial class NamedObjectConverterContext
 
     public static object? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
     {
-        var attribute = symbol.GetAttributes().FirstOrDefault(x => context.Equals(x.AttributeClass, Constants.NamedObjectAttributeTypeName));
+        var attribute = context.GetAttribute(symbol, Constants.NamedObjectAttributeTypeName);
         if (attribute is null && Symbols.IsTypeUnsupported(context, symbol))
             return null;
-        var required = symbol.GetMembers().Any(Symbols.IsMemberRequired);
+        var typeInfo = context.GetTypeInfo(symbol);
+        var required = typeInfo.RequiredMembers.Count is not 0;
         var dictionary = new SortedDictionary<string, SymbolNamedMemberInfo>();
         var cancellation = context.CancellationToken;
-        foreach (var member in Symbols.GetObjectMembers(symbol))
+        foreach (var member in typeInfo.FilteredMembers)
         {
             if (attribute is null)
                 GetSimpleNamedMember(member, required, dictionary);
@@ -49,12 +49,13 @@ public sealed partial class NamedObjectConverterContext
                 GetCustomNamedMember(context, member, required, dictionary);
             cancellation.ThrowIfCancellationRequested();
         }
-        var members = dictionary.Values.ToImmutableArray();
+
         // do not report error for plain object
         // let compiler report it if required member not set. (linq expression generator will report if required member not set)
+        var members = dictionary.Values.ToImmutableArray();
         if (members.Length is 0)
             return attribute is null ? null : (object)Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplay(symbol) });
-        var constructor = Symbols.GetConstructor(context, symbol, members);
+        var constructor = Symbols.GetConstructor(context, typeInfo, members);
         return new NamedObjectConverterContext(context, symbol, members, constructor).Invoke();
     }
 }

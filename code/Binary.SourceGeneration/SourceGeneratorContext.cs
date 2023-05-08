@@ -3,6 +3,7 @@
 using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 public class SourceGeneratorContext
@@ -17,6 +18,8 @@ public class SourceGeneratorContext
 
     private readonly Dictionary<ITypeSymbol, string> converterTypeFullNameCache;
 
+    private readonly Dictionary<ITypeSymbol, SymbolTypeInfo> typeInfoCache;
+
     public Compilation Compilation { get; }
 
     public CancellationToken CancellationToken { get; }
@@ -30,6 +33,7 @@ public class SourceGeneratorContext
         this.referencedTypes = referencedTypes;
         this.typeFullNameCache = new Dictionary<ITypeSymbol, string>(SymbolEqualityComparer.Default);
         this.converterTypeFullNameCache = new Dictionary<ITypeSymbol, string>(SymbolEqualityComparer.Default);
+        this.typeInfoCache = new Dictionary<ITypeSymbol, SymbolTypeInfo>(SymbolEqualityComparer.Default);
     }
 
     public object GetOrCreateResource(string key, Func<Compilation, object> creator)
@@ -37,6 +41,14 @@ public class SourceGeneratorContext
         var dictionary = this.resources;
         if (dictionary.TryGetValue(key, out var result) is false)
             dictionary.Add(key, result = creator.Invoke(Compilation));
+        return result;
+    }
+
+    public SymbolTypeInfo GetTypeInfo(ITypeSymbol symbol)
+    {
+        var dictionary = this.typeInfoCache;
+        if (dictionary.TryGetValue(symbol, out var result) is false)
+            dictionary.Add(symbol, result = new SymbolTypeInfo(symbol));
         return result;
     }
 
@@ -59,6 +71,11 @@ public class SourceGeneratorContext
     public void AddReferencedType(ITypeSymbol type)
     {
         this.referencedTypes.Enqueue(type);
+    }
+
+    public AttributeData? GetAttribute(ISymbol symbol, string attributeTypeName)
+    {
+        return symbol.GetAttributes().FirstOrDefault(x => Equals(x.AttributeClass, attributeTypeName));
     }
 
     public INamedTypeSymbol? GetNamedTypeSymbol(string typeName)

@@ -370,7 +370,8 @@ public class SymbolsTests
         Assert.NotEmpty(members);
 
         var context = new SourceGeneratorContext(compilation, new Queue<ITypeSymbol>(), CancellationToken.None);
-        var constructor = Symbols.GetConstructor(context, symbol, members);
+        var typeInfo = context.GetTypeInfo(symbol);
+        var constructor = Symbols.GetConstructor(context, typeInfo, members);
         Assert.NotNull(constructor);
     }
 
@@ -457,8 +458,10 @@ public class SymbolsTests
         Assert.NotEmpty(members);
 
         var context = new SourceGeneratorContext(compilation, new Queue<ITypeSymbol>(), CancellationToken.None);
-        var a = Symbols.GetConstructor(context, symbol, members);
-        var b = Symbols.GetConstructor(context, compilation.CreateArrayTypeSymbol(symbol, 1), members);
+        var x = context.GetTypeInfo(symbol);
+        var y = context.GetTypeInfo(compilation.CreateArrayTypeSymbol(symbol, 1));
+        var a = Symbols.GetConstructor(context, x, members);
+        var b = Symbols.GetConstructor(context, y, members);
         Assert.Null(a);
         Assert.Null(b);
     }
