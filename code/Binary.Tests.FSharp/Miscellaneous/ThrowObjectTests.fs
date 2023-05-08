@@ -10,10 +10,15 @@ type Test01 = Case01 of Tag : string
 
 [<Fact>]
 let ``Type With Duplicate Property Names`` () =
-    let case = Case01 "01"
-    let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter case |> ignore)
-    let message = sprintf "Named object error, duplicate binary string keys detected, type: %O, string converter type: %O" typeof<Test01> (generator.GetConverter<string>().GetType())
-    Assert.Equal(message, error.Message)
+    let baseType = typeof<Test01>
+    let caseType = typeof<Test01>
+    let a = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(baseType) |> ignore)
+    let b = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(caseType) |> ignore)
+    let message = $"Get members error, duplicate members detected, member name: Tag, type: {typeof<Test01>}"
+    Assert.Null a.ParamName
+    Assert.Null b.ParamName
+    Assert.Equal(message, a.Message)
+    Assert.Equal(message, b.Message)
     ()
 
 let TestNoConstructor (source : 'a) =

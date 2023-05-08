@@ -106,6 +106,42 @@ internal static class CommonModule
     }
 
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    internal static ImmutableArray<MemberInfo> GetAllInstanceFieldsAndProperties(Type type, bool includeNonPublic)
+    {
+        var flags = includeNonPublic
+            ? BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+            : BindingFlags.Instance | BindingFlags.Public;
+        var current = type;
+        var builder = ImmutableArray.CreateBuilder<MemberInfo>();
+        while (current is not null)
+        {
+            var members = current.GetMembers(flags);
+            foreach (var member in members)
+            {
+                if (current != member.DeclaringType)
+                    continue;
+                var field = member as FieldInfo;
+                var property = member as PropertyInfo;
+                if (field is null && property is null)
+                    continue;
+
+                // ignore overriding or shadowing
+                var indexer = property is not null && property.GetIndexParameters().Length is not 0;
+                var memberName = member.Name;
+                if (indexer is false && builder.FirstOrDefault(x => x.Name == memberName) is { } exists)
+                {
+                    if (current == exists.DeclaringType)
+                        throw new ArgumentException($"Get members error, duplicate members detected, member name: {memberName}, type: {current}");
+                    continue;
+                }
+                builder.Add(member);
+            }
+            current = current.BaseType;
+        }
+        return builder.DrainToImmutable();
+    }
+
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     internal static IConverter? GetConverter(IGeneratorContext context, Type type, Type typeDefinition, Type converterDefinition)
     {
         Debug.Assert(converterDefinition.IsGenericTypeDefinition);

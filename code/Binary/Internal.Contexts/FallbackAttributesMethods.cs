@@ -48,11 +48,11 @@ internal static class FallbackAttributesMethods
     private static ImmutableArray<MetaMemberInfo> GetMemberVariables(MetaTypeInfo typeInfo)
     {
         var type = typeInfo.Type;
-        var result = ImmutableArray.CreateBuilder<MetaMemberInfo>();
-        foreach (var member in type.GetMembers(CommonModule.PublicInstanceBindingFlags))
+        var builder = ImmutableArray.CreateBuilder<MetaMemberInfo>();
+        var members = CommonModule.GetAllInstanceFieldsAndProperties(type, includeNonPublic: false);
+        foreach (var member in members)
         {
-            if (member is FieldInfo or PropertyInfo is false)
-                continue;
+            Debug.Assert(member is FieldInfo or PropertyInfo);
             var property = member as PropertyInfo;
             var keyAttributes = GetAttributes(member, a => a is NamedKeyAttribute or TupleKeyAttribute);
             var key = keyAttributes.FirstOrDefault();
@@ -75,9 +75,9 @@ internal static class FallbackAttributesMethods
                 throw new ArgumentException($"Require '{nameof(TupleObjectAttribute)}' for '{nameof(TupleKeyAttribute)}', member name: {member.Name}, type: {type}");
             var optional = GetMemberIsOptional(typeInfo, member, key);
             var memberInfo = new MetaMemberInfo(member, key, conversion, optional);
-            result.Add(memberInfo);
+            builder.Add(memberInfo);
         }
-        return result.DrainToImmutable();
+        return builder.DrainToImmutable();
     }
 
     private static bool GetMemberIsOptional(MetaTypeInfo typeInfo, MemberInfo member, Attribute? key)
