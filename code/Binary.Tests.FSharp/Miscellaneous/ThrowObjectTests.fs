@@ -8,17 +8,19 @@ let generator = Generator.CreateDefault()
 
 type Test01 = Case01 of Tag : string
 
+type Test02 = Case02 of Tag : double
+
 [<Fact>]
 let ``Type With Duplicate Property Names`` () =
-    let baseType = typeof<Test01>
-    let caseType = typeof<Test01>
-    let a = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(baseType) |> ignore)
-    let b = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(caseType) |> ignore)
-    let message = $"Get members error, duplicate members detected, member name: Tag, type: {typeof<Test01>}"
+    let x = typeof<Test01>
+    let y = typeof<Test02>
+    let a = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(x) |> ignore)
+    let b = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(y) |> ignore)
+    let message t = $"Get members error, duplicate members detected, member name: Tag, type: {t}"
     Assert.Null a.ParamName
     Assert.Null b.ParamName
-    Assert.Equal(message, a.Message)
-    Assert.Equal(message, b.Message)
+    Assert.Equal(message x, a.Message)
+    Assert.Equal(message y, b.Message)
     ()
 
 let TestNoConstructor (source : 'a) =
