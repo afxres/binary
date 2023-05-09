@@ -18,13 +18,13 @@ public sealed partial class GenericConverterContext
 
         public SelfType SelfType { get; }
 
-        public ImmutableArray<ITypeSymbol> Elements { get; }
+        public ImmutableArray<ITypeSymbol> ElementTypes { get; }
 
         public TypeInfo(string name, SelfType selfType, ImmutableArray<ITypeSymbol> elements)
         {
             Name = name;
             SelfType = selfType;
-            Elements = elements;
+            ElementTypes = elements;
         }
     }
 

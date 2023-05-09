@@ -4,11 +4,11 @@ public class SymbolConverterContent
 {
     public string ConverterCreatorTypeName { get; }
 
-    public string Code { get; }
+    public string SourceCode { get; }
 
-    public SymbolConverterContent(string converterCreatorTypeName, string code)
+    public SymbolConverterContent(string creator, string code)
     {
-        ConverterCreatorTypeName = converterCreatorTypeName;
-        Code = code;
+        ConverterCreatorTypeName = creator;
+        SourceCode = code;
     }
 }

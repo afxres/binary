@@ -19,19 +19,19 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
         public SourceProductionContext SourceProductionContext { get; }
 
-        public string CurrentNameInSourceCode { get; }
+        public string NameInSourceCode { get; }
 
-        public string CurrentContainingNamespace { get; }
+        public string Namespace { get; }
 
-        public ImmutableDictionary<ITypeSymbol, AttributeData> CurrentInclusions { get; }
+        public ImmutableDictionary<ITypeSymbol, AttributeData> Inclusions { get; }
 
         public Entry(Compilation compilation, SourceProductionContext production, string type, string @namespace, ImmutableDictionary<ITypeSymbol, AttributeData> inclusions)
         {
             Compilation = compilation;
             SourceProductionContext = production;
-            CurrentNameInSourceCode = Symbols.GetNameInSourceCode(type);
-            CurrentContainingNamespace = @namespace;
-            CurrentInclusions = inclusions;
+            NameInSourceCode = Symbols.GetNameInSourceCode(type);
+            Namespace = @namespace;
+            Inclusions = inclusions;
         }
     }
 
@@ -148,7 +148,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
     private static string Invoke(Entry entry)
     {
-        var inclusions = entry.CurrentInclusions;
+        var inclusions = entry.Inclusions;
         var production = entry.SourceProductionContext;
         var cancellation = production.CancellationToken;
         var pending = new Queue<ITypeSymbol>(inclusions.Keys);
@@ -191,9 +191,9 @@ public sealed class SourceGenerator : IIncrementalGenerator
         var production = entry.SourceProductionContext;
         var cancellation = production.CancellationToken;
 
-        builder.AppendIndent(0, $"namespace {entry.CurrentContainingNamespace};");
+        builder.AppendIndent(0, $"namespace {entry.Namespace};");
         builder.AppendIndent();
-        builder.AppendIndent(0, $"partial class {entry.CurrentNameInSourceCode}");
+        builder.AppendIndent(0, $"partial class {entry.NameInSourceCode}");
         builder.AppendIndent(0, $"{{");
         builder.AppendIndent(1, $"public static System.Collections.Generic.IReadOnlyDictionary<System.Type, Mikodev.Binary.IConverterCreator> ConverterCreators {{ get; }} = System.Collections.Immutable.ImmutableDictionary.CreateRange(new System.Collections.Generic.Dictionary<System.Type, Mikodev.Binary.IConverterCreator>");
         builder.AppendIndent(1, $"{{");
@@ -213,11 +213,10 @@ public sealed class SourceGenerator : IIncrementalGenerator
             if (content is null)
                 continue;
             builder.AppendIndent();
-            _ = builder.Append(content.Code);
+            _ = builder.Append(content.SourceCode);
             cancellation.ThrowIfCancellationRequested();
         }
         builder.AppendIndent(0, $"}}");
-        var code = builder.ToString();
-        return code;
+        return builder.ToString();
     }
 }

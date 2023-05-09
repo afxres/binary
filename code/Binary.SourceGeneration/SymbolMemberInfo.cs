@@ -6,7 +6,7 @@ public class SymbolMemberInfo
 {
     public ISymbol Symbol { get; }
 
-    public ITypeSymbol TypeSymbol { get; }
+    public ITypeSymbol Type { get; }
 
     public string Name { get; }
 
@@ -16,12 +16,11 @@ public class SymbolMemberInfo
 
     public SymbolMemberInfo(ISymbol symbol, ITypeSymbol typeSymbol, bool @readonly)
     {
-        var name = symbol.Name;
-        Name = name;
-        NameInSourceCode = Symbols.GetNameInSourceCode(name);
+        Name = symbol.Name;
+        Type = typeSymbol;
         Symbol = symbol;
-        TypeSymbol = typeSymbol;
         IsReadOnly = @readonly;
+        NameInSourceCode = Symbols.GetNameInSourceCode(symbol.Name);
     }
 
     public SymbolMemberInfo(IFieldSymbol field) : this(field, field.Type, field.IsReadOnly) { }

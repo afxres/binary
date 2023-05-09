@@ -25,35 +25,35 @@ public sealed partial class CollectionConverterContext
 
         public string MethodBody { get; }
 
-        public ImmutableArray<ITypeSymbol> Elements { get; }
+        public ImmutableArray<ITypeSymbol> ElementTypes { get; }
 
         public TypeInfo(SourceType sourceType, string methodBody, ImmutableArray<ITypeSymbol> elements)
         {
             SourceType = sourceType;
             MethodBody = methodBody;
-            Elements = elements;
+            ElementTypes = elements;
         }
     }
 
     private class Resource
     {
-        public INamedTypeSymbol? UnboundIEnumerableTypeSymbol { get; }
+        public INamedTypeSymbol? UnboundIEnumerableType { get; }
 
-        public INamedTypeSymbol? UnboundIDictionaryTypeSymbol { get; }
+        public INamedTypeSymbol? UnboundIDictionaryType { get; }
 
-        public INamedTypeSymbol? UnboundIReadOnlyDictionaryTypeSymbol { get; }
+        public INamedTypeSymbol? UnboundIReadOnlyDictionaryType { get; }
 
-        public ImmutableDictionary<INamedTypeSymbol, (SourceType SourceType, string MethodBody)> SupportedTypeSymbols { get; }
+        public ImmutableDictionary<INamedTypeSymbol, (SourceType SourceType, string MethodBody)> SupportedTypes { get; }
 
-        public ImmutableHashSet<INamedTypeSymbol> UnsupportedTypeSymbols { get; }
+        public ImmutableHashSet<INamedTypeSymbol> UnsupportedTypes { get; }
 
         public Resource(ImmutableDictionary<INamedTypeSymbol, (SourceType, string)> supported, ImmutableHashSet<INamedTypeSymbol> unsupported, INamedTypeSymbol? enumerable, INamedTypeSymbol? dictionary, INamedTypeSymbol? readonlyDictionary)
         {
-            SupportedTypeSymbols = supported;
-            UnsupportedTypeSymbols = unsupported;
-            UnboundIEnumerableTypeSymbol = enumerable;
-            UnboundIDictionaryTypeSymbol = dictionary;
-            UnboundIReadOnlyDictionaryTypeSymbol = readonlyDictionary;
+            SupportedTypes = supported;
+            UnsupportedTypes = unsupported;
+            UnboundIEnumerableType = enumerable;
+            UnboundIDictionaryType = dictionary;
+            UnboundIReadOnlyDictionaryType = readonlyDictionary;
         }
     }
 
@@ -114,9 +114,9 @@ public sealed partial class CollectionConverterContext
 
     private static TypeInfo? GetInfo(INamedTypeSymbol symbol, Resource resource)
     {
-        static bool Implements(INamedTypeSymbol current, INamedTypeSymbol? unboundTypeSymbol)
+        static bool Implements(INamedTypeSymbol symbol, INamedTypeSymbol? unboundTypeSymbol)
         {
-            return current.IsGenericType && SymbolEqualityComparer.Default.Equals(unboundTypeSymbol, current.ConstructUnboundGenericType());
+            return symbol.IsGenericType && SymbolEqualityComparer.Default.Equals(unboundTypeSymbol, symbol.ConstructUnboundGenericType());
         }
 
         static bool HasConstructor(INamedTypeSymbol symbol, INamedTypeSymbol argument)
@@ -125,14 +125,14 @@ public sealed partial class CollectionConverterContext
         }
 
         var interfaces = symbol.AllInterfaces;
-        var enumerableInterfaces = interfaces.Where(x => Implements(x, resource.UnboundIEnumerableTypeSymbol)).ToList();
+        var enumerableInterfaces = interfaces.Where(x => Implements(x, resource.UnboundIEnumerableType)).ToList();
         if (enumerableInterfaces.Count is not 1)
             return null;
 
-        var dictionaryInterface = interfaces.FirstOrDefault(x => Implements(x, resource.UnboundIDictionaryTypeSymbol));
+        var dictionaryInterface = interfaces.FirstOrDefault(x => Implements(x, resource.UnboundIDictionaryType));
         if (dictionaryInterface is not null && HasConstructor(symbol, dictionaryInterface))
             return new TypeInfo(SourceType.Dictionary, string.Empty, dictionaryInterface.TypeArguments);
-        var readonlyDictionaryInterface = interfaces.FirstOrDefault(x => Implements(x, resource.UnboundIReadOnlyDictionaryTypeSymbol));
+        var readonlyDictionaryInterface = interfaces.FirstOrDefault(x => Implements(x, resource.UnboundIReadOnlyDictionaryType));
         if (readonlyDictionaryInterface is not null && HasConstructor(symbol, readonlyDictionaryInterface))
             return new TypeInfo(SourceType.Dictionary, string.Empty, readonlyDictionaryInterface.TypeArguments);
         var enumerableInterface = enumerableInterfaces.Single();
@@ -152,9 +152,9 @@ public sealed partial class CollectionConverterContext
         var resource = (Resource)context.GetOrCreateResource(ResourceKey, CreateResource);
         var unbound = symbol.IsGenericType ? symbol.ConstructUnboundGenericType() : null;
         var unboundOrOriginal = unbound ?? symbol;
-        if (resource.UnsupportedTypeSymbols.Contains(unboundOrOriginal))
+        if (resource.UnsupportedTypes.Contains(unboundOrOriginal))
             return null;
-        if (unbound is not null && resource.SupportedTypeSymbols.TryGetValue(unbound, out var definition))
+        if (unbound is not null && resource.SupportedTypes.TryGetValue(unbound, out var definition))
             return new TypeInfo(definition.SourceType, definition.MethodBody, symbol.TypeArguments);
         return GetInfo(symbol, resource);
     }

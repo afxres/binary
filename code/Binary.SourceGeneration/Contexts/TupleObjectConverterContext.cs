@@ -14,7 +14,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     private TupleObjectConverterContext(SourceGeneratorContext context, ITypeSymbol symbol, ImmutableArray<SymbolTupleMemberInfo> members, SymbolConstructorInfo<SymbolTupleMemberInfo>? constructor) : base(context, symbol)
     {
         for (var i = 0; i < members.Length; i++)
-            AddType(i, members[i].TypeSymbol);
+            AddType(i, members[i].Type);
         this.members = members;
         this.constructor = constructor;
     }
@@ -47,10 +47,15 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
 
         for (var i = 0; i < members.Length; i++)
         {
-            var last = (i == members.Length - 1);
             var member = members[i];
+            builder.AppendIndent(3, $"var var{i} = item.{member.NameInSourceCode};");
+            CancellationToken.ThrowIfCancellationRequested();
+        }
+        for (var i = 0; i < members.Length; i++)
+        {
+            var last = (i == members.Length - 1);
             var method = (auto || last is false) ? "EncodeAuto" : "Encode";
-            builder.AppendIndent(3, $"cvt{i}.{method}(ref allocator, item.{member.NameInSourceCode});");
+            builder.AppendIndent(3, $"cvt{i}.{method}(ref allocator, var{i});");
             CancellationToken.ThrowIfCancellationRequested();
         }
         builder.AppendIndent(2, $"}}");

@@ -74,7 +74,7 @@ public static partial class Symbols
             if (parameters.Length is 0)
                 continue;
             var objectIndexes = parameters
-                .Select(x => dictionary.TryGetValue(x.Name, out var index) && SymbolEqualityComparer.Default.Equals(members[index].TypeSymbol, x.Type) ? index : -1)
+                .Select(x => dictionary.TryGetValue(x.Name, out var index) && SymbolEqualityComparer.Default.Equals(members[index].Type, x.Type) ? index : -1)
                 .Where(x => x is not -1)
                 .ToImmutableArray();
             if (objectIndexes.Length != parameters.Length)

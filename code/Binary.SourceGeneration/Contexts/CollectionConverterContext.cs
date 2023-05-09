@@ -10,7 +10,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
 
     private CollectionConverterContext(SourceGeneratorContext context, ITypeSymbol symbol, TypeInfo info) : base(context, symbol)
     {
-        var elements = info.Elements;
+        var elements = info.ElementTypes;
         for (var i = 0; i < elements.Length; i++)
             AddType(i, elements[i]);
         this.info = info;
@@ -28,7 +28,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
             _ => null,
         };
 
-        var elements = info.Elements;
+        var elements = info.ElementTypes;
         for (var i = 0; i < elements.Length; i++)
         {
             var element = elements[i];
