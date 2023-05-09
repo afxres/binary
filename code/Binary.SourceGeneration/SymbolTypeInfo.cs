@@ -18,11 +18,11 @@ public class SymbolTypeInfo
 
     public ITypeSymbol Symbol => this.symbol;
 
-    public ImmutableArray<ISymbol> OriginalMembers => this.originalMembers.Value;
+    public ImmutableArray<ISymbol> OriginalFieldsAndProperties => this.originalMembers.Value;
 
-    public ImmutableArray<ISymbol> FilteredMembers => this.filteredMembers.Value;
+    public ImmutableArray<ISymbol> FilteredFieldsAndProperties => this.filteredMembers.Value;
 
-    public ImmutableHashSet<ISymbol> RequiredMembers => this.requiredMembers.Value;
+    public ImmutableHashSet<ISymbol> RequiredFieldsAndProperties => this.requiredMembers.Value;
 
     public SymbolTypeInfo(ITypeSymbol symbol)
     {

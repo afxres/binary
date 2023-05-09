@@ -465,4 +465,115 @@ public class SymbolsTests
         Assert.Null(a);
         Assert.Null(b);
     }
+
+    public static IEnumerable<object[]> IsRequiredData()
+    {
+        var a =
+            """
+            class Alpha
+            {
+                public int Field;
+
+                public required int RequiredField;
+
+                public string? Property { get; set; }
+
+                public required string? RequiredProperty { get; set; }
+            }
+            """;
+        yield return new object[] { a, "Alpha", "Field", false };
+        yield return new object[] { a, "Alpha", "RequiredField", true };
+        yield return new object[] { a, "Alpha", "Property", false };
+        yield return new object[] { a, "Alpha", "RequiredProperty", true };
+    }
+
+    [Theory(DisplayName = "Is Field Or Property Required")]
+    [MemberData(nameof(IsRequiredData))]
+    public void IsRequiredTest(string source, string typeName, string memberName, bool required)
+    {
+        var compilation = CompilationModule.CreateCompilation(source);
+        var tree = compilation.SyntaxTrees.First();
+        var model = compilation.GetSemanticModel(tree);
+        var nodes = tree.GetRoot().DescendantNodes();
+        var declaration = nodes.OfType<TypeDeclarationSyntax>().Single();
+        var symbol = model.GetDeclaredSymbol(declaration);
+        Assert.NotNull(symbol);
+        Assert.Equal(typeName, symbol.Name);
+        var member = symbol.GetMembers()
+            .Where(x => ((x as IFieldSymbol)?.Name ?? (x as IPropertySymbol)?.Name) == memberName)
+            .FirstOrDefault();
+        Assert.NotNull(member);
+        var a = Symbols.IsRequired(member);
+        var b = Symbols.IsRequired(symbol);
+        Assert.Equal(required, a);
+        Assert.False(b);
+    }
+
+    public static IEnumerable<object[]> FilterFieldsAndPropertiesData()
+    {
+        var a =
+            """
+            class Alpha
+            {
+                public int PublicInstanceField;
+
+                public int PublicInstanceProperty { get; set; }
+
+                private int PrivateInstanceField;
+
+                private int PrivateInstanceProperty { get; set; }
+
+                internal int InternalInstanceField;
+
+                internal int InternalInstanceProperty { get; set; }
+
+                public static int PublicStaticField;
+
+                public static int PublicStaticProperty { get; set; }
+
+                public ref int PublicInstancePropertyReturnsByRef => throw null;
+
+                public ref readonly int PublicInstancePropertyReturnsByRefReadonly => throw null;
+
+                public void PublicInstanceMethod() { }
+
+                public static void PublicStaticMethod() { }
+
+                public int this[int key] => default;
+
+                private long this[long key] => default;
+
+                internal short this[short key] => default;
+            }
+            """;
+        yield return new object[] { a, "Alpha", new string[] { "PublicInstanceField", "PublicInstanceProperty" } };
+    }
+
+    [Theory(DisplayName = "Filter Fields And Properties Test")]
+    [MemberData(nameof(FilterFieldsAndPropertiesData))]
+    public void FilterFieldsAndPropertiesTest(string source, string typeName, string[] expectedMemberNames)
+    {
+        var compilation = CompilationModule.CreateCompilation(source);
+        var tree = compilation.SyntaxTrees.First();
+        var model = compilation.GetSemanticModel(tree);
+        var nodes = tree.GetRoot().DescendantNodes();
+        var declaration = nodes.OfType<TypeDeclarationSyntax>().Single();
+        var symbol = model.GetDeclaredSymbol(declaration);
+        Assert.NotNull(symbol);
+        Assert.Equal(typeName, symbol.Name);
+        var members = symbol.GetMembers();
+        Assert.Contains(members, x => x is IMethodSymbol);
+        Assert.Contains(members, x => x is IFieldSymbol);
+        Assert.Contains(members, x => x is IPropertySymbol property && property.IsIndexer);
+        Assert.Contains(members, x => x is IPropertySymbol property && property.IsIndexer is false);
+        Assert.Contains(members, x => x.IsStatic);
+        Assert.Contains(members, x => x.IsStatic is false);
+        Assert.Contains(members, x => x.DeclaredAccessibility is Accessibility.Public);
+        Assert.Contains(members, x => x.DeclaredAccessibility is not Accessibility.Public);
+        Assert.Contains(members, x => x is IPropertySymbol property && property.ReturnsByRef);
+        Assert.Contains(members, x => x is IPropertySymbol property && property.ReturnsByRefReadonly);
+
+        var filtered = Symbols.FilterFieldsAndProperties(members);
+        Assert.Equal(new HashSet<string>(expectedMemberNames), new HashSet<string>(filtered.Select(x => x.Name)));
+    }
 }

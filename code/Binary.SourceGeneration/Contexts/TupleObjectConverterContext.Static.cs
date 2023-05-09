@@ -65,7 +65,7 @@ public sealed partial class TupleObjectConverterContext
         var typeInfo = context.GetTypeInfo(symbol);
         var dictionary = new SortedDictionary<int, SymbolTupleMemberInfo>();
         var cancellation = context.CancellationToken;
-        foreach (var member in typeInfo.FilteredMembers)
+        foreach (var member in typeInfo.FilteredFieldsAndProperties)
         {
             if (system)
                 GetSystemTupleMember(member, dictionary);

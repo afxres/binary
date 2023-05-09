@@ -60,7 +60,7 @@ public static partial class Symbols
         cancellation.ThrowIfCancellationRequested();
         var defaultConstructor = constructors.FirstOrDefault(x => x.Parameters.Length is 0);
         var hasDefaultConstructor = symbol.IsValueType || defaultConstructor is not null;
-        if (hasDefaultConstructor && ValidateConstructorWithMembers(context, defaultConstructor, typeInfo.RequiredMembers, members))
+        if (hasDefaultConstructor && ValidateConstructorWithMembers(context, defaultConstructor, typeInfo.RequiredFieldsAndProperties, members))
             return new SymbolConstructorInfo<T>(members, ImmutableArray.Create<int>(), Enumerable.Range(0, members.Length).ToImmutableArray());
         if (members.Select(x => x.Name).Distinct(comparer).Count() != members.Length)
             return null;
@@ -80,7 +80,7 @@ public static partial class Symbols
             if (objectIndexes.Length != parameters.Length)
                 continue;
             var directIndexes = Enumerable.Range(0, members.Length).Except(objectIndexes).ToImmutableArray();
-            if (ValidateConstructorWithMembers(context, i, typeInfo.RequiredMembers, directIndexes.Select(x => members[x]).ToImmutableArray()) is false)
+            if (ValidateConstructorWithMembers(context, i, typeInfo.RequiredFieldsAndProperties, directIndexes.Select(x => members[x]).ToImmutableArray()) is false)
                 continue;
             return new SymbolConstructorInfo<T>(members, objectIndexes, directIndexes);
         }

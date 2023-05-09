@@ -38,10 +38,10 @@ public sealed partial class NamedObjectConverterContext
         if (attribute is null && Symbols.IsTypeUnsupported(context, symbol))
             return null;
         var typeInfo = context.GetTypeInfo(symbol);
-        var required = typeInfo.RequiredMembers.Count is not 0;
+        var required = typeInfo.RequiredFieldsAndProperties.Count is not 0;
         var dictionary = new SortedDictionary<string, SymbolNamedMemberInfo>();
         var cancellation = context.CancellationToken;
-        foreach (var member in typeInfo.FilteredMembers)
+        foreach (var member in typeInfo.FilteredFieldsAndProperties)
         {
             if (attribute is null)
                 GetSimpleNamedMember(member, required, dictionary);
