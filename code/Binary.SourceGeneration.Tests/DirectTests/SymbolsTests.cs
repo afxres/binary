@@ -116,10 +116,33 @@ public class SymbolsTests
         yield return new object[] { b, "Data", "global::B<global::System.Int32>.X.Y<global::System.String>", "g_B_l_System_Int32_r_X_Y_l_System_String_r" };
     }
 
+    public static IEnumerable<object[]> SpecialNameData()
+    {
+        var a =
+            """
+            namespace @class.@yield.@namespace.@async.@await;
+
+            class @public
+            {
+                public class @class { }
+            }
+
+            class Ignore
+            {
+                public @public Alpha;
+
+                public @public.@class Bravo;
+            }
+            """;
+        yield return new object[] { a, "Alpha", "global::@class.yield.@namespace.async.await.@public", "class_yield_namespace_async_await_public" };
+        yield return new object[] { a, "Bravo", "global::@class.yield.@namespace.async.await.@public.@class", "class_yield_namespace_async_await_public_class" };
+    }
+
     [Theory(DisplayName = "Get Full Name Test")]
     [MemberData(nameof(ArrayData))]
     [MemberData(nameof(GlobalNamespaceTypeData))]
     [MemberData(nameof(NestedTypeData))]
+    [MemberData(nameof(SpecialNameData))]
     public void GetFullNameTest(string source, string memberName, string symbolFullName, string outputFullName)
     {
         var compilation = CompilationModule.CreateCompilation(source);
@@ -575,5 +598,32 @@ public class SymbolsTests
 
         var filtered = Symbols.FilterFieldsAndProperties(members);
         Assert.Equal(new HashSet<string>(expectedMemberNames), new HashSet<string>(filtered.Select(x => x.Name)));
+    }
+
+    public static IEnumerable<object[]> KeywordData()
+    {
+        yield return new object[] { "bool", true, "@bool" };
+        yield return new object[] { "public", true, "@public" };
+        yield return new object[] { "operator", true, "@operator" };
+
+        yield return new object[] { "yield", true, "@yield" };
+        yield return new object[] { "var", true, "@var" };
+        yield return new object[] { "async", true, "@async" };
+        yield return new object[] { "await", true, "@await" };
+
+        yield return new object[] { "list", false, "list" };
+        yield return new object[] { "dictionary", false, "dictionary" };
+        yield return new object[] { "Class", false, "Class" };
+        yield return new object[] { "Namespace", false, "Namespace" };
+    }
+
+    [Theory(DisplayName = "Keyword In Source Code Test")]
+    [MemberData(nameof(KeywordData))]
+    public void KeywordTest(string text, bool keyword, string expected)
+    {
+        var result = Symbols.IsKeyword(text);
+        var actual = Symbols.GetNameInSourceCode(text);
+        Assert.Equal(keyword, result);
+        Assert.Equal(expected, actual);
     }
 }

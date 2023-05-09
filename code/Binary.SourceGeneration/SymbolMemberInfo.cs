@@ -18,7 +18,7 @@ public class SymbolMemberInfo
     {
         var name = symbol.Name;
         Name = name;
-        NameInSourceCode = Symbols.IsKeyword(name) ? $"@{name}" : name;
+        NameInSourceCode = Symbols.GetNameInSourceCode(name);
         Symbol = symbol;
         TypeSymbol = typeSymbol;
         IsReadOnly = @readonly;

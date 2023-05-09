@@ -31,6 +31,11 @@ public static partial class Symbols
         return Location.None;
     }
 
+    public static string GetNameInSourceCode(string name)
+    {
+        return IsKeyword(name) ? $"@{name}" : name;
+    }
+
     public static string GetSymbolDiagnosticDisplay(ITypeSymbol symbol)
     {
         return symbol.ToDisplayString(SymbolDiagnosticDisplayFormat);
@@ -68,7 +73,7 @@ public static partial class Symbols
 
             if (containing is not null || @namespace.IsGlobalNamespace is false)
                 _ = target.Append('.');
-            _ = target.Append(symbol.Name);
+            _ = target.Append(GetNameInSourceCode(symbol.Name));
             var arguments = symbol.TypeArguments;
             if (arguments.Length is 0)
                 return;
@@ -118,7 +123,7 @@ public static partial class Symbols
             else if (@namespace.IsGlobalNamespace)
                 _ = target.Append("g_");
             else
-                _ = target.Append(@namespace.ToDisplayString().Replace('.', '_'));
+                _ = target.Append(@namespace.ToDisplayString().Replace('.', '_').Replace("@", string.Empty));
 
             if (containing is not null || @namespace.IsGlobalNamespace is false)
                 _ = target.Append('_');

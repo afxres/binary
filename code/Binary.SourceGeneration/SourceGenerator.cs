@@ -19,7 +19,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
         public SourceProductionContext SourceProductionContext { get; }
 
-        public string CurrentTypeName { get; }
+        public string CurrentNameInSourceCode { get; }
 
         public string CurrentContainingNamespace { get; }
 
@@ -29,7 +29,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         {
             Compilation = compilation;
             SourceProductionContext = production;
-            CurrentTypeName = type;
+            CurrentNameInSourceCode = Symbols.GetNameInSourceCode(type);
             CurrentContainingNamespace = @namespace;
             CurrentInclusions = inclusions;
         }
@@ -193,7 +193,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
         builder.AppendIndent(0, $"namespace {entry.CurrentContainingNamespace};");
         builder.AppendIndent();
-        builder.AppendIndent(0, $"partial class {entry.CurrentTypeName}");
+        builder.AppendIndent(0, $"partial class {entry.CurrentNameInSourceCode}");
         builder.AppendIndent(0, $"{{");
         builder.AppendIndent(1, $"public static System.Collections.Generic.IReadOnlyDictionary<System.Type, Mikodev.Binary.IConverterCreator> ConverterCreators {{ get; }} = System.Collections.Immutable.ImmutableDictionary.CreateRange(new System.Collections.Generic.Dictionary<System.Type, Mikodev.Binary.IConverterCreator>");
         builder.AppendIndent(1, $"{{");
