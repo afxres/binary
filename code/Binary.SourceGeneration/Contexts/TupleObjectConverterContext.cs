@@ -50,7 +50,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
             var last = (i == members.Length - 1);
             var member = members[i];
             var method = (auto || last is false) ? "EncodeAuto" : "Encode";
-            builder.AppendIndent(3, $"cvt{i}.{method}(ref allocator, item.{member.Name});");
+            builder.AppendIndent(3, $"cvt{i}.{method}(ref allocator, item.{member.NameInSourceCode});");
             CancellationToken.ThrowIfCancellationRequested();
         }
         builder.AppendIndent(2, $"}}");

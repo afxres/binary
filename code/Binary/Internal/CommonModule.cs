@@ -108,14 +108,15 @@ internal static class CommonModule
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     internal static ImmutableArray<MemberInfo> GetAllFieldsAndProperties(Type type, BindingFlags flags)
     {
-        var current = type;
-        var builder = ImmutableArray.CreateBuilder<MemberInfo>();
-        while (current is not null)
+        var target = type;
+        var result = new List<MemberInfo>();
+        var dictionary = new SortedDictionary<string, MemberInfo>();
+        while (target is not null)
         {
-            var members = current.GetMembers(flags);
+            var members = target.GetMembers(flags);
             foreach (var member in members)
             {
-                if (current != member.DeclaringType)
+                if (target != member.DeclaringType)
                     continue;
                 var field = member as FieldInfo;
                 var property = member as PropertyInfo;
@@ -124,18 +125,17 @@ internal static class CommonModule
 
                 // ignore overriding or shadowing
                 var indexer = property is not null && property.GetIndexParameters().Length is not 0;
-                var memberName = member.Name;
-                if (indexer is false && builder.FirstOrDefault(x => x.Name == memberName) is { } exists)
-                {
-                    if (current == exists.DeclaringType)
-                        throw new ArgumentException($"Get members error, duplicate members detected, member name: {memberName}, type: {current}");
-                    continue;
-                }
-                builder.Add(member);
+                if (indexer)
+                    result.Add(member);
+                else if (dictionary.TryGetValue(member.Name, out var exists) is false)
+                    dictionary.Add(member.Name, member);
+                else if (target == exists.DeclaringType)
+                    throw new ArgumentException($"Get members error, duplicate members detected, member name: {member.Name}, type: {target}");
             }
-            current = current.BaseType;
+            target = target.BaseType;
         }
-        return builder.DrainToImmutable();
+        result.AddRange(dictionary.Values);
+        return result.ToImmutableArray();
     }
 
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]

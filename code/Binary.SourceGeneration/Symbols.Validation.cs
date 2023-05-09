@@ -135,7 +135,7 @@ public static partial class Symbols
             diagnostics.Add(Diagnostic.Create(Constants.RequireTupleObjectAttribute, GetLocation(tupleKeyAttribute), new object[] { memberName, containingTypeName }));
         cancellation.ThrowIfCancellationRequested();
 
-        if (property is not null && IsPropertyReturnsByRefOrReturnsByRefReadonly(property))
+        if (property is not null && IsReturnsByRefOrReturnsByRefReadonly(property))
             diagnostics.Add(Diagnostic.Create(Constants.RequireNotByReferenceProperty, GetLocation(member), new object[] { memberName, containingTypeName }));
         cancellation.ThrowIfCancellationRequested();
 

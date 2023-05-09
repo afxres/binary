@@ -30,6 +30,6 @@ public class SymbolTypeInfo
         this.symbol = symbol;
         this.originalMembers = new Lazy<ImmutableArray<ISymbol>>(() => Symbols.GetAllFieldsAndProperties(this.symbol), LazyMode);
         this.filteredMembers = new Lazy<ImmutableArray<ISymbol>>(() => Symbols.FilterFieldsAndProperties(this.originalMembers.Value), LazyMode);
-        this.requiredMembers = new Lazy<ImmutableHashSet<ISymbol>>(() => this.originalMembers.Value.Where(Symbols.IsMemberRequired).ToImmutableHashSet(SymbolEqualityComparer.Default), LazyMode);
+        this.requiredMembers = new Lazy<ImmutableHashSet<ISymbol>>(() => this.originalMembers.Value.Where(Symbols.IsRequired).ToImmutableHashSet(SymbolEqualityComparer.Default), LazyMode);
     }
 }

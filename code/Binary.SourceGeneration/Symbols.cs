@@ -1,7 +1,9 @@
 ﻿namespace Mikodev.Binary.SourceGeneration;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -101,6 +103,34 @@ public static partial class Symbols
         return attribute.ConstructorArguments.Single().Value as ITypeSymbol;
     }
 
+    public static bool HasPublicSetter(IPropertySymbol property)
+    {
+        var setter = property.SetMethod;
+        if (setter is null)
+            return false;
+        return setter.DeclaredAccessibility is Accessibility.Public;
+    }
+
+    public static bool IsKeyword(string name)
+    {
+        return SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None || SyntaxFacts.GetContextualKeywordKind(name) != SyntaxKind.None;
+    }
+
+    public static bool IsRequired(ISymbol symbol)
+    {
+        return symbol switch
+        {
+            IFieldSymbol field => field.IsRequired,
+            IPropertySymbol property => property.IsRequired,
+            _ => false,
+        };
+    }
+
+    public static bool IsReturnsByRefOrReturnsByRefReadonly(IPropertySymbol property)
+    {
+        return property.ReturnsByRef || property.ReturnsByRefReadonly;
+    }
+
     public static bool IsTypeUnsupported(SourceGeneratorContext context, ITypeSymbol symbol)
     {
         if (SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, context.GetNamedTypeSymbol(Constants.IConverterTypeName)?.ContainingAssembly))
@@ -114,16 +144,6 @@ public static partial class Symbols
         return false;
     }
 
-    public static bool IsMemberRequired(ISymbol symbol)
-    {
-        return symbol switch
-        {
-            IFieldSymbol field => field.IsRequired,
-            IPropertySymbol property => property.IsRequired,
-            _ => false,
-        };
-    }
-
     public static bool IsTypeSupported(ITypeSymbol symbol)
     {
         if (symbol is IErrorTypeSymbol)
@@ -133,11 +153,6 @@ public static partial class Symbols
         if (symbol.IsRefLikeType)
             return false;
         return symbol.TypeKind is TypeKind.Array or TypeKind.Class or TypeKind.Enum or TypeKind.Interface or TypeKind.Struct;
-    }
-
-    public static bool IsPropertyReturnsByRefOrReturnsByRefReadonly(IPropertySymbol property)
-    {
-        return property.ReturnsByRef || property.ReturnsByRefReadonly;
     }
 
     public static ImmutableArray<ISymbol> FilterFieldsAndProperties(ImmutableArray<ISymbol> members)
@@ -151,7 +166,7 @@ public static partial class Symbols
             if (property is not null && property.IsIndexer)
                 continue;
             // support by reference properties or not? (linq expression generator not support by reference properties)
-            if (property is not null && IsPropertyReturnsByRefOrReturnsByRefReadonly(property))
+            if (property is not null && IsReturnsByRefOrReturnsByRefReadonly(property))
                 continue;
             var memberType = property?.Type ?? (member as IFieldSymbol)?.Type;
             if (memberType is null)
@@ -165,11 +180,12 @@ public static partial class Symbols
 
     public static ImmutableArray<ISymbol> GetAllFieldsAndProperties(ITypeSymbol symbol)
     {
-        var current = symbol;
-        var builder = ImmutableArray.CreateBuilder<ISymbol>();
-        while (current is not null)
+        var target = symbol;
+        var result = new List<ISymbol>();
+        var dictionary = new SortedDictionary<string, ISymbol>();
+        while (target is not null)
         {
-            var members = current.GetMembers();
+            var members = target.GetMembers();
             foreach (var member in members)
             {
                 var field = member as IFieldSymbol;
@@ -177,14 +193,16 @@ public static partial class Symbols
                 if (field is null && property is null)
                     continue;
 
+                // ignore overriding or shadowing
                 var indexer = property is not null && property.IsIndexer;
-                var memberName = member.Name;
-                if (indexer is false && builder.FirstOrDefault(x => x.Name == memberName) is { } exists)
-                    continue;
-                builder.Add(member);
+                if (indexer)
+                    result.Add(member);
+                else if (dictionary.ContainsKey(member.Name) is false)
+                    dictionary.Add(member.Name, member);
             }
-            current = current.BaseType;
+            target = target.BaseType;
         }
-        return builder.ToImmutable();
+        result.AddRange(dictionary.Values);
+        return result.ToImmutableArray();
     }
 }

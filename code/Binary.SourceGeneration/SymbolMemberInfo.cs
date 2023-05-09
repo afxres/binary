@@ -10,21 +10,21 @@ public class SymbolMemberInfo
 
     public string Name { get; }
 
+    public string NameInSourceCode { get; }
+
     public bool IsReadOnly { get; }
 
-    public SymbolMemberInfo(IFieldSymbol field)
+    public SymbolMemberInfo(ISymbol symbol, ITypeSymbol typeSymbol, bool @readonly)
     {
-        Name = field.Name;
-        Symbol = field;
-        TypeSymbol = field.Type;
-        IsReadOnly = field.IsReadOnly;
+        var name = symbol.Name;
+        Name = name;
+        NameInSourceCode = Symbols.IsKeyword(name) ? $"@{name}" : name;
+        Symbol = symbol;
+        TypeSymbol = typeSymbol;
+        IsReadOnly = @readonly;
     }
 
-    public SymbolMemberInfo(IPropertySymbol property)
-    {
-        Name = property.Name;
-        Symbol = property;
-        TypeSymbol = property.Type;
-        IsReadOnly = property.SetMethod?.DeclaredAccessibility is not Accessibility.Public;
-    }
+    public SymbolMemberInfo(IFieldSymbol field) : this(field, field.Type, field.IsReadOnly) { }
+
+    public SymbolMemberInfo(IPropertySymbol property) : this(property, property.Type, Symbols.HasPublicSetter(property) is false) { }
 }

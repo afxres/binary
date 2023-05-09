@@ -43,12 +43,12 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             if (member.IsOptional is false)
             {
                 builder.AppendIndent(3, $"{Constants.AllocatorTypeName}.Append(ref allocator, new System.ReadOnlySpan<byte>(key{i}));");
-                builder.AppendIndent(3, $"cvt{i}.EncodeWithLengthPrefix(ref allocator, item.{member.Name});");
+                builder.AppendIndent(3, $"cvt{i}.EncodeWithLengthPrefix(ref allocator, item.{member.NameInSourceCode});");
                 CancellationToken.ThrowIfCancellationRequested();
             }
             else
             {
-                builder.AppendIndent(3, $"var var{i} = item.{member.Name};");
+                builder.AppendIndent(3, $"var var{i} = item.{member.NameInSourceCode};");
                 builder.AppendIndent(3, $"if (System.Collections.Generic.EqualityComparer<{GetTypeFullName(i)}>.Default.Equals(var{i}, default) is false)");
                 builder.AppendIndent(3, $"{{");
                 builder.AppendIndent(4, $"{Constants.AllocatorTypeName}.Append(ref allocator, key{i});");

@@ -33,7 +33,7 @@ public class SymbolConstructorInfo<T> where T : SymbolMemberInfo
             foreach (var i in directIndexes)
             {
                 var member = members[i];
-                builder.AppendIndent(4, $"{member.Name} = var{i},");
+                builder.AppendIndent(4, $"{member.NameInSourceCode} = var{i},");
                 cancellation.ThrowIfCancellationRequested();
             }
             builder.AppendIndent(3, $"}};");

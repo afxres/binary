@@ -3,6 +3,7 @@
 using Mikodev.Binary.Attributes;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Xunit;
 
 abstract class A
@@ -59,6 +60,80 @@ class Q : IQ
     int IQ.W { get; set; }
 }
 
+class IndexerA
+{
+    public int Item { get; set; }
+}
+
+class IndexerB : IndexerA
+{
+    public int this[int key] => throw new NotSupportedException();
+}
+
+class IndexerC : IndexerB
+{
+    public new int this[int key] => throw new NotSupportedException();
+
+    public string this[string key] => throw new NotSupportedException();
+}
+
+class IndexerD : IndexerC
+{
+    public new string? Item { get; set; }
+
+    [IndexerName("Location")]
+    public long this[long key] => throw new NotSupportedException();
+}
+
+class IndexerE : IndexerD
+{
+    public long @this;
+
+    public long Location;
+}
+
+class IndexerF : IndexerE
+{
+    [IndexerName("Position")]
+    public new long this[long key] => throw new NotSupportedException();
+
+    public new long Location { get; set; }
+}
+
+class SpecialMemberNameA
+{
+    public int yield;
+
+    public int @this;
+
+    public int @namespace;
+}
+
+class SpecialMemberNameB : SpecialMemberNameA
+{
+    public new string? @this { get; set; }
+
+    public int @class { get; set; }
+
+    public int join { get; set; }
+}
+
+class SpecialMemberNameC : SpecialMemberNameB
+{
+    public new string @class;
+
+    public int async;
+
+    public int await;
+
+    public SpecialMemberNameC(string @class, int async, int await)
+    {
+        this.@class = @class;
+        this.async = async;
+        this.await = await;
+    }
+}
+
 [SourceGeneratorContext]
 [SourceGeneratorInclude<A>]
 [SourceGeneratorInclude<B>]
@@ -67,6 +142,15 @@ class Q : IQ
 [SourceGeneratorInclude<IO>]
 [SourceGeneratorInclude<IP>]
 [SourceGeneratorInclude<IQ>]
+[SourceGeneratorInclude<IndexerA>]
+[SourceGeneratorInclude<IndexerB>]
+[SourceGeneratorInclude<IndexerC>]
+[SourceGeneratorInclude<IndexerD>]
+[SourceGeneratorInclude<IndexerE>]
+[SourceGeneratorInclude<IndexerF>]
+[SourceGeneratorInclude<SpecialMemberNameA>]
+[SourceGeneratorInclude<SpecialMemberNameB>]
+[SourceGeneratorInclude<SpecialMemberNameC>]
 partial class IntegrationGeneratorContext { }
 
 public class IntegrationTests
@@ -126,9 +210,41 @@ public class IntegrationTests
         yield return new object[] { typeof(IQ), q, new { V = "Two", W = 3 } };
     }
 
+    public static IEnumerable<object[]> PlainObjectWithIndexerData()
+    {
+        var d = new IndexerD { Item = "One" };
+        ((IndexerA)d).Item = 1;
+        yield return new object[] { typeof(IndexerA), d, new { Item = 1 } };
+        yield return new object[] { typeof(IndexerB), d, new { Item = 1 } };
+        yield return new object[] { typeof(IndexerC), d, new { Item = 1 } };
+        yield return new object[] { typeof(IndexerD), d, new { Item = "One" } };
+        var f = new IndexerF { Item = "Two", @this = 3, Location = 4 };
+        ((IndexerA)f).Item = 5;
+        ((IndexerE)f).Location = 6;
+        yield return new object[] { typeof(IndexerA), f, new { Item = 5 } };
+        yield return new object[] { typeof(IndexerE), f, new { Item = "Two", Location = 6L, @this = 3L } };
+        yield return new object[] { typeof(IndexerF), f, new { Item = "Two", Location = 4L, @this = 3L } };
+    }
+
+    public static IEnumerable<object[]> PlainObjectWithSpecialMemberNameData()
+    {
+        var c = new SpecialMemberNameC("Zero", 1, 2);
+        c.yield = 3;
+        ((SpecialMemberNameA)c).@this = 4;
+        c.@namespace = 5;
+        c.@this = "Six";
+        ((SpecialMemberNameB)c).@class = 7;
+        c.join = 8;
+        yield return new object[] { typeof(SpecialMemberNameA), c, new { @namespace = 5, @this = 4, yield = 3 } };
+        yield return new object[] { typeof(SpecialMemberNameB), c, new { @class = 7, join = 8, @namespace = 5, @this = "Six", yield = 3 } };
+        yield return new object[] { typeof(SpecialMemberNameC), c, new { async = 1, await = 2, @class = "Zero", join = 8, @namespace = 5, @this = "Six", yield = 3 } };
+    }
+
     [Theory(DisplayName = "Encode Decode Test")]
     [MemberData(nameof(PlainObjectData))]
     [MemberData(nameof(PlainInterfaceObjectData))]
+    [MemberData(nameof(PlainObjectWithIndexerData))]
+    [MemberData(nameof(PlainObjectWithSpecialMemberNameData))]
     public void EncodeDecodeTest<T, A>(Type wanted, T source, A anonymous)
     {
         var method = new Action<object, object>(EncodeDecodeTestInternal).Method;
