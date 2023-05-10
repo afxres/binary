@@ -1,8 +1,12 @@
 ﻿namespace Mikodev.Binary.SourceGeneration.ObjectCrossTests.InheritanceTests;
 
+using Microsoft.CodeAnalysis;
 using Mikodev.Binary.Attributes;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Xunit;
 
@@ -251,5 +255,43 @@ public class IntegrationTests
         var target = method.GetGenericMethodDefinition().MakeGenericMethod(new Type[] { wanted, typeof(A) });
         var result = target.Invoke(null, new object?[] { source, anonymous });
         Assert.Null(result);
+    }
+
+    [Theory(DisplayName = "Get All Fields And Properties Test")]
+    [MemberData(nameof(PlainObjectData))]
+    [MemberData(nameof(PlainInterfaceObjectData))]
+    [MemberData(nameof(PlainObjectWithIndexerData))]
+    [MemberData(nameof(PlainObjectWithSpecialMemberNameData))]
+    public void GetAllFieldsAndPropertiesTest<T, A>(Type wanted, T source, A anonymous)
+    {
+        Assert.NotNull(wanted);
+        Assert.NotNull(source);
+        Assert.NotNull(anonymous);
+        var reflectionModule = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "CommonModule");
+        var reflectionMethod = reflectionModule.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name is "GetAllFieldsAndProperties");
+        var reflectionFunction = (Func<Type, BindingFlags, ImmutableArray<MemberInfo>>)Delegate.CreateDelegate(typeof(Func<Type, BindingFlags, ImmutableArray<MemberInfo>>), reflectionMethod);
+
+        var fullName = wanted.FullName;
+        Assert.NotNull(fullName);
+        var compilation = CompilationModule.CreateCompilationFromThisAssembly();
+        var symbol = compilation.GetTypeByMetadataName(fullName);
+        Assert.NotNull(symbol);
+
+        var anonymousMembers = typeof(A).GetMembers();
+        var anonymousFieldsAndProperties = anonymousMembers.Where(x => x is FieldInfo or PropertyInfo).ToList();
+        var anonymousFieldsAndPropertiesNames = anonymousFieldsAndProperties.Select(x => x.Name).ToHashSet();
+        Assert.NotEmpty(anonymousFieldsAndPropertiesNames);
+
+        var symbolFieldsAndProperties = Symbols.GetAllFieldsAndProperties(symbol);
+        var wantedFieldsAndProperties = reflectionFunction.Invoke(wanted, BindingFlags.Instance | BindingFlags.Public);
+        Assert.NotEmpty(symbolFieldsAndProperties);
+        Assert.NotEmpty(wantedFieldsAndProperties);
+        Assert.Equal(symbolFieldsAndProperties.Length, wantedFieldsAndProperties.Length);
+        Assert.All(wantedFieldsAndProperties, x => Assert.Equal(x.DeclaringType, x.ReflectedType));
+
+        var symbolMatches = symbolFieldsAndProperties.Where(x => x is not IPropertySymbol property || property.IsIndexer is false);
+        var wantedMatches = wantedFieldsAndProperties.Where(x => x is not PropertyInfo property || property.GetIndexParameters().Length is 0);
+        Assert.Equal(anonymousFieldsAndPropertiesNames, symbolMatches.Select(x => x.Name).ToHashSet());
+        Assert.Equal(anonymousFieldsAndPropertiesNames, wantedMatches.Select(x => x.Name).ToHashSet());
     }
 }
