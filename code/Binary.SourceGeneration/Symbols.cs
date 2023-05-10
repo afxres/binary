@@ -103,6 +103,19 @@ public static partial class Symbols
         return attribute.ConstructorArguments.Single().Value as ITypeSymbol;
     }
 
+    public static Location GetLocation(ISymbol symbol)
+    {
+        return symbol.Locations.FirstOrDefault() ?? Location.None;
+    }
+
+    public static Location GetLocation(AttributeData? attribute)
+    {
+        var reference = attribute?.ApplicationSyntaxReference;
+        if (reference is not null)
+            return Location.Create(reference.SyntaxTree, reference.Span);
+        return Location.None;
+    }
+
     public static bool HasPublicSetter(IPropertySymbol property)
     {
         var setter = property.SetMethod;

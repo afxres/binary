@@ -2,7 +2,6 @@
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Linq;
 using System.Text;
 
 public static partial class Symbols
@@ -18,17 +17,9 @@ public static partial class Symbols
         return SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(input)).ToFullString();
     }
 
-    public static Location GetLocation(ISymbol symbol)
+    public static string GetSymbolDiagnosticDisplay(ITypeSymbol symbol)
     {
-        return symbol.Locations.FirstOrDefault() ?? Location.None;
-    }
-
-    public static Location GetLocation(AttributeData? attribute)
-    {
-        var reference = attribute?.ApplicationSyntaxReference;
-        if (reference is not null)
-            return Location.Create(reference.SyntaxTree, reference.Span);
-        return Location.None;
+        return symbol.ToDisplayString(SymbolDiagnosticDisplayFormat);
     }
 
     public static string GetNameInSourceCode(string name)
@@ -36,9 +27,30 @@ public static partial class Symbols
         return IsKeyword(name) ? $"@{name}" : name;
     }
 
-    public static string GetSymbolDiagnosticDisplay(ITypeSymbol symbol)
+    public static void GetNameInSourceCode(StringBuilder builder, string name)
     {
-        return symbol.ToDisplayString(SymbolDiagnosticDisplayFormat);
+        if (IsKeyword(name))
+            _ = builder.Append('@');
+        _ = builder.Append(name);
+    }
+
+    public static string GetNamespaceInSourceCode(INamespaceSymbol @namespace)
+    {
+        var builder = new StringBuilder();
+        GetNamespaceInSourceCode(builder, @namespace);
+        return builder.ToString();
+    }
+
+    public static void GetNamespaceInSourceCode(StringBuilder builder, INamespaceSymbol @namespace)
+    {
+        var source = @namespace.ToDisplayParts();
+        foreach (var i in source)
+        {
+            if (i.Symbol is { } symbol)
+                GetNameInSourceCode(builder, symbol.Name);
+            else
+                _ = builder.Append('.');
+        }
     }
 
     public static string GetSymbolFullName(ITypeSymbol symbol)
@@ -51,6 +63,13 @@ public static partial class Symbols
                 InvokeNamedTypeSymbol(target, (INamedTypeSymbol)symbol);
         }
 
+        static void InvokeNamespaceSymbol(StringBuilder target, INamespaceSymbol @namespace)
+        {
+            const string Global = "global::";
+            _ = target.Append(Global);
+            GetNamespaceInSourceCode(target, @namespace);
+        }
+
         static void InvokeArrayTypeSymbol(StringBuilder target, IArrayTypeSymbol symbol)
         {
             Invoke(target, symbol.ElementType);
@@ -61,19 +80,16 @@ public static partial class Symbols
 
         static void InvokeNamedTypeSymbol(StringBuilder target, INamedTypeSymbol symbol)
         {
-            const string Global = "global::";
             var containing = symbol.ContainingType;
             var @namespace = symbol.ContainingNamespace;
             if (containing is not null)
                 Invoke(target, containing);
-            else if (@namespace.IsGlobalNamespace)
-                _ = target.Append(Global);
             else
-                _ = target.Append(Global + @namespace.ToDisplayString());
+                InvokeNamespaceSymbol(target, @namespace);
 
             if (containing is not null || @namespace.IsGlobalNamespace is false)
                 _ = target.Append('.');
-            _ = target.Append(GetNameInSourceCode(symbol.Name));
+            GetNameInSourceCode(target, symbol.Name);
             var arguments = symbol.TypeArguments;
             if (arguments.Length is 0)
                 return;
@@ -104,6 +120,23 @@ public static partial class Symbols
                 InvokeNamedTypeSymbol(target, (INamedTypeSymbol)symbol);
         }
 
+        static void InvokeNamespaceSymbol(StringBuilder target, INamespaceSymbol @namespace)
+        {
+            if (@namespace.IsGlobalNamespace is false)
+            {
+                var source = @namespace.ToDisplayParts();
+                foreach (var i in source)
+                {
+                    if (i.Symbol is { } symbol)
+                        _ = target.Append(symbol.Name);
+                    else
+                        _ = target.Append('_');
+                }
+                return;
+            }
+            _ = target.Append("g_");
+        }
+
         static void InvokeArrayTypeSymbol(StringBuilder target, IArrayTypeSymbol symbol)
         {
             _ = target.Append("Array");
@@ -120,10 +153,8 @@ public static partial class Symbols
             var @namespace = symbol.ContainingNamespace;
             if (containing is not null)
                 Invoke(target, containing);
-            else if (@namespace.IsGlobalNamespace)
-                _ = target.Append("g_");
             else
-                _ = target.Append(@namespace.ToDisplayString().Replace('.', '_').Replace("@", string.Empty));
+                InvokeNamespaceSymbol(target, @namespace);
 
             if (containing is not null || @namespace.IsGlobalNamespace is false)
                 _ = target.Append('_');

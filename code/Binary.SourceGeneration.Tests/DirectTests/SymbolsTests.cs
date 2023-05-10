@@ -134,8 +134,8 @@ public class SymbolsTests
                 public @public.@class Bravo;
             }
             """;
-        yield return new object[] { a, "Alpha", "global::@class.yield.@namespace.async.await.@public", "class_yield_namespace_async_await_public" };
-        yield return new object[] { a, "Bravo", "global::@class.yield.@namespace.async.await.@public.@class", "class_yield_namespace_async_await_public_class" };
+        yield return new object[] { a, "Alpha", "global::@class.@yield.@namespace.@async.@await.@public", "class_yield_namespace_async_await_public" };
+        yield return new object[] { a, "Bravo", "global::@class.@yield.@namespace.@async.@await.@public.@class", "class_yield_namespace_async_await_public_class" };
     }
 
     [Theory(DisplayName = "Get Full Name Test")]

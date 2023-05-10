@@ -13,6 +13,8 @@ using System.Text;
 [Generator]
 public sealed class SourceGenerator : IIncrementalGenerator
 {
+    private delegate object? TypeHandler(SourceGeneratorContext context, ITypeSymbol symbol);
+
     private sealed class Entry
     {
         public Compilation Compilation { get; }
@@ -21,21 +23,19 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
         public string NameInSourceCode { get; }
 
-        public string Namespace { get; }
+        public string NamespaceInSourceCode { get; }
 
         public ImmutableDictionary<ITypeSymbol, AttributeData> Inclusions { get; }
 
-        public Entry(Compilation compilation, SourceProductionContext production, string type, string @namespace, ImmutableDictionary<ITypeSymbol, AttributeData> inclusions)
+        public Entry(Compilation compilation, SourceProductionContext production, INamedTypeSymbol symbol, ImmutableDictionary<ITypeSymbol, AttributeData> inclusions)
         {
             Compilation = compilation;
             SourceProductionContext = production;
-            NameInSourceCode = Symbols.GetNameInSourceCode(type);
-            Namespace = @namespace;
+            NameInSourceCode = Symbols.GetNameInSourceCode(symbol.Name);
+            NamespaceInSourceCode = Symbols.GetNamespaceInSourceCode(symbol.ContainingNamespace);
             Inclusions = inclusions;
         }
     }
-
-    private delegate object? TypeHandler(SourceGeneratorContext context, ITypeSymbol symbol);
 
     private static readonly ImmutableArray<TypeHandler> TypeHandlers = ImmutableArray.CreateRange(new TypeHandler[]
     {
@@ -73,20 +73,21 @@ public sealed class SourceGenerator : IIncrementalGenerator
             return null;
         }
 
+        static void Insert(Compilation compilation, SourceProductionContext production, SortedDictionary<string, SortedDictionary<string, Entry>> dictionary, INamedTypeSymbol? include, INamedTypeSymbol symbol)
+        {
+            var key = symbol.Name;
+            var inclusions = GetInclusions(production, symbol, include);
+            var entry = new Entry(compilation, production, symbol, inclusions);
+            if (dictionary.TryGetValue(key, out var child) is false)
+                dictionary.Add(key, child = new SortedDictionary<string, Entry>(StringComparer.InvariantCulture));
+            child.Add(entry.NamespaceInSourceCode, entry);
+        }
+
         if (declarations.IsDefaultOrEmpty)
             return;
         var cancellation = production.CancellationToken;
         var include = compilation.GetTypeByMetadataName(Constants.SourceGeneratorIncludeAttributeTypeName)?.ConstructUnboundGenericType();
-
-        var dictionary = new SortedDictionary<string, SortedDictionary<string, INamedTypeSymbol>>(StringComparer.InvariantCulture);
-        void Insert(INamedTypeSymbol symbol)
-        {
-            var name = symbol.Name;
-            var @namespace = symbol.ContainingNamespace.ToDisplayString();
-            if (dictionary.TryGetValue(name, out var child) is false)
-                dictionary.Add(name, child = new SortedDictionary<string, INamedTypeSymbol>(StringComparer.InvariantCulture));
-            child.Add(@namespace, symbol);
-        }
+        var dictionary = new SortedDictionary<string, SortedDictionary<string, Entry>>(StringComparer.InvariantCulture);
 
         foreach (var declaration in declarations)
         {
@@ -97,7 +98,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
             if (Ensure(declaration, type) is { } descriptor)
                 production.ReportDiagnostic(Diagnostic.Create(descriptor, Symbols.GetLocation(type), new object[] { Symbols.GetSymbolDiagnosticDisplay(type) }));
             else
-                Insert(type);
+                Insert(compilation, production, dictionary, include, type);
             cancellation.ThrowIfCancellationRequested();
         }
 
@@ -108,9 +109,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
             cancellation.ThrowIfCancellationRequested();
             foreach (var pair in i.Value)
             {
-                var @namespace = pair.Key;
-                var inclusions = GetInclusions(production, pair.Value, include);
-                var entry = new Entry(compilation, production, name, @namespace, inclusions);
+                var entry = pair.Value;
                 cancellation.ThrowIfCancellationRequested();
                 var code = Invoke(entry);
                 var file = $"{name}.{index}.g.cs";
@@ -191,7 +190,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         var production = entry.SourceProductionContext;
         var cancellation = production.CancellationToken;
 
-        builder.AppendIndent(0, $"namespace {entry.Namespace};");
+        builder.AppendIndent(0, $"namespace {entry.NamespaceInSourceCode};");
         builder.AppendIndent();
         builder.AppendIndent(0, $"partial class {entry.NameInSourceCode}");
         builder.AppendIndent(0, $"{{");
