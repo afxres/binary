@@ -32,6 +32,19 @@ public static partial class Symbols
 
     public static SymbolConstructorInfo<T>? GetConstructor<T>(SourceGeneratorContext context, SymbolTypeInfo typeInfo, ImmutableArray<T> members) where T : SymbolMemberInfo
     {
+        static Dictionary<string, int>? CreateIgnoreCaseDictionary(ImmutableArray<T> members)
+        {
+            var dictionary = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+            for (var i = 0; i < members.Length; i++)
+            {
+                var symbol = members[i].Symbol;
+                if (dictionary.ContainsKey(symbol.Name))
+                    return null;
+                dictionary.Add(symbol.Name, i);
+            }
+            return dictionary;
+        }
+
         static bool ValidateConstructorWithMembers(SourceGeneratorContext context, IMethodSymbol? constructor, ImmutableHashSet<ISymbol> required, ImmutableArray<T> members)
         {
             const string SetsRequiredMembersAttribute = "System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute";
@@ -52,7 +65,6 @@ public static partial class Symbols
             return null;
         if (type is not INamedTypeSymbol symbol)
             return null;
-        var comparer = StringComparer.InvariantCultureIgnoreCase;
         var constructors = symbol.InstanceConstructors
             .Where(x => x.DeclaredAccessibility is Accessibility.Public)
             .OrderByDescending(x => x.Parameters.Length)
@@ -62,20 +74,20 @@ public static partial class Symbols
         var hasDefaultConstructor = symbol.IsValueType || defaultConstructor is not null;
         if (hasDefaultConstructor && ValidateConstructorWithMembers(context, defaultConstructor, typeInfo.RequiredFieldsAndProperties, members))
             return new SymbolConstructorInfo<T>(members, ImmutableArray.Create<int>(), Enumerable.Range(0, members.Length).ToImmutableArray());
-        if (members.Select(x => x.Name).Distinct(comparer).Count() != members.Length)
+        if (CreateIgnoreCaseDictionary(members) is not { } dictionary)
             return null;
 
         // select constructor with most parameters
-        var dictionary = members.Select((x, i) => (Key: x.Name, Index: i)).ToDictionary(x => x.Key, v => v.Index, comparer);
         foreach (var i in constructors)
         {
+            const int NotFound = -1;
             cancellation.ThrowIfCancellationRequested();
             var parameters = i.Parameters;
             if (parameters.Length is 0)
                 continue;
             var objectIndexes = parameters
-                .Select(x => dictionary.TryGetValue(x.Name, out var index) && SymbolEqualityComparer.Default.Equals(members[index].Type, x.Type) ? index : -1)
-                .Where(x => x is not -1)
+                .Select(x => dictionary.TryGetValue(x.Name, out var index) && SymbolEqualityComparer.Default.Equals(members[index].Type, x.Type) ? index : NotFound)
+                .Where(x => x is not NotFound)
                 .ToImmutableArray();
             if (objectIndexes.Length != parameters.Length)
                 continue;

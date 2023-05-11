@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Mikodev.Binary.SourceGeneration.Contexts;
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -21,6 +20,8 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
         public SourceProductionContext SourceProductionContext { get; }
 
+        public INamedTypeSymbol Symbol { get; }
+
         public string NameInSourceCode { get; }
 
         public string NamespaceInSourceCode { get; }
@@ -31,6 +32,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         {
             Compilation = compilation;
             SourceProductionContext = production;
+            Symbol = symbol;
             NameInSourceCode = Symbols.GetNameInSourceCode(symbol.Name);
             NamespaceInSourceCode = Symbols.GetNamespaceInSourceCode(symbol.ContainingNamespace);
             Inclusions = inclusions;
@@ -55,10 +57,10 @@ public sealed class SourceGenerator : IIncrementalGenerator
             (node, _) => node is TypeDeclarationSyntax,
             (syntax, _) => (TypeDeclarationSyntax)syntax.TargetNode);
         var provider = context.CompilationProvider.Combine(declarations.Collect());
-        context.RegisterSourceOutput(provider, (production, source) => Invoke(source.Left, source.Right, production));
+        context.RegisterSourceOutput(provider, (production, source) => Invoke(source.Left, production, source.Right));
     }
 
-    private static void Invoke(Compilation compilation, ImmutableArray<TypeDeclarationSyntax> declarations, SourceProductionContext production)
+    private static void Invoke(Compilation compilation, SourceProductionContext production, ImmutableArray<TypeDeclarationSyntax> declarations)
     {
         static DiagnosticDescriptor? Ensure(TypeDeclarationSyntax declaration, INamedTypeSymbol type)
         {
@@ -73,21 +75,20 @@ public sealed class SourceGenerator : IIncrementalGenerator
             return null;
         }
 
-        static void Insert(Compilation compilation, SourceProductionContext production, SortedDictionary<string, SortedDictionary<string, Entry>> dictionary, INamedTypeSymbol? include, INamedTypeSymbol symbol)
+        static void Insert(SortedDictionary<string, SortedDictionary<string, Entry>> dictionary, Entry entry)
         {
-            var key = symbol.Name;
-            var inclusions = GetInclusions(production, symbol, include);
-            var entry = new Entry(compilation, production, symbol, inclusions);
-            if (dictionary.TryGetValue(key, out var child) is false)
-                dictionary.Add(key, child = new SortedDictionary<string, Entry>(StringComparer.InvariantCulture));
-            child.Add(entry.NamespaceInSourceCode, entry);
+            // order by type name, then by containing namespace
+            var symbol = entry.Symbol;
+            if (dictionary.TryGetValue(symbol.Name, out var child) is false)
+                dictionary.Add(symbol.Name, child = new SortedDictionary<string, Entry>());
+            child.Add(symbol.ContainingNamespace.ToDisplayString(), entry);
         }
 
         if (declarations.IsDefaultOrEmpty)
             return;
         var cancellation = production.CancellationToken;
         var include = compilation.GetTypeByMetadataName(Constants.SourceGeneratorIncludeAttributeTypeName)?.ConstructUnboundGenericType();
-        var dictionary = new SortedDictionary<string, SortedDictionary<string, Entry>>(StringComparer.InvariantCulture);
+        var dictionary = new SortedDictionary<string, SortedDictionary<string, Entry>>();
 
         foreach (var declaration in declarations)
         {
@@ -98,7 +99,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
             if (Ensure(declaration, type) is { } descriptor)
                 production.ReportDiagnostic(Diagnostic.Create(descriptor, Symbols.GetLocation(type), new object[] { Symbols.GetSymbolDiagnosticDisplay(type) }));
             else
-                Insert(compilation, production, dictionary, include, type);
+                Insert(dictionary, new Entry(compilation, production, type, GetInclusions(production, type, include)));
             cancellation.ThrowIfCancellationRequested();
         }
 
@@ -151,7 +152,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         var production = entry.SourceProductionContext;
         var cancellation = production.CancellationToken;
         var pending = new Queue<ITypeSymbol>(inclusions.Keys);
-        var handled = new SortedDictionary<string, SymbolConverterContent?>(StringComparer.InvariantCulture);
+        var handled = new SortedDictionary<string, SymbolConverterContent?>();
         var context = new SourceGeneratorContext(entry.Compilation, pending, cancellation);
 
         SymbolConverterContent? Handle(ITypeSymbol symbol)
@@ -201,7 +202,6 @@ public sealed class SourceGenerator : IIncrementalGenerator
             var content = i.Value;
             if (content is null)
                 continue;
-            cancellation.ThrowIfCancellationRequested();
             builder.AppendIndent(2, $"{{ typeof({i.Key}), new {content.ConverterCreatorTypeName}() }},");
             cancellation.ThrowIfCancellationRequested();
         }

@@ -8,15 +8,12 @@ public class SymbolMemberInfo
 
     public ITypeSymbol Type { get; }
 
-    public string Name { get; }
-
     public string NameInSourceCode { get; }
 
     public bool IsReadOnly { get; }
 
     public SymbolMemberInfo(ISymbol symbol, ITypeSymbol typeSymbol, bool @readonly)
     {
-        Name = symbol.Name;
         Type = typeSymbol;
         Symbol = symbol;
         IsReadOnly = @readonly;

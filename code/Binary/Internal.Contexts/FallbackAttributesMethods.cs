@@ -198,6 +198,19 @@ internal static class FallbackAttributesMethods
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static ContextObjectConstructor? GetConstructor(Type type, ImmutableArray<MetaMemberInfo> members, ImmutableArray<ContextMemberInitializer> initializers)
     {
+        static Dictionary<string, int>? CreateIgnoreCaseDictionary(ImmutableArray<MetaMemberInfo> members)
+        {
+            var dictionary = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+            for (var i = 0; i < members.Length; i++)
+            {
+                var member = members[i];
+                if (dictionary.ContainsKey(member.Name))
+                    return null;
+                dictionary.Add(member.Name, i);
+            }
+            return dictionary;
+        }
+
         static bool ValidateMembers(ImmutableArray<MetaMemberInfo> members)
         {
             return members.Any(x => x.IsReadOnly) is false;
@@ -206,7 +219,6 @@ internal static class FallbackAttributesMethods
         Debug.Assert(members.Length is not 0);
         if (type.IsAbstract || type.IsInterface)
             return null;
-        var comparer = StringComparer.InvariantCultureIgnoreCase;
         var constructors = type.GetConstructors()
             .Select(x => (Constructor: x, Parameters: x.GetParameters()))
             .OrderByDescending(x => x.Parameters.Length)
@@ -215,18 +227,18 @@ internal static class FallbackAttributesMethods
         var hasDefaultConstructor = type.IsValueType || defaultConstructor is not null;
         if (hasDefaultConstructor && ValidateMembers(members))
             return (delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, initializers);
-        if (members.DistinctBy(x => x.Name, comparer).Count() != members.Length)
+        if (CreateIgnoreCaseDictionary(members) is not { } dictionary)
             return null;
 
         // select constructor with most parameters
-        var dictionary = members.Select((x, i) => (Key: x.Name, Index: i)).ToDictionary(x => x.Key, v => v.Index, comparer);
         foreach (var (constructor, parameters) in constructors)
         {
+            const int NotFound = -1;
             if (parameters.Length is 0)
                 continue;
             var objectIndexes = parameters
-                .Select(x => dictionary.TryGetValue(x.Name ?? string.Empty, out var index) && members[index].Type == x.ParameterType ? index : -1)
-                .Where(x => x is not -1)
+                .Select(x => dictionary.TryGetValue(x.Name ?? string.Empty, out var index) && members[index].Type == x.ParameterType ? index : NotFound)
+                .Where(x => x is not NotFound)
                 .ToImmutableArray();
             if (objectIndexes.Length != parameters.Length)
                 continue;
