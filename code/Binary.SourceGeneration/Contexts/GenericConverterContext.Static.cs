@@ -55,6 +55,8 @@ public sealed partial class GenericConverterContext
 
     private static TypeInfo? GetInfo(SourceGeneratorContext context, ITypeSymbol type)
     {
+        if (type.TypeKind is TypeKind.Enum)
+            return new TypeInfo("Enum", SelfType.Include, ImmutableArray.Create<ITypeSymbol>());
         if (type is IArrayTypeSymbol array)
             return new TypeInfo(array.IsSZArray ? "Array" : "VariableBoundArray", array.IsSZArray ? SelfType.Exclude : SelfType.Include, ImmutableArray.Create(array.ElementType));
         if (type is not INamedTypeSymbol symbol || symbol.IsGenericType is false)
