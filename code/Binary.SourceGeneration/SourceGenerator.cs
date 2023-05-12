@@ -20,8 +20,6 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
         public SourceProductionContext SourceProductionContext { get; }
 
-        public INamedTypeSymbol Symbol { get; }
-
         public string NameInSourceCode { get; }
 
         public string NamespaceInSourceCode { get; }
@@ -32,7 +30,6 @@ public sealed class SourceGenerator : IIncrementalGenerator
         {
             Compilation = compilation;
             SourceProductionContext = production;
-            Symbol = symbol;
             NameInSourceCode = Symbols.GetNameInSourceCode(symbol.Name);
             NamespaceInSourceCode = Symbols.GetNamespaceInSourceCode(symbol.ContainingNamespace);
             Inclusions = inclusions;
