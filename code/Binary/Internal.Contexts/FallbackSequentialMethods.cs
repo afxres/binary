@@ -75,19 +75,19 @@ internal static class FallbackSequentialMethods
 
     private static SpanLikeDecoder<T> GetDecoder<T, E, B>(Converter<E> converter) where B : struct, ISpanLikeBuilder<T, E>
     {
-        var source = SpanLikeContext.GetDecoderOrDefault<E[], E>(converter);
-        if (source is SpanLikeDecoder<T> actual)
+        var decoder = (converter as ISpanLikeContextProvider<E>)?.GetDecoder();
+        if (decoder is SpanLikeDecoder<T> actual)
             return actual;
-        return source is null
+        return decoder is null
             ? new ArrayDecoder<T, E, B>(converter)
-            : new ArrayForwardDecoder<T, E, B>(source);
+            : new ArrayForwardDecoder<T, E, B>(decoder);
     }
 
     private static SpanLikeEncoder<T> GetEncoder<T, E, A>(Converter<E> converter) where A : struct, ISpanLikeAdapter<T, E>
     {
-        var source = SpanLikeContext.GetEncoderOrDefault(converter);
-        if (source is not null)
-            return new ConstantForwardEncoder<T, E, A>(source, converter.Length);
+        var encoder = (converter as ISpanLikeContextProvider<E>)?.GetEncoder();
+        if (encoder is not null)
+            return new ConstantForwardEncoder<T, E, A>(encoder, converter.Length);
         return converter.Length is 0
             ? new VariableEncoder<T, E, A>(converter)
             : new ConstantEncoder<T, E, A>(converter);
@@ -123,7 +123,7 @@ internal static class FallbackSequentialMethods
 
     internal static SpanLikeConverter<List<E>> GetListConverter<E>(Converter<E> converter)
     {
-        var decoder = SpanLikeContext.GetDecoderOrDefault<List<E>, E>(converter) ?? new ListDecoder<E>(converter);
+        var decoder = converter is ISpanLikeContextProvider<E> provider ? provider.GetListDecoder() : new ListDecoder<E>(converter);
         var encoder = GetEncoder<List<E>, E, ListAdapter<E>>(converter);
         return new SpanLikeConverter<List<E>>(encoder, decoder);
     }

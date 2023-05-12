@@ -6,7 +6,7 @@ using Mikodev.Binary.Internal.Contexts;
 using Mikodev.Binary.Internal.Sequence;
 using Mikodev.Binary.Internal.Sequence.Decoders;
 using Mikodev.Binary.Internal.Sequence.Encoders;
-using Mikodev.Binary.Internal.SpanLike;
+using Mikodev.Binary.Internal.SpanLike.Contexts;
 using Mikodev.Binary.Internal.SpanLike.Decoders;
 using System;
 using System.Buffers;
@@ -134,7 +134,7 @@ public static partial class Generator
         ArgumentNullException.ThrowIfNull(converter);
         ArgumentNullException.ThrowIfNull(constructor);
         var encoder = new EnumerableEncoder<T, E>(converter);
-        var decoder = SpanLikeContext.GetDecoderOrDefault<List<E>, E>(converter) ?? new ListDecoder<E>(converter);
+        var decoder = converter is ISpanLikeContextProvider<E> provider ? provider.GetListDecoder() : new ListDecoder<E>(converter);
         return new SequenceConverter<T>(encoder.Encode, span => constructor.Invoke(decoder.Invoke(span)));
     }
 

@@ -4,7 +4,7 @@ using Mikodev.Binary.Internal.Metadata;
 using Mikodev.Binary.Internal.Sequence;
 using Mikodev.Binary.Internal.Sequence.Decoders;
 using Mikodev.Binary.Internal.Sequence.Encoders;
-using Mikodev.Binary.Internal.SpanLike;
+using Mikodev.Binary.Internal.SpanLike.Contexts;
 using Mikodev.Binary.Internal.SpanLike.Decoders;
 using System;
 using System.Collections.Concurrent;
@@ -138,8 +138,8 @@ internal static class FallbackCollectionMethods
     {
         DecodePassSpanDelegate<IEnumerable<E>> Invoke()
         {
-            if (SpanLikeContext.GetDecoderOrDefault<E[], E>(converter) is { } result)
-                return result.Invoke;
+            if (converter is ISpanLikeContextProvider<E> provider)
+                return provider.GetDecoder().Invoke;
             return new ListDecoder<E>(converter).Invoke;
         }
 

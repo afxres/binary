@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 
 internal sealed class NativeEndianConverter<T> : ConstantConverter<T, NativeEndianConverter<T>.Functions> where T : unmanaged
 {
-    internal readonly struct Functions : IConstantConverterFunctions<T>, ISpanLikeEncoderProvider<T>, ISpanLikeDecoderProvider<T[]>, ISpanLikeDecoderProvider<List<T>>
+    internal readonly struct Functions : IConstantConverterFunctions<T>, ISpanLikeContextProvider<T>
     {
         public static int Length => Unsafe.SizeOf<T>();
 
@@ -17,10 +17,10 @@ internal sealed class NativeEndianConverter<T> : ConstantConverter<T, NativeEndi
 
         public static void Encode(ref byte target, T item) => Unsafe.WriteUnaligned(ref target, item);
 
-        SpanLikeDecoder<T[]> ISpanLikeDecoderProvider<T[]>.GetDecoder() => new NativeEndianDecoder<T>();
+        SpanLikeForwardEncoder<T> ISpanLikeContextProvider<T>.GetEncoder() => new NativeEndianEncoder<T>();
 
-        SpanLikeDecoder<List<T>> ISpanLikeDecoderProvider<List<T>>.GetDecoder() => new NativeEndianListDecoder<T>();
+        SpanLikeDecoder<T[]> ISpanLikeContextProvider<T>.GetDecoder() => new NativeEndianDecoder<T>();
 
-        SpanLikeForwardEncoder<T> ISpanLikeEncoderProvider<T>.GetEncoder() => new NativeEndianEncoder<T>();
+        SpanLikeDecoder<List<T>> ISpanLikeContextProvider<T>.GetListDecoder() => new NativeEndianListDecoder<T>();
     }
 }
