@@ -1,13 +1,31 @@
 ﻿namespace Mikodev.Binary.SourceGeneration;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
 public static partial class Symbols
 {
-    public static bool Validate(SourceGeneratorContext context, ITypeSymbol symbol, SourceProductionContext production)
+    public static bool ValidateContextType(SourceProductionContext production, TypeDeclarationSyntax declaration, INamedTypeSymbol symbol)
+    {
+        if (ValidateContextType(declaration, symbol) is not { } descriptor)
+            return true;
+        production.ReportDiagnostic(Diagnostic.Create(descriptor, GetLocation(symbol), new object[] { GetSymbolDiagnosticDisplay(symbol) }));
+        return false;
+    }
+
+    public static bool ValidateIncludeType(SourceProductionContext production, IReadOnlyDictionary<ITypeSymbol, AttributeData> dictionary, AttributeData attribute, ITypeSymbol symbol)
+    {
+        if (ValidateIncludeType(dictionary, symbol) is not { } descriptor)
+            return true;
+        production.ReportDiagnostic(Diagnostic.Create(descriptor, GetLocation(attribute), new object[] { GetSymbolDiagnosticDisplay(symbol) }));
+        return false;
+    }
+
+    public static bool ValidateType(SourceProductionContext production, SourceGeneratorContext context, ITypeSymbol symbol)
     {
         var converterAttribute = context.GetAttribute(symbol, Constants.ConverterAttributeTypeName);
         var converterCreatorAttribute = context.GetAttribute(symbol, Constants.ConverterCreatorAttributeTypeName);
@@ -20,23 +38,45 @@ public static partial class Symbols
             .OfType<AttributeData>()
             .ToImmutableArray();
 
-        ValidateConverter(context, converterAttribute, diagnostics);
-        ValidateConverterCreator(context, converterCreatorAttribute, diagnostics);
+        ValidateConverterAttribute(context, converterAttribute, diagnostics);
+        ValidateConverterCreatorAttribute(context, converterCreatorAttribute, diagnostics);
         cancellation.ThrowIfCancellationRequested();
 
         if (attributes.Length > 1)
             diagnostics.Add(Diagnostic.Create(Constants.MultipleAttributesFoundOnType, GetLocation(symbol), new object[] { GetSymbolDiagnosticDisplay(symbol) }));
         else
-            ValidateMembers(context, symbol, attributes.SingleOrDefault(), diagnostics);
+            ValidateType(context, attributes.SingleOrDefault(), symbol, diagnostics);
 
         if (diagnostics.Count is 0)
             return true;
-        foreach (var i in diagnostics)
-            production.ReportDiagnostic(i);
+        foreach (var diagnostic in diagnostics)
+            production.ReportDiagnostic(diagnostic);
         return false;
     }
 
-    private static void ValidateMembers(SourceGeneratorContext context, ITypeSymbol symbol, AttributeData? typeAttribute, List<Diagnostic> diagnostics)
+    private static DiagnosticDescriptor? ValidateContextType(TypeDeclarationSyntax declaration, INamedTypeSymbol symbol)
+    {
+        if (declaration.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)) is false)
+            return Constants.ContextTypeNotPartial;
+        if (symbol.ContainingNamespace.IsGlobalNamespace)
+            return Constants.ContextTypeNotInNamespace;
+        if (symbol.ContainingType is not null)
+            return Constants.ContextTypeNested;
+        if (symbol.IsGenericType)
+            return Constants.ContextTypeGeneric;
+        return null;
+    }
+
+    private static DiagnosticDescriptor? ValidateIncludeType(IReadOnlyDictionary<ITypeSymbol, AttributeData> dictionary, ITypeSymbol symbol)
+    {
+        if (IsTypeSupported(symbol) is false)
+            return Constants.RequireSupportedTypeForIncludeAttribute;
+        else if (dictionary.ContainsKey(symbol))
+            return Constants.IncludeTypeDuplicated;
+        return null;
+    }
+
+    private static void ValidateType(SourceGeneratorContext context, AttributeData? typeAttribute, ITypeSymbol symbol, List<Diagnostic> diagnostics)
     {
         var tupleKeys = new SortedSet<int>();
         var namedKeys = new HashSet<string>();
@@ -48,7 +88,7 @@ public static partial class Symbols
         return;
     }
 
-    private static void ValidateConverter(SourceGeneratorContext context, AttributeData? attribute, List<Diagnostic> diagnostics)
+    private static void ValidateConverterAttribute(SourceGeneratorContext context, AttributeData? attribute, List<Diagnostic> diagnostics)
     {
         if (attribute is null)
             return;
@@ -58,7 +98,7 @@ public static partial class Symbols
         return;
     }
 
-    private static void ValidateConverterCreator(SourceGeneratorContext context, AttributeData? attribute, List<Diagnostic> diagnostics)
+    private static void ValidateConverterCreatorAttribute(SourceGeneratorContext context, AttributeData? attribute, List<Diagnostic> diagnostics)
     {
         if (attribute is null)
             return;
@@ -68,7 +108,7 @@ public static partial class Symbols
         return;
     }
 
-    private static void ValidateNamedKey(AttributeData? attribute, List<Diagnostic> diagnostics, HashSet<string> keys)
+    private static void ValidateNamedKeyAttribute(AttributeData? attribute, List<Diagnostic> diagnostics, HashSet<string> keys)
     {
         if (attribute is null)
             return;
@@ -80,7 +120,7 @@ public static partial class Symbols
         return;
     }
 
-    private static void ValidateTupleKey(AttributeData? attribute, List<Diagnostic> diagnostics, SortedSet<int> keys)
+    private static void ValidateTupleKeyAttribute(AttributeData? attribute, List<Diagnostic> diagnostics, SortedSet<int> keys)
     {
         if (attribute is null)
             return;
@@ -105,10 +145,10 @@ public static partial class Symbols
             tupleKeyAttribute is null)
             return;
 
-        ValidateConverter(context, converterAttribute, diagnostics);
-        ValidateConverterCreator(context, converterCreatorAttribute, diagnostics);
-        ValidateNamedKey(namedKeyAttribute, diagnostics, namedKeys);
-        ValidateTupleKey(tupleKeyAttribute, diagnostics, tupleKeys);
+        ValidateConverterAttribute(context, converterAttribute, diagnostics);
+        ValidateConverterCreatorAttribute(context, converterCreatorAttribute, diagnostics);
+        ValidateNamedKeyAttribute(namedKeyAttribute, diagnostics, namedKeys);
+        ValidateTupleKeyAttribute(tupleKeyAttribute, diagnostics, tupleKeys);
         cancellation.ThrowIfCancellationRequested();
 
         var memberName = member.Name;

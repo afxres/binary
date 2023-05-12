@@ -62,28 +62,6 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
     private static void Invoke(Compilation compilation, SourceProductionContext production, ImmutableArray<TypeDeclarationSyntax> declarations)
     {
-        static DiagnosticDescriptor? Ensure(TypeDeclarationSyntax declaration, INamedTypeSymbol type)
-        {
-            if (declaration.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)) is false)
-                return Constants.ContextTypeNotPartial;
-            if (type.ContainingNamespace.IsGlobalNamespace)
-                return Constants.ContextTypeNotInNamespace;
-            if (type.ContainingType is not null)
-                return Constants.ContextTypeNested;
-            if (type.IsGenericType)
-                return Constants.ContextTypeGeneric;
-            return null;
-        }
-
-        static void Insert(SortedDictionary<string, SortedDictionary<string, Entry>> dictionary, Entry entry)
-        {
-            // order by type name, then by containing namespace
-            var symbol = entry.Symbol;
-            if (dictionary.TryGetValue(symbol.Name, out var child) is false)
-                dictionary.Add(symbol.Name, child = new SortedDictionary<string, Entry>());
-            child.Add(symbol.ContainingNamespace.ToDisplayString(), entry);
-        }
-
         if (declarations.IsDefaultOrEmpty)
             return;
         var cancellation = production.CancellationToken;
@@ -92,25 +70,30 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
         foreach (var declaration in declarations)
         {
-            var model = compilation.GetSemanticModel(declaration.SyntaxTree);
-            var type = model.GetDeclaredSymbol(declaration);
-            if (type is null)
-                continue;
-            if (Ensure(declaration, type) is { } descriptor)
-                production.ReportDiagnostic(Diagnostic.Create(descriptor, Symbols.GetLocation(type), new object[] { Symbols.GetSymbolDiagnosticDisplay(type) }));
-            else
-                Insert(dictionary, new Entry(compilation, production, type, GetInclusions(production, type, include)));
             cancellation.ThrowIfCancellationRequested();
+            var semantic = compilation.GetSemanticModel(declaration.SyntaxTree);
+            var symbol = semantic.GetDeclaredSymbol(declaration);
+            if (symbol is null)
+                continue;
+            if (Symbols.ValidateContextType(production, declaration, symbol) is false)
+                continue;
+            var inclusions = GetInclusions(production, symbol, include);
+            var entry = new Entry(compilation, production, symbol, inclusions);
+            // order by type name, then by containing namespace
+            if (dictionary.TryGetValue(symbol.Name, out var child) is false)
+                dictionary.Add(symbol.Name, child = new SortedDictionary<string, Entry>());
+            child.Add(symbol.ContainingNamespace.ToDisplayString(), entry);
         }
 
         foreach (var i in dictionary)
         {
             var name = i.Key;
+            var child = i.Value;
             var index = 0;
             cancellation.ThrowIfCancellationRequested();
-            foreach (var pair in i.Value)
+            foreach (var k in child)
             {
-                var entry = pair.Value;
+                var entry = k.Value;
                 cancellation.ThrowIfCancellationRequested();
                 var code = Invoke(entry);
                 var file = $"{name}.{index}.g.cs";
@@ -125,23 +108,19 @@ public sealed class SourceGenerator : IIncrementalGenerator
         var builder = ImmutableDictionary.CreateBuilder<ITypeSymbol, AttributeData>(SymbolEqualityComparer.Default);
         var attributes = type.GetAttributes();
         var cancellation = production.CancellationToken;
-        foreach (var i in attributes)
+        foreach (var attribute in attributes)
         {
             cancellation.ThrowIfCancellationRequested();
-            var attribute = i.AttributeClass;
-            if (attribute is null || attribute.IsGenericType is false)
+            var attributeClass = attribute.AttributeClass;
+            if (attributeClass is null || attributeClass.IsGenericType is false)
                 continue;
-            var definitions = attribute.ConstructUnboundGenericType();
+            var definitions = attributeClass.ConstructUnboundGenericType();
             if (SymbolEqualityComparer.Default.Equals(definitions, include) is false)
                 continue;
-            var includedType = attribute.TypeArguments.Single();
-            if (Symbols.IsTypeSupported(includedType) is false)
-                production.ReportDiagnostic(Diagnostic.Create(Constants.RequireSupportedTypeForIncludeAttribute, Symbols.GetLocation(i), new object[] { Symbols.GetSymbolDiagnosticDisplay(includedType) }));
-            else if (builder.ContainsKey(includedType))
-                production.ReportDiagnostic(Diagnostic.Create(Constants.IncludeTypeDuplicated, Symbols.GetLocation(i), new object[] { Symbols.GetSymbolDiagnosticDisplay(includedType) }));
-            else
-                builder.Add(includedType, i);
-            cancellation.ThrowIfCancellationRequested();
+            var includedType = attributeClass.TypeArguments.Single();
+            if (Symbols.ValidateIncludeType(production, builder, attribute, includedType) is false)
+                continue;
+            builder.Add(includedType, attribute);
         }
         return builder.ToImmutable();
     }
@@ -155,34 +134,43 @@ public sealed class SourceGenerator : IIncrementalGenerator
         var handled = new SortedDictionary<string, SymbolConverterContent?>();
         var context = new SourceGeneratorContext(entry.Compilation, pending, cancellation);
 
-        SymbolConverterContent? Handle(ITypeSymbol symbol)
+        while (pending.Count is not 0)
         {
-            if (Symbols.Validate(context, symbol, production) is false)
-                return null;
-            var result = TypeHandlers.Select(h => h.Invoke(context, symbol)).FirstOrDefault(x => x is not null);
-            if (result is SymbolConverterContent target)
-                return target;
-            var diagnostic = ((Diagnostic?)result) ?? (inclusions.TryGetValue(symbol, out var attribute)
-                ? Diagnostic.Create(Constants.NoConverterGenerated, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplay(symbol) })
-                : null);
-            if (diagnostic is not null)
-                production.ReportDiagnostic(diagnostic);
+            var symbol = pending.Dequeue();
+            var key = context.GetTypeFullName(symbol);
+            cancellation.ThrowIfCancellationRequested();
+            if (handled.ContainsKey(key))
+                continue;
+            var result = Handle(entry, context, symbol);
+            handled.Add(key, result);
+        }
+        return Finish(entry, handled);
+    }
+
+    private static SymbolConverterContent? Handle(Entry entry, SourceGeneratorContext context, ITypeSymbol symbol)
+    {
+        var inclusions = entry.Inclusions;
+        var production = entry.SourceProductionContext;
+        var cancellation = production.CancellationToken;
+        if (Symbols.ValidateType(production, context, symbol) is false)
+            return null;
+
+        foreach (var handler in TypeHandlers)
+        {
+            cancellation.ThrowIfCancellationRequested();
+            var result = handler.Invoke(context, symbol);
+            if (result is SymbolConverterContent content)
+                return content;
+            if (result is null)
+                continue;
+            var diagnostic = (Diagnostic)result;
+            production.ReportDiagnostic(diagnostic);
             return null;
         }
 
-        while (pending.Count is not 0)
-        {
-            cancellation.ThrowIfCancellationRequested();
-            var symbol = pending.Dequeue();
-            var key = context.GetTypeFullName(symbol);
-            if (handled.ContainsKey(key))
-                continue;
-            var result = Handle(symbol);
-            handled.Add(key, result);
-            cancellation.ThrowIfCancellationRequested();
-        }
-
-        return Finish(entry, handled);
+        if (inclusions.TryGetValue(symbol, out var attribute))
+            production.ReportDiagnostic(Diagnostic.Create(Constants.NoConverterGenerated, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplay(symbol) }));
+        return null;
     }
 
     private static string Finish(Entry entry, SortedDictionary<string, SymbolConverterContent?> dictionary)
