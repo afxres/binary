@@ -51,12 +51,7 @@ Supported types:
 AOT support (via source generator) is now generally available.  
 For example, we have a data model like this:
 ```csharp
-class Person
-{
-    public int Id { get; set; }
-
-    public string Name { get; set; }
-}
+record Person(int Id, string Name);
 ```
 
 Then create a partial type with ``SourceGeneratorContextAttribute`` and include this data model:
@@ -77,7 +72,7 @@ var generator = Generator.CreateAotBuilder()
     .AddConverterCreators(SomeSourceGeneratorContext.ConverterCreators.Values)
     .Build();
 var converter = generator.GetConverter<Person>();
-var person = new Person { Id = 1, Name = "Someone" };
+var person = new Person(Id: 1, Name: "Someone");
 var buffer = converter.Encode(person);
 var result = converter.Decode(buffer);
 Console.WriteLine(result.Id);   // 1
