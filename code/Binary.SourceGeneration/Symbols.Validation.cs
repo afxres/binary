@@ -13,7 +13,7 @@ public static partial class Symbols
     {
         if (ValidateContextType(declaration, symbol) is not { } descriptor)
             return true;
-        production.ReportDiagnostic(Diagnostic.Create(descriptor, GetLocation(symbol), new object[] { GetSymbolDiagnosticDisplay(symbol) }));
+        production.ReportDiagnostic(Diagnostic.Create(descriptor, GetLocation(symbol), new object[] { GetSymbolDiagnosticDisplayString(symbol) }));
         return false;
     }
 
@@ -21,7 +21,7 @@ public static partial class Symbols
     {
         if (ValidateIncludeType(dictionary, symbol) is not { } descriptor)
             return true;
-        production.ReportDiagnostic(Diagnostic.Create(descriptor, GetLocation(attribute), new object[] { GetSymbolDiagnosticDisplay(symbol) }));
+        production.ReportDiagnostic(Diagnostic.Create(descriptor, GetLocation(attribute), new object[] { GetSymbolDiagnosticDisplayString(symbol) }));
         return false;
     }
 
@@ -43,9 +43,9 @@ public static partial class Symbols
         cancellation.ThrowIfCancellationRequested();
 
         if (attributes.Length > 1)
-            diagnostics.Add(Diagnostic.Create(Constants.MultipleAttributesFoundOnType, GetLocation(symbol), new object[] { GetSymbolDiagnosticDisplay(symbol) }));
+            diagnostics.Add(Diagnostic.Create(Constants.MultipleAttributesFoundOnType, GetLocation(symbol), new object[] { GetSymbolDiagnosticDisplayString(symbol) }));
         else
-            ValidateType(context, attributes.SingleOrDefault(), symbol, diagnostics);
+            ValidateType(context, symbol, attributes.SingleOrDefault()?.AttributeClass, diagnostics);
 
         if (diagnostics.Count is 0)
             return true;
@@ -76,15 +76,16 @@ public static partial class Symbols
         return null;
     }
 
-    private static void ValidateType(SourceGeneratorContext context, AttributeData? typeAttribute, ITypeSymbol symbol, List<Diagnostic> diagnostics)
+    private static void ValidateType(SourceGeneratorContext context, ITypeSymbol symbol, INamedTypeSymbol? typeAttribute, List<Diagnostic> diagnostics)
     {
         var tupleKeys = new SortedSet<int>();
         var namedKeys = new HashSet<string>();
         var typeInfo = context.GetTypeInfo(symbol);
-        foreach (var i in typeInfo.OriginalFieldsAndProperties)
-            ValidateMember(context, i, typeAttribute, diagnostics, namedKeys, tupleKeys);
+        var typeDisplay = GetSymbolDiagnosticDisplayString(symbol);
+        foreach (var member in typeInfo.OriginalFieldsAndProperties)
+            ValidateMember(context, typeDisplay, typeAttribute?.Name, member, typeInfo.RequiredFieldsAndProperties, diagnostics, namedKeys, tupleKeys);
         if (tupleKeys.Count is not 0 && (tupleKeys.Min is not 0 || tupleKeys.Max != tupleKeys.Count - 1))
-            diagnostics.Add(Diagnostic.Create(Constants.TupleKeyNotSequential, GetLocation(symbol), new object[] { GetSymbolDiagnosticDisplay(symbol) }));
+            diagnostics.Add(Diagnostic.Create(Constants.TupleKeyNotSequential, GetLocation(symbol), new object[] { GetSymbolDiagnosticDisplayString(symbol) }));
         return;
     }
 
@@ -130,13 +131,25 @@ public static partial class Symbols
         return;
     }
 
-    private static void ValidateMember(SourceGeneratorContext context, ISymbol member, AttributeData? typeAttribute, List<Diagnostic> diagnostics, HashSet<string> namedKeys, SortedSet<int> tupleKeys)
+    private static void ValidateMember(SourceGeneratorContext context, string containingTypeName, string? typeAttribute, ISymbol member, ImmutableHashSet<ISymbol> requiredMembers, List<Diagnostic> diagnostics, HashSet<string> namedKeys, SortedSet<int> tupleKeys)
     {
+        const string NamedObjectAttribute = "NamedObjectAttribute";
+        const string TupleObjectAttribute = "TupleObjectAttribute";
+
         var cancellation = context.CancellationToken;
         var converterAttribute = context.GetAttribute(member, Constants.ConverterAttributeTypeName);
         var converterCreatorAttribute = context.GetAttribute(member, Constants.ConverterCreatorAttributeTypeName);
         var namedKeyAttribute = context.GetAttribute(member, Constants.NamedKeyAttributeTypeName);
         var tupleKeyAttribute = context.GetAttribute(member, Constants.TupleKeyAttributeTypeName);
+        cancellation.ThrowIfCancellationRequested();
+
+        var memberName = member.Name;
+        var hasKey = namedKeyAttribute is not null || tupleKeyAttribute is not null;
+        var requiredMemberWithoutKey = hasKey is false && requiredMembers.Count is not 0 && IsRequired(member);
+        if (requiredMemberWithoutKey && typeAttribute is NamedObjectAttribute)
+            diagnostics.Add(Diagnostic.Create(Constants.RequireNamedKeyAttributeForRequiredMember, GetLocation(member), new object[] { memberName, containingTypeName }));
+        if (requiredMemberWithoutKey && typeAttribute is TupleObjectAttribute)
+            diagnostics.Add(Diagnostic.Create(Constants.RequireTupleKeyAttributeForRequiredMember, GetLocation(member), new object[] { memberName, containingTypeName }));
         cancellation.ThrowIfCancellationRequested();
 
         if (converterAttribute is null &&
@@ -151,8 +164,6 @@ public static partial class Symbols
         ValidateTupleKeyAttribute(tupleKeyAttribute, diagnostics, tupleKeys);
         cancellation.ThrowIfCancellationRequested();
 
-        var memberName = member.Name;
-        var containingTypeName = GetSymbolDiagnosticDisplay(member.ContainingType);
         var property = member as IPropertySymbol;
         if (member.IsStatic || member.DeclaredAccessibility is not Accessibility.Public)
             diagnostics.Add(Diagnostic.Create(Constants.RequirePublicInstanceMember, GetLocation(member), new object[] { memberName, containingTypeName }));
@@ -164,9 +175,9 @@ public static partial class Symbols
 
         if (converterAttribute is not null && converterCreatorAttribute is not null)
             diagnostics.Add(Diagnostic.Create(Constants.MultipleAttributesFoundOnMember, GetLocation(member), new object[] { memberName, containingTypeName }));
-        if (namedKeyAttribute is not null && context.Equals(typeAttribute?.AttributeClass, Constants.NamedObjectAttributeTypeName) is false)
+        if (namedKeyAttribute is not null && typeAttribute is not NamedObjectAttribute)
             diagnostics.Add(Diagnostic.Create(Constants.RequireNamedObjectAttribute, GetLocation(namedKeyAttribute), new object[] { memberName, containingTypeName }));
-        if (tupleKeyAttribute is not null && context.Equals(typeAttribute?.AttributeClass, Constants.TupleObjectAttributeTypeName) is false)
+        if (tupleKeyAttribute is not null && typeAttribute is not TupleObjectAttribute)
             diagnostics.Add(Diagnostic.Create(Constants.RequireTupleObjectAttribute, GetLocation(tupleKeyAttribute), new object[] { memberName, containingTypeName }));
         cancellation.ThrowIfCancellationRequested();
 
@@ -176,10 +187,9 @@ public static partial class Symbols
 
         var memberType = property?.Type ?? ((IFieldSymbol)member).Type;
         if (IsTypeSupported(memberType) is false)
-            diagnostics.Add(Diagnostic.Create(Constants.RequireSupportedTypeForMember, GetLocation(member), new object[] { GetSymbolDiagnosticDisplay(memberType), memberName, containingTypeName }));
+            diagnostics.Add(Diagnostic.Create(Constants.RequireSupportedTypeForMember, GetLocation(member), new object[] { GetSymbolDiagnosticDisplayString(memberType), memberName, containingTypeName }));
         cancellation.ThrowIfCancellationRequested();
 
-        var hasKey = namedKeyAttribute is not null || tupleKeyAttribute is not null;
         if (hasKey is false && converterAttribute is not null)
             diagnostics.Add(Diagnostic.Create(Constants.RequireKeyAttributeForConverterAttribute, GetLocation(converterAttribute), new object[] { memberName, containingTypeName }));
         if (hasKey is false && converterCreatorAttribute is not null)

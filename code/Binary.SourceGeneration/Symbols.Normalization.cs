@@ -17,7 +17,7 @@ public static partial class Symbols
         return SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(input)).ToFullString();
     }
 
-    public static string GetSymbolDiagnosticDisplay(ITypeSymbol symbol)
+    public static string GetSymbolDiagnosticDisplayString(ITypeSymbol symbol)
     {
         return symbol.ToDisplayString(SymbolDiagnosticDisplayFormat);
     }

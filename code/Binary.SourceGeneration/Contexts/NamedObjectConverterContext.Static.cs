@@ -51,10 +51,9 @@ public sealed partial class NamedObjectConverterContext
         }
 
         // do not report error for plain object
-        // let compiler report it if required member not set. (linq expression generator will report if required member not set)
         var members = dictionary.Values.ToImmutableArray();
         if (members.Length is 0)
-            return attribute is null ? null : (object)Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplay(symbol) });
+            return attribute is null ? null : (object)Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplayString(symbol) });
         var constructor = Symbols.GetConstructor(context, typeInfo, members);
         return new NamedObjectConverterContext(context, symbol, members, constructor).Invoke();
     }

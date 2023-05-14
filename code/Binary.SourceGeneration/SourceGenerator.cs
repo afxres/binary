@@ -165,7 +165,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         }
 
         if (inclusions.TryGetValue(symbol, out var attribute))
-            production.ReportDiagnostic(Diagnostic.Create(Constants.NoConverterGenerated, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplay(symbol) }));
+            production.ReportDiagnostic(Diagnostic.Create(Constants.NoConverterGenerated, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplayString(symbol) }));
         return null;
     }
 

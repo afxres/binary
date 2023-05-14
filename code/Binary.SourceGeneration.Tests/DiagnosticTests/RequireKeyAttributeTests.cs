@@ -90,4 +90,113 @@ public class RequireKeyAttributeTests
         Assert.EndsWith($"Require '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' for '{nameof(ConverterCreatorAttribute)}', member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
         Assert.Matches(@"ConverterCreator\(.*\)", diagnostic.Location.GetSourceText());
     }
+
+    public static IEnumerable<object[]> RequiredMemberData()
+    {
+        var a =
+            """
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<Alpha>]
+            partial class TestGeneratorContext { }
+
+            [NamedObject]
+            class Alpha
+            {
+                [NamedKey("first")]
+                public required int First { get; set; }
+
+                public required string Second { get; set; }
+            }
+            """;
+        var b =
+            """
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<Bravo>]
+            partial class TestGeneratorContext { }
+
+            [TupleObject]
+            class Bravo
+            {
+                public required int Head;
+
+                [TupleKey(0)]
+                public required string Tail;
+            }
+            """;
+        yield return new object[] { a, "Second", "Alpha", "Named" };
+        yield return new object[] { b, "Head", "Bravo", "Tuple" };
+    }
+
+    public static IEnumerable<object[]> RequiredMemberBaseTypeData()
+    {
+        var a =
+            """
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<Self>]
+            partial class TestGeneratorContext { }
+
+            class Base
+            {
+                public required int BaseMember;
+            }
+
+            [NamedObject]
+            class Self : Base
+            {
+                [NamedKey("member")]
+                public required int Member;
+            }
+            """;
+        var b =
+            """
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<Student>]
+            partial class TestGeneratorContext { }
+
+            class Person
+            {
+                public required string Name { get; set; }
+            }
+
+            [TupleObject]
+            class Student : Person
+            {
+                [TupleKey(0)]
+                public required int Id { get; set; }
+            }
+            """;
+        yield return new object[] { a, "BaseMember", "Self", "Named" };
+        yield return new object[] { b, "Name", "Student", "Tuple" };
+    }
+
+    [Theory(DisplayName = "Require Key Attribute For Required Member Test")]
+    [MemberData(nameof(RequiredMemberData))]
+    [MemberData(nameof(RequiredMemberBaseTypeData))]
+    public void RequireKeyAttributeForRequiredMemberTest(string source, string memberName, string typeName, string typeKind)
+    {
+        var compilation = CompilationModule.CreateCompilation(source);
+        var generator = new SourceGenerator();
+        _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
+        Assert.Equal($"Require {typeKind} Key Attribute For Required Member.", diagnostic.Descriptor.Title);
+        Assert.EndsWith($"Require '{typeKind}KeyAttribute' for required member, member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
+        Assert.Equal(memberName, diagnostic.Location.GetSourceText());
+    }
 }

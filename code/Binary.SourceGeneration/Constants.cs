@@ -254,5 +254,21 @@ public static class Constants
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    public static DiagnosticDescriptor RequireNamedKeyAttributeForRequiredMember { get; } = new DiagnosticDescriptor(
+        id: "BINSRCGEN59",
+        title: "Require Named Key Attribute For Required Member.",
+        messageFormat: "Require 'NamedKeyAttribute' for required member, member name: {0}, containing type: {1}",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor RequireTupleKeyAttributeForRequiredMember { get; } = new DiagnosticDescriptor(
+        id: "BINSRCGEN60",
+        title: "Require Tuple Key Attribute For Required Member.",
+        messageFormat: "Require 'TupleKeyAttribute' for required member, member name: {0}, containing type: {1}",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     // ↑ attributes
 }
