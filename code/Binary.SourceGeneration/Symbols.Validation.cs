@@ -27,12 +27,13 @@ public static partial class Symbols
 
     public static bool ValidateType(SourceProductionContext production, SourceGeneratorContext context, ITypeSymbol symbol)
     {
+        var cancellation = context.CancellationToken;
         var converterAttribute = context.GetAttribute(symbol, Constants.ConverterAttributeTypeName);
         var converterCreatorAttribute = context.GetAttribute(symbol, Constants.ConverterCreatorAttributeTypeName);
         var namedObjectAttribute = context.GetAttribute(symbol, Constants.NamedObjectAttributeTypeName);
         var tupleObjectAttribute = context.GetAttribute(symbol, Constants.TupleObjectAttributeTypeName);
 
-        var cancellation = context.CancellationToken;
+        var symbolDisplay = GetSymbolDiagnosticDisplayString(symbol);
         var diagnostics = new List<Diagnostic>();
         var attributes = new[] { converterAttribute, converterCreatorAttribute, namedObjectAttribute, tupleObjectAttribute }
             .OfType<AttributeData>()
@@ -43,9 +44,9 @@ public static partial class Symbols
         cancellation.ThrowIfCancellationRequested();
 
         if (attributes.Length > 1)
-            diagnostics.Add(Diagnostic.Create(Constants.MultipleAttributesFoundOnType, GetLocation(symbol), new object[] { GetSymbolDiagnosticDisplayString(symbol) }));
+            diagnostics.Add(Diagnostic.Create(Constants.MultipleAttributesFoundOnType, GetLocation(symbol), new object[] { symbolDisplay }));
         else
-            ValidateType(context, symbol, attributes.SingleOrDefault()?.AttributeClass, diagnostics);
+            ValidateType(context, symbol, symbolDisplay, attributes.SingleOrDefault()?.AttributeClass, diagnostics);
 
         if (diagnostics.Count is 0)
             return true;
@@ -76,16 +77,15 @@ public static partial class Symbols
         return null;
     }
 
-    private static void ValidateType(SourceGeneratorContext context, ITypeSymbol symbol, INamedTypeSymbol? typeAttribute, List<Diagnostic> diagnostics)
+    private static void ValidateType(SourceGeneratorContext context, ITypeSymbol symbol, string symbolDisplay, INamedTypeSymbol? typeAttribute, List<Diagnostic> diagnostics)
     {
         var tupleKeys = new SortedSet<int>();
         var namedKeys = new HashSet<string>();
         var typeInfo = context.GetTypeInfo(symbol);
-        var typeDisplay = GetSymbolDiagnosticDisplayString(symbol);
         foreach (var member in typeInfo.OriginalFieldsAndProperties)
-            ValidateMember(context, typeDisplay, typeAttribute?.Name, member, typeInfo.RequiredFieldsAndProperties, diagnostics, namedKeys, tupleKeys);
+            ValidateMember(context, symbolDisplay, typeAttribute?.Name, member, typeInfo.RequiredFieldsAndProperties, diagnostics, namedKeys, tupleKeys);
         if (tupleKeys.Count is not 0 && (tupleKeys.Min is not 0 || tupleKeys.Max != tupleKeys.Count - 1))
-            diagnostics.Add(Diagnostic.Create(Constants.TupleKeyNotSequential, GetLocation(symbol), new object[] { GetSymbolDiagnosticDisplayString(symbol) }));
+            diagnostics.Add(Diagnostic.Create(Constants.TupleKeyNotSequential, GetLocation(symbol), new object[] { symbolDisplay }));
         return;
     }
 

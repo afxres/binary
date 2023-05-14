@@ -52,8 +52,10 @@ public sealed partial class NamedObjectConverterContext
 
         // do not report error for plain object
         var members = dictionary.Values.ToImmutableArray();
-        if (members.Length is 0)
-            return attribute is null ? null : (object)Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplayString(symbol) });
+        if (members.Length is 0 && attribute is null)
+            return null;
+        if (members.Length is 0 && attribute is not null)
+            return Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplayString(symbol) });
         var constructor = Symbols.GetConstructor(context, typeInfo, members);
         return new NamedObjectConverterContext(context, symbol, members, constructor).Invoke();
     }
