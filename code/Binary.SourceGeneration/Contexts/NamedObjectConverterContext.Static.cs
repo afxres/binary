@@ -35,7 +35,7 @@ public sealed partial class NamedObjectConverterContext
     public static object? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
     {
         var attribute = context.GetAttribute(symbol, Constants.NamedObjectAttributeTypeName);
-        if (attribute is null && Symbols.IsTypeUnsupported(context, symbol))
+        if (attribute is null && Symbols.IsTypeIgnored(context, symbol))
             return null;
         var typeInfo = context.GetTypeInfo(symbol);
         var required = typeInfo.RequiredFieldsAndProperties.Count is not 0;

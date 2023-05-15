@@ -88,25 +88,25 @@ public static class Constants
 
     // ↑ include
 
-    // ↓ not supported
+    // ↓ not valid
 
-    public static DiagnosticDescriptor RequireSupportedTypeForIncludeAttribute { get; } = new DiagnosticDescriptor(
+    public static DiagnosticDescriptor RequireValidTypeForIncludeAttribute { get; } = new DiagnosticDescriptor(
         id: "BINSRCGEN21",
-        title: "Require Supported Type.",
-        messageFormat: "Require supported type (array, class, enum, interface or struct), type: {0}",
+        title: "Require Valid Type.",
+        messageFormat: "Require valid type (array, class, enum, interface or struct), type: {0}",
         category: DiagnosticCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    public static DiagnosticDescriptor RequireSupportedTypeForMember { get; } = new DiagnosticDescriptor(
+    public static DiagnosticDescriptor RequireValidTypeForMember { get; } = new DiagnosticDescriptor(
         id: "BINSRCGEN22",
-        title: "Require Supported Type.",
-        messageFormat: "Require supported type (array, class, enum, interface or struct), type: {0}, member name: {1}, containing type: {2}",
+        title: "Require Valid Type.",
+        messageFormat: "Require valid type (array, class, enum, interface or struct), type: {0}, member name: {1}, containing type: {2}",
         category: DiagnosticCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    // ↑ not supported
+    // ↑ not valid
 
     // ↓ member
 

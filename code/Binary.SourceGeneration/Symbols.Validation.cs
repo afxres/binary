@@ -70,8 +70,8 @@ public static partial class Symbols
 
     private static DiagnosticDescriptor? ValidateIncludeType(IReadOnlyDictionary<ITypeSymbol, AttributeData> dictionary, ITypeSymbol symbol)
     {
-        if (IsTypeSupported(symbol) is false)
-            return Constants.RequireSupportedTypeForIncludeAttribute;
+        if (IsTypeInvalid(symbol))
+            return Constants.RequireValidTypeForIncludeAttribute;
         else if (dictionary.ContainsKey(symbol))
             return Constants.IncludeTypeDuplicated;
         return null;
@@ -186,8 +186,8 @@ public static partial class Symbols
         cancellation.ThrowIfCancellationRequested();
 
         var memberType = property?.Type ?? ((IFieldSymbol)member).Type;
-        if (IsTypeSupported(memberType) is false)
-            diagnostics.Add(Diagnostic.Create(Constants.RequireSupportedTypeForMember, GetLocation(member), new object[] { GetSymbolDiagnosticDisplayString(memberType), memberName, containingTypeName }));
+        if (IsTypeInvalid(memberType))
+            diagnostics.Add(Diagnostic.Create(Constants.RequireValidTypeForMember, GetLocation(member), new object[] { GetSymbolDiagnosticDisplayString(memberType), memberName, containingTypeName }));
         cancellation.ThrowIfCancellationRequested();
 
         if (hasKey is false && converterAttribute is not null)

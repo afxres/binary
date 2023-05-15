@@ -156,7 +156,7 @@ public static partial class Symbols
         return property.ReturnsByRef || property.ReturnsByRefReadonly;
     }
 
-    public static bool IsTypeUnsupported(SourceGeneratorContext context, ITypeSymbol symbol)
+    public static bool IsTypeIgnored(SourceGeneratorContext context, ITypeSymbol symbol)
     {
         if (SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, context.GetNamedTypeSymbol(Constants.IConverterTypeName)?.ContainingAssembly))
             return true;
@@ -169,15 +169,15 @@ public static partial class Symbols
         return false;
     }
 
-    public static bool IsTypeSupported(ITypeSymbol symbol)
+    public static bool IsTypeInvalid(ITypeSymbol symbol)
     {
         if (symbol is IErrorTypeSymbol)
-            return false;
+            return true;
         if (symbol.IsStatic)
-            return false;
+            return true;
         if (symbol.IsRefLikeType)
-            return false;
-        return symbol.TypeKind is TypeKind.Array or TypeKind.Class or TypeKind.Enum or TypeKind.Interface or TypeKind.Struct;
+            return true;
+        return symbol.TypeKind is not TypeKind.Array and not TypeKind.Class and not TypeKind.Enum and not TypeKind.Interface and not TypeKind.Struct;
     }
 
     public static ImmutableArray<ISymbol> FilterFieldsAndProperties(ImmutableArray<ISymbol> members)
@@ -196,7 +196,7 @@ public static partial class Symbols
             var memberType = property?.Type ?? (member as IFieldSymbol)?.Type;
             if (memberType is null)
                 continue;
-            if (IsTypeSupported(memberType) is false)
+            if (IsTypeInvalid(memberType))
                 continue;
             builder.Add(member);
         }

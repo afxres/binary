@@ -4,9 +4,9 @@ using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using Xunit;
 
-public class RequiredSupportedTypeTests
+public class RequireValidTypeTests
 {
-    public static IEnumerable<object[]> RequireSupportedTypeForIncludeAttributeData()
+    public static IEnumerable<object[]> RequireValidTypeForIncludeAttributeData()
     {
         var a =
             """
@@ -34,20 +34,21 @@ public class RequiredSupportedTypeTests
         yield return new object[] { b, "Predicate<Int32>" };
     }
 
-    [Theory(DisplayName = "Require Supported Type For Include Attribute")]
-    [MemberData(nameof(RequireSupportedTypeForIncludeAttributeData))]
-    public void RequireSupportedTypeForIncludeAttributeTest(string source, string typeName)
+    [Theory(DisplayName = "Require Valid Type For Include Attribute")]
+    [MemberData(nameof(RequireValidTypeForIncludeAttributeData))]
+    public void RequireValidTypeForIncludeAttributeTest(string source, string typeName)
     {
         var compilation = CompilationModule.CreateCompilation(source);
         var generator = new SourceGenerator();
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"Require supported type (array, class, enum, interface or struct), type: {typeName}", diagnostic.ToString());
+        Assert.Equal("Require Valid Type.", diagnostic.Descriptor.Title);
+        Assert.EndsWith($"Require valid type (array, class, enum, interface or struct), type: {typeName}", diagnostic.ToString());
         Assert.Matches(@"SourceGeneratorInclude<.*>", diagnostic.Location.GetSourceText());
     }
 
-    public static IEnumerable<object[]> RequireSupportedTypeForMemberData()
+    public static IEnumerable<object[]> RequireValidTypeForMemberData()
     {
         var a =
             """
@@ -137,20 +138,21 @@ public class RequiredSupportedTypeTests
         yield return new object[] { d, "Span<Byte>", "Buffer", "Hotel" };
     }
 
-    [Theory(DisplayName = "Require Supported Type For Member")]
-    [MemberData(nameof(RequireSupportedTypeForMemberData))]
-    public void RequireSupportedTypeForMemberTest(string source, string typeName, string memberName, string containingTypeName)
+    [Theory(DisplayName = "Require Valid Type For Member")]
+    [MemberData(nameof(RequireValidTypeForMemberData))]
+    public void RequireValidTypeForMemberTest(string source, string typeName, string memberName, string containingTypeName)
     {
         var compilation = CompilationModule.CreateCompilation(source);
         var generator = new SourceGenerator();
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"Require supported type (array, class, enum, interface or struct), type: {typeName}, member name: {memberName}, containing type: {containingTypeName}", diagnostic.ToString());
+        Assert.Equal("Require Valid Type.", diagnostic.Descriptor.Title);
+        Assert.EndsWith($"Require valid type (array, class, enum, interface or struct), type: {typeName}, member name: {memberName}, containing type: {containingTypeName}", diagnostic.ToString());
         Assert.Contains(memberName, diagnostic.Location.GetSourceText());
     }
 
-    public static IEnumerable<object[]> RequireSupportedTypeForMemberPlainObjectData()
+    public static IEnumerable<object[]> RequireValidTypeForMemberPlainObjectData()
     {
         var a =
             """
@@ -172,9 +174,9 @@ public class RequiredSupportedTypeTests
         yield return new object[] { a };
     }
 
-    [Theory(DisplayName = "Require Supported Type For Member Of Plain Object")]
-    [MemberData(nameof(RequireSupportedTypeForMemberPlainObjectData))]
-    public void RequireSupportedTypeForMemberPlainObjectTest(string source)
+    [Theory(DisplayName = "Require Valid Type For Member Of Plain Object")]
+    [MemberData(nameof(RequireValidTypeForMemberPlainObjectData))]
+    public void RequireValidTypeForMemberPlainObjectTest(string source)
     {
         var compilation = CompilationModule.CreateCompilation(source);
         var generator = new SourceGenerator();
