@@ -50,12 +50,9 @@ public sealed partial class NamedObjectConverterContext
             cancellation.ThrowIfCancellationRequested();
         }
 
-        // do not report error for plain object
         var members = dictionary.Values.ToImmutableArray();
-        if (members.Length is 0 && attribute is null)
+        if (members.Length is 0)
             return new SourceResult(SourceStatus.NoAvailableMember);
-        if (members.Length is 0 && attribute is not null)
-            return new SourceResult(Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplayString(symbol) }));
         var constructor = Symbols.GetConstructor(context, typeInfo, members);
         return new NamedObjectConverterContext(context, tracker, symbol, members, constructor).Invoke();
     }

@@ -9,6 +9,10 @@ using System.Linq;
 
 public static partial class Symbols
 {
+    private const string NamedObjectAttribute = "NamedObjectAttribute";
+
+    private const string TupleObjectAttribute = "TupleObjectAttribute";
+
     public static bool ValidateContextType(SourceGeneratorContext context, TypeDeclarationSyntax declaration, INamedTypeSymbol symbol)
     {
         if (ValidateContextType(declaration, symbol) is not { } descriptor)
@@ -46,7 +50,7 @@ public static partial class Symbols
         if (attributes.Length > 1)
             diagnostics.Add(Diagnostic.Create(Constants.MultipleAttributesFoundOnType, GetLocation(symbol), new object[] { symbolDisplay }));
         else
-            ValidateType(context, symbol, symbolDisplay, attributes.SingleOrDefault()?.AttributeClass, diagnostics);
+            ValidateType(context, symbol, symbolDisplay, attributes.SingleOrDefault(), diagnostics);
 
         if (diagnostics.Count is 0)
             return true;
@@ -77,15 +81,27 @@ public static partial class Symbols
         return null;
     }
 
-    private static void ValidateType(SourceGeneratorContext context, ITypeSymbol symbol, string symbolDisplay, INamedTypeSymbol? typeAttribute, List<Diagnostic> diagnostics)
+    private static void ValidateType(SourceGeneratorContext context, ITypeSymbol symbol, string symbolDisplay, AttributeData? attribute, List<Diagnostic> diagnostics)
     {
-        var tupleKeys = new SortedSet<int>();
-        var namedKeys = new HashSet<string>();
+        var tupleMembers = new SortedDictionary<int, ISymbol>();
+        var namedMembers = new SortedDictionary<string, ISymbol>();
         var typeInfo = context.GetTypeInfo(symbol);
+        var typeAttribute = attribute?.AttributeClass;
         foreach (var member in typeInfo.OriginalFieldsAndProperties)
-            ValidateMember(context, symbolDisplay, typeAttribute?.Name, member, typeInfo.RequiredFieldsAndProperties, diagnostics, namedKeys, tupleKeys);
-        if (tupleKeys.Count is not 0 && (tupleKeys.Min is not 0 || tupleKeys.Max != tupleKeys.Count - 1))
+            ValidateMember(context, symbolDisplay, typeAttribute?.Name, member, typeInfo.RequiredFieldsAndProperties, diagnostics, namedMembers, tupleMembers);
+        var tupleKeys = tupleMembers.Keys;
+        if (tupleKeys.Count is not 0 && (tupleKeys.First() is not 0 || tupleKeys.Last() != tupleKeys.Count - 1))
             diagnostics.Add(Diagnostic.Create(Constants.TupleKeyNotSequential, GetLocation(symbol), new object[] { symbolDisplay }));
+        if (diagnostics.Count is not 0)
+            return;
+        var members = typeAttribute?.Name switch
+        {
+            NamedObjectAttribute => namedMembers.Values,
+            TupleObjectAttribute => tupleMembers.Values,
+            _ => default(IEnumerable<ISymbol>),
+        };
+        if (members is not null && typeInfo.FilteredFieldsAndProperties.Intersect(members, SymbolEqualityComparer.Default).Any() is false)
+            diagnostics.Add(Diagnostic.Create(Constants.NoAvailableMemberFound, GetLocation(attribute), new object[] { symbolDisplay }));
         return;
     }
 
@@ -109,33 +125,30 @@ public static partial class Symbols
         return;
     }
 
-    private static void ValidateNamedKeyAttribute(AttributeData? attribute, List<Diagnostic> diagnostics, HashSet<string> keys)
+    private static void ValidateNamedKeyAttribute(ISymbol member, AttributeData? attribute, List<Diagnostic> diagnostics, SortedDictionary<string, ISymbol> namedMembers)
     {
         if (attribute is null)
             return;
         var key = (string?)attribute.ConstructorArguments.Single().Value;
         if (key is null || key.Length is 0)
             diagnostics.Add(Diagnostic.Create(Constants.NamedKeyNullOrEmpty, GetLocation(attribute)));
-        else if (keys.Add(key) is false)
+        else if (namedMembers.TryAdd(key, member) is false)
             diagnostics.Add(Diagnostic.Create(Constants.NamedKeyDuplicated, GetLocation(attribute), new object[] { key }));
         return;
     }
 
-    private static void ValidateTupleKeyAttribute(AttributeData? attribute, List<Diagnostic> diagnostics, SortedSet<int> keys)
+    private static void ValidateTupleKeyAttribute(ISymbol member, AttributeData? attribute, List<Diagnostic> diagnostics, SortedDictionary<int, ISymbol> tupleMembers)
     {
         if (attribute is null)
             return;
         var key = (int)attribute.ConstructorArguments.Single().Value!;
-        if (keys.Add(key) is false)
+        if (tupleMembers.TryAdd(key, member) is false)
             diagnostics.Add(Diagnostic.Create(Constants.TupleKeyDuplicated, GetLocation(attribute), new object[] { key }));
         return;
     }
 
-    private static void ValidateMember(SourceGeneratorContext context, string containingTypeName, string? typeAttribute, ISymbol member, ImmutableHashSet<ISymbol> requiredMembers, List<Diagnostic> diagnostics, HashSet<string> namedKeys, SortedSet<int> tupleKeys)
+    private static void ValidateMember(SourceGeneratorContext context, string containingTypeName, string? typeAttribute, ISymbol member, ImmutableHashSet<ISymbol> requiredMembers, List<Diagnostic> diagnostics, SortedDictionary<string, ISymbol> namedMembers, SortedDictionary<int, ISymbol> tupleMembers)
     {
-        const string NamedObjectAttribute = "NamedObjectAttribute";
-        const string TupleObjectAttribute = "TupleObjectAttribute";
-
         var cancellation = context.CancellationToken;
         var converterAttribute = context.GetAttribute(member, Constants.ConverterAttributeTypeName);
         var converterCreatorAttribute = context.GetAttribute(member, Constants.ConverterCreatorAttributeTypeName);
@@ -160,8 +173,8 @@ public static partial class Symbols
 
         ValidateConverterAttribute(context, converterAttribute, diagnostics);
         ValidateConverterCreatorAttribute(context, converterCreatorAttribute, diagnostics);
-        ValidateNamedKeyAttribute(namedKeyAttribute, diagnostics, namedKeys);
-        ValidateTupleKeyAttribute(tupleKeyAttribute, diagnostics, tupleKeys);
+        ValidateNamedKeyAttribute(member, namedKeyAttribute, diagnostics, namedMembers);
+        ValidateTupleKeyAttribute(member, tupleKeyAttribute, diagnostics, tupleMembers);
         cancellation.ThrowIfCancellationRequested();
 
         var property = member as IPropertySymbol;

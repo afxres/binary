@@ -31,6 +31,23 @@ public class CompilationTests
         yield return new object[] { a };
     }
 
+    public static IEnumerable<object[]> VariableBoundArrayData()
+    {
+        var a =
+            """
+            // variable bound arrays
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<int[,]>]
+            [SourceGeneratorInclude<string[,,]>]
+            public partial class TestGeneratorContext { }
+            """;
+        yield return new object[] { a };
+    }
+
     public static IEnumerable<object[]> EnumTypesData()
     {
         var a =
@@ -823,6 +840,7 @@ public class CompilationTests
 
     [Theory(DisplayName = "Compilation Test")]
     [MemberData(nameof(SpanLikeTypesData))]
+    [MemberData(nameof(VariableBoundArrayData))]
     [MemberData(nameof(EnumTypesData))]
     [MemberData(nameof(CommonGenericTypesData))]
     [MemberData(nameof(CommonCollectionTypesData))]

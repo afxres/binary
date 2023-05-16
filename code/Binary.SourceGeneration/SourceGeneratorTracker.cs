@@ -12,7 +12,7 @@ public class SourceGeneratorTracker
         this.referenced = referenced;
     }
 
-    public void AddReferencedType(ITypeSymbol symbol)
+    public void AddType(ITypeSymbol symbol)
     {
         this.referenced.Enqueue(symbol);
     }

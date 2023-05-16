@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary.SourceGeneration;
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 public static class SystemExtensions
@@ -39,5 +40,13 @@ public static class SystemExtensions
         }
         _ = builder.Append(tail);
         _ = builder.AppendLine();
+    }
+
+    public static bool TryAdd<K, V>(this IDictionary<K, V> dictionary, K key, V value)
+    {
+        if (dictionary.ContainsKey(key))
+            return false;
+        dictionary.Add(key, value);
+        return true;
     }
 }

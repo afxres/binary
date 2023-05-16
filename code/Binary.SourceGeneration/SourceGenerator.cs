@@ -155,10 +155,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
                 continue;
             if (result.Status is SourceStatus.Ok)
                 return result;
-            if (result.Diagnostic is not { } diagnostic)
-                break;
-            context.Collect(diagnostic);
-            return null;
+            break;
         }
 
         if (inclusions.TryGetValue(symbol, out var attribute) is false)

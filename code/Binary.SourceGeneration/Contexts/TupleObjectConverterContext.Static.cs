@@ -73,9 +73,10 @@ public sealed partial class TupleObjectConverterContext
                 GetCustomTupleMember(context, member, dictionary);
             cancellation.ThrowIfCancellationRequested();
         }
+
         var members = dictionary.Values.ToImmutableArray();
         if (members.Length is 0)
-            return new SourceResult(Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplayString(symbol) }));
+            return new SourceResult(SourceStatus.NoAvailableMember);
         var constructor = Symbols.GetConstructor(context, typeInfo, members);
         return new TupleObjectConverterContext(context, tracker, symbol, members, constructor).Invoke();
     }

@@ -92,7 +92,7 @@ public abstract class SymbolConverterContext
     protected void AppendAssignConverterExplicit(StringBuilder builder, ITypeSymbol member, string variableName, string converterTypeAlias, string memberTypeAlias)
     {
         builder.AppendIndent(3, $"var {variableName} = ({converterTypeAlias})context.GetConverter(typeof({memberTypeAlias}));");
-        this.tracker.AddReferencedType(member);
+        this.tracker.AddType(member);
         CancellationToken.ThrowIfCancellationRequested();
     }
 
