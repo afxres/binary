@@ -8,7 +8,7 @@ using System.Threading;
 
 public class SourceGeneratorContext
 {
-    private readonly Queue<ITypeSymbol> referencedTypes;
+    private readonly Action<Diagnostic> diagnosticCollector;
 
     private readonly Dictionary<string, object> resources;
 
@@ -20,20 +20,23 @@ public class SourceGeneratorContext
 
     private readonly Dictionary<ITypeSymbol, SymbolTypeInfo> typeInfoCache;
 
+    private readonly Dictionary<ITypeSymbol, bool> validationCache;
+
     public Compilation Compilation { get; }
 
     public CancellationToken CancellationToken { get; }
 
-    public SourceGeneratorContext(Compilation compilation, Queue<ITypeSymbol> referencedTypes, CancellationToken cancellation)
+    public SourceGeneratorContext(Compilation compilation, Action<Diagnostic> diagnosticCollector, CancellationToken cancellation)
     {
         Compilation = compilation;
         CancellationToken = cancellation;
+        this.diagnosticCollector = diagnosticCollector;
         this.resources = new Dictionary<string, object>();
         this.types = new Dictionary<string, ITypeSymbol?>();
-        this.referencedTypes = referencedTypes;
         this.typeFullNameCache = new Dictionary<ITypeSymbol, string>(SymbolEqualityComparer.Default);
         this.converterTypeFullNameCache = new Dictionary<ITypeSymbol, string>(SymbolEqualityComparer.Default);
         this.typeInfoCache = new Dictionary<ITypeSymbol, SymbolTypeInfo>(SymbolEqualityComparer.Default);
+        this.validationCache = new Dictionary<ITypeSymbol, bool>(SymbolEqualityComparer.Default);
     }
 
     public object GetOrCreateResource(string key, Func<Compilation, object> creator)
@@ -68,11 +71,6 @@ public class SourceGeneratorContext
         return result;
     }
 
-    public void AddReferencedType(ITypeSymbol type)
-    {
-        this.referencedTypes.Enqueue(type);
-    }
-
     public AttributeData? GetAttribute(ISymbol symbol, string attributeTypeName)
     {
         return symbol.GetAttributes().FirstOrDefault(x => Equals(x.AttributeClass, attributeTypeName));
@@ -86,8 +84,21 @@ public class SourceGeneratorContext
         return (INamedTypeSymbol?)type;
     }
 
+    public bool ValidateType(ITypeSymbol symbol)
+    {
+        var dictionary = this.validationCache;
+        if (dictionary.TryGetValue(symbol, out var result) is false)
+            dictionary.Add(symbol, result = Symbols.ValidateType(this, symbol));
+        return result;
+    }
+
     public bool Equals(ISymbol? symbol, string typeName)
     {
         return SymbolEqualityComparer.Default.Equals(symbol, GetNamedTypeSymbol(typeName));
+    }
+
+    public void Collect(Diagnostic diagnostic)
+    {
+        this.diagnosticCollector.Invoke(diagnostic);
     }
 }

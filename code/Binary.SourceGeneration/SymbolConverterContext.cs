@@ -9,6 +9,8 @@ public abstract class SymbolConverterContext
 {
     private readonly SourceGeneratorContext context;
 
+    private readonly SourceGeneratorTracker tracker;
+
     private readonly Dictionary<int, (string TypeFullName, string ConverterTypeFullName)> fullNameCache;
 
     protected ITypeSymbol Symbol { get; }
@@ -25,10 +27,11 @@ public abstract class SymbolConverterContext
 
     protected string ConverterCreatorTypeName { get; }
 
-    protected SymbolConverterContext(SourceGeneratorContext context, ITypeSymbol symbol)
+    protected SymbolConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol)
     {
         var output = Symbols.GetOutputFullName(symbol);
         this.context = context;
+        this.tracker = tracker;
         this.fullNameCache = new Dictionary<int, (string, string)>();
         Symbol = symbol;
         SymbolTypeFullName = context.GetTypeFullName(symbol);
@@ -89,7 +92,7 @@ public abstract class SymbolConverterContext
     protected void AppendAssignConverterExplicit(StringBuilder builder, ITypeSymbol member, string variableName, string converterTypeAlias, string memberTypeAlias)
     {
         builder.AppendIndent(3, $"var {variableName} = ({converterTypeAlias})context.GetConverter(typeof({memberTypeAlias}));");
-        this.context.AddReferencedType(member);
+        this.tracker.AddReferencedType(member);
         CancellationToken.ThrowIfCancellationRequested();
     }
 
@@ -105,10 +108,10 @@ public abstract class SymbolConverterContext
 
     protected abstract void Invoke(StringBuilder builder);
 
-    protected SymbolConverterContent Invoke()
+    protected SourceResult Invoke()
     {
         var builder = new StringBuilder();
         Invoke(builder);
-        return new SymbolConverterContent(ConverterCreatorTypeName, builder.ToString());
+        return new SourceResult(ConverterCreatorTypeName, builder.ToString());
     }
 }

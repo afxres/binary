@@ -56,7 +56,7 @@ public sealed partial class TupleObjectConverterContext
         return types.Contains(unbound);
     }
 
-    public static object? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
+    public static SourceResult? Invoke(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol)
     {
         var system = IsSystemTuple(context, symbol);
         var attribute = system ? null : context.GetAttribute(symbol, Constants.TupleObjectAttributeTypeName);
@@ -75,8 +75,8 @@ public sealed partial class TupleObjectConverterContext
         }
         var members = dictionary.Values.ToImmutableArray();
         if (members.Length is 0)
-            return Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplayString(symbol) });
+            return new SourceResult(Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplayString(symbol) }));
         var constructor = Symbols.GetConstructor(context, typeInfo, members);
-        return new TupleObjectConverterContext(context, symbol, members, constructor).Invoke();
+        return new TupleObjectConverterContext(context, tracker, symbol, members, constructor).Invoke();
     }
 }

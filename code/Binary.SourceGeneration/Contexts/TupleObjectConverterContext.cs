@@ -11,7 +11,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
 
     private readonly SymbolConstructorInfo<SymbolTupleMemberInfo>? constructor;
 
-    private TupleObjectConverterContext(SourceGeneratorContext context, ITypeSymbol symbol, ImmutableArray<SymbolTupleMemberInfo> members, SymbolConstructorInfo<SymbolTupleMemberInfo>? constructor) : base(context, symbol)
+    private TupleObjectConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, ImmutableArray<SymbolTupleMemberInfo> members, SymbolConstructorInfo<SymbolTupleMemberInfo>? constructor) : base(context, tracker, symbol)
     {
         for (var i = 0; i < members.Length; i++)
             AddType(i, members[i].Type);

@@ -169,10 +169,10 @@ public sealed partial class CollectionConverterContext
         return GetInfo(symbol, resource);
     }
 
-    public static SymbolConverterContent? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
+    public static SourceResult? Invoke(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol)
     {
         if (GetInfo(context, symbol) is not { } info)
             return null;
-        return new CollectionConverterContext(context, symbol, info).Invoke();
+        return new CollectionConverterContext(context, tracker, symbol, info).Invoke();
     }
 }

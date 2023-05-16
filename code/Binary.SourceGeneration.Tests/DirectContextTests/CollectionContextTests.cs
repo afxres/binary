@@ -26,12 +26,13 @@ public class CollectionContextTests
             .Select(x => Assert.IsAssignableFrom<INamedTypeSymbol>(compilation.GetTypeByMetadataName(Assert.IsType<string>(x.FullName))))
             .ToList();
         var referenced = new Queue<ITypeSymbol>();
-        var context = new SourceGeneratorContext(compilation, referenced, CancellationToken.None);
-        var results = unsupportedTypeSymbols.Select(x => CollectionConverterContext.Invoke(context, x)).ToList();
+        var context = new SourceGeneratorContext(compilation, _ => Assert.Fail("Invalid Call!"), CancellationToken.None);
+        var tracker = new SourceGeneratorTracker(referenced);
+        var results = unsupportedTypeSymbols.Select(x => CollectionConverterContext.Invoke(context, tracker, x)).ToList();
         Assert.All(results, Assert.Null);
 
         var arraySymbol = compilation.CreateArrayTypeSymbol(compilation.GetSpecialType(SpecialType.System_String), 1);
-        Assert.Null(CollectionConverterContext.Invoke(context, arraySymbol));
+        Assert.Null(CollectionConverterContext.Invoke(context, tracker, arraySymbol));
     }
 
     [Fact(DisplayName = "Unsupported Type Compilation Test")]

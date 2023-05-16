@@ -392,7 +392,7 @@ public class SymbolsTests
         var members = memberSymbols.Select(x => new SymbolTupleMemberInfo(x)).ToImmutableArray();
         Assert.NotEmpty(members);
 
-        var context = new SourceGeneratorContext(compilation, new Queue<ITypeSymbol>(), CancellationToken.None);
+        var context = new SourceGeneratorContext(compilation, _ => Assert.Fail("Invalid Call!"), CancellationToken.None);
         var typeInfo = context.GetTypeInfo(symbol);
         var constructor = Symbols.GetConstructor(context, typeInfo, members);
         Assert.NotNull(constructor);
@@ -480,7 +480,7 @@ public class SymbolsTests
         var members = memberSymbols.Select(x => new SymbolTupleMemberInfo(x)).ToImmutableArray();
         Assert.NotEmpty(members);
 
-        var context = new SourceGeneratorContext(compilation, new Queue<ITypeSymbol>(), CancellationToken.None);
+        var context = new SourceGeneratorContext(compilation, _ => Assert.Fail("Invalid Call!"), CancellationToken.None);
         var x = context.GetTypeInfo(symbol);
         var y = context.GetTypeInfo(compilation.CreateArrayTypeSymbol(symbol, 1));
         var a = Symbols.GetConstructor(context, x, members);

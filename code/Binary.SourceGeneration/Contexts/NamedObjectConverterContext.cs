@@ -11,7 +11,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
 
     private readonly SymbolConstructorInfo<SymbolNamedMemberInfo>? constructor;
 
-    private NamedObjectConverterContext(SourceGeneratorContext context, ITypeSymbol symbol, ImmutableArray<SymbolNamedMemberInfo> members, SymbolConstructorInfo<SymbolNamedMemberInfo>? constructor) : base(context, symbol)
+    private NamedObjectConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, ImmutableArray<SymbolNamedMemberInfo> members, SymbolConstructorInfo<SymbolNamedMemberInfo>? constructor) : base(context, tracker, symbol)
     {
         for (var i = 0; i < members.Length; i++)
             AddType(i, members[i].Type);

@@ -9,23 +9,23 @@ using System.Linq;
 
 public static partial class Symbols
 {
-    public static bool ValidateContextType(SourceProductionContext production, TypeDeclarationSyntax declaration, INamedTypeSymbol symbol)
+    public static bool ValidateContextType(SourceGeneratorContext context, TypeDeclarationSyntax declaration, INamedTypeSymbol symbol)
     {
         if (ValidateContextType(declaration, symbol) is not { } descriptor)
             return true;
-        production.ReportDiagnostic(Diagnostic.Create(descriptor, GetLocation(symbol), new object[] { GetSymbolDiagnosticDisplayString(symbol) }));
+        context.Collect(Diagnostic.Create(descriptor, GetLocation(symbol), new object[] { GetSymbolDiagnosticDisplayString(symbol) }));
         return false;
     }
 
-    public static bool ValidateIncludeType(SourceProductionContext production, IReadOnlyDictionary<ITypeSymbol, AttributeData> dictionary, AttributeData attribute, ITypeSymbol symbol)
+    public static bool ValidateIncludeType(SourceGeneratorContext context, IReadOnlyDictionary<ITypeSymbol, AttributeData> dictionary, AttributeData attribute, ITypeSymbol symbol)
     {
         if (ValidateIncludeType(dictionary, symbol) is not { } descriptor)
             return true;
-        production.ReportDiagnostic(Diagnostic.Create(descriptor, GetLocation(attribute), new object[] { GetSymbolDiagnosticDisplayString(symbol) }));
+        context.Collect(Diagnostic.Create(descriptor, GetLocation(attribute), new object[] { GetSymbolDiagnosticDisplayString(symbol) }));
         return false;
     }
 
-    public static bool ValidateType(SourceProductionContext production, SourceGeneratorContext context, ITypeSymbol symbol)
+    public static bool ValidateType(SourceGeneratorContext context, ITypeSymbol symbol)
     {
         var cancellation = context.CancellationToken;
         var converterAttribute = context.GetAttribute(symbol, Constants.ConverterAttributeTypeName);
@@ -51,7 +51,7 @@ public static partial class Symbols
         if (diagnostics.Count is 0)
             return true;
         foreach (var diagnostic in diagnostics)
-            production.ReportDiagnostic(diagnostic);
+            context.Collect(diagnostic);
         return false;
     }
 

@@ -8,7 +8,7 @@ public sealed partial class AttributeConverterCreatorContext : SymbolConverterCo
 {
     private readonly ITypeSymbol creator;
 
-    private AttributeConverterCreatorContext(SourceGeneratorContext context, ITypeSymbol symbol, ITypeSymbol creator) : base(context, symbol)
+    private AttributeConverterCreatorContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, ITypeSymbol creator) : base(context, tracker, symbol)
     {
         this.creator = creator;
     }

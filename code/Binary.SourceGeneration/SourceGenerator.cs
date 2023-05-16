@@ -8,28 +8,23 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 [Generator]
 public sealed class SourceGenerator : IIncrementalGenerator
 {
-    private delegate object? TypeHandler(SourceGeneratorContext context, ITypeSymbol symbol);
+    private delegate SourceResult? TypeHandler(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol);
 
-    private sealed class Entry
+    private sealed class ContextInfo
     {
-        public Compilation Compilation { get; }
-
-        public SourceProductionContext SourceProductionContext { get; }
-
         public string NameInSourceCode { get; }
 
         public string NamespaceInSourceCode { get; }
 
         public ImmutableDictionary<ITypeSymbol, AttributeData> Inclusions { get; }
 
-        public Entry(Compilation compilation, SourceProductionContext production, INamedTypeSymbol symbol, ImmutableDictionary<ITypeSymbol, AttributeData> inclusions)
+        public ContextInfo(INamedTypeSymbol symbol, ImmutableDictionary<ITypeSymbol, AttributeData> inclusions)
         {
-            Compilation = compilation;
-            SourceProductionContext = production;
             NameInSourceCode = Symbols.GetNameInSourceCode(symbol.Name);
             NamespaceInSourceCode = Symbols.GetNamespaceInSourceCode(symbol.ContainingNamespace);
             Inclusions = inclusions;
@@ -62,7 +57,8 @@ public sealed class SourceGenerator : IIncrementalGenerator
             return;
         var cancellation = production.CancellationToken;
         var include = compilation.GetTypeByMetadataName(Constants.SourceGeneratorIncludeAttributeTypeName)?.ConstructUnboundGenericType();
-        var dictionary = new SortedDictionary<string, SortedDictionary<string, Entry>>();
+        var context = new SourceGeneratorContext(compilation, production.ReportDiagnostic, cancellation);
+        var dictionary = new SortedDictionary<string, SortedDictionary<string, ContextInfo>>();
 
         foreach (var declaration in declarations)
         {
@@ -71,14 +67,14 @@ public sealed class SourceGenerator : IIncrementalGenerator
             var symbol = semantic.GetDeclaredSymbol(declaration);
             if (symbol is null)
                 continue;
-            if (Symbols.ValidateContextType(production, declaration, symbol) is false)
+            if (Symbols.ValidateContextType(context, declaration, symbol) is false)
                 continue;
-            var inclusions = GetInclusions(production, symbol, include);
-            var entry = new Entry(compilation, production, symbol, inclusions);
+            var inclusions = GetInclusions(context, symbol, include);
+            var info = new ContextInfo(symbol, inclusions);
             // order by type name, then by containing namespace
             if (dictionary.TryGetValue(symbol.Name, out var child) is false)
-                dictionary.Add(symbol.Name, child = new SortedDictionary<string, Entry>());
-            child.Add(symbol.ContainingNamespace.ToDisplayString(), entry);
+                dictionary.Add(symbol.Name, child = new SortedDictionary<string, ContextInfo>());
+            child.Add(symbol.ContainingNamespace.ToDisplayString(), info);
         }
 
         foreach (var i in dictionary)
@@ -89,9 +85,9 @@ public sealed class SourceGenerator : IIncrementalGenerator
             cancellation.ThrowIfCancellationRequested();
             foreach (var k in child)
             {
-                var entry = k.Value;
+                var info = k.Value;
                 cancellation.ThrowIfCancellationRequested();
-                var code = Invoke(entry);
+                var code = Invoke(context, info);
                 var file = $"{name}.{index}.g.cs";
                 production.AddSource(file, code);
                 index++;
@@ -99,11 +95,11 @@ public sealed class SourceGenerator : IIncrementalGenerator
         }
     }
 
-    private static ImmutableDictionary<ITypeSymbol, AttributeData> GetInclusions(SourceProductionContext production, INamedTypeSymbol type, INamedTypeSymbol? include)
+    private static ImmutableDictionary<ITypeSymbol, AttributeData> GetInclusions(SourceGeneratorContext context, INamedTypeSymbol type, INamedTypeSymbol? include)
     {
         var builder = ImmutableDictionary.CreateBuilder<ITypeSymbol, AttributeData>(SymbolEqualityComparer.Default);
         var attributes = type.GetAttributes();
-        var cancellation = production.CancellationToken;
+        var cancellation = context.CancellationToken;
         foreach (var attribute in attributes)
         {
             cancellation.ThrowIfCancellationRequested();
@@ -114,21 +110,20 @@ public sealed class SourceGenerator : IIncrementalGenerator
             if (SymbolEqualityComparer.Default.Equals(definitions, include) is false)
                 continue;
             var includedType = attributeClass.TypeArguments.Single();
-            if (Symbols.ValidateIncludeType(production, builder, attribute, includedType) is false)
+            if (Symbols.ValidateIncludeType(context, builder, attribute, includedType) is false)
                 continue;
             builder.Add(includedType, attribute);
         }
         return builder.ToImmutable();
     }
 
-    private static string Invoke(Entry entry)
+    private static string Invoke(SourceGeneratorContext context, ContextInfo info)
     {
-        var inclusions = entry.Inclusions;
-        var production = entry.SourceProductionContext;
-        var cancellation = production.CancellationToken;
+        var inclusions = info.Inclusions;
+        var cancellation = context.CancellationToken;
         var pending = new Queue<ITypeSymbol>(inclusions.Keys);
-        var handled = new SortedDictionary<string, SymbolConverterContent?>();
-        var context = new SourceGeneratorContext(entry.Compilation, pending, cancellation);
+        var tracker = new SourceGeneratorTracker(pending);
+        var handled = new SortedDictionary<string, SourceResult?>();
 
         while (pending.Count is not 0)
         {
@@ -137,47 +132,50 @@ public sealed class SourceGenerator : IIncrementalGenerator
             cancellation.ThrowIfCancellationRequested();
             if (handled.ContainsKey(key))
                 continue;
-            var result = Handle(entry, context, symbol);
+            var result = Handle(context, tracker, info, symbol);
             handled.Add(key, result);
         }
-        return Finish(entry, handled);
+        return Finish(info, handled, cancellation);
     }
 
-    private static SymbolConverterContent? Handle(Entry entry, SourceGeneratorContext context, ITypeSymbol symbol)
+    private static SourceResult? Handle(SourceGeneratorContext context, SourceGeneratorTracker tracker, ContextInfo info, ITypeSymbol symbol)
     {
-        var inclusions = entry.Inclusions;
-        var production = entry.SourceProductionContext;
-        var cancellation = production.CancellationToken;
-        if (Symbols.ValidateType(production, context, symbol) is false)
+        if (context.ValidateType(symbol) is false)
             return null;
+
+        var inclusions = info.Inclusions;
+        var cancellation = context.CancellationToken;
+        var result = default(SourceResult);
 
         foreach (var handler in TypeHandlers)
         {
+            result = handler.Invoke(context, tracker, symbol);
             cancellation.ThrowIfCancellationRequested();
-            var result = handler.Invoke(context, symbol);
-            if (result is SymbolConverterContent content)
-                return content;
             if (result is null)
                 continue;
-            var diagnostic = (Diagnostic)result;
-            production.ReportDiagnostic(diagnostic);
+            if (result.Status is SourceStatus.Ok)
+                return result;
+            if (result.Diagnostic is not { } diagnostic)
+                break;
+            context.Collect(diagnostic);
             return null;
         }
 
-        if (inclusions.TryGetValue(symbol, out var attribute))
-            production.ReportDiagnostic(Diagnostic.Create(Constants.NoConverterGenerated, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplayString(symbol) }));
+        if (inclusions.TryGetValue(symbol, out var attribute) is false)
+            return null;
+        var descriptor = result?.Status is SourceStatus.NoAvailableMember
+            ? Constants.NoAvailableMemberFound
+            : Constants.NoConverterGenerated;
+        context.Collect(Diagnostic.Create(descriptor, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplayString(symbol) }));
         return null;
     }
 
-    private static string Finish(Entry entry, SortedDictionary<string, SymbolConverterContent?> dictionary)
+    private static string Finish(ContextInfo info, SortedDictionary<string, SourceResult?> dictionary, CancellationToken cancellation)
     {
         var builder = new StringBuilder();
-        var production = entry.SourceProductionContext;
-        var cancellation = production.CancellationToken;
-
-        builder.AppendIndent(0, $"namespace {entry.NamespaceInSourceCode};");
+        builder.AppendIndent(0, $"namespace {info.NamespaceInSourceCode};");
         builder.AppendIndent();
-        builder.AppendIndent(0, $"partial class {entry.NameInSourceCode}");
+        builder.AppendIndent(0, $"partial class {info.NameInSourceCode}");
         builder.AppendIndent(0, $"{{");
         builder.AppendIndent(1, $"public static System.Collections.Generic.IReadOnlyDictionary<System.Type, Mikodev.Binary.IConverterCreator> ConverterCreators {{ get; }} = System.Collections.Immutable.ImmutableDictionary.CreateRange(new System.Collections.Generic.Dictionary<System.Type, Mikodev.Binary.IConverterCreator>");
         builder.AppendIndent(1, $"{{");

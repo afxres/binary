@@ -69,10 +69,10 @@ public sealed partial class GenericConverterContext
         return null;
     }
 
-    public static SymbolConverterContent? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
+    public static SourceResult? Invoke(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol)
     {
         if (GetInfo(context, symbol) is not { } info)
             return null;
-        return new GenericConverterContext(context, symbol, info).Invoke();
+        return new GenericConverterContext(context, tracker, symbol, info).Invoke();
     }
 }

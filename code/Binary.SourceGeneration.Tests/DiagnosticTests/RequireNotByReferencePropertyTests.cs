@@ -103,13 +103,13 @@ public class RequireNotByReferencePropertyTests
     [MemberData(nameof(ByReferencePropertyPlainObjectData))]
     public void RequireNotByReferencePropertyPlainObjectTest(string source, string typeName)
     {
-        // no converter generated because by reference properties are ignored
+        // no available member found because by reference properties are ignored
         var compilation = CompilationModule.CreateCompilation(source);
         var generator = new SourceGenerator();
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
-        Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
-        Assert.EndsWith($"No converter generated, type: {typeName}", diagnostic.ToString());
-        Assert.Contains($"SourceGeneratorInclude<{typeName}>", diagnostic.Location.GetSourceText());
+        Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
+        Assert.EndsWith($"No available member found, type: {typeName}", diagnostic.ToString());
+        Assert.Equal($"SourceGeneratorInclude<{typeName}>", diagnostic.Location.GetSourceText());
     }
 }

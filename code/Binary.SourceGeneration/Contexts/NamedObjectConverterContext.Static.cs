@@ -32,11 +32,11 @@ public sealed partial class NamedObjectConverterContext
         dictionary.Add(key, info);
     }
 
-    public static object? Invoke(SourceGeneratorContext context, ITypeSymbol symbol)
+    public static SourceResult? Invoke(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol)
     {
         var attribute = context.GetAttribute(symbol, Constants.NamedObjectAttributeTypeName);
         if (attribute is null && Symbols.IsTypeIgnored(context, symbol))
-            return null;
+            return new SourceResult(SourceStatus.Ignored);
         var typeInfo = context.GetTypeInfo(symbol);
         var required = typeInfo.RequiredFieldsAndProperties.Count is not 0;
         var dictionary = new SortedDictionary<string, SymbolNamedMemberInfo>();
@@ -53,10 +53,10 @@ public sealed partial class NamedObjectConverterContext
         // do not report error for plain object
         var members = dictionary.Values.ToImmutableArray();
         if (members.Length is 0 && attribute is null)
-            return null;
+            return new SourceResult(SourceStatus.NoAvailableMember);
         if (members.Length is 0 && attribute is not null)
-            return Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplayString(symbol) });
+            return new SourceResult(Diagnostic.Create(Constants.NoAvailableMemberFound, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplayString(symbol) }));
         var constructor = Symbols.GetConstructor(context, typeInfo, members);
-        return new NamedObjectConverterContext(context, symbol, members, constructor).Invoke();
+        return new NamedObjectConverterContext(context, tracker, symbol, members, constructor).Invoke();
     }
 }
