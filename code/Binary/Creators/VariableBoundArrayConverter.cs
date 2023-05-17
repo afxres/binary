@@ -46,6 +46,7 @@ internal sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T 
 
     public override T? Decode(in ReadOnlySpan<byte> span)
     {
+        // TODO: use 'Array.CreateInstanceFromArrayType'
         [UnconditionalSuppressMessage("AotAnalysis", "IL3050:RequiresDynamicCode")]
         static Array Create(int[] lengths, int[] lowerBounds) => Array.CreateInstance(typeof(E), lengths, lowerBounds);
 

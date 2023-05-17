@@ -9,7 +9,7 @@
     <Authors>Mikodev</Authors>
     <Company>Mikodev</Company>
     <Product>Mikodev.Binary</Product>
-    <Version>5.6.0-beta.1</Version>
+    <Version>5.6.0-beta.2</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageTags>binary dynamic serialization fsharp</PackageTags>
     <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
