@@ -187,24 +187,24 @@ internal static class FallbackCollectionMethods
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    private static EncodeDelegate<T?> GetEncodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
+    private static AllocatorAction<T?> GetEncodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
     {
         if (typeof(T) == typeof(HashSet<E>))
-            return (EncodeDelegate<T?>)(object)new EncodeDelegate<HashSet<E>?>(new HashSetEncoder<E>(converter).Encode);
+            return (AllocatorAction<T?>)(object)new AllocatorAction<HashSet<E>?>(new HashSetEncoder<E>(converter).Encode);
         return GetEncodeDelegate<T, E>(converter.EncodeAuto) ?? new EnumerableEncoder<T, E>(converter).Encode;
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    private static EncodeDelegate<T?> GetEncodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
+    private static AllocatorAction<T?> GetEncodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
     {
         if (typeof(T) == typeof(Dictionary<K, V>))
-            return (EncodeDelegate<T?>)(object)new EncodeDelegate<Dictionary<K, V>>(new DictionaryEncoder<K, V>(init, tail).Encode);
+            return (AllocatorAction<T?>)(object)new AllocatorAction<Dictionary<K, V>>(new DictionaryEncoder<K, V>(init, tail).Encode);
         var source = new KeyValueEnumerableEncoder<T, K, V>(init, tail);
         return GetEncodeDelegate<T, KeyValuePair<K, V>>(source.EncodeKeyValuePairAuto) ?? source.Encode;
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    private static EncodeDelegate<T?>? GetEncodeDelegate<T, E>(EncodeDelegate<E> adapter)
+    private static AllocatorAction<T?>? GetEncodeDelegate<T, E>(AllocatorAction<E> adapter)
     {
         var initial = typeof(T).GetMethods(CommonModule.PublicInstanceBindingFlags).FirstOrDefault(x => x.Name is "GetEnumerator" && x.GetParameters().Length is 0);
         if (initial is null)
@@ -234,7 +234,7 @@ internal static class FallbackCollectionMethods
         var ensure = typeof(T).IsValueType
             ? result as Expression
             : Expression.IfThen(Expression.NotEqual(collection, Expression.Constant(null, typeof(T))), result);
-        var lambda = Expression.Lambda<EncodeDelegate<T?>>(ensure, allocator, collection);
+        var lambda = Expression.Lambda<AllocatorAction<T?>>(ensure, allocator, collection);
         return lambda.Compile();
     }
 

@@ -7,9 +7,9 @@ internal sealed partial class SequenceConverter<T> : Converter<T>
 {
     private readonly DecodePassSpanDelegate<T> decode;
 
-    private readonly EncodeDelegate<T?> encode;
+    private readonly AllocatorAction<T?> encode;
 
-    public SequenceConverter(EncodeDelegate<T?> encode, DecodePassSpanDelegate<T>? decode)
+    public SequenceConverter(AllocatorAction<T?> encode, DecodePassSpanDelegate<T>? decode)
     {
         this.encode = encode;
         this.decode = decode ?? (_ => ThrowHelper.ThrowNoSuitableConstructor<T>());

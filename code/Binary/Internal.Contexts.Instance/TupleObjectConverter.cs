@@ -6,15 +6,15 @@ using System.Diagnostics;
 
 internal sealed class TupleObjectConverter<T> : Converter<T>
 {
-    private readonly EncodeDelegate<T> encode;
+    private readonly AllocatorAction<T> encode;
 
-    private readonly EncodeDelegate<T> encodeAuto;
+    private readonly AllocatorAction<T> encodeAuto;
 
     private readonly DecodeDelegate<T> decode;
 
     private readonly DecodeDelegate<T> decodeAuto;
 
-    public TupleObjectConverter(EncodeDelegate<T> encode, EncodeDelegate<T> encodeAuto, DecodeDelegate<T>? decode, DecodeDelegate<T>? decodeAuto, int length) : base(length)
+    public TupleObjectConverter(AllocatorAction<T> encode, AllocatorAction<T> encodeAuto, DecodeDelegate<T>? decode, DecodeDelegate<T>? decodeAuto, int length) : base(length)
     {
         this.encode = encode;
         this.encodeAuto = encodeAuto;

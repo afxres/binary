@@ -42,7 +42,7 @@ internal static class ContextMethodsOfTupleObject
             var invoke = Expression.Call(Expression.Constant(converter), method, allocator, members[i].Invoke(item));
             expressions.Add(invoke);
         }
-        var delegateType = typeof(EncodeDelegate<>).MakeGenericType(type);
+        var delegateType = typeof(AllocatorAction<>).MakeGenericType(type);
         var lambda = Expression.Lambda(delegateType, Expression.Block(expressions), allocator, item);
         return lambda.Compile();
     }
