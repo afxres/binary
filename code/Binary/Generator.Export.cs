@@ -6,8 +6,6 @@ using Mikodev.Binary.Internal.Contexts;
 using Mikodev.Binary.Internal.Sequence;
 using Mikodev.Binary.Internal.Sequence.Decoders;
 using Mikodev.Binary.Internal.Sequence.Encoders;
-using Mikodev.Binary.Internal.SpanLike.Contexts;
-using Mikodev.Binary.Internal.SpanLike.Decoders;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -120,58 +118,5 @@ public static partial class Generator
         var encoder = new DictionaryEncoder<K, V>(key, value);
         var decoder = new DictionaryDecoder<K, V>(key, value);
         return new SequenceConverter<Dictionary<K, V>>(encoder.Encode, decoder.Decode);
-    }
-
-    public static Converter<T> GetEnumerableConverter<T, E>(Converter<E> converter) where T : IEnumerable<E>
-    {
-        ArgumentNullException.ThrowIfNull(converter);
-        var encoder = new EnumerableEncoder<T, E>(converter);
-        return new SequenceConverter<T>(encoder.Encode, null);
-    }
-
-    public static Converter<T> GetEnumerableConverter<T, E>(Converter<E> converter, Func<List<E>, T> constructor) where T : IEnumerable<E>
-    {
-        ArgumentNullException.ThrowIfNull(converter);
-        ArgumentNullException.ThrowIfNull(constructor);
-        var encoder = new EnumerableEncoder<T, E>(converter);
-        var decoder = converter is ISpanLikeContextProvider<E> provider ? provider.GetListDecoder() : new ListDecoder<E>(converter);
-        return new SequenceConverter<T>(encoder.Encode, span => constructor.Invoke(decoder.Invoke(span)));
-    }
-
-    public static Converter<T> GetEnumerableConverter<T, E>(Converter<E> converter, Func<HashSet<E>, T> constructor) where T : IEnumerable<E>
-    {
-        ArgumentNullException.ThrowIfNull(converter);
-        ArgumentNullException.ThrowIfNull(constructor);
-        var encoder = new EnumerableEncoder<T, E>(converter);
-        var decoder = new HashSetDecoder<E>(converter);
-        return new SequenceConverter<T>(encoder.Encode, span => constructor.Invoke(decoder.Decode(span)));
-    }
-
-    public static Converter<T> GetEnumerableConverter<T, K, V>(Converter<K> key, Converter<V> value) where T : IEnumerable<KeyValuePair<K, V>> where K : notnull
-    {
-        ArgumentNullException.ThrowIfNull(key);
-        ArgumentNullException.ThrowIfNull(value);
-        var encoder = new KeyValueEnumerableEncoder<T, K, V>(key, value);
-        return new SequenceConverter<T>(encoder.Encode, null);
-    }
-
-    public static Converter<T> GetEnumerableConverter<T, K, V>(Converter<K> key, Converter<V> value, Func<List<KeyValuePair<K, V>>, T> constructor) where T : IEnumerable<KeyValuePair<K, V>> where K : notnull
-    {
-        ArgumentNullException.ThrowIfNull(key);
-        ArgumentNullException.ThrowIfNull(value);
-        ArgumentNullException.ThrowIfNull(constructor);
-        var encoder = new KeyValueEnumerableEncoder<T, K, V>(key, value);
-        var decoder = new KeyValueEnumerableDecoder<K, V>(key, value);
-        return new SequenceConverter<T>(encoder.Encode, span => constructor.Invoke(decoder.Decode(span)));
-    }
-
-    public static Converter<T> GetEnumerableConverter<T, K, V>(Converter<K> key, Converter<V> value, Func<Dictionary<K, V>, T> constructor) where T : IEnumerable<KeyValuePair<K, V>> where K : notnull
-    {
-        ArgumentNullException.ThrowIfNull(key);
-        ArgumentNullException.ThrowIfNull(value);
-        ArgumentNullException.ThrowIfNull(constructor);
-        var encoder = new KeyValueEnumerableEncoder<T, K, V>(key, value);
-        var decoder = new DictionaryDecoder<K, V>(key, value);
-        return new SequenceConverter<T>(encoder.Encode, span => constructor.Invoke(decoder.Decode(span)));
     }
 }

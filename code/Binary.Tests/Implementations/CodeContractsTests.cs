@@ -242,7 +242,7 @@ public class CodeContractsTests
         var matches = parameters.Where(x => x.ParameterType.IsByRef is false && x.ParameterType.IsByRefLike).ToList();
         Assert.NotEmpty(matches);
         var hostTypes = matches.Select(x => x.Member.ReflectedType).Distinct().ToList();
-        Assert.Equal(5, hostTypes.Count);
+        Assert.Equal(6, hostTypes.Count);
         foreach (var parameter in matches)
         {
             var attributes = parameter.GetCustomAttributes();

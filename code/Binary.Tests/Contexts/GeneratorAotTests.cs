@@ -31,7 +31,7 @@ public class GeneratorAotTests
         {
             if (i.Name.Contains("VariableBoundArray"))
                 return new[] { typeof(int[,]), typeof(int) };
-            if (i.Name.Contains("Enumerable") || i.Name.Contains("Dictionary"))
+            if (i.Name.Contains("Dictionary"))
                 return new[] { typeof(IEnumerable<int>), typeof(int) };
             else
                 return new[] { typeof(int), typeof(int) };
@@ -40,15 +40,13 @@ public class GeneratorAotTests
         var methods = typeof(Generator).GetMethods().Where(x => x.Name.Contains("Converter")).ToList();
         var group1 = methods.Where(x => x.GetGenericArguments().Length is 1).ToList();
         var group2 = methods.Where(x => x.GetGenericArguments().Length is 2).ToList();
-        var group3 = methods.Where(x => x.GetGenericArguments().Length is 3).ToList();
 
         var group1Methods = group1.Select(x => x.MakeGenericMethod(typeof(int))).ToList();
         var group2Methods = group2.Select(x => x.MakeGenericMethod(GetArgs2(x))).ToList();
-        var group3Methods = group3.Select(x => x.MakeGenericMethod(typeof(IDictionary<int, int>), typeof(int), typeof(int))).ToList();
-        var result = group1Methods.Concat(group2Methods).Concat(group3Methods).ToList();
+        var result = group1Methods.Concat(group2Methods).ToList();
         Assert.NotEmpty(group1Methods);
         Assert.NotEmpty(group2Methods);
-        Assert.NotEmpty(group3Methods);
+        Assert.Equal(methods.Count, result.Count);
 
         foreach (var i in result)
         {
