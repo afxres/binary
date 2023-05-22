@@ -22,7 +22,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
     private void AppendClosureHead(StringBuilder builder)
     {
         var members = this.members;
-        builder.AppendIndent(1, $"private sealed class {ClosureTypeName}(", ")", members.Length, i => $"byte[] key{i}, {GetConverterTypeFullName(i)} cvt{i}");
+        builder.AppendIndent(1, $"private sealed class {OutputClosureTypeName}(", ")", members.Length, i => $"byte[] key{i}, {GetConverterTypeFullName(i)} cvt{i}");
         builder.AppendIndent(1, $"{{");
         CancellationToken.ThrowIfCancellationRequested();
     }
@@ -102,7 +102,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             builder.AppendIndent(3, $"var key{i} = {Constants.AllocatorTypeName}.Invoke(names[{i}], encoding.EncodeWithLengthPrefix);");
             CancellationToken.ThrowIfCancellationRequested();
         }
-        builder.AppendIndent(3, $"var closure = new {ClosureTypeName}(", ");", members.Length, x => $"key{x}, cvt{x}");
+        builder.AppendIndent(3, $"var closure = new {OutputClosureTypeName}(", ");", members.Length, x => $"key{x}, cvt{x}");
         builder.AppendIndent(3, $"var converter = Mikodev.Binary.Components.NamedObject.GetNamedObjectConverter<{SymbolTypeFullName}>(closure.Encode, {decoder}, encoding, names, optional);");
         builder.AppendIndent(3, $"return ({Constants.IConverterTypeName})converter;");
     }

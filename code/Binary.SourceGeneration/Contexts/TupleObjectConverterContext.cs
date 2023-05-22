@@ -22,7 +22,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     private void AppendConverterHead(StringBuilder builder)
     {
         var members = this.members;
-        builder.AppendIndent(1, $"private sealed class {ConverterTypeName}(", ")", members.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
+        builder.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", ")", members.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
         builder.AppendIndent(2, $": {SymbolConverterTypeFullName}(Mikodev.Binary.Components.TupleObject.GetTupleObjectLength(new {Constants.IConverterTypeName}[] {{ ", $" }}))", members.Length, x => $"cvt{x}");
         builder.AppendIndent(1, $"{{");
         CancellationToken.ThrowIfCancellationRequested();
@@ -101,7 +101,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
             CancellationToken.ThrowIfCancellationRequested();
         }
 
-        builder.AppendIndent(3, $"var converter = new {ConverterTypeName}(", ");", members.Length, x => $"cvt{x}");
+        builder.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ");", members.Length, x => $"cvt{x}");
         builder.AppendIndent(3, $"return ({Constants.IConverterTypeName})converter;");
     }
 

@@ -21,11 +21,11 @@ public abstract class SymbolConverterContext
 
     protected CancellationToken CancellationToken => this.context.CancellationToken;
 
-    protected string ClosureTypeName { get; }
+    protected string OutputClosureTypeName { get; }
 
-    protected string ConverterTypeName { get; }
+    protected string OutputConverterTypeName { get; }
 
-    protected string ConverterCreatorTypeName { get; }
+    protected string OutputConverterCreatorTypeName { get; }
 
     protected SymbolConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol)
     {
@@ -36,9 +36,9 @@ public abstract class SymbolConverterContext
         Symbol = symbol;
         SymbolTypeFullName = context.GetTypeFullName(symbol);
         SymbolConverterTypeFullName = context.GetConverterTypeFullName(symbol);
-        ClosureTypeName = $"{output}_Closure";
-        ConverterTypeName = $"{output}_Converter";
-        ConverterCreatorTypeName = $"{output}_ConverterCreator";
+        OutputClosureTypeName = $"{output}_Closure";
+        OutputConverterTypeName = $"{output}_Converter";
+        OutputConverterCreatorTypeName = $"{output}_ConverterCreator";
     }
 
     protected void AddType(int key, ITypeSymbol symbol)
@@ -60,7 +60,7 @@ public abstract class SymbolConverterContext
 
     protected void AppendConverterCreatorHead(StringBuilder builder)
     {
-        builder.AppendIndent(1, $"private sealed class {ConverterCreatorTypeName} : {Constants.IConverterCreatorTypeName}");
+        builder.AppendIndent(1, $"private sealed class {OutputConverterCreatorTypeName} : {Constants.IConverterCreatorTypeName}");
         builder.AppendIndent(1, $"{{");
 
         builder.AppendIndent(2, $"public {Constants.IConverterTypeName} GetConverter({Constants.IGeneratorContextTypeName} context, System.Type type)");
@@ -112,6 +112,6 @@ public abstract class SymbolConverterContext
     {
         var builder = new StringBuilder();
         Invoke(builder);
-        return new SourceResult(ConverterCreatorTypeName, builder.ToString());
+        return new SourceResult(OutputConverterCreatorTypeName, builder.ToString());
     }
 }

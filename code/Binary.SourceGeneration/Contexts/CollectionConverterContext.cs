@@ -28,7 +28,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
         };
         var elements = info.ElementTypes;
         var tail = args is null ? ")" : $", Mikodev.Binary.Components.CollectionDecoder<{args}> decoder)";
-        builder.AppendIndent(1, $"private sealed class {ConverterTypeName}(", tail, elements.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
+        builder.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", tail, elements.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
         builder.AppendIndent(2, $": {SymbolConverterTypeFullName}");
         builder.AppendIndent(1, $"{{");
         CancellationToken.ThrowIfCancellationRequested();
@@ -108,7 +108,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
         var tail = method is null ? ");" : ", decoder);";
         if (method is not null)
             builder.AppendIndent(3, $"var decoder = Mikodev.Binary.Components.Collection.{method}(", ");", elements.Length, x => $"cvt{x}");
-        builder.AppendIndent(3, $"var converter = new {ConverterTypeName}(", tail, elements.Length, x => $"cvt{x}");
+        builder.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", tail, elements.Length, x => $"cvt{x}");
         builder.AppendIndent(3, $"return ({Constants.IConverterTypeName})converter;");
     }
 
