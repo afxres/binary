@@ -114,6 +114,28 @@ public class CustomReadOnlyDictionaryInternalConstructor<K, V> : AbstractReadOnl
     internal CustomReadOnlyDictionaryInternalConstructor(IEnumerable<KeyValuePair<K, V>> collection) : base(collection) { }
 }
 
+public readonly struct CustomValueEnumerable<T> : IEnumerable<T>
+{
+    public readonly IEnumerable<T>? Collection;
+
+    public CustomValueEnumerable(IEnumerable<T>? collection) => this.Collection = collection;
+
+    public IEnumerator<T> GetEnumerator() => (this.Collection ?? Array.Empty<T>()).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+public readonly struct CustomValueEnumerableInternalConstructor<T> : IEnumerable<T>
+{
+    internal readonly IEnumerable<T>? Collection;
+
+    internal CustomValueEnumerableInternalConstructor(IEnumerable<T>? collection) => this.Collection = collection;
+
+    public IEnumerator<T> GetEnumerator() => (this.Collection ?? Array.Empty<T>()).GetEnumerator();
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
 [SourceGeneratorContext]
 [SourceGeneratorInclude<List<int>>]
 [SourceGeneratorInclude<List<string>>]
@@ -123,6 +145,10 @@ public class CustomReadOnlyDictionaryInternalConstructor<K, V> : AbstractReadOnl
 [SourceGeneratorInclude<CustomEnumerable<string>>]
 [SourceGeneratorInclude<CustomEnumerableInternalConstructor<int>>]
 [SourceGeneratorInclude<CustomEnumerableInternalConstructor<string>>]
+[SourceGeneratorInclude<CustomValueEnumerable<int>>]
+[SourceGeneratorInclude<CustomValueEnumerable<string>>]
+[SourceGeneratorInclude<CustomValueEnumerableInternalConstructor<int>>]
+[SourceGeneratorInclude<CustomValueEnumerableInternalConstructor<string>>]
 [SourceGeneratorInclude<CustomDictionary<int, string>>]
 [SourceGeneratorInclude<CustomReadOnlyDictionary<string, int>>]
 [SourceGeneratorInclude<CustomDictionaryEnumerableConstructor<int, string>>]
@@ -147,6 +173,8 @@ public class IntegrationTests
         var b = a.Select(x => x.ToString()).ToList();
         yield return new object[] { new CustomEnumerable<int>(a), a };
         yield return new object[] { new CustomEnumerable<string>(b), b };
+        yield return new object[] { new CustomValueEnumerable<int>(a), a };
+        yield return new object[] { new CustomValueEnumerable<string>(b), b };
     }
 
     public static IEnumerable<object[]> EnumerableKeyValuePairData()
@@ -169,6 +197,10 @@ public class IntegrationTests
         var converter = generator.GetConverter<T>();
         var converterSecond = generatorSecond.GetConverter<T>();
         var converterList = generator.GetConverter<List<E>>();
+        Assert.Equal(0, converter.Length);
+        Assert.Equal(0, converterSecond.Length);
+        Assert.Equal(0, converterList.Length);
+
         var buffer = converter.Encode(source);
         var bufferList = converterList.Encode(actual);
         var bufferSecond = converterSecond.Encode(source);
@@ -179,6 +211,11 @@ public class IntegrationTests
         var resultSecond = converterSecond.Decode(buffer);
         Assert.Equal(actual, result);
         Assert.Equal(actual, resultSecond);
+
+        var bufferDefault = converter.Encode(default);
+        var bufferSecondDefault = converterSecond.Encode(default);
+        Assert.Empty(bufferDefault);
+        Assert.Empty(bufferSecondDefault);
     }
 
     public static IEnumerable<object[]> EnumerableEncodeOnlyData()
@@ -187,6 +224,8 @@ public class IntegrationTests
         var b = a.Select(x => x.ToString()).ToList();
         yield return new object[] { new CustomEnumerableInternalConstructor<int>(a), a };
         yield return new object[] { new CustomEnumerableInternalConstructor<string>(b), b };
+        yield return new object[] { new CustomValueEnumerableInternalConstructor<int>(a), a };
+        yield return new object[] { new CustomValueEnumerableInternalConstructor<string>(b), b };
     }
 
     public static IEnumerable<object[]> EnumerableKeyValuePairEncodeOnlyData()
