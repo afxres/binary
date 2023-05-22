@@ -18,7 +18,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
     private void AppendConverterHead(StringBuilder builder)
     {
         var info = this.info;
-        var args = info.SourceType switch
+        var arguments = info.SourceType switch
         {
             SourceType.List => $"System.Collections.Generic.List<{GetTypeFullName(0)}>",
             SourceType.HashSet => $"System.Collections.Generic.HashSet<{GetTypeFullName(0)}>",
@@ -27,7 +27,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
             _ => null,
         };
         var elements = info.ElementTypes;
-        var tail = args is null ? ")" : $", Mikodev.Binary.Components.CollectionDecoder<{args}> decoder)";
+        var tail = arguments is null ? ")" : $", Mikodev.Binary.Components.CollectionDecoder<{arguments}> decoder)";
         builder.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", tail, elements.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
         builder.AppendIndent(2, $": {SymbolConverterTypeFullName}");
         builder.AppendIndent(1, $"{{");
@@ -109,7 +109,6 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
         if (method is not null)
             builder.AppendIndent(3, $"var decoder = Mikodev.Binary.Components.Collection.{method}(", ");", elements.Length, x => $"cvt{x}");
         builder.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", tail, elements.Length, x => $"cvt{x}");
-        builder.AppendIndent(3, $"return ({Constants.IConverterTypeName})converter;");
     }
 
     protected override void Invoke(StringBuilder builder)

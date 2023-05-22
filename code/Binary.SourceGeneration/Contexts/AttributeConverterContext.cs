@@ -13,17 +13,10 @@ public sealed partial class AttributeConverterContext : SymbolConverterContext
         this.converter = converter;
     }
 
-    private void AppendConverterCreatorBody(StringBuilder builder)
-    {
-        AppendAssignConverterExplicitConverter(builder, this.converter, "converter", SymbolConverterTypeFullName);
-        builder.AppendIndent(3, $"return ({Constants.IConverterTypeName})converter;");
-        CancellationToken.ThrowIfCancellationRequested();
-    }
-
     protected override void Invoke(StringBuilder builder)
     {
         AppendConverterCreatorHead(builder);
-        AppendConverterCreatorBody(builder);
+        AppendAssignConverterExplicitConverter(builder, this.converter, "converter", SymbolConverterTypeFullName);
         AppendConverterCreatorTail(builder);
     }
 }

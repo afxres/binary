@@ -71,6 +71,7 @@ public abstract class SymbolConverterContext
 
     protected void AppendConverterCreatorTail(StringBuilder builder)
     {
+        builder.AppendIndent(3, $"return ({Constants.IConverterTypeName})converter;");
         builder.AppendIndent(2, $"}}");
         builder.AppendIndent(1, $"}}");
     }

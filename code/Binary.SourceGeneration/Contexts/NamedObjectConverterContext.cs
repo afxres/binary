@@ -102,9 +102,9 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             builder.AppendIndent(3, $"var key{i} = {Constants.AllocatorTypeName}.Invoke(names[{i}], encoding.EncodeWithLengthPrefix);");
             CancellationToken.ThrowIfCancellationRequested();
         }
+
         builder.AppendIndent(3, $"var closure = new {OutputClosureTypeName}(", ");", members.Length, x => $"key{x}, cvt{x}");
         builder.AppendIndent(3, $"var converter = Mikodev.Binary.Components.NamedObject.GetNamedObjectConverter<{SymbolTypeFullName}>(closure.Encode, {decoder}, encoding, names, optional);");
-        builder.AppendIndent(3, $"return ({Constants.IConverterTypeName})converter;");
     }
 
     protected override void Invoke(StringBuilder builder)

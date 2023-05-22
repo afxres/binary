@@ -2,7 +2,7 @@
 
 using Microsoft.CodeAnalysis;
 using Mikodev.Binary.SourceGeneration;
-using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -29,9 +29,12 @@ public sealed partial class GenericConverterContext : SymbolConverterContext
             CancellationToken.ThrowIfCancellationRequested();
         }
 
-        var types = string.Join(", ", (info.SelfType is SelfType.Include ? new[] { SymbolTypeFullName } : Array.Empty<string>()).Concat(elements.Select((_, i) => GetTypeFullName(i))));
-        builder.AppendIndent(3, $"var converter = Mikodev.Binary.Generator.Get{info.Name}Converter<{types}>(", ");", elements.Length, x => $"cvt{x}");
-        builder.AppendIndent(3, $"return ({Constants.IConverterTypeName})converter;");
+        var types = new List<string>();
+        if (info.SelfType is SelfType.Include)
+            types.Add(SymbolTypeFullName);
+        types.AddRange(elements.Select((_, i) => GetTypeFullName(i)));
+        var arguments = string.Join(", ", types);
+        builder.AppendIndent(3, $"var converter = Mikodev.Binary.Generator.Get{info.Name}Converter<{arguments}>(", ");", elements.Length, x => $"cvt{x}");
     }
 
     protected override void Invoke(StringBuilder builder)

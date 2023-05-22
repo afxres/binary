@@ -27,11 +27,11 @@ public static partial class Symbols
         return IsKeyword(name) ? $"@{name}" : name;
     }
 
-    public static void GetNameInSourceCode(StringBuilder builder, string name)
+    public static void GetNameInSourceCode(StringBuilder target, string name)
     {
         if (IsKeyword(name))
-            _ = builder.Append('@');
-        _ = builder.Append(name);
+            _ = target.Append('@');
+        _ = target.Append(name);
     }
 
     public static string GetNamespaceInSourceCode(INamespaceSymbol @namespace)
@@ -41,15 +41,15 @@ public static partial class Symbols
         return builder.ToString();
     }
 
-    public static void GetNamespaceInSourceCode(StringBuilder builder, INamespaceSymbol @namespace)
+    public static void GetNamespaceInSourceCode(StringBuilder target, INamespaceSymbol @namespace)
     {
         var source = @namespace.ToDisplayParts();
         foreach (var i in source)
         {
             if (i.Symbol is { } symbol)
-                GetNameInSourceCode(builder, symbol.Name);
+                GetNameInSourceCode(target, symbol.Name);
             else
-                _ = builder.Append('.');
+                _ = target.Append('.');
         }
     }
 
@@ -94,7 +94,7 @@ public static partial class Symbols
             if (arguments.Length is 0)
                 return;
 
-            _ = target.Append("<");
+            _ = target.Append('<');
             for (var i = 0; i < arguments.Length; i++)
             {
                 Invoke(target, arguments[i]);
@@ -102,7 +102,7 @@ public static partial class Symbols
                     break;
                 _ = target.Append(", ");
             }
-            _ = target.Append(">");
+            _ = target.Append('>');
         }
 
         var builder = new StringBuilder();

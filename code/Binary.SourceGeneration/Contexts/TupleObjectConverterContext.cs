@@ -100,9 +100,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
             AppendAssignConverter(builder, member, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i));
             CancellationToken.ThrowIfCancellationRequested();
         }
-
         builder.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ");", members.Length, x => $"cvt{x}");
-        builder.AppendIndent(3, $"return ({Constants.IConverterTypeName})converter;");
     }
 
     protected override void Invoke(StringBuilder builder)
