@@ -41,10 +41,10 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
     }
 
     [DebuggerStepThrough, DoesNotReturn]
-    private void ExceptKeyFound(int i) => throw new ArgumentException($"Named key '{this.names[i]}' already exists, type: {typeof(T)}");
-
-    [DebuggerStepThrough, DoesNotReturn]
-    private void ExceptNotFound(int i) => throw new ArgumentException($"Named key '{this.names[i]}' does not exist, type: {typeof(T)}");
+    private void ExceptKeyFound(int cursor)
+    {
+        throw new ArgumentException($"Named key '{this.names[cursor]}' already exists, type: {typeof(T)}");
+    }
 
     [DebuggerStepThrough, DoesNotReturn]
     private void ExceptNotFound(ReadOnlySpan<long> span)
@@ -58,7 +58,7 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
             cursor = i;
             break;
         }
-        ExceptNotFound(cursor);
+        throw new ArgumentException($"Named key '{this.names[cursor]}' does not exist, type: {typeof(T)}");
     }
 
     public override void Encode(ref Allocator allocator, T? item)
@@ -96,16 +96,15 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
             Debug.Assert(cursor is -1 || (uint)cursor < (uint)slices.Length);
             offset += length;
             length = NumberModule.DecodeEnsureBuffer(ref source, ref offset, limits);
-            if ((uint)cursor < (uint)slices.Length)
-            {
-                ref var handle = ref slices[cursor];
-                if (handle is not 0)
-                    ExceptKeyFound(cursor);
-                handle = NamedObjectTemplates.GetIndexData(offset, length);
-                if (optional[cursor])
-                    continue;
-                remain--;
-            }
+            if ((uint)cursor >= (uint)slices.Length)
+                continue;
+            ref var handle = ref slices[cursor];
+            if (handle is not 0)
+                ExceptKeyFound(cursor);
+            handle = NamedObjectTemplates.GetIndexData(offset, length);
+            if (optional[cursor])
+                continue;
+            remain--;
         }
 
         Debug.Assert(remain >= 0);
