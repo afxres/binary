@@ -151,7 +151,7 @@ internal static class FallbackCollectionMethods
 
     private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
     {
-        return GetDecodeDelegate<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail).Decode, method);
+        return GetDecodeDelegate<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail).Invoke, method);
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
@@ -160,7 +160,7 @@ internal static class FallbackCollectionMethods
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), ArrayOrListAssignableDefinitions.Contains))
             return GetDecodeDelegate<T, E>(converter, null);
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), HashSetAssignableDefinitions.Contains))
-            return GetDecodeDelegate<T, HashSet<E>>(new HashSetDecoder<E>(converter).Decode);
+            return GetDecodeDelegate<T, HashSet<E>>(new HashSetDecoder<E>(converter).Invoke);
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } result)
             return GetDecodeDelegate<T, E>(converter, x => Expression.Call(result.MakeGenericMethod(typeof(E)), x));
         if (GetConstructorOrDefault(typeof(T), typeof(IEnumerable<E>)) is { } method)
@@ -173,13 +173,13 @@ internal static class FallbackCollectionMethods
     private static DecodePassSpanDelegate<T>? GetDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
     {
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), DictionaryAssignableDefinitions.Contains))
-            return GetDecodeDelegate<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail).Decode);
+            return GetDecodeDelegate<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail).Invoke);
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } result)
             return GetDecodeDelegate<T, K, V>(init, tail, x => Expression.Call(result.MakeGenericMethod(typeof(K), typeof(V)), x));
         if (GetConstructorOrDefault(typeof(T), typeof(IDictionary<K, V>)) is { } target)
-            return GetDecodeDelegate<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail).Decode, target);
+            return GetDecodeDelegate<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail).Invoke, target);
         if (GetConstructorOrDefault(typeof(T), typeof(IReadOnlyDictionary<K, V>)) is { } second)
-            return GetDecodeDelegate<T, Dictionary<K, V>, IReadOnlyDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail).Decode, second);
+            return GetDecodeDelegate<T, Dictionary<K, V>, IReadOnlyDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail).Invoke, second);
         if (GetConstructorOrDefault(typeof(T), typeof(IEnumerable<KeyValuePair<K, V>>)) is { } method)
             return GetDecodeDelegate<T, K, V>(init, tail, method);
         else

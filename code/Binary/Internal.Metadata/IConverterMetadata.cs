@@ -3,6 +3,8 @@
 using System;
 using System.Reflection;
 
+internal delegate void EncodeDelegate<in T>(ref Allocator allocator, T data);
+
 internal delegate T DecodeDelegate<out T>(ref ReadOnlySpan<byte> span);
 
 internal delegate T DecodePassSpanDelegate<out T>(ReadOnlySpan<byte> span);

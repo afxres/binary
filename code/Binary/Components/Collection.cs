@@ -13,14 +13,14 @@ public static class Collection
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(value);
         var decoder = new DictionaryDecoder<K, V>(key, value);
-        return decoder.Decode;
+        return decoder.Invoke;
     }
 
     public static CollectionDecoder<HashSet<E>> GetHashSetDecoder<E>(Converter<E> converter)
     {
         ArgumentNullException.ThrowIfNull(converter);
         var decoder = new HashSetDecoder<E>(converter);
-        return decoder.Decode;
+        return decoder.Invoke;
     }
 
     public static CollectionDecoder<List<E>> GetListDecoder<E>(Converter<E> converter)
@@ -35,6 +35,6 @@ public static class Collection
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(value);
         var decoder = new KeyValueEnumerableDecoder<K, V>(key, value);
-        return decoder.Decode;
+        return decoder.Invoke;
     }
 }

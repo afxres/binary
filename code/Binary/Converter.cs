@@ -23,7 +23,7 @@ public abstract partial class Converter<T>
         var parent = typeof(Converter<T>);
         if (new DecodeDelegate<T>(DecodeAuto).Method.DeclaringType == parent && new DecodeDelegate<T>(DecodeWithLengthPrefix).Method.DeclaringType != parent)
             ThrowHelper.ThrowNotOverride(nameof(DecodeAuto), nameof(DecodeWithLengthPrefix), GetType());
-        if (new AllocatorAction<T>(EncodeAuto).Method.DeclaringType == parent && new AllocatorAction<T>(EncodeWithLengthPrefix).Method.DeclaringType != parent)
+        if (new EncodeDelegate<T>(EncodeAuto).Method.DeclaringType == parent && new EncodeDelegate<T>(EncodeWithLengthPrefix).Method.DeclaringType != parent)
             ThrowHelper.ThrowNotOverride(nameof(EncodeAuto), nameof(EncodeWithLengthPrefix), GetType());
         this.length = length;
     }

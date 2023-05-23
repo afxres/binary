@@ -19,7 +19,7 @@ internal sealed class DictionaryDecoder<K, V> where K : notnull
         this.itemLength = TupleObject.GetTupleObjectLength(new IConverter[] { init, tail });
     }
 
-    public Dictionary<K, V> Decode(ReadOnlySpan<byte> span)
+    public Dictionary<K, V> Invoke(ReadOnlySpan<byte> span)
     {
         var limits = span.Length;
         if (limits is 0)

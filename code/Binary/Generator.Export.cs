@@ -108,7 +108,9 @@ public static partial class Generator
     public static Converter<HashSet<E>> GetHashSetConverter<E>(Converter<E> converter)
     {
         ArgumentNullException.ThrowIfNull(converter);
-        return new SequenceConverter<HashSet<E>>(new HashSetEncoder<E>(converter).Encode, new HashSetDecoder<E>(converter).Decode);
+        var encoder = new HashSetEncoder<E>(converter);
+        var decoder = new HashSetDecoder<E>(converter);
+        return new SequenceConverter<HashSet<E>>(encoder.Encode, decoder.Invoke);
     }
 
     public static Converter<Dictionary<K, V>> GetDictionaryConverter<K, V>(Converter<K> key, Converter<V> value) where K : notnull
@@ -117,6 +119,6 @@ public static partial class Generator
         ArgumentNullException.ThrowIfNull(value);
         var encoder = new DictionaryEncoder<K, V>(key, value);
         var decoder = new DictionaryDecoder<K, V>(key, value);
-        return new SequenceConverter<Dictionary<K, V>>(encoder.Encode, decoder.Decode);
+        return new SequenceConverter<Dictionary<K, V>>(encoder.Encode, decoder.Invoke);
     }
 }

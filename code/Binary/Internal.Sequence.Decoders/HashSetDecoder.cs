@@ -9,7 +9,7 @@ internal sealed class HashSetDecoder<E>
 
     public HashSetDecoder(Converter<E> converter) => this.converter = converter;
 
-    public HashSet<E> Decode(ReadOnlySpan<byte> span)
+    public HashSet<E> Invoke(ReadOnlySpan<byte> span)
     {
         var converter = this.converter;
         var result = new HashSet<E>();
