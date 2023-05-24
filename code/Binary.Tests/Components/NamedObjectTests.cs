@@ -39,8 +39,8 @@ public class NamedObjectTests
         var i = Assert.Throws<ArgumentException>(() => NamedObject.GetNamedObjectConverter(a, null, b, new[] { string.Empty }, Array.Empty<bool>()));
         Assert.Null(h.ParamName);
         Assert.Null(i.ParamName);
-        Assert.Equal($"Collection is empty.", h.Message);
-        Assert.Equal($"Collection is empty.", i.Message);
+        Assert.Equal($"Sequence contains no element.", h.Message);
+        Assert.Equal($"Sequence contains no element.", i.Message);
     }
 
     [Fact(DisplayName = "Argument Collection Lengths Not Match Test")]
@@ -51,6 +51,6 @@ public class NamedObjectTests
         var b = generator.GetConverter<string>();
         var h = Assert.Throws<ArgumentException>(() => NamedObject.GetNamedObjectConverter(a, null, b, new[] { string.Empty }, new[] { false, true }));
         Assert.Null(h.ParamName);
-        Assert.Equal($"Collection lengths not match.", h.Message);
+        Assert.Equal($"Sequence lengths not match.", h.Message);
     }
 }

@@ -17,9 +17,9 @@ public static class NamedObject
         var alpha = names.ToImmutableArray();
         var bravo = optional.ToImmutableArray();
         if (alpha.Length is 0 || bravo.Length is 0)
-            throw new ArgumentException($"Collection is empty.");
+            throw new ArgumentException($"Sequence contains no element.");
         if (alpha.Length != bravo.Length)
-            throw new ArgumentException($"Collection lengths not match.");
+            throw new ArgumentException($"Sequence lengths not match.");
         var dictionary = NamedObjectArguments.GetDictionary(typeof(T), converter, alpha);
         return new NamedObjectConverter<T>(action, constructor, dictionary, alpha, bravo);
     }
