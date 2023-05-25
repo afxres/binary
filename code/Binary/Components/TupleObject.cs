@@ -9,11 +9,9 @@ public static class TupleObject
     public static int GetTupleObjectLength(IEnumerable<IConverter> converters)
     {
         ArgumentNullException.ThrowIfNull(converters);
-        var invoke = false;
         var result = 0;
         foreach (var i in converters)
         {
-            invoke = true;
             if (i is not IConverterMetadata)
                 throw new ArgumentException($"Sequence contains null or invalid element.", nameof(converters));
             var length = i.Length;
@@ -22,7 +20,7 @@ public static class TupleObject
             checked { result += length; }
         }
 
-        if (invoke is false)
+        if (result is 0)
             throw new ArgumentException("Sequence contains no element.", nameof(converters));
         return result;
     }
