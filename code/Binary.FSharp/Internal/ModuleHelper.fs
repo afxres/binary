@@ -1,7 +1,9 @@
 ﻿module internal Mikodev.Binary.Internal.ModuleHelper
 
 open Mikodev.Binary
+open System
 open System.Runtime.CompilerServices
+open System.Reflection
 
 type IdentityDefinition = delegate of nativeint -> nativeint
 
@@ -9,13 +11,13 @@ type ToHandleDefinition = delegate of byref<Allocator> -> nativeint
 
 let IdentityDelegate = IdentityDefinition id
 
-let EncodeNumberMethodInfo = CommonHelper.GetMethod(typeof<Converter>, nameof Converter.Encode)
+let AllocatorByRefType = typeof<IConverter>.Assembly.GetType("Mikodev.Binary.Allocator", throwOnError = true).MakeByRefType()
 
-let DecodeNumberMethodInfo = CommonHelper.GetMethod(typeof<Converter>, nameof Converter.Decode)
+let ReadOnlySpanByteByRefType = typeof<ReadOnlyMemory<byte>>.GetProperty("Span", BindingFlags.Instance ||| BindingFlags.Public).PropertyType.MakeByRefType()
 
-let AllocatorByRefType = (EncodeNumberMethodInfo.GetParameters() |> Array.head).ParameterType
+let EncodeNumberMethodInfo = CommonHelper.GetMethod(typeof<Converter>, "Encode", [| AllocatorByRefType; typeof<int> |])
 
-let ReadOnlySpanByteByRefType = (DecodeNumberMethodInfo.GetParameters() |> Array.head).ParameterType
+let DecodeNumberMethodInfo = CommonHelper.GetMethod(typeof<Converter>, "Decode", [| ReadOnlySpanByteByRefType |])
 
 #nowarn "42" // This construct is deprecated: it is only for use in the F# library
 

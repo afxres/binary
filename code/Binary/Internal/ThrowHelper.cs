@@ -38,6 +38,9 @@ internal static class ThrowHelper
     internal static void ThrowNotEnoughBytes() => throw new ArgumentException("Not enough bytes or byte sequence invalid.");
 
     [DoesNotReturn]
+    internal static void ThrowNotEnoughBytesToWrite() => throw new ArgumentException("Not enough bytes to write.");
+
+    [DoesNotReturn]
     internal static void ThrowTryWriteBytesFailed() => throw new InvalidOperationException("Try write bytes failed.");
 
     [DoesNotReturn]

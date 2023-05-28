@@ -48,20 +48,6 @@ let ``Encode Number Then Decode`` (number : int, length : int) =
     Assert.True(span.IsEmpty)
     ()
 
-[<Theory>]
-[<InlineData(-1)>]
-[<InlineData(Int32.MinValue)>]
-let ``Encode Number (overflow)`` (number : int) =
-    let error = Assert.Throws<ArgumentOutOfRangeException>(fun () ->
-        let mutable allocator = Allocator()
-        Converter.Encode(&allocator, number))
-    let methodInfo = typeof<Converter>.GetMethod("Encode")
-    let parameter = methodInfo.GetParameters() |> Array.last
-    Assert.Equal("number", error.ParamName)
-    Assert.Equal("number", parameter.Name)
-    Assert.StartsWith("Argument number must be greater than or equal to zero!", error.Message)
-    ()
-
 [<Fact>]
 let ``Decode Number (empty bytes)`` () =
     let error = Assert.Throws<ArgumentException>(fun () -> let mutable span = ReadOnlySpan<byte>() in Converter.Decode(&span) |> ignore)

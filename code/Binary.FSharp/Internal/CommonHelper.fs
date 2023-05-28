@@ -28,8 +28,8 @@ type internal CommonHelper =
         else
             null
 
-    static member GetMethod(t : Type, name : string) =
-        let result = t.GetMethod name
+    static member GetMethod(t : Type, name : string, types : Type array) =
+        let result = t.GetMethod(name, types)
         if isNull (box result) then
             raise (MissingMethodException $"Method not found, method name: {name}, type: {t}")
         result

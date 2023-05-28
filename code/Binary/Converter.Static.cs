@@ -26,6 +26,27 @@ public static class Converter
         return ThrowHelper.ThrowNotConverter<MethodInfo>(converter.GetType());
     }
 
+    public static void Encode(scoped Span<byte> span, int number, out int bytesWritten)
+    {
+        if (number < 0)
+            ThrowHelper.ThrowNumberNegative();
+        var numberLength = NumberModule.EncodeLength((uint)number);
+        if (span.Length < numberLength)
+            ThrowHelper.ThrowNotEnoughBytesToWrite();
+        NumberModule.Encode(ref MemoryMarshal.GetReference(span), (uint)number, numberLength);
+        bytesWritten = numberLength;
+    }
+
+    public static int Decode(scoped ReadOnlySpan<byte> span, out int bytesRead)
+    {
+        ref var source = ref MemoryMarshal.GetReference(span);
+        var limits = span.Length;
+        var offset = 0;
+        var length = NumberModule.Decode(ref source, ref offset, limits);
+        bytesRead = offset;
+        return length;
+    }
+
     public static void Encode(ref Allocator allocator, int number)
     {
         if (number < 0)
