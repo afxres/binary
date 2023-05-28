@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-public static class Converter
+public static partial class Converter
 {
     public static Type GetGenericArgument(IConverter converter)
     {
