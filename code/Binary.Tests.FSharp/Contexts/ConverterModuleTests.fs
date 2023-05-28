@@ -102,7 +102,7 @@ type ConverterModuleTests() =
 
     [<Fact>]
     member __.``Get Method (converter null)`` () =
-        let error = Assert.Throws<ArgumentNullException>(fun () -> Converter.GetMethod(Unchecked.defaultof<IConverter>, null) |> ignore)
+        let error = Assert.Throws<ArgumentNullException>(fun () -> Converter.GetMethod(Unchecked.defaultof<IConverter>, String.Empty) |> ignore)
         let methodInfo = typeof<Converter>.GetMethods() |> Array.filter (fun x -> x.Name = "GetMethod") |> Array.exactlyOne
         let parameter = methodInfo.GetParameters() |> Array.head
         Assert.Equal("converter", parameter.Name)
@@ -112,14 +112,13 @@ type ConverterModuleTests() =
     [<Theory>]
     [<MemberData("Data Invalid Converter")>]
     member __.``Get Method (invalid converter instance)`` (converter : IConverter) =
-        let error = Assert.Throws<ArgumentException>(fun () -> Converter.GetMethod(converter, null) |> ignore)
+        let error = Assert.Throws<ArgumentException>(fun () -> Converter.GetMethod(converter, String.Empty) |> ignore)
         let message = sprintf "Can not get generic argument, '%O' is not a subclass of '%O'" (converter.GetType()) typedefof<Converter<_>>
         Assert.Null(error.ParamName)
         Assert.Equal(message, error.Message)
         ()
 
     [<Theory>]
-    [<InlineData(null)>]
     [<InlineData("")>]
     [<InlineData("Bad Name")>]
     member __.``Get Method (invalid name)`` (name : string) =

@@ -19,6 +19,7 @@ public static class Converter
 
     public static MethodInfo GetMethod(IConverter converter, string name)
     {
+        ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(converter);
         if (converter is IConverterMetadata metadata)
             return metadata.GetMethod(name);
