@@ -10,6 +10,12 @@ using System.Runtime.InteropServices;
 public ref partial struct Allocator
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Append(ref Allocator allocator, byte data)
+    {
+        Unsafe.WriteUnaligned(ref Assign(ref allocator, sizeof(byte)), data);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Append(ref Allocator allocator, scoped ReadOnlySpan<byte> span)
     {
         var length = span.Length;

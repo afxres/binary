@@ -212,4 +212,45 @@ public class AllocatorTests
             }
         }
     }
+
+    [Theory(DisplayName = "Append Byte Test")]
+    [InlineData((byte)0, 0, 0, 256)]
+    [InlineData((byte)1, 100, 256, 256)]
+    [InlineData((byte)2, 255, 256, 256)]
+    [InlineData((byte)3, 256, 256, 512)]
+    [InlineData((byte)47, 513, 1024, 1024)]
+    [InlineData((byte)73, 2048, 2048, 4096)]
+    [InlineData((byte)255, 767, 768, 768)]
+    public void AppendByteTest(byte data, int length, int capacity, int newCapacity)
+    {
+        var buffer = new byte[capacity];
+        var allocator = new Allocator(buffer);
+        Allocator.Append(ref allocator, length, 0, (_, _) => { });
+        Assert.Equal(length, allocator.Length);
+        Assert.Equal(capacity, allocator.Capacity);
+        Allocator.Append(ref allocator, data);
+        Assert.Equal(newCapacity, allocator.Capacity);
+        Assert.Equal(length + 1, allocator.Length);
+        Assert.Equal(data, allocator.AsSpan()[length]);
+    }
+
+    [Theory(DisplayName = "Append Byte Capacity Limited Test")]
+    [InlineData((byte)0, 0, 0)]
+    [InlineData((byte)1, 128, 128)]
+    [InlineData((byte)2, 256, 256)]
+    [InlineData((byte)255, 8192, 8192)]
+    public void AppendByteCapacityLimitedTest(byte data, int length, int capacity)
+    {
+        var error = Assert.Throws<ArgumentException>(() =>
+        {
+            var allocator = new Allocator(Array.Empty<byte>(), maxCapacity: capacity);
+            Allocator.Append(ref allocator, length, 0, (_, _) => { });
+            Assert.Equal(length, allocator.Length);
+            Assert.Equal(capacity, allocator.Capacity);
+            Assert.Equal(capacity, allocator.MaxCapacity);
+            Allocator.Append(ref allocator, data);
+        });
+        Assert.Null(error.ParamName);
+        Assert.Equal("Maximum capacity has been reached.", error.Message);
+    }
 }
