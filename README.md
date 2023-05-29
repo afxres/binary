@@ -46,6 +46,16 @@ Supported types:
 | Tuple         | ``KeyValuePair<,>``, ``Tuple<...>``, ``ValueTuple<...>``                                                                        | Tuple can not be null                    |
 | Collection    | Implements ``IEnumerable<>`` and have a constructor accept ``IEnumerable<>`` as parameter                                       | Stack types are explicitly not supported |
 
+Language Features:
+| Feature                   | JIT | AOT | Comment                              |
+| ------------------------- | --- | --- | ------------------------------------ |
+| Enumeration Types         | Yes | Yes | Use underlying integral numeric type |
+| Anonymous Types           | Yes |     |                                      |
+| Tuple Types               | Yes | Yes |                                      |
+| Records                   | Yes | Yes |                                      |
+| Required Members          | Yes | Yes |                                      |
+| Discriminated Unions (F#) | Yes |     |                                      |
+
 ## AOT Support
 
 AOT support (via source generator) is now generally available.  
@@ -153,10 +163,10 @@ Console.WriteLine(result);
 ### Length Prefix
 
 Variable length codes for length prefix:
-| Leading Bit | Byte Length | Min Value | Max Value | Example (hex) | Example Value |
-| :---------- | :---------- | :-------- | :-------- | :------------ | :------------ |
-| 0           | 1           | 0         | 2^7 - 1   | 7F            | 127           |
-| 1           | 4           | 0         | 2^31 - 1  | 80 00 04 01   | 1025          |
+| Leading Bit | Byte Length | Min Value | Max Value          | Example (hex) | Example Value |
+| ----------- | ----------- | --------- | ------------------ | ------------- | ------------- |
+| 0           | 1           | 0         | 2<sup>7</sup> - 1  | 7F            | 127           |
+| 1           | 4           | 0         | 2<sup>31</sup> - 1 | 80 00 04 01   | 1025          |
 
 ### Object
 
