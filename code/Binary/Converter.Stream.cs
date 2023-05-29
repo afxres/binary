@@ -19,7 +19,7 @@ public static partial class Converter
     {
         var buffer = new byte[4];
         Encode(new Span<byte>(buffer), number, out var length);
-        await stream.WriteAsync(new ReadOnlyMemory<byte>(buffer, 0, length), cancellation);
+        await stream.WriteAsync(new ReadOnlyMemory<byte>(buffer, 0, length), cancellation).ConfigureAwait(false);
     }
 
     public static int Decode(Stream stream)
@@ -37,11 +37,11 @@ public static partial class Converter
     public static async ValueTask<int> DecodeAsync(Stream stream, CancellationToken cancellation = default)
     {
         var buffer = new byte[4];
-        await stream.ReadExactlyAsync(new Memory<byte>(buffer, 0, 1), cancellation);
+        await stream.ReadExactlyAsync(new Memory<byte>(buffer, 0, 1), cancellation).ConfigureAwait(false);
         var header = (uint)buffer[0];
         if ((header & 0x80U) is 0)
             return (int)header;
-        await stream.ReadExactlyAsync(new Memory<byte>(buffer, 1, 3), cancellation);
+        await stream.ReadExactlyAsync(new Memory<byte>(buffer, 1, 3), cancellation).ConfigureAwait(false);
         var result = BinaryPrimitives.ReadUInt32BigEndian(buffer);
         return (int)(result & 0x7FFF_FFFFU);
     }
