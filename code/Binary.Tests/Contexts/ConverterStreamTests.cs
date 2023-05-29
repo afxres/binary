@@ -83,7 +83,7 @@ public class ConverterStreamTests
         Assert.StartsWith("Argument number must be greater than or equal to zero!", error.Message);
     }
 
-    private sealed class TestStream : Stream
+    private class TestStream : Stream
     {
         public override void Flush() => throw new NotImplementedException();
 
@@ -120,6 +120,22 @@ public class ConverterStreamTests
         }
     }
 
+    private class TestStream2 : TestStream
+    {
+        public List<int> BytesReadList { get; } = new List<int>();
+
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            buffer.Span.Fill(0x80);
+            BytesReadList.Add(buffer.Length);
+            Assert.True(cancellationToken.CanBeCanceled);
+            if (buffer.Length is 1)
+                return ValueTask.FromResult(1);
+            cancellationToken.ThrowIfCancellationRequested();
+            throw new NotSupportedException("Message 03.");
+        }
+    }
+
     [Fact(DisplayName = "Encode With Cancellation Async")]
     public async Task EncodeWithCancellationTestAsync()
     {
@@ -148,6 +164,24 @@ public class ConverterStreamTests
         var taskSecond = Converter.DecodeAsync(stream, source.Token).AsTask();
         var exception = await Assert.ThrowsAsync<OperationCanceledException>(() => taskSecond);
         Assert.Equal(source.Token, exception.CancellationToken);
+    }
+
+    [Fact(DisplayName = "Decode With Cancellation Case 2 Async")]
+    public async Task DecodeWithCancellationCase2TestAsync()
+    {
+        var stream = new TestStream2();
+        Assert.Empty(stream.BytesReadList);
+        var source = new CancellationTokenSource();
+        var task = Converter.DecodeAsync(stream, source.Token).AsTask();
+        var error = await Assert.ThrowsAsync<NotSupportedException>(() => task);
+        Assert.Equal("Message 03.", error.Message);
+        Assert.Equal(new[] { 1, 3 }, stream.BytesReadList);
+
+        source.Cancel();
+        var taskSecond = Converter.DecodeAsync(stream, source.Token).AsTask();
+        var exception = await Assert.ThrowsAsync<OperationCanceledException>(() => taskSecond);
+        Assert.Equal(source.Token, exception.CancellationToken);
+        Assert.Equal(new[] { 1, 3, 1, 3 }, stream.BytesReadList);
     }
 
     public static IEnumerable<object[]> NotEnoughBytesData()
