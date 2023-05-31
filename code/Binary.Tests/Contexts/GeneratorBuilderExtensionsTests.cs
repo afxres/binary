@@ -27,6 +27,35 @@ public class GeneratorBuilderExtensionsTests
         public IGenerator Build() => throw new NotSupportedException();
     }
 
+    private sealed class FakeLinkedListGeneratorBuilder : IGeneratorBuilder
+    {
+        public int Id { get; }
+
+        public object? Item { get; }
+
+        public FakeLinkedListGeneratorBuilder? Next { get; }
+
+        public FakeLinkedListGeneratorBuilder()
+        {
+            Id = 0;
+            Item = null;
+            Next = null;
+        }
+
+        public FakeLinkedListGeneratorBuilder(object item, FakeLinkedListGeneratorBuilder next)
+        {
+            Id = next.Id + 1;
+            Item = item;
+            Next = next;
+        }
+
+        public IGeneratorBuilder AddConverter(IConverter converter) => new FakeLinkedListGeneratorBuilder(converter, this);
+
+        public IGeneratorBuilder AddConverterCreator(IConverterCreator creator) => new FakeLinkedListGeneratorBuilder(creator, this);
+
+        public IGenerator Build() => throw new NotImplementedException();
+    }
+
     private sealed class FakeConverter<T> : Converter<T>
     {
         public override void Encode(ref Allocator allocator, T? item) => throw new NotSupportedException();
@@ -50,6 +79,17 @@ public class GeneratorBuilderExtensionsTests
         Assert.True(ReferenceEquals(builder, returned));
     }
 
+    [Fact(DisplayName = "Add Converters With Linked List Builder")]
+    public void AddConvertersWithLinkedListBuilder()
+    {
+        var converters = new IConverter[] { new FakeConverter<int>(), new FakeConverter<string>() };
+        var builder = new FakeLinkedListGeneratorBuilder();
+        Assert.Equal(0, builder.Id);
+        var returned = Assert.IsType<FakeLinkedListGeneratorBuilder>(builder.AddConverters(converters));
+        Assert.Equal(2, returned.Id);
+        Assert.False(ReferenceEquals(builder, returned));
+    }
+
     [Fact(DisplayName = "Add Converter Creators")]
     public void AddConverterCreators()
     {
@@ -59,6 +99,17 @@ public class GeneratorBuilderExtensionsTests
         var returned = builder.AddConverterCreators(creators);
         Assert.Equal(2, builder.ConverterCreators.Count);
         Assert.True(ReferenceEquals(builder, returned));
+    }
+
+    [Fact(DisplayName = "Add Converter Creators With Linked List Builder")]
+    public void AddConverterCreatorsWithLinkedListBuilder()
+    {
+        var creators = new IConverterCreator[] { new FakeConverterCreator<Guid>(), new FakeConverterCreator<Uri>() };
+        var builder = new FakeLinkedListGeneratorBuilder();
+        Assert.Equal(0, builder.Id);
+        var returned = Assert.IsType<FakeLinkedListGeneratorBuilder>(builder.AddConverterCreators(creators));
+        Assert.Equal(2, returned.Id);
+        Assert.False(ReferenceEquals(builder, returned));
     }
 
     [Fact(DisplayName = "Add Converters (argument null)")]
