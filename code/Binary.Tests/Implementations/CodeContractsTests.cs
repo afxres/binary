@@ -88,9 +88,9 @@ public class CodeContractsTests
     public void PublicObjectMethods()
     {
         var types = typeof(IConverter).Assembly.GetTypes()
-            .Where(x => (x.IsPublic || x.IsNestedPublic) && !(x.IsAbstract && x.IsSealed) && !typeof(Delegate).IsAssignableFrom(x) && !x.IsInterface && x.Namespace == "Mikodev.Binary")
+            .Where(x => (x.IsPublic || x.IsNestedPublic) && !(x.IsAbstract && x.IsSealed) && !typeof(Delegate).IsAssignableFrom(x) && !x.IsInterface && x.Namespace is not "Mikodev.Binary.Attributes")
             .ToList();
-        Assert.Equal(3, types.Count);
+        Assert.Equal(4, types.Count);
         foreach (var t in types)
         {
             var equalMethod = t.GetMethodNotNull("Equals", new[] { typeof(object) });
@@ -100,6 +100,32 @@ public class CodeContractsTests
             Assert.Equal(3, attributes.Count);
             Assert.All(attributes, Assert.NotNull);
             Assert.True(attributes.All(x => Assert.IsAssignableFrom<EditorBrowsableAttribute>(x).State == EditorBrowsableState.Never));
+        }
+    }
+
+    [Fact(DisplayName = "Public ByRef Struct Obsolete 'Equals' And 'GetHashCode'")]
+    public void PublicByReferenceStructuresObsoleteObjectMethodsTest()
+    {
+        static void AssertMessage(MethodInfo method)
+        {
+            var attribute = method.GetCustomAttributes().OfType<ObsoleteAttribute>().Single();
+            Assert.False(attribute.IsError);
+            var reflected = method.ReflectedType;
+            Assert.NotNull(reflected);
+            var message = $"{method.Name}() on {reflected.Name} will always throw an exception.";
+            Assert.Equal(message, attribute.Message);
+        }
+
+        var types = typeof(IConverter).Assembly.GetTypes()
+            .Where(x => x.IsPublic && x.IsByRefLike)
+            .ToList();
+        Assert.Equal(2, types.Count);
+        foreach (var t in types)
+        {
+            var methods = t.GetMethods().Where(x => x.Name is "Equals" or "GetHashCode").ToList();
+            _ = Assert.Single(methods, x => x.Name is "Equals");
+            _ = Assert.Single(methods, x => x.Name is "GetHashCode");
+            Assert.All(methods, AssertMessage);
         }
     }
 
@@ -127,7 +153,7 @@ public class CodeContractsTests
         var selection = types.Where(x => x.Name.Contains('<') is false);
         var attributes = selection.Select(x => (Type: x, Attribute: x.GetCustomAttribute<DebuggerDisplayAttribute>(inherit: false))).Where(x => x.Attribute is not null).ToList();
         var overridden = types.Where(x => x.Name.Contains('<') is false && x.GetMethod("ToString")?.DeclaringType == x).ToList();
-        Assert.Equal(5, overridden.Count);
+        Assert.Equal(6, overridden.Count);
         Assert.Equal(overridden.ToHashSet(), attributes.Select(x => x.Type).ToHashSet());
         var display = attributes.Select(x => x.Attribute?.Value).Distinct().Single();
         Assert.Equal("{ToString(),nq}", display);

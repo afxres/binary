@@ -139,7 +139,7 @@ let ``Equals (obsolete)`` () =
     let define = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "Allocator") |> Array.exactlyOne
     let method = define.GetMethods() |> Array.filter (fun x -> x.Name = "Equals") |> Array.exactlyOne
     let attributes = method.GetCustomAttributes(typeof<ObsoleteAttribute>, false) |> Array.exactlyOne :?> ObsoleteAttribute
-    let message = "Equals on Allocator will always throw an exception."
+    let message = "Equals() on Allocator will always throw an exception."
     Assert.Equal(message, attributes.Message)
     ()
 
@@ -148,7 +148,7 @@ let ``Get Hash Code (obsolete)`` () =
     let define = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "Allocator") |> Array.exactlyOne
     let method = define.GetMethods() |> Array.filter (fun x -> x.Name = "GetHashCode") |> Array.exactlyOne
     let attributes = method.GetCustomAttributes(typeof<ObsoleteAttribute>, false) |> Array.exactlyOne :?> ObsoleteAttribute
-    let message = "GetHashCode on Allocator will always throw an exception."
+    let message = "GetHashCode() on Allocator will always throw an exception."
     Assert.Equal(message, attributes.Message)
     ()
 

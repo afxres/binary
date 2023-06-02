@@ -87,13 +87,13 @@ public ref partial struct Allocator
     public readonly ReadOnlySpan<byte> AsSpan() => MemoryMarshal.CreateReadOnlySpan(ref this.target, this.offset);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    [Obsolete($"{nameof(Equals)} on {nameof(Allocator)} will always throw an exception.")]
+    [Obsolete($"{nameof(Equals)}() on {nameof(Allocator)} will always throw an exception.")]
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
     public readonly override bool Equals(object? obj) => throw new NotSupportedException();
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    [Obsolete($"{nameof(GetHashCode)} on {nameof(Allocator)} will always throw an exception.")]
+    [Obsolete($"{nameof(GetHashCode)}() on {nameof(Allocator)} will always throw an exception.")]
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
     public readonly override int GetHashCode() => throw new NotSupportedException();
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
