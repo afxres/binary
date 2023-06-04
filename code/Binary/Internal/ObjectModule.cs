@@ -1,11 +1,11 @@
-﻿namespace Mikodev.Binary.Internal.Contexts.Template;
+﻿namespace Mikodev.Binary.Internal;
 
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-internal static class NamedObjectTemplates
+internal static class ObjectModule
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool NotDefaultValue<T>(T? item)

@@ -2,7 +2,6 @@
 
 using Mikodev.Binary.Components;
 using Mikodev.Binary.Internal.Contexts.Instance;
-using Mikodev.Binary.Internal.Contexts.Template;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -14,17 +13,13 @@ using System.Reflection;
 
 internal static class ContextMethodsOfNamedObject
 {
-    private delegate bool EnsureMethodDelegate<in T>(T? item);
-
-    private delegate void AppendMethodDelegate(ref Allocator allocator, byte[] data);
-
-    private static readonly MethodInfo AppendMethodInfo = new AppendMethodDelegate(NamedObjectTemplates.Append).Method;
+    private static readonly MethodInfo AppendMethodInfo = new AllocatorAction<byte[]>(ObjectModule.Append).Method;
 
     private static readonly MethodInfo InvokeMethodInfo = CommonModule.GetPublicInstanceMethod(typeof(NamedObjectParameter), nameof(NamedObjectParameter.GetValue));
 
     private static readonly MethodInfo ExistsMethodInfo = CommonModule.GetPublicInstanceMethod(typeof(NamedObjectParameter), nameof(NamedObjectParameter.HasValue));
 
-    private static readonly MethodInfo EnsureMethodInfo = new EnsureMethodDelegate<object>(NamedObjectTemplates.NotDefaultValue).Method.GetGenericMethodDefinition();
+    private static readonly MethodInfo EnsureMethodInfo = new Func<object, bool>(ObjectModule.NotDefaultValue).Method.GetGenericMethodDefinition();
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<ContextMemberInitializer> members, ImmutableArray<string> names, ImmutableArray<bool> optional, Converter<string> encoding)
