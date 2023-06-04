@@ -63,14 +63,19 @@ public abstract class NamedObjectConverter<T> : Converter<T?>
         throw new ArgumentException($"Named key '{this.names[cursor]}' does not exist, type: {typeof(T)}");
     }
 
+    private static T? Decode()
+    {
+        if (default(T) is not null)
+            ThrowHelper.ThrowNotEnoughBytes();
+        return default;
+    }
+
     public abstract T Decode(scoped NamedObjectParameter parameter);
 
     public sealed override T? Decode(in ReadOnlySpan<byte> span)
     {
-        if (span.Length is 0 && default(T) is null)
-            return default;
-        if (span.Length is 0 && default(T) is not null)
-            ThrowHelper.ThrowNotEnoughBytes();
+        if (span.Length is 0)
+            return Decode();
 
         // maybe 'StackOverflowException', just let it crash
         var optional = this.optional;
