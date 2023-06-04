@@ -20,9 +20,9 @@ internal static class ContextMethodsOfNamedObject
 
     private static readonly MethodInfo AppendMethodInfo = new AppendMethodDelegate(NamedObjectTemplates.Append).Method;
 
-    private static readonly MethodInfo InvokeMethodInfo = CommonModule.GetPublicInstanceMethod(typeof(NamedObjectConstructorParameter), nameof(NamedObjectConstructorParameter.GetValue));
+    private static readonly MethodInfo InvokeMethodInfo = CommonModule.GetPublicInstanceMethod(typeof(NamedObjectParameter), nameof(NamedObjectParameter.GetValue));
 
-    private static readonly MethodInfo ExistsMethodInfo = CommonModule.GetPublicInstanceMethod(typeof(NamedObjectConstructorParameter), nameof(NamedObjectConstructorParameter.HasValue));
+    private static readonly MethodInfo ExistsMethodInfo = CommonModule.GetPublicInstanceMethod(typeof(NamedObjectParameter), nameof(NamedObjectParameter.HasValue));
 
     private static readonly MethodInfo EnsureMethodInfo = new EnsureMethodDelegate<object>(NamedObjectTemplates.NotDefaultValue).Method.GetGenericMethodDefinition();
 
@@ -32,11 +32,10 @@ internal static class ContextMethodsOfNamedObject
         Debug.Assert(members.Length == names.Length);
         Debug.Assert(members.Length == optional.Length);
         Debug.Assert(members.Length == converters.Length);
-        var dictionary = NamedObjectArguments.GetDictionary(type, encoding, names);
         var encode = GetEncodeDelegateAsNamedObject(type, converters, members, names, optional, encoding);
         var decode = GetDecodeDelegateAsNamedObject(type, converters, optional, constructor);
-        var converterArguments = new object?[] { encode, decode, dictionary, names, optional };
-        var converterType = typeof(NamedObjectConverter<>).MakeGenericType(type);
+        var converterArguments = new object?[] { encoding, names, optional, encode, decode };
+        var converterType = typeof(NamedObjectDelegateConverter<>).MakeGenericType(type);
         var converter = CommonModule.CreateInstance(converterType, converterArguments);
         return (IConverter)converter;
     }
@@ -93,6 +92,6 @@ internal static class ContextMethodsOfNamedObject
             return result.MoveToImmutable();
         }
 
-        return constructor?.Invoke(typeof(NamedObjectConstructor<>).MakeGenericType(type), Initialize);
+        return constructor?.Invoke(typeof(NamedObjectDecodeDelegate<>).MakeGenericType(type), Initialize);
     }
 }

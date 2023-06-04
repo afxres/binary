@@ -7,14 +7,14 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 [DebuggerDisplay(CommonModule.DebuggerDisplayValue)]
-public readonly ref struct NamedObjectConstructorParameter
+public readonly ref struct NamedObjectParameter
 {
     private readonly ReadOnlySpan<byte> source;
 
     private readonly Span<long> slices;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal NamedObjectConstructorParameter(ReadOnlySpan<byte> source, Span<long> slices)
+    internal NamedObjectParameter(ReadOnlySpan<byte> source, Span<long> slices)
     {
         this.source = source;
         this.slices = slices;
@@ -35,13 +35,13 @@ public readonly ref struct NamedObjectConstructorParameter
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    [Obsolete($"{nameof(Equals)}() on {nameof(NamedObjectConstructorParameter)} will always throw an exception.")]
+    [Obsolete($"{nameof(Equals)}() on {nameof(NamedObjectParameter)} will always throw an exception.")]
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
     public readonly override bool Equals(object? obj) => throw new NotSupportedException();
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    [Obsolete($"{nameof(GetHashCode)}() on {nameof(NamedObjectConstructorParameter)} will always throw an exception.")]
+    [Obsolete($"{nameof(GetHashCode)}() on {nameof(NamedObjectParameter)} will always throw an exception.")]
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
     public readonly override int GetHashCode() => throw new NotSupportedException();
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member

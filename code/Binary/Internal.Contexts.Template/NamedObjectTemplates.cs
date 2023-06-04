@@ -8,12 +8,6 @@ using System.Runtime.InteropServices;
 internal static class NamedObjectTemplates
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static long GetIndexData(int offset, int length)
-    {
-        return (long)(((ulong)(uint)offset << 32) | (uint)length);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool NotDefaultValue<T>(T? item)
     {
         return EqualityComparer<T>.Default.Equals(item, default) is false;

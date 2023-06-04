@@ -3,7 +3,6 @@
 using Mikodev.Binary.Attributes;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Xunit;
 
 [SourceGeneratorContext]
@@ -68,17 +67,11 @@ public class PropertyOnlyTests
         var generator = builder.Build();
         var converter = generator.GetConverter<T>();
         var converterType = converter.GetType();
-        Assert.Equal(converterType.Assembly, typeof(IConverter).Assembly);
-        var encodeField = converterType.GetField("encode", BindingFlags.Instance | BindingFlags.NonPublic);
-        Assert.NotNull(encodeField);
-        var encodeAction = Assert.IsType<AllocatorAction<T>>(encodeField.GetValue(converter));
-        var encodeTarget = encodeAction.Target;
-        Assert.NotNull(encodeTarget);
-        Assert.Equal(encodeTarget.GetType().Assembly, typeof(PropertyOnlySourceGeneratorContext).Assembly);
+        Assert.Equal(converterType.Assembly, typeof(PropertyOnlySourceGeneratorContext).Assembly);
 
         var generatorSecond = Generator.CreateDefault();
         var converterSecond = generatorSecond.GetConverter<T>();
-        Assert.Equal("NamedObjectConverter`1", converterSecond.GetType().Name);
+        Assert.Equal("NamedObjectDelegateConverter`1", converterSecond.GetType().Name);
 
         var buffer = converter.Encode(source);
         var bufferExpected = converterSecond.Encode(source);

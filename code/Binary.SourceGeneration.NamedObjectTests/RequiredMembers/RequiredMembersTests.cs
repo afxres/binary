@@ -4,7 +4,6 @@ using Mikodev.Binary.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Xunit;
 
 [SourceGeneratorContext]
@@ -87,13 +86,7 @@ public class RequiredMembersTests
         var generator = builder.Build();
         var converter = generator.GetConverter<T>();
         var converterType = converter.GetType();
-        Assert.Equal(converterType.Assembly, typeof(IConverter).Assembly);
-        var encodeField = converterType.GetField("encode", BindingFlags.Instance | BindingFlags.NonPublic);
-        Assert.NotNull(encodeField);
-        var encodeAction = Assert.IsType<AllocatorAction<T>>(encodeField.GetValue(converter));
-        var encodeTarget = encodeAction.Target;
-        Assert.NotNull(encodeTarget);
-        Assert.Equal(encodeTarget.GetType().Assembly, typeof(RequiredMembersSourceGeneratorContext).Assembly);
+        Assert.Equal(converterType.Assembly, typeof(RequiredMembersSourceGeneratorContext).Assembly);
 
         var buffer = converter.Encode(source);
         var token = new Token(generator, buffer);

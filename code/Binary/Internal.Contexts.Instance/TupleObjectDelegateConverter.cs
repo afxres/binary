@@ -4,7 +4,7 @@ using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Diagnostics;
 
-internal sealed class TupleObjectConverter<T> : Converter<T>
+internal sealed class TupleObjectDelegateConverter<T> : Converter<T>
 {
     private readonly AllocatorAction<T> encode;
 
@@ -14,7 +14,7 @@ internal sealed class TupleObjectConverter<T> : Converter<T>
 
     private readonly DecodeDelegate<T> decodeAuto;
 
-    public TupleObjectConverter(AllocatorAction<T> encode, AllocatorAction<T> encodeAuto, DecodeDelegate<T>? decode, DecodeDelegate<T>? decodeAuto, int length) : base(length)
+    public TupleObjectDelegateConverter(AllocatorAction<T> encode, AllocatorAction<T> encodeAuto, DecodeDelegate<T>? decode, DecodeDelegate<T>? decodeAuto, int length) : base(length)
     {
         this.encode = encode;
         this.encodeAuto = encodeAuto;

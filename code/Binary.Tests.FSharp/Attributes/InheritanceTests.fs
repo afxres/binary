@@ -172,7 +172,7 @@ let ``Require Key Attribute On This Type For Object Attribute`` (t: Type, requir
     ()
 
 [<Theory>]
-[<InlineData(typeof<Quebec>, "NamedObjectConverter`1", "TupleObjectConverter`1")>]
+[<InlineData(typeof<Quebec>, "NamedObjectDelegateConverter`1", "TupleObjectDelegateConverter`1")>]
 let ``Rewrite Base Class Attribute On This Class`` (t : Type, thisConverterDefinition : string, baseConverterDefinition : string) =
     let thisConverter = generator.GetConverter t
     let baseConverter = generator.GetConverter t.BaseType

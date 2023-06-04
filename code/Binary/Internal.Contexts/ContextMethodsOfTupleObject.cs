@@ -22,7 +22,7 @@ internal static class ContextMethodsOfTupleObject
         var decodeAuto = GetDecodeDelegateAsTupleObject(type, converters, constructor, auto: true);
         var itemLength = TupleObject.GetTupleObjectLength(converters);
         var converterArguments = new object?[] { encode, encodeAuto, decode, decodeAuto, itemLength };
-        var converterType = typeof(TupleObjectConverter<>).MakeGenericType(type);
+        var converterType = typeof(TupleObjectDelegateConverter<>).MakeGenericType(type);
         var converter = CommonModule.CreateInstance(converterType, converterArguments);
         return (IConverter)converter;
     }

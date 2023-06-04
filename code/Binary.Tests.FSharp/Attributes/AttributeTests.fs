@@ -618,7 +618,7 @@ type AttributeTests() =
     [<MemberData("Data Alpha")>]
     member __.``Named Object (encode, decode)`` (source : 'a, expected : (string * obj) array) =
         let converter = generator.GetConverter<'a>()
-        Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
+        Assert.StartsWith("NamedObjectDelegateConverter`1", converter.GetType().Name)
         Assert.Equal(0, converter.Length)
 
         let mutable allocator = Allocator()
@@ -642,7 +642,7 @@ type AttributeTests() =
     [<MemberData("Data Alpha")>]
     member __.``Named Object (encode auto, decode auto)`` (source : 'a, expected : (string * obj) array) =
         let converter = generator.GetConverter<'a>()
-        Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
+        Assert.StartsWith("NamedObjectDelegateConverter`1", converter.GetType().Name)
         Assert.Equal(0, converter.Length)
 
         let mutable allocator = Allocator()
@@ -670,7 +670,7 @@ type AttributeTests() =
     [<MemberData("Data Bravo")>]
     member __.``Tuple Object (encode, decode)`` (source : 'a, expected : 'b, size : int) =
         let converter = generator.GetConverter<'a>()
-        Assert.StartsWith("TupleObjectConverter`1", converter.GetType().Name)
+        Assert.StartsWith("TupleObjectDelegateConverter`1", converter.GetType().Name)
         Assert.Equal(size, converter.Length)
 
         let mutable allocator = Allocator()
@@ -689,7 +689,7 @@ type AttributeTests() =
     [<MemberData("Data Bravo")>]
     member __.``Tuple Object (encode auto, decode auto)`` (source : 'a, expected : 'b, size : int) =
         let converter = generator.GetConverter<'a>()
-        Assert.StartsWith("TupleObjectConverter`1", converter.GetType().Name)
+        Assert.StartsWith("TupleObjectDelegateConverter`1", converter.GetType().Name)
         Assert.Equal(size, converter.Length)
 
         let mutable allocator = Allocator()

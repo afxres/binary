@@ -61,7 +61,6 @@ internal static class BinaryObject
         }
 
         Debug.Assert(records.Length == free);
-        Debug.Assert(records.All(x => x.Head is not null));
         Debug.Assert(records.Select(x => x.Next).All(next => next is -1 || (uint)next < (uint)records.Length));
         return new HashCodeDictionary<T>(buckets, records, @default);
     }

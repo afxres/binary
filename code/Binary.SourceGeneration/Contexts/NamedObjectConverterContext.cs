@@ -19,15 +19,17 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         this.constructor = constructor;
     }
 
-    private void AppendClosureHead(StringBuilder builder)
+    private void AppendConverterHead(StringBuilder builder)
     {
         var members = this.members;
-        builder.AppendIndent(1, $"private sealed class {OutputClosureTypeName}(", ")", members.Length, i => $"byte[] key{i}, {GetConverterTypeFullName(i)} cvt{i}");
+        var tail = ", Mikodev.Binary.Converter<string> converter, System.Collections.Generic.IEnumerable<string> names, System.Collections.Generic.IEnumerable<bool> optional)";
+        builder.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", tail, members.Length, i => $"byte[] key{i}, {GetConverterTypeFullName(i)} cvt{i}");
+        builder.AppendIndent(2, $": Mikodev.Binary.Components.NamedObjectConverter<{SymbolTypeFullName}>(converter, names, optional)");
         builder.AppendIndent(1, $"{{");
         CancellationToken.ThrowIfCancellationRequested();
     }
 
-    private void AppendClosureTail(StringBuilder builder)
+    private void AppendConverterTail(StringBuilder builder)
     {
         builder.AppendIndent(1, $"}}");
     }
@@ -35,14 +37,23 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
     private void AppendEncodeMethod(StringBuilder builder)
     {
         var members = this.members;
-        builder.AppendIndent(2, $"public void Encode(ref {Constants.AllocatorTypeName} allocator, {SymbolTypeFullName} item)");
+        builder.AppendIndent(2, $"public override void Encode(ref {Constants.AllocatorTypeName} allocator, {SymbolTypeFullName} item)");
         builder.AppendIndent(2, $"{{");
+
+        if (Symbol.IsValueType is false)
+        {
+            builder.AppendIndent(3, $"if (item is null)");
+            builder.AppendIndent(4, "return;");
+            CancellationToken.ThrowIfCancellationRequested();
+        }
+
         for (var i = 0; i < members.Length; i++)
         {
             var member = members[i];
             builder.AppendIndent(3, $"var var{i} = item.{member.NameInSourceCode};");
             CancellationToken.ThrowIfCancellationRequested();
         }
+
         for (var i = 0; i < members.Length; i++)
         {
             var optional = members[i].IsOptional;
@@ -60,41 +71,46 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             }
             CancellationToken.ThrowIfCancellationRequested();
         }
+
         builder.AppendIndent(2, $"}}");
     }
 
     private void AppendDecodeMethod(StringBuilder builder)
     {
-        var constructor = this.constructor;
-        if (constructor is null)
-            return;
         var members = this.members;
+        var constructor = this.constructor;
         builder.AppendIndent();
-        builder.AppendIndent(2, $"public {SymbolTypeFullName} Decode(scoped Mikodev.Binary.Components.NamedObjectConstructorParameter parameter)");
+        builder.AppendIndent(2, $"public override {SymbolTypeFullName} Decode(scoped Mikodev.Binary.Components.NamedObjectParameter parameter)");
         builder.AppendIndent(2, $"{{");
 
-        for (var i = 0; i < members.Length; i++)
+        if (constructor is null)
         {
-            var member = members[i];
-            if (member.IsOptional is false)
-                builder.AppendIndent(3, $"var var{i} = cvt{i}.Decode(parameter.GetValue({i}));");
-            else
-                builder.AppendIndent(3, $"var var{i} = parameter.HasValue({i}) ? cvt{i}.Decode(parameter.GetValue({i})) : default;");
-            CancellationToken.ThrowIfCancellationRequested();
+            builder.AppendIndent(3, $"throw new System.NotSupportedException($\"No suitable constructor found, type: {{typeof({SymbolTypeFullName})}}\");");
+        }
+        else
+        {
+            for (var i = 0; i < members.Length; i++)
+            {
+                var member = members[i];
+                if (member.IsOptional is false)
+                    builder.AppendIndent(3, $"var var{i} = cvt{i}.Decode(parameter.GetValue({i}));");
+                else
+                    builder.AppendIndent(3, $"var var{i} = parameter.HasValue({i}) ? cvt{i}.Decode(parameter.GetValue({i})) : default;");
+                CancellationToken.ThrowIfCancellationRequested();
+            }
+            constructor.Append(builder, SymbolTypeFullName, CancellationToken);
         }
 
-        constructor.Append(builder, SymbolTypeFullName, CancellationToken);
         builder.AppendIndent(2, $"}}");
     }
 
     private void AppendConverterCreatorBody(StringBuilder builder)
     {
         var members = this.members;
-        var decoder = this.constructor is null ? "null" : "closure.Decode";
-
         builder.AppendIndent(3, $"var names = new string[] {{ ", $" }};", members.Length, x => members[x].NamedKeyLiteral);
         builder.AppendIndent(3, $"var optional = new bool[] {{ ", $" }};", members.Length, x => members[x].IsOptional ? "true" : "false");
         builder.AppendIndent(3, $"var encoding = ({Constants.ConverterTypeName}<string>)context.GetConverter(typeof(string));");
+
         for (var i = 0; i < members.Length; i++)
         {
             var member = members[i];
@@ -103,16 +119,15 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             CancellationToken.ThrowIfCancellationRequested();
         }
 
-        builder.AppendIndent(3, $"var closure = new {OutputClosureTypeName}(", ");", members.Length, x => $"key{x}, cvt{x}");
-        builder.AppendIndent(3, $"var converter = Mikodev.Binary.Components.NamedObject.GetNamedObjectConverter<{SymbolTypeFullName}>(closure.Encode, {decoder}, encoding, names, optional);");
+        builder.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ", encoding, names, optional);", members.Length, x => $"key{x}, cvt{x}");
     }
 
     protected override void Invoke(StringBuilder builder)
     {
-        AppendClosureHead(builder);
+        AppendConverterHead(builder);
         AppendEncodeMethod(builder);
         AppendDecodeMethod(builder);
-        AppendClosureTail(builder);
+        AppendConverterTail(builder);
         builder.AppendIndent();
 
         AppendConverterCreatorHead(builder);

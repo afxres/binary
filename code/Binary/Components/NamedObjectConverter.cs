@@ -1,9 +1,9 @@
-﻿namespace Mikodev.Binary.Internal.Contexts.Instance;
+﻿namespace Mikodev.Binary.Components;
 
-using Mikodev.Binary.Components;
 using Mikodev.Binary.External;
-using Mikodev.Binary.Internal.Contexts.Template;
+using Mikodev.Binary.Internal;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-internal sealed class NamedObjectConverter<T> : Converter<T?>
+public abstract class NamedObjectConverter<T> : Converter<T?>
 {
     private readonly int required;
 
@@ -19,24 +19,26 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
 
     private readonly ImmutableArray<string> names;
 
-    private readonly AllocatorAction<T> encode;
-
     private readonly ByteViewDictionary<int> dictionary;
 
-    private readonly NamedObjectConstructor<T>? decode;
-
-    public NamedObjectConverter(AllocatorAction<T> encode, NamedObjectConstructor<T>? decode, ByteViewDictionary<int> dictionary, ImmutableArray<string> names, ImmutableArray<bool> optional)
+    public NamedObjectConverter(Converter<string> converter, IEnumerable<string> names, IEnumerable<bool> optional)
     {
-        Debug.Assert(encode is not null);
-        Debug.Assert(dictionary is not null);
-        Debug.Assert(optional.Any());
-        Debug.Assert(optional.Any(x => x is false));
-        Debug.Assert(optional.Length == names.Length);
-        this.names = names;
-        this.encode = encode;
-        this.decode = decode;
-        this.optional = optional;
-        this.required = optional.Count(x => x is false);
+        ArgumentNullException.ThrowIfNull(converter);
+        ArgumentNullException.ThrowIfNull(names);
+        ArgumentNullException.ThrowIfNull(optional);
+        var alpha = names.ToImmutableArray();
+        var bravo = optional.ToImmutableArray();
+        if (alpha.Length is 0 || bravo.Length is 0)
+            throw new ArgumentException($"Sequence contains no element.");
+        if (alpha.Length != bravo.Length)
+            throw new ArgumentException($"Sequence lengths not match.");
+        var selector = new Func<string, ReadOnlyMemory<byte>>(x => converter.Encode(x));
+        var dictionary = BinaryObject.Create(alpha.Select(selector).ToImmutableArray());
+        if (dictionary is null)
+            throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {typeof(T)}, string converter type: {converter.GetType()}");
+        this.names = alpha;
+        this.optional = bravo;
+        this.required = bravo.Count(x => x is false);
         this.dictionary = dictionary;
     }
 
@@ -61,18 +63,10 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
         throw new ArgumentException($"Named key '{this.names[cursor]}' does not exist, type: {typeof(T)}");
     }
 
-    public override void Encode(ref Allocator allocator, T? item)
-    {
-        if (item is null)
-            return;
-        this.encode.Invoke(ref allocator, item);
-    }
+    public abstract T Decode(scoped NamedObjectParameter parameter);
 
-    public override T? Decode(in ReadOnlySpan<byte> span)
+    public sealed override T? Decode(in ReadOnlySpan<byte> span)
     {
-        var decode = this.decode;
-        if (decode is null)
-            return ThrowHelper.ThrowNoSuitableConstructor<T>();
         if (span.Length is 0 && default(T) is null)
             return default;
         if (span.Length is 0 && default(T) is not null)
@@ -101,7 +95,7 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
             ref var handle = ref slices[cursor];
             if (handle is not 0)
                 ExceptKeyFound(cursor);
-            handle = NamedObjectTemplates.GetIndexData(offset, length);
+            handle = (long)(((ulong)(uint)offset << 32) | (uint)length);
             if (optional[cursor])
                 continue;
             remain--;
@@ -111,6 +105,6 @@ internal sealed class NamedObjectConverter<T> : Converter<T?>
         Debug.Assert(remain <= optional.Length);
         if (remain is not 0)
             ExceptNotFound(slices);
-        return decode.Invoke(new NamedObjectConstructorParameter(span, slices));
+        return Decode(new NamedObjectParameter(span, slices));
     }
 }

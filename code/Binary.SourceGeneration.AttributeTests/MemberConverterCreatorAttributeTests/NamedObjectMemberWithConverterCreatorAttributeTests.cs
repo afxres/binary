@@ -3,7 +3,6 @@
 using Mikodev.Binary.Attributes;
 using System;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using Xunit;
 
@@ -44,8 +43,8 @@ public class KeyedItem
 
 public class NamedObjectMemberWithConverterCreatorAttributeTests
 {
-    [Fact(DisplayName = "Member Converter Creator Attribute Test")]
-    public void MemberConverterCreatorAttributeTest()
+    [Fact(DisplayName = "Member With Converter Creator Attribute Test")]
+    public void MemberWithConverterCreatorAttributeTest()
     {
         var builder = Generator.CreateAotBuilder();
         var pair = Assert.Single(KeyedItemSourceGeneratorContext.ConverterCreators);
@@ -54,13 +53,7 @@ public class NamedObjectMemberWithConverterCreatorAttributeTests
         var generator = builder.Build();
         var converter = generator.GetConverter<KeyedItem>();
         var converterType = converter.GetType();
-        Assert.Equal(converterType.Assembly, typeof(IConverter).Assembly);
-        var encodeField = converterType.GetField("encode", BindingFlags.Instance | BindingFlags.NonPublic);
-        Assert.NotNull(encodeField);
-        var encodeAction = Assert.IsType<AllocatorAction<KeyedItem>>(encodeField.GetValue(converter));
-        var encodeTarget = encodeAction.Target;
-        Assert.NotNull(encodeTarget);
-        Assert.Equal(encodeTarget.GetType().Assembly, typeof(KeyedItemSourceGeneratorContext).Assembly);
+        Assert.Equal(converterType.Assembly, typeof(KeyedItemSourceGeneratorContext).Assembly);
 
         for (var i = 0; i < 16; i++)
         {

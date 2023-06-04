@@ -32,7 +32,7 @@ public sealed partial class NamedObjectConverterContext
         dictionary.Add(key, info);
     }
 
-    public static SourceResult? Invoke(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol)
+    public static SourceResult Invoke(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol)
     {
         var attribute = context.GetAttribute(symbol, Constants.NamedObjectAttributeTypeName);
         if (attribute is null && Symbols.IsTypeIgnored(context, symbol))

@@ -26,7 +26,7 @@ let ``Key Already Exists`` () =
 let ``Anonymous Class Record Encode (from null value)`` () =
     let template = {| id = 1024; data = "data" |}
     let converter = generator.GetConverter(template)
-    Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
+    Assert.StartsWith("NamedObjectDelegateConverter`1", converter.GetType().Name)
     let mutable allocator = Allocator()
     converter.Encode(&allocator, null |> Unchecked.unbox)
     Assert.Equal(0, allocator.Length)
@@ -39,7 +39,7 @@ let ``Anonymous Class Record Encode (from null value)`` () =
 [<Fact>]
 let ``Bytes To Anonymous Class Record (from empty bytes, expect null value)`` () =
     let converter = generator.GetConverter {| id = 0; data = String.Empty |}
-    Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
+    Assert.StartsWith("NamedObjectDelegateConverter`1", converter.GetType().Name)
     let value = converter.Decode Array.empty<byte>
     Assert.Null value
     ()
@@ -47,7 +47,7 @@ let ``Bytes To Anonymous Class Record (from empty bytes, expect null value)`` ()
 [<Fact>]
 let ``Bytes To Anonymous Value Record (from empty bytes, expect bytes not enough)`` () =
     let converter = generator.GetConverter struct {| alpha = 0.0; bravo = Unchecked.defaultof<Uri> |}
-    Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
+    Assert.StartsWith("NamedObjectDelegateConverter`1", converter.GetType().Name)
     let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode Array.empty<byte> |> ignore)
     Assert.Equal("Not enough bytes or byte sequence invalid.", error.Message)
     ()
@@ -157,7 +157,7 @@ let ``Type With 32 Properties (via constructor)`` () =
         X10 = 0x10; X11 = 0x11; X12 = 0x12; X13 = 0x13; X14 = 0x14; X15 = 0x15; X16 = 0x16; X17 = 0x17;
         X18 = 0x18; X19 = 0x19; X1A = 0x1A; X1B = 0x1B; X1C = 0x1C; X1D = 0x1D; X1E = 0x1E; X1F = 0x1F; |}
     let converter = generator.GetConverter(source)
-    Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
+    Assert.StartsWith("NamedObjectDelegateConverter`1", converter.GetType().Name)
     let mutable allocator = Allocator()
     converter.Encode(&allocator, source)
     let buffer = allocator.AsSpan().ToArray()
@@ -170,7 +170,7 @@ let ``Type With 32 Properties (via constructor)`` () =
 let ``Type With 48 Properties (via properties)`` () =
     let source = ``Item 48``()
     let converter = generator.GetConverter(source)
-    Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
+    Assert.StartsWith("NamedObjectDelegateConverter`1", converter.GetType().Name)
     let mutable allocator = Allocator()
     converter.Encode(&allocator, source)
     let buffer = allocator.AsSpan().ToArray()
@@ -215,7 +215,7 @@ type BadType(key : int, Key : string) =
 
 let Test (instance : 'a) (anonymous : 'b) =
     let converter = generator.GetConverter<'a>()
-    Assert.StartsWith("NamedObjectConverter`1", converter.GetType().Name)
+    Assert.StartsWith("NamedObjectDelegateConverter`1", converter.GetType().Name)
     let buffer = converter.Encode instance
     let target = generator.Encode anonymous
     Assert.Equal<byte>(target, buffer)

@@ -78,7 +78,7 @@ internal static class FallbackPrimitivesMethods
             var type = field.FieldType;
             var init = new ContextMemberInitializer(x => Expression.Field(parent.Invoke(x), field));
             var converter = context.GetConverter(type);
-            if (type.IsValueType && IsTupleOrValueTuple(type) && converter.GetType() == typeof(TupleObjectConverter<>).MakeGenericType(type))
+            if (type.IsValueType && IsTupleOrValueTuple(type) && converter.GetType() == typeof(TupleObjectDelegateConverter<>).MakeGenericType(type))
                 Invoke(type, x => Expand(context, result, x, init));
             else
                 result.Add((type, init, converter));

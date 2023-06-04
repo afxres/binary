@@ -5,7 +5,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Linq;
 
 [DebuggerDisplay(CommonModule.DebuggerDisplayValue)]
 internal sealed class Generator : IGenerator
@@ -21,8 +20,6 @@ internal sealed class Generator : IGenerator
         this.fallback = fallback;
         this.creators = creators;
         this.converters = new ConcurrentDictionary<Type, IConverter>(converters) { [typeof(object)] = new GeneratorObjectConverter(this) };
-        Debug.Assert(this.converters.All(x => x.Value is not null));
-        Debug.Assert(this.creators.Length is 0 || this.creators.All(x => x is not null));
     }
 
     public IConverter GetConverter(Type type)

@@ -41,7 +41,7 @@ public class ConverterOverrideHideTests
     {
         var generator = Generator.CreateDefaultBuilder().AddConverter(new OverrideHideAllMember<int>()).Build();
         var converter = generator.GetConverter<ValueTuple<int>>();
-        Assert.StartsWith("TupleObjectConverter`1", converter.GetType().Name);
+        Assert.StartsWith("TupleObjectDelegateConverter`1", converter.GetType().Name);
         var error = Assert.Throws<NotSupportedException>(() =>
         {
             var allocator = new Allocator();
@@ -55,7 +55,7 @@ public class ConverterOverrideHideTests
     {
         var generator = Generator.CreateDefaultBuilder().AddConverter(new OverrideHideAllMember<int>()).Build();
         var converter = generator.GetConverter<ValueTuple<int>>();
-        Assert.StartsWith("TupleObjectConverter`1", converter.GetType().Name);
+        Assert.StartsWith("TupleObjectDelegateConverter`1", converter.GetType().Name);
         var error = Assert.Throws<NotSupportedException>(() =>
         {
             var allocator = new Allocator();
@@ -78,7 +78,7 @@ public class ConverterOverrideHideTests
     {
         var generator = Generator.CreateDefaultBuilder().AddConverter(new OverrideHideAllMember<int>()).Build();
         var converter = generator.GetConverter<ValueTuple<int>>();
-        Assert.StartsWith("TupleObjectConverter`1", converter.GetType().Name);
+        Assert.StartsWith("TupleObjectDelegateConverter`1", converter.GetType().Name);
         var error = Assert.Throws<NotSupportedException>(() =>
         {
             var span = new ReadOnlySpan<byte>();
@@ -92,7 +92,7 @@ public class ConverterOverrideHideTests
     {
         var generator = Generator.CreateDefaultBuilder().AddConverter(new OverrideHideAllMember<int>()).Build();
         var converter = generator.GetConverter<ValueTuple<int>>();
-        Assert.StartsWith("TupleObjectConverter`1", converter.GetType().Name);
+        Assert.StartsWith("TupleObjectDelegateConverter`1", converter.GetType().Name);
         var error = Assert.Throws<NotSupportedException>(() =>
         {
             var span = new ReadOnlySpan<byte>();
