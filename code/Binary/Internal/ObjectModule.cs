@@ -7,6 +7,13 @@ using System.Runtime.InteropServices;
 
 internal static class ObjectModule
 {
+    internal static T? GetNullValueOrThrow<T>()
+    {
+        if (default(T) is not null)
+            ThrowHelper.ThrowNotEnoughBytes();
+        return default;
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool NotDefaultValue<T>(T? item)
     {
