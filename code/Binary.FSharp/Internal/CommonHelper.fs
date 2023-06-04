@@ -2,6 +2,7 @@
 
 open Mikodev.Binary
 open System
+open System.Reflection
 
 [<Sealed>]
 [<AbstractClass>]
@@ -27,6 +28,12 @@ type internal CommonHelper =
             converter :?> IConverter
         else
             null
+
+    static member GetType(assembly : Assembly, name : string) =
+        let result = assembly.GetType(name)
+        if isNull (box result) then
+            raise (TypeLoadException $"Type not found, type name: {name}")
+        result
 
     static member GetMethod(t : Type, name : string, types : Type array) =
         let result = t.GetMethod(name, types)

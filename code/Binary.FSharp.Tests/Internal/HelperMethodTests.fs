@@ -15,6 +15,20 @@ type HelperMethodTests() =
         Assert.NotNull method
         Delegate.CreateDelegate(typeof<'T>, method) :?> 'T
 
+    static member ``Data Type Invalid`` : (obj array) seq = seq {
+        yield [| typeof<IConverter>.Assembly; "NotExist" |]
+        yield [| typeof<IConverter>.Assembly; "Argument" |]
+    }
+
+    [<Theory>]
+    [<MemberData(nameof HelperMethodTests.``Data Type Invalid``)>]
+    member __.``Get Type Error`` (assembly : Assembly, typeName : string) =
+        let invoke = HelperMethodTests.GetCommonHelperMethod<Func<Assembly, string, Type>> "GetType"
+        let error = Assert.Throws<TypeLoadException>(fun () -> invoke.Invoke(assembly, typeName) |> ignore)
+        let message = $"Type not found, type name: {typeName}"
+        Assert.Equal(message, error.Message)
+        ()
+
     static member ``Data Alpha`` : (obj array) seq = seq {
         yield [| typeof<HelperMethodTests>; "NotFound" |]
         yield [| typeof<HelperMethodTests>; "Function" |]

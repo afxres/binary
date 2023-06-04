@@ -3,7 +3,6 @@
 open Mikodev.Binary
 open System
 open System.Runtime.CompilerServices
-open System.Reflection
 
 type IdentityDefinition = delegate of nativeint -> nativeint
 
@@ -11,9 +10,9 @@ type ToHandleDefinition = delegate of byref<Allocator> -> nativeint
 
 let IdentityDelegate = IdentityDefinition id
 
-let AllocatorByRefType = typeof<IConverter>.Assembly.GetType("Mikodev.Binary.Allocator", throwOnError = true).MakeByRefType()
+let AllocatorByRefType = CommonHelper.GetType(typeof<IConverter>.Assembly, "Mikodev.Binary.Allocator").MakeByRefType()
 
-let ReadOnlySpanByteByRefType = typeof<ReadOnlyMemory<byte>>.GetProperty("Span", BindingFlags.Instance ||| BindingFlags.Public).PropertyType.MakeByRefType()
+let ReadOnlySpanByteByRefType = CommonHelper.GetType(typeof<MemoryExtensions>.Assembly, "System.ReadOnlySpan`1").MakeGenericType(typeof<byte>).MakeByRefType()
 
 let EncodeNumberMethodInfo = CommonHelper.GetMethod(typeof<Converter>, "Encode", [| AllocatorByRefType; typeof<int> |])
 
