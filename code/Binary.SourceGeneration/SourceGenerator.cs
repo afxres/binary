@@ -64,10 +64,8 @@ public sealed class SourceGenerator : IIncrementalGenerator
         {
             cancellation.ThrowIfCancellationRequested();
             var semantic = compilation.GetSemanticModel(declaration.SyntaxTree);
-            var symbol = semantic.GetDeclaredSymbol(declaration);
-            if (symbol is null)
-                continue;
-            if (Symbols.ValidateContextType(context, declaration, symbol) is false)
+            var symbol = semantic.GetDeclaredSymbol(declaration, cancellation);
+            if (symbol is null || Symbols.ValidateContextType(context, declaration, symbol) is false)
                 continue;
             var inclusions = GetInclusions(context, symbol, include);
             var info = new ContextInfo(symbol, inclusions);
