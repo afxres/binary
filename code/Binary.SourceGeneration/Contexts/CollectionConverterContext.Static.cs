@@ -138,7 +138,6 @@ public sealed partial class CollectionConverterContext
         var enumerableInterfaces = interfaces.Where(x => Implements(x, resource.UnboundIEnumerableType)).ToList();
         if (enumerableInterfaces.Count is not 1)
             return null;
-
         var dictionaryInterface = interfaces.FirstOrDefault(x => Implements(x, resource.UnboundIDictionaryType));
         if (dictionaryInterface is not null && HasConstructor(symbol, dictionaryInterface))
             return new TypeInfo(SourceType.Dictionary, string.Empty, dictionaryInterface.TypeArguments);

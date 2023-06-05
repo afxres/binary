@@ -73,7 +73,6 @@ public sealed partial class TupleObjectConverterContext
                 GetCustomTupleMember(context, member, dictionary);
             cancellation.ThrowIfCancellationRequested();
         }
-
         var members = dictionary.Values.ToImmutableArray();
         if (members.Length is 0)
             return new SourceResult(SourceStatus.NoAvailableMember);

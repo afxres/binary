@@ -70,7 +70,7 @@ public abstract class NamedObjectConverter<T> : Converter<T?>
         return default;
     }
 
-    public abstract T Decode(scoped NamedObjectParameter parameter);
+    public virtual T Decode(scoped NamedObjectParameter parameter) => ThrowHelper.ThrowNoSuitableConstructor<T>();
 
     public sealed override T? Decode(in ReadOnlySpan<byte> span)
     {

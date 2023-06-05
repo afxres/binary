@@ -23,7 +23,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     {
         var members = this.members;
         builder.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", ")", members.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
-        builder.AppendIndent(2, $": {SymbolConverterTypeFullName}(Mikodev.Binary.Components.TupleObject.GetConverterLength(new {Constants.IConverterTypeName}[] {{ ", $" }}))", members.Length, x => $"cvt{x}");
+        builder.AppendIndent(2, $": Mikodev.Binary.Components.TupleObjectConverter<{SymbolTypeFullName}>(Mikodev.Binary.Components.TupleObject.GetConverterLength(new {Constants.IConverterTypeName}[] {{ ", $" }}))", members.Length, x => $"cvt{x}");
         builder.AppendIndent(1, $"{{");
         CancellationToken.ThrowIfCancellationRequested();
     }
@@ -37,6 +37,8 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     {
         var members = this.members;
         var methodName = auto ? "EncodeAuto" : "Encode";
+        if (auto)
+            builder.AppendIndent();
         builder.AppendIndent(2, $"public override void {methodName}(ref {Constants.AllocatorTypeName} allocator, {SymbolTypeFullName} item)");
         builder.AppendIndent(2, $"{{");
         if (Symbol.IsValueType is false)
@@ -44,7 +46,6 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
             builder.AppendIndent(3, $"System.ArgumentNullException.ThrowIfNull(item);");
             CancellationToken.ThrowIfCancellationRequested();
         }
-
         for (var i = 0; i < members.Length; i++)
         {
             var member = members[i];
@@ -63,31 +64,27 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
 
     private void AppendDecodeMethod(StringBuilder builder, bool auto)
     {
-        var members = this.members;
         var constructor = this.constructor;
+        if (constructor is null)
+            return;
+        var members = this.members;
         var modifier = auto ? "ref" : "in";
         var methodName = auto ? "DecodeAuto" : "Decode";
+        builder.AppendIndent();
         builder.AppendIndent(2, $"public override {SymbolTypeFullName} {methodName}({modifier} System.ReadOnlySpan<byte> span)");
         builder.AppendIndent(2, $"{{");
-        if (constructor is null)
+        if (auto is false)
+            builder.AppendIndent(3, $"var body = span;");
+        var bufferName = auto ? "span" : "body";
+        for (var i = 0; i < members.Length; i++)
         {
-            builder.AppendIndent(3, $"throw new System.NotSupportedException($\"No suitable constructor found, type: {{typeof({SymbolTypeFullName})}}\");");
+            var last = (i == members.Length - 1);
+            var method = (auto || last is false) ? "DecodeAuto" : "Decode";
+            var keyword = (auto is false && last) ? "in" : "ref";
+            builder.AppendIndent(3, $"var var{i} = cvt{i}.{method}({keyword} {bufferName});");
+            CancellationToken.ThrowIfCancellationRequested();
         }
-        else
-        {
-            if (auto is false)
-                builder.AppendIndent(3, $"var body = span;");
-            var bufferName = auto ? "span" : "body";
-            for (var i = 0; i < members.Length; i++)
-            {
-                var last = (i == members.Length - 1);
-                var method = (auto || last is false) ? "DecodeAuto" : "Decode";
-                var keyword = (auto is false && last) ? "in" : "ref";
-                builder.AppendIndent(3, $"var var{i} = cvt{i}.{method}({keyword} {bufferName});");
-                CancellationToken.ThrowIfCancellationRequested();
-            }
-            constructor.Append(builder, SymbolTypeFullName, CancellationToken);
-        }
+        constructor.Append(builder, SymbolTypeFullName, CancellationToken);
         builder.AppendIndent(2, $"}}");
     }
 
@@ -107,11 +104,8 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     {
         AppendConverterHead(builder);
         AppendEncodeMethod(builder, auto: false);
-        builder.AppendIndent();
         AppendEncodeMethod(builder, auto: true);
-        builder.AppendIndent();
         AppendDecodeMethod(builder, auto: false);
-        builder.AppendIndent();
         AppendDecodeMethod(builder, auto: true);
         AppendConverterTail(builder);
         builder.AppendIndent();

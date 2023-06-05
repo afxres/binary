@@ -28,7 +28,6 @@ public sealed partial class GenericConverterContext : SymbolConverterContext
             AppendAssignConverterExplicit(builder, element, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i));
             CancellationToken.ThrowIfCancellationRequested();
         }
-
         var types = new List<string>();
         if (info.SelfType is SelfType.Include)
             types.Add(SymbolTypeFullName);

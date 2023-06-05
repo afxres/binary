@@ -90,7 +90,7 @@ public class CodeContractsTests
         var types = typeof(IConverter).Assembly.GetTypes()
             .Where(x => (x.IsPublic || x.IsNestedPublic) && !(x.IsAbstract && x.IsSealed) && !typeof(Delegate).IsAssignableFrom(x) && !x.IsInterface && x.Namespace is not "Mikodev.Binary.Attributes")
             .ToList();
-        Assert.Equal(5, types.Count);
+        Assert.Equal(7, types.Count);
         foreach (var t in types)
         {
             var equalMethod = t.GetMethodNotNull("Equals", new[] { typeof(object) });
@@ -170,7 +170,7 @@ public class CodeContractsTests
 
         var parameters = methodBases.SelectMany(x => x.GetParameters()).ToList();
         var byteArrayParameters = parameters.Where(x => x.ParameterType == typeof(byte[])).ToList();
-        Assert.Equal(6, byteArrayParameters.Count);
+        Assert.Equal(8, byteArrayParameters.Count);
         Assert.All(byteArrayParameters, x => Assert.Equal("Decode", x.Member.Name));
     }
 
