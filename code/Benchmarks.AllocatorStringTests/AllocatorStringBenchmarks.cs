@@ -1,24 +1,19 @@
 ﻿namespace Mikodev.Binary.Benchmarks.AllocatorStringTests;
 
 using BenchmarkDotNet.Attributes;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 [MemoryDiagnoser]
 public class AllocatorStringBenchmarks
 {
-    [AllowNull]
-    private byte[] buffer;
+    private byte[] buffer = null!;
 
-    [AllowNull]
-    private Encoding encoding;
+    private Encoding encoding = null!;
 
-    [AllowNull]
-    private AllocatorWriter<string?> writer;
+    private AllocatorWriter<string?> writer = null!;
 
-    [AllowNull]
     [Params("", "#", "Hello, world!", "0123456789ABCDEF0123456789abcdef", "The quick brown fox jumps over the lazy dog.")]
-    public string Text;
+    public string Text = null!;
 
     [GlobalSetup]
     public void Setup()

@@ -2,27 +2,23 @@
 
 using BenchmarkDotNet.Attributes;
 using Mikodev.Binary.Benchmarks.Abstractions;
-using System.Diagnostics.CodeAnalysis;
 
 [MemoryDiagnoser]
 public class ObjectBenchmarks
 {
     private byte[]? buffer;
 
-    [AllowNull]
-    private ClassNamedObject<int> class01;
+    private ClassNamedObject<int> class01 = null!;
 
     private byte[]? classBytes;
 
-    [AllowNull]
-    private Converter<ClassNamedObject<int>> classConverter;
+    private Converter<ClassNamedObject<int>> classConverter = null!;
 
     private ValueNamedObject<int> value01;
 
     private byte[]? valueBytes;
 
-    [AllowNull]
-    private Converter<ValueNamedObject<int>> valueConverter;
+    private Converter<ValueNamedObject<int>> valueConverter = null!;
 
     [GlobalSetup]
     public void Setup()

@@ -5,7 +5,6 @@ using Mikodev.Binary.Attributes;
 using Mikodev.Binary.Benchmarks.IntegrationTests.Models;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using TypeX1 = System.ValueTuple<int, string, int[], System.ValueTuple<double, System.Collections.Generic.List<string>>>;
 
 [SourceGeneratorContext]
@@ -16,11 +15,9 @@ public partial class IntegrationGeneratorContext { }
 [MemoryDiagnoser]
 public class IntegrationBenchmarks
 {
-    [AllowNull]
-    private IGenerator generatorJit;
+    private IGenerator generatorJit = null!;
 
-    [AllowNull]
-    private IGenerator generatorAot;
+    private IGenerator generatorAot = null!;
 
     private byte[]? buffer;
 
@@ -28,21 +25,17 @@ public class IntegrationBenchmarks
 
     private byte[]? valueBytes;
 
-    [AllowNull]
-    private Converter<Type01> valueConverterJit;
+    private Converter<Type01> valueConverterJit = null!;
 
-    [AllowNull]
-    private Converter<Type01> valueConverterAot;
+    private Converter<Type01> valueConverterAot = null!;
 
     private TypeX1 tuple;
 
     private byte[]? tupleBytes;
 
-    [AllowNull]
-    private Converter<TypeX1> tupleConverterJit;
+    private Converter<TypeX1> tupleConverterJit = null!;
 
-    [AllowNull]
-    private Converter<TypeX1> tupleConverterAot;
+    private Converter<TypeX1> tupleConverterAot = null!;
 
     [GlobalSetup]
     public void Setup()

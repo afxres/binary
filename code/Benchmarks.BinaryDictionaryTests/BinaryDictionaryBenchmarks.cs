@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -15,23 +14,17 @@ public class BinaryDictionaryBenchmarks
 {
     private delegate int GetValueOrDefault(ref byte source, int length);
 
-    [AllowNull]
-    private byte[][] keys3;
+    private byte[][] keys3 = null!;
 
-    [AllowNull]
-    private byte[][] keys7;
+    private byte[][] keys7 = null!;
 
-    [AllowNull]
-    private GetValueOrDefault functorLongData3;
+    private GetValueOrDefault functorLongData3 = null!;
 
-    [AllowNull]
-    private GetValueOrDefault functorHashCode3;
+    private GetValueOrDefault functorHashCode3 = null!;
 
-    [AllowNull]
-    private GetValueOrDefault functorLongData7;
+    private GetValueOrDefault functorLongData7 = null!;
 
-    [AllowNull]
-    private GetValueOrDefault functorHashCode7;
+    private GetValueOrDefault functorHashCode7 = null!;
 
     [GlobalSetup]
     public void Setup()

@@ -3,14 +3,12 @@
 using BenchmarkDotNet.Attributes;
 using Mikodev.Binary.Benchmarks.LengthPrefixEncodeTests.Models;
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 public class LengthPrefixEncodeBenchmarks
 {
     private byte[]? buffer;
 
-    [AllowNull]
-    private Converter<int> converter;
+    private Converter<int> converter = null!;
 
     [Params(0, 4, 8, 12, 16, 32)]
     public int Count;

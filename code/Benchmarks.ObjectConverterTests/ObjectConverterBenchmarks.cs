@@ -1,21 +1,17 @@
 ﻿namespace Mikodev.Binary.Benchmarks.ObjectConverterTests;
 
 using BenchmarkDotNet.Attributes;
-using System.Diagnostics.CodeAnalysis;
 
 public class ObjectConverterBenchmarks
 {
     private byte[]? buffer;
 
-    [AllowNull]
-    private IGenerator generator;
+    private IGenerator generator = null!;
 
-    [AllowNull]
-    private Converter<object> objectConverter;
+    private Converter<object> objectConverter = null!;
 
-    [AllowNull]
     [Params(1024, "string")]
-    public object Item;
+    public object Item = null!;
 
     [GlobalSetup]
     public void Setup()

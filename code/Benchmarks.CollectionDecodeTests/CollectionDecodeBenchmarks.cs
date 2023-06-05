@@ -5,7 +5,6 @@ using Mikodev.Binary.Benchmarks.Abstractions;
 using Mikodev.Binary.Benchmarks.CollectionDecodeTests.Models;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 [MemoryDiagnoser]
@@ -16,20 +15,15 @@ public class CollectionDecodeBenchmarks<T> where T : ICollection<int>
 {
     private byte[]? dataBuffer;
 
-    [AllowNull]
-    private Converter<int> converter;
+    private Converter<int> converter = null!;
 
-    [AllowNull]
-    private Converter<IEnumerable<int>> enumerableConverter;
+    private Converter<IEnumerable<int>> enumerableConverter = null!;
 
-    [AllowNull]
-    private Decoder<T> directiveDecoder;
+    private Decoder<T> directiveDecoder = null!;
 
-    [AllowNull]
-    private Decoder<T> interfaceDecoder;
+    private Decoder<T> interfaceDecoder = null!;
 
-    [AllowNull]
-    private Func<IEnumerable<int>, T> constructor;
+    private Func<IEnumerable<int>, T> constructor = null!;
 
     [Params("constant", "variable")]
     public string? Flag;

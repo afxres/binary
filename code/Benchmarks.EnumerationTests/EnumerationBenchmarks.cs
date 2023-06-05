@@ -4,7 +4,6 @@ using BenchmarkDotNet.Attributes;
 using Mikodev.Binary.Benchmarks.EnumerationTests.Models;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 [MemoryDiagnoser]
@@ -18,14 +17,11 @@ public class EnumerationBenchmarks<T> where T : notnull
 
     private Dictionary<T, T>? dictionary;
 
-    [AllowNull]
-    private Converter<T> converter;
+    private Converter<T> converter = null!;
 
-    [AllowNull]
-    private Converter<HashSet<T>> collectionConverter;
+    private Converter<HashSet<T>> collectionConverter = null!;
 
-    [AllowNull]
-    private Converter<Dictionary<T, T>> dictionaryConverter;
+    private Converter<Dictionary<T, T>> dictionaryConverter = null!;
 
     [Params(0, 1 << 4, 1 << 8, 1 << 20)]
     public int Count;

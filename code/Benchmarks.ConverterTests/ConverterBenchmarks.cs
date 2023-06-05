@@ -3,7 +3,6 @@
 using BenchmarkDotNet.Attributes;
 using Mikodev.Binary.Benchmarks.Abstractions;
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 [MemoryDiagnoser]
 public class ConverterBenchmarks
@@ -18,8 +17,7 @@ public class ConverterBenchmarks
 
     private byte[]? encodeWithLengthPrefixBytes;
 
-    [AllowNull]
-    private Converter<int> converter;
+    private Converter<int> converter = null!;
 
     [Params("constant", "variable", "internal")]
     public string? Flag;
