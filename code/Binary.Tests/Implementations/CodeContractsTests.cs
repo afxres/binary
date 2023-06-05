@@ -192,7 +192,7 @@ public class CodeContractsTests
         var attributedMethods = methods.Where(x => x.GetCustomAttributes().SingleOrDefault(a => a.GetType().FullName == AttributeName) != null).ToList();
         Assert.All(attributedMethods, x => Assert.True((x.DeclaringType?.Name is "ThrowHelper" && x.Name.StartsWith("Throw")) || x.Name.StartsWith("Except")));
 
-        var expectedMethods = methods.Where(x => x.Name.StartsWith("Throw") || x.Name.StartsWith("Except")).ToList();
+        var expectedMethods = methods.Where(x => x.Name.Contains("Throw") || x.Name.Contains("Except")).ToList();
         Assert.Equal(new HashSet<MethodInfo>(attributedMethods), new HashSet<MethodInfo>(expectedMethods));
 
         var misspelledMethods = methods.Where(x => x.Name.ToUpperInvariant().Contains("Expect".ToUpperInvariant())).ToList();
