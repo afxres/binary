@@ -23,7 +23,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     {
         var members = this.members;
         builder.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", ")", members.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
-        builder.AppendIndent(2, $": {SymbolConverterTypeFullName}(Mikodev.Binary.Components.TupleObject.GetTupleObjectLength(new {Constants.IConverterTypeName}[] {{ ", $" }}))", members.Length, x => $"cvt{x}");
+        builder.AppendIndent(2, $": {SymbolConverterTypeFullName}(Mikodev.Binary.Components.TupleObject.GetConverterLength(new {Constants.IConverterTypeName}[] {{ ", $" }}))", members.Length, x => $"cvt{x}");
         builder.AppendIndent(1, $"{{");
         CancellationToken.ThrowIfCancellationRequested();
     }

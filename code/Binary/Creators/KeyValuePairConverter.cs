@@ -10,7 +10,7 @@ internal sealed class KeyValuePairConverter<K, V> : Converter<KeyValuePair<K, V>
 
     private readonly Converter<V> tail;
 
-    public KeyValuePairConverter(Converter<K> init, Converter<V> tail) : base(TupleObject.GetTupleObjectLength(new IConverter[] { init, tail }))
+    public KeyValuePairConverter(Converter<K> init, Converter<V> tail) : base(TupleObject.GetConverterLength(new IConverter[] { init, tail }))
     {
         this.init = init;
         this.tail = tail;

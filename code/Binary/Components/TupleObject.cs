@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 public static class TupleObject
 {
-    public static int GetTupleObjectLength(IEnumerable<IConverter> converters)
+    public static int GetConverterLength(IEnumerable<IConverter> converters)
     {
         ArgumentNullException.ThrowIfNull(converters);
         var result = 0;

@@ -16,7 +16,7 @@ internal sealed class DictionaryDecoder<K, V> where K : notnull
     {
         this.init = init;
         this.tail = tail;
-        this.itemLength = TupleObject.GetTupleObjectLength(new IConverter[] { init, tail });
+        this.itemLength = TupleObject.GetConverterLength(new IConverter[] { init, tail });
     }
 
     public Dictionary<K, V> Invoke(ReadOnlySpan<byte> span)

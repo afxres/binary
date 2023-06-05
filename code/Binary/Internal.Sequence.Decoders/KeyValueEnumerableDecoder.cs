@@ -16,7 +16,7 @@ internal sealed class KeyValueEnumerableDecoder<K, V>
     {
         this.init = init;
         this.tail = tail;
-        this.itemLength = TupleObject.GetTupleObjectLength(new IConverter[] { init, tail });
+        this.itemLength = TupleObject.GetConverterLength(new IConverter[] { init, tail });
     }
 
     public List<KeyValuePair<K, V>> Invoke(ReadOnlySpan<byte> span)

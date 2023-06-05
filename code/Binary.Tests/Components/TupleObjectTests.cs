@@ -1,9 +1,8 @@
 ﻿namespace Mikodev.Binary.Tests.Components;
 
 using Mikodev.Binary.Components;
-using Mikodev.Binary.Tests.Internal;
 using System;
-using System.Reflection;
+using System.Collections.Generic;
 using Xunit;
 
 public class TupleObjectTests
@@ -41,8 +40,8 @@ public class TupleObjectTests
     [Fact(DisplayName = "Argument Null Test")]
     public void ArgumentNullTest()
     {
-        var methodInfo = ReflectionExtensions.GetMethodNotNull(typeof(TupleObject), "GetTupleObjectLength", BindingFlags.Static | BindingFlags.Public);
-        var error = Assert.Throws<ArgumentNullException>(() => TupleObject.GetTupleObjectLength(null!));
+        var methodInfo = new Func<IEnumerable<IConverter>, int>(TupleObject.GetConverterLength).Method;
+        var error = Assert.Throws<ArgumentNullException>(() => TupleObject.GetConverterLength(null!));
         var parameters = methodInfo.GetParameters();
         Assert.Equal(parameters[0].Name, error.ParamName);
     }
@@ -51,15 +50,15 @@ public class TupleObjectTests
     public void OverflowTest()
     {
         var converter = new FakeConverter<int>(0x4000_0000);
-        var error = Assert.Throws<OverflowException>(() => TupleObject.GetTupleObjectLength(new[] { converter, converter }));
+        var error = Assert.Throws<OverflowException>(() => TupleObject.GetConverterLength(new[] { converter, converter }));
         Assert.Equal(new OverflowException().Message, error.Message);
     }
 
     [Fact(DisplayName = "Sequence Null Test")]
     public void SequenceNullTest()
     {
-        var methodInfo = ReflectionExtensions.GetMethodNotNull(typeof(TupleObject), "GetTupleObjectLength", BindingFlags.Static | BindingFlags.Public);
-        var error = Assert.Throws<ArgumentException>(() => TupleObject.GetTupleObjectLength(new IConverter[] { null! }));
+        var methodInfo = new Func<IEnumerable<IConverter>, int>(TupleObject.GetConverterLength).Method;
+        var error = Assert.Throws<ArgumentException>(() => TupleObject.GetConverterLength(new IConverter[] { null! }));
         var parameters = methodInfo.GetParameters();
         Assert.Equal(parameters[0].Name, error.ParamName);
         Assert.StartsWith("Sequence contains null or invalid element.", error.Message);
@@ -68,8 +67,8 @@ public class TupleObjectTests
     [Fact(DisplayName = "Sequence Invalid Test")]
     public void SequenceInvalidTest()
     {
-        var methodInfo = ReflectionExtensions.GetMethodNotNull(typeof(TupleObject), "GetTupleObjectLength", BindingFlags.Static | BindingFlags.Public);
-        var error = Assert.Throws<ArgumentException>(() => TupleObject.GetTupleObjectLength(new IConverter[] { new HideConverter() }));
+        var methodInfo = new Func<IEnumerable<IConverter>, int>(TupleObject.GetConverterLength).Method;
+        var error = Assert.Throws<ArgumentException>(() => TupleObject.GetConverterLength(new IConverter[] { new HideConverter() }));
         var parameters = methodInfo.GetParameters();
         Assert.Equal(parameters[0].Name, error.ParamName);
         Assert.StartsWith("Sequence contains null or invalid element.", error.Message);
@@ -78,8 +77,8 @@ public class TupleObjectTests
     [Fact(DisplayName = "Sequence Empty Test")]
     public void SequenceEmptyTest()
     {
-        var methodInfo = ReflectionExtensions.GetMethodNotNull(typeof(TupleObject), "GetTupleObjectLength", BindingFlags.Static | BindingFlags.Public);
-        var error = Assert.Throws<ArgumentException>(() => TupleObject.GetTupleObjectLength(Array.Empty<IConverter>()));
+        var methodInfo = new Func<IEnumerable<IConverter>, int>(TupleObject.GetConverterLength).Method;
+        var error = Assert.Throws<ArgumentException>(() => TupleObject.GetConverterLength(Array.Empty<IConverter>()));
         var parameters = methodInfo.GetParameters();
         Assert.Equal(parameters[0].Name, error.ParamName);
         Assert.StartsWith("Sequence contains no element.", error.Message);
