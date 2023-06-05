@@ -17,7 +17,7 @@ public static class TupleObject
             var length = i.Length;
             if (length is 0)
                 return 0;
-            checked { result += length; }
+            result = checked(result + length);
         }
 
         if (result is 0)

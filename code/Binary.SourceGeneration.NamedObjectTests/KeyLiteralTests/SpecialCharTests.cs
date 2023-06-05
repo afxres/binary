@@ -14,10 +14,10 @@ public partial class SpecialCharGeneratorContext { }
 public class ClassWithSpecialCharsAsNameKeys : IEquatable<ClassWithSpecialCharsAsNameKeys?>
 {
     [NamedKey("\x0\x10\x13\x4f60\x597d")]
-    public int A { get; set; }
+    public int A { get; init; }
 
     [NamedKey("\x7f")]
-    public string? Z { get; set; }
+    public string? Z { get; init; }
 
     public bool Equals(ClassWithSpecialCharsAsNameKeys? other) => other is not null && A == other.A && Z == other.Z;
 

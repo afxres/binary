@@ -1,9 +1,9 @@
 ﻿namespace Mikodev.Binary.Tests.Miscellaneous;
 
+using Mikodev.Binary.Components;
 using Mikodev.Binary.Tests.Internal;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -93,10 +93,7 @@ public class ArithmeticOverflowTests
 
     private sealed class UnsafeRawListData<T>
     {
-        [AllowNull]
-#pragma warning disable CS0649 // Field 'ArithmeticOverflowTests.UnsafeRawListData<T>.Data' is never assigned to, and will always have its default value null
-        public T[] Data;
-#pragma warning restore CS0649 // Field 'ArithmeticOverflowTests.UnsafeRawListData<T>.Data' is never assigned to, and will always have its default value null
+        public T[] Data = null!;
 
         public int Size;
     }
@@ -118,5 +115,24 @@ public class ArithmeticOverflowTests
             method.Invoke(ref allocator, source);
         });
         this.output.WriteLine(error.StackTrace);
+    }
+
+    private sealed class FakeConverter<T> : Converter<T>
+    {
+        public FakeConverter(int length) : base(length) { }
+
+        public override void Encode(ref Allocator allocator, T? item) => throw new NotSupportedException();
+
+        public override T Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException();
+    }
+
+    [Theory(DisplayName = "Get Converter Length Overflow")]
+    [InlineData(new int[] { 0x4000_0000, 0x4000_0000 })]
+    [InlineData(new int[] { 0x3000_0000, 0x3000_0000, 0x3000_0000 })]
+    public void GetConverterLengthOverflow(int[] lengths)
+    {
+        var converters = lengths.Select(x => new FakeConverter<object>(x)).ToList();
+        var error = Assert.Throws<OverflowException>(() => TupleObject.GetConverterLength(converters));
+        Assert.Equal(new OverflowException().Message, error.Message);
     }
 }
