@@ -21,7 +21,7 @@ public abstract class NamedObjectConverter<T> : Converter<T?>
 
     private readonly ByteViewDictionary<int> dictionary;
 
-    public NamedObjectConverter(Converter<string> converter, IEnumerable<string> names, IEnumerable<bool> optional)
+    protected NamedObjectConverter(Converter<string> converter, IEnumerable<string> names, IEnumerable<bool> optional)
     {
         ArgumentNullException.ThrowIfNull(converter);
         ArgumentNullException.ThrowIfNull(names);

@@ -5,6 +5,7 @@ using Mikodev.Binary.Components;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Xunit;
 
 public class NamedObjectConverterTests
@@ -28,7 +29,7 @@ public class NamedObjectConverterTests
         var i = Assert.Throws<ArgumentNullException>(() => new FakeNamedObjectConverter<object>(null!, c, d));
         var j = Assert.Throws<ArgumentNullException>(() => new FakeNamedObjectConverter<object>(b, null!, d));
         var k = Assert.Throws<ArgumentNullException>(() => new FakeNamedObjectConverter<object>(b, c, null!));
-        var constructorInfo = typeof(NamedObjectConverter<object>).GetConstructors().Single();
+        var constructorInfo = typeof(NamedObjectConverter<object>).GetConstructors(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Single();
         var parameterNames = constructorInfo.GetParameters();
         Assert.Equal(parameterNames[0].Name, i.ParamName);
         Assert.Equal(parameterNames[1].Name, j.ParamName);

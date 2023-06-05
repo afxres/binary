@@ -276,4 +276,22 @@ public class CodeContractsTests
             Assert.Equal("System.Runtime.CompilerServices", attribute.GetType().Namespace);
         }
     }
+
+    [Fact(DisplayName = "Public Abstract Class Constructor Should Be Protected")]
+    public void PublicAbstractClassConstructorShouldBeProtected()
+    {
+        var types = typeof(IConverter).Assembly.GetTypes();
+        var publicAbstractTypes = types.Where(x => x.IsPublic && x.IsAbstract && x.IsInterface is false && x.IsSealed is false).ToList();
+        var knownTypeNames = new HashSet<string> { "Converter`1", "CollectionConverter`1", "NamedObjectConverter`1", "TupleObjectConverter`1" };
+        Assert.Equal(knownTypeNames, publicAbstractTypes.Select(x => x.Name).ToHashSet());
+
+        foreach (var type in publicAbstractTypes)
+        {
+            var constructors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.NotEmpty(constructors);
+            Assert.All(constructors, x => Assert.True(x.IsFamily));
+            Assert.All(constructors, x => Assert.False(x.IsPublic));
+            Assert.All(constructors, x => Assert.False(x.IsPrivate));
+        }
+    }
 }
