@@ -584,7 +584,7 @@ type AttributeTests() =
             Assert.False(attribute.AllowMultiple)
             map.Add(i, attribute.ValidOn)
         let a = AttributeTargets.Property ||| AttributeTargets.Field
-        let b = AttributeTargets.Class ||| AttributeTargets.Struct ||| AttributeTargets.Enum ||| AttributeTargets.Interface
+        let b = AttributeTargets.Class ||| AttributeTargets.Struct ||| AttributeTargets.Interface
         let c = AttributeTargets.Class ||| AttributeTargets.Struct ||| AttributeTargets.Enum ||| AttributeTargets.Interface ||| AttributeTargets.Property ||| AttributeTargets.Field
         Assert.Equal(a, map.[typeof<NamedKeyAttribute>])
         Assert.Equal(a, map.[typeof<TupleKeyAttribute>])
