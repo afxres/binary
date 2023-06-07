@@ -6,6 +6,8 @@ using System.Linq;
 
 public sealed partial class CollectionConverterContext
 {
+    private const string ConstructorParameter = "$0";
+
     private enum SourceType
     {
         Null,
@@ -66,30 +68,29 @@ public sealed partial class CollectionConverterContext
             builder.Add(type.ConstructUnboundGenericType(), (source, method));
         }
 
-        const string Lambda = "item";
         var builder = ImmutableDictionary.CreateBuilder<INamedTypeSymbol, (SourceType, string)>(SymbolEqualityComparer.Default);
         var functor = (string name, SourceType source, string method) => Add(compilation, builder, name, source, method);
-        functor.Invoke("System.Collections.Frozen.FrozenSet`1", SourceType.List, "System.Collections.Frozen.FrozenSet.ToFrozenSet(item, true)");
-        functor.Invoke("System.Collections.Frozen.FrozenDictionary`2", SourceType.ListKeyValuePair, "System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary(item, true)");
-        functor.Invoke("System.Collections.Generic.IList`1", SourceType.List, Lambda);
-        functor.Invoke("System.Collections.Generic.ICollection`1", SourceType.List, Lambda);
-        functor.Invoke("System.Collections.Generic.IEnumerable`1", SourceType.List, Lambda);
-        functor.Invoke("System.Collections.Generic.IReadOnlyList`1", SourceType.List, Lambda);
-        functor.Invoke("System.Collections.Generic.IReadOnlyCollection`1", SourceType.List, Lambda);
-        functor.Invoke("System.Collections.Generic.ISet`1", SourceType.HashSet, Lambda);
-        functor.Invoke("System.Collections.Generic.IReadOnlySet`1", SourceType.HashSet, Lambda);
-        functor.Invoke("System.Collections.Generic.IDictionary`2", SourceType.Dictionary, Lambda);
-        functor.Invoke("System.Collections.Generic.IReadOnlyDictionary`2", SourceType.Dictionary, Lambda);
-        functor.Invoke("System.Collections.Immutable.IImmutableDictionary`2", SourceType.ListKeyValuePair, "System.Collections.Immutable.ImmutableDictionary.CreateRange(item)");
-        functor.Invoke("System.Collections.Immutable.IImmutableList`1", SourceType.List, "System.Collections.Immutable.ImmutableList.CreateRange(item)");
-        functor.Invoke("System.Collections.Immutable.IImmutableQueue`1", SourceType.List, "System.Collections.Immutable.ImmutableQueue.CreateRange(item)");
-        functor.Invoke("System.Collections.Immutable.IImmutableSet`1", SourceType.List, "System.Collections.Immutable.ImmutableHashSet.CreateRange(item)");
-        functor.Invoke("System.Collections.Immutable.ImmutableDictionary`2", SourceType.ListKeyValuePair, "System.Collections.Immutable.ImmutableDictionary.CreateRange(item)");
-        functor.Invoke("System.Collections.Immutable.ImmutableHashSet`1", SourceType.List, "System.Collections.Immutable.ImmutableHashSet.CreateRange(item)");
-        functor.Invoke("System.Collections.Immutable.ImmutableList`1", SourceType.List, "System.Collections.Immutable.ImmutableList.CreateRange(item)");
-        functor.Invoke("System.Collections.Immutable.ImmutableQueue`1", SourceType.List, "System.Collections.Immutable.ImmutableQueue.CreateRange(item)");
-        functor.Invoke("System.Collections.Immutable.ImmutableSortedDictionary`2", SourceType.ListKeyValuePair, "System.Collections.Immutable.ImmutableSortedDictionary.CreateRange(item)");
-        functor.Invoke("System.Collections.Immutable.ImmutableSortedSet`1", SourceType.List, "System.Collections.Immutable.ImmutableSortedSet.CreateRange(item)");
+        functor.Invoke("System.Collections.Frozen.FrozenSet`1", SourceType.List, $"System.Collections.Frozen.FrozenSet.ToFrozenSet({ConstructorParameter}, true)");
+        functor.Invoke("System.Collections.Frozen.FrozenDictionary`2", SourceType.ListKeyValuePair, $"System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary({ConstructorParameter}, true)");
+        functor.Invoke("System.Collections.Generic.IList`1", SourceType.List, ConstructorParameter);
+        functor.Invoke("System.Collections.Generic.ICollection`1", SourceType.List, ConstructorParameter);
+        functor.Invoke("System.Collections.Generic.IEnumerable`1", SourceType.List, ConstructorParameter);
+        functor.Invoke("System.Collections.Generic.IReadOnlyList`1", SourceType.List, ConstructorParameter);
+        functor.Invoke("System.Collections.Generic.IReadOnlyCollection`1", SourceType.List, ConstructorParameter);
+        functor.Invoke("System.Collections.Generic.ISet`1", SourceType.HashSet, ConstructorParameter);
+        functor.Invoke("System.Collections.Generic.IReadOnlySet`1", SourceType.HashSet, ConstructorParameter);
+        functor.Invoke("System.Collections.Generic.IDictionary`2", SourceType.Dictionary, ConstructorParameter);
+        functor.Invoke("System.Collections.Generic.IReadOnlyDictionary`2", SourceType.Dictionary, ConstructorParameter);
+        functor.Invoke("System.Collections.Immutable.IImmutableDictionary`2", SourceType.ListKeyValuePair, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.IImmutableList`1", SourceType.List, $"System.Collections.Immutable.ImmutableList.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.IImmutableQueue`1", SourceType.List, $"System.Collections.Immutable.ImmutableQueue.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.IImmutableSet`1", SourceType.List, $"System.Collections.Immutable.ImmutableHashSet.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.ImmutableDictionary`2", SourceType.ListKeyValuePair, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.ImmutableHashSet`1", SourceType.List, $"System.Collections.Immutable.ImmutableHashSet.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.ImmutableList`1", SourceType.List, $"System.Collections.Immutable.ImmutableList.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.ImmutableQueue`1", SourceType.List, $"System.Collections.Immutable.ImmutableQueue.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.ImmutableSortedDictionary`2", SourceType.ListKeyValuePair, $"System.Collections.Immutable.ImmutableSortedDictionary.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.ImmutableSortedSet`1", SourceType.List, $"System.Collections.Immutable.ImmutableSortedSet.CreateRange({ConstructorParameter})");
         return builder.ToImmutable();
     }
 

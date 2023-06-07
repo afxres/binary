@@ -52,14 +52,17 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
             CancellationToken.ThrowIfCancellationRequested();
         }
         builder.AppendIndent(3, $"foreach (var i in item)");
-        builder.AppendIndent(3, $"{{");
         if (elements.Length is 1)
+        {
             builder.AppendIndent(4, $"cvt0.EncodeAuto(ref allocator, i);");
+        }
         else
+        {
+            builder.AppendIndent(3, $"{{");
             builder.AppendIndent(4, $"cvt0.EncodeAuto(ref allocator, i.Key);");
-        if (elements.Length is not 1)
             builder.AppendIndent(4, $"cvt1.EncodeAuto(ref allocator, i.Value);");
-        builder.AppendIndent(3, $"}}");
+            builder.AppendIndent(3, $"}}");
+        }
         builder.AppendIndent(2, $"}}");
     }
 
@@ -71,11 +74,12 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
         builder.AppendIndent();
         builder.AppendIndent(2, $"public override {SymbolTypeFullName} Decode(in System.ReadOnlySpan<byte> span)");
         builder.AppendIndent(2, $"{{");
+        var invoke = "decoder.Invoke(span)";
         var method = info.MethodBody;
-        if (string.IsNullOrEmpty(method))
-            method = $"new {SymbolTypeFullName}(item)";
-        builder.AppendIndent(3, $"var item = decoder.Invoke(span);");
-        builder.AppendIndent(3, $"return {method};");
+        var action = string.IsNullOrEmpty(method)
+            ? $"new {SymbolTypeFullName}({invoke})"
+            : method.Replace(ConstructorParameter, invoke);
+        builder.AppendIndent(3, $"return {action};");
         builder.AppendIndent(2, $"}}");
     }
 
