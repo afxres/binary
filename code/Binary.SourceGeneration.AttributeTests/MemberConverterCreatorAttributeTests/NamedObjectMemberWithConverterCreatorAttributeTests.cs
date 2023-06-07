@@ -46,11 +46,12 @@ public class NamedObjectMemberWithConverterCreatorAttributeTests
     [Fact(DisplayName = "Member With Converter Creator Attribute Test")]
     public void MemberWithConverterCreatorAttributeTest()
     {
-        var builder = Generator.CreateAotBuilder();
         var pair = Assert.Single(KeyedItemSourceGeneratorContext.ConverterCreators);
         Assert.Equal(typeof(KeyedItem), pair.Key);
-        _ = builder.AddConverterCreator(pair.Value);
-        var generator = builder.Build();
+
+        var generator = Generator.CreateAotBuilder()
+            .AddConverterCreator(pair.Value)
+            .Build();
         var converter = generator.GetConverter<KeyedItem>();
         var converterType = converter.GetType();
         Assert.Equal(converterType.Assembly, typeof(KeyedItemSourceGeneratorContext).Assembly);

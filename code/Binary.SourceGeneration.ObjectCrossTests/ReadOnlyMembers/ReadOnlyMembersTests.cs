@@ -124,10 +124,9 @@ public class ReadOnlyMembersTests
     [MemberData(nameof(PropertyWithNonPublicSetterData))]
     public void ReadOnlyMembersTest<T>(T source)
     {
-        var builder = Generator.CreateAotBuilder();
-        foreach (var i in ReadOnlyMembersGeneratorContext.ConverterCreators)
-            _ = builder.AddConverterCreator(i.Value);
-        var generator = builder.Build();
+        var generator = Generator.CreateAotBuilder()
+            .AddConverterCreators(ReadOnlyMembersGeneratorContext.ConverterCreators.Values)
+            .Build();
         var converter = generator.GetConverter<T>();
         var buffer = converter.Encode(source);
         Assert.NotEmpty(buffer);

@@ -61,10 +61,9 @@ public class PropertyOnlyTests
     [MemberData(nameof(ValueData))]
     public void EncodeDecodeTest<T>(T source)
     {
-        var builder = Generator.CreateAotBuilder();
-        foreach (var i in PropertyOnlySourceGeneratorContext.ConverterCreators)
-            _ = builder.AddConverterCreator(i.Value);
-        var generator = builder.Build();
+        var generator = Generator.CreateAotBuilder()
+            .AddConverterCreators(PropertyOnlySourceGeneratorContext.ConverterCreators.Values)
+            .Build();
         var converter = generator.GetConverter<T>();
         var converterType = converter.GetType();
         Assert.Equal(converterType.Assembly, typeof(PropertyOnlySourceGeneratorContext).Assembly);

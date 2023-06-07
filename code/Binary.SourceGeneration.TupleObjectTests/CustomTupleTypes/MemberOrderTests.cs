@@ -87,10 +87,9 @@ public class MemberOrderTests
     [MemberData(nameof(UnorderedMembersData))]
     public void MemberOrderTest<T, R>(T source, R sample)
     {
-        var builder = Generator.CreateAotBuilder();
-        foreach (var pair in MemberOrderSourceGeneratorContext.ConverterCreators)
-            _ = builder.AddConverterCreator(pair.Value);
-        var generator = builder.Build();
+        var generator = Generator.CreateAotBuilder()
+            .AddConverterCreators(MemberOrderSourceGeneratorContext.ConverterCreators.Values)
+            .Build();
         var converter = generator.GetConverter<T>();
         Assert.Equal(converter.GetType().Assembly, typeof(MemberOrderSourceGeneratorContext).Assembly);
         Assert.Equal(0, converter.Length);

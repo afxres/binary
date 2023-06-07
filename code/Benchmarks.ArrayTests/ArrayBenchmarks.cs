@@ -4,6 +4,8 @@ using BenchmarkDotNet.Attributes;
 using Mikodev.Binary.Benchmarks.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 [MemoryDiagnoser]
 public class ArrayBenchmarks
@@ -32,13 +34,17 @@ public class ArrayBenchmarks
     [GlobalSetup]
     public void Setup()
     {
-        var builder = Generator.CreateDefaultBuilder();
-        var flag = this.Flag;
-        if (flag is "constant")
-            _ = builder.AddConverter(new ConstantNativeConverter<int>());
-        else if (flag is "variable")
-            _ = builder.AddConverter(new VariableNativeConverter<int>());
-        var generator = builder.Build();
+        static IEnumerable<IConverter> Select(string? flag)
+        {
+            if (flag is "constant")
+                yield return new ConstantNativeConverter<int>();
+            else if (flag is "variable")
+                yield return new VariableNativeConverter<int>();
+        }
+
+        var generator = Generator.CreateDefaultBuilder()
+            .AddConverters(Select(this.Flag))
+            .Build();
 
         this.array01 = new[] { 1313 };
         this.list01 = new List<int> { 1313 };
@@ -51,6 +57,15 @@ public class ArrayBenchmarks
         this.buffer = new byte[65536];
         this.encodeBytes = this.arrayConverter.Encode(this.array01);
         this.encodeWithLengthPrefixBytes = Allocator.Invoke(this.array01, this.arrayConverter.EncodeWithLengthPrefix);
+
+        var arrayResult = this.arrayConverter.Decode(this.encodeBytes);
+        var listResult = this.listConverter.Decode(this.encodeBytes);
+        var memoryResult = this.memoryConverter.Decode(this.encodeBytes);
+
+        // simple tests
+        Trace.Assert(arrayResult.Single() is 1313);
+        Trace.Assert(listResult.Single() is 1313);
+        Trace.Assert(memoryResult.ToArray().Single() is 1313);
     }
 
     [Benchmark(Description = "Encode Array")]

@@ -34,9 +34,6 @@ public static partial class Generator
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     public static IGeneratorBuilder CreateDefaultBuilder()
     {
-        var builder = new GeneratorBuilder(new GeneratorContextFallback());
-        foreach (var creator in GetConverterCreators())
-            _ = builder.AddConverterCreator(creator);
-        return builder;
+        return new GeneratorBuilder(new GeneratorContextFallback()).AddConverterCreators(GetConverterCreators());
     }
 }

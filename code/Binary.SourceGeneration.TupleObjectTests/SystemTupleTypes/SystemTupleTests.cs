@@ -35,10 +35,9 @@ public class SystemTupleTests
     [MemberData(nameof(ValueTupleData))]
     public void IntegrationTest<T>(T source, int converterLength)
     {
-        var builder = Generator.CreateAotBuilder();
-        foreach (var i in SystemTupleSourceGeneratorContext.ConverterCreators)
-            _ = builder.AddConverterCreator(i.Value);
-        var generator = builder.Build();
+        var generator = Generator.CreateAotBuilder()
+            .AddConverterCreators(SystemTupleSourceGeneratorContext.ConverterCreators.Values)
+            .Build();
         var converter = generator.GetConverter<T>();
         Assert.Equal(typeof(SystemTupleSourceGeneratorContext).Assembly, converter.GetType().Assembly);
         Assert.Equal(converterLength, converter.Length);

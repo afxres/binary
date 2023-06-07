@@ -22,9 +22,6 @@ public static partial class Generator
 
     public static IGeneratorBuilder CreateAotBuilder()
     {
-        var builder = new GeneratorBuilder();
-        foreach (var creator in GetAotConverterCreators())
-            _ = builder.AddConverterCreator(creator);
-        return builder;
+        return new GeneratorBuilder().AddConverterCreators(GetAotConverterCreators());
     }
 }

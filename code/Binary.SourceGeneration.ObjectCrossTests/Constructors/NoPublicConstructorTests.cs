@@ -55,10 +55,9 @@ public class NoPublicConstructorTests
     [MemberData(nameof(NoPublicConstructorData))]
     public void NoPublicConstructorTest<T>(T source)
     {
-        var builder = Generator.CreateAotBuilder();
-        foreach (var i in NoPublicConstructorGeneratorContext.ConverterCreators)
-            _ = builder.AddConverterCreator(i.Value);
-        var generator = builder.Build();
+        var generator = Generator.CreateAotBuilder()
+            .AddConverterCreators(NoPublicConstructorGeneratorContext.ConverterCreators.Values)
+            .Build();
         var converter = generator.GetConverter<T>();
         var buffer = converter.Encode(source);
         Assert.NotEmpty(buffer);

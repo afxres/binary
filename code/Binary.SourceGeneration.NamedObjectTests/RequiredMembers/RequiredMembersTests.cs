@@ -80,10 +80,9 @@ public class RequiredMembersTests
     [MemberData(nameof(PropertyOnlyRequiredMemberSetData))]
     public void EncodeDecodeTest<T>(IEnumerable<string> expectedKeys, T source)
     {
-        var builder = Generator.CreateAotBuilder();
-        foreach (var i in RequiredMembersSourceGeneratorContext.ConverterCreators)
-            _ = builder.AddConverterCreator(i.Value);
-        var generator = builder.Build();
+        var generator = Generator.CreateAotBuilder()
+            .AddConverterCreators(RequiredMembersSourceGeneratorContext.ConverterCreators.Values)
+            .Build();
         var converter = generator.GetConverter<T>();
         var converterType = converter.GetType();
         Assert.Equal(converterType.Assembly, typeof(RequiredMembersSourceGeneratorContext).Assembly);

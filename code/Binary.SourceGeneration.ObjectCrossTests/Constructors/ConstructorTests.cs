@@ -123,10 +123,9 @@ public class ConstructorTests
     [MemberData(nameof(ConstructorData))]
     public void ConstructorTest<T>(T source)
     {
-        var builder = Generator.CreateAotBuilder();
-        foreach (var i in ConstructorGeneratorContext.ConverterCreators)
-            _ = builder.AddConverterCreator(i.Value);
-        var generator = builder.Build();
+        var generator = Generator.CreateAotBuilder()
+            .AddConverterCreators(ConstructorGeneratorContext.ConverterCreators.Values)
+            .Build();
         var converter = generator.GetConverter<T>();
         var buffer = converter.Encode(source);
         Assert.NotEmpty(buffer);
