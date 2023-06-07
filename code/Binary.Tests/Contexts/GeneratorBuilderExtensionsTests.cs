@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 public class GeneratorBuilderExtensionsTests
@@ -79,6 +80,16 @@ public class GeneratorBuilderExtensionsTests
         Assert.True(ReferenceEquals(builder, returned));
     }
 
+    [Fact(DisplayName = "Add Converters With Empty Collection")]
+    public void AddConvertersWithEmptyCollection()
+    {
+        var builder = new FakeLinkedListGeneratorBuilder();
+        Assert.Equal(0, builder.Id);
+        var returned = Assert.IsType<FakeLinkedListGeneratorBuilder>(builder.AddConverters(Enumerable.Empty<IConverter>()));
+        Assert.Equal(0, builder.Id);
+        Assert.True(ReferenceEquals(builder, returned));
+    }
+
     [Fact(DisplayName = "Add Converters With Linked List Builder")]
     public void AddConvertersWithLinkedListBuilder()
     {
@@ -98,6 +109,16 @@ public class GeneratorBuilderExtensionsTests
         Assert.Empty(builder.ConverterCreators);
         var returned = builder.AddConverterCreators(creators);
         Assert.Equal(2, builder.ConverterCreators.Count);
+        Assert.True(ReferenceEquals(builder, returned));
+    }
+
+    [Fact(DisplayName = "Add Converter Creators With Empty Collection")]
+    public void AddConverterCreatorsWithEmptyCollection()
+    {
+        var builder = new FakeLinkedListGeneratorBuilder();
+        Assert.Equal(0, builder.Id);
+        var returned = Assert.IsType<FakeLinkedListGeneratorBuilder>(builder.AddConverterCreators(Enumerable.Empty<IConverterCreator>()));
+        Assert.Equal(0, builder.Id);
         Assert.True(ReferenceEquals(builder, returned));
     }
 
