@@ -55,21 +55,21 @@ type FakeDictionary<'K, 'V>(item : Queue<KeyValuePair<'K, 'V>>) =
     interface IDictionary<'K, 'V> with
         member __.Add(_: 'K, _: 'V): unit = raise (NotSupportedException())
 
-        member __.Add(_: KeyValuePair<'K,'V>): unit = raise (NotSupportedException())
+        member __.Add(_: KeyValuePair<'K, 'V>): unit = raise (NotSupportedException())
 
         member __.Clear(): unit = raise (NotSupportedException())
 
-        member __.Contains(_: KeyValuePair<'K,'V>): bool = raise (NotSupportedException())
+        member __.Contains(_: KeyValuePair<'K, 'V>): bool = raise (NotSupportedException())
 
         member __.ContainsKey(_: 'K): bool = raise (NotSupportedException())
 
-        member __.CopyTo(array: KeyValuePair<'K,'V> [], arrayIndex: int): unit = item.CopyTo(array, arrayIndex)
+        member __.CopyTo(array: KeyValuePair<'K, 'V> [], arrayIndex: int): unit = item.CopyTo(array, arrayIndex)
 
         member __.Count: int = item.Count
 
         member __.GetEnumerator(): IEnumerator = (item :> seq<_>).GetEnumerator() :> IEnumerator
 
-        member __.GetEnumerator(): IEnumerator<KeyValuePair<'K,'V>> = (item :> seq<_>).GetEnumerator()
+        member __.GetEnumerator(): IEnumerator<KeyValuePair<'K, 'V>> = (item :> seq<_>).GetEnumerator()
 
         member __.IsReadOnly: bool = raise (NotSupportedException())
 
@@ -79,7 +79,7 @@ type FakeDictionary<'K, 'V>(item : Queue<KeyValuePair<'K, 'V>>) =
 
         member __.Remove(_: 'K): bool = raise (NotSupportedException())
 
-        member __.Remove(_: KeyValuePair<'K,'V>): bool = raise (NotSupportedException())
+        member __.Remove(_: KeyValuePair<'K, 'V>): bool = raise (NotSupportedException())
 
         member __.TryGetValue(_: 'K, value: byref<'V>): bool = raise (NotSupportedException())
 
@@ -93,7 +93,7 @@ type FakeReadOnlyDictionary<'K, 'V>(item : KeyValuePair<'K, 'V> array) =
 
         member __.GetEnumerator(): IEnumerator = (item :> seq<_>).GetEnumerator() :> IEnumerator
 
-        member __.GetEnumerator(): IEnumerator<KeyValuePair<'K,'V>> = (item :> seq<_>).GetEnumerator()
+        member __.GetEnumerator(): IEnumerator<KeyValuePair<'K, 'V>> = (item :> seq<_>).GetEnumerator()
 
         member __.Item with get (_key: 'K): 'V = raise (NotSupportedException())
 
@@ -107,20 +107,20 @@ type FakeDictionaryReadOnlyDictionary<'K, 'V>(item : KeyValuePair<'K, 'V> Resize
     interface IEnumerable<KeyValuePair<'K, 'V>> with
         member __.GetEnumerator(): IEnumerator = (item :> seq<_>).GetEnumerator() :> IEnumerator
 
-        member __.GetEnumerator(): IEnumerator<KeyValuePair<'K,'V>> = (item :> seq<_>).GetEnumerator()
+        member __.GetEnumerator(): IEnumerator<KeyValuePair<'K, 'V>> = (item :> seq<_>).GetEnumerator()
 
     interface IDictionary<'K, 'V> with
         member __.Add(_: 'K, _: 'V): unit = raise (NotSupportedException())
 
-        member __.Add(_: KeyValuePair<'K,'V>): unit = raise (NotSupportedException())
+        member __.Add(_: KeyValuePair<'K, 'V>): unit = raise (NotSupportedException())
 
         member __.Clear(): unit = raise (NotSupportedException())
 
-        member __.Contains(_: KeyValuePair<'K,'V>): bool = raise (NotSupportedException())
+        member __.Contains(_: KeyValuePair<'K, 'V>): bool = raise (NotSupportedException())
 
         member __.ContainsKey(_: 'K): bool = raise (NotSupportedException())
 
-        member __.CopyTo(array: KeyValuePair<'K,'V> [], arrayIndex: int): unit = item.CopyTo(array, arrayIndex)
+        member __.CopyTo(array: KeyValuePair<'K, 'V> [], arrayIndex: int): unit = item.CopyTo(array, arrayIndex)
 
         member __.Count: int = item.Count
 
@@ -132,7 +132,7 @@ type FakeDictionaryReadOnlyDictionary<'K, 'V>(item : KeyValuePair<'K, 'V> Resize
 
         member __.Remove(_: 'K): bool = raise (NotSupportedException())
 
-        member __.Remove(_: KeyValuePair<'K,'V>): bool = raise (NotSupportedException())
+        member __.Remove(_: KeyValuePair<'K, 'V>): bool = raise (NotSupportedException())
 
         member __.TryGetValue(_: 'K, value: byref<'V>): bool = raise (NotSupportedException())
 
