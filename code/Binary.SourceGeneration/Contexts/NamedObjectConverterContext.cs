@@ -22,8 +22,8 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
     private void AppendConverterHead(StringBuilder builder)
     {
         var members = this.members;
-        var tail = ", Mikodev.Binary.Converter<string> converter, System.Collections.Generic.IEnumerable<string> names, System.Collections.Generic.IEnumerable<bool> optional)";
-        builder.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", tail, members.Length, i => $"byte[] key{i}, {GetConverterTypeFullName(i)} cvt{i}");
+        var tail = ", byte[][] keys, Mikodev.Binary.Converter<string> converter, System.Collections.Generic.IEnumerable<string> names, System.Collections.Generic.IEnumerable<bool> optional)";
+        builder.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", tail, members.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
         builder.AppendIndent(2, $": Mikodev.Binary.Components.NamedObjectConverter<{SymbolTypeFullName}>(converter, names, optional)");
         builder.AppendIndent(1, $"{{");
         CancellationToken.ThrowIfCancellationRequested();
@@ -60,7 +60,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
                 builder.AppendIndent(3, $"{{");
             }
             var indent = optional ? 4 : 3;
-            builder.AppendIndent(indent, $"{Constants.AllocatorTypeName}.Append(ref allocator, new System.ReadOnlySpan<byte>(key{i}));");
+            builder.AppendIndent(indent, $"{Constants.AllocatorTypeName}.Append(ref allocator, new System.ReadOnlySpan<byte>(keys[{i}]));");
             builder.AppendIndent(indent, $"cvt{i}.EncodeWithLengthPrefix(ref allocator, var{i});");
             if (optional)
             {
@@ -103,10 +103,10 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         {
             var member = members[i];
             AppendAssignConverter(builder, member, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i));
-            builder.AppendIndent(3, $"var key{i} = {Constants.AllocatorTypeName}.Invoke(names[{i}], encoding.EncodeWithLengthPrefix);");
             CancellationToken.ThrowIfCancellationRequested();
         }
-        builder.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ", encoding, names, optional);", members.Length, x => $"key{x}, cvt{x}");
+        builder.AppendIndent(3, $"var keys = System.Array.ConvertAll(names, x => Mikodev.Binary.Allocator.Invoke(x, encoding.EncodeWithLengthPrefix));");
+        builder.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ", keys, encoding, names, optional);", members.Length, x => $"cvt{x}");
     }
 
     protected override void Invoke(StringBuilder builder)
