@@ -31,13 +31,13 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     private void AppendConverterTail(StringBuilder builder)
     {
         builder.AppendIndent(1, $"}}");
+        builder.AppendIndent();
     }
 
     private void AppendExceptMethod(StringBuilder builder)
     {
         if (Symbol.IsValueType)
             return;
-        builder.AppendIndent(2, $"[System.Diagnostics.DebuggerStepThrough]");
         builder.AppendIndent(2, $"[System.Diagnostics.CodeAnalysis.DoesNotReturn]");
         builder.AppendIndent(2, $"private static void Except()");
         builder.AppendIndent(2, $"{{");
@@ -47,12 +47,26 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
         CancellationToken.ThrowIfCancellationRequested();
     }
 
+    private void AppendEnsureMethod(StringBuilder builder)
+    {
+        if (Symbol.IsValueType)
+            return;
+        builder.AppendIndent(2, $"[System.Diagnostics.DebuggerStepThrough]");
+        builder.AppendIndent(2, $"private static void Ensure({SymbolTypeFullName} item)");
+        builder.AppendIndent(2, $"{{");
+        builder.AppendIndent(3, $"if (item is not null)");
+        builder.AppendIndent(4, $"return;");
+        builder.AppendIndent(3, $"Except();");
+        builder.AppendIndent(2, $"}}");
+        builder.AppendIndent();
+        CancellationToken.ThrowIfCancellationRequested();
+    }
+
     private void AppendEnsureFragment(StringBuilder builder)
     {
         if (Symbol.IsValueType)
             return;
-        builder.AppendIndent(3, $"if (item is null)");
-        builder.AppendIndent(4, "Except();");
+        builder.AppendIndent(3, "Ensure(item);");
         CancellationToken.ThrowIfCancellationRequested();
     }
 
@@ -123,12 +137,12 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     {
         AppendConverterHead(builder);
         AppendExceptMethod(builder);
+        AppendEnsureMethod(builder);
         AppendEncodeMethod(builder, auto: false);
         AppendEncodeMethod(builder, auto: true);
         AppendDecodeMethod(builder, auto: false);
         AppendDecodeMethod(builder, auto: true);
         AppendConverterTail(builder);
-        builder.AppendIndent();
 
         AppendConverterCreatorHead(builder);
         AppendConverterCreatorBody(builder);

@@ -37,6 +37,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
     private void AppendConverterTail(StringBuilder builder)
     {
         builder.AppendIndent(1, $"}}");
+        builder.AppendIndent();
     }
 
     private void AppendEnsureFragment(StringBuilder builder)
@@ -119,7 +120,6 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
         AppendEncodeMethod(builder);
         AppendDecodeMethod(builder);
         AppendConverterTail(builder);
-        builder.AppendIndent();
 
         AppendConverterCreatorHead(builder);
         AppendConverterCreatorBody(builder);
