@@ -39,18 +39,22 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
         builder.AppendIndent(1, $"}}");
     }
 
+    private void AppendEnsureFragment(StringBuilder builder)
+    {
+        if (Symbol.IsValueType)
+            return;
+        builder.AppendIndent(3, $"if (item is null)");
+        builder.AppendIndent(4, "return;");
+        CancellationToken.ThrowIfCancellationRequested();
+    }
+
     private void AppendEncodeMethod(StringBuilder builder)
     {
         var info = this.info;
         var elements = info.ElementTypes;
         builder.AppendIndent(2, $"public override void Encode(ref {Constants.AllocatorTypeName} allocator, {SymbolTypeFullName} item)");
         builder.AppendIndent(2, $"{{");
-        if (Symbol.IsValueType is false)
-        {
-            builder.AppendIndent(3, $"if (item is null)");
-            builder.AppendIndent(4, "return;");
-            CancellationToken.ThrowIfCancellationRequested();
-        }
+        AppendEnsureFragment(builder);
         builder.AppendIndent(3, $"foreach (var i in item)");
         if (elements.Length is 1)
         {
@@ -64,6 +68,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
             builder.AppendIndent(3, $"}}");
         }
         builder.AppendIndent(2, $"}}");
+        CancellationToken.ThrowIfCancellationRequested();
     }
 
     private void AppendDecodeMethod(StringBuilder builder)
@@ -81,6 +86,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
             : method.Replace(ConstructorParameter, invoke);
         builder.AppendIndent(3, $"return {action};");
         builder.AppendIndent(2, $"}}");
+        CancellationToken.ThrowIfCancellationRequested();
     }
 
     private void AppendConverterCreatorBody(StringBuilder builder)

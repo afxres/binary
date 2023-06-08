@@ -33,6 +33,29 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
         builder.AppendIndent(1, $"}}");
     }
 
+    private void AppendExceptMethod(StringBuilder builder)
+    {
+        if (Symbol.IsValueType)
+            return;
+        builder.AppendIndent(2, $"[System.Diagnostics.DebuggerStepThrough]");
+        builder.AppendIndent(2, $"[System.Diagnostics.CodeAnalysis.DoesNotReturn]");
+        builder.AppendIndent(2, $"private static void Except()");
+        builder.AppendIndent(2, $"{{");
+        builder.AppendIndent(3, $"throw new System.ArgumentNullException(\"item\", $\"Tuple can not be null, type: {{typeof({SymbolTypeFullName})}}\");");
+        builder.AppendIndent(2, $"}}");
+        builder.AppendIndent();
+        CancellationToken.ThrowIfCancellationRequested();
+    }
+
+    private void AppendEnsureFragment(StringBuilder builder)
+    {
+        if (Symbol.IsValueType)
+            return;
+        builder.AppendIndent(3, $"if (item is null)");
+        builder.AppendIndent(4, "Except();");
+        CancellationToken.ThrowIfCancellationRequested();
+    }
+
     private void AppendEncodeMethod(StringBuilder builder, bool auto)
     {
         var members = this.members;
@@ -41,11 +64,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
             builder.AppendIndent();
         builder.AppendIndent(2, $"public override void {methodName}(ref {Constants.AllocatorTypeName} allocator, {SymbolTypeFullName} item)");
         builder.AppendIndent(2, $"{{");
-        if (Symbol.IsValueType is false)
-        {
-            builder.AppendIndent(3, $"System.ArgumentNullException.ThrowIfNull(item);");
-            CancellationToken.ThrowIfCancellationRequested();
-        }
+        AppendEnsureFragment(builder);
         for (var i = 0; i < members.Length; i++)
         {
             var member = members[i];
@@ -103,6 +122,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     protected override void Invoke(StringBuilder builder)
     {
         AppendConverterHead(builder);
+        AppendExceptMethod(builder);
         AppendEncodeMethod(builder, auto: false);
         AppendEncodeMethod(builder, auto: true);
         AppendDecodeMethod(builder, auto: false);

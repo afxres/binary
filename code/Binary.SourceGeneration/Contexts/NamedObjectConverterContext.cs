@@ -34,17 +34,28 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         builder.AppendIndent(1, $"}}");
     }
 
+    private void AppendEnsureFragment(StringBuilder builder)
+    {
+        if (Symbol.IsValueType)
+            return;
+        builder.AppendIndent(3, $"if (item is null)");
+        builder.AppendIndent(4, "return;");
+        CancellationToken.ThrowIfCancellationRequested();
+    }
+
+    private void AppendEncodeFragment(StringBuilder builder, int indent, int i)
+    {
+        builder.AppendIndent(indent, $"{Constants.AllocatorTypeName}.Append(ref allocator, new System.ReadOnlySpan<byte>(keys[{i}]));");
+        builder.AppendIndent(indent, $"cvt{i}.EncodeWithLengthPrefix(ref allocator, var{i});");
+        CancellationToken.ThrowIfCancellationRequested();
+    }
+
     private void AppendEncodeMethod(StringBuilder builder)
     {
         var members = this.members;
         builder.AppendIndent(2, $"public override void Encode(ref {Constants.AllocatorTypeName} allocator, {SymbolTypeFullName} item)");
         builder.AppendIndent(2, $"{{");
-        if (Symbol.IsValueType is false)
-        {
-            builder.AppendIndent(3, $"if (item is null)");
-            builder.AppendIndent(4, "return;");
-            CancellationToken.ThrowIfCancellationRequested();
-        }
+        AppendEnsureFragment(builder);
         for (var i = 0; i < members.Length; i++)
         {
             var member = members[i];
@@ -53,20 +64,17 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         }
         for (var i = 0; i < members.Length; i++)
         {
-            var optional = members[i].IsOptional;
-            if (optional)
+            if (members[i].IsOptional is false)
+            {
+                AppendEncodeFragment(builder, 3, i);
+            }
+            else
             {
                 builder.AppendIndent(3, $"if (System.Collections.Generic.EqualityComparer<{GetTypeFullName(i)}>.Default.Equals(var{i}, default) is false)");
                 builder.AppendIndent(3, $"{{");
-            }
-            var indent = optional ? 4 : 3;
-            builder.AppendIndent(indent, $"{Constants.AllocatorTypeName}.Append(ref allocator, new System.ReadOnlySpan<byte>(keys[{i}]));");
-            builder.AppendIndent(indent, $"cvt{i}.EncodeWithLengthPrefix(ref allocator, var{i});");
-            if (optional)
-            {
+                AppendEncodeFragment(builder, 4, i);
                 builder.AppendIndent(3, $"}}");
             }
-            CancellationToken.ThrowIfCancellationRequested();
         }
         builder.AppendIndent(2, $"}}");
     }
