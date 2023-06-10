@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Mikodev.Binary.SourceGeneration.Contexts;
+using Mikodev.Binary.SourceGeneration.Internal;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;

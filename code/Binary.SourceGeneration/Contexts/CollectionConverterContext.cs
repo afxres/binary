@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary.SourceGeneration.Contexts;
 
 using Microsoft.CodeAnalysis;
+using Mikodev.Binary.SourceGeneration.Internal;
 using System.Text;
 
 public sealed partial class CollectionConverterContext : SymbolConverterContext

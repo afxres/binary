@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary.SourceGeneration;
 
 using Microsoft.CodeAnalysis;
+using Mikodev.Binary.SourceGeneration.Internal;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;

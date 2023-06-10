@@ -1,5 +1,6 @@
 ﻿namespace Mikodev.Binary.SourceGeneration;
 
+using Mikodev.Binary.SourceGeneration.Internal;
 using System.Collections.Immutable;
 using System.Text;
 using System.Threading;

@@ -2,6 +2,7 @@
 
 using Microsoft.CodeAnalysis;
 using Mikodev.Binary.SourceGeneration;
+using Mikodev.Binary.SourceGeneration.Internal;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
