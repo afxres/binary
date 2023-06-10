@@ -92,8 +92,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         builder.AppendIndent(2, $"{{");
         for (var i = 0; i < members.Length; i++)
         {
-            var member = members[i];
-            if (member.IsOptional is false)
+            if (members[i].IsOptional is false)
                 builder.AppendIndent(3, $"var var{i} = cvt{i}.Decode(parameter.GetValue({i}));");
             else
                 builder.AppendIndent(3, $"var var{i} = parameter.HasValue({i}) ? cvt{i}.Decode(parameter.GetValue({i})) : default;");
