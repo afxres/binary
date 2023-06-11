@@ -2,7 +2,6 @@
 
 using Microsoft.CodeAnalysis;
 using Mikodev.Binary.SourceGeneration;
-using System.Text;
 
 public sealed partial class AttributeConverterCreatorContext : SymbolConverterContext
 {
@@ -13,10 +12,10 @@ public sealed partial class AttributeConverterCreatorContext : SymbolConverterCo
         this.creator = creator;
     }
 
-    protected override void Invoke(StringBuilder builder)
+    protected override void Handle()
     {
-        AppendConverterCreatorHead(builder);
-        AppendAssignConverterExplicitConverterCreator(builder, this.creator, "converter", SymbolConverterTypeFullName, SymbolTypeFullName);
-        AppendConverterCreatorTail(builder);
+        AppendConverterCreatorHead();
+        AppendAssignConverterExplicitConverterCreator(this.creator, "converter", SymbolConverterTypeFullName, SymbolTypeFullName);
+        AppendConverterCreatorTail();
     }
 }

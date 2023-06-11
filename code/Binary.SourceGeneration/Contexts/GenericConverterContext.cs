@@ -5,7 +5,6 @@ using Mikodev.Binary.SourceGeneration;
 using Mikodev.Binary.SourceGeneration.Internal;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 public sealed partial class GenericConverterContext : SymbolConverterContext
 {
@@ -19,14 +18,14 @@ public sealed partial class GenericConverterContext : SymbolConverterContext
         this.info = info;
     }
 
-    private void AppendConverterCreatorBody(StringBuilder builder)
+    private void AppendConverterCreatorBody()
     {
         var info = this.info;
         var elements = info.ElementTypes;
         for (var i = 0; i < elements.Length; i++)
         {
             var element = elements[i];
-            AppendAssignConverterExplicit(builder, element, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i));
+            AppendAssignConverterExplicit(element, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i));
             CancellationToken.ThrowIfCancellationRequested();
         }
         var types = new List<string>();
@@ -34,13 +33,13 @@ public sealed partial class GenericConverterContext : SymbolConverterContext
             types.Add(SymbolTypeFullName);
         types.AddRange(elements.Select((_, i) => GetTypeFullName(i)));
         var arguments = string.Join(", ", types);
-        builder.AppendIndent(3, $"var converter = Mikodev.Binary.Generator.Get{info.Name}Converter<{arguments}>(", ");", elements.Length, x => $"cvt{x}");
+        Output.AppendIndent(3, $"var converter = Mikodev.Binary.Generator.Get{info.Name}Converter<{arguments}>(", ");", elements.Length, x => $"cvt{x}");
     }
 
-    protected override void Invoke(StringBuilder builder)
+    protected override void Handle()
     {
-        AppendConverterCreatorHead(builder);
-        AppendConverterCreatorBody(builder);
-        AppendConverterCreatorTail(builder);
+        AppendConverterCreatorHead();
+        AppendConverterCreatorBody();
+        AppendConverterCreatorTail();
     }
 }

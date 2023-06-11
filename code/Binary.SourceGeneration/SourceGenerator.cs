@@ -168,32 +168,32 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
     private static string Finish(ContextInfo info, SortedDictionary<string, SourceResult?> dictionary, CancellationToken cancellation)
     {
-        var builder = new StringBuilder();
-        builder.AppendIndent(0, $"namespace {info.NamespaceInSourceCode};");
-        builder.AppendIndent();
-        builder.AppendIndent(0, $"partial class {info.NameInSourceCode}");
-        builder.AppendIndent(0, $"{{");
-        builder.AppendIndent(1, $"public static System.Collections.Generic.IReadOnlyDictionary<System.Type, Mikodev.Binary.IConverterCreator> ConverterCreators {{ get; }} = System.Collections.Immutable.ImmutableDictionary.CreateRange(new System.Collections.Generic.Dictionary<System.Type, Mikodev.Binary.IConverterCreator>");
-        builder.AppendIndent(1, $"{{");
+        var output = new StringBuilder();
+        output.AppendIndent(0, $"namespace {info.NamespaceInSourceCode};");
+        output.AppendIndent();
+        output.AppendIndent(0, $"partial class {info.NameInSourceCode}");
+        output.AppendIndent(0, $"{{");
+        output.AppendIndent(1, $"public static System.Collections.Generic.IReadOnlyDictionary<System.Type, Mikodev.Binary.IConverterCreator> ConverterCreators {{ get; }} = System.Collections.Immutable.ImmutableDictionary.CreateRange(new System.Collections.Generic.Dictionary<System.Type, Mikodev.Binary.IConverterCreator>");
+        output.AppendIndent(1, $"{{");
         foreach (var i in dictionary)
         {
             var content = i.Value;
             if (content is null)
                 continue;
-            builder.AppendIndent(2, $"{{ typeof({i.Key}), new {content.ConverterCreatorTypeName}() }},");
+            output.AppendIndent(2, $"{{ typeof({i.Key}), new {content.ConverterCreatorTypeName}() }},");
             cancellation.ThrowIfCancellationRequested();
         }
-        builder.AppendIndent(1, $"}});");
+        output.AppendIndent(1, $"}});");
         foreach (var i in dictionary)
         {
             var content = i.Value;
             if (content is null)
                 continue;
-            builder.AppendIndent();
-            _ = builder.Append(content.SourceCode);
+            output.AppendIndent();
+            _ = output.Append(content.SourceCode);
             cancellation.ThrowIfCancellationRequested();
         }
-        builder.AppendIndent(0, $"}}");
-        return builder.ToString();
+        output.AppendIndent(0, $"}}");
+        return output.ToString();
     }
 }

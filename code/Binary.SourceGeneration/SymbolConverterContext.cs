@@ -22,6 +22,8 @@ public abstract class SymbolConverterContext
 
     protected CancellationToken CancellationToken => this.context.CancellationToken;
 
+    protected StringBuilder Output { get; } = new StringBuilder();
+
     protected string OutputConverterTypeName { get; }
 
     protected string OutputConverterCreatorTypeName { get; }
@@ -56,61 +58,62 @@ public abstract class SymbolConverterContext
         return this.fullNameCache[key].ConverterTypeFullName;
     }
 
-    protected void AppendConverterCreatorHead(StringBuilder builder)
+    protected void AppendConverterCreatorHead()
     {
-        builder.AppendIndent(1, $"private sealed class {OutputConverterCreatorTypeName} : {Constants.IConverterCreatorTypeName}");
-        builder.AppendIndent(1, $"{{");
+        Output.AppendIndent(1, $"private sealed class {OutputConverterCreatorTypeName} : {Constants.IConverterCreatorTypeName}");
+        Output.AppendIndent(1, $"{{");
 
-        builder.AppendIndent(2, $"public {Constants.IConverterTypeName} GetConverter({Constants.IGeneratorContextTypeName} context, System.Type type)");
-        builder.AppendIndent(2, $"{{");
-        builder.AppendIndent(3, $"if (type != typeof({SymbolTypeFullName}))");
-        builder.AppendIndent(4, $"return null;");
+        Output.AppendIndent(2, $"public {Constants.IConverterTypeName} GetConverter({Constants.IGeneratorContextTypeName} context, System.Type type)");
+        Output.AppendIndent(2, $"{{");
+        Output.AppendIndent(3, $"if (type != typeof({SymbolTypeFullName}))");
+        Output.AppendIndent(4, $"return null;");
     }
 
-    protected void AppendConverterCreatorTail(StringBuilder builder)
+    protected void AppendConverterCreatorTail()
     {
-        builder.AppendIndent(3, $"return ({Constants.IConverterTypeName})converter;");
-        builder.AppendIndent(2, $"}}");
-        builder.AppendIndent(1, $"}}");
+        Output.AppendIndent(3, $"return ({Constants.IConverterTypeName})converter;");
+        Output.AppendIndent(2, $"}}");
+        Output.AppendIndent(1, $"}}");
     }
 
-    protected void AppendAssignConverterExplicitConverter(StringBuilder builder, ITypeSymbol converter, string variableName, string converterTypeAlias)
+    protected void AppendAssignConverterExplicitConverter(ITypeSymbol converter, string variableName, string converterTypeAlias)
     {
         var fullName = this.context.GetTypeFullName(converter);
-        builder.AppendIndent(3, $"var {variableName} = ({converterTypeAlias})(new {fullName}());");
+        Output.AppendIndent(3, $"var {variableName} = ({converterTypeAlias})(new {fullName}());");
         CancellationToken.ThrowIfCancellationRequested();
     }
 
-    protected void AppendAssignConverterExplicitConverterCreator(StringBuilder builder, ITypeSymbol creator, string variableName, string converterTypeAlias, string memberTypeAlias)
+    protected void AppendAssignConverterExplicitConverterCreator(ITypeSymbol creator, string variableName, string converterTypeAlias, string memberTypeAlias)
     {
         var fullName = this.context.GetTypeFullName(creator);
-        builder.AppendIndent(3, $"var {variableName} = ({converterTypeAlias})((({Constants.IConverterCreatorTypeName})(new {fullName}())).GetConverter(context, typeof({memberTypeAlias})));");
+        Output.AppendIndent(3, $"var {variableName} = ({converterTypeAlias})((({Constants.IConverterCreatorTypeName})(new {fullName}())).GetConverter(context, typeof({memberTypeAlias})));");
         CancellationToken.ThrowIfCancellationRequested();
     }
 
-    protected void AppendAssignConverterExplicit(StringBuilder builder, ITypeSymbol member, string variableName, string converterTypeAlias, string memberTypeAlias)
+    protected void AppendAssignConverterExplicit(ITypeSymbol member, string variableName, string converterTypeAlias, string memberTypeAlias)
     {
-        builder.AppendIndent(3, $"var {variableName} = ({converterTypeAlias})context.GetConverter(typeof({memberTypeAlias}));");
+        Output.AppendIndent(3, $"var {variableName} = ({converterTypeAlias})context.GetConverter(typeof({memberTypeAlias}));");
         this.tracker.AddType(member);
         CancellationToken.ThrowIfCancellationRequested();
     }
 
-    protected void AppendAssignConverter(StringBuilder builder, SymbolMemberInfo member, string variableName, string converterTypeAlias, string memberTypeAlias)
+    protected void AppendAssignConverter(SymbolMemberInfo member, string variableName, string converterTypeAlias, string memberTypeAlias)
     {
         if (Symbols.GetConverterType(this.context, member.Symbol) is { } converter)
-            AppendAssignConverterExplicitConverter(builder, converter, variableName, converterTypeAlias);
+            AppendAssignConverterExplicitConverter(converter, variableName, converterTypeAlias);
         else if (Symbols.GetConverterCreatorType(this.context, member.Symbol) is { } creator)
-            AppendAssignConverterExplicitConverterCreator(builder, creator, variableName, converterTypeAlias, memberTypeAlias);
+            AppendAssignConverterExplicitConverterCreator(creator, variableName, converterTypeAlias, memberTypeAlias);
         else
-            AppendAssignConverterExplicit(builder, member.Type, variableName, converterTypeAlias, memberTypeAlias);
+            AppendAssignConverterExplicit(member.Type, variableName, converterTypeAlias, memberTypeAlias);
     }
 
-    protected abstract void Invoke(StringBuilder builder);
+    protected abstract void Handle();
 
     protected SourceResult Invoke()
     {
-        var builder = new StringBuilder();
-        Invoke(builder);
-        return new SourceResult(OutputConverterCreatorTypeName, builder.ToString());
+        Handle();
+        var code = Output.ToString();
+        var name = OutputConverterCreatorTypeName;
+        return new SourceResult(name, code);
     }
 }

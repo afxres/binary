@@ -36,9 +36,9 @@ public static partial class Symbols
 
     public static string GetNamespaceInSourceCode(INamespaceSymbol @namespace)
     {
-        var builder = new StringBuilder();
-        GetNamespaceInSourceCode(builder, @namespace);
-        return builder.ToString();
+        var target = new StringBuilder();
+        GetNamespaceInSourceCode(target, @namespace);
+        return target.ToString();
     }
 
     public static void GetNamespaceInSourceCode(StringBuilder target, INamespaceSymbol @namespace)
@@ -105,9 +105,9 @@ public static partial class Symbols
             _ = target.Append('>');
         }
 
-        var builder = new StringBuilder();
-        Invoke(builder, symbol);
-        return builder.ToString();
+        var target = new StringBuilder();
+        Invoke(target, symbol);
+        return target.ToString();
     }
 
     public static string GetOutputFullName(ITypeSymbol symbol)
@@ -174,8 +174,8 @@ public static partial class Symbols
             _ = target.Append("_r");
         }
 
-        var builder = new StringBuilder();
-        Invoke(builder, symbol);
-        return builder.ToString();
+        var target = new StringBuilder();
+        Invoke(target, symbol);
+        return target.ToString();
     }
 }
