@@ -49,4 +49,11 @@ public static class SystemExtensions
         dictionary.Add(key, value);
         return true;
     }
+
+    public static void ForEach<T>(this ReadOnlySpan<T> values, Action<int, T> action)
+    {
+        for (var i = 0; i < values.Length; i++)
+            action.Invoke(i, values[i]);
+        return;
+    }
 }

@@ -10,8 +10,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
     private CollectionConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, TypeInfo info) : base(context, tracker, symbol)
     {
         var elements = info.ElementTypes;
-        for (var i = 0; i < elements.Length; i++)
-            AddType(i, elements[i]);
+        elements.AsSpan().ForEach(AddType);
         this.info = info;
     }
 
