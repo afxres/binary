@@ -37,7 +37,7 @@ public ref partial struct Allocator
         var underlying = allocator.underlying;
         if (underlying is not null)
         {
-            ref var target = ref underlying.Allocate(bounds);
+            ref var target = ref underlying.Resize(bounds);
             allocator.target = ref target;
             allocator.bounds = bounds;
         }

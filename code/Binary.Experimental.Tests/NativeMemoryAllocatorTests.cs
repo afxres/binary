@@ -16,12 +16,12 @@ public class NativeMemoryAllocatorTests
         allocator.Dispose();
     }
 
-    [Fact(DisplayName = "Dispose Then Allocate")]
-    public void DisposeThenAllocate()
+    [Fact(DisplayName = "Dispose Then Resize")]
+    public void DisposeThenResize()
     {
         var allocator = new NativeMemoryAllocator();
         allocator.Dispose();
-        var error = Assert.Throws<ObjectDisposedException>(() => allocator.Allocate(1));
+        var error = Assert.Throws<ObjectDisposedException>(() => allocator.Resize(1));
         Assert.NotNull(error.ObjectName);
     }
 

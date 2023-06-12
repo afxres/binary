@@ -9,11 +9,11 @@ public sealed class NativeMemoryAllocator : IAllocator, IDisposable
 
     private unsafe void* location = null;
 
-    public unsafe ref byte Allocate(int required)
+    public unsafe ref byte Resize(int length)
     {
-        if (this.disposed)
-            throw new ObjectDisposedException(nameof(NativeMemoryAllocator));
-        return ref *(byte*)(this.location = NativeMemory.Realloc(this.location, (uint)required));
+        ObjectDisposedException.ThrowIf(this.disposed, typeof(NativeMemoryAllocator));
+        this.location = NativeMemory.Realloc(this.location, (uint)length);
+        return ref *(byte*)(this.location);
     }
 
     public unsafe void Dispose()

@@ -18,7 +18,7 @@ let ``Constructor (default)`` () =
 [<InlineData(-1)>]
 [<InlineData(-255)>]
 let ``Constructor (argument out of range)`` (limits : int) =
-    let underlyingAllocator = { new IAllocator with member __.Allocate _ = raise (NotSupportedException()); &Unsafe.NullRef<byte>() };
+    let underlyingAllocator = { new IAllocator with member __.Resize _ = raise (NotSupportedException()); &Unsafe.NullRef<byte>() };
     let a = Assert.Throws<ArgumentOutOfRangeException>(fun () -> let _ = Allocator(Span(), limits) in ())
     let b = Assert.Throws<ArgumentOutOfRangeException>(fun () -> let _ = Allocator(underlyingAllocator, limits) in ())
     let allocatorType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "Allocator") |> Array.exactlyOne

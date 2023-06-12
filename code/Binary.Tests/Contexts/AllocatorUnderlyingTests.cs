@@ -13,9 +13,9 @@ public class AllocatorUnderlyingTests
     {
         public readonly List<byte[]> AllocatedArrays = new List<byte[]>();
 
-        public ref byte Allocate(int required)
+        public ref byte Resize(int length)
         {
-            var currentArray = new byte[required];
+            var currentArray = new byte[length];
             var previousArray = this.AllocatedArrays.LastOrDefault().AsSpan();
             this.AllocatedArrays.Add(currentArray);
             previousArray.CopyTo(currentArray);

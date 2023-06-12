@@ -2,5 +2,5 @@
 
 public interface IAllocator
 {
-    ref byte Allocate(int required);
+    ref byte Resize(int length);
 }
