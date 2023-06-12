@@ -412,10 +412,30 @@ public class CompilationTests
                 public short Hidden { get; set; }
             }
             """;
+        var e =
+            """
+            // custom value named object
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<CustomValueNamedObject<int>>]
+            [SourceGeneratorInclude<CustomValueNamedObject<string>>]
+            partial class TestGeneratorContext { }
+
+            [NamedObject]
+            struct CustomValueNamedObject<T>
+            {
+                [NamedKey("data")]
+                public T Data;
+            }
+            """;
         yield return new object[] { a };
         yield return new object[] { b };
         yield return new object[] { c };
         yield return new object[] { d };
+        yield return new object[] { e };
     }
 
     public static IEnumerable<object[]> CustomTupleObjectData()
@@ -833,9 +853,34 @@ public class CompilationTests
 
             interface ICustomReadOnlyDictionary<K, V> : IReadOnlyDictionary<K, V> { }
             """;
+        var d =
+            """
+            // custom value enumerable
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+            using System;
+            using System.Collections;
+            using System.Collections.Generic;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<CustomValueEnumerable<int>>]
+            [SourceGeneratorInclude<CustomValueEnumerable<string>>]
+            partial class TestGeneratorContext { }
+
+            struct CustomValueEnumerable<E> : IEnumerable<E>
+            {
+                public CustomValueEnumerable(IEnumerable<E> values) => throw new NotSupportedException();
+
+                readonly IEnumerator IEnumerable.GetEnumerator() => throw new NotSupportedException();
+
+                readonly IEnumerator<E> IEnumerable<E>.GetEnumerator() => throw new NotSupportedException();
+            }
+            """;
         yield return new object[] { a };
         yield return new object[] { b };
         yield return new object[] { c };
+        yield return new object[] { d };
     }
 
     [Theory(DisplayName = "Compilation Test")]
