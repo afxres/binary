@@ -22,7 +22,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     {
         var members = this.members;
         Output.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", ")", members.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
-        Output.AppendIndent(2, $": Mikodev.Binary.Components.TupleObjectConverter<{SymbolTypeFullName}>(Mikodev.Binary.Components.TupleObject.GetConverterLength(new {Constants.IConverterTypeName}[] {{ ", $" }}))", members.Length, x => $"cvt{x}");
+        Output.AppendIndent(2, $": Mikodev.Binary.Converter<{SymbolTypeFullName}>(Mikodev.Binary.Components.TupleObject.GetConverterLength(new {Constants.IConverterTypeName}[] {{ ", $" }}))", members.Length, x => $"cvt{x}");
         Output.AppendIndent(1, $"{{");
         CancellationToken.ThrowIfCancellationRequested();
     }
@@ -65,7 +65,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     {
         if (Symbol.IsValueType)
             return;
-        Output.AppendIndent(3, "Ensure(item);");
+        Output.AppendIndent(3, $"Ensure(item);");
         CancellationToken.ThrowIfCancellationRequested();
     }
 
@@ -96,27 +96,28 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
 
     private void AppendDecodeMethod(bool auto)
     {
-        var constructor = this.constructor;
-        if (constructor is null)
-            return;
         var members = this.members;
-        var modifier = auto ? "ref" : "in";
-        var methodName = auto ? "DecodeAuto" : "Decode";
+        var constructor = this.constructor;
         Output.AppendIndent();
-        Output.AppendIndent(2, $"public override {SymbolTypeFullName} {methodName}({modifier} System.ReadOnlySpan<byte> span)");
+        Output.AppendIndent(2, $"public override {SymbolTypeFullName} {(auto ? "DecodeAuto" : "Decode")}({(auto ? "ref" : "in")} System.ReadOnlySpan<byte> span)");
         Output.AppendIndent(2, $"{{");
-        if (auto is false)
-            Output.AppendIndent(3, $"var body = span;");
-        var bufferName = auto ? "span" : "body";
-        for (var i = 0; i < members.Length; i++)
+        if (constructor is null)
         {
-            var last = (i == members.Length - 1);
-            var method = (auto || last is false) ? "DecodeAuto" : "Decode";
-            var keyword = (auto is false && last) ? "in" : "ref";
-            Output.AppendIndent(3, $"var var{i} = cvt{i}.{method}({keyword} {bufferName});");
-            CancellationToken.ThrowIfCancellationRequested();
+            Output.AppendIndent(3, $"throw new System.NotSupportedException($\"No suitable constructor found, type: {{typeof({SymbolTypeFullName})}}\");");
         }
-        constructor.AppendTo(Output, SymbolTypeFullName, CancellationToken);
+        else
+        {
+            if (auto is false)
+                Output.AppendIndent(3, $"var body = span;");
+            var bufferName = auto ? "span" : "body";
+            for (var i = 0; i < members.Length; i++)
+            {
+                var flag = auto || (i != members.Length - 1);
+                Output.AppendIndent(3, $"var var{i} = cvt{i}.{(flag ? "DecodeAuto" : "Decode")}({(flag ? "ref" : "in")} {bufferName});");
+                CancellationToken.ThrowIfCancellationRequested();
+            }
+            constructor.AppendTo(Output, SymbolTypeFullName, CancellationToken);
+        }
         Output.AppendIndent(2, $"}}");
     }
 

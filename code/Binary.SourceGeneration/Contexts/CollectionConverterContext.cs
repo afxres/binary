@@ -2,6 +2,7 @@
 
 using Microsoft.CodeAnalysis;
 using Mikodev.Binary.SourceGeneration.Internal;
+using System;
 
 public sealed partial class CollectionConverterContext : SymbolConverterContext
 {
@@ -17,18 +18,9 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
     private void AppendConverterHead()
     {
         var info = this.info;
-        var arguments = info.SourceType switch
-        {
-            SourceType.List => $"System.Collections.Generic.List<{GetTypeFullName(0)}>",
-            SourceType.HashSet => $"System.Collections.Generic.HashSet<{GetTypeFullName(0)}>",
-            SourceType.Dictionary => $"System.Collections.Generic.Dictionary<{GetTypeFullName(0)}, {GetTypeFullName(1)}>",
-            SourceType.ListKeyValuePair => $"System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<{GetTypeFullName(0)}, {GetTypeFullName(1)}>>",
-            _ => null,
-        };
         var elements = info.ElementTypes;
-        var tail = arguments is null ? ")" : $", Mikodev.Binary.Components.CollectionDecoder<{arguments}> decoder)";
-        Output.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", tail, elements.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
-        Output.AppendIndent(2, $": Mikodev.Binary.Components.CollectionConverter<{SymbolTypeFullName}>");
+        Output.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", ")", elements.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
+        Output.AppendIndent(2, $": Mikodev.Binary.Converter<{SymbolTypeFullName}>");
         Output.AppendIndent(1, $"{{");
         CancellationToken.ThrowIfCancellationRequested();
     }
@@ -44,7 +36,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
         if (Symbol.IsValueType)
             return;
         Output.AppendIndent(3, $"if (item is null)");
-        Output.AppendIndent(4, "return;");
+        Output.AppendIndent(4, $"return;");
         CancellationToken.ThrowIfCancellationRequested();
     }
 
@@ -71,20 +63,69 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
         CancellationToken.ThrowIfCancellationRequested();
     }
 
+    private void AppendDecodeList()
+    {
+        Output.AppendIndent(3, $"var item = new System.Collections.Generic.List<{GetTypeFullName(0)}>();");
+        Output.AppendIndent(3, $"while (body.Length is not 0)");
+        Output.AppendIndent(4, $"item.Add(cvt0.DecodeAuto(ref body));");
+    }
+
+    private void AppendDecodeHashSet()
+    {
+        Output.AppendIndent(3, $"var item = new System.Collections.Generic.HashSet<{GetTypeFullName(0)}>();");
+        Output.AppendIndent(3, $"while (body.Length is not 0)");
+        Output.AppendIndent(4, $"_ = item.Add(cvt0.DecodeAuto(ref body));");
+    }
+
+    private void AppendDecodeDictionary()
+    {
+        Output.AppendIndent(3, $"var item = new System.Collections.Generic.Dictionary<{GetTypeFullName(0)}, {GetTypeFullName(1)}>();");
+        Output.AppendIndent(3, $"while (body.Length is not 0)");
+        Output.AppendIndent(3, $"{{");
+        Output.AppendIndent(4, $"var var0 = cvt0.DecodeAuto(ref body);");
+        Output.AppendIndent(4, $"var var1 = cvt1.DecodeAuto(ref body);");
+        Output.AppendIndent(4, $"item.Add(var0, var1);");
+        Output.AppendIndent(3, $"}}");
+    }
+
+    private void AppendDecodeListKeyValuePair()
+    {
+        Output.AppendIndent(3, $"var item = new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<{GetTypeFullName(0)}, {GetTypeFullName(1)}>>();");
+        Output.AppendIndent(3, $"while (body.Length is not 0)");
+        Output.AppendIndent(3, $"{{");
+        Output.AppendIndent(4, $"var var0 = cvt0.DecodeAuto(ref body);");
+        Output.AppendIndent(4, $"var var1 = cvt1.DecodeAuto(ref body);");
+        Output.AppendIndent(4, $"item.Add(System.Collections.Generic.KeyValuePair.Create(var0, var1));");
+        Output.AppendIndent(3, $"}}");
+    }
+
     private void AppendDecodeMethod()
     {
         var info = this.info;
-        if (info.SourceType is SourceType.Null)
-            return;
+        var action = info.SourceType switch
+        {
+            SourceType.List => new Action(AppendDecodeList),
+            SourceType.HashSet => new Action(AppendDecodeHashSet),
+            SourceType.Dictionary => new Action(AppendDecodeDictionary),
+            SourceType.ListKeyValuePair => new Action(AppendDecodeListKeyValuePair),
+            _ => null,
+        };
         Output.AppendIndent();
         Output.AppendIndent(2, $"public override {SymbolTypeFullName} Decode(in System.ReadOnlySpan<byte> span)");
         Output.AppendIndent(2, $"{{");
-        var invoke = "decoder.Invoke(span)";
-        var method = info.MethodBody;
-        var action = string.IsNullOrEmpty(method)
-            ? $"new {SymbolTypeFullName}({invoke})"
-            : method.Replace(ConstructorParameter, invoke);
-        Output.AppendIndent(3, $"return {action};");
+        if (action is null)
+        {
+            Output.AppendIndent(3, $"throw new System.NotSupportedException($\"No suitable constructor found, type: {{typeof({SymbolTypeFullName})}}\");");
+        }
+        else
+        {
+            Output.AppendIndent(3, $"var body = span;");
+            action.Invoke();
+            var method = info.MethodBody;
+            if (string.IsNullOrEmpty(method))
+                method = $"new {SymbolTypeFullName}({ConstructorParameter})";
+            Output.AppendIndent(3, $"return {method};");
+        }
         Output.AppendIndent(2, $"}}");
         CancellationToken.ThrowIfCancellationRequested();
     }
@@ -92,14 +133,6 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
     private void AppendConverterCreatorBody()
     {
         var info = this.info;
-        var method = info.SourceType switch
-        {
-            SourceType.List => "GetListDecoder",
-            SourceType.HashSet => "GetHashSetDecoder",
-            SourceType.Dictionary => "GetDictionaryDecoder",
-            SourceType.ListKeyValuePair => "GetListDecoder",
-            _ => null,
-        };
         var elements = info.ElementTypes;
         for (var i = 0; i < elements.Length; i++)
         {
@@ -107,10 +140,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
             AppendAssignConverterExplicit(element, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i));
             CancellationToken.ThrowIfCancellationRequested();
         }
-        var tail = method is null ? ");" : ", decoder);";
-        if (method is not null)
-            Output.AppendIndent(3, $"var decoder = Mikodev.Binary.Components.Collection.{method}(", ");", elements.Length, x => $"cvt{x}");
-        Output.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", tail, elements.Length, x => $"cvt{x}");
+        Output.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ");", elements.Length, x => $"cvt{x}");
     }
 
     protected override void Handle()

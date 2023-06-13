@@ -6,7 +6,7 @@ using System.Linq;
 
 public sealed partial class CollectionConverterContext
 {
-    private const string ConstructorParameter = "$0";
+    private const string ConstructorParameter = "item";
 
     private enum SourceType
     {

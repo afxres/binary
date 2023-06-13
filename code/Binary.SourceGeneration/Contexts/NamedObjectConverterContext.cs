@@ -39,7 +39,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         if (Symbol.IsValueType)
             return;
         Output.AppendIndent(3, $"if (item is null)");
-        Output.AppendIndent(4, "return;");
+        Output.AppendIndent(4, $"return;");
         CancellationToken.ThrowIfCancellationRequested();
     }
 
@@ -81,22 +81,27 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
 
     private void AppendDecodeMethod()
     {
-        var constructor = this.constructor;
-        if (constructor is null)
-            return;
         var members = this.members;
+        var constructor = this.constructor;
         Output.AppendIndent();
         Output.AppendIndent(2, $"public override {SymbolTypeFullName} Decode(scoped Mikodev.Binary.Components.NamedObjectParameter parameter)");
         Output.AppendIndent(2, $"{{");
-        for (var i = 0; i < members.Length; i++)
+        if (constructor is null)
         {
-            if (members[i].IsOptional is false)
-                Output.AppendIndent(3, $"var var{i} = cvt{i}.Decode(parameter.GetValue({i}));");
-            else
-                Output.AppendIndent(3, $"var var{i} = parameter.HasValue({i}) ? cvt{i}.Decode(parameter.GetValue({i})) : default;");
-            CancellationToken.ThrowIfCancellationRequested();
+            Output.AppendIndent(3, $"throw new System.NotSupportedException($\"No suitable constructor found, type: {{typeof({SymbolTypeFullName})}}\");");
         }
-        constructor.AppendTo(Output, SymbolTypeFullName, CancellationToken);
+        else
+        {
+            for (var i = 0; i < members.Length; i++)
+            {
+                if (members[i].IsOptional is false)
+                    Output.AppendIndent(3, $"var var{i} = cvt{i}.Decode(parameter.GetValue({i}));");
+                else
+                    Output.AppendIndent(3, $"var var{i} = parameter.HasValue({i}) ? cvt{i}.Decode(parameter.GetValue({i})) : default;");
+                CancellationToken.ThrowIfCancellationRequested();
+            }
+            constructor.AppendTo(Output, SymbolTypeFullName, CancellationToken);
+        }
         Output.AppendIndent(2, $"}}");
     }
 
