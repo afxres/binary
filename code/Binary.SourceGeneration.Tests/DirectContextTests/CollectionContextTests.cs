@@ -25,9 +25,8 @@ public class CollectionContextTests
         var unsupportedTypeSymbols = unsupportedTypes
             .Select(x => Assert.IsAssignableFrom<INamedTypeSymbol>(compilation.GetTypeByMetadataName(Assert.IsType<string>(x.FullName))))
             .ToList();
-        var referenced = new Queue<ITypeSymbol>();
         var context = new SourceGeneratorContext(compilation, _ => Assert.Fail("Invalid Call!"), CancellationToken.None);
-        var tracker = new SourceGeneratorTracker(referenced);
+        var tracker = new SourceGeneratorTracker(_ => Assert.Fail("Invalid Call!"));
         var results = unsupportedTypeSymbols.Select(x => CollectionConverterContext.Invoke(context, tracker, x)).ToList();
         Assert.All(results, Assert.Null);
 

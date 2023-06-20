@@ -114,7 +114,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         var inclusions = info.Inclusions;
         var cancellation = context.CancellationToken;
         var pending = new Queue<ITypeSymbol>(inclusions.Keys);
-        var tracker = new SourceGeneratorTracker(pending);
+        var tracker = new SourceGeneratorTracker(pending.Enqueue);
         var handled = new SortedDictionary<string, SourceResult?>();
 
         while (pending.Count is not 0)
