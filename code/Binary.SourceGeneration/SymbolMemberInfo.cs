@@ -2,23 +2,15 @@
 
 using Microsoft.CodeAnalysis;
 
-public class SymbolMemberInfo
+public class SymbolMemberInfo(ISymbol symbol, ITypeSymbol typeSymbol, bool @readonly)
 {
-    public ISymbol Symbol { get; }
+    public ISymbol Symbol { get; } = symbol;
 
-    public ITypeSymbol Type { get; }
+    public ITypeSymbol Type { get; } = typeSymbol;
 
-    public string NameInSourceCode { get; }
+    public string NameInSourceCode { get; } = Symbols.GetNameInSourceCode(symbol.Name);
 
-    public bool IsReadOnly { get; }
-
-    public SymbolMemberInfo(ISymbol symbol, ITypeSymbol typeSymbol, bool @readonly)
-    {
-        Type = typeSymbol;
-        Symbol = symbol;
-        IsReadOnly = @readonly;
-        NameInSourceCode = Symbols.GetNameInSourceCode(symbol.Name);
-    }
+    public bool IsReadOnly { get; } = @readonly;
 
     public SymbolMemberInfo(IFieldSymbol field) : this(field, field.Type, field.IsReadOnly) { }
 

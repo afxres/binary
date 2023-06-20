@@ -3,17 +3,10 @@
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 
-public class SourceGeneratorTracker
+public class SourceGeneratorTracker(Queue<ITypeSymbol> referenced)
 {
-    private readonly Queue<ITypeSymbol> referenced;
-
-    public SourceGeneratorTracker(Queue<ITypeSymbol> referenced)
-    {
-        this.referenced = referenced;
-    }
-
     public void AddType(ITypeSymbol symbol)
     {
-        this.referenced.Enqueue(symbol);
+        referenced.Enqueue(symbol);
     }
 }

@@ -16,20 +16,13 @@ public sealed class SourceGenerator : IIncrementalGenerator
 {
     private delegate SourceResult? TypeHandler(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol);
 
-    private sealed class ContextInfo
+    private sealed class ContextInfo(INamedTypeSymbol symbol, ImmutableDictionary<ITypeSymbol, AttributeData> inclusions)
     {
-        public string NameInSourceCode { get; }
+        public string NameInSourceCode { get; } = Symbols.GetNameInSourceCode(symbol.Name);
 
-        public string NamespaceInSourceCode { get; }
+        public string NamespaceInSourceCode { get; } = Symbols.GetNamespaceInSourceCode(symbol.ContainingNamespace);
 
-        public ImmutableDictionary<ITypeSymbol, AttributeData> Inclusions { get; }
-
-        public ContextInfo(INamedTypeSymbol symbol, ImmutableDictionary<ITypeSymbol, AttributeData> inclusions)
-        {
-            NameInSourceCode = Symbols.GetNameInSourceCode(symbol.Name);
-            NamespaceInSourceCode = Symbols.GetNamespaceInSourceCode(symbol.ContainingNamespace);
-            Inclusions = inclusions;
-        }
+        public ImmutableDictionary<ITypeSymbol, AttributeData> Inclusions { get; } = inclusions;
     }
 
     private static readonly ImmutableArray<TypeHandler> TypeHandlers = ImmutableArray.CreateRange(new TypeHandler[]

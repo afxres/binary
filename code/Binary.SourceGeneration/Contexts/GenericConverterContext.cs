@@ -28,7 +28,7 @@ public sealed partial class GenericConverterContext : SymbolConverterContext
             CancellationToken.ThrowIfCancellationRequested();
         }
         var types = new List<string>();
-        if (info.SelfType is SelfType.Include)
+        if (info.SelfKind is SelfKind.Include)
             types.Add(SymbolTypeFullName);
         types.AddRange(elements.Select((_, i) => GetTypeFullName(i)));
         var arguments = string.Join(", ", types);

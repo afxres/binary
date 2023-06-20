@@ -102,12 +102,12 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
     private void AppendDecodeMethod()
     {
         var info = this.info;
-        var action = info.SourceType switch
+        var action = info.SourceKind switch
         {
-            SourceType.List => new Action(AppendDecodeList),
-            SourceType.HashSet => new Action(AppendDecodeHashSet),
-            SourceType.Dictionary => new Action(AppendDecodeDictionary),
-            SourceType.ListKeyValuePair => new Action(AppendDecodeListKeyValuePair),
+            SourceKind.List => new Action(AppendDecodeList),
+            SourceKind.HashSet => new Action(AppendDecodeHashSet),
+            SourceKind.Dictionary => new Action(AppendDecodeDictionary),
+            SourceKind.ListKeyValuePair => new Action(AppendDecodeListKeyValuePair),
             _ => null,
         };
         Output.AppendIndent();
@@ -121,7 +121,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
         {
             Output.AppendIndent(3, $"var body = span;");
             action.Invoke();
-            var method = info.MethodBody;
+            var method = info.Expression;
             if (string.IsNullOrEmpty(method))
                 method = $"new {SymbolTypeFullName}({ConstructorParameter})";
             Output.AppendIndent(3, $"return {method};");

@@ -1,21 +1,14 @@
 ﻿namespace Mikodev.Binary.SourceGeneration;
 
-public class SourceResult
+public class SourceResult(SourceStatus status, string converterCreatorTypeName, string sourceCode)
 {
-    public SourceStatus Status { get; }
+    public SourceStatus Status { get; } = status;
 
-    public string ConverterCreatorTypeName { get; }
+    public string ConverterCreatorTypeName { get; } = converterCreatorTypeName;
 
-    public string SourceCode { get; }
+    public string SourceCode { get; } = sourceCode;
 
     public SourceResult(SourceStatus status) : this(status, string.Empty, string.Empty) { }
 
     public SourceResult(string converterCreatorTypeName, string sourceCode) : this(SourceStatus.Ok, converterCreatorTypeName, sourceCode) { }
-
-    public SourceResult(SourceStatus status, string converterCreatorTypeName, string sourceCode)
-    {
-        Status = status;
-        ConverterCreatorTypeName = converterCreatorTypeName;
-        SourceCode = sourceCode;
-    }
 }

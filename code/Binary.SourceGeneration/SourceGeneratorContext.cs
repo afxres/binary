@@ -6,38 +6,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-public class SourceGeneratorContext
+public class SourceGeneratorContext(Compilation compilation, Action<Diagnostic> diagnosticCollector, CancellationToken cancellation)
 {
-    private readonly Action<Diagnostic> diagnosticCollector;
+    private readonly Action<Diagnostic> diagnosticCollector = diagnosticCollector;
 
-    private readonly Dictionary<string, object> resources;
+    private readonly Dictionary<string, object> resources = new Dictionary<string, object>();
 
-    private readonly Dictionary<string, ITypeSymbol?> types;
+    private readonly Dictionary<string, ITypeSymbol?> types = new Dictionary<string, ITypeSymbol?>();
 
-    private readonly Dictionary<ITypeSymbol, string> typeFullNameCache;
+    private readonly Dictionary<ITypeSymbol, string> typeFullNameCache = new Dictionary<ITypeSymbol, string>(SymbolEqualityComparer.Default);
 
-    private readonly Dictionary<ITypeSymbol, string> converterTypeFullNameCache;
+    private readonly Dictionary<ITypeSymbol, string> converterTypeFullNameCache = new Dictionary<ITypeSymbol, string>(SymbolEqualityComparer.Default);
 
-    private readonly Dictionary<ITypeSymbol, SymbolTypeInfo> typeInfoCache;
+    private readonly Dictionary<ITypeSymbol, SymbolTypeInfo> typeInfoCache = new Dictionary<ITypeSymbol, SymbolTypeInfo>(SymbolEqualityComparer.Default);
 
-    private readonly Dictionary<ITypeSymbol, bool> validationCache;
+    private readonly Dictionary<ITypeSymbol, bool> validationCache = new Dictionary<ITypeSymbol, bool>(SymbolEqualityComparer.Default);
 
-    public Compilation Compilation { get; }
+    public Compilation Compilation { get; } = compilation;
 
-    public CancellationToken CancellationToken { get; }
-
-    public SourceGeneratorContext(Compilation compilation, Action<Diagnostic> diagnosticCollector, CancellationToken cancellation)
-    {
-        Compilation = compilation;
-        CancellationToken = cancellation;
-        this.diagnosticCollector = diagnosticCollector;
-        this.resources = new Dictionary<string, object>();
-        this.types = new Dictionary<string, ITypeSymbol?>();
-        this.typeFullNameCache = new Dictionary<ITypeSymbol, string>(SymbolEqualityComparer.Default);
-        this.converterTypeFullNameCache = new Dictionary<ITypeSymbol, string>(SymbolEqualityComparer.Default);
-        this.typeInfoCache = new Dictionary<ITypeSymbol, SymbolTypeInfo>(SymbolEqualityComparer.Default);
-        this.validationCache = new Dictionary<ITypeSymbol, bool>(SymbolEqualityComparer.Default);
-    }
+    public CancellationToken CancellationToken { get; } = cancellation;
 
     public object GetOrCreateResource(string key, Func<Compilation, object> creator)
     {

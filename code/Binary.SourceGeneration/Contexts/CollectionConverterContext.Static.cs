@@ -8,7 +8,7 @@ public sealed partial class CollectionConverterContext
 {
     private const string ConstructorParameter = "item";
 
-    private enum SourceType
+    private enum SourceKind
     {
         Null,
 
@@ -21,76 +21,63 @@ public sealed partial class CollectionConverterContext
         ListKeyValuePair,
     }
 
-    private class TypeInfo
+    private class TypeBaseInfo(SourceKind sourceKind, string expression)
     {
-        public SourceType SourceType { get; }
+        public SourceKind SourceKind { get; } = sourceKind;
 
-        public string MethodBody { get; }
-
-        public ImmutableArray<ITypeSymbol> ElementTypes { get; }
-
-        public TypeInfo(SourceType sourceType, string methodBody, ImmutableArray<ITypeSymbol> elements)
-        {
-            SourceType = sourceType;
-            MethodBody = methodBody;
-            ElementTypes = elements;
-        }
+        public string Expression { get; } = expression;
     }
 
-    private class Resource
+    private class TypeInfo(SourceKind sourceKind, string expression, ImmutableArray<ITypeSymbol> elements) : TypeBaseInfo(sourceKind, expression)
     {
-        public INamedTypeSymbol? UnboundIEnumerableType { get; }
-
-        public INamedTypeSymbol? UnboundIDictionaryType { get; }
-
-        public INamedTypeSymbol? UnboundIReadOnlyDictionaryType { get; }
-
-        public ImmutableDictionary<INamedTypeSymbol, (SourceType SourceType, string MethodBody)> SupportedTypes { get; }
-
-        public ImmutableHashSet<INamedTypeSymbol> UnsupportedTypes { get; }
-
-        public Resource(ImmutableDictionary<INamedTypeSymbol, (SourceType, string)> supported, ImmutableHashSet<INamedTypeSymbol> unsupported, INamedTypeSymbol? enumerable, INamedTypeSymbol? dictionary, INamedTypeSymbol? readonlyDictionary)
-        {
-            SupportedTypes = supported;
-            UnsupportedTypes = unsupported;
-            UnboundIEnumerableType = enumerable;
-            UnboundIDictionaryType = dictionary;
-            UnboundIReadOnlyDictionaryType = readonlyDictionary;
-        }
+        public ImmutableArray<ITypeSymbol> ElementTypes { get; } = elements;
     }
 
-    private static ImmutableDictionary<INamedTypeSymbol, (SourceType, string)> CreateResourceForSupportedTypes(Compilation compilation)
+    private class Resource(ImmutableDictionary<INamedTypeSymbol, TypeBaseInfo> supported, ImmutableHashSet<INamedTypeSymbol> unsupported, INamedTypeSymbol? enumerable, INamedTypeSymbol? dictionary, INamedTypeSymbol? readonlyDictionary)
     {
-        static void Add(Compilation compilation, ImmutableDictionary<INamedTypeSymbol, (SourceType, string)>.Builder builder, string name, SourceType source, string method)
+        public INamedTypeSymbol? UnboundIEnumerableType { get; } = enumerable;
+
+        public INamedTypeSymbol? UnboundIDictionaryType { get; } = dictionary;
+
+        public INamedTypeSymbol? UnboundIReadOnlyDictionaryType { get; } = readonlyDictionary;
+
+        public ImmutableDictionary<INamedTypeSymbol, TypeBaseInfo> SupportedTypes { get; } = supported;
+
+        public ImmutableHashSet<INamedTypeSymbol> UnsupportedTypes { get; } = unsupported;
+    }
+
+    private static ImmutableDictionary<INamedTypeSymbol, TypeBaseInfo> CreateResourceForSupportedTypes(Compilation compilation)
+    {
+        static void Add(Compilation compilation, ImmutableDictionary<INamedTypeSymbol, TypeBaseInfo>.Builder builder, string name, SourceKind source, string method)
         {
             if (compilation.GetTypeByMetadataName(name) is not { } type)
                 return;
-            builder.Add(type.ConstructUnboundGenericType(), (source, method));
+            builder.Add(type.ConstructUnboundGenericType(), new TypeBaseInfo(source, method));
         }
 
-        var builder = ImmutableDictionary.CreateBuilder<INamedTypeSymbol, (SourceType, string)>(SymbolEqualityComparer.Default);
-        var functor = (string name, SourceType source, string method) => Add(compilation, builder, name, source, method);
-        functor.Invoke("System.Collections.Frozen.FrozenSet`1", SourceType.List, $"System.Collections.Frozen.FrozenSet.ToFrozenSet({ConstructorParameter}, true)");
-        functor.Invoke("System.Collections.Frozen.FrozenDictionary`2", SourceType.ListKeyValuePair, $"System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary({ConstructorParameter}, true)");
-        functor.Invoke("System.Collections.Generic.IList`1", SourceType.List, ConstructorParameter);
-        functor.Invoke("System.Collections.Generic.ICollection`1", SourceType.List, ConstructorParameter);
-        functor.Invoke("System.Collections.Generic.IEnumerable`1", SourceType.List, ConstructorParameter);
-        functor.Invoke("System.Collections.Generic.IReadOnlyList`1", SourceType.List, ConstructorParameter);
-        functor.Invoke("System.Collections.Generic.IReadOnlyCollection`1", SourceType.List, ConstructorParameter);
-        functor.Invoke("System.Collections.Generic.ISet`1", SourceType.HashSet, ConstructorParameter);
-        functor.Invoke("System.Collections.Generic.IReadOnlySet`1", SourceType.HashSet, ConstructorParameter);
-        functor.Invoke("System.Collections.Generic.IDictionary`2", SourceType.Dictionary, ConstructorParameter);
-        functor.Invoke("System.Collections.Generic.IReadOnlyDictionary`2", SourceType.Dictionary, ConstructorParameter);
-        functor.Invoke("System.Collections.Immutable.IImmutableDictionary`2", SourceType.ListKeyValuePair, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.IImmutableList`1", SourceType.List, $"System.Collections.Immutable.ImmutableList.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.IImmutableQueue`1", SourceType.List, $"System.Collections.Immutable.ImmutableQueue.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.IImmutableSet`1", SourceType.List, $"System.Collections.Immutable.ImmutableHashSet.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.ImmutableDictionary`2", SourceType.ListKeyValuePair, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.ImmutableHashSet`1", SourceType.List, $"System.Collections.Immutable.ImmutableHashSet.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.ImmutableList`1", SourceType.List, $"System.Collections.Immutable.ImmutableList.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.ImmutableQueue`1", SourceType.List, $"System.Collections.Immutable.ImmutableQueue.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.ImmutableSortedDictionary`2", SourceType.ListKeyValuePair, $"System.Collections.Immutable.ImmutableSortedDictionary.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.ImmutableSortedSet`1", SourceType.List, $"System.Collections.Immutable.ImmutableSortedSet.CreateRange({ConstructorParameter})");
+        var builder = ImmutableDictionary.CreateBuilder<INamedTypeSymbol, TypeBaseInfo>(SymbolEqualityComparer.Default);
+        var functor = (string name, SourceKind source, string method) => Add(compilation, builder, name, source, method);
+        functor.Invoke("System.Collections.Frozen.FrozenSet`1", SourceKind.List, $"System.Collections.Frozen.FrozenSet.ToFrozenSet({ConstructorParameter}, true)");
+        functor.Invoke("System.Collections.Frozen.FrozenDictionary`2", SourceKind.ListKeyValuePair, $"System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary({ConstructorParameter}, true)");
+        functor.Invoke("System.Collections.Generic.IList`1", SourceKind.List, ConstructorParameter);
+        functor.Invoke("System.Collections.Generic.ICollection`1", SourceKind.List, ConstructorParameter);
+        functor.Invoke("System.Collections.Generic.IEnumerable`1", SourceKind.List, ConstructorParameter);
+        functor.Invoke("System.Collections.Generic.IReadOnlyList`1", SourceKind.List, ConstructorParameter);
+        functor.Invoke("System.Collections.Generic.IReadOnlyCollection`1", SourceKind.List, ConstructorParameter);
+        functor.Invoke("System.Collections.Generic.ISet`1", SourceKind.HashSet, ConstructorParameter);
+        functor.Invoke("System.Collections.Generic.IReadOnlySet`1", SourceKind.HashSet, ConstructorParameter);
+        functor.Invoke("System.Collections.Generic.IDictionary`2", SourceKind.Dictionary, ConstructorParameter);
+        functor.Invoke("System.Collections.Generic.IReadOnlyDictionary`2", SourceKind.Dictionary, ConstructorParameter);
+        functor.Invoke("System.Collections.Immutable.IImmutableDictionary`2", SourceKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.IImmutableList`1", SourceKind.List, $"System.Collections.Immutable.ImmutableList.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.IImmutableQueue`1", SourceKind.List, $"System.Collections.Immutable.ImmutableQueue.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.IImmutableSet`1", SourceKind.List, $"System.Collections.Immutable.ImmutableHashSet.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.ImmutableDictionary`2", SourceKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.ImmutableHashSet`1", SourceKind.List, $"System.Collections.Immutable.ImmutableHashSet.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.ImmutableList`1", SourceKind.List, $"System.Collections.Immutable.ImmutableList.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.ImmutableQueue`1", SourceKind.List, $"System.Collections.Immutable.ImmutableQueue.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.ImmutableSortedDictionary`2", SourceKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableSortedDictionary.CreateRange({ConstructorParameter})");
+        functor.Invoke("System.Collections.Immutable.ImmutableSortedSet`1", SourceKind.List, $"System.Collections.Immutable.ImmutableSortedSet.CreateRange({ConstructorParameter})");
         return builder.ToImmutable();
     }
 
@@ -141,17 +128,17 @@ public sealed partial class CollectionConverterContext
             return null;
         var dictionaryInterface = interfaces.FirstOrDefault(x => Implements(x, resource.UnboundIDictionaryType));
         if (dictionaryInterface is not null && HasConstructor(symbol, dictionaryInterface))
-            return new TypeInfo(SourceType.Dictionary, string.Empty, dictionaryInterface.TypeArguments);
+            return new TypeInfo(SourceKind.Dictionary, string.Empty, dictionaryInterface.TypeArguments);
         var readonlyDictionaryInterface = interfaces.FirstOrDefault(x => Implements(x, resource.UnboundIReadOnlyDictionaryType));
         if (readonlyDictionaryInterface is not null && HasConstructor(symbol, readonlyDictionaryInterface))
-            return new TypeInfo(SourceType.Dictionary, string.Empty, readonlyDictionaryInterface.TypeArguments);
+            return new TypeInfo(SourceKind.Dictionary, string.Empty, readonlyDictionaryInterface.TypeArguments);
         var enumerableInterface = enumerableInterfaces.Single();
         var typeArguments = dictionaryInterface?.TypeArguments ?? readonlyDictionaryInterface?.TypeArguments;
         var hasConstructor = HasConstructor(symbol, enumerableInterface);
-        var sourceType = hasConstructor
-            ? (typeArguments is null ? SourceType.List : SourceType.ListKeyValuePair)
-            : SourceType.Null;
-        return new TypeInfo(sourceType, string.Empty, typeArguments ?? enumerableInterface.TypeArguments);
+        var sourceKind = hasConstructor
+            ? (typeArguments is null ? SourceKind.List : SourceKind.ListKeyValuePair)
+            : SourceKind.Null;
+        return new TypeInfo(sourceKind, string.Empty, typeArguments ?? enumerableInterface.TypeArguments);
     }
 
     private static TypeInfo? GetInfo(SourceGeneratorContext context, ITypeSymbol type)
@@ -165,7 +152,7 @@ public sealed partial class CollectionConverterContext
         if (resource.UnsupportedTypes.Contains(unboundOrOriginal))
             return null;
         if (unbound is not null && resource.SupportedTypes.TryGetValue(unbound, out var definition))
-            return new TypeInfo(definition.SourceType, definition.MethodBody, symbol.TypeArguments);
+            return new TypeInfo(definition.SourceKind, definition.Expression, symbol.TypeArguments);
         return GetInfo(symbol, resource);
     }
 

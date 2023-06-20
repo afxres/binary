@@ -5,27 +5,20 @@ using System.Collections.Immutable;
 
 public sealed partial class GenericConverterContext
 {
-    private enum SelfType
+    private enum SelfKind
     {
         Exclude,
 
         Include,
     }
 
-    private class TypeInfo
+    private class TypeInfo(string name, SelfKind selfKind, ImmutableArray<ITypeSymbol> elements)
     {
-        public string Name { get; }
+        public string Name { get; } = name;
 
-        public SelfType SelfType { get; }
+        public SelfKind SelfKind { get; } = selfKind;
 
-        public ImmutableArray<ITypeSymbol> ElementTypes { get; }
-
-        public TypeInfo(string name, SelfType selfType, ImmutableArray<ITypeSymbol> elements)
-        {
-            Name = name;
-            SelfType = selfType;
-            ElementTypes = elements;
-        }
+        public ImmutableArray<ITypeSymbol> ElementTypes { get; } = elements;
     }
 
     private static ImmutableHashSet<INamedTypeSymbol> CreateResource(Compilation compilation)
@@ -56,16 +49,16 @@ public sealed partial class GenericConverterContext
     private static TypeInfo? GetInfo(SourceGeneratorContext context, ITypeSymbol type)
     {
         if (type.TypeKind is TypeKind.Enum)
-            return new TypeInfo("Enum", SelfType.Include, ImmutableArray.Create<ITypeSymbol>());
+            return new TypeInfo("Enum", SelfKind.Include, ImmutableArray.Create<ITypeSymbol>());
         if (type is IArrayTypeSymbol array)
-            return new TypeInfo(array.IsSZArray ? "Array" : "VariableBoundArray", array.IsSZArray ? SelfType.Exclude : SelfType.Include, ImmutableArray.Create(array.ElementType));
+            return new TypeInfo(array.IsSZArray ? "Array" : "VariableBoundArray", array.IsSZArray ? SelfKind.Exclude : SelfKind.Include, ImmutableArray.Create(array.ElementType));
         if (type is not INamedTypeSymbol symbol || symbol.IsGenericType is false)
             return null;
         const string ResourceKey = "Generic";
         var types = (ImmutableHashSet<INamedTypeSymbol>)context.GetOrCreateResource(ResourceKey, CreateResource);
         var unbound = symbol.ConstructUnboundGenericType();
         if (types.Contains(unbound))
-            return new TypeInfo(symbol.Name, SelfType.Exclude, symbol.TypeArguments);
+            return new TypeInfo(symbol.Name, SelfKind.Exclude, symbol.TypeArguments);
         return null;
     }
 
