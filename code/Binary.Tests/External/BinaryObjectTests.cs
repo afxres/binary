@@ -40,8 +40,8 @@ public class BinaryObjectTests
         var b = new[] { 1, 2, 3, 4, 5, 6, 7, 8 };
         var da = create.Invoke(a.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString()))).ToImmutableArray());
         var db = create.Invoke(b.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString()))).ToImmutableArray());
-        Assert.Equal("LongDataDictionary", da.GetType().Name);
-        Assert.Equal("HashCodeDictionary`1", db.GetType().Name);
+        Assert.Equal("LongDataList", da.GetType().Name);
+        Assert.Equal("HashCodeList", db.GetType().Name);
     }
 
     [Fact(DisplayName = "Create Dictionary With Limited Single Entry Length")]
@@ -52,7 +52,7 @@ public class BinaryObjectTests
         var b = new[] { "OtherName0000016" };
         var da = create.Invoke(a.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x))).ToImmutableArray());
         var db = create.Invoke(b.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x))).ToImmutableArray());
-        Assert.Equal("LongDataDictionary", da.GetType().Name);
-        Assert.Equal("HashCodeDictionary`1", db.GetType().Name);
+        Assert.Equal("LongDataList", da.GetType().Name);
+        Assert.Equal("HashCodeList", db.GetType().Name);
     }
 }

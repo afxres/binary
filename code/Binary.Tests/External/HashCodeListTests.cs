@@ -9,11 +9,11 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Xunit;
 
-public class HashCodeDictionaryTests
+public class HashCodeListTests
 {
     private delegate uint HashCode(ref byte source, int length);
 
-    private delegate object CreateDictionary<T>(ImmutableArray<KeyValuePair<ReadOnlyMemory<byte>, T>> items, T? @default);
+    private delegate object CreateDictionary(ImmutableArray<ReadOnlyMemory<byte>> items);
 
     private delegate T GetValue<T>(ref byte source, int length);
 
@@ -23,7 +23,7 @@ public class HashCodeDictionaryTests
         Assert.NotNull(type);
         var method = type.GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
         Assert.NotNull(method);
-        return (T)Delegate.CreateDelegate(typeof(T), Assert.IsAssignableFrom<MethodInfo>(method));
+        return (T)Delegate.CreateDelegate(typeof(T), method);
     }
 
     private static HashCode GetHashCodeDelegate()
@@ -31,18 +31,18 @@ public class HashCodeDictionaryTests
         return GetInternalDelegate<HashCode>("GetHashCode");
     }
 
-    private static CreateDictionary<T> GetCreateDictionaryDelegate<T>()
+    private static CreateDictionary GetCreateDictionaryDelegate()
     {
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryObject");
         Assert.NotNull(type);
-        var method = type.GetMethod("CreateHashCodeDictionary", BindingFlags.Static | BindingFlags.NonPublic);
+        var method = type.GetMethod("CreateHashCodeList", BindingFlags.Static | BindingFlags.NonPublic);
         Assert.NotNull(method);
-        return (CreateDictionary<T>)Delegate.CreateDelegate(typeof(CreateDictionary<T>), Assert.IsAssignableFrom<MethodInfo>(method).MakeGenericMethod(typeof(T)));
+        return (CreateDictionary)Delegate.CreateDelegate(typeof(CreateDictionary), method);
     }
 
     private static GetValue<T> GetGetValueDelegate<T>(object dictionary)
     {
-        var method = dictionary.GetType().GetMethod("GetValue", BindingFlags.Instance | BindingFlags.Public);
+        var method = dictionary.GetType().GetMethod("Invoke", BindingFlags.Instance | BindingFlags.Public);
         Assert.NotNull(method);
         return (GetValue<T>)Delegate.CreateDelegate(typeof(GetValue<T>), dictionary, Assert.IsAssignableFrom<MethodInfo>(method));
     }
@@ -54,7 +54,7 @@ public class HashCodeDictionaryTests
     public void DictionaryHashConflict(byte value, int[] sizes)
     {
         var hash = GetHashCodeDelegate();
-        var create = GetCreateDictionaryDelegate<int>();
+        var create = GetCreateDictionaryDelegate();
         var buffers = new List<byte[]>();
         foreach (var i in sizes)
         {
@@ -75,21 +75,22 @@ public class HashCodeDictionaryTests
         Assert.Equal(sizes.Length, codes.Count);
         _ = Assert.Single(codes.Distinct());
 
-        var arguments = buffers.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(x), x.Length)).ToImmutableArray();
-        var dictionary = create.Invoke(arguments, -1);
+        var arguments = buffers.Select(x => new ReadOnlyMemory<byte>(x)).ToImmutableArray();
+        var dictionary = create.Invoke(arguments);
         Assert.NotNull(dictionary);
         var query = GetGetValueDelegate<int>(dictionary);
 
         var actual = new List<int>();
-        foreach (var i in buffers)
+        for (var i = 0; i < arguments.Length; i++)
         {
-            var length = i.Length;
-            ref var source = ref MemoryMarshal.GetReference(new ReadOnlySpan<byte>(i));
+            var buffer = arguments[i];
+            var length = buffer.Length;
+            ref var source = ref MemoryMarshal.GetReference(buffer.Span);
             var result = query.Invoke(ref source, length);
             actual.Add(result);
-            Assert.Equal(length, result);
+            Assert.Equal(i, result);
         }
-        Assert.Equal(sizes, actual);
+        Assert.Equal(Enumerable.Range(0, arguments.Length), actual);
     }
 
     [Theory(DisplayName = "Duplicate Keys")]
@@ -98,9 +99,9 @@ public class HashCodeDictionaryTests
     [InlineData(new[] { 32768, 65535, 65536, 65536 })]
     public void DictionaryDuplicateKey(int[] values)
     {
-        var create = GetCreateDictionaryDelegate<int>();
-        var arguments = values.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString())), x)).ToImmutableArray();
-        var result = create.Invoke(arguments, -1);
+        var create = GetCreateDictionaryDelegate();
+        var arguments = values.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString()))).ToImmutableArray();
+        var result = create.Invoke(arguments);
         Assert.Null(result);
     }
 
@@ -112,23 +113,23 @@ public class HashCodeDictionaryTests
         var names = types.Select(x => x.Name).Concat(members.Select(x => x.Name)).ToHashSet().ToArray();
         Assert.True(names.Length > 1000);
 
-        var arguments = names.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x)), x)).ToImmutableArray();
-        var create = GetCreateDictionaryDelegate<string>();
-        var dictionary = create.Invoke(arguments, null);
+        var arguments = names.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x))).ToImmutableArray();
+        var create = GetCreateDictionaryDelegate();
+        var dictionary = create.Invoke(arguments);
         Assert.NotNull(dictionary);
-        var query = GetGetValueDelegate<string>(dictionary);
+        var query = GetGetValueDelegate<int>(dictionary);
 
-        var actual = new List<string>();
-        foreach (var i in arguments)
+        var actual = new List<int>();
+        for (var i = 0; i < arguments.Length; i++)
         {
-            var buffer = i.Key.Span;
+            var buffer = arguments[i].Span;
             var length = buffer.Length;
             ref var source = ref MemoryMarshal.GetReference(buffer);
             var result = query.Invoke(ref source, length);
             actual.Add(result);
-            Assert.Equal(i.Value, result);
+            Assert.Equal(i, result);
         }
-        Assert.Equal(names, actual);
+        Assert.Equal(Enumerable.Range(0, names.Length), actual);
     }
 
     [Theory(DisplayName = "Key Not Found")]
@@ -137,16 +138,16 @@ public class HashCodeDictionaryTests
     [InlineData(new[] { 9, 1234567890 }, new[] { 3, 432, 67 })]
     public void DictionaryQueryNotFound(int[] values, int[] others)
     {
-        var create = GetCreateDictionaryDelegate<string>();
-        var arguments = values.Select(x => KeyValuePair.Create(new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString())), x.ToString())).ToImmutableArray();
-        var result = create.Invoke(arguments, null);
-        var query = GetGetValueDelegate<string>(result);
+        var create = GetCreateDictionaryDelegate();
+        var arguments = values.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString()))).ToImmutableArray();
+        var result = create.Invoke(arguments);
+        var query = GetGetValueDelegate<int>(result);
         Assert.NotNull(result);
         for (var i = 0; i < others.Length; i++)
         {
             var buffer = Encoding.UTF8.GetBytes(others[i].ToString()).AsSpan();
             var actual = query.Invoke(ref MemoryMarshal.GetReference(buffer), buffer.Length);
-            Assert.Null(actual);
+            Assert.Equal(-1, actual);
         }
     }
 }

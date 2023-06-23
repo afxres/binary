@@ -2,22 +2,19 @@
 
 using Mikodev.Binary.External.Contexts;
 
-internal sealed class HashCodeDictionary<T> : ByteViewDictionary<T>
+internal sealed class HashCodeList : ByteViewList
 {
-    private readonly T content;
-
     private readonly int[] buckets;
 
-    private readonly HashCodeSlot<T>[] records;
+    private readonly HashCodeSlot[] records;
 
-    public HashCodeDictionary(int[] buckets, HashCodeSlot<T>[] records, T content)
+    public HashCodeList(int[] buckets, HashCodeSlot[] records)
     {
-        this.content = content;
         this.buckets = buckets;
         this.records = records;
     }
 
-    public override T GetValue(ref byte source, int length)
+    public override int Invoke(ref byte source, int length)
     {
         var buckets = this.buckets;
         var records = this.records;
@@ -27,9 +24,9 @@ internal sealed class HashCodeDictionary<T> : ByteViewDictionary<T>
         {
             ref readonly var slot = ref records[next];
             if (hash == slot.Hash && BinaryModule.GetEquality(ref source, length, slot.Head))
-                return slot.Item;
+                return next;
             next = slot.Next;
         }
-        return this.content;
+        return -1;
     }
 }

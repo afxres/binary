@@ -1,12 +1,10 @@
 ﻿namespace Mikodev.Binary.External.Contexts;
 
-internal struct HashCodeSlot<T>
+internal struct HashCodeSlot
 {
     public byte[] Head;
 
     public uint Hash;
 
     public int Next;
-
-    public T Item;
 }

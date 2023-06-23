@@ -15,31 +15,31 @@ public abstract class NamedObjectConverter<T> : Converter<T?>
 {
     private readonly int required;
 
+    private readonly ByteViewList view;
+
     private readonly ImmutableArray<bool> optional;
 
     private readonly ImmutableArray<string> names;
-
-    private readonly ByteViewDictionary<int> dictionary;
 
     protected NamedObjectConverter(Converter<string> converter, IEnumerable<string> names, IEnumerable<bool> optional)
     {
         ArgumentNullException.ThrowIfNull(converter);
         ArgumentNullException.ThrowIfNull(names);
         ArgumentNullException.ThrowIfNull(optional);
-        var alpha = names.ToImmutableArray();
-        var bravo = optional.ToImmutableArray();
-        if (alpha.Length is 0 || bravo.Length is 0)
+        var head = names.ToImmutableArray();
+        var tail = optional.ToImmutableArray();
+        if (head.Length is 0 || tail.Length is 0)
             throw new ArgumentException($"Sequence contains no element.");
-        if (alpha.Length != bravo.Length)
+        if (head.Length != tail.Length)
             throw new ArgumentException($"Sequence lengths not match.");
-        var selector = new Func<string, ReadOnlyMemory<byte>>(x => converter.Encode(x));
-        var dictionary = BinaryObject.Create(alpha.Select(selector).ToImmutableArray());
-        if (dictionary is null)
+        var data = head.Select(x => new ReadOnlyMemory<byte>(converter.Encode(x))).ToImmutableArray();
+        var view = BinaryObject.Create(data);
+        if (view is null)
             throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {typeof(T)}, string converter type: {converter.GetType()}");
-        this.names = alpha;
-        this.optional = bravo;
-        this.required = bravo.Count(x => x is false);
-        this.dictionary = dictionary;
+        this.view = view;
+        this.names = head;
+        this.optional = tail;
+        this.required = tail.Count(x => x is false);
     }
 
     [DebuggerStepThrough, DoesNotReturn]
@@ -78,7 +78,7 @@ public abstract class NamedObjectConverter<T> : Converter<T?>
         // maybe 'StackOverflowException', just let it crash
         var optional = this.optional;
         var remain = this.required;
-        var record = this.dictionary;
+        var record = this.view;
         var slices = (stackalloc long[optional.Length]);
         ref var source = ref MemoryMarshal.GetReference(span);
 
@@ -89,7 +89,7 @@ public abstract class NamedObjectConverter<T> : Converter<T?>
         {
             offset += length;
             length = NumberModule.DecodeEnsureBuffer(ref source, ref offset, limits);
-            var cursor = record.GetValue(ref Unsafe.Add(ref source, offset), length);
+            var cursor = record.Invoke(ref Unsafe.Add(ref source, offset), length);
             Debug.Assert(cursor is -1 || (uint)cursor < (uint)slices.Length);
             offset += length;
             length = NumberModule.DecodeEnsureBuffer(ref source, ref offset, limits);

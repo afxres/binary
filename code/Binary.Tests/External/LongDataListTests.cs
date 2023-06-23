@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Xunit;
 
-public class LongDataDictionaryTests
+public class LongDataListTests
 {
     private delegate object CreateDictionary(ImmutableArray<ReadOnlyMemory<byte>> items);
 
@@ -19,14 +19,14 @@ public class LongDataDictionaryTests
     {
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryObject");
         Assert.NotNull(type);
-        var method = type.GetMethod("CreateLongDataDictionary", BindingFlags.Static | BindingFlags.NonPublic);
+        var method = type.GetMethod("CreateLongDataList", BindingFlags.Static | BindingFlags.NonPublic);
         Assert.NotNull(method);
         return (CreateDictionary)Delegate.CreateDelegate(typeof(CreateDictionary), Assert.IsAssignableFrom<MethodInfo>(method));
     }
 
     private static GetValue GetGetValueDelegate(object dictionary)
     {
-        var method = dictionary.GetType().GetMethod("GetValue", BindingFlags.Instance | BindingFlags.Public);
+        var method = dictionary.GetType().GetMethod("Invoke", BindingFlags.Instance | BindingFlags.Public);
         Assert.NotNull(method);
         return (GetValue)Delegate.CreateDelegate(typeof(GetValue), dictionary, Assert.IsAssignableFrom<MethodInfo>(method));
     }

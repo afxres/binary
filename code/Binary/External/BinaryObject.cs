@@ -2,7 +2,6 @@
 
 using Mikodev.Binary.External.Contexts;
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -12,38 +11,35 @@ internal static class BinaryObject
 {
     internal const int ItemLimits = 7;
 
-    internal const int DataFallback = -1;
-
     internal const int LongDataLimits = 15;
 
-    internal static ByteViewDictionary<int>? Create(ImmutableArray<ReadOnlyMemory<byte>> items)
+    internal static ByteViewList? Create(ImmutableArray<ReadOnlyMemory<byte>> items)
     {
         Debug.Assert(items.Any());
         if (items.Length <= ItemLimits && items.All(x => x.Length <= LongDataLimits))
-            return CreateLongDataDictionary(items);
+            return CreateLongDataList(items);
         else
-            return CreateHashCodeDictionary(items.Select(KeyValuePair.Create).ToImmutableArray(), DataFallback);
+            return CreateHashCodeList(items);
     }
 
-    private static LongDataDictionary? CreateLongDataDictionary(ImmutableArray<ReadOnlyMemory<byte>> items)
+    private static LongDataList? CreateLongDataList(ImmutableArray<ReadOnlyMemory<byte>> items)
     {
         static LongDataSlot Invoke(ReadOnlySpan<byte> span) => BinaryModule.GetLongData(ref MemoryMarshal.GetReference(span), span.Length);
         var records = items.Select(x => Invoke(x.Span)).ToArray();
         if (records.DistinctBy(x => (x.Head, x.Tail)).Count() != items.Length)
             return null;
-        return new LongDataDictionary(records);
+        return new LongDataList(records);
     }
 
-    private static HashCodeDictionary<T>? CreateHashCodeDictionary<T>(ImmutableArray<KeyValuePair<ReadOnlyMemory<byte>, T>> items, T @default)
+    private static HashCodeList? CreateHashCodeList(ImmutableArray<ReadOnlyMemory<byte>> items)
     {
-        var free = 0;
-        var records = new HashCodeSlot<T>[items.Length];
+        var records = new HashCodeSlot[items.Length];
         var buckets = new int[BinaryModule.GetCapacity(records.Length)];
         Array.Fill(buckets, -1);
 
-        foreach (var pair in items)
+        for (var i = 0; i < items.Length; i++)
         {
-            var buffer = pair.Key.ToArray();
+            var buffer = items[i].ToArray();
             var length = buffer.Length;
             ref var source = ref MemoryMarshal.GetArrayDataReference(buffer);
             var hash = BinaryModule.GetHashCode(ref source, length);
@@ -55,13 +51,11 @@ internal static class BinaryObject
                     return null;
                 next = ref slot.Next;
             }
-            records[free] = new HashCodeSlot<T> { Head = buffer, Hash = hash, Item = pair.Value, Next = -1 };
-            next = free;
-            free++;
+            records[i] = new HashCodeSlot { Head = buffer, Hash = hash, Next = -1 };
+            next = i;
         }
 
-        Debug.Assert(records.Length == free);
         Debug.Assert(records.Select(x => x.Next).All(next => next is -1 || (uint)next < (uint)records.Length));
-        return new HashCodeDictionary<T>(buckets, records, @default);
+        return new HashCodeList(buckets, records);
     }
 }
