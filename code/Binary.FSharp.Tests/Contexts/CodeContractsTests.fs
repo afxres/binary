@@ -3,6 +3,7 @@
 open Mikodev.Binary
 open System
 open System.Collections.Generic
+open System.Diagnostics.CodeAnalysis
 open System.Reflection
 open Xunit
 
@@ -33,4 +34,24 @@ let ``Public Members`` () =
         let declaringTypeNames = declaringTypes |> Array.map (fun x -> x.Name)
         let expectedTypeNames = [| "Object"; "Converter`1" |]
         Assert.All(declaringTypeNames, fun x -> Assert.Contains(x, expectedTypeNames))
+    ()
+
+[<Fact>]
+let ``Public Members With Requires Unreferenced Code Attribute`` () =
+    let t = typeof<GeneratorBuilderFSharpExtensions>
+    let members = t.GetMembers(BindingFlags.Instance ||| BindingFlags.Static ||| BindingFlags.Public)
+    let common = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "CommonModule") |> Array.exactlyOne
+    let messageField = common.GetField("RequiresUnreferencedCodeMessage", BindingFlags.Static ||| BindingFlags.NonPublic)
+    Assert.NotNull messageField
+    let message = messageField.GetValue(null)
+    Assert.NotNull message
+    Assert.NotEmpty members
+    let sequence = seq {
+        for m in members do
+            if m.DeclaringType <> typeof<obj> then
+                let attribute = m.GetCustomAttributes() |> Seq.choose (fun x -> match x with | :? RequiresUnreferencedCodeAttribute as a -> Some a | _ -> None) |> Seq.exactlyOne
+                yield attribute.Message
+    }
+    let actual = sequence |> Seq.exactlyOne
+    Assert.Equal(message, actual)
     ()
