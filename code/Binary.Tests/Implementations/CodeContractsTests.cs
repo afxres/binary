@@ -253,7 +253,7 @@ public class CodeContractsTests
         var groups = selections.GroupBy(x => x.Value.ReadState).ToDictionary(x => x.Key);
         var anonymous = groups[NullabilityState.Nullable].Select(x => x.Key).Where(x => x.Name is "anonymous").ToList();
         Assert.Equal(2, groups.Count);
-        Assert.Equal(4, anonymous.Count);
+        Assert.Equal(5, anonymous.Count);
         Assert.True(groups.ContainsKey(NullabilityState.Unknown));
         Assert.True(groups.ContainsKey(NullabilityState.Nullable));
         Assert.All(groups[NullabilityState.Unknown], x => Assert.True(x.Key.Member.DeclaringType?.IsSubclassOf(typeof(Delegate))));
@@ -268,7 +268,7 @@ public class CodeContractsTests
         var matches = parameters.Where(x => x.ParameterType.IsByRef is false && x.ParameterType.IsByRefLike).ToList();
         Assert.NotEmpty(matches);
         var hostTypes = matches.Select(x => x.Member.ReflectedType).Distinct().ToList();
-        Assert.Equal(5, hostTypes.Count);
+        Assert.Equal(6, hostTypes.Count);
         foreach (var parameter in matches)
         {
             var attributes = parameter.GetCustomAttributes();

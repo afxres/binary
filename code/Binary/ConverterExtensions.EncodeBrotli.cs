@@ -1,0 +1,64 @@
+﻿namespace Mikodev.Binary;
+
+using System;
+using System.Buffers;
+using System.IO;
+using System.IO.Compression;
+
+public static partial class ConverterExtensions
+{
+    private static void EncodeBrotliInternal(ReadOnlySpan<byte> source, Span<byte> target, out int bytesWritten)
+    {
+        var handle = new BrotliEncoder(1, 22);
+
+        try
+        {
+            var status = handle.Compress(source, target, out _, out bytesWritten, isFinalBlock: true);
+            if (status is OperationStatus.Done)
+                return;
+            throw new IOException($"Brotli encode failed, status: {status}");
+        }
+        finally
+        {
+            handle.Dispose();
+        }
+    }
+
+    private static byte[] EncodeBrotliInternal(ReadOnlySpan<byte> source, ArrayPool<byte> arrays)
+    {
+        var length = BrotliEncoder.GetMaxCompressedLength(source.Length);
+        var memory = arrays.Rent(length);
+
+        try
+        {
+            var target = new Span<byte>(memory);
+            EncodeBrotliInternal(source, target, out var bytesWritten);
+            return target.Slice(0, bytesWritten).ToArray();
+        }
+        finally
+        {
+            arrays.Return(memory);
+        }
+    }
+
+    private static byte[] EncodeBrotliInternal<T>(Converter<T> converter, T item, ArrayPool<byte> pool)
+    {
+        var memory = pool.Rent(1024 * 1024);
+
+        try
+        {
+            var allocator = new Allocator(new Span<byte>(memory));
+            converter.Encode(ref allocator, item);
+            return EncodeBrotliInternal(allocator.AsSpan(), pool);
+        }
+        finally
+        {
+            pool.Return(memory);
+        }
+    }
+
+    public static byte[] EncodeBrotli<T>(this Converter<T> converter, T item)
+    {
+        return EncodeBrotliInternal(converter, item, ArrayPool<byte>.Shared);
+    }
+}
