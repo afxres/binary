@@ -9,19 +9,9 @@ public static partial class ConverterExtensions
 {
     private static void EncodeBrotliInternal(ReadOnlySpan<byte> source, Span<byte> target, out int bytesWritten)
     {
-        var handle = new BrotliEncoder(1, 22);
-
-        try
-        {
-            var status = handle.Compress(source, target, out _, out bytesWritten, isFinalBlock: true);
-            if (status is OperationStatus.Done)
-                return;
-            throw new IOException($"Brotli encode failed, status: {status}");
-        }
-        finally
-        {
-            handle.Dispose();
-        }
+        if (BrotliEncoder.TryCompress(source, target, out bytesWritten, quality: 1, window: 22))
+            return;
+        throw new IOException("Brotli encode failed.");
     }
 
     private static byte[] EncodeBrotliInternal(ReadOnlySpan<byte> source, ArrayPool<byte> arrays)

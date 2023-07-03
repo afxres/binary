@@ -50,6 +50,7 @@ public class ConverterExtensionsTests
         var status = BrotliEncoder.TryCompress(bufferOrigin, bufferZipped, out var bytesWritten, quality: 1, window: 22);
         Assert.True(status);
         Assert.Equal(buffer.Length, bytesWritten);
+        Assert.Equal(buffer, bufferZipped);
 
         var bufferResult = new byte[bufferOrigin.Length];
         var statusResult = BrotliDecoder.TryDecompress(bufferZipped, bufferResult, out var bytesWrittenResult);
