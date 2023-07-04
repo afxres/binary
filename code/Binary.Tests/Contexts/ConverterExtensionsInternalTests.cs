@@ -20,20 +20,20 @@ public class ConverterExtensionsInternalTests
 
     private class TestArrayPool<T> : ArrayPool<T>
     {
-        public List<T[]> Rented { get; } = new List<T[]>();
+        public List<int> Rented { get; } = new List<int>();
 
-        public List<T[]> Returned { get; } = new List<T[]>();
+        public List<int> Returned { get; } = new List<int>();
 
         public override T[] Rent(int minimumLength)
         {
             var result = new T[minimumLength];
-            Rented.Add(result);
+            Rented.Add(result.Length);
             return result;
         }
 
         public override void Return(T[] array, bool clearArray = false)
         {
-            Returned.Add(array);
+            Returned.Add(array.Length);
         }
     }
 
@@ -67,8 +67,8 @@ public class ConverterExtensionsInternalTests
         var message = $"Brotli decode failed, status: {OperationStatus.NeedMoreData}";
         Assert.Equal(message, error.Message);
         Assert.Equal(arrays.Rented.Count, arrays.Returned.Count);
-        Assert.Equal(64 * 1024, arrays.Rented.Single().Length);
-        Assert.Equal(64 * 1024, arrays.Returned.Single().Length);
+        Assert.Equal(64 * 1024, arrays.Rented.Single());
+        Assert.Equal(64 * 1024, arrays.Returned.Single());
     }
 
     public static IEnumerable<object[]> DecodeBrotliArrayPoolRentReturnData()
@@ -100,8 +100,8 @@ public class ConverterExtensionsInternalTests
         var result = action.Invoke(converter, zipped, arrays);
         Assert.Equal(source, result);
         Assert.Equal(arrays.Rented.Count, arrays.Returned.Count);
-        Assert.Equal(rented, arrays.Rented.Select(x => x.Length));
-        Assert.Equal(rented, arrays.Returned.Select(x => x.Length));
+        Assert.Equal(rented, arrays.Rented);
+        Assert.Equal(rented, arrays.Returned);
     }
 
     public static IEnumerable<object[]> EncodeBrotliArrayPoolRentReturnData()
@@ -128,8 +128,8 @@ public class ConverterExtensionsInternalTests
         var arrays = new TestArrayPool<byte>();
         var result = action.Invoke(converter, source, arrays);
         Assert.Equal(arrays.Rented.Count, arrays.Returned.Count);
-        Assert.Equal(rented, arrays.Rented.Select(x => x.Length));
-        Assert.Equal(rented, arrays.Returned.Select(x => x.Length).Reverse());
+        Assert.Equal(rented, arrays.Rented);
+        Assert.Equal(rented, arrays.Returned.Select(x => x).Reverse());
     }
 
     [Fact(DisplayName = "Decode Brotli Input Overflow Test")]
