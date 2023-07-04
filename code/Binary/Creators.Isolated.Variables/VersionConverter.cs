@@ -6,7 +6,6 @@ using Mikodev.Binary.Internal;
 using System;
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 internal sealed class VersionConverter : VariableConverter<Version?, VersionConverter.Functions>
 {
@@ -19,7 +18,7 @@ internal sealed class VersionConverter : VariableConverter<Version?, VersionConv
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void Encode(Span<byte> span, int offset, int data)
         {
-            BinaryPrimitives.WriteInt32LittleEndian(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(span), offset * sizeof(int)), sizeof(int)), data);
+            BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset * sizeof(int), sizeof(int)), data);
         }
 
         static int Invoke(Span<byte> span, Version? item)
@@ -46,7 +45,7 @@ internal sealed class VersionConverter : VariableConverter<Version?, VersionConv
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static int Decode(ReadOnlySpan<byte> span, int offset)
         {
-            return BinaryPrimitives.ReadInt32LittleEndian(MemoryMarshal.CreateReadOnlySpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(span), offset * sizeof(int)), sizeof(int)));
+            return BinaryPrimitives.ReadInt32LittleEndian(span.Slice(offset * sizeof(int), sizeof(int)));
         }
 
         var result = default(Version?);
