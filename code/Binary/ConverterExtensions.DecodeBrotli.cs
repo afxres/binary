@@ -9,17 +9,18 @@ public static partial class ConverterExtensions
 {
     private static T DecodeBrotliInternal<T>(Converter<T> converter, ReadOnlySpan<byte> source, ArrayPool<byte> arrays)
     {
-        var memory = arrays.Rent(Math.Max(64 * 1024, checked(source.Length * 2)));
+        var limits = Math.Max(64 * 1024, checked(source.Length * 2));
+        var memory = arrays.Rent(limits);
         var handle = new BrotliDecoder();
+        var offset = 0;
+        var length = 0;
 
         try
         {
-            var offset = 0;
-            var length = 0;
-
             while (true)
             {
-                var status = handle.Decompress(source.Slice(offset), new Span<byte>(memory, length, memory.Length - length), out var bytesConsumed, out var bytesWritten);
+                limits = Math.Max(limits, memory.Length);
+                var status = handle.Decompress(source.Slice(offset), new Span<byte>(memory, length, limits - length), out var bytesConsumed, out var bytesWritten);
                 offset += bytesConsumed;
                 length += bytesWritten;
 
@@ -28,7 +29,8 @@ public static partial class ConverterExtensions
                 if (status is not OperationStatus.DestinationTooSmall)
                     throw new IOException($"Brotli decode failed, status: {status}");
 
-                var buffer = arrays.Rent(checked(memory.Length * 2));
+                limits = checked(limits * 2);
+                var buffer = arrays.Rent(limits);
                 new ReadOnlySpan<byte>(memory, 0, length).CopyTo(new Span<byte>(buffer));
                 arrays.Return(memory);
                 memory = buffer;

@@ -45,6 +45,14 @@ public class ConverterExtensionsInternalTests
         return (T)Delegate.CreateDelegate(typeof(T), method);
     }
 
+    private static DecodeBrotliInternal<T> GetDecodeBrotliInternalMethod<T>()
+    {
+        var method = typeof(ConverterExtensions).GetMethod("DecodeBrotliInternal", BindingFlags.Static | BindingFlags.NonPublic);
+        Assert.NotNull(method);
+        var action = (DecodeBrotliInternal<T>)Delegate.CreateDelegate(typeof(DecodeBrotliInternal<T>), method.MakeGenericMethod(typeof(T)));
+        return action;
+    }
+
     [Fact(DisplayName = "Encode Brotli Exception Test")]
     public void EncodeBrotliInternalExceptionTest()
     {
@@ -59,9 +67,7 @@ public class ConverterExtensionsInternalTests
     {
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<int>();
-        var method = typeof(ConverterExtensions).GetMethod("DecodeBrotliInternal", BindingFlags.Static | BindingFlags.NonPublic);
-        Assert.NotNull(method);
-        var action = (DecodeBrotliInternal<int>)Delegate.CreateDelegate(typeof(DecodeBrotliInternal<int>), method.MakeGenericMethod(typeof(int)));
+        var action = GetDecodeBrotliInternalMethod<int>();
         var arrays = new TestArrayPool<byte>();
         var error = Assert.Throws<IOException>(() => action.Invoke(converter, Array.Empty<byte>(), arrays));
         var message = $"Brotli decode failed, status: {OperationStatus.NeedMoreData}";
@@ -93,9 +99,7 @@ public class ConverterExtensionsInternalTests
 
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<byte[]>();
-        var method = typeof(ConverterExtensions).GetMethod("DecodeBrotliInternal", BindingFlags.Static | BindingFlags.NonPublic);
-        Assert.NotNull(method);
-        var action = (DecodeBrotliInternal<byte[]>)Delegate.CreateDelegate(typeof(DecodeBrotliInternal<byte[]>), method.MakeGenericMethod(typeof(byte[])));
+        var action = GetDecodeBrotliInternalMethod<byte[]>();
         var arrays = new TestArrayPool<byte>();
         var result = action.Invoke(converter, zipped, arrays);
         Assert.Equal(source, result);
@@ -195,5 +199,87 @@ public class ConverterExtensionsInternalTests
         var converter = generator.GetConverter<byte[]>();
         var error = Assert.Throws<OverflowException>(() => ConverterExtensions.DecodeBrotli(converter, buffer));
         Assert.Equal(new OverflowException().Message, error.Message);
+    }
+
+    private class TestInvalidZeroSizeReturnsArrayPool<T> : ArrayPool<T>
+    {
+        public List<int> Rented { get; } = new List<int>();
+
+        public List<int> Returned { get; } = new List<int>();
+
+        public override T[] Rent(int minimumLength)
+        {
+            var result = Array.Empty<T>();
+            Rented.Add(minimumLength);
+            return result;
+        }
+
+        public override void Return(T[] array, bool clearArray = false)
+        {
+            Returned.Add(array.Length);
+        }
+    }
+
+    [Fact(DisplayName = "Decode Brotli With Invalid Zero Size Returns Array Pool")]
+    public void DecodeBrotliWithInvalidZeroSizeReturnsArrayPoolTest()
+    {
+        var length = 256;
+        var source = new byte[length];
+        for (var i = 0; i < source.Length; i++)
+            source[i] = (byte)i;
+        var buffer = new byte[BrotliEncoder.GetMaxCompressedLength(length)];
+        var status = BrotliEncoder.TryCompress(source, buffer, out var bytesWritten);
+        Assert.True(status);
+        var zipped = new ReadOnlySpan<byte>(buffer, 0, bytesWritten).ToArray();
+
+        var arrays = new TestInvalidZeroSizeReturnsArrayPool<byte>();
+        var generator = Generator.CreateDefault();
+        var converter = generator.GetConverter<byte[]>();
+        var action = GetDecodeBrotliInternalMethod<byte[]>();
+        var error = Assert.Throws<ArgumentOutOfRangeException>(() => action.Invoke(converter, zipped, arrays));
+        Assert.Equal(new ArgumentOutOfRangeException().Message, error.Message);
+        Assert.Equal(64 * 1024, arrays.Rented.Single());
+        Assert.Equal(0, arrays.Returned.Single());
+    }
+
+    private class TestDoubleSizeReturnsArrayPool<T> : ArrayPool<T>
+    {
+        public List<int> Rented { get; } = new List<int>();
+
+        public List<int> Returned { get; } = new List<int>();
+
+        public override T[] Rent(int minimumLength)
+        {
+            var result = new T[minimumLength * 2];
+            Rented.Add(minimumLength);
+            return result;
+        }
+
+        public override void Return(T[] array, bool clearArray = false)
+        {
+            Returned.Add(array.Length);
+        }
+    }
+
+    [Fact(DisplayName = "Decode Brotli With Double Size Returns Array Pool")]
+    public void DecodeBrotliWithDoubleSizeReturnsArrayPoolTest()
+    {
+        var length = 1024 * 1024;
+        var source = new byte[length];
+        for (var i = 0; i < source.Length; i++)
+            source[i] = (byte)i;
+        var buffer = new byte[BrotliEncoder.GetMaxCompressedLength(length)];
+        var status = BrotliEncoder.TryCompress(source, buffer, out var bytesWritten);
+        Assert.True(status);
+        var zipped = new ReadOnlySpan<byte>(buffer, 0, bytesWritten).ToArray();
+
+        var arrays = new TestDoubleSizeReturnsArrayPool<byte>();
+        var generator = Generator.CreateDefault();
+        var converter = generator.GetConverter<byte[]>();
+        var action = GetDecodeBrotliInternalMethod<byte[]>();
+        var result = action.Invoke(converter, zipped, arrays);
+        Assert.Equal(source, result);
+        Assert.Equal(new[] { 64 * 1024, 256 * 1024, 1024 * 1024 }, arrays.Rented);
+        Assert.Equal(new[] { 128 * 1024, 512 * 1024, 2 * 1024 * 1024 }, arrays.Returned);
     }
 }
