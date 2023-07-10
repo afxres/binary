@@ -42,8 +42,13 @@ public class ConverterExtensionsTests
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<T>();
         var buffer = converter.EncodeBrotli(data);
+        var bufferObject = ((IConverter)converter).EncodeBrotli(data);
+        Assert.Equal(buffer, bufferObject);
+
         var result = converter.DecodeBrotli(buffer);
+        var resultObject = ((IConverter)converter).DecodeBrotli(buffer);
         Assert.Equal(data, result);
+        Assert.Equal(data, Assert.IsType<T>(resultObject));
 
         var bufferOrigin = converter.Encode(data);
         var bufferZipped = new byte[buffer.Length];

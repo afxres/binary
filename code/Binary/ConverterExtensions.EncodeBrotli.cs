@@ -31,14 +31,14 @@ public static partial class ConverterExtensions
         }
     }
 
-    private static byte[] EncodeBrotliInternal<T>(Converter<T> converter, T item, ArrayPool<byte> pool)
+    private static byte[] EncodeBrotliInternal<T>(AllocatorAction<T> action, T item, ArrayPool<byte> pool)
     {
         var memory = pool.Rent(1024 * 1024);
 
         try
         {
             var allocator = new Allocator(new Span<byte>(memory));
-            converter.Encode(ref allocator, item);
+            action.Invoke(ref allocator, item);
             return EncodeBrotliInternal(allocator.AsSpan(), pool);
         }
         finally
@@ -47,8 +47,13 @@ public static partial class ConverterExtensions
         }
     }
 
+    public static byte[] EncodeBrotli(this IConverter converter, object? item)
+    {
+        return EncodeBrotliInternal(converter.Encode, item, ArrayPool<byte>.Shared);
+    }
+
     public static byte[] EncodeBrotli<T>(this Converter<T> converter, T item)
     {
-        return EncodeBrotliInternal(converter, item, ArrayPool<byte>.Shared);
+        return EncodeBrotliInternal(converter.Encode, item, ArrayPool<byte>.Shared);
     }
 }

@@ -12,6 +12,8 @@ public static class GeneratorExtensions
 
     public static byte[] Encode<T>(this IGenerator generator, T item) => generator.GetConverter<T>().Encode(item);
 
+    public static byte[] EncodeBrotli(this IGenerator generator, object? item, Type type) => generator.GetConverter(type).EncodeBrotli(item);
+
     public static byte[] EncodeBrotli<T>(this IGenerator generator, T item) => generator.GetConverter<T>().EncodeBrotli(item);
 
     public static object? Decode(this IGenerator generator, byte[]? buffer, Type type) => generator.GetConverter(type).Decode(buffer);
@@ -26,7 +28,15 @@ public static class GeneratorExtensions
 
     public static T Decode<T>(this IGenerator generator, scoped ReadOnlySpan<byte> span, T? anonymous) => generator.Decode<T>(span);
 
+    public static object? DecodeBrotli(this IGenerator generator, byte[]? buffer, Type type) => generator.DecodeBrotli(new ReadOnlySpan<byte>(buffer), type);
+
+    public static object? DecodeBrotli(this IGenerator generator, scoped ReadOnlySpan<byte> span, Type type) => generator.GetConverter(type).DecodeBrotli(span);
+
+    public static T DecodeBrotli<T>(this IGenerator generator, byte[]? buffer) => generator.GetConverter<T>().DecodeBrotli(new ReadOnlySpan<byte>(buffer));
+
+    public static T DecodeBrotli<T>(this IGenerator generator, byte[]? buffer, T? anonymous) => generator.DecodeBrotli<T>(buffer);
+
     public static T DecodeBrotli<T>(this IGenerator generator, scoped ReadOnlySpan<byte> span) => generator.GetConverter<T>().DecodeBrotli(span);
 
-    public static T DecodeBrotli<T>(this IGenerator generator, scoped ReadOnlySpan<byte> span, T? anonymous) => generator.GetConverter<T>().DecodeBrotli(span);
+    public static T DecodeBrotli<T>(this IGenerator generator, scoped ReadOnlySpan<byte> span, T? anonymous) => generator.DecodeBrotli<T>(span);
 }

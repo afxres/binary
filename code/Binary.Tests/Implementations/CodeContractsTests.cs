@@ -170,8 +170,15 @@ public class CodeContractsTests
 
         var parameters = methodBases.SelectMany(x => x.GetParameters()).ToList();
         var byteArrayParameters = parameters.Where(x => x.ParameterType == typeof(byte[])).ToList();
-        Assert.Equal(6, byteArrayParameters.Count);
-        Assert.All(byteArrayParameters, x => Assert.Equal("Decode", x.Member.Name));
+        Assert.Equal(9, byteArrayParameters.Count);
+        var context = new NullabilityInfoContext();
+        foreach (var x in byteArrayParameters)
+        {
+            var info = context.Create(x);
+            Assert.StartsWith("Decode", x.Member.Name);
+            Assert.Equal(NullabilityState.Nullable, info.ReadState);
+            Assert.Equal(NullabilityState.Nullable, info.WriteState);
+        }
     }
 
     [Fact(DisplayName = "Is Ref Struct")]
@@ -253,7 +260,7 @@ public class CodeContractsTests
         var groups = selections.GroupBy(x => x.Value.ReadState).ToDictionary(x => x.Key);
         var anonymous = groups[NullabilityState.Nullable].Select(x => x.Key).Where(x => x.Name is "anonymous").ToList();
         Assert.Equal(2, groups.Count);
-        Assert.Equal(5, anonymous.Count);
+        Assert.Equal(6, anonymous.Count);
         Assert.True(groups.ContainsKey(NullabilityState.Unknown));
         Assert.True(groups.ContainsKey(NullabilityState.Nullable));
         Assert.All(groups[NullabilityState.Unknown], x => Assert.True(x.Key.Member.DeclaringType?.IsSubclassOf(typeof(Delegate))));

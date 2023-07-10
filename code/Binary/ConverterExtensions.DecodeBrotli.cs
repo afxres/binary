@@ -1,5 +1,6 @@
 ﻿namespace Mikodev.Binary;
 
+using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Buffers;
 using System.IO;
@@ -7,7 +8,7 @@ using System.IO.Compression;
 
 public static partial class ConverterExtensions
 {
-    private static T DecodeBrotliInternal<T>(Converter<T> converter, ReadOnlySpan<byte> source, ArrayPool<byte> arrays)
+    private static T DecodeBrotliInternal<T>(DecodeReadOnlyDelegate<T> decode, ReadOnlySpan<byte> source, ArrayPool<byte> arrays)
     {
         var limits = Math.Max(64 * 1024, checked(source.Length * 2));
         var memory = arrays.Rent(limits);
@@ -25,7 +26,7 @@ public static partial class ConverterExtensions
                 length += bytesWritten;
 
                 if (status is OperationStatus.Done)
-                    return converter.Decode(new ReadOnlySpan<byte>(memory, 0, length));
+                    return decode.Invoke(new ReadOnlySpan<byte>(memory, 0, length));
                 if (status is not OperationStatus.DestinationTooSmall)
                     throw new IOException($"Brotli decode failed, status: {status}");
 
@@ -43,8 +44,13 @@ public static partial class ConverterExtensions
         }
     }
 
+    public static object? DecodeBrotli(this IConverter converter, scoped ReadOnlySpan<byte> span)
+    {
+        return DecodeBrotliInternal(converter.Decode, span, ArrayPool<byte>.Shared);
+    }
+
     public static T DecodeBrotli<T>(this Converter<T> converter, scoped ReadOnlySpan<byte> span)
     {
-        return DecodeBrotliInternal(converter, span, ArrayPool<byte>.Shared);
+        return DecodeBrotliInternal(converter.Decode, span, ArrayPool<byte>.Shared);
     }
 }
