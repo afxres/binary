@@ -2,7 +2,7 @@
 
 using System;
 
-internal interface ISpanLikeAdapter<T, E>
+internal interface ISpanLikeAdapter<in T, E>
 {
     static abstract ReadOnlySpan<E> AsSpan(T? item);
 

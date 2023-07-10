@@ -13,7 +13,7 @@ using Xunit;
 
 public class ConverterExtensionsInternalTests
 {
-    private delegate T DecodeBrotliInternal<T>(ReadOnlySpan<byte> source, ArrayPool<byte> arrays);
+    private delegate T DecodeBrotliInternal<out T>(ReadOnlySpan<byte> source, ArrayPool<byte> arrays);
 
     private delegate void EncodeBrotliInternal(ReadOnlySpan<byte> source, Span<byte> target, out int bytesWritten);
 
@@ -134,11 +134,16 @@ public class ConverterExtensionsInternalTests
 
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<byte[]>();
-        var method = typeof(ConverterExtensions).GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Where(x => x.Name is "EncodeBrotliInternal" && x.IsGenericMethod).Single();
+        var method = typeof(ConverterExtensions).GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name is "EncodeBrotliInternal" && x.IsGenericMethod);
         Assert.NotNull(method);
         var action = (EncodeBrotliInternal<byte[]>)Delegate.CreateDelegate(typeof(EncodeBrotliInternal<byte[]>), method.MakeGenericMethod(typeof(byte[])));
         var arrays = new TestArrayPool<byte>();
         var result = action.Invoke(converter.Encode, source, arrays);
+        var actual = new byte[length];
+        var status = BrotliDecoder.TryDecompress(result, actual, out var bytesWritten);
+        Assert.True(status);
+        Assert.Equal(length, bytesWritten);
+        Assert.Equal(source, actual);
         Assert.Equal(arrays.Rented.Count, arrays.Returned.Count);
         Assert.Equal(rented, arrays.Rented);
         Assert.Equal(rented, arrays.Returned.Select(x => x).Reverse());

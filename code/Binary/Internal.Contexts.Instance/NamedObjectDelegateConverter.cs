@@ -3,7 +3,7 @@
 using Mikodev.Binary.Components;
 using System.Collections.Generic;
 
-internal delegate T NamedObjectDecodeDelegate<T>(scoped NamedObjectParameter parameter);
+internal delegate T NamedObjectDecodeDelegate<out T>(scoped NamedObjectParameter parameter);
 
 internal sealed class NamedObjectDelegateConverter<T> : NamedObjectConverter<T>
 {
