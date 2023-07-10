@@ -221,7 +221,7 @@ let ``Append Action (1 byte 512 times, capacity test)`` () =
     let mutable allocator = Allocator()
     for item in 1..512 do
         Allocator.Append(&allocator, 1, null :> obj,
-            fun (a : Span<byte>) b ->
+            fun (a : Span<byte>) (b : obj) ->
                 Assert.Null b
                 Assert.Equal(1, a.Length))
         Assert.Equal(item, allocator.Length)
