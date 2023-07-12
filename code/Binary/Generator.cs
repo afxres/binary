@@ -13,6 +13,7 @@ public static partial class Generator
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static IEnumerable<IConverterCreator> GetConverterCreators()
     {
+        yield return new InlineArrayConverterCreator();
         yield return new KeyValuePairConverterCreator();
         yield return new LinkedListConverterCreator();
         yield return new NullableConverterCreator();
