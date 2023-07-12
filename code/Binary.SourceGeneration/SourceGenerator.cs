@@ -31,6 +31,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         AttributeConverterCreatorContext.Invoke,
         GenericConverterContext.Invoke,
         CollectionConverterContext.Invoke,
+        InlineArrayConverterContext.Invoke,
         TupleObjectConverterContext.Invoke,
         NamedObjectConverterContext.Invoke,
     });
