@@ -34,6 +34,15 @@ public struct TestArray10<T>
 [SourceGeneratorInclude<TestArray10<string>>]
 public partial class IntegrationGeneratorContext { }
 
+public class FakeConverter<T> : Converter<T>
+{
+    public FakeConverter(int length) : base(length) { }
+
+    public override void Encode(ref Allocator allocator, T? item) => throw new NotSupportedException();
+
+    public override T Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException();
+}
+
 public class IntegrationTests
 {
     public static IEnumerable<object[]> InlineArrayData()
@@ -91,5 +100,23 @@ public class IntegrationTests
         var bufferResultSecond = converterSecond.Encode(resultSecond);
         Assert.Equal(bufferExpected, bufferResult);
         Assert.Equal(bufferExpected, bufferResultSecond);
+    }
+
+    [Fact(DisplayName = "Converter Length Overflow Test")]
+    public void ConverterLengthOverflowTest()
+    {
+        var a = Generator.CreateAotBuilder().AddConverterCreators(IntegrationGeneratorContext.ConverterCreators.Values).AddConverter(new FakeConverter<int>(100)).Build();
+        var b = Generator.CreateDefaultBuilder().AddConverter(new FakeConverter<int>(200)).Build();
+        Assert.Equal(400, a.GetConverter<TestArray4<int>>().Length);
+        Assert.Equal(800, b.GetConverter<TestArray4<int>>().Length);
+        Assert.Equal(1000, a.GetConverter<TestArray10<int>>().Length);
+        Assert.Equal(2000, b.GetConverter<TestArray10<int>>().Length);
+
+        var c = Generator.CreateAotBuilder().AddConverterCreators(IntegrationGeneratorContext.ConverterCreators.Values).AddConverter(new FakeConverter<int>(0x2000_0000)).Build();
+        var d = Generator.CreateDefaultBuilder().AddConverter(new FakeConverter<int>(0x3000_0000)).Build();
+        _ = Assert.Throws<OverflowException>(c.GetConverter<TestArray4<int>>);
+        _ = Assert.Throws<OverflowException>(d.GetConverter<TestArray4<int>>);
+        _ = Assert.Throws<OverflowException>(c.GetConverter<TestArray10<int>>);
+        _ = Assert.Throws<OverflowException>(d.GetConverter<TestArray10<int>>);
     }
 }
