@@ -54,6 +54,7 @@ Language Features:
 | Tuple Types               | Yes | Yes |                                      |
 | Records                   | Yes | Yes |                                      |
 | Required Members          | Yes | Yes |                                      |
+| Inline Arrays             | Yes | Yes |                                      |
 | Discriminated Unions (F#) | Yes |     |                                      |
 
 ## AOT Support
