@@ -31,9 +31,10 @@ public sealed partial class InlineArrayConverterContext : SymbolConverterContext
 
     private void AppendEncodeMethod()
     {
+        var info = this.info;
         Output.AppendIndent(2, $"public override void Encode(ref {Constants.AllocatorTypeName} allocator, {SymbolTypeFullName} item)");
         Output.AppendIndent(2, $"{{");
-        Output.AppendIndent(3, $"var buffer = (System.ReadOnlySpan<{GetTypeFullName(0)}>)item;");
+        Output.AppendIndent(3, $"var buffer = System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref System.Runtime.CompilerServices.Unsafe.As<{SymbolTypeFullName}, {GetTypeFullName(0)}>(ref item), {info.Length});");
         Output.AppendIndent(3, $"for (var i = 0; i < buffer.Length; i++)");
         Output.AppendIndent(4, $"cvt0.EncodeAuto(ref allocator, buffer[i]);");
         Output.AppendIndent(2, $"}}");
@@ -42,12 +43,13 @@ public sealed partial class InlineArrayConverterContext : SymbolConverterContext
 
     private void AppendDecodeMethod()
     {
+        var info = this.info;
         Output.AppendIndent();
         Output.AppendIndent(2, $"public override {SymbolTypeFullName} Decode(in System.ReadOnlySpan<byte> span)");
         Output.AppendIndent(2, $"{{");
         Output.AppendIndent(3, $"var body = span;");
         Output.AppendIndent(3, $"var result = default({SymbolTypeFullName});");
-        Output.AppendIndent(3, $"var buffer = (System.Span<{GetTypeFullName(0)}>)result;");
+        Output.AppendIndent(3, $"var buffer = System.Runtime.InteropServices.MemoryMarshal.CreateSpan(ref System.Runtime.CompilerServices.Unsafe.As<{SymbolTypeFullName}, {GetTypeFullName(0)}>(ref result), {info.Length});");
         Output.AppendIndent(3, $"for (var i = 0; i < buffer.Length; i++)");
         Output.AppendIndent(4, $"buffer[i] = cvt0.DecodeAuto(ref body);");
         Output.AppendIndent(3, $"return result;");

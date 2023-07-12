@@ -883,6 +883,49 @@ public class CompilationTests
         yield return new object[] { d };
     }
 
+    public static IEnumerable<object[]> InlineArrayData()
+    {
+        var a =
+            """
+            // inline array generic public field
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+            using System.Runtime.CompilerServices;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<GenericInlineArray4<int>>]
+            [SourceGeneratorInclude<GenericInlineArray4<string>>]
+            partial class TestGeneratorContext { }
+
+            [InlineArray(4)]
+            struct GenericInlineArray4<T>
+            {
+                public T Field;
+            }
+            """;
+        var b =
+            """
+            // inline array private field
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+            using System.Runtime.CompilerServices;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<FloatInlineArray10>]
+            partial class TestGeneratorContext { }
+
+            [InlineArray(4)]
+            struct FloatInlineArray10
+            {
+                private float element;
+            }
+            """;
+        yield return new object[] { a };
+        yield return new object[] { b };
+    }
+
     [Theory(DisplayName = "Compilation Test")]
     [MemberData(nameof(SpanLikeTypesData))]
     [MemberData(nameof(VariableBoundArrayData))]
@@ -902,6 +945,7 @@ public class CompilationTests
     [MemberData(nameof(NamedTupleData))]
     [MemberData(nameof(CustomCollectionData))]
     [MemberData(nameof(CustomInterfaceOrAbstractCollectionData))]
+    [MemberData(nameof(InlineArrayData))]
     public void CompilationTest(string source)
     {
         Assert.Contains("SourceGeneratorContext", source);
