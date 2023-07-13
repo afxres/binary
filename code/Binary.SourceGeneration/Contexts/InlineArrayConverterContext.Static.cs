@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary.SourceGeneration.Contexts;
 
 using Microsoft.CodeAnalysis;
+using Mikodev.Binary.SourceGeneration.Internal;
 using System.Linq;
 
 public sealed partial class InlineArrayConverterContext
@@ -12,22 +13,16 @@ public sealed partial class InlineArrayConverterContext
         public ITypeSymbol ElementType { get; } = elementType;
     }
 
-    private static TypeInfo? GetInfo(SourceGeneratorContext context, ITypeSymbol type)
-    {
-        if (type.IsValueType is false)
-            return null;
-        const string InlineArrayAttribute = "System.Runtime.CompilerServices.InlineArrayAttribute";
-        if (context.GetAttribute(type, InlineArrayAttribute) is not { } attribute)
-            return null;
-        var length = (int)attribute.ConstructorArguments.Single().Value!;
-        var element = type.GetMembers().OfType<IFieldSymbol>().Where(x => x.IsStatic is false).Single().Type;
-        return new TypeInfo(length, element);
-    }
-
     public static SourceResult? Invoke(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol)
     {
-        if (GetInfo(context, symbol) is not { } info)
+        if (symbol.IsValueType is false)
             return null;
-        return new InlineArrayConverterContext(context, tracker, symbol, info).Invoke();
+        const string InlineArrayAttribute = "System.Runtime.CompilerServices.InlineArrayAttribute";
+        if (context.GetAttribute(symbol, InlineArrayAttribute) is not { } attribute)
+            return null;
+        var fields = symbol.GetMembers().OfType<IFieldSymbol>().Where(x => x.IsStatic is false).ToList();
+        if (fields.Count is not 1 || attribute.TryGetConstructorArgument<int>(out var length) is false)
+            return new SourceResult(SourceStatus.Ignored);
+        return new InlineArrayConverterContext(context, tracker, symbol, new TypeInfo(length, fields[0].Type)).Invoke();
     }
 }
