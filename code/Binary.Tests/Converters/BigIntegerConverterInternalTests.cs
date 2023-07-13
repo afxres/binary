@@ -10,7 +10,6 @@ public class BigIntegerConverterInternalTests
 {
     public static readonly IEnumerable<object?[]> DataNotEnoughSpace = new List<object?[]>
     {
-        new object?[] { 0, default(BigInteger) },
         new object?[] { 0, new BigInteger() },
         new object?[] { 1, new BigInteger(1024) },
         new object?[] { 3, new BigInteger(int.MaxValue) },

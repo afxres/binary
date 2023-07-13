@@ -18,9 +18,7 @@ public class BigIntegerConverterTests
 
     public static IEnumerable<object[]> DataNumber => new List<object[]>
     {
-        new object[] { default(BigInteger) },
         new object[] { new BigInteger() },
-        new object[] { new BigInteger(0) },
         new object[] { new BigInteger(long.MaxValue) },
         new object[] { new BigInteger(long.MinValue) },
         new object[] { BigInteger.Parse("91389681247993671255432112000000") },
