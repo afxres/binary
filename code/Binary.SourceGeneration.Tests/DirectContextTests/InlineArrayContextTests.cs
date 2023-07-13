@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Mikodev.Binary.SourceGeneration.Contexts;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -80,6 +81,7 @@ public class InlineArrayContextTests
         references.Add(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
         references.Add(MetadataReference.CreateFromFile(typeof(IConverter).Assembly.Location));
         references.Add(MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Runtime")).Location));
+        references.Add(MetadataReference.CreateFromFile(typeof(ImmutableArray<object>).Assembly.Location));
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
             syntaxTrees: new[] { CSharpSyntaxTree.ParseText(source, CompilationModule.ParseOptions) },
@@ -88,7 +90,9 @@ public class InlineArrayContextTests
         var driver = CSharpGeneratorDriver.Create(generators: new ISourceGenerator[] { new SourceGenerator().AsSourceGenerator() }, parseOptions: CompilationModule.ParseOptions);
         _ = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var outputDiagnostics);
         var diagnostic = Assert.Single(outputDiagnostics);
+        var outputCompilationDiagnostics = outputCompilation.GetDiagnostics();
         Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
+        Assert.DoesNotContain(outputCompilationDiagnostics, x => x.Id is "CS0234");
 
         var tree = compilation.SyntaxTrees.First();
         var model = compilation.GetSemanticModel(tree);
