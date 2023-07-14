@@ -22,7 +22,7 @@ public sealed partial class InlineArrayConverterContext
             return null;
         var fields = symbol.GetMembers().OfType<IFieldSymbol>().Where(x => x.IsStatic is false).ToList();
         if (fields.Count is not 1 || attribute.TryGetConstructorArgument<int>(out var length) is false)
-            return new SourceResult(SourceStatus.Ignored);
+            return new SourceResult(SourceStatus.Pass);
         return new InlineArrayConverterContext(context, tracker, symbol, new TypeInfo(length, fields[0].Type)).Invoke();
     }
 }
