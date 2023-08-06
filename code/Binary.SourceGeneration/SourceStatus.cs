@@ -6,7 +6,7 @@ public enum SourceStatus
 
     Ok,
 
-    Pass,
+    Skip,
 
     NoAvailableMember,
 }

@@ -36,7 +36,7 @@ public sealed partial class NamedObjectConverterContext
     {
         var attribute = context.GetAttribute(symbol, Constants.NamedObjectAttributeTypeName);
         if (attribute is null && Symbols.IsTypeIgnored(context, symbol))
-            return new SourceResult(SourceStatus.Pass);
+            return new SourceResult(SourceStatus.Skip);
         var typeInfo = context.GetTypeInfo(symbol);
         var required = typeInfo.RequiredFieldsAndProperties.Count is not 0;
         var dictionary = new SortedDictionary<string, SymbolNamedMemberInfo>();
