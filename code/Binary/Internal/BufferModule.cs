@@ -17,7 +17,7 @@ internal sealed class BufferModule
     private BufferModule(byte[] buffer) => this.buffer = buffer;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static Span<byte> Result(BufferModule buffer) => new Span<byte>(buffer.buffer);
+    internal static Span<byte> Intent(BufferModule buffer) => new Span<byte>(buffer.buffer);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static void Return(BufferModule buffer) => buffer.borrow = false;

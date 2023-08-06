@@ -66,6 +66,6 @@ internal sealed class GeneratorContext : IGeneratorContext, IDisposable
 
         if (this.fallback is { } fallback)
             return fallback.GetConverter(this, type);
-        throw new NotSupportedException($"Invalid type: {type}");
+        throw new NotSupportedException($"No available converter found, type: {type}");
     }
 }

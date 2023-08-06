@@ -19,7 +19,7 @@ public abstract partial class Converter<T>
         var handle = BufferModule.Borrow();
         try
         {
-            var allocator = new Allocator(BufferModule.Result(handle));
+            var allocator = new Allocator(BufferModule.Intent(handle));
             Encode(ref allocator, item);
             return allocator.ToArray();
         }

@@ -94,7 +94,7 @@ public ref partial struct Allocator
         var handle = BufferModule.Borrow();
         try
         {
-            var allocator = new Allocator(BufferModule.Result(handle));
+            var allocator = new Allocator(BufferModule.Intent(handle));
             action.Invoke(ref allocator, data);
             return allocator.ToArray();
         }

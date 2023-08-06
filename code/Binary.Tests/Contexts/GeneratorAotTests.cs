@@ -21,7 +21,7 @@ public class GeneratorAotTests
     {
         var generator = Generator.CreateAot();
         var error = Assert.Throws<NotSupportedException>(generator.GetConverter<ValueType>);
-        Assert.Equal($"Invalid type: {typeof(ValueType)}", error.Message);
+        Assert.Equal($"No available converter found, type: {typeof(ValueType)}", error.Message);
     }
 
     [Fact(DisplayName = "Argument Null Test")]

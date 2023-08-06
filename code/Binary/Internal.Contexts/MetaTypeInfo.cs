@@ -12,7 +12,7 @@ internal sealed class MetaTypeInfo
 
     private readonly Type type;
 
-    public bool IsRequired => this.required;
+    public bool HasRequiredMember => this.required;
 
     public bool IsNamedObject => this.attribute is NamedObjectAttribute;
 

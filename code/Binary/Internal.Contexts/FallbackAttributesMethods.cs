@@ -82,7 +82,7 @@ internal static class FallbackAttributesMethods
 
     private static bool GetMemberIsOptional(MetaTypeInfo typeInfo, MemberInfo member, Attribute? key)
     {
-        if (typeInfo.IsRequired is false)
+        if (typeInfo.HasRequiredMember is false)
             return false;
         var required = GetAttributes(member, x => x is RequiredMemberAttribute).Any();
         if (required is false)
@@ -153,15 +153,15 @@ internal static class FallbackAttributesMethods
 
         list = default;
         if (typeInfo.IsTupleObject)
-            return GetSortedMembers(type, tuple);
+            return GetSortedTupleMembers(type, tuple);
         if (typeInfo.IsNamedObject)
-            return GetSortedMembers(type, named, out list);
+            return GetSortedNamedMembers(type, named, out list);
         var result = source.OrderBy(x => x.Name).ToImmutableArray();
         list = result.Select(x => x.Name).ToImmutableArray();
         return result;
     }
 
-    private static ImmutableArray<MetaMemberInfo> GetSortedMembers(Type type, ImmutableDictionary<MetaMemberInfo, NamedKeyAttribute> collection, out ImmutableArray<string> list)
+    private static ImmutableArray<MetaMemberInfo> GetSortedNamedMembers(Type type, ImmutableDictionary<MetaMemberInfo, NamedKeyAttribute> collection, out ImmutableArray<string> list)
     {
         Debug.Assert(collection.Count is not 0);
         var map = new SortedDictionary<string, MetaMemberInfo>();
@@ -178,7 +178,7 @@ internal static class FallbackAttributesMethods
         return map.Values.ToImmutableArray();
     }
 
-    private static ImmutableArray<MetaMemberInfo> GetSortedMembers(Type type, ImmutableDictionary<MetaMemberInfo, TupleKeyAttribute> collection)
+    private static ImmutableArray<MetaMemberInfo> GetSortedTupleMembers(Type type, ImmutableDictionary<MetaMemberInfo, TupleKeyAttribute> collection)
     {
         Debug.Assert(collection.Count is not 0);
         var map = new SortedDictionary<int, MetaMemberInfo>();
