@@ -596,7 +596,7 @@ public class SymbolsTests
         Assert.Contains(members, x => x is IPropertySymbol property && property.ReturnsByRef);
         Assert.Contains(members, x => x is IPropertySymbol property && property.ReturnsByRefReadonly);
 
-        var filtered = Symbols.FilterFieldsAndProperties(members);
+        var filtered = Symbols.FilterFieldsAndProperties(members, default);
         Assert.Equal(new HashSet<string>(expectedMemberNames), new HashSet<string>(filtered.Select(x => x.Name)));
     }
 

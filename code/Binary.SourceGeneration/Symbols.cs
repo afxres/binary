@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 
 public static partial class Symbols
 {
@@ -180,11 +181,12 @@ public static partial class Symbols
         return symbol.TypeKind is not TypeKind.Array and not TypeKind.Class and not TypeKind.Enum and not TypeKind.Interface and not TypeKind.Struct;
     }
 
-    public static ImmutableArray<ISymbol> FilterFieldsAndProperties(ImmutableArray<ISymbol> members)
+    public static ImmutableArray<ISymbol> FilterFieldsAndProperties(ImmutableArray<ISymbol> members, CancellationToken cancellation)
     {
         var builder = ImmutableArray.CreateBuilder<ISymbol>();
         foreach (var member in members)
         {
+            cancellation.ThrowIfCancellationRequested();
             if (member.IsStatic || member.DeclaredAccessibility is not Accessibility.Public)
                 continue;
             var property = member as IPropertySymbol;
@@ -203,16 +205,18 @@ public static partial class Symbols
         return builder.ToImmutable();
     }
 
-    public static ImmutableArray<ISymbol> GetAllFieldsAndProperties(ITypeSymbol symbol)
+    public static ImmutableArray<ISymbol> GetAllFieldsAndProperties(ITypeSymbol symbol, CancellationToken cancellation)
     {
         var target = symbol;
         var result = new List<ISymbol>();
         var dictionary = new SortedDictionary<string, ISymbol>();
         while (target is not null)
         {
+            cancellation.ThrowIfCancellationRequested();
             var members = target.GetMembers();
             foreach (var member in members)
             {
+                cancellation.ThrowIfCancellationRequested();
                 var field = member as IFieldSymbol;
                 var property = member as IPropertySymbol;
                 if (field is null && property is null)

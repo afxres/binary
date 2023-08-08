@@ -1,35 +1,25 @@
 ﻿namespace Mikodev.Binary.SourceGeneration;
 
 using Microsoft.CodeAnalysis;
-using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 
-public class SymbolTypeInfo
+public class SymbolTypeInfo(ITypeSymbol symbol, ImmutableArray<ISymbol> originalMembers, ImmutableArray<ISymbol> filteredMembers, ImmutableHashSet<ISymbol> requiredMembers)
 {
-    private readonly ITypeSymbol symbol;
+    public ITypeSymbol Symbol { get; } = symbol;
 
-    private readonly Lazy<ImmutableArray<ISymbol>> originalMembers;
+    public ImmutableArray<ISymbol> OriginalFieldsAndProperties { get; } = originalMembers;
 
-    private readonly Lazy<ImmutableArray<ISymbol>> filteredMembers;
+    public ImmutableArray<ISymbol> FilteredFieldsAndProperties { get; } = filteredMembers;
 
-    private readonly Lazy<ImmutableHashSet<ISymbol>> requiredMembers;
+    public ImmutableHashSet<ISymbol> RequiredFieldsAndProperties { get; } = requiredMembers;
 
-    public ITypeSymbol Symbol => this.symbol;
-
-    public ImmutableArray<ISymbol> OriginalFieldsAndProperties => this.originalMembers.Value;
-
-    public ImmutableArray<ISymbol> FilteredFieldsAndProperties => this.filteredMembers.Value;
-
-    public ImmutableHashSet<ISymbol> RequiredFieldsAndProperties => this.requiredMembers.Value;
-
-    public SymbolTypeInfo(ITypeSymbol symbol)
+    public static SymbolTypeInfo Create(ITypeSymbol symbol, CancellationToken cancellation)
     {
-        const LazyThreadSafetyMode LazyMode = LazyThreadSafetyMode.ExecutionAndPublication;
-        this.symbol = symbol;
-        this.originalMembers = new Lazy<ImmutableArray<ISymbol>>(() => Symbols.GetAllFieldsAndProperties(this.symbol), LazyMode);
-        this.filteredMembers = new Lazy<ImmutableArray<ISymbol>>(() => Symbols.FilterFieldsAndProperties(this.originalMembers.Value), LazyMode);
-        this.requiredMembers = new Lazy<ImmutableHashSet<ISymbol>>(() => this.originalMembers.Value.Where(Symbols.IsRequired).ToImmutableHashSet(SymbolEqualityComparer.Default), LazyMode);
+        var originalMembers = Symbols.GetAllFieldsAndProperties(symbol, cancellation);
+        var filteredMembers = Symbols.FilterFieldsAndProperties(originalMembers, cancellation);
+        var requiredMembers = originalMembers.Where(Symbols.IsRequired).ToImmutableHashSet(SymbolEqualityComparer.Default);
+        return new SymbolTypeInfo(symbol, originalMembers, filteredMembers, requiredMembers);
     }
 }

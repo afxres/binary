@@ -282,7 +282,7 @@ public class IntegrationTests
         var anonymousFieldsAndPropertiesNames = anonymousFieldsAndProperties.Select(x => x.Name).ToHashSet();
         Assert.NotEmpty(anonymousFieldsAndPropertiesNames);
 
-        var symbolFieldsAndProperties = Symbols.GetAllFieldsAndProperties(symbol);
+        var symbolFieldsAndProperties = Symbols.GetAllFieldsAndProperties(symbol, default);
         var wantedFieldsAndProperties = reflectionFunction.Invoke(wanted, BindingFlags.Instance | BindingFlags.Public);
         Assert.NotEmpty(symbolFieldsAndProperties);
         Assert.NotEmpty(wantedFieldsAndProperties);

@@ -38,7 +38,7 @@ public class SourceGeneratorContext(Compilation compilation, Action<Diagnostic> 
     {
         var dictionary = this.typeInfoCache;
         if (dictionary.TryGetValue(symbol, out var result) is false)
-            dictionary.Add(symbol, result = new SymbolTypeInfo(symbol));
+            dictionary.Add(symbol, result = SymbolTypeInfo.Create(symbol, CancellationToken));
         return result;
     }
 
