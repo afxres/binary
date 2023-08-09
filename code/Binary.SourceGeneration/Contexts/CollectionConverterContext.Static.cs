@@ -57,8 +57,8 @@ public sealed partial class CollectionConverterContext
 
         var builder = ImmutableDictionary.CreateBuilder<INamedTypeSymbol, TypeBaseInfo>(SymbolEqualityComparer.Default);
         var functor = (string name, SourceKind source, string method) => Add(compilation, builder, name, source, method);
-        functor.Invoke("System.Collections.Frozen.FrozenSet`1", SourceKind.List, $"System.Collections.Frozen.FrozenSet.ToFrozenSet({ConstructorParameter}, true)");
-        functor.Invoke("System.Collections.Frozen.FrozenDictionary`2", SourceKind.ListKeyValuePair, $"System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary({ConstructorParameter}, true)");
+        functor.Invoke("System.Collections.Frozen.FrozenSet`1", SourceKind.List, $"System.Collections.Frozen.FrozenSet.ToFrozenSet({ConstructorParameter})");
+        functor.Invoke("System.Collections.Frozen.FrozenDictionary`2", SourceKind.ListKeyValuePair, $"System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary({ConstructorParameter})");
         functor.Invoke("System.Collections.Generic.IList`1", SourceKind.List, ConstructorParameter);
         functor.Invoke("System.Collections.Generic.ICollection`1", SourceKind.List, ConstructorParameter);
         functor.Invoke("System.Collections.Generic.IEnumerable`1", SourceKind.List, ConstructorParameter);

@@ -184,13 +184,13 @@ public class IntegrationTests
 
     public static IEnumerable<object[]> FrozenCollectionAbstractClassData()
     {
-        var a = FrozenDictionary.ToFrozenDictionary(new[] { new KeyValuePair<int, string>(1, "2") }, true);
-        var b = FrozenDictionary.ToFrozenDictionary(new[] { new KeyValuePair<string, int>("3", 4) }, false);
+        var a = FrozenDictionary.ToFrozenDictionary(new[] { new KeyValuePair<int, string>(1, "2") });
+        var b = FrozenDictionary.ToFrozenDictionary(new[] { new KeyValuePair<string, int>("3", 4) });
         yield return new object[] { typeof(FrozenDictionary<int, string>), a, new KeyValuePair<int, string>(1, "2"), ".*FrozenDictionary.*Int32.*String" };
         yield return new object[] { typeof(FrozenDictionary<string, int>), b, new KeyValuePair<string, int>("3", 4), ".*FrozenDictionary.*String.*Int32" };
 
-        var c = FrozenSet.ToFrozenSet(new[] { 5 }, true);
-        var d = FrozenSet.ToFrozenSet(new[] { "6" }, false);
+        var c = FrozenSet.ToFrozenSet(new[] { 5 });
+        var d = FrozenSet.ToFrozenSet(new[] { "6" });
         yield return new object[] { typeof(FrozenSet<int>), c, 5, ".*FrozenSet.*Int32" };
         yield return new object[] { typeof(FrozenSet<string>), d, "6", ".*FrozenSet.*String" };
     }

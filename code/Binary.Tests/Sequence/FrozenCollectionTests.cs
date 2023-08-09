@@ -44,22 +44,14 @@ public class FrozenCollectionTests
     public static IEnumerable<object[]> FrozenDictionaryData()
     {
         var source = Enumerable.Range(0, 100).ToList();
-        var a = source.Select(x => KeyValuePair.Create(x, x)).ToFrozenDictionary(optimizeForReading: true);
-        var b = source.Select(x => KeyValuePair.Create(x, x.ToString())).ToFrozenDictionary(optimizeForReading: true);
-        var c = source.Select(x => KeyValuePair.Create(x.ToString(), x)).ToFrozenDictionary(optimizeForReading: true);
-        var d = source.Select(x => KeyValuePair.Create(x.ToString(), x.ToString())).ToFrozenDictionary(optimizeForReading: true);
-        var h = source.Select(x => KeyValuePair.Create(x, x)).ToFrozenDictionary(optimizeForReading: false);
-        var i = source.Select(x => KeyValuePair.Create(x, x.ToString())).ToFrozenDictionary(optimizeForReading: false);
-        var j = source.Select(x => KeyValuePair.Create(x.ToString(), x)).ToFrozenDictionary(optimizeForReading: false);
-        var k = source.Select(x => KeyValuePair.Create(x.ToString(), x.ToString())).ToFrozenDictionary(optimizeForReading: false);
+        var a = source.Select(x => KeyValuePair.Create(x, x)).ToFrozenDictionary();
+        var b = source.Select(x => KeyValuePair.Create(x, x.ToString())).ToFrozenDictionary();
+        var c = source.Select(x => KeyValuePair.Create(x.ToString(), x)).ToFrozenDictionary();
+        var d = source.Select(x => KeyValuePair.Create(x.ToString(), x.ToString())).ToFrozenDictionary();
         yield return new object[] { a };
         yield return new object[] { b };
         yield return new object[] { c };
         yield return new object[] { d };
-        yield return new object[] { h };
-        yield return new object[] { i };
-        yield return new object[] { j };
-        yield return new object[] { k };
     }
 
     [Theory(DisplayName = "Frozen Dictionary Force Base Type Converter")]
@@ -92,14 +84,10 @@ public class FrozenCollectionTests
     public static IEnumerable<object[]> FrozenSetData()
     {
         var source = Enumerable.Range(0, 100).ToList();
-        var a = source.ToFrozenSet(optimizeForReading: true);
-        var b = source.Select(x => x.ToString()).ToFrozenSet(optimizeForReading: true);
-        var h = source.ToFrozenSet(optimizeForReading: false);
-        var i = source.Select(x => x.ToString()).ToFrozenSet(optimizeForReading: false);
+        var a = source.ToFrozenSet();
+        var b = source.Select(x => x.ToString()).ToFrozenSet();
         yield return new object[] { a };
         yield return new object[] { b };
-        yield return new object[] { h };
-        yield return new object[] { i };
     }
 
     [Theory(DisplayName = "Frozen Set Force Base Type Converter")]

@@ -10,13 +10,13 @@ internal static class SequenceMethods
     {
         Debug.Assert(items is not null);
         Debug.Assert(items is List<KeyValuePair<K, V>>);
-        return FrozenDictionary.ToFrozenDictionary(items, true);
+        return FrozenDictionary.ToFrozenDictionary(items);
     }
 
     internal static FrozenSet<T> GetFrozenSet<T>(IEnumerable<T> items)
     {
         Debug.Assert(items is not null);
         Debug.Assert(items is T[] or List<T>);
-        return FrozenSet.ToFrozenSet(items, true);
+        return FrozenSet.ToFrozenSet(items);
     }
 }
