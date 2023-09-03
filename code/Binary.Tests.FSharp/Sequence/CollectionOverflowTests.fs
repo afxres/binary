@@ -37,7 +37,9 @@ type BackupConverter<'a>(length : int) =
 type CollectionOverflowTests () =
     static member ``Data Alpha`` : (obj array) seq = seq {
         yield [| 0; 0 |]
-        yield [| 1; 8 |]
+        yield [| 1; 1 |]
+        yield [| 31; 31 |]
+        yield [| 47; 64 |]
         yield [| 1024 * 1024 + 1; 1024 * 1024 * 2 |]
     }
 

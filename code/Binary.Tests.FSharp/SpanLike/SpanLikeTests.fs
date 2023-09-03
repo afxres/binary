@@ -12,8 +12,9 @@ type SpanLikeTests () =
     static member ``Data Alpha`` : (obj array) seq = seq {
         yield [| [| 1; 2 |]; 2 |]
         yield [| [| 1.1; 2.2; 3.3; 4.4; 5.5; 6.6 |]; 6 |]
-        yield [| [| "alpha" |]; 8 |]
-        yield [| [| "a"; "b"; "c"; "d"; "e" |]; 8 |]
+        yield [| [| "alpha" |]; 1 |]
+        yield [| [| "a"; "b"; "c"; "d"; "e" |]; 5 |]
+        yield [| Enumerable.Range(0, 31) |> Seq.map (fun x -> struct (sprintf "%4x" x, x)) |> Seq.toArray; 31 |]
         yield [| Enumerable.Range(0, 48) |> Seq.map (fun x -> struct (sprintf "%4x" x, x)) |> Seq.toArray; 64 |]
         yield [| Enumerable.Range(0, 192) |> Seq.map (fun x -> (x, sprintf "%4d" x)) |> Seq.toArray; 256 |]
     }

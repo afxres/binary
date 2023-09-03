@@ -133,15 +133,17 @@ public class CodeContractsTests
     public void StructMethods()
     {
         static bool HasReadOnlyAttribute(MemberInfo info) => info.GetCustomAttributes().SingleOrDefault(x => x.GetType().Name == "IsReadOnlyAttribute") != null;
+        static bool HasCompilerGeneratedAttribute(MemberInfo info) => info.GetCustomAttributes().SingleOrDefault(x => x.GetType().Name == "CompilerGeneratedAttribute") != null;
 
-        var types = typeof(IConverter).Assembly.GetTypes().Where(x => x.IsValueType).ToList();
+        var types = typeof(IConverter).Assembly.GetTypes().Where(x => x.IsValueType && HasCompilerGeneratedAttribute(x) is false).ToList();
         var readonlyTypes = types.Where(HasReadOnlyAttribute).ToList();
         var otherTypes = types.Except(readonlyTypes).ToList();
         var methods = otherTypes.SelectMany(x => x.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)).ToList();
         var ignoreMembers = methods.Where(x => x.DeclaringType == typeof(object) || x.DeclaringType == typeof(ValueType)).ToList();
         var remainMembers = methods.Except(ignoreMembers).ToList();
-        var attributes = remainMembers.Select(x => (x, Flag: HasReadOnlyAttribute(x))).ToList();
+        var attributes = remainMembers.Select(x => (Method: x, Flag: HasReadOnlyAttribute(x))).ToList();
 
+        Assert.NotEmpty(attributes);
         Assert.Equal(otherTypes.Count * 6 - 3, ignoreMembers.Count);
         Assert.All(attributes, x => Assert.True(x.Flag));
     }
