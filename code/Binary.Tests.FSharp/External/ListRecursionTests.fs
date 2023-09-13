@@ -17,6 +17,7 @@ type LargeBlockConverter() =
     inherit Converter<LargeBlock>(0)
 
     override __.Encode(allocator, item) =
+        let mutable item = item
         Allocator.Append(&allocator, MemoryMarshal.CreateReadOnlySpan(&Unsafe.As<LargeBlock, byte>(&Unsafe.AsRef(&item)), Unsafe.SizeOf<LargeBlock>()))
         ()
 
