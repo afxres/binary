@@ -13,7 +13,7 @@ public partial class ListDecodeBenchmarks
 
     private Converter<int> converter = null!;
 
-    [Params(0, 4, 8, 16, 32, 256)]
+    [Params(0, 4, 8, 16, 24, 32)]
     public int Length;
 
     [GlobalSetup]
@@ -25,11 +25,13 @@ public partial class ListDecodeBenchmarks
         this.bytes = generator.Encode(values);
 
         var decodeResult = Decode(this.converter, this.bytes);
+        var decodeStackBasedResult = DecodeStackBased(this.converter, this.bytes);
         var decodeRecursivelyResult = DecodeRecursively(this.converter, this.bytes);
 
         // simple tests
         Trace.Assert(this.bytes.Length == this.Length * 5);
         Trace.Assert(values.SequenceEqual(decodeResult));
+        Trace.Assert(values.SequenceEqual(decodeStackBasedResult));
         Trace.Assert(values.SequenceEqual(decodeRecursivelyResult));
     }
 
@@ -39,8 +41,14 @@ public partial class ListDecodeBenchmarks
         return Decode(this.converter, this.bytes);
     }
 
-    [Benchmark(Description = "Decode List Recursively")]
+    [Benchmark(Description = "Decode Stack Based")]
     public List<int> M02()
+    {
+        return DecodeStackBased(this.converter, this.bytes);
+    }
+
+    [Benchmark(Description = "Decode List Recursively")]
+    public List<int> M03()
     {
         return DecodeRecursively(this.converter, this.bytes);
     }
