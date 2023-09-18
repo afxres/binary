@@ -108,16 +108,16 @@ internal static class CommonModule
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     internal static ImmutableArray<MemberInfo> GetAllFieldsAndProperties(Type type, BindingFlags flags)
     {
-        static ImmutableArray<Type> Expand(Type type)
+        static ImmutableHashSet<Type> Expand(Type type)
         {
-            var result = ImmutableArray.CreateBuilder<Type>();
+            var result = ImmutableHashSet.CreateBuilder<Type>();
             for (var i = type; i != null; i = i.BaseType)
-                result.Add(i);
-            return result.DrainToImmutable();
+                _ = result.Add(i);
+            return result.ToImmutable();
         }
 
         var source = type.IsInterface
-            ? ImmutableArray.Create(type).AddRange(type.GetInterfaces())
+            ? ImmutableHashSet.Create(type).Union(type.GetInterfaces())
             : Expand(type);
         var result = new List<MemberInfo>();
         var dictionary = new SortedDictionary<string, MemberInfo>();

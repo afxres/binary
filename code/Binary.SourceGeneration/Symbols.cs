@@ -207,16 +207,16 @@ public static partial class Symbols
 
     public static ImmutableArray<ISymbol> GetAllFieldsAndProperties(Compilation compilation, ITypeSymbol type, out ImmutableSortedSet<string> ambiguous, CancellationToken cancellation)
     {
-        static ImmutableArray<ITypeSymbol> Expand(ITypeSymbol type)
+        static ImmutableHashSet<ITypeSymbol> Expand(ITypeSymbol type)
         {
-            var result = ImmutableArray.CreateBuilder<ITypeSymbol>();
+            var result = ImmutableHashSet.CreateBuilder<ITypeSymbol>(SymbolEqualityComparer.Default);
             for (var i = type; i != null; i = i.BaseType)
-                result.Add(i);
+                _ = result.Add(i);
             return result.ToImmutable();
         }
 
         var source = type.TypeKind is TypeKind.Interface
-            ? ImmutableArray.Create(type).AddRange(type.AllInterfaces)
+            ? ImmutableHashSet.Create<ITypeSymbol>(SymbolEqualityComparer.Default, type).Union(type.AllInterfaces)
             : Expand(type);
         var result = new List<ISymbol>();
         var create = ImmutableSortedSet.CreateBuilder<string>();
