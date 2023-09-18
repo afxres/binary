@@ -205,12 +205,23 @@ public static partial class Symbols
         return builder.ToImmutable();
     }
 
-    public static ImmutableArray<ISymbol> GetAllFieldsAndProperties(ITypeSymbol symbol, CancellationToken cancellation)
+    public static ImmutableArray<ISymbol> GetAllFieldsAndProperties(Compilation compilation, ITypeSymbol type, out ImmutableSortedSet<string> ambiguous, CancellationToken cancellation)
     {
-        var target = symbol;
+        static ImmutableArray<ITypeSymbol> Expand(ITypeSymbol type)
+        {
+            var result = ImmutableArray.CreateBuilder<ITypeSymbol>();
+            for (var i = type; i != null; i = i.BaseType)
+                result.Add(i);
+            return result.ToImmutable();
+        }
+
+        var source = type.TypeKind is TypeKind.Interface
+            ? ImmutableArray.Create(type).AddRange(type.AllInterfaces)
+            : Expand(type);
         var result = new List<ISymbol>();
+        var create = ImmutableSortedSet.CreateBuilder<string>();
         var dictionary = new SortedDictionary<string, ISymbol>();
-        while (target is not null)
+        foreach (var target in source)
         {
             cancellation.ThrowIfCancellationRequested();
             var members = target.GetMembers();
@@ -226,12 +237,16 @@ public static partial class Symbols
                 var indexer = property is not null && property.IsIndexer;
                 if (indexer)
                     result.Add(member);
-                else if (dictionary.ContainsKey(member.Name) is false)
+                else if (dictionary.TryGetValue(member.Name, out var exists) is false)
                     dictionary.Add(member.Name, member);
+                else if (compilation.ClassifyConversion(target, exists.ContainingType) is { } alpha && (alpha.IsIdentity is false && alpha.IsImplicit && alpha.IsReference))
+                    dictionary[member.Name] = member;
+                else if (compilation.ClassifyConversion(exists.ContainingType, target) is { } bravo && (bravo.IsIdentity || bravo.Exists is false))
+                    _ = create.Add(member.Name);
             }
-            target = target.BaseType;
         }
         result.AddRange(dictionary.Values);
+        ambiguous = create.ToImmutable();
         return result.ToImmutableArray();
     }
 }

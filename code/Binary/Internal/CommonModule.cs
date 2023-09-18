@@ -108,10 +108,20 @@ internal static class CommonModule
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     internal static ImmutableArray<MemberInfo> GetAllFieldsAndProperties(Type type, BindingFlags flags)
     {
-        var target = type;
+        static ImmutableArray<Type> Expand(Type type)
+        {
+            var result = ImmutableArray.CreateBuilder<Type>();
+            for (var i = type; i != null; i = i.BaseType)
+                result.Add(i);
+            return result.DrainToImmutable();
+        }
+
+        var source = type.IsInterface
+            ? ImmutableArray.Create(type).AddRange(type.GetInterfaces())
+            : Expand(type);
         var result = new List<MemberInfo>();
         var dictionary = new SortedDictionary<string, MemberInfo>();
-        while (target is not null)
+        foreach (var target in source)
         {
             var members = target.GetMembers(flags);
             foreach (var member in members)
@@ -129,10 +139,11 @@ internal static class CommonModule
                     result.Add(member);
                 else if (dictionary.TryGetValue(member.Name, out var exists) is false)
                     dictionary.Add(member.Name, member);
-                else if (target == exists.DeclaringType)
+                else if (target != exists.DeclaringType && target.IsAssignableTo(exists.DeclaringType))
+                    dictionary[member.Name] = member;
+                else if (target == exists.DeclaringType || target.IsAssignableFrom(exists.DeclaringType) is false)
                     throw new ArgumentException($"Get members error, duplicate members detected, member name: {member.Name}, type: {target}");
             }
-            target = target.BaseType;
         }
         result.AddRange(dictionary.Values);
         return result.ToImmutableArray();

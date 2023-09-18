@@ -210,8 +210,8 @@ public class IntegrationTests
         ((IQ)q).V = "Two";
         ((IQ)q).W = 3;
         yield return new object[] { typeof(IO), q, new { U = 1 } };
-        yield return new object[] { typeof(IP), q, new { V = 2 } };
-        yield return new object[] { typeof(IQ), q, new { V = "Two", W = 3 } };
+        yield return new object[] { typeof(IP), q, new { U = 1, V = 2 } };
+        yield return new object[] { typeof(IQ), q, new { U = 1, V = "Two", W = 3 } };
     }
 
     public static IEnumerable<object[]> PlainObjectWithIndexerData()
@@ -282,8 +282,9 @@ public class IntegrationTests
         var anonymousFieldsAndPropertiesNames = anonymousFieldsAndProperties.Select(x => x.Name).ToHashSet();
         Assert.NotEmpty(anonymousFieldsAndPropertiesNames);
 
-        var symbolFieldsAndProperties = Symbols.GetAllFieldsAndProperties(symbol, default);
+        var symbolFieldsAndProperties = Symbols.GetAllFieldsAndProperties(compilation, symbol, out var conflict, default);
         var wantedFieldsAndProperties = reflectionFunction.Invoke(wanted, BindingFlags.Instance | BindingFlags.Public);
+        Assert.Empty(conflict);
         Assert.NotEmpty(symbolFieldsAndProperties);
         Assert.NotEmpty(wantedFieldsAndProperties);
         Assert.Equal(symbolFieldsAndProperties.Length, wantedFieldsAndProperties.Length);
