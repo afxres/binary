@@ -205,7 +205,7 @@ public static partial class Symbols
         return builder.ToImmutable();
     }
 
-    public static ImmutableArray<ISymbol> GetAllFieldsAndProperties(Compilation compilation, ITypeSymbol type, out ImmutableSortedSet<string> ambiguous, CancellationToken cancellation)
+    public static ImmutableArray<ISymbol> GetAllFieldsAndProperties(Compilation compilation, ITypeSymbol type, out ImmutableSortedSet<string> conflict, CancellationToken cancellation)
     {
         static ImmutableHashSet<ITypeSymbol> Expand(ITypeSymbol type)
         {
@@ -218,8 +218,8 @@ public static partial class Symbols
         var source = type.TypeKind is TypeKind.Interface
             ? ImmutableHashSet.Create<ITypeSymbol>(SymbolEqualityComparer.Default, type).Union(type.AllInterfaces)
             : Expand(type);
-        var result = new List<ISymbol>();
-        var create = ImmutableSortedSet.CreateBuilder<string>();
+        var result = ImmutableArray.CreateBuilder<ISymbol>();
+        var errors = ImmutableSortedSet.CreateBuilder<string>();
         var dictionary = new SortedDictionary<string, ISymbol>();
         foreach (var target in source)
         {
@@ -241,12 +241,14 @@ public static partial class Symbols
                     dictionary.Add(member.Name, member);
                 else if (compilation.ClassifyConversion(target, exists.ContainingType) is { } alpha && (alpha.IsIdentity is false && alpha.IsImplicit && alpha.IsReference))
                     dictionary[member.Name] = member;
-                else if (compilation.ClassifyConversion(exists.ContainingType, target) is { } bravo && (bravo.IsIdentity || bravo.Exists is false))
-                    _ = create.Add(member.Name);
+                else if (compilation.ClassifyConversion(exists.ContainingType, target) is { } bravo && (alpha.IsImplicit == bravo.IsImplicit))
+                    _ = errors.Add(member.Name);
             }
         }
+        conflict = errors.ToImmutable();
+        if (conflict.Count is not 0)
+            return ImmutableArray.Create<ISymbol>();
         result.AddRange(dictionary.Values);
-        ambiguous = create.ToImmutable();
-        return result.ToImmutableArray();
+        return result.ToImmutable();
     }
 }

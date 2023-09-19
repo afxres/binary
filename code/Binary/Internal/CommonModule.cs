@@ -119,7 +119,7 @@ internal static class CommonModule
         var source = type.IsInterface
             ? ImmutableHashSet.Create(type).Union(type.GetInterfaces())
             : Expand(type);
-        var result = new List<MemberInfo>();
+        var result = ImmutableArray.CreateBuilder<MemberInfo>();
         var dictionary = new SortedDictionary<string, MemberInfo>();
         foreach (var target in source)
         {
@@ -142,11 +142,11 @@ internal static class CommonModule
                 else if (target != exists.DeclaringType && target.IsAssignableTo(exists.DeclaringType))
                     dictionary[member.Name] = member;
                 else if (target == exists.DeclaringType || target.IsAssignableFrom(exists.DeclaringType) is false)
-                    throw new ArgumentException($"Get members error, duplicate members detected, member name: {member.Name}, type: {target}");
+                    throw new ArgumentException($"Get members error, ambiguous members detected, member name: {member.Name}, type: {type}");
             }
         }
         result.AddRange(dictionary.Values);
-        return result.ToImmutableArray();
+        return result.DrainToImmutable();
     }
 
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
