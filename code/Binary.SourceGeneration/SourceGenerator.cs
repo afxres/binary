@@ -153,10 +153,16 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
         if (inclusions.TryGetValue(symbol, out var attribute) is false)
             return null;
-        var descriptor = result?.Status is SourceStatus.NoAvailableMember
-            ? Constants.NoAvailableMemberFound
-            : Constants.NoConverterGenerated;
-        context.Collect(Diagnostic.Create(descriptor, Symbols.GetLocation(attribute), new object[] { Symbols.GetSymbolDiagnosticDisplayString(symbol) }));
+
+        var location = Symbols.GetLocation(attribute);
+        var symbolDisplay = Symbols.GetSymbolDiagnosticDisplayString(symbol);
+        if (result?.Status is not SourceStatus.NoAvailableMember)
+            context.Collect(Diagnostic.Create(Constants.NoConverterGenerated, location, new object[] { symbolDisplay }));
+        else if (context.GetTypeInfo(symbol).Conflict is { Count: not 0 } conflict)
+            foreach (var name in conflict)
+                context.Collect(Diagnostic.Create(Constants.AmbiguousMemberFound, location, new object[] { name, symbolDisplay }));
+        else
+            context.Collect(Diagnostic.Create(Constants.NoAvailableMemberFound, location, new object[] { symbolDisplay }));
         return null;
     }
 

@@ -118,8 +118,16 @@ public static class Constants
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    public static DiagnosticDescriptor RequirePublicInstanceMember { get; } = new DiagnosticDescriptor(
+    public static DiagnosticDescriptor AmbiguousMemberFound { get; } = new DiagnosticDescriptor(
         id: "BINSRCGEN32",
+        title: "Ambiguous Member Found.",
+        messageFormat: "Ambiguous member found, member name: {0}, type: {1}",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor RequirePublicInstanceMember { get; } = new DiagnosticDescriptor(
+        id: "BINSRCGEN33",
         title: "Require Public Instance Member.",
         messageFormat: "Require public instance member, member name: {0}, containing type: {1}",
         category: DiagnosticCategory,
@@ -127,7 +135,7 @@ public static class Constants
         isEnabledByDefault: true);
 
     public static DiagnosticDescriptor RequireNotIndexer { get; } = new DiagnosticDescriptor(
-        id: "BINSRCGEN33",
+        id: "BINSRCGEN34",
         title: "Require Not Indexer.",
         messageFormat: "Require not an indexer, containing type: {0}",
         category: DiagnosticCategory,
@@ -135,7 +143,7 @@ public static class Constants
         isEnabledByDefault: true);
 
     public static DiagnosticDescriptor RequirePublicGetter { get; } = new DiagnosticDescriptor(
-        id: "BINSRCGEN34",
+        id: "BINSRCGEN35",
         title: "Require Public Getter.",
         messageFormat: "Require a public getter, member name: {0}, containing type: {1}",
         category: DiagnosticCategory,
@@ -143,7 +151,7 @@ public static class Constants
         isEnabledByDefault: true);
 
     public static DiagnosticDescriptor RequireNotByReferenceProperty { get; } = new DiagnosticDescriptor(
-        id: "BINSRCGEN35",
+        id: "BINSRCGEN36",
         title: "Require Not By Reference Property.",
         messageFormat: "Require not by reference property, member name: {0}, containing type: {1}",
         category: DiagnosticCategory,
