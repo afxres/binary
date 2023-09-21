@@ -95,13 +95,19 @@ public static partial class Symbols
             diagnostics.Add(Diagnostic.Create(Constants.TupleKeyNotSequential, GetLocation(symbol), new object[] { symbolDisplay }));
         if (diagnostics.Count is not 0)
             return;
+
         var members = typeAttribute?.Name switch
         {
             NamedObjectAttribute => namedMembers.Values,
             TupleObjectAttribute => tupleMembers.Values,
             _ => default(IEnumerable<ISymbol>),
         };
-        if (members is not null && typeInfo.FilteredFieldsAndProperties.Intersect(members, SymbolEqualityComparer.Default).Any() is false)
+        if (members is null)
+            return;
+        else if (typeInfo.Conflict is { Count: not 0 } conflict)
+            foreach (var name in conflict)
+                diagnostics.Add(Diagnostic.Create(Constants.AmbiguousMemberFound, GetLocation(attribute), new object[] { name, symbolDisplay }));
+        else if (typeInfo.FilteredFieldsAndProperties.Intersect(members, SymbolEqualityComparer.Default).Any() is false)
             diagnostics.Add(Diagnostic.Create(Constants.NoAvailableMemberFound, GetLocation(attribute), new object[] { symbolDisplay }));
         return;
     }

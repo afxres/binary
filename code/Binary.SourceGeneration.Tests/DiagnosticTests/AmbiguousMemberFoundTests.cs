@@ -60,15 +60,78 @@ public class AmbiguousMemberFoundTests
 
                 Guid D { get; }
             }
+
             interface IMultipleChild : IMultipleA, IMultipleB { }
             """;
-        yield return new object[] { a, new string[] { "Name" }, "INameChild" };
-        yield return new object[] { b, new string[] { "B", "C" }, "IMultipleChild" };
+        yield return new object[] { a, new string[] { "Name" }, "INameChild", "SourceGeneratorInclude<INameChild>" };
+        yield return new object[] { b, new string[] { "B", "C" }, "IMultipleChild", "SourceGeneratorInclude<IMultipleChild>" };
+    }
+
+    public static IEnumerable<object[]> AmbiguousInterfaceWithObjectAttributeData()
+    {
+        var a =
+            """
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<INameChild>]
+            public partial class TestGeneratorContext { }
+
+            interface INameA
+            {
+                string Name { get; }
+            }
+
+            interface INameB
+            {
+                string Name { get; }
+            }
+
+            [NamedObject]
+            interface INameChild : INameA, INameB { }
+            """;
+        var b =
+            """
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+            using System;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<IMultipleChild>]
+            public partial class TestGeneratorContext { }
+
+            interface IMultipleA
+            {
+                int A { get; }
+
+                double B { get; }
+
+                string C { get; }
+            }
+
+            interface IMultipleB
+            {
+                int B { get; }
+
+                string C { get; }
+
+                Guid D { get; }
+            }
+
+            [TupleObject]
+            interface IMultipleChild : IMultipleA, IMultipleB { }
+            """;
+        yield return new object[] { a, new string[] { "Name" }, "INameChild", "NamedObject" };
+        yield return new object[] { b, new string[] { "B", "C" }, "IMultipleChild", "TupleObject" };
     }
 
     [Theory(DisplayName = "Ambiguous Member Found")]
     [MemberData(nameof(AmbiguousInterfaceData))]
-    public void AmbiguousMemberTest(string source, IReadOnlyCollection<string> memberNames, string typeName)
+    [MemberData(nameof(AmbiguousInterfaceWithObjectAttributeData))]
+    public void AmbiguousMemberTest(string source, IReadOnlyCollection<string> memberNames, string typeName, string location)
     {
         var compilation = CompilationModule.CreateCompilation(source);
         var generator = new SourceGenerator();
@@ -84,7 +147,7 @@ public class AmbiguousMemberFoundTests
             Assert.Equal(3, match.Groups.Count);
             Assert.Contains(match.Groups[1].Value, memberNames);
             Assert.Equal(typeName, match.Groups[2].Value);
-            Assert.Equal($"SourceGeneratorInclude<{typeName}>", diagnostic.Location.GetSourceText());
+            Assert.Equal(location, diagnostic.Location.GetSourceText());
             actualNames.Add(match.Groups[1].Value);
         }
         Assert.Equal(memberNames.ToHashSet(), actualNames.ToHashSet());
