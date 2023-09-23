@@ -25,10 +25,16 @@ public sealed class SourceGenerator : IIncrementalGenerator
         public ImmutableDictionary<ITypeSymbol, AttributeData> Inclusions { get; } = inclusions;
     }
 
-    private static readonly ImmutableArray<TypeHandler> TypeHandlers = ImmutableArray.CreateRange(new TypeHandler[]
+    private static readonly ImmutableArray<TypeHandler> ExplicitTypeHandlers = ImmutableArray.CreateRange(new TypeHandler[]
     {
         AttributeConverterContext.Invoke,
         AttributeConverterCreatorContext.Invoke,
+        TupleObjectConverterContext.Invoke,
+        NamedObjectConverterContext.Invoke,
+    });
+
+    private static readonly ImmutableArray<TypeHandler> ImplicitTypeHandlers = ImmutableArray.CreateRange(new TypeHandler[]
+    {
         GenericConverterContext.Invoke,
         CollectionConverterContext.Invoke,
         InlineArrayConverterContext.Invoke,
@@ -133,14 +139,17 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
     private static SourceResult? Handle(SourceGeneratorContext context, SourceGeneratorTracker tracker, ContextInfo info, ITypeSymbol symbol)
     {
-        if (context.ValidateType(symbol) is false)
+        if (context.ValidateType(symbol, out var hasCustomAttribute) is false)
             return null;
 
         var inclusions = info.Inclusions;
         var cancellation = context.CancellationToken;
         var result = default(SourceResult);
+        var handlers = hasCustomAttribute
+            ? ExplicitTypeHandlers
+            : ImplicitTypeHandlers;
 
-        foreach (var handler in TypeHandlers)
+        foreach (var handler in handlers)
         {
             result = handler.Invoke(context, tracker, symbol);
             cancellation.ThrowIfCancellationRequested();

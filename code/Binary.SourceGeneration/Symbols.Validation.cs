@@ -30,7 +30,7 @@ public static partial class Symbols
         return false;
     }
 
-    public static bool ValidateType(SourceGeneratorContext context, ITypeSymbol symbol)
+    public static bool ValidateType(SourceGeneratorContext context, ITypeSymbol symbol, out bool hasCustomAttribute)
     {
         var cancellation = context.CancellationToken;
         var converterAttribute = context.GetAttribute(symbol, Constants.ConverterAttributeTypeName);
@@ -44,6 +44,7 @@ public static partial class Symbols
             .OfType<AttributeData>()
             .ToImmutableArray();
 
+        hasCustomAttribute = attributes.Length is not 0;
         ValidateConverterAttribute(context, converterAttribute, diagnostics);
         ValidateConverterCreatorAttribute(context, converterCreatorAttribute, diagnostics);
         cancellation.ThrowIfCancellationRequested();

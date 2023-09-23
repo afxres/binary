@@ -21,14 +21,15 @@ internal sealed class GeneratorContextFallback : IGeneratorContextFallback
         if (type.Assembly == typeof(IConverter).Assembly)
             throw new ArgumentException($"Invalid internal type: {type}");
 
-        if ((converter = FallbackCollectionMethods.GetConverter(context, type)) is not null)
+        var typeInfo = new MetaTypeInfo(type);
+        if (typeInfo.Attributes.Length is 0 && (converter = FallbackCollectionMethods.GetConverter(context, type)) is not null)
             return converter;
 
-        if (type == typeof(IEnumerable) || typeof(IEnumerable).IsAssignableFrom(type))
+        if (typeInfo.Attributes.Length is 0 && (type == typeof(IEnumerable) || typeof(IEnumerable).IsAssignableFrom(type)))
             throw new ArgumentException($"Invalid non-generic collection type: {type}");
         if (type.Assembly == typeof(object).Assembly)
             throw new ArgumentException($"Invalid system type: {type}");
 
-        return FallbackAttributesMethods.GetConverter(context, type);
+        return FallbackAttributesMethods.GetConverter(context, typeInfo);
     }
 }

@@ -13,15 +13,14 @@ using System.Runtime.CompilerServices;
 internal static class FallbackAttributesMethods
 {
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    internal static IConverter GetConverter(IGeneratorContext context, Type type)
+    internal static IConverter GetConverter(IGeneratorContext context, MetaTypeInfo typeInfo)
     {
-        var attributes = GetAttributes(type, a => a is NamedObjectAttribute or TupleObjectAttribute or ConverterAttribute or ConverterCreatorAttribute);
+        var type = typeInfo.Type;
+        var attributes = typeInfo.Attributes;
         if (attributes.Length > 1)
             throw new ArgumentException($"Multiple attributes found, type: {type}");
 
         var attribute = attributes.FirstOrDefault();
-        var required = GetAttributes(type, x => x is RequiredMemberAttribute).Any();
-        var typeInfo = new MetaTypeInfo(type, attribute, required);
         var memberInfoArrayUnsorted = GetMemberVariables(typeInfo);
 
         if (attribute is ConverterAttribute or ConverterCreatorAttribute)
@@ -54,9 +53,9 @@ internal static class FallbackAttributesMethods
         {
             Debug.Assert(member is FieldInfo or PropertyInfo);
             var property = member as PropertyInfo;
-            var keyAttributes = GetAttributes(member, a => a is NamedKeyAttribute or TupleKeyAttribute);
+            var keyAttributes = CommonModule.GetAttributes(member, a => a is NamedKeyAttribute or TupleKeyAttribute);
             var key = keyAttributes.FirstOrDefault();
-            var conversionAttributes = GetAttributes(member, a => a is ConverterAttribute or ConverterCreatorAttribute);
+            var conversionAttributes = CommonModule.GetAttributes(member, a => a is ConverterAttribute or ConverterCreatorAttribute);
             var conversion = conversionAttributes.FirstOrDefault();
             var indexer = property is not null && property.GetIndexParameters().Length is not 0;
             if (indexer && (key ?? conversion) is { } instance)
@@ -84,7 +83,7 @@ internal static class FallbackAttributesMethods
     {
         if (typeInfo.HasRequiredMember is false)
             return false;
-        var required = GetAttributes(member, x => x is RequiredMemberAttribute).Any();
+        var required = CommonModule.GetAttributes(member, x => x is RequiredMemberAttribute).Any();
         if (required is false)
             return true;
         if (typeInfo.IsNamedObject && key is not NamedKeyAttribute)
@@ -92,13 +91,6 @@ internal static class FallbackAttributesMethods
         if (typeInfo.IsTupleObject && key is not TupleKeyAttribute)
             throw new ArgumentException($"Require '{nameof(TupleKeyAttribute)}' for required member, member name: {member.Name}, type: {typeInfo.Type}");
         return false;
-    }
-
-    private static ImmutableArray<Attribute> GetAttributes(MemberInfo member, Func<Attribute, bool> filter)
-    {
-        Debug.Assert(member is Type or FieldInfo or PropertyInfo);
-        var attributes = member.GetCustomAttributes(false).OfType<Attribute>().Where(filter).ToImmutableArray();
-        return attributes;
     }
 
     private static T GetConverterOrCreator<T>([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type instance, Type reflected, string? memberName)

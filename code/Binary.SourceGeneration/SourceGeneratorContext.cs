@@ -20,7 +20,7 @@ public class SourceGeneratorContext(Compilation compilation, Action<Diagnostic> 
 
     private readonly Dictionary<ITypeSymbol, SymbolTypeInfo> typeInfoCache = new Dictionary<ITypeSymbol, SymbolTypeInfo>(SymbolEqualityComparer.Default);
 
-    private readonly Dictionary<ITypeSymbol, bool> validationCache = new Dictionary<ITypeSymbol, bool>(SymbolEqualityComparer.Default);
+    private readonly Dictionary<ITypeSymbol, (bool NoError, bool HasCustomAttribute)> validationCache = new Dictionary<ITypeSymbol, (bool, bool)>(SymbolEqualityComparer.Default);
 
     public Compilation Compilation { get; } = compilation;
 
@@ -71,12 +71,13 @@ public class SourceGeneratorContext(Compilation compilation, Action<Diagnostic> 
         return (INamedTypeSymbol?)type;
     }
 
-    public bool ValidateType(ITypeSymbol symbol)
+    public bool ValidateType(ITypeSymbol symbol, out bool hasCustomAttribute)
     {
         var dictionary = this.validationCache;
         if (dictionary.TryGetValue(symbol, out var result) is false)
-            dictionary.Add(symbol, result = Symbols.ValidateType(this, symbol));
-        return result;
+            dictionary.Add(symbol, result = (Symbols.ValidateType(this, symbol, out var exists), exists));
+        hasCustomAttribute = result.HasCustomAttribute;
+        return result.NoError;
     }
 
     public bool Equals(ISymbol? symbol, string typeName)

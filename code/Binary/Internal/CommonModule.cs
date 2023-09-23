@@ -105,6 +105,13 @@ internal static class CommonModule
         throw new InvalidOperationException(result);
     }
 
+    internal static ImmutableArray<Attribute> GetAttributes(MemberInfo member, Func<Attribute, bool> filter)
+    {
+        Debug.Assert(member is Type or FieldInfo or PropertyInfo);
+        var attributes = member.GetCustomAttributes(false).OfType<Attribute>().Where(filter).ToImmutableArray();
+        return attributes;
+    }
+
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
     internal static ImmutableArray<MemberInfo> GetAllFieldsAndProperties(Type type, BindingFlags flags)
     {
