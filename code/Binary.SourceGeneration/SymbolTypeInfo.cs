@@ -5,11 +5,11 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 
-public class SymbolTypeInfo(ITypeSymbol symbol, ImmutableSortedSet<string> conflict, ImmutableArray<ISymbol> originalMembers, ImmutableArray<ISymbol> filteredMembers, ImmutableHashSet<ISymbol> requiredMembers)
+public class SymbolTypeInfo(ITypeSymbol symbol, ImmutableSortedSet<string> conflictMembers, ImmutableArray<ISymbol> originalMembers, ImmutableArray<ISymbol> filteredMembers, ImmutableHashSet<ISymbol> requiredMembers)
 {
     public ITypeSymbol Symbol { get; } = symbol;
 
-    public ImmutableSortedSet<string> Conflict { get; } = conflict;
+    public ImmutableSortedSet<string> ConflictFieldsAndProperties { get; } = conflictMembers;
 
     public ImmutableArray<ISymbol> OriginalFieldsAndProperties { get; } = originalMembers;
 

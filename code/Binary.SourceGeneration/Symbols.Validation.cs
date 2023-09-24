@@ -105,7 +105,7 @@ public static partial class Symbols
         };
         if (members is null)
             return;
-        else if (typeInfo.Conflict is { Count: not 0 } conflict)
+        else if (typeInfo.ConflictFieldsAndProperties is { Count: not 0 } conflict)
             foreach (var name in conflict)
                 diagnostics.Add(Diagnostic.Create(Constants.AmbiguousMemberFound, GetLocation(attribute), new object[] { name, symbolDisplay }));
         else if (typeInfo.FilteredFieldsAndProperties.Intersect(members, SymbolEqualityComparer.Default).Any() is false)
