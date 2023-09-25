@@ -10,12 +10,19 @@
     <Company>Mikodev</Company>
     <Product>Mikodev.Binary</Product>
     <Version>5.6.0-beta.6</Version>
+    <Description>Serialization library for C# and F#.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageTags>binary dynamic serialization</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>binary;serialization</PackageTags>
     <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/afxres/binary.git</RepositoryUrl>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+  </ItemGroup>
 
   <PropertyGroup>
     <Nullable>enable</Nullable>
