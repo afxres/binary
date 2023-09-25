@@ -77,7 +77,7 @@ partial class SomeSourceGeneratorContext { }
 ```
 
 This will generate a property named ``ConverterCreators`` which contains all generated converter creators.  
-Just add those converter creators and it will work.
+Just add those converter creators to ``IGenerator`` and it will work.
 ```csharp
 var generator = Generator.CreateAotBuilder()
     .AddConverterCreators(SomeSourceGeneratorContext.ConverterCreators.Values)
@@ -147,7 +147,7 @@ class SimplePersonConverterCreator : IConverterCreator
 }
 ```
 
-And use like this:
+Then add this converter creator to ``IGenerator``:
 ```csharp
 var generator = Generator.CreateDefaultBuilder()
     .AddConverterCreator(new SimplePersonConverterCreator())
@@ -164,30 +164,45 @@ Console.WriteLine(result);
 ### Length Prefix
 
 Variable length codes for length prefix:
-| Leading Bit | Byte Length | Min Value | Max Value          | Example (hex) | Example Value |
-| ----------- | ----------- | --------- | ------------------ | ------------- | ------------- |
-| 0           | 1           | 0         | 2<sup>7</sup> - 1  | 7F            | 127           |
-| 1           | 4           | 0         | 2<sup>31</sup> - 1 | 80 00 04 01   | 1025          |
+| Leading Bit | Byte Length | Range            | Example Bytes   | Example Value |
+| ----------- | ----------- | ---------------- | --------------- | ------------- |
+| ``0``       | ``1``       | ``0 ~ 2^7 - 1``  | ``7F``          | ``127``       |
+| ``1``       | ``4``       | ``0 ~ 2^31 - 1`` | ``80 00 04 01`` | ``1025``      |
 
 ### Object
 
-Data model:
-```fsharp
-{| id = 1024; name = "F#" |}
+Value:
+```csharp
+new { id = 1024, name = "C#" }
 ```
 
-Output bytes (hex):
-```
-02 69 64 04 00 04 00 00 04 6e 61 6d 65 02 46 23
+Equivalent to:
+```csharp
+new SortedDictionary<string, object> { ["id"] = 1024, ["name"] = "C#" }
 ```
 
-Output layout:
-| Prefix Bytes | Content Bytes | Data | Comment         |
-| :----------- | :------------ | :--- | :-------------- |
-| 02           | 69 64         | id   | Key             |
-| 04           | 00 04 00 00   | 1024 | Value of int    |
-| 04           | 6e 61 6d 65   | name | Key             |
-| 02           | 46 23         | F#   | Value of string |
+Bytes:
+```
+    i  d                1024
+02  69 64           04  00 04 00 00
+    n  a  m  e          C  #
+04  6e 61 6d 65     02  43 23
+```
+
+### Tuple
+
+Value:
+```csharp
+("Text", 3.14F)
+```
+
+Bytes:
+```
+    T  e  x  t
+04  54 65 78 74
+    3.14
+    c3 f5 48 40
+```
 
 [PC]:https://www.nuget.org/packages/Mikodev.Binary/
 [PF]:https://www.nuget.org/packages/Mikodev.Binary.FSharp/
