@@ -12,15 +12,13 @@ public class SourceGeneratorContext(Compilation compilation, Action<Diagnostic> 
 
     private readonly Dictionary<string, object> resources = new Dictionary<string, object>();
 
-    private readonly Dictionary<string, ITypeSymbol?> types = new Dictionary<string, ITypeSymbol?>();
-
     private readonly Dictionary<ITypeSymbol, string> typeFullNameCache = new Dictionary<ITypeSymbol, string>(SymbolEqualityComparer.Default);
 
     private readonly Dictionary<ITypeSymbol, string> converterTypeFullNameCache = new Dictionary<ITypeSymbol, string>(SymbolEqualityComparer.Default);
 
     private readonly Dictionary<ITypeSymbol, SymbolTypeInfo> typeInfoCache = new Dictionary<ITypeSymbol, SymbolTypeInfo>(SymbolEqualityComparer.Default);
 
-    private readonly Dictionary<ITypeSymbol, (bool NoError, bool HasCustomAttribute)> validationCache = new Dictionary<ITypeSymbol, (bool, bool)>(SymbolEqualityComparer.Default);
+    private readonly Dictionary<ITypeSymbol, SymbolTypeKind> validationCache = new Dictionary<ITypeSymbol, SymbolTypeKind>(SymbolEqualityComparer.Default);
 
     public Compilation Compilation { get; } = compilation;
 
@@ -63,26 +61,17 @@ public class SourceGeneratorContext(Compilation compilation, Action<Diagnostic> 
         return symbol.GetAttributes().FirstOrDefault(x => Equals(x.AttributeClass, attributeTypeName));
     }
 
-    public INamedTypeSymbol? GetNamedTypeSymbol(string typeName)
-    {
-        var dictionary = this.types;
-        if (dictionary.TryGetValue(typeName, out var type) is false)
-            dictionary.Add(typeName, type = Compilation.GetTypeByMetadataName(typeName));
-        return (INamedTypeSymbol?)type;
-    }
-
-    public bool ValidateType(ITypeSymbol symbol, out bool hasCustomAttribute)
+    public SymbolTypeKind ValidateType(ITypeSymbol symbol)
     {
         var dictionary = this.validationCache;
         if (dictionary.TryGetValue(symbol, out var result) is false)
-            dictionary.Add(symbol, result = (Symbols.ValidateType(this, symbol, out var exists), exists));
-        hasCustomAttribute = result.HasCustomAttribute;
-        return result.NoError;
+            dictionary.Add(symbol, result = Symbols.ValidateType(this, symbol));
+        return result;
     }
 
     public bool Equals(ISymbol? symbol, string typeName)
     {
-        return SymbolEqualityComparer.Default.Equals(symbol, GetNamedTypeSymbol(typeName));
+        return SymbolEqualityComparer.Default.Equals(symbol, Compilation.GetTypeByMetadataName(typeName));
     }
 
     public void Collect(Diagnostic diagnostic)

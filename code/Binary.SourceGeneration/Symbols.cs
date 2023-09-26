@@ -159,7 +159,7 @@ public static partial class Symbols
 
     public static bool IsTypeIgnored(SourceGeneratorContext context, ITypeSymbol symbol)
     {
-        if (SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, context.GetNamedTypeSymbol(Constants.IConverterTypeName)?.ContainingAssembly))
+        if (SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, context.Compilation.GetTypeByMetadataName(Constants.IConverterTypeName)?.ContainingAssembly))
             return true;
         var objectSymbol = context.Compilation.GetSpecialType(SpecialType.System_Object);
         if (SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, objectSymbol.ContainingAssembly))

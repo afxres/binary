@@ -30,7 +30,7 @@ public static partial class Symbols
         return false;
     }
 
-    public static bool ValidateType(SourceGeneratorContext context, ITypeSymbol symbol, out bool hasCustomAttribute)
+    public static SymbolTypeKind ValidateType(SourceGeneratorContext context, ITypeSymbol symbol)
     {
         var cancellation = context.CancellationToken;
         var converterAttribute = context.GetAttribute(symbol, Constants.ConverterAttributeTypeName);
@@ -44,7 +44,6 @@ public static partial class Symbols
             .OfType<AttributeData>()
             .ToImmutableArray();
 
-        hasCustomAttribute = attributes.Length is not 0;
         ValidateConverterAttribute(context, converterAttribute, diagnostics);
         ValidateConverterCreatorAttribute(context, converterCreatorAttribute, diagnostics);
         cancellation.ThrowIfCancellationRequested();
@@ -55,10 +54,10 @@ public static partial class Symbols
             ValidateType(context, symbol, symbolDisplay, attributes.SingleOrDefault(), diagnostics);
 
         if (diagnostics.Count is 0)
-            return true;
+            return attributes.Length is 0 ? SymbolTypeKind.Native : SymbolTypeKind.Custom;
         foreach (var diagnostic in diagnostics)
             context.Collect(diagnostic);
-        return false;
+        return SymbolTypeKind.Ignore;
     }
 
     private static DiagnosticDescriptor? ValidateContextType(TypeDeclarationSyntax declaration, INamedTypeSymbol symbol)

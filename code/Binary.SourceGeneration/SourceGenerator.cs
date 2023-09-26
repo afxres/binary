@@ -25,7 +25,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         public ImmutableDictionary<ITypeSymbol, AttributeData> Inclusions { get; } = inclusions;
     }
 
-    private static readonly ImmutableArray<TypeHandler> ExplicitTypeHandlers = ImmutableArray.CreateRange(new TypeHandler[]
+    private static readonly ImmutableArray<TypeHandler> CustomTypeHandlers = ImmutableArray.CreateRange(new TypeHandler[]
     {
         AttributeConverterContext.Invoke,
         AttributeConverterCreatorContext.Invoke,
@@ -33,7 +33,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         NamedObjectConverterContext.Invoke,
     });
 
-    private static readonly ImmutableArray<TypeHandler> ImplicitTypeHandlers = ImmutableArray.CreateRange(new TypeHandler[]
+    private static readonly ImmutableArray<TypeHandler> NativeTypeHandlers = ImmutableArray.CreateRange(new TypeHandler[]
     {
         GenericConverterContext.Invoke,
         CollectionConverterContext.Invoke,
@@ -139,15 +139,16 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
     private static SourceResult? Handle(SourceGeneratorContext context, SourceGeneratorTracker tracker, ContextInfo info, ITypeSymbol symbol)
     {
-        if (context.ValidateType(symbol, out var hasCustomAttribute) is false)
+        var kind = context.ValidateType(symbol);
+        if (kind is SymbolTypeKind.Ignore)
             return null;
 
         var inclusions = info.Inclusions;
         var cancellation = context.CancellationToken;
         var result = default(SourceResult);
-        var handlers = hasCustomAttribute
-            ? ExplicitTypeHandlers
-            : ImplicitTypeHandlers;
+        var handlers = kind is SymbolTypeKind.Native
+            ? NativeTypeHandlers
+            : CustomTypeHandlers;
 
         foreach (var handler in handlers)
         {
