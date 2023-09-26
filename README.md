@@ -1,7 +1,5 @@
 # Binary
 
-Summary:
-
 ![GitHub repo size](https://img.shields.io/github/repo-size/afxres/binary)
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/afxres/binary/dotnet-tests.yml?branch=main)
 [![Coverage Status](https://coveralls.io/repos/github/afxres/binary/badge.svg?branch=main)](https://coveralls.io/github/afxres/binary?branch=main)
@@ -10,6 +8,8 @@ Summary:
 | :---------------------------- | :------------- | :--------------- | :------------------ |
 | [`Mikodev.Binary`][PC]        | ![version][VC] | ![downloads][IC] | Main package        |
 | [`Mikodev.Binary.FSharp`][PF] | ![version][VF] | ![downloads][IF] | Type support for F# |
+
+## Getting Started
 
 Add package (for C# project):
 ```
@@ -90,84 +90,15 @@ Console.WriteLine(result.Id);   // 1
 Console.WriteLine(result.Name); // Someone
 ```
 
-## Implement custom converters
-
-Data model:
-```csharp
-record Person(string Name, int Age);
-```
-
-A simple converter implementation:
-```csharp
-class SimplePersonConverter : Converter<Person>
-{
-    public override void Encode(ref Allocator allocator, Person item)
-    {
-        Allocator.Append(ref allocator, sizeof(int), item.Age, BinaryPrimitives.WriteInt32LittleEndian);
-        Allocator.Append(ref allocator, item.Name.AsSpan(), Encoding.UTF8);
-    }
-
-    public override Person Decode(in ReadOnlySpan<byte> span)
-    {
-        var age = BinaryPrimitives.ReadInt32LittleEndian(span);
-        var name = Encoding.UTF8.GetString(span.Slice(sizeof(int)));
-        return new Person(name, age);
-    }
-}
-```
-
-Or implement with existing converters via converter creator:
-```csharp
-class SimplePersonConverter(Converter<int> intConverter, Converter<string> stringConverter) : Converter<Person>
-{
-    public override void Encode(ref Allocator allocator, Person item)
-    {
-        intConverter.Encode(ref allocator, item.Age);
-        stringConverter.Encode(ref allocator, item.Name);
-    }
-
-    public override Person Decode(in ReadOnlySpan<byte> span)
-    {
-        var age = intConverter.Decode(span);
-        var name = stringConverter.Decode(span.Slice(sizeof(int)));
-        return new Person(name, age);
-    }
-}
-
-class SimplePersonConverterCreator : IConverterCreator
-{
-    public IConverter? GetConverter(IGeneratorContext context, Type type)
-    {
-        if (type != typeof(Person))
-            return null;
-        var intConverter = (Converter<int>)context.GetConverter(typeof(int));
-        var stringConverter = (Converter<string>)context.GetConverter(typeof(string));
-        return new SimplePersonConverter(intConverter, stringConverter);
-    }
-}
-```
-
-Then add this converter creator to ``IGenerator``:
-```csharp
-var generator = Generator.CreateDefaultBuilder()
-    .AddConverterCreator(new SimplePersonConverterCreator())
-    .Build();
-var converter = generator.GetConverter<Person>();
-var source = new Person("C#", 21);
-var buffer = converter.Encode(source);
-var result = converter.Decode(buffer);
-Console.WriteLine(result);
-```
-
 ## Binary Layout
 
 ### Length Prefix
 
 Variable length codes for length prefix:
-| Leading Bit | Byte Length | Range            | Example Bytes   | Example Value |
-| ----------- | ----------- | ---------------- | --------------- | ------------- |
-| ``0``       | ``1``       | ``0 ~ 2^7 - 1``  | ``7F``          | ``127``       |
-| ``1``       | ``4``       | ``0 ~ 2^31 - 1`` | ``80 00 04 01`` | ``1025``      |
+| Leading Bit | Byte Length | Range               | Example Bytes   | Example Value |
+| ----------- | ----------- | ------------------- | --------------- | ------------- |
+| ``0``       | ``1``       | ``0 ~ 0x7F``        | ``7F``          | ``127``       |
+| ``1``       | ``4``       | ``0 ~ 0x7FFF_FFFF`` | ``80 00 04 01`` | ``1025``      |
 
 ### Object
 
