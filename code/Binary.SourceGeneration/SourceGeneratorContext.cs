@@ -52,7 +52,7 @@ public class SourceGeneratorContext(Compilation compilation, Action<Diagnostic> 
     {
         var dictionary = this.converterTypeFullNameCache;
         if (dictionary.TryGetValue(symbol, out var result) is false)
-            dictionary.Add(symbol, result = $"{Constants.ConverterTypeName}<{GetTypeFullName(symbol)}>");
+            dictionary.Add(symbol, result = $"Mikodev.Binary.Converter<{GetTypeFullName(symbol)}>");
         return result;
     }
 

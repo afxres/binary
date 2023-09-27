@@ -75,7 +75,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
         var methodName = auto ? "EncodeAuto" : "Encode";
         if (auto)
             Output.AppendIndent();
-        Output.AppendIndent(2, $"public override void {methodName}(ref {Constants.AllocatorTypeName} allocator, {SymbolTypeFullName} item)");
+        Output.AppendIndent(2, $"public override void {methodName}(ref Mikodev.Binary.Allocator allocator, {SymbolTypeFullName} item)");
         Output.AppendIndent(2, $"{{");
         AppendEnsureContext();
         for (var i = 0; i < members.Length; i++)

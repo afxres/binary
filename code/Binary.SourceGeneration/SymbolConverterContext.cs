@@ -63,7 +63,7 @@ public abstract class SymbolConverterContext
         Output.AppendIndent(1, $"private sealed class {OutputConverterCreatorTypeName} : {Constants.IConverterCreatorTypeName}");
         Output.AppendIndent(1, $"{{");
 
-        Output.AppendIndent(2, $"public {Constants.IConverterTypeName} GetConverter({Constants.IGeneratorContextTypeName} context, System.Type type)");
+        Output.AppendIndent(2, $"public {Constants.IConverterTypeName} GetConverter(Mikodev.Binary.IGeneratorContext context, System.Type type)");
         Output.AppendIndent(2, $"{{");
         Output.AppendIndent(3, $"if (type != typeof({SymbolTypeFullName}))");
         Output.AppendIndent(4, $"return null;");

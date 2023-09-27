@@ -45,7 +45,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
 
     private void AppendEncodeContext(int indent, int i)
     {
-        Output.AppendIndent(indent, $"{Constants.AllocatorTypeName}.Append(ref allocator, new System.ReadOnlySpan<byte>(keys[{i}]));");
+        Output.AppendIndent(indent, $"Mikodev.Binary.Allocator.Append(ref allocator, new System.ReadOnlySpan<byte>(keys[{i}]));");
         Output.AppendIndent(indent, $"cvt{i}.EncodeWithLengthPrefix(ref allocator, var{i});");
         CancellationToken.ThrowIfCancellationRequested();
     }
@@ -53,7 +53,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
     private void AppendEncodeMethod()
     {
         var members = this.members;
-        Output.AppendIndent(2, $"public override void Encode(ref {Constants.AllocatorTypeName} allocator, {SymbolTypeFullName} item)");
+        Output.AppendIndent(2, $"public override void Encode(ref Mikodev.Binary.Allocator allocator, {SymbolTypeFullName} item)");
         Output.AppendIndent(2, $"{{");
         AppendEnsureContext();
         for (var i = 0; i < members.Length; i++)
@@ -110,7 +110,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         var members = this.members;
         Output.AppendIndent(3, $"var names = new string[] {{ ", $" }};", members.Length, x => members[x].NamedKeyLiteral);
         Output.AppendIndent(3, $"var optional = new bool[] {{ ", $" }};", members.Length, x => members[x].IsOptional ? "true" : "false");
-        Output.AppendIndent(3, $"var encoding = ({Constants.ConverterTypeName}<string>)context.GetConverter(typeof(string));");
+        Output.AppendIndent(3, $"var encoding = (Mikodev.Binary.Converter<string>)context.GetConverter(typeof(string));");
         for (var i = 0; i < members.Length; i++)
         {
             var member = members[i];

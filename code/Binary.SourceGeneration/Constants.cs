@@ -16,15 +16,9 @@ public static class Constants
 
     public const string TupleKeyAttributeTypeName = "Mikodev.Binary.Attributes.TupleKeyAttribute";
 
-    public const string AllocatorTypeName = "Mikodev.Binary.Allocator";
-
-    public const string ConverterTypeName = "Mikodev.Binary.Converter";
-
     public const string IConverterTypeName = "Mikodev.Binary.IConverter";
 
     public const string IConverterCreatorTypeName = "Mikodev.Binary.IConverterCreator";
-
-    public const string IGeneratorContextTypeName = "Mikodev.Binary.IGeneratorContext";
 
     public const string ConverterAttributeTypeName = "Mikodev.Binary.Attributes.ConverterAttribute";
 

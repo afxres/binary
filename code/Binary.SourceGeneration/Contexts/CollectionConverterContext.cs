@@ -44,7 +44,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
     {
         var info = this.info;
         var elements = info.ElementTypes;
-        Output.AppendIndent(2, $"public override void Encode(ref {Constants.AllocatorTypeName} allocator, {SymbolTypeFullName} item)");
+        Output.AppendIndent(2, $"public override void Encode(ref Mikodev.Binary.Allocator allocator, {SymbolTypeFullName} item)");
         Output.AppendIndent(2, $"{{");
         AppendEnsureContext();
         Output.AppendIndent(3, $"foreach (var i in item)");
