@@ -37,7 +37,7 @@ record Person(string Name, int Age);
 
 Supported types:
 | Category      | Details                                                                                                                         | Comment                                  |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| :------------ | :------------------------------------------------------------------------------------------------------------------------------ | :--------------------------------------- |
 | Primitive     | ``(U)Int(16,32,64,128)``, ``Boolean``, ``Byte``, ``Char``, ``Decimal``, ``Double``, ``Half``, ``SByte``, ``Single``, ``String`` | Default encoding of string is 'UTF-8'    |
 | Data & Time   | ``DateOnly``, ``DateTime``, ``DateTimeOffset``, ``TimeOnly``, ``TimeSpan``                                                      |                                          |
 | Numeric       | ``BigInteger``, ``Complex``, ``Matrix3x2``, ``Matrix4x4``, ``Plane``, ``Quaternion``, ``Vector2``, ``Vector3``, ``Vector4``     |                                          |
@@ -47,15 +47,15 @@ Supported types:
 | Collection    | Implements ``IEnumerable<>`` and have a constructor accept ``IEnumerable<>`` as parameter                                       | Stack types are explicitly not supported |
 
 Language Features:
-| Feature                   | JIT | AOT | Comment                              |
-| ------------------------- | --- | --- | ------------------------------------ |
-| Enumeration Types         | Yes | Yes | Use underlying integral numeric type |
-| Anonymous Types           | Yes |     |                                      |
-| Tuple Types               | Yes | Yes |                                      |
-| Records                   | Yes | Yes |                                      |
-| Required Members          | Yes | Yes |                                      |
-| Inline Arrays             | Yes | Yes |                                      |
-| Discriminated Unions (F#) | Yes |     |                                      |
+| Feature                   | JIT  | AOT  | Comment                              |
+| :------------------------ | :--- | :--- | :----------------------------------- |
+| Enumeration Types         | Yes  | Yes  | Use underlying integral numeric type |
+| Anonymous Types           | Yes  |      |                                      |
+| Tuple Types               | Yes  | Yes  |                                      |
+| Records                   | Yes  | Yes  |                                      |
+| Required Members          | Yes  | Yes  |                                      |
+| Inline Arrays             | Yes  | Yes  |                                      |
+| Discriminated Unions (F#) | Yes  |      |                                      |
 
 ## AOT Support
 
@@ -96,7 +96,7 @@ Console.WriteLine(result.Name); // Someone
 
 Variable length codes for length prefix:
 | Leading Bit | Byte Length | Range               | Example Bytes   | Example Value |
-| ----------- | ----------- | ------------------- | --------------- | ------------- |
+| :---------- | :---------- | :------------------ | :-------------- | :------------ |
 | ``0``       | ``1``       | ``0 ~ 0x7F``        | ``7F``          | ``127``       |
 | ``1``       | ``4``       | ``0 ~ 0x7FFF_FFFF`` | ``80 00 04 01`` | ``1025``      |
 
