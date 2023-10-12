@@ -22,10 +22,8 @@ internal readonly struct ListAdapter<E> : ISpanLikeAdapter<List<E>, E>
 
     public static void Encode(ref Allocator allocator, List<E>? item, Converter<E> converter)
     {
-        if (item is null)
-            return;
-        for (var i = 0; i < item.Count; i++)
-            converter.EncodeAuto(ref allocator, item[i]);
+        foreach (var i in CollectionsMarshal.AsSpan(item))
+            converter.EncodeAuto(ref allocator, i);
         return;
     }
 }
