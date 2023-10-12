@@ -4,10 +4,10 @@
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/afxres/binary/dotnet-tests.yml?branch=main)
 [![Coverage Status](https://coveralls.io/repos/github/afxres/binary/badge.svg?branch=main)](https://coveralls.io/github/afxres/binary?branch=main)
 
-| Package                       | Version        | Downloads        | Descriptions        |
-| :---------------------------- | :------------- | :--------------- | :------------------ |
-| [`Mikodev.Binary`][PC]        | ![version][VC] | ![downloads][IC] | Main package        |
-| [`Mikodev.Binary.FSharp`][PF] | ![version][VF] | ![downloads][IF] | Type support for F# |
+| Package                       | Version        | Downloads        | Descriptions                 |
+| :---------------------------- | :------------- | :--------------- | :--------------------------- |
+| [`Mikodev.Binary`][PC]        | ![version][VC] | ![downloads][IC] | Main package                 |
+| [`Mikodev.Binary.FSharp`][PF] | ![version][VF] | ![downloads][IF] | Additional converters for F# |
 
 ## Getting Started
 
@@ -38,7 +38,7 @@ record Person(string Name, int Age);
 Supported types:
 | Category      | Details                                                                                                                         | Comment                                  |
 | :------------ | :------------------------------------------------------------------------------------------------------------------------------ | :--------------------------------------- |
-| Primitive     | ``(U)Int(16,32,64,128)``, ``Boolean``, ``Byte``, ``Char``, ``Decimal``, ``Double``, ``Half``, ``SByte``, ``Single``, ``String`` | Default encoding of string is 'UTF-8'    |
+| Primitive     | ``(U)Int(16,32,64,128)``, ``Boolean``, ``Byte``, ``Char``, ``Decimal``, ``Double``, ``Half``, ``SByte``, ``Single``, ``String`` | Default string encoding is UTF-8         |
 | Data & Time   | ``DateOnly``, ``DateTime``, ``DateTimeOffset``, ``TimeOnly``, ``TimeSpan``                                                      |                                          |
 | Numeric       | ``BigInteger``, ``Complex``, ``Matrix3x2``, ``Matrix4x4``, ``Plane``, ``Quaternion``, ``Vector2``, ``Vector3``, ``Vector4``     |                                          |
 | Memory        | ``T[...]``, ``Memory<>``, ``ReadOnlyMemory<>``, ``ReadOnlySequence<>``                                                          |                                          |
@@ -47,15 +47,15 @@ Supported types:
 | Collection    | Implements ``IEnumerable<>`` and have a constructor accept ``IEnumerable<>`` as parameter                                       | Stack types are explicitly not supported |
 
 Language Features:
-| Feature                   | JIT  | AOT  | Comment                              |
-| :------------------------ | :--- | :--- | :----------------------------------- |
-| Enumeration Types         | Yes  | Yes  | Use underlying integral numeric type |
-| Anonymous Types           | Yes  |      |                                      |
-| Tuple Types               | Yes  | Yes  |                                      |
-| Records                   | Yes  | Yes  |                                      |
-| Required Members          | Yes  | Yes  |                                      |
-| Inline Arrays             | Yes  | Yes  |                                      |
-| Discriminated Unions (F#) | Yes  |      |                                      |
+| Feature                   | JIT  | AOT  | Comment           |
+| :------------------------ | :--- | :--- | :---------------- |
+| Enumeration Types         | Yes  | Yes  | Treat as integers |
+| Anonymous Types           | Yes  |      |                   |
+| Tuple Types               | Yes  | Yes  |                   |
+| Records                   | Yes  | Yes  |                   |
+| Required Members          | Yes  | Yes  |                   |
+| Inline Arrays             | Yes  | Yes  |                   |
+| Discriminated Unions (F#) | Yes  |      |                   |
 
 ## AOT Support
 
