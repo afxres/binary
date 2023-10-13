@@ -1,27 +1,18 @@
 # Binary
 
-![GitHub repo size](https://img.shields.io/github/repo-size/afxres/binary)
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/afxres/binary/dotnet-tests.yml?branch=main)
+[![GitHub repo size](https://img.shields.io/github/repo-size/afxres/binary)](#)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/afxres/binary/dotnet-tests.yml?branch=main)](#)
 [![Coverage Status](https://coveralls.io/repos/github/afxres/binary/badge.svg?branch=main)](https://coveralls.io/github/afxres/binary?branch=main)
 
-| Package                       | Version        | Downloads        | Descriptions                 |
-| :---------------------------- | :------------- | :--------------- | :--------------------------- |
-| [`Mikodev.Binary`][PC]        | ![version][VC] | ![downloads][IC] | Main package                 |
-| [`Mikodev.Binary.FSharp`][PF] | ![version][VF] | ![downloads][IF] | Additional converters for F# |
+| Package                       | Version             | Downloads             | Descriptions                 |
+| :---------------------------- | :------------------ | :-------------------- | :--------------------------- |
+| [`Mikodev.Binary`][PC]        | [![version][VC]](#) | [![downloads][IC]](#) | Main package                 |
+| [`Mikodev.Binary.FSharp`][PF] | [![version][VF]](#) | [![downloads][IF]](#) | Additional converters for F# |
 
 ## Getting Started
 
-Add package (for C# project):
-```
-dotnet add package Mikodev.Binary
-```
+### Sample code
 
-Add package (for F# project):
-```
-dotnet add package Mikodev.Binary.FSharp
-```
-
-Sample code:
 ```csharp
 using Mikodev.Binary;
 using System;
@@ -35,7 +26,8 @@ Console.WriteLine(result);
 record Person(string Name, int Age);
 ```
 
-Supported types:
+### Supported types
+
 | Category      | Details                                                                                                                         | Comment                                  |
 | :------------ | :------------------------------------------------------------------------------------------------------------------------------ | :--------------------------------------- |
 | Primitive     | ``(U)Int(16,32,64,128)``, ``Boolean``, ``Byte``, ``Char``, ``Decimal``, ``Double``, ``Half``, ``SByte``, ``Single``, ``String`` | Default string encoding is UTF-8         |
@@ -46,7 +38,8 @@ Supported types:
 | Tuple         | ``KeyValuePair<,>``, ``Tuple<...>``, ``ValueTuple<...>``                                                                        | Tuple can not be null                    |
 | Collection    | Implements ``IEnumerable<>`` and have a constructor accept ``IEnumerable<>`` as parameter                                       | Stack types are explicitly not supported |
 
-Language Features:
+### Language Features
+
 | Feature                   | JIT  | AOT  | Comment           |
 | :------------------------ | :--- | :--- | :---------------- |
 | Enumeration Types         | Yes  | Yes  | Treat as integers |
@@ -57,7 +50,7 @@ Language Features:
 | Inline Arrays             | Yes  | Yes  |                   |
 | Discriminated Unions (F#) | Yes  |      |                   |
 
-## AOT Support
+### AOT Support
 
 AOT support (via source generator) is now generally available.  
 For example, we have a data model like this:
@@ -94,7 +87,6 @@ Console.WriteLine(result.Name); // Someone
 
 ### Length Prefix
 
-Variable length codes for length prefix:
 | Leading Bit | Byte Length | Range               | Example Bytes   | Example Value |
 | :---------- | :---------- | :------------------ | :-------------- | :------------ |
 | ``0``       | ``1``       | ``0 ~ 0x7F``        | ``7F``          | ``127``       |
