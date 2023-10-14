@@ -43,13 +43,6 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         CancellationToken.ThrowIfCancellationRequested();
     }
 
-    private void AppendEncodeContext(int indent, int i)
-    {
-        Output.AppendIndent(indent, $"Mikodev.Binary.Allocator.Append(ref allocator, new System.ReadOnlySpan<byte>(keys[{i}]));");
-        Output.AppendIndent(indent, $"cvt{i}.EncodeWithLengthPrefix(ref allocator, var{i});");
-        CancellationToken.ThrowIfCancellationRequested();
-    }
-
     private void AppendEncodeMethod()
     {
         var members = this.members;
@@ -58,23 +51,21 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         AppendEnsureContext();
         for (var i = 0; i < members.Length; i++)
         {
-            var member = members[i];
-            Output.AppendIndent(3, $"var var{i} = item.{member.NameInSourceCode};");
-            CancellationToken.ThrowIfCancellationRequested();
-        }
-        for (var i = 0; i < members.Length; i++)
-        {
             if (members[i].IsOptional is false)
             {
-                AppendEncodeContext(3, i);
+                Output.AppendIndent(3, $"Mikodev.Binary.Allocator.Append(ref allocator, new System.ReadOnlySpan<byte>(keys[{i}]));");
+                Output.AppendIndent(3, $"cvt{i}.EncodeWithLengthPrefix(ref allocator, item.{members[i].NameInSourceCode});");
             }
             else
             {
+                Output.AppendIndent(3, $"var var{i} = item.{members[i].NameInSourceCode};");
                 Output.AppendIndent(3, $"if (System.Collections.Generic.EqualityComparer<{GetTypeFullName(i)}>.Default.Equals(var{i}, default) is false)");
                 Output.AppendIndent(3, $"{{");
-                AppendEncodeContext(4, i);
+                Output.AppendIndent(4, $"Mikodev.Binary.Allocator.Append(ref allocator, new System.ReadOnlySpan<byte>(keys[{i}]));");
+                Output.AppendIndent(4, $"cvt{i}.EncodeWithLengthPrefix(ref allocator, var{i});");
                 Output.AppendIndent(3, $"}}");
             }
+            CancellationToken.ThrowIfCancellationRequested();
         }
         Output.AppendIndent(2, $"}}");
     }
