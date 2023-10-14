@@ -72,23 +72,15 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     private void AppendEncodeMethod(bool auto)
     {
         var members = this.members;
-        var methodName = auto ? "EncodeAuto" : "Encode";
         if (auto)
             Output.AppendIndent();
-        Output.AppendIndent(2, $"public override void {methodName}(ref Mikodev.Binary.Allocator allocator, {SymbolTypeFullName} item)");
+        Output.AppendIndent(2, $"public override void {(auto ? "EncodeAuto" : "Encode")}(ref Mikodev.Binary.Allocator allocator, {SymbolTypeFullName} item)");
         Output.AppendIndent(2, $"{{");
         AppendEnsureContext();
         for (var i = 0; i < members.Length; i++)
         {
-            var member = members[i];
-            Output.AppendIndent(3, $"var var{i} = item.{member.NameInSourceCode};");
-            CancellationToken.ThrowIfCancellationRequested();
-        }
-        for (var i = 0; i < members.Length; i++)
-        {
-            var last = (i == members.Length - 1);
-            var method = (auto || last is false) ? "EncodeAuto" : "Encode";
-            Output.AppendIndent(3, $"cvt{i}.{method}(ref allocator, var{i});");
+            var flag = auto || (i != members.Length - 1);
+            Output.AppendIndent(3, $"cvt{i}.{(flag ? "EncodeAuto" : "Encode")}(ref allocator, item.{members[i].NameInSourceCode});");
             CancellationToken.ThrowIfCancellationRequested();
         }
         Output.AppendIndent(2, $"}}");
@@ -108,8 +100,8 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
         else
         {
             if (auto is false)
-                Output.AppendIndent(3, $"var body = span;");
-            var bufferName = auto ? "span" : "body";
+                Output.AppendIndent(3, $"var copy = span;");
+            var bufferName = auto ? "span" : "copy";
             for (var i = 0; i < members.Length; i++)
             {
                 var flag = auto || (i != members.Length - 1);
