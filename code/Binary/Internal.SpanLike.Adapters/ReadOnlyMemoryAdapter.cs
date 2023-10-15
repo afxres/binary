@@ -18,6 +18,7 @@ internal readonly struct ReadOnlyMemoryAdapter<E> : ISpanLikeAdapter<ReadOnlyMem
         return item.Length;
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void Encode(ref Allocator allocator, ReadOnlyMemory<E> item, Converter<E> converter)
     {
         foreach (var i in item.Span)

@@ -20,6 +20,7 @@ internal readonly struct ListAdapter<E> : ISpanLikeAdapter<List<E>, E>
         return item is null ? 0 : item.Count;
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void Encode(ref Allocator allocator, List<E>? item, Converter<E> converter)
     {
         foreach (var i in CollectionsMarshal.AsSpan(item))

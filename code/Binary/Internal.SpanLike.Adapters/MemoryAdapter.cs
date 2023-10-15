@@ -18,6 +18,7 @@ internal readonly struct MemoryAdapter<E> : ISpanLikeAdapter<Memory<E>, E>
         return item.Length;
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public static void Encode(ref Allocator allocator, Memory<E> item, Converter<E> converter)
     {
         foreach (var i in item.Span)
