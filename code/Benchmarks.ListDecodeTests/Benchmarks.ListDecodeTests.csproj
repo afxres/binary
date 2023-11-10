@@ -5,7 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Mikodev.Binary.Benchmarks.ListDecodeTests</AssemblyName>
     <RootNamespace>Mikodev.Binary.Benchmarks.ListDecodeTests</RootNamespace>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
