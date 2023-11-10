@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-public class VariableBoundArrayConverterTests
+public partial class VariableBoundArrayConverterTests
 {
     public static IEnumerable<object[]> Array2DData()
     {
@@ -23,11 +23,11 @@ public class VariableBoundArrayConverterTests
 
     public static IEnumerable<object[]> Array2DNonZeroBasedData()
     {
-        var alpha = (int[,])Array.CreateInstance(typeof(int), new[] { 2, 3 }, new[] { 4, 5 });
+        var alpha = (int[,])Array.CreateInstance(typeof(int), [2, 3], [4, 5]);
         for (var i = alpha.GetLowerBound(0); i <= alpha.GetUpperBound(0); i++)
             for (var k = alpha.GetLowerBound(1); k <= alpha.GetUpperBound(1); k++)
                 alpha[i, k] = (i << 16) | k;
-        var bravo = (string[,])Array.CreateInstance(typeof(string), new[] { 3, 4 }, new[] { 5, 6 });
+        var bravo = (string[,])Array.CreateInstance(typeof(string), [3, 4], [5, 6]);
         for (var i = bravo.GetLowerBound(0); i <= bravo.GetUpperBound(0); i++)
             for (var k = bravo.GetLowerBound(1); k <= bravo.GetUpperBound(1); k++)
                 bravo[i, k] = $"({i}, {k})";
@@ -59,8 +59,8 @@ public class VariableBoundArrayConverterTests
     {
         yield return new object[] { new int[3, 0] };
         yield return new object[] { new string[0, 2, 4] };
-        var alpha = Array.CreateInstance(typeof(int), new[] { 2, 0, 2, 3 }, new[] { 0, 1, 0, 2 });
-        var bravo = Array.CreateInstance(typeof(string), new[] { 0, 2, 4 }, new[] { 4, 2, 0 });
+        var alpha = Array.CreateInstance(typeof(int), [2, 0, 2, 3], [0, 1, 0, 2]);
+        var bravo = Array.CreateInstance(typeof(string), [0, 2, 4], [4, 2, 0]);
         yield return new object[] { alpha };
         yield return new object[] { bravo };
     }
@@ -104,10 +104,10 @@ public class VariableBoundArrayConverterTests
 
     public static IEnumerable<object[]> Array1DNonZeroBasedData()
     {
-        var alpha = Array.CreateInstance(typeof(int), new[] { 10 }, new[] { 11 });
+        var alpha = Array.CreateInstance(typeof(int), [10], [11]);
         for (var i = alpha.GetLowerBound(0); i <= alpha.GetUpperBound(0); i++)
             alpha.SetValue(i, i);
-        var bravo = Array.CreateInstance(typeof(string), new[] { 20 }, new[] { 21 });
+        var bravo = Array.CreateInstance(typeof(string), [20], [21]);
         for (var i = bravo.GetLowerBound(0); i <= bravo.GetUpperBound(0); i++)
             bravo.SetValue(i.ToString(), i);
         yield return new object[] { alpha };
