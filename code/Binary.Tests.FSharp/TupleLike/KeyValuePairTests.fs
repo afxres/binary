@@ -30,7 +30,7 @@ let DecodeAuto<'a> (c : Converter<'a>) (buffer : byte array) =
 [<InlineData("", -2.4, 0, 9, 9)>]
 [<InlineData(-4, 256L, 12, 12, 12)>]
 [<InlineData("key", "value", 0, 9, 10)>]
-let ``Key-Value Pair`` (k : 'K) (v : 'V) define normal headed =
+let ``Key-Value Pair``<'K, 'V> (k : 'K) (v : 'V) define normal headed =
     let i = KeyValuePair(k, v)
     let t = k, v
     let alpha = generator.GetConverter<KeyValuePair<'K, 'V>> ()

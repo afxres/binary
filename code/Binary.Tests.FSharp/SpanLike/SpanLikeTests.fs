@@ -21,7 +21,7 @@ type SpanLikeTests () =
 
     [<Theory(DisplayName = "Memory")>]
     [<MemberData("Data Alpha")>]
-    member __.``Memory`` (item : 'a array, capacity : int) =
+    member __.``Memory``<'a> (item : 'a array, capacity : int) =
         let converter = generator.GetConverter<Memory<'a>>()
         let buffer = converter.Encode(Memory item)
         let result = converter.Decode buffer
@@ -33,7 +33,7 @@ type SpanLikeTests () =
 
     [<Theory(DisplayName = "ReadOnlyMemory")>]
     [<MemberData("Data Alpha")>]
-    member __.``ReadOnlyMemory`` (item : 'a array, capacity : int) =
+    member __.``ReadOnlyMemory``<'a> (item : 'a array, capacity : int) =
         let converter = generator.GetConverter<ReadOnlyMemory<'a>>()
         let buffer = converter.Encode(ReadOnlyMemory item)
         let result = converter.Decode buffer
@@ -45,7 +45,7 @@ type SpanLikeTests () =
 
     [<Theory(DisplayName = "ArraySegment")>]
     [<MemberData("Data Alpha")>]
-    member __.``ArraySegment`` (item : 'a array, capacity : int) =
+    member __.``ArraySegment``<'a> (item : 'a array, capacity : int) =
         let converter = generator.GetConverter<ArraySegment<'a>>()
         let buffer = converter.Encode(ArraySegment item)
         let result = converter.Decode buffer
@@ -61,7 +61,7 @@ type SpanLikeTests () =
 
     [<Theory>]
     [<MemberData("Data Slice")>]
-    member __.``Memory Slice`` (item : 'a array, offset : int, length : int) =
+    member __.``Memory Slice``<'a> (item : 'a array, offset : int, length : int) =
         let converter = generator.GetConverter<Memory<'a>>()
         let source = Memory<'a>(item, offset, length)
         let buffer = converter.Encode source
@@ -71,7 +71,7 @@ type SpanLikeTests () =
 
     [<Theory>]
     [<MemberData("Data Slice")>]
-    member __.``ReadOnlyMemory Slice`` (item : 'a array, offset : int, length : int) =
+    member __.``ReadOnlyMemory Slice``<'a> (item : 'a array, offset : int, length : int) =
         let converter = generator.GetConverter<ReadOnlyMemory<'a>>()
         let source = ReadOnlyMemory<'a>(item, offset, length)
         let buffer = converter.Encode source
@@ -81,7 +81,7 @@ type SpanLikeTests () =
 
     [<Theory>]
     [<MemberData("Data Slice")>]
-    member __.``ArraySegment Slice`` (item : 'a array, offset : int, length : int) =
+    member __.``ArraySegment Slice``<'a> (item : 'a array, offset : int, length : int) =
         let converter = generator.GetConverter<ArraySegment<'a>>()
         let source = ArraySegment<'a>(item, offset, length)
         let buffer = converter.Encode source
@@ -98,7 +98,7 @@ type SpanLikeTests () =
 
     [<Theory>]
     [<MemberData("Data Empty")>]
-    member __.``Memory Empty`` (item : 'a array) =
+    member __.``Memory Empty``<'a> (item : 'a array) =
         let converter = generator.GetConverter<Memory<'a>>()
         let buffer = converter.Encode (Memory item)
         let result = converter.Decode buffer
@@ -111,7 +111,7 @@ type SpanLikeTests () =
 
     [<Theory>]
     [<MemberData("Data Empty")>]
-    member __.``ReadOnlyMemory Empty`` (item : 'a array) =
+    member __.``ReadOnlyMemory Empty``<'a> (item : 'a array) =
         let converter = generator.GetConverter<ReadOnlyMemory<'a>>()
         let buffer = converter.Encode (ReadOnlyMemory item)
         let result = converter.Decode buffer
@@ -124,7 +124,7 @@ type SpanLikeTests () =
 
     [<Theory>]
     [<MemberData("Data Empty")>]
-    member __.``ArraySegment Empty`` (item : 'a array) =
+    member __.``ArraySegment Empty``<'a> (item : 'a array) =
         let converter = generator.GetConverter<ArraySegment<'a>>()
         let buffer = converter.Encode (ArraySegment item)
         let result = converter.Decode buffer
@@ -140,7 +140,7 @@ type SpanLikeTests () =
 
     [<Theory>]
     [<MemberData("Data Large")>]
-    member __.``Memory Large Count`` (item : 'a array) =
+    member __.``Memory Large Count``<'a> (item : 'a array) =
         let converter = generator.GetConverter<Memory<'a>>()
         let buffer = converter.Encode(Memory item)
         let result = converter.Decode buffer
@@ -149,7 +149,7 @@ type SpanLikeTests () =
 
     [<Theory>]
     [<MemberData("Data Large")>]
-    member __.``ReadOnlyMemory Large Count`` (item : 'a array) =
+    member __.``ReadOnlyMemory Large Count``<'a> (item : 'a array) =
         let converter = generator.GetConverter<ReadOnlyMemory<'a>>()
         let buffer = converter.Encode(ReadOnlyMemory item)
         let result = converter.Decode buffer
@@ -158,7 +158,7 @@ type SpanLikeTests () =
 
     [<Theory>]
     [<MemberData("Data Large")>]
-    member __.``ArraySegment Large Count`` (item : 'a array) =
+    member __.``ArraySegment Large Count``<'a> (item : 'a array) =
         let converter = generator.GetConverter<ArraySegment<'a>>()
         let buffer = converter.Encode(ArraySegment item)
         let result = converter.Decode buffer

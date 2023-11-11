@@ -39,13 +39,13 @@ type ListTests () =
         ()
 
     static member ``Data Alpha`` : (obj array) seq = seq {
-        yield [| box [| 2; 6; 10 |] |]
-        yield [| box [| "one"; "second"; "final" |] |]
+        yield [| [| 2; 6; 10 |] |]
+        yield [| [| "one"; "second"; "final" |] |]
     }
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member __.``Fallback List Implementation (hack, integration test)`` (array : 'a array) =
+    member __.``Fallback List Implementation (hack, integration test)``<'a> (array : 'a array) =
         let generator = Generator.CreateDefault()
         let types = [ typeof<int>; typeof<string> ] |> List.map (fun x -> x, generator.GetConverter x) |> readOnlyDict
         let context = { new IGeneratorContext with member __.GetConverter t = types.[t] }

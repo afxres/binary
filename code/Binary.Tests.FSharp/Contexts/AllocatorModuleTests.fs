@@ -317,7 +317,7 @@ let ``Append Max Length With Length Prefix (default constructor, writer null)`` 
 [<Theory>]
 [<InlineData(1)>]
 [<InlineData("data")>]
-let ``Append Action (with data)`` (data : 'a) =
+let ``Append Action (with data)``<'a> (data : 'a) =
     let mutable flag : 'a option = None
     let mutable allocator = Allocator()
     Allocator.Append(&allocator, 1, data, fun a b -> flag <- Some b)

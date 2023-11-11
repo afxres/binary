@@ -171,7 +171,7 @@ let ``Decode (via type, argument null)`` () =
 [<Theory>]
 [<InlineData(6)>]
 [<InlineData("fox")>]
-let ``Encode and Decode`` (data : 'a) =
+let ``Encode and Decode``<'a> (data : 'a) =
     let buffer = generator.Encode data
     let result = generator.Decode<'a> buffer
     Assert.Equal<'a>(data, result)
