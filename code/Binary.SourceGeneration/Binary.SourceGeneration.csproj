@@ -9,7 +9,7 @@
     <Authors>Mikodev</Authors>
     <Company>Mikodev</Company>
     <Product>Mikodev.Binary</Product>
-    <Version>5.6.0-beta.9</Version>
+    <Version>5.6.0</Version>
     <IsRoslynComponent>true</IsRoslynComponent>
     <AnalyzerLanguage>cs</AnalyzerLanguage>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
