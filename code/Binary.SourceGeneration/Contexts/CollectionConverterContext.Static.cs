@@ -6,9 +6,9 @@ using System.Linq;
 
 public sealed partial class CollectionConverterContext
 {
-    private const string ConstructorParameter = "item";
+    private const string ConstructorArgument = "item";
 
-    private enum SourceKind
+    private enum ConstructorArgumentKind
     {
         Null,
 
@@ -21,16 +21,16 @@ public sealed partial class CollectionConverterContext
         ListKeyValuePair,
     }
 
-    private class TypeBaseInfo(SourceKind sourceKind, string expression)
+    private class TypeBaseInfo(ConstructorArgumentKind kind, string expression)
     {
-        public SourceKind SourceKind { get; } = sourceKind;
+        public ConstructorArgumentKind ConstructorArgumentKind { get; } = kind;
 
-        public string Expression { get; } = expression;
+        public string ConstructorExpression { get; } = expression;
     }
 
-    private class TypeInfo(SourceKind sourceKind, string expression, ImmutableArray<ITypeSymbol> elements) : TypeBaseInfo(sourceKind, expression)
+    private class TypeInfo(ConstructorArgumentKind kind, string expression, ImmutableArray<ITypeSymbol> types) : TypeBaseInfo(kind, expression)
     {
-        public ImmutableArray<ITypeSymbol> ElementTypes { get; } = elements;
+        public ImmutableArray<ITypeSymbol> ElementTypes { get; } = types;
     }
 
     private class Resource(ImmutableDictionary<INamedTypeSymbol, TypeBaseInfo> supported, ImmutableHashSet<INamedTypeSymbol> unsupported, INamedTypeSymbol? enumerable, INamedTypeSymbol? dictionary, INamedTypeSymbol? readonlyDictionary)
@@ -48,7 +48,7 @@ public sealed partial class CollectionConverterContext
 
     private static ImmutableDictionary<INamedTypeSymbol, TypeBaseInfo> CreateResourceForSupportedTypes(Compilation compilation)
     {
-        static void Add(Compilation compilation, ImmutableDictionary<INamedTypeSymbol, TypeBaseInfo>.Builder builder, string name, SourceKind source, string method)
+        static void Register(Compilation compilation, ImmutableDictionary<INamedTypeSymbol, TypeBaseInfo>.Builder builder, string name, ConstructorArgumentKind source, string method)
         {
             if (compilation.GetTypeByMetadataName(name) is not { } type)
                 return;
@@ -56,34 +56,35 @@ public sealed partial class CollectionConverterContext
         }
 
         var builder = ImmutableDictionary.CreateBuilder<INamedTypeSymbol, TypeBaseInfo>(SymbolEqualityComparer.Default);
-        var functor = (string name, SourceKind source, string method) => Add(compilation, builder, name, source, method);
-        functor.Invoke("System.Collections.Frozen.FrozenSet`1", SourceKind.List, $"System.Collections.Frozen.FrozenSet.ToFrozenSet({ConstructorParameter})");
-        functor.Invoke("System.Collections.Frozen.FrozenDictionary`2", SourceKind.ListKeyValuePair, $"System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary({ConstructorParameter})");
-        functor.Invoke("System.Collections.Generic.IList`1", SourceKind.List, ConstructorParameter);
-        functor.Invoke("System.Collections.Generic.ICollection`1", SourceKind.List, ConstructorParameter);
-        functor.Invoke("System.Collections.Generic.IEnumerable`1", SourceKind.List, ConstructorParameter);
-        functor.Invoke("System.Collections.Generic.IReadOnlyList`1", SourceKind.List, ConstructorParameter);
-        functor.Invoke("System.Collections.Generic.IReadOnlyCollection`1", SourceKind.List, ConstructorParameter);
-        functor.Invoke("System.Collections.Generic.ISet`1", SourceKind.HashSet, ConstructorParameter);
-        functor.Invoke("System.Collections.Generic.IReadOnlySet`1", SourceKind.HashSet, ConstructorParameter);
-        functor.Invoke("System.Collections.Generic.IDictionary`2", SourceKind.Dictionary, ConstructorParameter);
-        functor.Invoke("System.Collections.Generic.IReadOnlyDictionary`2", SourceKind.Dictionary, ConstructorParameter);
-        functor.Invoke("System.Collections.Immutable.IImmutableDictionary`2", SourceKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.IImmutableList`1", SourceKind.List, $"System.Collections.Immutable.ImmutableList.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.IImmutableQueue`1", SourceKind.List, $"System.Collections.Immutable.ImmutableQueue.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.IImmutableSet`1", SourceKind.List, $"System.Collections.Immutable.ImmutableHashSet.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.ImmutableDictionary`2", SourceKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.ImmutableHashSet`1", SourceKind.List, $"System.Collections.Immutable.ImmutableHashSet.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.ImmutableList`1", SourceKind.List, $"System.Collections.Immutable.ImmutableList.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.ImmutableQueue`1", SourceKind.List, $"System.Collections.Immutable.ImmutableQueue.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.ImmutableSortedDictionary`2", SourceKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableSortedDictionary.CreateRange({ConstructorParameter})");
-        functor.Invoke("System.Collections.Immutable.ImmutableSortedSet`1", SourceKind.List, $"System.Collections.Immutable.ImmutableSortedSet.CreateRange({ConstructorParameter})");
+
+        Register(compilation, builder, "System.Collections.Frozen.FrozenSet`1", ConstructorArgumentKind.List, $"System.Collections.Frozen.FrozenSet.ToFrozenSet({ConstructorArgument})");
+        Register(compilation, builder, "System.Collections.Frozen.FrozenDictionary`2", ConstructorArgumentKind.ListKeyValuePair, $"System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary({ConstructorArgument})");
+        Register(compilation, builder, "System.Collections.Generic.IList`1", ConstructorArgumentKind.List, ConstructorArgument);
+        Register(compilation, builder, "System.Collections.Generic.ICollection`1", ConstructorArgumentKind.List, ConstructorArgument);
+        Register(compilation, builder, "System.Collections.Generic.IEnumerable`1", ConstructorArgumentKind.List, ConstructorArgument);
+        Register(compilation, builder, "System.Collections.Generic.IReadOnlyList`1", ConstructorArgumentKind.List, ConstructorArgument);
+        Register(compilation, builder, "System.Collections.Generic.IReadOnlyCollection`1", ConstructorArgumentKind.List, ConstructorArgument);
+        Register(compilation, builder, "System.Collections.Generic.ISet`1", ConstructorArgumentKind.HashSet, ConstructorArgument);
+        Register(compilation, builder, "System.Collections.Generic.IReadOnlySet`1", ConstructorArgumentKind.HashSet, ConstructorArgument);
+        Register(compilation, builder, "System.Collections.Generic.IDictionary`2", ConstructorArgumentKind.Dictionary, ConstructorArgument);
+        Register(compilation, builder, "System.Collections.Generic.IReadOnlyDictionary`2", ConstructorArgumentKind.Dictionary, ConstructorArgument);
+        Register(compilation, builder, "System.Collections.Immutable.IImmutableDictionary`2", ConstructorArgumentKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorArgument})");
+        Register(compilation, builder, "System.Collections.Immutable.IImmutableList`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableList.CreateRange({ConstructorArgument})");
+        Register(compilation, builder, "System.Collections.Immutable.IImmutableQueue`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableQueue.CreateRange({ConstructorArgument})");
+        Register(compilation, builder, "System.Collections.Immutable.IImmutableSet`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableHashSet.CreateRange({ConstructorArgument})");
+        Register(compilation, builder, "System.Collections.Immutable.ImmutableDictionary`2", ConstructorArgumentKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorArgument})");
+        Register(compilation, builder, "System.Collections.Immutable.ImmutableHashSet`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableHashSet.CreateRange({ConstructorArgument})");
+        Register(compilation, builder, "System.Collections.Immutable.ImmutableList`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableList.CreateRange({ConstructorArgument})");
+        Register(compilation, builder, "System.Collections.Immutable.ImmutableQueue`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableQueue.CreateRange({ConstructorArgument})");
+        Register(compilation, builder, "System.Collections.Immutable.ImmutableSortedDictionary`2", ConstructorArgumentKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableSortedDictionary.CreateRange({ConstructorArgument})");
+        Register(compilation, builder, "System.Collections.Immutable.ImmutableSortedSet`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableSortedSet.CreateRange({ConstructorArgument})");
+
         return builder.ToImmutable();
     }
 
     private static ImmutableHashSet<INamedTypeSymbol> CreateResourceForUnsupportedTypes(Compilation compilation)
     {
-        static void Add(Compilation compilation, ImmutableHashSet<INamedTypeSymbol>.Builder builder, string name)
+        static void Register(Compilation compilation, ImmutableHashSet<INamedTypeSymbol>.Builder builder, string name)
         {
             if (compilation.GetTypeByMetadataName(name) is not { } type)
                 return;
@@ -91,12 +92,13 @@ public sealed partial class CollectionConverterContext
         }
 
         var builder = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>(SymbolEqualityComparer.Default);
-        var functor = (string name) => Add(compilation, builder, name);
-        functor.Invoke("System.String");
-        functor.Invoke("System.Collections.Generic.Stack`1");
-        functor.Invoke("System.Collections.Concurrent.ConcurrentStack`1");
-        functor.Invoke("System.Collections.Immutable.ImmutableStack`1");
-        functor.Invoke("System.Collections.Immutable.IImmutableStack`1");
+
+        Register(compilation, builder, "System.String");
+        Register(compilation, builder, "System.Collections.Generic.Stack`1");
+        Register(compilation, builder, "System.Collections.Concurrent.ConcurrentStack`1");
+        Register(compilation, builder, "System.Collections.Immutable.ImmutableStack`1");
+        Register(compilation, builder, "System.Collections.Immutable.IImmutableStack`1");
+
         return builder.ToImmutable();
     }
 
@@ -128,17 +130,17 @@ public sealed partial class CollectionConverterContext
             return null;
         var dictionaryInterface = interfaces.FirstOrDefault(x => Implements(x, resource.UnboundIDictionaryType));
         if (dictionaryInterface is not null && HasConstructor(symbol, dictionaryInterface))
-            return new TypeInfo(SourceKind.Dictionary, string.Empty, dictionaryInterface.TypeArguments);
+            return new TypeInfo(ConstructorArgumentKind.Dictionary, string.Empty, dictionaryInterface.TypeArguments);
         var readonlyDictionaryInterface = interfaces.FirstOrDefault(x => Implements(x, resource.UnboundIReadOnlyDictionaryType));
         if (readonlyDictionaryInterface is not null && HasConstructor(symbol, readonlyDictionaryInterface))
-            return new TypeInfo(SourceKind.Dictionary, string.Empty, readonlyDictionaryInterface.TypeArguments);
+            return new TypeInfo(ConstructorArgumentKind.Dictionary, string.Empty, readonlyDictionaryInterface.TypeArguments);
         var enumerableInterface = enumerableInterfaces.Single();
         var typeArguments = dictionaryInterface?.TypeArguments ?? readonlyDictionaryInterface?.TypeArguments;
         var hasConstructor = HasConstructor(symbol, enumerableInterface);
-        var sourceKind = hasConstructor
-            ? (typeArguments is null ? SourceKind.List : SourceKind.ListKeyValuePair)
-            : SourceKind.Null;
-        return new TypeInfo(sourceKind, string.Empty, typeArguments ?? enumerableInterface.TypeArguments);
+        var constructorArgumentKind = hasConstructor
+            ? (typeArguments is null ? ConstructorArgumentKind.List : ConstructorArgumentKind.ListKeyValuePair)
+            : ConstructorArgumentKind.Null;
+        return new TypeInfo(constructorArgumentKind, string.Empty, typeArguments ?? enumerableInterface.TypeArguments);
     }
 
     private static TypeInfo? GetInfo(SourceGeneratorContext context, ITypeSymbol type)
@@ -152,7 +154,7 @@ public sealed partial class CollectionConverterContext
         if (resource.UnsupportedTypes.Contains(unboundOrOriginal))
             return null;
         if (unbound is not null && resource.SupportedTypes.TryGetValue(unbound, out var definition))
-            return new TypeInfo(definition.SourceKind, definition.Expression, symbol.TypeArguments);
+            return new TypeInfo(definition.ConstructorArgumentKind, definition.ConstructorExpression, symbol.TypeArguments);
         return GetInfo(symbol, resource);
     }
 

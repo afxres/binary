@@ -102,13 +102,13 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
     private void AppendDecodeMethod()
     {
         var info = this.info;
-        var action = info.SourceKind switch
+        var action = info.ConstructorArgumentKind switch
         {
-            SourceKind.List => new Action(AppendDecodeList),
-            SourceKind.HashSet => new Action(AppendDecodeHashSet),
-            SourceKind.Dictionary => new Action(AppendDecodeDictionary),
-            SourceKind.ListKeyValuePair => new Action(AppendDecodeListKeyValuePair),
-            _ => null,
+            ConstructorArgumentKind.List => AppendDecodeList,
+            ConstructorArgumentKind.HashSet => AppendDecodeHashSet,
+            ConstructorArgumentKind.Dictionary => AppendDecodeDictionary,
+            ConstructorArgumentKind.ListKeyValuePair => AppendDecodeListKeyValuePair,
+            _ => default(Action),
         };
         Output.AppendIndent();
         Output.AppendIndent(2, $"public override {SymbolTypeFullName} Decode(in System.ReadOnlySpan<byte> span)");
@@ -121,9 +121,9 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
         {
             Output.AppendIndent(3, $"var body = span;");
             action.Invoke();
-            var method = info.Expression;
+            var method = info.ConstructorExpression;
             if (string.IsNullOrEmpty(method))
-                method = $"new {SymbolTypeFullName}({ConstructorParameter})";
+                method = $"new {SymbolTypeFullName}({ConstructorArgument})";
             Output.AppendIndent(3, $"return {method};");
         }
         Output.AppendIndent(2, $"}}");

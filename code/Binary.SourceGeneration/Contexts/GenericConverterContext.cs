@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis;
 using Mikodev.Binary.SourceGeneration;
 using Mikodev.Binary.SourceGeneration.Internal;
 using System.Collections.Generic;
-using System.Linq;
 
 public sealed partial class GenericConverterContext : SymbolConverterContext
 {
@@ -21,18 +20,16 @@ public sealed partial class GenericConverterContext : SymbolConverterContext
     {
         var info = this.info;
         var elements = info.ElementTypes;
+        var types = new List<string>();
+        if (info.TypeArgumentsOption is TypeArgumentsOption.IncludeReturnType)
+            types.Add(SymbolTypeFullName);
         for (var i = 0; i < elements.Length; i++)
         {
-            var element = elements[i];
-            AppendAssignConverterExplicit(element, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i));
+            types.Add(GetTypeFullName(i));
+            AppendAssignConverterExplicit(elements[i], $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i));
             CancellationToken.ThrowIfCancellationRequested();
         }
-        var types = new List<string>();
-        if (info.SelfKind is SelfKind.Include)
-            types.Add(SymbolTypeFullName);
-        types.AddRange(elements.Select((_, i) => GetTypeFullName(i)));
-        var arguments = string.Join(", ", types);
-        Output.AppendIndent(3, $"var converter = Mikodev.Binary.Generator.Get{info.Name}Converter<{arguments}>(", ");", elements.Length, x => $"cvt{x}");
+        Output.AppendIndent(3, $"var converter = Mikodev.Binary.Generator.Get{info.TypeName}Converter<{string.Join(", ", types)}>(", ");", elements.Length, x => $"cvt{x}");
     }
 
     protected override void Handle()
