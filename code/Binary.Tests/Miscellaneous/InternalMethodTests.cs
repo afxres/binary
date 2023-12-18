@@ -71,9 +71,9 @@ public class InternalMethodTests
     [Theory(DisplayName = "Create Instance With Null Result")]
     [InlineData(typeof(int?), null)]
     [InlineData(typeof(long?), null)]
-    public void CreateInstanceWithNull(Type type, object[] arguments)
+    public void CreateInstanceWithNull(Type type, object[]? arguments)
     {
-        var invoke = GetCommonModuleMethod<Func<Type, object[], object>>("CreateInstance");
+        var invoke = GetCommonModuleMethod<Func<Type, object[]?, object>>("CreateInstance");
         var error = Assert.Throws<InvalidOperationException>(() => invoke.Invoke(type, arguments));
         var message = $"Invalid null instance detected, type: {type}";
         Assert.Equal(message, error.Message);
