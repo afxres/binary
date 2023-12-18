@@ -10,7 +10,7 @@ public class SourceGeneratorContext(Compilation compilation, Action<Diagnostic> 
 {
     private readonly Action<Diagnostic> diagnosticCollector = diagnosticCollector;
 
-    private readonly Dictionary<string, object> resources = new Dictionary<string, object>();
+    private readonly Dictionary<string, object> resources = [];
 
     private readonly Dictionary<ITypeSymbol, string> typeFullNameCache = new Dictionary<ITypeSymbol, string>(SymbolEqualityComparer.Default);
 

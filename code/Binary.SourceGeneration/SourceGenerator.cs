@@ -72,7 +72,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
             var info = new ContextInfo(symbol, inclusions);
             // order by type name, then by containing namespace
             if (dictionary.TryGetValue(symbol.Name, out var child) is false)
-                dictionary.Add(symbol.Name, child = new SortedDictionary<string, ContextInfo>());
+                dictionary.Add(symbol.Name, child = []);
             child.Add(symbol.ContainingNamespace.ToDisplayString(), info);
         }
 
