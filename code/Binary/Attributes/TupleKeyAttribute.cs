@@ -3,9 +3,7 @@
 using System;
 
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
-public sealed class TupleKeyAttribute : Attribute
+public sealed class TupleKeyAttribute(int key) : Attribute
 {
-    public int Key { get; }
-
-    public TupleKeyAttribute(int key) => Key = key;
+    public int Key { get; } = key;
 }

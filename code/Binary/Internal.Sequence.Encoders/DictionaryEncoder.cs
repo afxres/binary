@@ -2,17 +2,11 @@
 
 using System.Collections.Generic;
 
-internal sealed class DictionaryEncoder<K, V> where K : notnull
+internal sealed class DictionaryEncoder<K, V>(Converter<K> init, Converter<V> tail) where K : notnull
 {
-    private readonly Converter<K> init;
+    private readonly Converter<K> init = init;
 
-    private readonly Converter<V> tail;
-
-    public DictionaryEncoder(Converter<K> init, Converter<V> tail)
-    {
-        this.init = init;
-        this.tail = tail;
-    }
+    private readonly Converter<V> tail = tail;
 
     public void Encode(ref Allocator allocator, Dictionary<K, V>? item)
     {

@@ -2,11 +2,9 @@
 
 using System.Collections.Generic;
 
-internal sealed class HashSetEncoder<E>
+internal sealed class HashSetEncoder<E>(Converter<E> converter)
 {
-    private readonly Converter<E> converter;
-
-    public HashSetEncoder(Converter<E> converter) => this.converter = converter;
+    private readonly Converter<E> converter = converter;
 
     public void Encode(ref Allocator allocator, HashSet<E>? item)
     {

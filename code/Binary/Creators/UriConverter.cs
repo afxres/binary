@@ -2,11 +2,9 @@
 
 using System;
 
-internal sealed class UriConverter : Converter<Uri?>
+internal sealed class UriConverter(Converter<string> converter) : Converter<Uri?>
 {
-    private readonly Converter<string> converter;
-
-    public UriConverter(Converter<string> converter) => this.converter = converter;
+    private readonly Converter<string> converter = converter;
 
     private static Uri? DecodeInternal(string item) => string.IsNullOrEmpty(item) ? null : new Uri(item);
 

@@ -4,11 +4,9 @@ using Mikodev.Binary.Internal.SpanLike;
 using System;
 using System.Buffers;
 
-internal sealed class ReadOnlySequenceConverter<E> : Converter<ReadOnlySequence<E>>
+internal sealed class ReadOnlySequenceConverter<E>(Converter<E> converter) : Converter<ReadOnlySequence<E>>
 {
-    private readonly Converter<E> converter;
-
-    public ReadOnlySequenceConverter(Converter<E> converter) => this.converter = converter;
+    private readonly Converter<E> converter = converter;
 
     public override void Encode(ref Allocator allocator, ReadOnlySequence<E> item)
     {

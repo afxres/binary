@@ -4,17 +4,11 @@ using Mikodev.Binary.Components;
 using System;
 using System.Collections.Generic;
 
-internal sealed class KeyValuePairConverter<K, V> : Converter<KeyValuePair<K, V>>
+internal sealed class KeyValuePairConverter<K, V>(Converter<K> init, Converter<V> tail) : Converter<KeyValuePair<K, V>>(TupleObject.GetConverterLength(new IConverter[] { init, tail }))
 {
-    private readonly Converter<K> init;
+    private readonly Converter<K> init = init;
 
-    private readonly Converter<V> tail;
-
-    public KeyValuePairConverter(Converter<K> init, Converter<V> tail) : base(TupleObject.GetConverterLength(new IConverter[] { init, tail }))
-    {
-        this.init = init;
-        this.tail = tail;
-    }
+    private readonly Converter<V> tail = tail;
 
     public override void Encode(ref Allocator allocator, KeyValuePair<K, V> item)
     {

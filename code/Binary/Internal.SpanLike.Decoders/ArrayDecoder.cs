@@ -4,14 +4,9 @@ using Mikodev.Binary.Internal.SpanLike.Contexts;
 using System;
 using System.Diagnostics;
 
-internal sealed class ArrayDecoder<T, E, B> : SpanLikeDecoder<T> where B : struct, ISpanLikeBuilder<T, E>
+internal sealed class ArrayDecoder<T, E, B>(Converter<E> converter) : SpanLikeDecoder<T> where B : struct, ISpanLikeBuilder<T, E>
 {
-    private readonly Converter<E> converter;
-
-    public ArrayDecoder(Converter<E> converter)
-    {
-        this.converter = converter;
-    }
+    private readonly Converter<E> converter = converter;
 
     public override T Invoke(ReadOnlySpan<byte> span)
     {

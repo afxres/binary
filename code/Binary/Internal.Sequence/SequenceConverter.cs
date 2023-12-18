@@ -3,17 +3,11 @@
 using Mikodev.Binary.Internal.Metadata;
 using System;
 
-internal sealed partial class SequenceConverter<T> : Converter<T>
+internal sealed partial class SequenceConverter<T>(AllocatorAction<T?> encode, DecodePassSpanDelegate<T>? decode) : Converter<T>
 {
-    private readonly DecodePassSpanDelegate<T> decode;
+    private readonly AllocatorAction<T?> encode = encode;
 
-    private readonly AllocatorAction<T?> encode;
-
-    public SequenceConverter(AllocatorAction<T?> encode, DecodePassSpanDelegate<T>? decode)
-    {
-        this.encode = encode;
-        this.decode = decode ?? (_ => ThrowHelper.ThrowNoSuitableConstructor<T>());
-    }
+    private readonly DecodePassSpanDelegate<T> decode = decode ?? (_ => ThrowHelper.ThrowNoSuitableConstructor<T>());
 
     public override void Encode(ref Allocator allocator, T? item) => this.encode.Invoke(ref allocator, item);
 

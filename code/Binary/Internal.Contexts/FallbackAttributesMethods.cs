@@ -166,8 +166,8 @@ internal static class FallbackAttributesMethods
                 throw new ArgumentException($"Named key '{key}' already exists, type: {type}");
             map.Add(key, member);
         }
-        list = map.Keys.ToImmutableArray();
-        return map.Values.ToImmutableArray();
+        list = [.. map.Keys];
+        return [.. map.Values];
     }
 
     private static ImmutableArray<MetaMemberInfo> GetSortedTupleMembers(Type type, ImmutableDictionary<MetaMemberInfo, TupleKeyAttribute> collection)
@@ -184,7 +184,7 @@ internal static class FallbackAttributesMethods
         var keys = map.Keys;
         if (keys.First() is not 0 || keys.Last() != keys.Count - 1)
             throw new ArgumentException($"Tuple key must start at zero and must be sequential, type: {type}");
-        return map.Values.ToImmutableArray();
+        return [.. map.Values];
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]

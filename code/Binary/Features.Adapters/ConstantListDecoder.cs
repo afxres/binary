@@ -13,7 +13,7 @@ internal sealed class ConstantListDecoder<E, U> : SpanLikeDecoder<List<E>> where
     public override List<E> Invoke(ReadOnlySpan<byte> span)
     {
         if (span.Length is 0)
-            return new List<E>();
+            return [];
         var capacity = SequenceContext.GetCapacity<E>(span.Length, U.Length);
         var result = new List<E>(capacity);
         ref var source = ref MemoryMarshal.GetReference(span);

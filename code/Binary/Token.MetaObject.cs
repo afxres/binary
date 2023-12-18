@@ -8,13 +8,11 @@ using System.Reflection;
 
 public sealed partial class Token
 {
-    private sealed class MetaObject : DynamicMetaObject
+    private sealed class MetaObject(Expression parameter, object value) : DynamicMetaObject(parameter, BindingRestrictions.Empty, value)
     {
         private static readonly MethodInfo IndexerMethodInfo = new Func<Token, string, Token>(GetToken).Method;
 
         private static readonly MethodInfo ConvertMethodInfo = new Func<Token, object>(GetValue<object>).Method.GetGenericMethodDefinition();
-
-        public MetaObject(Expression parameter, object value) : base(parameter, BindingRestrictions.Empty, value) { }
 
         public override DynamicMetaObject BindConvert(ConvertBinder binder)
         {

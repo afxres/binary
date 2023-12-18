@@ -11,7 +11,7 @@ internal sealed class GeneratorBuilder : IGeneratorBuilder
 {
     private readonly LinkedList<IConverterCreator> creators = new LinkedList<IConverterCreator>();
 
-    private readonly Dictionary<Type, IConverter> converters = new Dictionary<Type, IConverter>();
+    private readonly Dictionary<Type, IConverter> converters = [];
 
     private readonly IGeneratorContextFallback? fallback;
 
@@ -36,7 +36,7 @@ internal sealed class GeneratorBuilder : IGeneratorBuilder
         return this;
     }
 
-    public IGenerator Build() => new Generator(this.creators.ToImmutableArray(), this.converters.ToImmutableDictionary(), this.fallback);
+    public IGenerator Build() => new Generator([.. this.creators], this.converters.ToImmutableDictionary(), this.fallback);
 
     public override string ToString() => $"Converter Count = {this.converters.Count}, Converter Creator Count = {this.creators.Count}";
 }

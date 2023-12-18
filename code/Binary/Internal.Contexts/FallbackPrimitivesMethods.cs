@@ -11,20 +11,10 @@ using System.Reflection;
 
 internal static class FallbackPrimitivesMethods
 {
-    private static readonly ImmutableArray<string> Names = ImmutableArray.Create(new[]
-    {
-        "Item1",
-        "Item2",
-        "Item3",
-        "Item4",
-        "Item5",
-        "Item6",
-        "Item7",
-        "Rest",
-    });
+    private static readonly ImmutableArray<string> Names = ["Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Rest"];
 
-    private static readonly ImmutableArray<Type> Types = ImmutableArray.Create(new[]
-    {
+    private static readonly ImmutableArray<Type> Types =
+    [
         typeof(Tuple<>),
         typeof(Tuple<,>),
         typeof(Tuple<,,>),
@@ -41,7 +31,7 @@ internal static class FallbackPrimitivesMethods
         typeof(ValueTuple<,,,,,>),
         typeof(ValueTuple<,,,,,,>),
         typeof(ValueTuple<,,,,,,,>),
-    });
+    ];
 
     private static bool IsTupleOrValueTuple(Type type)
     {

@@ -2,14 +2,9 @@
 
 using Mikodev.Binary.Internal.SpanLike.Contexts;
 
-internal sealed class VariableEncoder<T, E, A> : SpanLikeEncoder<T> where A : struct, ISpanLikeAdapter<T, E>
+internal sealed class VariableEncoder<T, E, A>(Converter<E> converter) : SpanLikeEncoder<T> where A : struct, ISpanLikeAdapter<T, E>
 {
-    private readonly Converter<E> converter;
-
-    public VariableEncoder(Converter<E> converter)
-    {
-        this.converter = converter;
-    }
+    private readonly Converter<E> converter = converter;
 
     public override void Encode(ref Allocator allocator, T? item)
     {

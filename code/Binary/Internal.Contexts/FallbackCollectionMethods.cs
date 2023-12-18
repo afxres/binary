@@ -98,15 +98,15 @@ internal static class FallbackCollectionMethods
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(type, InvalidTypeDefinitions.Contains))
             throw new ArgumentException($"Invalid collection type: {type}");
         if (CommonModule.TryGetInterfaceArguments(type, typeof(IDictionary<,>), out var types) || CommonModule.TryGetInterfaceArguments(type, typeof(IReadOnlyDictionary<,>), out types))
-            return GetConverter(context, GetConverter<IEnumerable<KeyValuePair<object, object>>, object, object>, ImmutableArray.Create(type).AddRange(types));
+            return GetConverter(context, GetConverter<IEnumerable<KeyValuePair<object, object>>, object, object>, [type, .. types]);
         else
-            return GetConverter(context, GetConverter<IEnumerable<object>, object>, ImmutableArray.Create(type).AddRange(arguments));
+            return GetConverter(context, GetConverter<IEnumerable<object>, object>, [type, .. arguments]);
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static IConverter GetConverter(IGeneratorContext context, Func<IGeneratorContext, IConverter> func, ImmutableArray<Type> types)
     {
-        var method = func.Method.GetGenericMethodDefinition().MakeGenericMethod(types.ToArray());
+        var method = func.Method.GetGenericMethodDefinition().MakeGenericMethod([.. types]);
         var target = CommonModule.CreateDelegate<Func<IGeneratorContext, IConverter>>(null, method);
         return target.Invoke(context);
     }

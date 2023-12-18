@@ -48,7 +48,7 @@ internal static class SpanLikeMethods
     {
         var limits = span.Length;
         if (limits is 0)
-            return new List<E>();
+            return [];
         var intent = span;
         var length = converter.Length;
         var result = length is 0
@@ -73,7 +73,7 @@ internal static class SpanLikeMethods
         if (limits is 0)
         {
             actual = 0;
-            return Array.Empty<E>();
+            return [];
         }
 
         var intent = span;

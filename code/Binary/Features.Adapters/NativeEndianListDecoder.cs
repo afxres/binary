@@ -12,7 +12,7 @@ internal sealed class NativeEndianListDecoder<E> : SpanLikeDecoder<List<E>> wher
     public override List<E> Invoke(ReadOnlySpan<byte> span)
     {
         if (span.Length is 0)
-            return new List<E>();
+            return [];
         var capacity = SequenceContext.GetCapacity<E>(span.Length, Unsafe.SizeOf<E>());
         var result = new List<E>(capacity);
         CollectionsMarshal.SetCount(result, capacity);

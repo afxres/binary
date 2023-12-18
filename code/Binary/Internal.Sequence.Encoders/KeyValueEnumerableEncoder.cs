@@ -2,17 +2,11 @@
 
 using System.Collections.Generic;
 
-internal sealed class KeyValueEnumerableEncoder<T, K, V> where T : IEnumerable<KeyValuePair<K, V>>
+internal sealed class KeyValueEnumerableEncoder<T, K, V>(Converter<K> init, Converter<V> tail) where T : IEnumerable<KeyValuePair<K, V>>
 {
-    private readonly Converter<K> init;
+    private readonly Converter<K> init = init;
 
-    private readonly Converter<V> tail;
-
-    public KeyValueEnumerableEncoder(Converter<K> init, Converter<V> tail)
-    {
-        this.init = init;
-        this.tail = tail;
-    }
+    private readonly Converter<V> tail = tail;
 
     public void Encode(ref Allocator allocator, T? item)
     {

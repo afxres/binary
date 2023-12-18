@@ -4,26 +4,19 @@ using Mikodev.Binary.Components;
 using System;
 using System.Collections.Generic;
 
-internal sealed class KeyValueEnumerableDecoder<K, V>
+internal sealed class KeyValueEnumerableDecoder<K, V>(Converter<K> init, Converter<V> tail)
 {
-    private readonly int itemLength;
+    private readonly int itemLength = TupleObject.GetConverterLength(new IConverter[] { init, tail });
 
-    private readonly Converter<K> init;
+    private readonly Converter<K> init = init;
 
-    private readonly Converter<V> tail;
-
-    public KeyValueEnumerableDecoder(Converter<K> init, Converter<V> tail)
-    {
-        this.init = init;
-        this.tail = tail;
-        this.itemLength = TupleObject.GetConverterLength(new IConverter[] { init, tail });
-    }
+    private readonly Converter<V> tail = tail;
 
     public List<KeyValuePair<K, V>> Invoke(ReadOnlySpan<byte> span)
     {
         var limits = span.Length;
         if (limits is 0)
-            return new List<KeyValuePair<K, V>>();
+            return [];
         var capacity = SequenceContext.GetCapacityOrDefault<KeyValuePair<K, V>>(limits, this.itemLength);
         var init = this.init;
         var tail = this.tail;

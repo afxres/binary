@@ -3,17 +3,11 @@
 using System;
 using System.Collections.Generic;
 
-internal sealed class PriorityQueueConverter<E, P> : Converter<PriorityQueue<E, P>>
+internal sealed class PriorityQueueConverter<E, P>(Converter<E> init, Converter<P> tail) : Converter<PriorityQueue<E, P>>
 {
-    private readonly Converter<E> init;
+    private readonly Converter<E> init = init;
 
-    private readonly Converter<P> tail;
-
-    public PriorityQueueConverter(Converter<E> init, Converter<P> tail)
-    {
-        this.init = init;
-        this.tail = tail;
-    }
+    private readonly Converter<P> tail = tail;
 
     public override void Encode(ref Allocator allocator, PriorityQueue<E, P>? item)
     {

@@ -3,14 +3,9 @@
 using System;
 using System.Collections.Generic;
 
-internal sealed class ListDecoder<E> : SpanLikeDecoder<List<E>>
+internal sealed class ListDecoder<E>(Converter<E> converter) : SpanLikeDecoder<List<E>>
 {
-    private readonly Converter<E> converter;
-
-    public ListDecoder(Converter<E> converter)
-    {
-        this.converter = converter;
-    }
+    private readonly Converter<E> converter = converter;
 
     public override List<E> Invoke(ReadOnlySpan<byte> span)
     {

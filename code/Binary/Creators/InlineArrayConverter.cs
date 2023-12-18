@@ -4,17 +4,11 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-internal sealed class InlineArrayConverter<T, E> : Converter<T> where T : struct
+internal sealed class InlineArrayConverter<T, E>(Converter<E> converter, int length) : Converter<T>(checked(converter.Length * length)) where T : struct
 {
-    private readonly int length;
+    private readonly int length = length;
 
-    private readonly Converter<E> converter;
-
-    public InlineArrayConverter(Converter<E> converter, int length) : base(checked(converter.Length * length))
-    {
-        this.converter = converter;
-        this.length = length;
-    }
+    private readonly Converter<E> converter = converter;
 
     public override void Encode(ref Allocator allocator, T item)
     {

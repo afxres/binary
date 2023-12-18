@@ -4,23 +4,15 @@ using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Diagnostics;
 
-internal sealed class TupleObjectDelegateConverter<T> : Converter<T>
+internal sealed class TupleObjectDelegateConverter<T>(AllocatorAction<T> encode, AllocatorAction<T> encodeAuto, DecodeDelegate<T>? decode, DecodeDelegate<T>? decodeAuto, int length) : Converter<T>(length)
 {
-    private readonly AllocatorAction<T> encode;
+    private readonly AllocatorAction<T> encode = encode;
 
-    private readonly AllocatorAction<T> encodeAuto;
+    private readonly AllocatorAction<T> encodeAuto = encodeAuto;
 
-    private readonly DecodeDelegate<T> decode;
+    private readonly DecodeDelegate<T> decode = decode ?? ((ref ReadOnlySpan<byte> _) => ThrowHelper.ThrowNoSuitableConstructor<T>());
 
-    private readonly DecodeDelegate<T> decodeAuto;
-
-    public TupleObjectDelegateConverter(AllocatorAction<T> encode, AllocatorAction<T> encodeAuto, DecodeDelegate<T>? decode, DecodeDelegate<T>? decodeAuto, int length) : base(length)
-    {
-        this.encode = encode;
-        this.encodeAuto = encodeAuto;
-        this.decode = decode ?? ((ref ReadOnlySpan<byte> _) => ThrowHelper.ThrowNoSuitableConstructor<T>());
-        this.decodeAuto = decodeAuto ?? ((ref ReadOnlySpan<byte> _) => ThrowHelper.ThrowNoSuitableConstructor<T>());
-    }
+    private readonly DecodeDelegate<T> decodeAuto = decodeAuto ?? ((ref ReadOnlySpan<byte> _) => ThrowHelper.ThrowNoSuitableConstructor<T>());
 
     public override void Encode(ref Allocator allocator, T? item)
     {

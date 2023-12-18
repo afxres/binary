@@ -2,17 +2,11 @@
 
 using System;
 
-internal sealed class SpanLikeConverter<T> : Converter<T>
+internal sealed class SpanLikeConverter<T>(SpanLikeEncoder<T> encoder, SpanLikeDecoder<T> decoder) : Converter<T>
 {
-    private readonly SpanLikeDecoder<T> decoder;
+    private readonly SpanLikeEncoder<T> encoder = encoder;
 
-    private readonly SpanLikeEncoder<T> encoder;
-
-    public SpanLikeConverter(SpanLikeEncoder<T> encoder, SpanLikeDecoder<T> decoder)
-    {
-        this.decoder = decoder;
-        this.encoder = encoder;
-    }
+    private readonly SpanLikeDecoder<T> decoder = decoder;
 
     public override void Encode(ref Allocator allocator, T? item) => this.encoder.Encode(ref allocator, item);
 

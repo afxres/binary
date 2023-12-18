@@ -2,17 +2,11 @@
 
 using Mikodev.Binary.External.Contexts;
 
-internal sealed class HashCodeList : ByteViewList
+internal sealed class HashCodeList(int[] buckets, HashCodeSlot[] records) : ByteViewList
 {
-    private readonly int[] buckets;
+    private readonly int[] buckets = buckets;
 
-    private readonly HashCodeSlot[] records;
-
-    public HashCodeList(int[] buckets, HashCodeSlot[] records)
-    {
-        this.buckets = buckets;
-        this.records = records;
-    }
+    private readonly HashCodeSlot[] records = records;
 
     public override int Invoke(ref byte source, int length)
     {

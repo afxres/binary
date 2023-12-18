@@ -3,15 +3,13 @@
 using Mikodev.Binary.Internal;
 using System;
 
-internal sealed class NullableConverter<T> : Converter<T?> where T : struct
+internal sealed class NullableConverter<T>(Converter<T> converter) : Converter<T?> where T : struct
 {
     private const int None = 0;
 
     private const int Some = 1;
 
-    private readonly Converter<T> converter;
-
-    public NullableConverter(Converter<T> converter) => this.converter = converter;
+    private readonly Converter<T> converter = converter;
 
     public override void Encode(ref Allocator allocator, T? item)
     {

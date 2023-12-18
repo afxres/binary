@@ -8,7 +8,7 @@ internal sealed class BufferModule
     [ThreadStatic]
     private static BufferModule? ThreadStaticInstance;
 
-    private static readonly BufferModule GlobalSharedInstance = new BufferModule(Array.Empty<byte>());
+    private static readonly BufferModule GlobalSharedInstance = new BufferModule([]);
 
     private readonly byte[] buffer;
 

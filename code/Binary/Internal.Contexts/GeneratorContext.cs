@@ -7,24 +7,17 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 
-internal sealed class GeneratorContext : IGeneratorContext, IDisposable
+internal sealed class GeneratorContext(ImmutableArray<IConverterCreator> creators, ConcurrentDictionary<Type, IConverter> converters, IGeneratorContextFallback? fallback = null) : IGeneratorContext, IDisposable
 {
     private bool disposed = false;
 
-    private readonly IGeneratorContextFallback? fallback;
+    private readonly IGeneratorContextFallback? fallback = fallback;
 
-    private readonly HashSet<Type> types = new HashSet<Type>();
+    private readonly HashSet<Type> types = [];
 
-    private readonly ImmutableArray<IConverterCreator> creators;
+    private readonly ImmutableArray<IConverterCreator> creators = creators;
 
-    private readonly ConcurrentDictionary<Type, IConverter> converters;
-
-    public GeneratorContext(ImmutableArray<IConverterCreator> creators, ConcurrentDictionary<Type, IConverter> converters, IGeneratorContextFallback? fallback = null)
-    {
-        this.fallback = fallback;
-        this.creators = creators;
-        this.converters = converters;
-    }
+    private readonly ConcurrentDictionary<Type, IConverter> converters = converters;
 
     public void Dispose()
     {

@@ -5,11 +5,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-internal sealed class GeneratorObjectConverter : Converter<object>
+internal sealed class GeneratorObjectConverter(IGenerator generator) : Converter<object>
 {
-    private readonly IGenerator generator;
-
-    public GeneratorObjectConverter(IGenerator generator) => this.generator = generator;
+    private readonly IGenerator generator = generator;
 
     [DebuggerStepThrough, DoesNotReturn]
     private static void ExceptNull() => throw new ArgumentException("Can not get type of null object.");

@@ -5,17 +5,11 @@ using System.Collections.Generic;
 
 internal delegate T NamedObjectDecodeDelegate<out T>(scoped NamedObjectParameter parameter);
 
-internal sealed class NamedObjectDelegateConverter<T> : NamedObjectConverter<T>
+internal sealed class NamedObjectDelegateConverter<T>(Converter<string> converter, IEnumerable<string> names, IEnumerable<bool> optional, AllocatorAction<T> encode, NamedObjectDecodeDelegate<T>? decode) : NamedObjectConverter<T>(converter, names, optional)
 {
-    private readonly AllocatorAction<T> encode;
+    private readonly AllocatorAction<T> encode = encode;
 
-    private readonly NamedObjectDecodeDelegate<T> decode;
-
-    public NamedObjectDelegateConverter(Converter<string> converter, IEnumerable<string> names, IEnumerable<bool> optional, AllocatorAction<T> encode, NamedObjectDecodeDelegate<T>? decode) : base(converter, names, optional)
-    {
-        this.encode = encode;
-        this.decode = decode ?? (_ => ThrowHelper.ThrowNoSuitableConstructor<T>());
-    }
+    private readonly NamedObjectDecodeDelegate<T> decode = decode ?? (_ => ThrowHelper.ThrowNoSuitableConstructor<T>());
 
     public override T Decode(NamedObjectParameter parameter)
     {

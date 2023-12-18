@@ -23,7 +23,7 @@ internal static class ContextMethods
         var parameters = constructor.GetParameters();
         Debug.Assert(parameters.Length is not 0);
         var objectIndexes = Enumerable.Range(0, parameters.Length).ToImmutableArray();
-        return GetDecodeDelegate(delegateType, initializer, constructor, objectIndexes, ImmutableArray.Create<ContextMemberInitializer>(), ImmutableArray.Create<int>());
+        return GetDecodeDelegate(delegateType, initializer, constructor, objectIndexes, [], []);
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
@@ -31,7 +31,7 @@ internal static class ContextMethods
     {
         Debug.Assert(members.Any());
         var memberIndexes = Enumerable.Range(0, members.Length).ToImmutableArray();
-        return GetDecodeDelegate(delegateType, initializer, null, ImmutableArray.Create<int>(), members, memberIndexes);
+        return GetDecodeDelegate(delegateType, initializer, null, [], members, memberIndexes);
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]

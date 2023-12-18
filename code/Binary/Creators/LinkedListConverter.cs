@@ -3,11 +3,9 @@
 using System;
 using System.Collections.Generic;
 
-internal sealed class LinkedListConverter<T> : Converter<LinkedList<T>>
+internal sealed class LinkedListConverter<T>(Converter<T> converter) : Converter<LinkedList<T>>
 {
-    private readonly Converter<T> converter;
-
-    public LinkedListConverter(Converter<T> converter) => this.converter = converter;
+    private readonly Converter<T> converter = converter;
 
     public override void Encode(ref Allocator allocator, LinkedList<T>? item)
     {

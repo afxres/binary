@@ -3,9 +3,7 @@
 using System;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Enum | AttributeTargets.Interface | AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
-public sealed class ConverterCreatorAttribute : Attribute
+public sealed class ConverterCreatorAttribute(Type type) : Attribute
 {
-    public Type Type { get; }
-
-    public ConverterCreatorAttribute(Type type) => Type = type;
+    public Type Type { get; } = type;
 }

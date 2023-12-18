@@ -3,14 +3,9 @@
 using Mikodev.Binary.Internal.SpanLike.Contexts;
 using System.Diagnostics;
 
-internal sealed class ConstantEncoder<T, E, A> : SpanLikeEncoder<T> where A : struct, ISpanLikeAdapter<T, E>
+internal sealed class ConstantEncoder<T, E, A>(Converter<E> converter) : SpanLikeEncoder<T> where A : struct, ISpanLikeAdapter<T, E>
 {
-    private readonly Converter<E> converter;
-
-    public ConstantEncoder(Converter<E> converter)
-    {
-        this.converter = converter;
-    }
+    private readonly Converter<E> converter = converter;
 
     public override void Encode(ref Allocator allocator, T? item)
     {

@@ -77,7 +77,7 @@ public ref partial struct Allocator
     {
         var offset = this.offset;
         if (offset is 0)
-            return Array.Empty<byte>();
+            return [];
         var result = new byte[offset];
         Unsafe.CopyBlockUnaligned(ref MemoryMarshal.GetArrayDataReference(result), ref this.target, (uint)offset);
         return result;
