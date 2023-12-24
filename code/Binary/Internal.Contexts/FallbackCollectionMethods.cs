@@ -239,7 +239,7 @@ internal static class FallbackCollectionMethods
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    private static IConverter GetConverter<T, E>(IGeneratorContext context) where T : IEnumerable<E>
+    private static SequenceConverter<T> GetConverter<T, E>(IGeneratorContext context) where T : IEnumerable<E>
     {
         var converter = (Converter<E>)context.GetConverter(typeof(E));
         var encode = GetEncodeDelegate<T, E>(converter);
@@ -248,7 +248,7 @@ internal static class FallbackCollectionMethods
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    private static IConverter GetConverter<T, K, V>(IGeneratorContext context) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
+    private static SequenceConverter<T> GetConverter<T, K, V>(IGeneratorContext context) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
     {
         var init = (Converter<K>)context.GetConverter(typeof(K));
         var tail = (Converter<V>)context.GetConverter(typeof(V));
