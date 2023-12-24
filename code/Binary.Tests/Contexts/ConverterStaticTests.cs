@@ -10,9 +10,11 @@ public class ConverterStaticTests
     [Fact(DisplayName = "Argument Null Test")]
     public void ArgumentNullTest()
     {
-        var methods = new List<MethodInfo>();
-        methods.Add(new Func<IConverter, Type>(Converter.GetGenericArgument).Method);
-        methods.Add(new Func<IConverter, string, MethodInfo>(Converter.GetMethod).Method);
+        var methods = new List<MethodInfo>
+        {
+            new Func<IConverter, Type>(Converter.GetGenericArgument).Method,
+            new Func<IConverter, string, MethodInfo>(Converter.GetMethod).Method
+        };
         Assert.All(methods, ArgumentTests.ArgumentNullExceptionTest);
     }
 
@@ -40,7 +42,7 @@ public class ConverterStaticTests
     [InlineData(int.MinValue)]
     public void EncodeBySpanOverflowTest(int number)
     {
-        var error = Assert.Throws<ArgumentOutOfRangeException>(() => Converter.Encode(Array.Empty<byte>(), number, out var _));
+        var error = Assert.Throws<ArgumentOutOfRangeException>(() => Converter.Encode([], number, out var _));
         var method = new Write(Converter.Encode).Method;
         var parameters = method.GetParameters();
         Assert.Equal("number", error.ParamName);
@@ -134,7 +136,7 @@ public class ConverterStaticTests
     [Fact(DisplayName = "Decode Read Only Empty Bytes Test")]
     public void DecodeReaOnlyEmptyBytesTest()
     {
-        var error = Assert.Throws<ArgumentException>(() => _ = Converter.Decode(Array.Empty<byte>(), out var _));
+        var error = Assert.Throws<ArgumentException>(() => _ = Converter.Decode([], out var _));
         Assert.Null(error.ParamName);
         Assert.Equal("Not enough bytes or byte sequence invalid.", error.Message);
     }

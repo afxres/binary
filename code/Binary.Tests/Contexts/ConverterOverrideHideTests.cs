@@ -137,7 +137,7 @@ public class ConverterOverrideHideTests
         Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
         var error = Assert.Throws<NotSupportedException>(() =>
         {
-            var span = new ReadOnlySpan<byte>(new byte[] { FSharpOption<int>.Tags.Some });
+            var span = new ReadOnlySpan<byte>([FSharpOption<int>.Tags.Some]);
             _ = converter.Decode(in span);
         });
         Assert.Equal("Fake 'Decode'", error.Message);
@@ -151,7 +151,7 @@ public class ConverterOverrideHideTests
         Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
         var error = Assert.Throws<NotSupportedException>(() =>
         {
-            var span = new ReadOnlySpan<byte>(new byte[] { FSharpOption<int>.Tags.Some });
+            var span = new ReadOnlySpan<byte>([FSharpOption<int>.Tags.Some]);
             _ = converter.DecodeAuto(ref span);
         });
         Assert.Equal("Fake 'DecodeAuto'", error.Message);

@@ -64,13 +64,11 @@ public class ConverterTests
 
     private delegate T DecodeDelegate<out T>(ReadOnlySpan<byte> span);
 
-    private class CustomCallbackConverter<T> : Converter<T>
+    private class CustomCallbackConverter<T>(int length) : Converter<T>(length)
     {
         public required DecodeDelegate<T> DecodeDelegate { get; init; }
 
         public required AllocatorAction<T?> EncodeDelegate { get; init; }
-
-        public CustomCallbackConverter(int length) : base(length) { }
 
         public override T Decode(in ReadOnlySpan<byte> span) => DecodeDelegate.Invoke(span);
 

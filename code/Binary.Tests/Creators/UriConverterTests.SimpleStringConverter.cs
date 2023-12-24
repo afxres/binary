@@ -11,12 +11,11 @@ public partial class UriConverterTests
     {
         public Encoding Encoding { get; set; } = Encoding.UTF8;
 
-        public List<string> CallingSteps { get; } = new List<string>();
+        public List<string> CallingSteps { get; } = [];
 
         public void RecordCalling([CallerMemberName] string? name = default)
         {
-            if (name is null)
-                throw new ArgumentNullException(nameof(name));
+            ArgumentNullException.ThrowIfNull(name);
             CallingSteps.Add(name);
         }
 

@@ -21,9 +21,9 @@ public class ConverterExtensionsInternalTests
 
     private class TestArrayPool<T> : ArrayPool<T>
     {
-        public List<int> Rented { get; } = new List<int>();
+        public List<int> Rented { get; } = [];
 
-        public List<int> Returned { get; } = new List<int>();
+        public List<int> Returned { get; } = [];
 
         public override T[] Rent(int minimumLength)
         {
@@ -56,8 +56,8 @@ public class ConverterExtensionsInternalTests
         var decode = Delegate.CreateDelegate(decodeType, converter, Converter.GetMethod(converter, "Decode"));
         var span = Expression.Parameter(typeof(ReadOnlySpan<byte>));
         var pool = Expression.Parameter(typeof(ArrayPool<byte>));
-        var call = Expression.Call(method.MakeGenericMethod(typeof(T)), new Expression[] { Expression.Constant(decode), span, pool });
-        var lambda = Expression.Lambda<DecodeBrotliInternal<T>>(call, new ParameterExpression[] { span, pool });
+        var call = Expression.Call(method.MakeGenericMethod(typeof(T)), [Expression.Constant(decode), span, pool]);
+        var lambda = Expression.Lambda<DecodeBrotliInternal<T>>(call, [span, pool]);
         return lambda.Compile();
     }
 
@@ -77,7 +77,7 @@ public class ConverterExtensionsInternalTests
         var converter = generator.GetConverter<int>();
         var action = GetDecodeBrotliInternalMethod(converter);
         var arrays = new TestArrayPool<byte>();
-        var error = Assert.Throws<IOException>(() => action.Invoke(Array.Empty<byte>(), arrays));
+        var error = Assert.Throws<IOException>(() => action.Invoke([], arrays));
         var message = $"Brotli decode failed, status: {OperationStatus.NeedMoreData}";
         Assert.Equal(message, error.Message);
         Assert.Equal(arrays.Rented.Count, arrays.Returned.Count);
@@ -216,9 +216,9 @@ public class ConverterExtensionsInternalTests
 
     private class TestInvalidZeroSizeReturnsArrayPool<T> : ArrayPool<T>
     {
-        public List<int> Rented { get; } = new List<int>();
+        public List<int> Rented { get; } = [];
 
-        public List<int> Returned { get; } = new List<int>();
+        public List<int> Returned { get; } = [];
 
         public override T[] Rent(int minimumLength)
         {
@@ -257,9 +257,9 @@ public class ConverterExtensionsInternalTests
 
     private class TestDoubleSizeReturnsArrayPool<T> : ArrayPool<T>
     {
-        public List<int> Rented { get; } = new List<int>();
+        public List<int> Rented { get; } = [];
 
-        public List<int> Returned { get; } = new List<int>();
+        public List<int> Returned { get; } = [];
 
         public override T[] Rent(int minimumLength)
         {

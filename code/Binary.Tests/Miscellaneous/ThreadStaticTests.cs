@@ -27,11 +27,9 @@ public class ThreadStaticTests
         public int GetHashCode(T obj) => RuntimeHelpers.GetHashCode(obj);
     }
 
-    private sealed class FakeVariableConverter<T> : Converter<T>
+    private sealed class FakeVariableConverter<T>(EncodeAction<T> encodeAction) : Converter<T>(0)
     {
-        private readonly EncodeAction<T> encodeAction;
-
-        public FakeVariableConverter(EncodeAction<T> encodeAction) : base(0) => this.encodeAction = encodeAction;
+        private readonly EncodeAction<T> encodeAction = encodeAction;
 
         public override void Encode(ref Allocator allocator, T? item) => this.encodeAction.Invoke(ref allocator, Assert.IsAssignableFrom<T>(item));
 

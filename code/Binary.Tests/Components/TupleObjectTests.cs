@@ -28,10 +28,8 @@ public class TupleObjectTests
         public object? Decode(byte[]? buffer) => throw new NotSupportedException();
     }
 
-    private sealed class FakeConverter<T> : Converter<T>
+    private sealed class FakeConverter<T>(int length) : Converter<T>(length)
     {
-        public FakeConverter(int length) : base(length) { }
-
         public override void Encode(ref Allocator allocator, T? item) => throw new NotImplementedException();
 
         public override T Decode(in ReadOnlySpan<byte> span) => throw new NotImplementedException();

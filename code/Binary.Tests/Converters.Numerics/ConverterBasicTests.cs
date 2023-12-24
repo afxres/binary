@@ -34,7 +34,7 @@ public class ConverterBasicTests
         {
             var type = fieldInfo.FieldType;
             if (type == typeof(float) || type == typeof(double))
-                return new[] { type };
+                return [type];
             return type.GetFields(Flags).Select(x => x.FieldType).ToArray();
         }
 

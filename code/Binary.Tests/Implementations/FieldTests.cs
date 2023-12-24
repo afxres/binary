@@ -113,11 +113,9 @@ public class FieldTests
         Assert.Equal(message, error.Message);
     }
 
-    public class ReadOnlyFieldPublicConstructorType
+    public class ReadOnlyFieldPublicConstructorType(string item)
     {
-        public readonly string Item;
-
-        public ReadOnlyFieldPublicConstructorType(string item) => this.Item = "Ha" + item;
+        public readonly string Item = "Ha" + item;
     }
 
     [Fact(DisplayName = "Read Only Field Public Constructor")]

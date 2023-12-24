@@ -60,10 +60,8 @@ public class InlineArrayConverterTests
         Assert.Equal(bufferExpected, bufferResult);
     }
 
-    private class FakeConverter<T> : Converter<T>
+    private class FakeConverter<T>(int length) : Converter<T>(length)
     {
-        public FakeConverter(int length) : base(length) { }
-
         public override void Encode(ref Allocator allocator, T? item) => throw new NotSupportedException();
 
         public override T Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException();

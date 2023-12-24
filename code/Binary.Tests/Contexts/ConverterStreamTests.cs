@@ -122,7 +122,7 @@ public class ConverterStreamTests
 
     private class TestStream2 : TestStream
     {
-        public List<int> BytesReadList { get; } = new List<int>();
+        public List<int> BytesReadList { get; } = [];
 
         public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {

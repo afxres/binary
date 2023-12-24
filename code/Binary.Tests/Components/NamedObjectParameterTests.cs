@@ -30,14 +30,9 @@ public class NamedObjectParameterTests
 
     private delegate T FakeNamedObjectDecodeDelegate<T>(scoped NamedObjectParameter parameter);
 
-    private sealed class FakeNamedObjectConverter<T> : NamedObjectConverter<T>
+    private sealed class FakeNamedObjectConverter<T>(FakeNamedObjectDecodeDelegate<T> decodeDelegate, Converter<string> converter, IEnumerable<string> names, IEnumerable<bool> optional) : NamedObjectConverter<T>(converter, names, optional)
     {
-        public FakeNamedObjectDecodeDelegate<T> DecodeDelegate { get; }
-
-        public FakeNamedObjectConverter(FakeNamedObjectDecodeDelegate<T> decodeDelegate, Converter<string> converter, IEnumerable<string> names, IEnumerable<bool> optional) : base(converter, names, optional)
-        {
-            DecodeDelegate = decodeDelegate;
-        }
+        public FakeNamedObjectDecodeDelegate<T> DecodeDelegate { get; } = decodeDelegate;
 
         public override T Decode(scoped NamedObjectParameter parameter)
         {

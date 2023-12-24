@@ -5,37 +5,26 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public sealed class CustomByRefLikeEnumeratorCollection<T> : IEnumerable<T>
+public sealed class CustomByRefLikeEnumeratorCollection<T>(IEnumerable<T> items) : IEnumerable<T>
 {
-    public List<T> Items { get; }
+    public List<T> Items { get; } = items.ToList();
 
     public int CurrentCallCount { get; private set; } = 0;
 
     public int MoveNextCallCount { get; private set; } = 0;
-
-    public CustomByRefLikeEnumeratorCollection(IEnumerable<T> items)
-    {
-        Items = items.ToList();
-    }
 
     public Enumerator GetEnumerator()
     {
         return new Enumerator(this);
     }
 
-    public ref struct Enumerator
+    public ref struct Enumerator(CustomByRefLikeEnumeratorCollection<T> source)
     {
-        private readonly CustomByRefLikeEnumeratorCollection<T> source;
+        private readonly CustomByRefLikeEnumeratorCollection<T> source = source;
 
-        private int index;
+        private int index = -1;
 
-        public Enumerator(CustomByRefLikeEnumeratorCollection<T> source)
-        {
-            this.index = -1;
-            this.source = source;
-        }
-
-        public T Current
+        public readonly T Current
         {
             get
             {

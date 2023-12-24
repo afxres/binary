@@ -93,7 +93,7 @@ public class CodeContractsTests
         Assert.Equal(5, types.Count);
         foreach (var t in types)
         {
-            var equalMethod = t.GetMethodNotNull("Equals", new[] { typeof(object) });
+            var equalMethod = t.GetMethodNotNull("Equals", [typeof(object)]);
             var hashMethod = t.GetMethodNotNull("GetHashCode", Type.EmptyTypes);
             var stringMethod = t.GetMethodNotNull("ToString", Type.EmptyTypes);
             var attributes = new[] { equalMethod, hashMethod, stringMethod }.Select(x => x.GetCustomAttribute<EditorBrowsableAttribute>()).ToList();
@@ -156,7 +156,7 @@ public class CodeContractsTests
         var attributes = selection.Select(x => (Type: x, Attribute: x.GetCustomAttribute<DebuggerDisplayAttribute>(inherit: false))).Where(x => x.Attribute is not null).ToList();
         var overridden = types.Where(x => x.Name.Contains('<') is false && x.GetMethod("ToString")?.DeclaringType == x).ToList();
         Assert.Equal(6, overridden.Count);
-        Assert.Equal(overridden.ToHashSet(), attributes.Select(x => x.Type).ToHashSet());
+        Assert.Equal([.. overridden], attributes.Select(x => x.Type).ToHashSet());
         var display = attributes.Select(x => x.Attribute?.Value).Distinct().Single();
         Assert.Equal("{ToString(),nq}", display);
     }
@@ -204,7 +204,7 @@ public class CodeContractsTests
         var expectedMethods = methods.Where(x => x.Name.Contains("Throw") || x.Name.Contains("Except")).ToList();
         Assert.Equal(new HashSet<MethodInfo>(attributedMethods), new HashSet<MethodInfo>(expectedMethods));
 
-        var misspelledMethods = methods.Where(x => x.Name.ToUpperInvariant().Contains("Expect".ToUpperInvariant())).ToList();
+        var misspelledMethods = methods.Where(x => x.Name.Contains("Expect", StringComparison.InvariantCultureIgnoreCase)).ToList();
         Assert.Empty(misspelledMethods);
     }
 
@@ -252,11 +252,12 @@ public class CodeContractsTests
     [Fact(DisplayName = "Public Method Parameter Nullability")]
     public void PublicEncodeMethodNullability()
     {
+        static bool Filter(ParameterInfo p) => p.ParameterType.IsGenericParameter || p.ParameterType == typeof(object) || p.ParameterType == typeof(byte[]);
+
         var context = new NullabilityInfoContext();
         var publicTypes = typeof(IConverter).Assembly.GetTypes().Where(x => x.IsPublic).ToImmutableArray();
         var publicMethods = publicTypes.SelectMany(x => x.GetMethods()).ToImmutableArray();
-        var filter = (ParameterInfo p) => p.ParameterType.IsGenericParameter || p.ParameterType == typeof(object) || p.ParameterType == typeof(byte[]);
-        var parameters = publicMethods.SelectMany(x => x.GetParameters()).Where(filter).ToImmutableArray();
+        var parameters = publicMethods.SelectMany(x => x.GetParameters()).Where(Filter).ToImmutableArray();
         var selections = parameters.Select(x => KeyValuePair.Create(x, context.Create(x))).ToList();
         Assert.All(selections, x => Assert.Equal(x.Value.ReadState, x.Value.WriteState));
         var groups = selections.GroupBy(x => x.Value.ReadState).ToDictionary(x => x.Key);

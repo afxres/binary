@@ -28,8 +28,8 @@ public class RequiredMembersTests
         var bb = generator.Encode(b);
         var ta = new Token(generator, ba);
         var tb = new Token(generator, bb);
-        Assert.Equal(new[] { "Id" }.ToHashSet(), ta.Children.Keys.ToHashSet());
-        Assert.Equal(new[] { "Id", "Name" }.ToHashSet(), tb.Children.Keys.ToHashSet());
+        Assert.Equal(["Id"], ta.Children.Keys.ToHashSet());
+        Assert.Equal(["Id", "Name"], tb.Children.Keys.ToHashSet());
         Assert.Equal(1, ta["Id"].As<int>());
         Assert.Equal(2, tb["Id"].As<int>());
         Assert.Equal("Two", tb["Name"].As<string>());

@@ -11,14 +11,9 @@ using System.Runtime.InteropServices;
 using Xunit;
 using Xunit.Abstractions;
 
-public class ArithmeticOverflowTests
+public class ArithmeticOverflowTests(ITestOutputHelper output)
 {
-    private readonly ITestOutputHelper output;
-
-    public ArithmeticOverflowTests(ITestOutputHelper output)
-    {
-        this.output = output;
-    }
+    private readonly ITestOutputHelper output = output;
 
     private delegate void ArrayResizeDelegate<E>(ref E[] source, E data);
 
@@ -59,10 +54,8 @@ public class ArithmeticOverflowTests
 
     private readonly struct FakeValue { }
 
-    private sealed class FakeValueConverter : Converter<FakeValue>
+    private sealed class FakeValueConverter(int length) : Converter<FakeValue>(length)
     {
-        public FakeValueConverter(int length) : base(length) { }
-
         public override void Encode(ref Allocator allocator, FakeValue item) => throw new NotSupportedException();
 
         public override FakeValue Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException();
@@ -117,10 +110,8 @@ public class ArithmeticOverflowTests
         this.output.WriteLine(error.StackTrace);
     }
 
-    private sealed class FakeConverter<T> : Converter<T>
+    private sealed class FakeConverter<T>(int length) : Converter<T>(length)
     {
-        public FakeConverter(int length) : base(length) { }
-
         public override void Encode(ref Allocator allocator, T? item) => throw new NotSupportedException();
 
         public override T Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException();

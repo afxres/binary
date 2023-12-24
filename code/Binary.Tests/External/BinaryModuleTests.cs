@@ -82,7 +82,7 @@ public class BinaryModuleTests
     public void EqualityLengthBothZero()
     {
         var equality = GetEqualityDelegate();
-        var result = equality.Invoke(ref MemoryMarshal.GetReference<byte>(default), 0, Array.Empty<byte>());
+        var result = equality.Invoke(ref MemoryMarshal.GetReference<byte>(default), 0, []);
         Assert.True(result);
     }
 
@@ -181,7 +181,7 @@ public class BinaryModuleTests
         Assert.NotNull(customPrimeTable);
         Assert.Equal(systemPrimeTable, customPrimeTable);
         Assert.False(ReferenceEquals(systemPrimeTable, customPrimeTable));
-        Assert.True(MemoryExtensions.SequenceEqual(new ReadOnlySpan<int>(systemPrimeTable.ToArray()), new ReadOnlySpan<int>(customPrimeTable.ToArray())));
+        Assert.True(MemoryExtensions.SequenceEqual(new ReadOnlySpan<int>([.. systemPrimeTable]), new ReadOnlySpan<int>([.. customPrimeTable])));
     }
 
     [Theory(DisplayName = "Capacity")]
@@ -250,7 +250,7 @@ public class BinaryModuleTests
 
             var headSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<ulong, byte>(ref result.Head), sizeof(long));
             var tailSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<ulong, byte>(ref result.Tail), sizeof(long));
-            var headPart = (length & 8) is 0 ? Array.Empty<byte>() : headSpan.ToArray();
+            var headPart = (length & 8) is 0 ? [] : headSpan.ToArray();
             var tailPart = tailSpan.Slice(1, length & 7).ToArray();
             var expect = Enumerable.Concat(tailPart, headPart).ToArray();
             var actual = Encoding.UTF8.GetString(expect);
@@ -282,7 +282,7 @@ public class BinaryModuleTests
 
                 var headSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<ulong, byte>(ref result.Head), sizeof(long));
                 var tailSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<ulong, byte>(ref result.Tail), sizeof(long));
-                var headPart = (length & 8) is 0 ? Array.Empty<byte>() : headSpan.ToArray();
+                var headPart = (length & 8) is 0 ? [] : headSpan.ToArray();
                 var tailPart = tailSpan.Slice(1, length & 7).ToArray();
                 var expect = Enumerable.Concat(tailPart, headPart).ToArray();
                 Assert.Equal(buffer, expect);

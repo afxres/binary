@@ -11,16 +11,14 @@ public class UnionTests
     private class EmptyUnion { }
 
     [CompilationMapping(SourceConstructFlags.SumType)]
-    public sealed class FakeUnion<T>
+    public sealed class FakeUnion<T>(T item)
     {
         private readonly int tag;
 
-        private readonly T item;
+        private readonly T item = item;
 
         [CompilationMapping(SourceConstructFlags.UnionCase, 0)]
         public static FakeUnion<T> NewOne(T item) => new FakeUnion<T>(item);
-
-        public FakeUnion(T item) => this.item = item;
 
         public FakeUnion(T item, int tag) : this(item) => this.tag = tag;
 

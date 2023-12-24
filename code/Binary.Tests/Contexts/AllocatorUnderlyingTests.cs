@@ -11,7 +11,7 @@ public class AllocatorUnderlyingTests
 {
     private sealed class ManagedArrayAllocator : IAllocator
     {
-        public readonly List<byte[]> AllocatedArrays = new List<byte[]>();
+        public readonly List<byte[]> AllocatedArrays = [];
 
         public ref byte Resize(int length)
         {
@@ -55,12 +55,12 @@ public class AllocatorUnderlyingTests
         var allocated = underlyingAllocator.AllocatedArrays;
         Assert.Equal(3, allocated.Count);
 
-        Assert.Equal(a, allocated[0].AsSpan(0, 100).ToArray());
-        Assert.Equal(a.Concat(b).ToArray(), allocated[1].AsSpan(0, 400).ToArray());
-        Assert.Equal(a.Concat(b).Concat(c).ToArray(), allocated[2].AsSpan(0, 900).ToArray());
+        Assert.Equal(a, allocated[0].AsSpan(0, 100));
+        Assert.Equal([.. a, .. b], allocated[1].AsSpan(0, 400));
+        Assert.Equal([.. a, .. b, .. c], allocated[2].AsSpan(0, 900));
 
         Assert.True(Unsafe.AreSame(ref MemoryMarshal.GetArrayDataReference(allocated[2]), ref MemoryMarshal.GetReference(allocator.AsSpan())));
-        Assert.Equal(a.Concat(b).Concat(c).ToArray(), allocator.ToArray());
+        Assert.Equal([.. a, .. b, .. c], allocator.AsSpan());
 
         Assert.All(allocated[0].AsSpan(100).ToArray(), x => Assert.Equal(0, x));
         Assert.All(allocated[1].AsSpan(400).ToArray(), x => Assert.Equal(0, x));
@@ -93,11 +93,11 @@ public class AllocatorUnderlyingTests
         var allocated = underlyingAllocator.AllocatedArrays;
         Assert.Equal(2, allocated.Count);
 
-        Assert.Equal(a, allocated[0].AsSpan(0, 222).ToArray());
-        Assert.Equal(a.Concat(b).ToArray(), allocated[1].AsSpan(0, 888).ToArray());
+        Assert.Equal(a, allocated[0].AsSpan(0, 222));
+        Assert.Equal([.. a, .. b], allocated[1].AsSpan(0, 888));
 
         Assert.True(Unsafe.AreSame(ref MemoryMarshal.GetArrayDataReference(allocated[1]), ref MemoryMarshal.GetReference(allocator.AsSpan())));
-        Assert.Equal(a.Concat(b).ToArray(), allocator.ToArray());
+        Assert.Equal([.. a, .. b], allocator.AsSpan());
 
         Assert.All(allocated[0].AsSpan(222).ToArray(), x => Assert.Equal(0, x));
         Assert.All(allocated[1].AsSpan(888).ToArray(), x => Assert.Equal(0, x));

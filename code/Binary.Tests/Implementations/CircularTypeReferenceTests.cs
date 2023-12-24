@@ -5,17 +5,11 @@ using Xunit;
 
 public class CircularTypeReferenceTests
 {
-    private class LinkedList<T>
+    private class LinkedList<T>(T data, LinkedList<T>? next)
     {
-        public T Data { get; }
+        public T Data { get; } = data;
 
-        public LinkedList<T>? Next { get; }
-
-        public LinkedList(T data, LinkedList<T>? next)
-        {
-            Data = data;
-            Next = next;
-        }
+        public LinkedList<T>? Next { get; } = next;
 
         public LinkedList<T> Add(T data) => new LinkedList<T>(data, this);
     }

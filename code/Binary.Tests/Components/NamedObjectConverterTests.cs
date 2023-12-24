@@ -10,10 +10,8 @@ using Xunit;
 
 public class NamedObjectConverterTests
 {
-    private sealed class FakeNamedObjectConverter<T> : NamedObjectConverter<T>
+    private sealed class FakeNamedObjectConverter<T>(Converter<string> converter, IEnumerable<string> names, IEnumerable<bool> optional) : NamedObjectConverter<T>(converter, names, optional)
     {
-        public FakeNamedObjectConverter(Converter<string> converter, IEnumerable<string> names, IEnumerable<bool> optional) : base(converter, names, optional) { }
-
         public override T Decode(NamedObjectParameter parameter) => throw new NotImplementedException();
 
         public override void Encode(ref Allocator allocator, T? item) => throw new NotImplementedException();

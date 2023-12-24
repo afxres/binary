@@ -21,7 +21,7 @@ public class RecordTests
         var generator = Generator.CreateDefault();
         var h = generator.Encode(a);
         var i = generator.Encode(b);
-        Assert.Equal<byte>(h, i);
+        Assert.Equal(h, i);
         var j = generator.Decode<T>(h);
         var k = generator.Decode<R>(i);
         Assert.Equal(a, j);

@@ -168,7 +168,7 @@ public class DynamicTests
     {
         var types = typeof(Token).GetNestedTypes(BindingFlags.NonPublic);
         var type = types.Single(x => x.Name is "MetaObject");
-        var instance = Assert.IsAssignableFrom<DynamicMetaObject>(Activator.CreateInstance(type, new object?[] { Expression.Parameter(typeof(Token)), null }));
+        var instance = Assert.IsAssignableFrom<DynamicMetaObject>(Activator.CreateInstance(type, [Expression.Parameter(typeof(Token)), null]));
         var keys = instance.GetDynamicMemberNames();
         Assert.Equal(Array.Empty<string>(), keys);
         Assert.Null(instance.Value);

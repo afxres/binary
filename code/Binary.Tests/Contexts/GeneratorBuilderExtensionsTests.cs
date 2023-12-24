@@ -9,9 +9,9 @@ public class GeneratorBuilderExtensionsTests
 {
     private sealed class FakeGeneratorBuilder : IGeneratorBuilder
     {
-        public List<IConverter> Converters { get; } = new List<IConverter>();
+        public List<IConverter> Converters { get; } = [];
 
-        public List<IConverterCreator> ConverterCreators { get; } = new List<IConverterCreator>();
+        public List<IConverterCreator> ConverterCreators { get; } = [];
 
         public IGeneratorBuilder AddConverter(IConverter converter)
         {

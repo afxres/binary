@@ -5,18 +5,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-public sealed class CustomValueEnumeratorDictionary<K, V> : IReadOnlyDictionary<K, V>
+public sealed class CustomValueEnumeratorDictionary<K, V>(IEnumerable<KeyValuePair<K, V>> list) : IReadOnlyDictionary<K, V>
 {
-    public List<KeyValuePair<K, V>> Items { get; }
+    public List<KeyValuePair<K, V>> Items { get; } = list.ToList();
 
     public int CurrentCallCount { get; private set; } = 0;
 
     public int MoveNextCallCount { get; private set; } = 0;
-
-    public CustomValueEnumeratorDictionary(IEnumerable<KeyValuePair<K, V>> list)
-    {
-        Items = list.ToList();
-    }
 
     public Enumerator GetEnumerator()
     {
@@ -35,7 +30,7 @@ public sealed class CustomValueEnumeratorDictionary<K, V> : IReadOnlyDictionary<
             this.index = -1;
         }
 
-        public KeyValuePair<K, V> Current
+        public readonly KeyValuePair<K, V> Current
         {
             get
             {

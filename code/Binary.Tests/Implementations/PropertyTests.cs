@@ -43,9 +43,9 @@ public class PropertyTests
 
         private int InvalidG { get; set; }
 
-        public int this[string i] => throw new NotImplementedException();
+        public readonly int this[string i] => throw new NotImplementedException();
 
-        public string this[int i] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string this[int i] { readonly get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 
     [Fact(DisplayName = "Class Type Properties")]

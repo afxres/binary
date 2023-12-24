@@ -88,8 +88,8 @@ public class NullableConverterTests
     public static readonly IEnumerable<object[]> CollectionData = new[]
     {
         new object[] { new byte?[] { 2, 4, null, 8, null } },
-        new object[] { new List<float?> { null, 2.71F, null } },
-        new object[] { new HashSet<double?> { 3.14, null, 1.41 } }
+        [new List<float?> { null, 2.71F, null }],
+        [new HashSet<double?> { 3.14, null, 1.41 }]
     };
 
     internal unsafe void CollectionFunction<TCollection, T>(TCollection collection) where T : unmanaged where TCollection : IEnumerable<T?>
@@ -117,13 +117,13 @@ public class NullableConverterTests
         var method = GetType()
             .GetMethodNotNull(nameof(CollectionFunction), BindingFlags.Instance | BindingFlags.NonPublic)
             .MakeGenericMethod(collectionType, elementType);
-        _ = method.Invoke(this, new object[] { collection });
+        _ = method.Invoke(this, [collection]);
     }
 
     public static readonly IEnumerable<object[]> DictionaryData = new[]
     {
         new object[] { new Dictionary<int, double?> { [0] = null, [1] = 1.1, [-2] = 2.2 } },
-        new object[] { new Dictionary<float, long?> { [0] = null, [-3.3F] = 6L, [4.4F] = 8 } },
+        [new Dictionary<float, long?> { [0] = null, [-3.3F] = 6L, [4.4F] = 8 }],
     };
 
     [Theory(DisplayName = "Nullable Dictionary")]
@@ -198,9 +198,9 @@ public class NullableConverterTests
     public static readonly IEnumerable<object[]> OptionData = new[]
     {
         new object[] { 10 },
-        new object[] { long.MaxValue },
-        new object[] { (-1536, "Inner text") },
-        new object[] { ("Value tuple", Guid.NewGuid()) },
+        [long.MaxValue],
+        [(-1536, "Inner text")],
+        [("Value tuple", Guid.NewGuid())],
     };
 
     [Theory(DisplayName = "Nullable With F# Option")]
@@ -217,10 +217,10 @@ public class NullableConverterTests
         var m = FSharpOption<T>.Some(data);
         var n = FSharpOption<T>.None;
 
-        Assert.Equal<byte>(Encode(converterItem, a), Encode(converterOption, m));
-        Assert.Equal<byte>(EncodeAuto(converterItem, a), EncodeAuto(converterOption, m));
-        Assert.Equal<byte>(Encode(converterItem, b), Encode(converterOption, n));
-        Assert.Equal<byte>(EncodeAuto(converterItem, b), EncodeAuto(converterOption, n));
+        Assert.Equal(Encode(converterItem, a), Encode(converterOption, m));
+        Assert.Equal(EncodeAuto(converterItem, a), EncodeAuto(converterOption, m));
+        Assert.Equal(Encode(converterItem, b), Encode(converterOption, n));
+        Assert.Equal(EncodeAuto(converterItem, b), EncodeAuto(converterOption, n));
     }
 
     [Theory(DisplayName = "Invalid Nullable Tag (decode & decode auto)")]
@@ -234,7 +234,11 @@ public class NullableConverterTests
         Assert.StartsWith("NullableConverter`1", converter.GetType().Name);
 
         var alpha = Assert.Throws<ArgumentException>(() => converter.Decode(buffer));
-        var bravo = Assert.Throws<ArgumentException>(() => { var span = new ReadOnlySpan<byte>(buffer); _ = converter.DecodeAuto(ref span); });
+        var bravo = Assert.Throws<ArgumentException>(() =>
+        {
+            var span = new ReadOnlySpan<byte>(buffer);
+            _ = converter.DecodeAuto(ref span);
+        });
         var message = $"Invalid nullable tag '{tag}', type: System.Nullable`1[System.Int32]";
         Assert.Null(alpha.ParamName);
         Assert.Null(bravo.ParamName);

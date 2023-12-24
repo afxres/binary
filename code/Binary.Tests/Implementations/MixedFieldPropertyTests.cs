@@ -34,7 +34,7 @@ public class MixedFieldPropertyTests
 
         var token = new Token(generator, buffer);
         var keys = new[] { nameof(MixedSimpleClass.FiledA), nameof(MixedSimpleClass.PropertyB), nameof(MixedSimpleClass.PropertyInitOnlyC) };
-        Assert.Equal(keys.ToHashSet(), token.Children.Keys.ToHashSet());
+        Assert.Equal([.. keys], token.Children.Keys.ToHashSet());
     }
 
     [NamedObject]
@@ -68,7 +68,7 @@ public class MixedFieldPropertyTests
 
         var token = new Token(generator, buffer);
         var keys = new[] { "id", "name" };
-        Assert.Equal(keys.ToHashSet(), token.Children.Keys.ToHashSet());
+        Assert.Equal([.. keys], token.Children.Keys.ToHashSet());
     }
 
     [TupleObject]

@@ -243,7 +243,7 @@ public class AllocatorTests
     {
         var error = Assert.Throws<ArgumentException>(() =>
         {
-            var allocator = new Allocator(Array.Empty<byte>(), maxCapacity: capacity);
+            var allocator = new Allocator([], maxCapacity: capacity);
             Allocator.Append(ref allocator, length, 0, (_, _) => { });
             Assert.Equal(length, allocator.Length);
             Assert.Equal(capacity, allocator.Capacity);

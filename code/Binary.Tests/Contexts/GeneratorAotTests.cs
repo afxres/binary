@@ -30,11 +30,11 @@ public class GeneratorAotTests
         static Type[] GetArgs2(MethodInfo i)
         {
             if (i.Name.Contains("VariableBoundArray"))
-                return new[] { typeof(int[,]), typeof(int) };
+                return [typeof(int[,]), typeof(int)];
             if (i.Name.Contains("Dictionary"))
-                return new[] { typeof(IEnumerable<int>), typeof(int) };
+                return [typeof(IEnumerable<int>), typeof(int)];
             else
-                return new[] { typeof(int), typeof(int) };
+                return [typeof(int), typeof(int)];
         }
 
         var methods = typeof(Generator).GetMethods().Where(x => x.Name.Contains("Converter")).ToList();

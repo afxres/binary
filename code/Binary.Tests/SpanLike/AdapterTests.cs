@@ -124,7 +124,7 @@ public class AdapterTests
         Assert.Empty(array);
         var test = TestAllMethodNullOrEmptyData<E[], E>;
         test.Invoke(null);
-        test.Invoke(Array.Empty<E>());
+        test.Invoke([]);
     }
 
     [Theory(DisplayName = "ArraySegment Adapter Test")]
@@ -144,8 +144,8 @@ public class AdapterTests
         var test = TestAllMethodNullOrEmptyData<ArraySegment<E>, E>;
         test.Invoke(default);
         test.Invoke(new ArraySegment<E>());
-        test.Invoke(new ArraySegment<E>(Array.Empty<E>()));
-        test.Invoke(new ArraySegment<E>(Array.Empty<E>(), 0, 0));
+        test.Invoke(new ArraySegment<E>([]));
+        test.Invoke(new ArraySegment<E>([], 0, 0));
     }
 
     [Theory(DisplayName = "ImmutableArray Adapter Test")]
@@ -164,9 +164,7 @@ public class AdapterTests
         Assert.Empty(array);
         var test = TestAllMethodNullOrEmptyData<ImmutableArray<E>, E>;
         test.Invoke(default);
-        test.Invoke(new ImmutableArray<E>());
-        test.Invoke(ImmutableArray<E>.Empty);
-        test.Invoke(ImmutableArray.Create<E>());
+        test.Invoke([]);
         test.Invoke(ImmutableArray.Create(Array.Empty<E>()));
         test.Invoke(ImmutableArray.CreateRange(Array.Empty<E>()));
     }
@@ -187,7 +185,7 @@ public class AdapterTests
         Assert.Empty(array);
         var test = TestAllMethodNullOrEmptyData<List<E>, E>;
         test.Invoke(null);
-        test.Invoke(new List<E>());
+        test.Invoke([]);
         test.Invoke(new List<E>(capacity: 8));
     }
 

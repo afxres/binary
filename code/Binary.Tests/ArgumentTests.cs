@@ -63,7 +63,7 @@ public static class ArgumentTests
         var parameters = method.GetParameters();
         var types = parameters.Select(x => x.ParameterType).Concat(new[] { method.ReturnType }).ToArray();
         var test = ArgumentNullTestMethods[parameters.Length - 1].MakeGenericMethod(types);
-        var errors = Assert.IsAssignableFrom<IEnumerable<ArgumentNullException>>(test.Invoke(null, new object[] { method }));
+        var errors = Assert.IsAssignableFrom<IEnumerable<ArgumentNullException>>(test.Invoke(null, [method]));
         var expectedParameterNames = parameters.Select(x => x.Name).ToList();
         var actualParameterNames = errors.Select(x => x.ParamName).ToList();
         Assert.Equal(expectedParameterNames, actualParameterNames);
