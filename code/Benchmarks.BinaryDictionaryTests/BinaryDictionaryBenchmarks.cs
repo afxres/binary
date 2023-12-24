@@ -54,7 +54,7 @@ public class BinaryDictionaryBenchmarks
         GetValueOrDefault CreateLongData(byte[][] keys)
         {
             var source = keys.Select(x => new ReadOnlyMemory<byte>(x)).ToImmutableArray();
-            var target = createLongData.Invoke(null, new[] { (object)source });
+            var target = createLongData.Invoke(null, [(object)source]);
             var result = Delegate.CreateDelegate(typeof(GetValueOrDefault), target!, "GetValue");
             return (GetValueOrDefault)result;
         }
@@ -62,7 +62,7 @@ public class BinaryDictionaryBenchmarks
         GetValueOrDefault CreateHashCode(byte[][] keys)
         {
             var source = keys.Select((x, i) => KeyValuePair.Create(new ReadOnlyMemory<byte>(x), i)).ToImmutableArray();
-            var target = createHashCode.Invoke(null, new[] { (object)source, -1 });
+            var target = createHashCode.Invoke(null, [(object)source, -1]);
             var result = Delegate.CreateDelegate(typeof(GetValueOrDefault), target!, "GetValue");
             return (GetValueOrDefault)result;
         }

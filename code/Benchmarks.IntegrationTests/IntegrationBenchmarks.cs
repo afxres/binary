@@ -46,11 +46,11 @@ public class IntegrationBenchmarks
         {
             Id = 1024,
             Name = "csharp",
-            List = new[] { 7, 11, 555, 1313 },
+            List = [7, 11, 555, 1313],
             Item = new Type02
             {
                 Data = 2.2D,
-                Tags = new List<string> { "one", "two", "three" },
+                Tags = ["one", "two", "three"],
             }
         };
         this.tuple = (1024, "csharp", new[] { 7, 11, 555, 1313 }, (2.2D, new List<string> { "one", "two", "three" }));

@@ -42,6 +42,10 @@ public struct ValuePerson : IEquatable<ValuePerson>
     public override readonly bool Equals(object? obj) => obj is ValuePerson person && Equals(person);
 
     public override readonly int GetHashCode() => HashCode.Combine(this.Id, this.Name);
+
+    public static bool operator ==(ValuePerson left, ValuePerson right) => left.Equals(right);
+
+    public static bool operator !=(ValuePerson left, ValuePerson right) => !(left == right);
 }
 
 [TupleObject]

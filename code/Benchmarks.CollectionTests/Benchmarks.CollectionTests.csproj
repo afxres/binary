@@ -5,8 +5,12 @@
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Mikodev.Binary.Benchmarks.CollectionTests</AssemblyName>
     <RootNamespace>Mikodev.Binary.Benchmarks.CollectionTests</RootNamespace>
-    <LangVersion>10.0</LangVersion>
+    <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>CA1861</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -40,6 +40,10 @@ public readonly struct ValueItem : IEquatable<ValueItem>
     public override bool Equals(object? obj) => obj is ValueItem item && Equals(item);
 
     public override int GetHashCode() => HashCode.Combine(Tag, Content);
+
+    public static bool operator ==(ValueItem left, ValueItem right) => left.Equals(right);
+
+    public static bool operator !=(ValueItem left, ValueItem right) => !(left == right);
 }
 
 public class PropertyOnlyTests

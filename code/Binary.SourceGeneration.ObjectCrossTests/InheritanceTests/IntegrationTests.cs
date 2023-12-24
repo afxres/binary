@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Xunit;
 
+#pragma warning disable IDE1006 // Naming Styles
 abstract class A
 {
     public abstract int H { get; set; }
@@ -122,20 +123,13 @@ class SpecialMemberNameB : SpecialMemberNameA
     public int join { get; set; }
 }
 
-class SpecialMemberNameC : SpecialMemberNameB
+class SpecialMemberNameC(string @class, int async, int await) : SpecialMemberNameB
 {
-    public new string @class;
+    public new string @class = @class;
 
-    public int async;
+    public int async = async;
 
-    public int await;
-
-    public SpecialMemberNameC(string @class, int async, int await)
-    {
-        this.@class = @class;
-        this.async = async;
-        this.await = await;
-    }
+    public int await = await;
 }
 
 [SourceGeneratorContext]
@@ -252,8 +246,8 @@ public class IntegrationTests
     public void EncodeDecodeTest<T, A>(Type wanted, T source, A anonymous)
     {
         var method = new Action<object, object>(EncodeDecodeTestInternal).Method;
-        var target = method.GetGenericMethodDefinition().MakeGenericMethod(new Type[] { wanted, typeof(A) });
-        var result = target.Invoke(null, new object?[] { source, anonymous });
+        var target = method.GetGenericMethodDefinition().MakeGenericMethod([wanted, typeof(A)]);
+        var result = target.Invoke(null, [source, anonymous]);
         Assert.Null(result);
     }
 
@@ -296,3 +290,4 @@ public class IntegrationTests
         Assert.Equal(anonymousFieldsAndPropertiesNames, wantedMatches.Select(x => x.Name).ToHashSet());
     }
 }
+#pragma warning restore IDE1006 // Naming Styles

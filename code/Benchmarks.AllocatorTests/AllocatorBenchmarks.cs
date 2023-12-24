@@ -1,7 +1,6 @@
 ﻿namespace Mikodev.Binary.Benchmarks.AllocatorTests;
 
 using BenchmarkDotNet.Attributes;
-using System;
 
 [MemoryDiagnoser]
 public class AllocatorBenchmarks
@@ -23,8 +22,8 @@ public class AllocatorBenchmarks
     [GlobalSetup]
     public void Setup()
     {
-        this.buffer0 = Array.Empty<byte>();
-        this.buffer1 = new byte[] { 0x7F };
+        this.buffer0 = [];
+        this.buffer1 = [0x7F];
         this.buffer1024 = new byte[1024];
         this.maxCapacity512 = 512;
         this.maxCapacity2048 = 2048;

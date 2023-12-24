@@ -13,21 +13,17 @@ public interface IAbstractDictionary<K, V> : IDictionary<K, V> { }
 
 public interface IAbstractReadOnlyDictionary<K, V> : IReadOnlyDictionary<K, V> { }
 
-public abstract class AbstractEnumerable<T> : IAbstractEnumerable<T>
+public abstract class AbstractEnumerable<T>(IEnumerable<T> collection) : IAbstractEnumerable<T>
 {
-    public IEnumerable<T> Collection { get; }
-
-    public AbstractEnumerable(IEnumerable<T> collection) => Collection = collection;
+    public IEnumerable<T> Collection { get; } = collection;
 
     public IEnumerator<T> GetEnumerator() => Collection.GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
-public abstract class AbstractDictionary<K, V> : AbstractEnumerable<KeyValuePair<K, V>>, IAbstractDictionary<K, V>
+public abstract class AbstractDictionary<K, V>(IEnumerable<KeyValuePair<K, V>> collection) : AbstractEnumerable<KeyValuePair<K, V>>(collection), IAbstractDictionary<K, V>
 {
-    public AbstractDictionary(IEnumerable<KeyValuePair<K, V>> collection) : base(collection) { }
-
     void IDictionary<K, V>.Add(K key, V value) => throw new NotImplementedException();
 
     bool IDictionary<K, V>.ContainsKey(K key) => throw new NotImplementedException();
@@ -57,10 +53,8 @@ public abstract class AbstractDictionary<K, V> : AbstractEnumerable<KeyValuePair
     bool ICollection<KeyValuePair<K, V>>.IsReadOnly => throw new NotImplementedException();
 }
 
-public abstract class AbstractReadOnlyDictionary<K, V> : AbstractEnumerable<KeyValuePair<K, V>>, IAbstractReadOnlyDictionary<K, V>
+public abstract class AbstractReadOnlyDictionary<K, V>(IEnumerable<KeyValuePair<K, V>> collection) : AbstractEnumerable<KeyValuePair<K, V>>(collection), IAbstractReadOnlyDictionary<K, V>
 {
-    public AbstractReadOnlyDictionary(IEnumerable<KeyValuePair<K, V>> collection) : base(collection) { }
-
     bool IReadOnlyDictionary<K, V>.ContainsKey(K key) => throw new NotImplementedException();
 
     bool IReadOnlyDictionary<K, V>.TryGetValue(K key, out V value) => throw new NotImplementedException();
@@ -74,35 +68,20 @@ public abstract class AbstractReadOnlyDictionary<K, V> : AbstractEnumerable<KeyV
     int IReadOnlyCollection<KeyValuePair<K, V>>.Count => throw new NotImplementedException();
 }
 
-public class CustomEnumerable<T> : AbstractEnumerable<T>
-{
-    public CustomEnumerable(IEnumerable<T> collection) : base(collection) { }
-}
+public class CustomEnumerable<T>(IEnumerable<T> collection) : AbstractEnumerable<T>(collection) { }
 
 public class CustomEnumerableInternalConstructor<T> : AbstractEnumerable<T>
 {
     internal CustomEnumerableInternalConstructor(IEnumerable<T> collection) : base(collection) { }
 }
 
-public class CustomDictionary<K, V> : AbstractDictionary<K, V>
-{
-    public CustomDictionary(IDictionary<K, V> collection) : base(collection) { }
-}
+public class CustomDictionary<K, V>(IDictionary<K, V> collection) : AbstractDictionary<K, V>(collection) { }
 
-public class CustomReadOnlyDictionary<K, V> : AbstractReadOnlyDictionary<K, V>
-{
-    public CustomReadOnlyDictionary(IReadOnlyDictionary<K, V> collection) : base(collection) { }
-}
+public class CustomReadOnlyDictionary<K, V>(IReadOnlyDictionary<K, V> collection) : AbstractReadOnlyDictionary<K, V>(collection) { }
 
-public class CustomDictionaryEnumerableConstructor<K, V> : AbstractDictionary<K, V>
-{
-    public CustomDictionaryEnumerableConstructor(IEnumerable<KeyValuePair<K, V>> collection) : base(collection) { }
-}
+public class CustomDictionaryEnumerableConstructor<K, V>(IEnumerable<KeyValuePair<K, V>> collection) : AbstractDictionary<K, V>(collection) { }
 
-public class CustomReadOnlyDictionaryEnumerableConstructor<K, V> : AbstractReadOnlyDictionary<K, V>
-{
-    public CustomReadOnlyDictionaryEnumerableConstructor(IEnumerable<KeyValuePair<K, V>> collection) : base(collection) { }
-}
+public class CustomReadOnlyDictionaryEnumerableConstructor<K, V>(IEnumerable<KeyValuePair<K, V>> collection) : AbstractReadOnlyDictionary<K, V>(collection) { }
 
 public class CustomDictionaryInternalConstructor<K, V> : AbstractDictionary<K, V>
 {
@@ -114,11 +93,9 @@ public class CustomReadOnlyDictionaryInternalConstructor<K, V> : AbstractReadOnl
     internal CustomReadOnlyDictionaryInternalConstructor(IEnumerable<KeyValuePair<K, V>> collection) : base(collection) { }
 }
 
-public readonly struct CustomValueEnumerable<T> : IEnumerable<T>
+public readonly struct CustomValueEnumerable<T>(IEnumerable<T>? collection) : IEnumerable<T>
 {
-    public readonly IEnumerable<T>? Collection;
-
-    public CustomValueEnumerable(IEnumerable<T>? collection) => this.Collection = collection;
+    public readonly IEnumerable<T>? Collection = collection;
 
     public IEnumerator<T> GetEnumerator() => (this.Collection ?? Array.Empty<T>()).GetEnumerator();
 
@@ -286,8 +263,8 @@ public class IntegrationTests
     {
         Assert.True(wantedType.IsInterface || wantedType.IsAbstract);
         var method = new Action<IEnumerable<object>, List<object>>(EnumerableEncodeOnlyTest).Method;
-        var target = method.GetGenericMethodDefinition().MakeGenericMethod(new Type[] { wantedType, typeof(E) });
-        var result = target.Invoke(this, new object?[] { source, actual });
+        var target = method.GetGenericMethodDefinition().MakeGenericMethod([wantedType, typeof(E)]);
+        var result = target.Invoke(this, [source, actual]);
         Assert.Null(result);
     }
 }

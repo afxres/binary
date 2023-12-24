@@ -204,8 +204,8 @@ public class IntegrationTests
         Assert.True(wantedType.IsAbstract || wantedType.IsInterface);
         Assert.StartsWith("System.Collections", wantedType.Namespace);
         var method = new Action<IEnumerable<object>, object, string>(EncodeDecodeTest).Method;
-        var target = method.GetGenericMethodDefinition().MakeGenericMethod(new Type[] { wantedType, typeof(E) });
-        var result = target.Invoke(this, new object?[] { source, element, pattern });
+        var target = method.GetGenericMethodDefinition().MakeGenericMethod([wantedType, typeof(E)]);
+        var result = target.Invoke(this, [source, element, pattern]);
         Assert.Null(result);
     }
 }

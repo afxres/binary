@@ -10,10 +10,12 @@ public static class CompilationModule
 {
     public static Compilation CreateCompilationFromThisAssembly()
     {
-        var references = new List<MetadataReference>();
-        references.Add(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
-        references.Add(MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Runtime")).Location));
-        references.Add(MetadataReference.CreateFromFile(typeof(CompilationModule).Assembly.Location));
+        var references = new List<MetadataReference>
+        {
+            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+            MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Runtime")).Location),
+            MetadataReference.CreateFromFile(typeof(CompilationModule).Assembly.Location)
+        };
 
         const string AssemblyName = "TestAssembly";
         var compilation = CSharpCompilation.Create(

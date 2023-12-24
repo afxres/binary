@@ -5,7 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>Mikodev.Binary.Benchmarks.LengthPrefixEncodeTests</AssemblyName>
     <RootNamespace>Mikodev.Binary.Benchmarks.LengthPrefixEncodeTests</RootNamespace>
-    <LangVersion>10.0</LangVersion>
+    <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

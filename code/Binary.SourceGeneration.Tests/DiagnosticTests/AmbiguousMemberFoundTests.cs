@@ -150,6 +150,6 @@ public class AmbiguousMemberFoundTests
             Assert.Equal(location, diagnostic.Location.GetSourceText());
             actualNames.Add(match.Groups[1].Value);
         }
-        Assert.Equal(memberNames.ToHashSet(), actualNames.ToHashSet());
+        Assert.Equal([.. memberNames], actualNames.ToHashSet());
     }
 }

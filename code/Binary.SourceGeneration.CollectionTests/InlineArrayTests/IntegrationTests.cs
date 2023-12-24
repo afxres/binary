@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Xunit;
 
+#pragma warning disable CA2211 // Non-constant fields should not be visible
 [InlineArray(4)]
 public struct TestArray4<T>
 {
@@ -34,10 +35,8 @@ public struct TestArray10<T>
 [SourceGeneratorInclude<TestArray10<string>>]
 public partial class IntegrationGeneratorContext { }
 
-public class FakeConverter<T> : Converter<T>
+public class FakeConverter<T>(int length) : Converter<T>(length)
 {
-    public FakeConverter(int length) : base(length) { }
-
     public override void Encode(ref Allocator allocator, T? item) => throw new NotSupportedException();
 
     public override T Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException();
@@ -120,3 +119,4 @@ public class IntegrationTests
         _ = Assert.Throws<OverflowException>(d.GetConverter<TestArray10<int>>);
     }
 }
+#pragma warning restore CA2211 // Non-constant fields should not be visible

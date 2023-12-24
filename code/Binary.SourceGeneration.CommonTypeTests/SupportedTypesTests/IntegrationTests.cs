@@ -60,26 +60,26 @@ public class IntegrationTests
 
     public static IEnumerable<object[]> ArraySegmentData()
     {
-        yield return new object[] { new ArraySegment<int>(new[] { 1 }), "SpanLikeConverter`1.*ArraySegment`1.*Int32" };
-        yield return new object[] { new ArraySegment<string>(new[] { "2" }), "SpanLikeConverter`1.*ArraySegment`1.*String" };
+        yield return new object[] { new ArraySegment<int>([1]), "SpanLikeConverter`1.*ArraySegment`1.*Int32" };
+        yield return new object[] { new ArraySegment<string>(["2"]), "SpanLikeConverter`1.*ArraySegment`1.*String" };
     }
 
     public static IEnumerable<object[]> MemoryData()
     {
-        yield return new object[] { new Memory<int>(new[] { 3 }), "SpanLikeConverter`1.*Memory`1.*Int32" };
-        yield return new object[] { new Memory<string>(new[] { "4" }), "SpanLikeConverter`1.*Memory`1.*String" };
+        yield return new object[] { new Memory<int>([3]), "SpanLikeConverter`1.*Memory`1.*Int32" };
+        yield return new object[] { new Memory<string>(["4"]), "SpanLikeConverter`1.*Memory`1.*String" };
     }
 
     public static IEnumerable<object[]> ReadOnlyMemoryData()
     {
-        yield return new object[] { new ReadOnlyMemory<int>(new[] { 5 }), "SpanLikeConverter`1.*ReadOnlyMemory`1.*Int32" };
-        yield return new object[] { new ReadOnlyMemory<string>(new[] { "6" }), "SpanLikeConverter`1.*ReadOnlyMemory`1.*String" };
+        yield return new object[] { new ReadOnlyMemory<int>([5]), "SpanLikeConverter`1.*ReadOnlyMemory`1.*Int32" };
+        yield return new object[] { new ReadOnlyMemory<string>(["6"]), "SpanLikeConverter`1.*ReadOnlyMemory`1.*String" };
     }
 
     public static IEnumerable<object[]> ReadOnlySequenceData()
     {
-        yield return new object[] { new ReadOnlySequence<int>(new[] { 1 }), "ReadOnlySequenceConverter`1.*Int32" };
-        yield return new object[] { new ReadOnlySequence<string>(new[] { "2" }), "ReadOnlySequenceConverter`1.*String" };
+        yield return new object[] { new ReadOnlySequence<int>([1]), "ReadOnlySequenceConverter`1.*Int32" };
+        yield return new object[] { new ReadOnlySequence<string>(["2"]), "ReadOnlySequenceConverter`1.*String" };
     }
 
     public static IEnumerable<object[]> PriorityQueueData()

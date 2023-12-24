@@ -54,8 +54,8 @@ public class LengthHeadedArrayConverterTests
     {
         var generator = Generator.CreateAot();
         var converter = new LengthHeadedArrayConverter<int>(generator.GetConverter<int>());
-        var buffer = converter.Encode(Array.Empty<int>());
-        Assert.Equal(new byte[] { 0 }, buffer);
+        var buffer = converter.Encode([]);
+        Assert.Equal([0], buffer);
         var a = converter.Decode(new byte[] { 0 });
         var b = converter.Decode(new byte[] { 0x80, 0, 0, 0 });
         Assert.NotNull(a);

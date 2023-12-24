@@ -25,7 +25,7 @@ public class BitArrayConverterTests
         var converter = new BitArrayConverter();
         var source = new BitArray(0);
         var buffer = converter.Encode(source);
-        Assert.Equal(new byte[] { 0 }, buffer);
+        Assert.Equal([0], buffer);
         var result = converter.Decode(header);
         Assert.NotNull(result);
         Assert.Equal(0, result.Length);

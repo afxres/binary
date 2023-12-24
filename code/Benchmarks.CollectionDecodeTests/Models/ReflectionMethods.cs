@@ -33,7 +33,7 @@ public static class ReflectionMethods
 
     public static Func<IEnumerable<int>, T> GetConstructor<T, E>() where T : IEnumerable<E>
     {
-        var constructor = typeof(T).GetConstructor(new[] { typeof(IEnumerable<E>) }) ?? throw new Exception();
+        var constructor = typeof(T).GetConstructor([typeof(IEnumerable<E>)]) ?? throw new Exception();
         var source = Expression.Parameter(typeof(IEnumerable<E>), "source");
         var lambda = Expression.Lambda<Func<IEnumerable<int>, T>>(Expression.New(constructor, source), source);
         return lambda.Compile();

@@ -18,14 +18,15 @@ internal class CompilationModule
 
     public static Compilation CreateCompilation(string source)
     {
-        var builder = ImmutableArray.CreateBuilder<MetadataReference>();
-        builder.Add(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
-        builder.Add(MetadataReference.CreateFromFile(typeof(IConverter).Assembly.Location));
-        builder.Add(MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Runtime")).Location));
-        builder.Add(MetadataReference.CreateFromFile(typeof(ImmutableArray<object>).Assembly.Location));
-        builder.Add(MetadataReference.CreateFromFile(typeof(LinkedList<object>).Assembly.Location));
-        builder.Add(MetadataReference.CreateFromFile(typeof(ReadOnlySequence<object>).Assembly.Location));
-        return CreateCompilation(source, builder.ToImmutable());
+        return CreateCompilation(source,
+        [
+            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IConverter).Assembly.Location),
+            MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Runtime")).Location),
+            MetadataReference.CreateFromFile(typeof(ImmutableArray<object>).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(LinkedList<object>).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(ReadOnlySequence<object>).Assembly.Location),
+        ]);
     }
 
     public static Compilation CreateCompilation(string source, ImmutableArray<MetadataReference> references)

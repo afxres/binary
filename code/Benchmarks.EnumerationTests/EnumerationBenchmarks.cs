@@ -33,7 +33,7 @@ public class EnumerationBenchmarks<T> where T : notnull
         var generator = Generator.CreateDefault();
         this.buffer = new byte[1 << 24];
         this.converter = generator.GetConverter<T>();
-        this.collection = source.ToHashSet();
+        this.collection = [.. source];
         this.dictionary = source.ToDictionary(x => x);
         this.collectionConverter = generator.GetConverter<HashSet<T>>();
         this.dictionaryConverter = generator.GetConverter<Dictionary<T, T>>();

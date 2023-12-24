@@ -46,14 +46,9 @@ public class ClassBravo
     public string? Text { get; set; }
 }
 
-public readonly struct StructureAlpha
+public readonly struct StructureAlpha(string text)
 {
-    public readonly string Text;
-
-    public StructureAlpha(string text)
-    {
-        this.Text = text;
-    }
+    public readonly string Text = text;
 }
 
 public struct StructureBravo
@@ -143,7 +138,7 @@ public class NamedObjectWithDefaultValueTests
     public void InterfaceTypeNamedObjectDefaultValueTest<T>(Type wanted, T data)
     {
         var method = new Action<object>(ReferenceTypeNamedObjectDefaultValueTest).Method.GetGenericMethodDefinition().MakeGenericMethod(wanted);
-        var result = method.Invoke(this, parameters: new object?[] { data });
+        var result = method.Invoke(this, parameters: [data]);
         Assert.Null(result);
     }
 }

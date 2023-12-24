@@ -46,9 +46,9 @@ public class ArrayBenchmarks
             .AddConverters(Select(this.Flag))
             .Build();
 
-        this.array01 = new[] { 1313 };
-        this.list01 = new List<int> { 1313 };
-        this.memory01 = new Memory<int>(new int[] { 1313 });
+        this.array01 = [1313];
+        this.list01 = [1313];
+        this.memory01 = new Memory<int>([1313]);
 
         this.arrayConverter = generator.GetConverter<int[]>();
         this.listConverter = generator.GetConverter<List<int>>();

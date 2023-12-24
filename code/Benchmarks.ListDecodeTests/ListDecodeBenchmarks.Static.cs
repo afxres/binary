@@ -20,7 +20,7 @@ public partial class ListDecodeBenchmarks
     private static List<T> Decode<T>(Converter<T> converter, ReadOnlySpan<byte> span)
     {
         if (span.Length is 0)
-            return new List<T>();
+            return [];
         const int FallbackCapacity = 8;
         var intent = span;
         var result = new List<T>(FallbackCapacity);
@@ -32,7 +32,7 @@ public partial class ListDecodeBenchmarks
     private static List<T> DecodeStackBased<T>(Converter<T> converter, ReadOnlySpan<byte> span)
     {
         if (span.Length is 0)
-            return new List<T>();
+            return [];
         var buffer = new InlineBuffer<T>();
         var target = (Span<T>)buffer;
         var cursor = 0;
@@ -48,7 +48,7 @@ public partial class ListDecodeBenchmarks
     private static List<T> DecodeRecursively<T>(Converter<T> converter, ReadOnlySpan<byte> span)
     {
         if (span.Length is 0)
-            return new List<T>();
+            return [];
         return DecodeRecursively(converter, ref span, 0);
     }
 

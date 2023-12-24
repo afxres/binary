@@ -77,11 +77,13 @@ public class InlineArrayContextTests
     [MemberData(nameof(InvalidInlineArrayData))]
     public void InvalidInlineArrayTest(string source)
     {
-        var references = new List<MetadataReference>();
-        references.Add(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
-        references.Add(MetadataReference.CreateFromFile(typeof(IConverter).Assembly.Location));
-        references.Add(MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Runtime")).Location));
-        references.Add(MetadataReference.CreateFromFile(typeof(ImmutableArray<object>).Assembly.Location));
+        var references = new List<MetadataReference>
+        {
+            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(IConverter).Assembly.Location),
+            MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Runtime")).Location),
+            MetadataReference.CreateFromFile(typeof(ImmutableArray<object>).Assembly.Location)
+        };
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
             syntaxTrees: new[] { CSharpSyntaxTree.ParseText(source, CompilationModule.ParseOptions) },

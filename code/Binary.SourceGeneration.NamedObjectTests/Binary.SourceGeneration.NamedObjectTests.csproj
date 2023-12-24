@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -7,6 +7,10 @@
     <RootNamespace>Mikodev.Binary.SourceGeneration.NamedObjectTests</RootNamespace>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NoWarn>CA1861;xUnit1042</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

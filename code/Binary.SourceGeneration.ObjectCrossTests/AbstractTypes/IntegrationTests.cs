@@ -13,26 +13,18 @@ public interface IPerson
     string Name { get; }
 }
 
-public abstract class AbstractPerson : IPerson
+public abstract class AbstractPerson(int age, string name) : IPerson
 {
-    public virtual int Age { get; }
+    public virtual int Age { get; } = age;
 
-    public virtual string Name { get; }
-
-    public AbstractPerson(int age, string name)
-    {
-        Age = age;
-        Name = name;
-    }
+    public virtual string Name { get; } = name;
 }
 
-public class Person : AbstractPerson, IEquatable<Person?>
+public class Person(int age, string name) : AbstractPerson(age, name), IEquatable<Person?>
 {
     public override int Age => base.Age;
 
     public override string Name => base.Name;
-
-    public Person(int age, string name) : base(age, name) { }
 
     public bool Equals(Person? other) => other is not null && Age == other.Age && Name == other.Name;
 
@@ -154,8 +146,8 @@ public class IntegrationTests
     {
         Assert.True(wantedType.IsInterface || wantedType.IsAbstract);
         var method = new Action<object>(EncodeOnlyTest).Method;
-        var target = method.GetGenericMethodDefinition().MakeGenericMethod(new Type[] { wantedType });
-        var result = target.Invoke(this, new object?[] { source });
+        var target = method.GetGenericMethodDefinition().MakeGenericMethod([wantedType]);
+        var result = target.Invoke(this, [source]);
         Assert.Null(result);
     }
 }

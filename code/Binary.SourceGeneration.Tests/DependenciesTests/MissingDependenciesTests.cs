@@ -2,7 +2,6 @@
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Collections.Immutable;
 using System.Reflection;
 using Xunit;
 
@@ -17,10 +16,11 @@ public class MissingDependenciesTests
 
             public class Empty { }
             """;
-        var builder = ImmutableArray.CreateBuilder<MetadataReference>();
-        builder.Add(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
-        builder.Add(MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Runtime")).Location));
-        var compilation = CompilationModule.CreateCompilation(source, builder.ToImmutable());
+        var compilation = CompilationModule.CreateCompilation(source,
+        [
+            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+            MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Runtime")).Location),
+        ]);
         var generator = new SourceGenerator();
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         Assert.Empty(diagnostics);
@@ -45,11 +45,12 @@ public class MissingDependenciesTests
                 public T Data { get; set; }
             }
             """;
-        var builder = ImmutableArray.CreateBuilder<MetadataReference>();
-        builder.Add(MetadataReference.CreateFromFile(typeof(IConverter).Assembly.Location));
-        builder.Add(MetadataReference.CreateFromFile(typeof(object).Assembly.Location));
-        builder.Add(MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Runtime")).Location));
-        var compilation = CompilationModule.CreateCompilation(source, builder.ToImmutable());
+        var compilation = CompilationModule.CreateCompilation(source,
+        [
+            MetadataReference.CreateFromFile(typeof(IConverter).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+            MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Runtime")).Location),
+        ]);
         var generator = new SourceGenerator();
         var driver = CSharpGeneratorDriver.Create(generators: new[] { generator.AsSourceGenerator() }, parseOptions: CompilationModule.ParseOptions);
         _ = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var outputDiagnostics);
