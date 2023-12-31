@@ -63,11 +63,11 @@ public sealed partial class Token : IDynamicMetaObjectProvider
                 var result = new Token(generator, target, origin, decode);
                 builder.Add(source, result);
             }
-            return new TokenValue(builder.ToImmutable(), null);
+            return (builder.ToImmutable(), null);
         }
         catch (Exception e)
         {
-            return new TokenValue(ImmutableDictionary.Create<string, Token>(), e);
+            return (ImmutableDictionary.Create<string, Token>(), e);
         }
     }
 

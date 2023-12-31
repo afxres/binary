@@ -17,14 +17,14 @@ internal sealed class DetectEndianConverterCreator : IConverterCreator
         {
             var little = new LittleEndianConverter<T>();
             var native = new NativeEndianConverter<T>();
-            dictionary.Add(typeof(T), new ConverterPair(little, native));
+            dictionary.Add(typeof(T), (little, native));
         }
 
         static void RegisterRepeat<T, E>(Dictionary<Type, ConverterPair> dictionary) where T : unmanaged where E : unmanaged
         {
             var little = new RepeatLittleEndianConverter<T, E>();
             var native = new NativeEndianConverter<T>();
-            dictionary.Add(typeof(T), new ConverterPair(little, native));
+            dictionary.Add(typeof(T), (little, native));
         }
 
         var dictionary = new Dictionary<Type, ConverterPair>();
