@@ -15,4 +15,14 @@ public static class SymbolExtensions
         result = actual;
         return true;
     }
+
+    public static Diagnostic With(this DiagnosticDescriptor descriptor, ISymbol symbol, object?[]? parameters = null)
+    {
+        return Diagnostic.Create(descriptor, Symbols.GetLocation(symbol), parameters);
+    }
+
+    public static Diagnostic With(this DiagnosticDescriptor descriptor, AttributeData? attribute, object?[]? parameters = null)
+    {
+        return Diagnostic.Create(descriptor, Symbols.GetLocation(attribute), parameters);
+    }
 }

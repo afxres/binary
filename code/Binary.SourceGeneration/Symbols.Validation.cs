@@ -18,7 +18,7 @@ public static partial class Symbols
     {
         if (ValidateContextType(declaration, symbol) is not { } descriptor)
             return true;
-        context.Collect(Diagnostic.Create(descriptor, GetLocation(symbol), new object[] { GetSymbolDiagnosticDisplayString(symbol) }));
+        context.Collect(descriptor.With(symbol, [GetSymbolDiagnosticDisplayString(symbol)]));
         return false;
     }
 
@@ -26,7 +26,7 @@ public static partial class Symbols
     {
         if (ValidateIncludeType(dictionary, symbol) is not { } descriptor)
             return true;
-        context.Collect(Diagnostic.Create(descriptor, GetLocation(attribute), new object[] { GetSymbolDiagnosticDisplayString(symbol) }));
+        context.Collect(descriptor.With(attribute, [GetSymbolDiagnosticDisplayString(symbol)]));
         return false;
     }
 
@@ -49,7 +49,7 @@ public static partial class Symbols
         cancellation.ThrowIfCancellationRequested();
 
         if (attributes.Length > 1)
-            diagnostics.Add(Diagnostic.Create(Constants.MultipleAttributesFoundOnType, GetLocation(symbol), new object[] { symbolDisplay }));
+            diagnostics.Add(Constants.MultipleAttributesFoundOnType.With(symbol, [symbolDisplay]));
         else
             ValidateType(context, symbol, symbolDisplay, attributes.SingleOrDefault(), diagnostics);
 
@@ -92,7 +92,7 @@ public static partial class Symbols
             ValidateMember(context, symbolDisplay, typeAttribute?.Name, member, typeInfo.RequiredFieldsAndProperties, diagnostics, namedMembers, tupleMembers);
         var tupleKeys = tupleMembers.Keys;
         if (tupleKeys.Count is not 0 && (tupleKeys.First() is not 0 || tupleKeys.Last() != tupleKeys.Count - 1))
-            diagnostics.Add(Diagnostic.Create(Constants.TupleKeyNotSequential, GetLocation(symbol), new object[] { symbolDisplay }));
+            diagnostics.Add(Constants.TupleKeyNotSequential.With(symbol, [symbolDisplay]));
         if (diagnostics.Count is not 0)
             return;
 
@@ -106,9 +106,9 @@ public static partial class Symbols
             return;
         else if (typeInfo.ConflictFieldsAndProperties is { Count: not 0 } conflict)
             foreach (var name in conflict)
-                diagnostics.Add(Diagnostic.Create(Constants.AmbiguousMemberFound, GetLocation(attribute), new object[] { name, symbolDisplay }));
+                diagnostics.Add(Constants.AmbiguousMemberFound.With(attribute, [name, symbolDisplay]));
         else if (typeInfo.FilteredFieldsAndProperties.Intersect(members, SymbolEqualityComparer.Default).Any() is false)
-            diagnostics.Add(Diagnostic.Create(Constants.NoAvailableMemberFound, GetLocation(attribute), new object[] { symbolDisplay }));
+            diagnostics.Add(Constants.NoAvailableMemberFound.With(attribute, [symbolDisplay]));
         return;
     }
 
@@ -118,7 +118,7 @@ public static partial class Symbols
             return;
         var argument = attribute.ConstructorArguments.Single();
         if (argument.Value is not ITypeSymbol type || type.AllInterfaces.Any(x => context.Equals(x, Constants.IConverterTypeName)) is false)
-            diagnostics.Add(Diagnostic.Create(Constants.RequireConverterType, GetLocation(attribute)));
+            diagnostics.Add(Constants.RequireConverterType.With(attribute));
         return;
     }
 
@@ -128,7 +128,7 @@ public static partial class Symbols
             return;
         var argument = attribute.ConstructorArguments.Single();
         if (argument.Value is not ITypeSymbol type || type.AllInterfaces.Any(x => context.Equals(x, Constants.IConverterCreatorTypeName)) is false)
-            diagnostics.Add(Diagnostic.Create(Constants.RequireConverterCreatorType, GetLocation(attribute)));
+            diagnostics.Add(Constants.RequireConverterCreatorType.With(attribute));
         return;
     }
 
@@ -138,9 +138,9 @@ public static partial class Symbols
             return;
         var key = (string?)attribute.ConstructorArguments.Single().Value;
         if (key is null || key.Length is 0)
-            diagnostics.Add(Diagnostic.Create(Constants.NamedKeyNullOrEmpty, GetLocation(attribute)));
+            diagnostics.Add(Constants.NamedKeyNullOrEmpty.With(attribute));
         else if (namedMembers.TryAdd(key, member) is false)
-            diagnostics.Add(Diagnostic.Create(Constants.NamedKeyDuplicated, GetLocation(attribute), new object[] { key }));
+            diagnostics.Add(Constants.NamedKeyDuplicated.With(attribute, [key]));
         return;
     }
 
@@ -150,7 +150,7 @@ public static partial class Symbols
             return;
         var key = (int)attribute.ConstructorArguments.Single().Value!;
         if (tupleMembers.TryAdd(key, member) is false)
-            diagnostics.Add(Diagnostic.Create(Constants.TupleKeyDuplicated, GetLocation(attribute), new object[] { key }));
+            diagnostics.Add(Constants.TupleKeyDuplicated.With(attribute, [key]));
         return;
     }
 
@@ -167,9 +167,9 @@ public static partial class Symbols
         var hasKey = namedKeyAttribute is not null || tupleKeyAttribute is not null;
         var requiredMemberWithoutKey = hasKey is false && requiredMembers.Count is not 0 && IsRequired(member);
         if (requiredMemberWithoutKey && typeAttribute is NamedObjectAttribute)
-            diagnostics.Add(Diagnostic.Create(Constants.RequireNamedKeyAttributeForRequiredMember, GetLocation(member), new object[] { memberName, containingTypeName }));
+            diagnostics.Add(Constants.RequireNamedKeyAttributeForRequiredMember.With(member, [memberName, containingTypeName]));
         if (requiredMemberWithoutKey && typeAttribute is TupleObjectAttribute)
-            diagnostics.Add(Diagnostic.Create(Constants.RequireTupleKeyAttributeForRequiredMember, GetLocation(member), new object[] { memberName, containingTypeName }));
+            diagnostics.Add(Constants.RequireTupleKeyAttributeForRequiredMember.With(member, [memberName, containingTypeName]));
         cancellation.ThrowIfCancellationRequested();
 
         if (converterAttribute is null &&
@@ -186,34 +186,34 @@ public static partial class Symbols
 
         var property = member as IPropertySymbol;
         if (member.IsStatic || member.DeclaredAccessibility is not Accessibility.Public)
-            diagnostics.Add(Diagnostic.Create(Constants.RequirePublicInstanceMember, GetLocation(member), new object[] { memberName, containingTypeName }));
+            diagnostics.Add(Constants.RequirePublicInstanceMember.With(member, [memberName, containingTypeName]));
         else if (property is not null && property.IsIndexer)
-            diagnostics.Add(Diagnostic.Create(Constants.RequireNotIndexer, GetLocation(member), new object[] { containingTypeName }));
+            diagnostics.Add(Constants.RequireNotIndexer.With(member, [containingTypeName]));
         else if (property is not null && property.GetMethod?.DeclaredAccessibility is not Accessibility.Public)
-            diagnostics.Add(Diagnostic.Create(Constants.RequirePublicGetter, GetLocation(member), new object[] { memberName, containingTypeName }));
+            diagnostics.Add(Constants.RequirePublicGetter.With(member, [memberName, containingTypeName]));
         cancellation.ThrowIfCancellationRequested();
 
         if (converterAttribute is not null && converterCreatorAttribute is not null)
-            diagnostics.Add(Diagnostic.Create(Constants.MultipleAttributesFoundOnMember, GetLocation(member), new object[] { memberName, containingTypeName }));
+            diagnostics.Add(Constants.MultipleAttributesFoundOnMember.With(member, [memberName, containingTypeName]));
         if (namedKeyAttribute is not null && typeAttribute is not NamedObjectAttribute)
-            diagnostics.Add(Diagnostic.Create(Constants.RequireNamedObjectAttribute, GetLocation(namedKeyAttribute), new object[] { memberName, containingTypeName }));
+            diagnostics.Add(Constants.RequireNamedObjectAttribute.With(namedKeyAttribute, [memberName, containingTypeName]));
         if (tupleKeyAttribute is not null && typeAttribute is not TupleObjectAttribute)
-            diagnostics.Add(Diagnostic.Create(Constants.RequireTupleObjectAttribute, GetLocation(tupleKeyAttribute), new object[] { memberName, containingTypeName }));
+            diagnostics.Add(Constants.RequireTupleObjectAttribute.With(tupleKeyAttribute, [memberName, containingTypeName]));
         cancellation.ThrowIfCancellationRequested();
 
         if (property is not null && IsReturnsByRefOrReturnsByRefReadonly(property))
-            diagnostics.Add(Diagnostic.Create(Constants.RequireNotByReferenceProperty, GetLocation(member), new object[] { memberName, containingTypeName }));
+            diagnostics.Add(Constants.RequireNotByReferenceProperty.With(member, [memberName, containingTypeName]));
         cancellation.ThrowIfCancellationRequested();
 
         var memberType = property?.Type ?? ((IFieldSymbol)member).Type;
         if (IsTypeInvalid(memberType))
-            diagnostics.Add(Diagnostic.Create(Constants.RequireValidTypeForMember, GetLocation(member), new object[] { GetSymbolDiagnosticDisplayString(memberType), memberName, containingTypeName }));
+            diagnostics.Add(Constants.RequireValidTypeForMember.With(member, [GetSymbolDiagnosticDisplayString(memberType), memberName, containingTypeName]));
         cancellation.ThrowIfCancellationRequested();
 
         if (hasKey is false && converterAttribute is not null)
-            diagnostics.Add(Diagnostic.Create(Constants.RequireKeyAttributeForConverterAttribute, GetLocation(converterAttribute), new object[] { memberName, containingTypeName }));
+            diagnostics.Add(Constants.RequireKeyAttributeForConverterAttribute.With(converterAttribute, [memberName, containingTypeName]));
         if (hasKey is false && converterCreatorAttribute is not null)
-            diagnostics.Add(Diagnostic.Create(Constants.RequireKeyAttributeForConverterCreatorAttribute, GetLocation(converterCreatorAttribute), new object[] { memberName, containingTypeName }));
+            diagnostics.Add(Constants.RequireKeyAttributeForConverterCreatorAttribute.With(converterCreatorAttribute, [memberName, containingTypeName]));
         cancellation.ThrowIfCancellationRequested();
     }
 }
