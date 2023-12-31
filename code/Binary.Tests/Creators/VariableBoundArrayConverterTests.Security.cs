@@ -27,7 +27,7 @@ public partial class VariableBoundArrayConverterTests
         var allocator = new Allocator();
         foreach (var i in lengths)
             Converter.Encode(ref allocator, i);
-        foreach (var i in lengths)
+        foreach (var _ in lengths)
             Converter.Encode(ref allocator, 0);
         Allocator.Expand(ref allocator, remainingLength);
         var buffer = allocator.ToArray();
@@ -49,7 +49,7 @@ public partial class VariableBoundArrayConverterTests
         var allocator = new Allocator();
         foreach (var i in lengths)
             Converter.Encode(ref allocator, i);
-        foreach (var i in lengths)
+        foreach (var _ in lengths)
             Converter.Encode(ref allocator, 0);
         var buffer = allocator.ToArray();
 
