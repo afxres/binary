@@ -17,8 +17,7 @@ internal sealed class InlineArrayConverterCreator : IConverterCreator
         var itemType = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Single().FieldType;
         var itemConverter = context.GetConverter(itemType);
         var converterType = typeof(InlineArrayConverter<,>).MakeGenericType(type, itemType);
-        var converterArguments = new object[] { itemConverter, attribute.Length };
-        var converter = CommonModule.CreateInstance(converterType, converterArguments);
+        var converter = CommonModule.CreateInstance(converterType, [itemConverter, attribute.Length]);
         return (IConverter)converter;
     }
 }

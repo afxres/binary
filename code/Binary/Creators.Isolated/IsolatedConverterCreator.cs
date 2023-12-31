@@ -4,31 +4,29 @@ using Mikodev.Binary.Creators.Isolated.Constants;
 using Mikodev.Binary.Creators.Isolated.Primitive;
 using Mikodev.Binary.Creators.Isolated.Variables;
 using System;
+using System.Collections.Frozen;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 
 internal sealed class IsolatedConverterCreator : IConverterCreator
 {
-    private static readonly ImmutableDictionary<Type, IConverter> SharedConverters;
+    private static readonly FrozenDictionary<Type, IConverter> SharedConverters = GetConverters().ToFrozenDictionary(Converter.GetGenericArgument);
 
-    static IsolatedConverterCreator()
+    private static IEnumerable<IConverter> GetConverters()
     {
-        var converters = new IConverter[]
-        {
-            new DateOnlyConverter(),
-            new DateTimeConverter(),
-            new DateTimeOffsetConverter(),
-            new DecimalConverter(),
-            new GuidConverter(),
-            new RuneConverter(),
-            new TimeOnlyConverter(),
-            new TimeSpanConverter(),
-            new BigIntegerConverter(),
-            new IPAddressConverter(),
-            new IPEndPointConverter(),
-            new VersionConverter(),
-            new StringConverter(),
-        };
-        SharedConverters = converters.ToImmutableDictionary(Converter.GetGenericArgument);
+        yield return new DateOnlyConverter();
+        yield return new DateTimeConverter();
+        yield return new DateTimeOffsetConverter();
+        yield return new DecimalConverter();
+        yield return new GuidConverter();
+        yield return new RuneConverter();
+        yield return new TimeOnlyConverter();
+        yield return new TimeSpanConverter();
+        yield return new BigIntegerConverter();
+        yield return new IPAddressConverter();
+        yield return new IPEndPointConverter();
+        yield return new VersionConverter();
+        yield return new StringConverter();
     }
 
     public IConverter? GetConverter(IGeneratorContext context, Type type)

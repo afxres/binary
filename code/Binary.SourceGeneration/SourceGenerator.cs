@@ -183,7 +183,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         output.AppendIndent();
         output.AppendIndent(0, $"partial class {info.NameInSourceCode}");
         output.AppendIndent(0, $"{{");
-        output.AppendIndent(1, $"public static System.Collections.Generic.IReadOnlyDictionary<System.Type, Mikodev.Binary.IConverterCreator> ConverterCreators {{ get; }} = System.Collections.Immutable.ImmutableDictionary.CreateRange(new System.Collections.Generic.Dictionary<System.Type, Mikodev.Binary.IConverterCreator>");
+        output.AppendIndent(1, $"public static System.Collections.Generic.IReadOnlyDictionary<System.Type, Mikodev.Binary.IConverterCreator> ConverterCreators {{ get; }} = System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary(new System.Collections.Generic.Dictionary<System.Type, Mikodev.Binary.IConverterCreator>");
         output.AppendIndent(1, $"{{");
         foreach (var i in dictionary)
         {

@@ -19,8 +19,8 @@ public class InternalTypeCollectionTests
             .ToImmutableDictionary(Converter.GetGenericArgument);
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "IsolatedConverterCreator");
         var field = type.GetFieldNotNull("SharedConverters", BindingFlags.Static | BindingFlags.NonPublic);
-        var actual = Assert.IsAssignableFrom<ImmutableDictionary<Type, IConverter>>(field.GetValue(null));
-        Assert.Equal(expected.Keys, actual.Keys);
+        var actual = Assert.IsAssignableFrom<IReadOnlyDictionary<Type, IConverter>>(field.GetValue(null));
+        Assert.Equal(expected.Keys.ToHashSet(), actual.Keys.ToHashSet());
         Assert.Equal(expected.Values.Select(x => x.GetType()).ToHashSet(), actual.Values.Select(x => x.GetType()).ToHashSet());
     }
 
@@ -43,7 +43,7 @@ public class InternalTypeCollectionTests
     {
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "DetectEndianConverterCreator");
         var field = ReflectionExtensions.GetFieldNotNull(type, "SharedConverters", BindingFlags.Static | BindingFlags.NonPublic);
-        var actual = Assert.IsAssignableFrom<ImmutableDictionary<Type, (IConverter, IConverter)>>(field.GetValue(null));
+        var actual = Assert.IsAssignableFrom<IReadOnlyDictionary<Type, (IConverter, IConverter)>>(field.GetValue(null));
         foreach (var (key, (little, native)) in actual)
         {
             Assert.Equal(key, Converter.GetGenericArgument(little));

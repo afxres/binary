@@ -4,7 +4,6 @@ using Mikodev.Binary.Tests.Contexts;
 using Mikodev.Binary.Tests.Internal;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
@@ -90,7 +89,7 @@ public class ConverterIntegrationTests
     {
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "DetectEndianConverterCreator");
         var field = ReflectionExtensions.GetFieldNotNull(type, "SharedConverters", BindingFlags.Static | BindingFlags.NonPublic);
-        var actual = Assert.IsAssignableFrom<ImmutableDictionary<Type, (IConverter, IConverter)>>(field.GetValue(null));
+        var actual = Assert.IsAssignableFrom<IReadOnlyDictionary<Type, (IConverter, IConverter)>>(field.GetValue(null));
 
         var (little, native) = actual[typeof(T)];
         var a = little.Encode(data);

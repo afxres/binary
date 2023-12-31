@@ -1,59 +1,61 @@
 ﻿namespace Mikodev.Binary.Creators.Endianness;
 
 using System;
-using System.Collections.Immutable;
+using System.Collections.Frozen;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Numerics;
+using ConverterPair = (IConverter Little, IConverter Native);
 
 internal sealed class DetectEndianConverterCreator : IConverterCreator
 {
-    private static readonly ImmutableDictionary<Type, (IConverter Little, IConverter Native)> SharedConverters;
+    private static readonly FrozenDictionary<Type, ConverterPair> SharedConverters;
 
     static DetectEndianConverterCreator()
     {
-        static void Register<T>(ImmutableDictionary<Type, (IConverter, IConverter)>.Builder builder) where T : unmanaged
+        static void Register<T>(Dictionary<Type, ConverterPair> dictionary) where T : unmanaged
         {
             var little = new LittleEndianConverter<T>();
             var native = new NativeEndianConverter<T>();
-            builder.Add(typeof(T), (little, native));
+            dictionary.Add(typeof(T), new ConverterPair(little, native));
         }
 
-        static void RegisterRepeat<T, E>(ImmutableDictionary<Type, (IConverter, IConverter)>.Builder builder) where T : unmanaged where E : unmanaged
+        static void RegisterRepeat<T, E>(Dictionary<Type, ConverterPair> dictionary) where T : unmanaged where E : unmanaged
         {
             var little = new RepeatLittleEndianConverter<T, E>();
             var native = new NativeEndianConverter<T>();
-            builder.Add(typeof(T), (little, native));
+            dictionary.Add(typeof(T), new ConverterPair(little, native));
         }
 
-        var builder = ImmutableDictionary.CreateBuilder<Type, (IConverter, IConverter)>();
+        var dictionary = new Dictionary<Type, ConverterPair>();
 
-        Register<bool>(builder);
-        Register<byte>(builder);
-        Register<sbyte>(builder);
-        Register<char>(builder);
-        Register<short>(builder);
-        Register<int>(builder);
-        Register<long>(builder);
-        Register<ushort>(builder);
-        Register<uint>(builder);
-        Register<ulong>(builder);
-        Register<float>(builder);
-        Register<double>(builder);
-        Register<Half>(builder);
-        Register<BitVector32>(builder);
-        Register<Int128>(builder);
-        Register<UInt128>(builder);
+        Register<bool>(dictionary);
+        Register<byte>(dictionary);
+        Register<sbyte>(dictionary);
+        Register<char>(dictionary);
+        Register<short>(dictionary);
+        Register<int>(dictionary);
+        Register<long>(dictionary);
+        Register<ushort>(dictionary);
+        Register<uint>(dictionary);
+        Register<ulong>(dictionary);
+        Register<float>(dictionary);
+        Register<double>(dictionary);
+        Register<Half>(dictionary);
+        Register<BitVector32>(dictionary);
+        Register<Int128>(dictionary);
+        Register<UInt128>(dictionary);
 
-        RegisterRepeat<Complex, double>(builder);
-        RegisterRepeat<Matrix3x2, float>(builder);
-        RegisterRepeat<Matrix4x4, float>(builder);
-        RegisterRepeat<Plane, float>(builder);
-        RegisterRepeat<Quaternion, float>(builder);
-        RegisterRepeat<Vector2, float>(builder);
-        RegisterRepeat<Vector3, float>(builder);
-        RegisterRepeat<Vector4, float>(builder);
+        RegisterRepeat<Complex, double>(dictionary);
+        RegisterRepeat<Matrix3x2, float>(dictionary);
+        RegisterRepeat<Matrix4x4, float>(dictionary);
+        RegisterRepeat<Plane, float>(dictionary);
+        RegisterRepeat<Quaternion, float>(dictionary);
+        RegisterRepeat<Vector2, float>(dictionary);
+        RegisterRepeat<Vector3, float>(dictionary);
+        RegisterRepeat<Vector4, float>(dictionary);
 
-        SharedConverters = builder.ToImmutable();
+        SharedConverters = dictionary.ToFrozenDictionary();
     }
 
     public IConverter? GetConverter(IGeneratorContext context, Type type)

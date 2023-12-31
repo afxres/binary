@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 internal sealed class DictionaryDecoder<K, V>(Converter<K> init, Converter<V> tail) where K : notnull
 {
-    private readonly int itemLength = TupleObject.GetConverterLength(new IConverter[] { init, tail });
+    private readonly int itemLength = TupleObject.GetConverterLength([init, tail]);
 
     private readonly Converter<K> init = init;
 

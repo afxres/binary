@@ -7,7 +7,7 @@ using System.Linq;
 
 public sealed partial class TupleObjectConverterContext
 {
-    private static readonly ImmutableArray<string> SystemTupleMemberNames = ImmutableArray.Create(new[] { "Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Rest" });
+    private static readonly ImmutableArray<string> SystemTupleMemberNames = ImmutableArray.Create(["Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Rest"]);
 
     private static SymbolTupleMemberInfo GetTupleMember(ISymbol member)
     {

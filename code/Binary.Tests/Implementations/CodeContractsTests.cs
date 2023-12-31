@@ -42,7 +42,7 @@ public class CodeContractsTests
         Assert.NotEmpty(inRefExpected);
         Assert.All(inRefExpected, x => Assert.Contains("Decode", x.Member.Name));
         Assert.NotEmpty(inRefUnexpected);
-        Assert.All(inRefUnexpected, x => Assert.True(x.DeclaringType!.Name.Contains("Functions") || x.DeclaringType!.IsSubclassOf(typeof(Delegate))));
+        Assert.All(inRefUnexpected, x => Assert.True(x.DeclaringType is { } declaring && (declaring.Name.Contains('<') || declaring.Name.Contains("Functions") || declaring.IsSubclassOf(typeof(Delegate)))));
 
         var converterParameters = parameters.Where(x => x.Member is MethodInfo && typeof(IConverter).IsAssignableFrom(x.Member.DeclaringType)).ToList();
         var converterExpectedParameters = converterParameters.Where(x => !x.Member.Name.StartsWith("Throw") && !x.Member.Name.StartsWith("Except") && Equals(x.ParameterType.Name, names)).ToList();

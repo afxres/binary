@@ -11,6 +11,7 @@ using System.Dynamic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using TokenValue = (System.Collections.Immutable.ImmutableDictionary<string, Token> Tokens, System.Exception? Error);
 
 [DebuggerDisplay(CommonModule.DebuggerDisplayValue)]
 public sealed partial class Token : IDynamicMetaObjectProvider
@@ -23,7 +24,7 @@ public sealed partial class Token : IDynamicMetaObjectProvider
 
     private readonly Token? parent;
 
-    private readonly Lazy<(ImmutableDictionary<string, Token> Tokens, Exception? Error)> create;
+    private readonly Lazy<TokenValue> create;
 
     public IReadOnlyDictionary<string, Token> Children => this.create.Value.Tokens;
 
@@ -39,10 +40,10 @@ public sealed partial class Token : IDynamicMetaObjectProvider
         this.memory = memory;
         this.parent = parent;
         this.decode = decode;
-        this.create = new Lazy<(ImmutableDictionary<string, Token>, Exception?)>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
+        this.create = new Lazy<TokenValue>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
     }
 
-    private static (ImmutableDictionary<string, Token>, Exception?) GetTokens(Token origin)
+    private static TokenValue GetTokens(Token origin)
     {
         var generator = origin.generator;
         var memory = origin.memory;
@@ -62,11 +63,11 @@ public sealed partial class Token : IDynamicMetaObjectProvider
                 var result = new Token(generator, target, origin, decode);
                 builder.Add(source, result);
             }
-            return (builder.ToImmutable(), null);
+            return new TokenValue(builder.ToImmutable(), null);
         }
         catch (Exception e)
         {
-            return (ImmutableDictionary.Create<string, Token>(), e);
+            return new TokenValue(ImmutableDictionary.Create<string, Token>(), e);
         }
     }
 

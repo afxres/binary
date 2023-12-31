@@ -21,9 +21,8 @@ internal static class ContextMethodsOfTupleObject
         var decode = GetDecodeDelegateAsTupleObject(type, converters, constructor, auto: false);
         var decodeAuto = GetDecodeDelegateAsTupleObject(type, converters, constructor, auto: true);
         var itemLength = TupleObject.GetConverterLength(converters);
-        var converterArguments = new object?[] { encode, encodeAuto, decode, decodeAuto, itemLength };
         var converterType = typeof(TupleObjectDelegateConverter<>).MakeGenericType(type);
-        var converter = CommonModule.CreateInstance(converterType, converterArguments);
+        var converter = CommonModule.CreateInstance(converterType, [encode, encodeAuto, decode, decodeAuto, itemLength]);
         return (IConverter)converter;
     }
 

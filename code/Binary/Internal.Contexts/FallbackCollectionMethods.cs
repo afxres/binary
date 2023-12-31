@@ -26,7 +26,7 @@ internal static class FallbackCollectionMethods
 
     private static readonly ImmutableArray<Type> ArrayOrListAssignableDefinitions;
 
-    private static readonly ImmutableDictionary<Type, MethodInfo> ImmutableCollectionCreateMethods;
+    private static readonly FrozenDictionary<Type, MethodInfo> ImmutableCollectionCreateMethods;
 
     static FallbackCollectionMethods()
     {
@@ -35,7 +35,7 @@ internal static class FallbackCollectionMethods
             return func.Method.GetGenericMethodDefinition();
         }
 
-        var immutable = ImmutableDictionary.CreateRange(new Dictionary<Type, MethodInfo>
+        var immutable = new Dictionary<Type, MethodInfo>
         {
             [typeof(IImmutableDictionary<,>)] = Info(ImmutableDictionary.CreateRange),
             [typeof(IImmutableList<>)] = Info(ImmutableList.CreateRange),
@@ -50,44 +50,44 @@ internal static class FallbackCollectionMethods
             [typeof(ImmutableSortedSet<>)] = Info(ImmutableSortedSet.CreateRange),
             [typeof(FrozenDictionary<,>)] = Info(SequenceMethods.GetFrozenDictionary),
             [typeof(FrozenSet<>)] = Info(SequenceMethods.GetFrozenSet),
-        });
+        };
 
-        var invalid = ImmutableArray.Create(new[]
-        {
+        var invalid = ImmutableArray.Create(
+        [
             typeof(Stack<>),
             typeof(ConcurrentStack<>),
             typeof(ImmutableStack<>),
             typeof(IImmutableStack<>),
-        });
+        ]);
 
-        var array = ImmutableArray.Create(new[]
-        {
+        var array = ImmutableArray.Create(
+        [
             typeof(IList<>),
             typeof(ICollection<>),
             typeof(IEnumerable<>),
             typeof(IReadOnlyList<>),
             typeof(IReadOnlyCollection<>),
-        });
+        ]);
 
-        var set = ImmutableArray.Create(new[]
-        {
+        var set = ImmutableArray.Create(
+        [
             typeof(HashSet<>),
             typeof(ISet<>),
             typeof(IReadOnlySet<>),
-        });
+        ]);
 
-        var dictionary = ImmutableArray.Create(new[]
-        {
+        var dictionary = ImmutableArray.Create(
+        [
             typeof(Dictionary<,>),
             typeof(IDictionary<,>),
             typeof(IReadOnlyDictionary<,>),
-        });
+        ]);
 
         InvalidTypeDefinitions = invalid;
         HashSetAssignableDefinitions = set;
         DictionaryAssignableDefinitions = dictionary;
         ArrayOrListAssignableDefinitions = array;
-        ImmutableCollectionCreateMethods = immutable;
+        ImmutableCollectionCreateMethods = immutable.ToFrozenDictionary();
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
@@ -230,7 +230,7 @@ internal static class FallbackCollectionMethods
             ? origin as Expression
             : Expression.TryFinally(origin, Expression.Call(enumerator, dispose));
         var assign = Expression.Assign(enumerator, Expression.Call(collection, initial));
-        var result = Expression.Block(new[] { enumerator }, assign, source);
+        var result = Expression.Block([enumerator], assign, source);
         var ensure = typeof(T).IsValueType
             ? result as Expression
             : Expression.IfThen(Expression.NotEqual(collection, Expression.Constant(null, typeof(T))), result);

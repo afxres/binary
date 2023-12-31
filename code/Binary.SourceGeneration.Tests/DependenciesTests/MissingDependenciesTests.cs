@@ -59,6 +59,6 @@ public class MissingDependenciesTests
         Assert.Empty(diagnostics);
         Assert.Empty(outputDiagnostics);
         Assert.NotEmpty(outputCompilationDiagnostics);
-        Assert.All(outputCompilationDiagnostics, x => Assert.Contains("Immutable", x.Location.GetSourceText()));
+        Assert.All(outputCompilationDiagnostics, x => Assert.Contains("System.Collections.Frozen", x.Location.GetSourceText()));
     }
 }

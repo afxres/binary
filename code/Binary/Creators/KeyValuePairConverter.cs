@@ -4,7 +4,7 @@ using Mikodev.Binary.Components;
 using System;
 using System.Collections.Generic;
 
-internal sealed class KeyValuePairConverter<K, V>(Converter<K> init, Converter<V> tail) : Converter<KeyValuePair<K, V>>(TupleObject.GetConverterLength(new IConverter[] { init, tail }))
+internal sealed class KeyValuePairConverter<K, V>(Converter<K> init, Converter<V> tail) : Converter<KeyValuePair<K, V>>(TupleObject.GetConverterLength([init, tail]))
 {
     private readonly Converter<K> init = init;
 

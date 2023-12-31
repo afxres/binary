@@ -13,8 +13,7 @@ internal sealed class VariableBoundArrayConverterCreator : IConverterCreator
             return null;
         var itemConverter = context.GetConverter(itemType);
         var converterType = typeof(VariableBoundArrayConverter<,>).MakeGenericType(type, itemType);
-        var converterArguments = new object[] { itemConverter };
-        var converter = CommonModule.CreateInstance(converterType, converterArguments);
+        var converter = CommonModule.CreateInstance(converterType, [itemConverter]);
         return (IConverter)converter;
     }
 }

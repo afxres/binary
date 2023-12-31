@@ -7,6 +7,7 @@ using Mikodev.Binary.Internal.SpanLike.Contexts;
 using Mikodev.Binary.Internal.SpanLike.Decoders;
 using Mikodev.Binary.Internal.SpanLike.Encoders;
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -19,7 +20,7 @@ internal static class FallbackSequentialMethods
 
     private static readonly MethodInfo UnboxCreateMethod;
 
-    private static readonly ImmutableDictionary<Type, MethodInfo> CreateMethods;
+    private static readonly FrozenDictionary<Type, MethodInfo> CreateMethods;
 
     static FallbackSequentialMethods()
     {
@@ -30,15 +31,15 @@ internal static class FallbackSequentialMethods
 
         var array = Info(GetArrayConverter);
         var unbox = new Func<MethodInfo, object, object>(GetConverter<object>).Method.GetGenericMethodDefinition();
-        var create = ImmutableDictionary.CreateRange(new Dictionary<Type, MethodInfo>
+        var create = new Dictionary<Type, MethodInfo>
         {
             [typeof(List<>)] = Info(GetListConverter),
             [typeof(Memory<>)] = Info(GetMemoryConverter),
             [typeof(ArraySegment<>)] = Info(GetArraySegmentConverter),
             [typeof(ReadOnlyMemory<>)] = Info(GetReadOnlyMemoryConverter),
             [typeof(ImmutableArray<>)] = Info(GetImmutableArrayConverter),
-        });
-        CreateMethods = create;
+        };
+        CreateMethods = create.ToFrozenDictionary();
         UnboxCreateMethod = unbox;
         ArrayCreateMethod = array;
     }
