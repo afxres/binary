@@ -23,6 +23,7 @@ internal sealed class IsolatedConverterCreator : IConverterCreator
         yield return new TimeOnlyConverter();
         yield return new TimeSpanConverter();
         yield return new BigIntegerConverter();
+        yield return new BitArrayConverter();
         yield return new IPAddressConverter();
         yield return new IPEndPointConverter();
         yield return new VersionConverter();
