@@ -14,8 +14,8 @@ jobs:
         run: |
           cd code
           dotnet restore
-          dotnet build --no-restore
-          dotnet test --no-restore -f net8.0 --collect:"XPlat Code Coverage;Format=lcov"
+          dotnet build
+          dotnet test -f net8.0 --collect:"XPlat Code Coverage;Format=lcov"
 
       - name: Coverage
         run: |
