@@ -9,7 +9,7 @@ using Xunit;
 
 public class AllocatorTests
 {
-    private delegate int Anchor(ref Allocator allocator, int length);
+    private delegate int Anchor(ref Allocator allocator);
 
     private delegate void Resize(ref Allocator allocator, int expand);
 
@@ -105,16 +105,16 @@ public class AllocatorTests
         Assert.Equal(offset, allocator.Length);
     }
 
-    [Fact(DisplayName = "Anchor (hack, zero)")]
-    public void AnchorZero()
+    [Fact(DisplayName = "Anchor")]
+    public void AnchorMethod()
     {
         var methodInfo = typeof(Allocator).GetMethodNotNull("Anchor", BindingFlags.Static | BindingFlags.NonPublic);
         var anchor = (Anchor)Delegate.CreateDelegate(typeof(Anchor), methodInfo);
         var buffer = new byte[25];
         var allocator = new Allocator(buffer);
-        var result = anchor.Invoke(ref allocator, 0);
+        var result = anchor.Invoke(ref allocator);
         Assert.Equal(0, result);
-        Assert.Equal(0, allocator.Length);
+        Assert.Equal(4, allocator.Length);
         Assert.Equal(buffer.Length, allocator.Capacity);
     }
 
@@ -141,7 +141,7 @@ public class AllocatorTests
         var random = new Random();
         random.NextBytes(buffer);
         var allocator = new Allocator(new Span<byte>(new byte[allocatorCapacity]), maxCapacity: allocatorCapacity);
-        var anchor = anchorMethod.Invoke(ref allocator, 4);
+        var anchor = anchorMethod.Invoke(ref allocator);
         Assert.Equal(4, allocator.Length);
         Assert.Equal(allocatorCapacity, allocator.Capacity);
         Allocator.Append(ref allocator, buffer);
@@ -195,7 +195,7 @@ public class AllocatorTests
                 var buffer = new byte[length];
                 random.NextBytes(buffer);
                 var allocator = new Allocator(new byte[capacity], maxCapacity: capacity);
-                var anchor = anchorMethod.Invoke(ref allocator, 4);
+                var anchor = anchorMethod.Invoke(ref allocator);
                 Assert.Equal(4, allocator.Length);
                 Allocator.Append(ref allocator, buffer);
                 Assert.Equal(length + 4, allocator.Length);

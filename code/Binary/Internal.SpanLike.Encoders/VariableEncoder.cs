@@ -13,7 +13,7 @@ internal sealed class VariableEncoder<T, E, A>(Converter<E> converter) : SpanLik
 
     public override void EncodeWithLengthPrefix(ref Allocator allocator, T? item)
     {
-        var anchor = Allocator.Anchor(ref allocator, sizeof(int));
+        var anchor = Allocator.Anchor(ref allocator);
         A.Encode(ref allocator, item, this.converter);
         Allocator.FinishAnchor(ref allocator, anchor);
     }

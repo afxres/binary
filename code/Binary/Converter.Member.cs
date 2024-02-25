@@ -39,7 +39,7 @@ public abstract partial class Converter<T>
 
     private void EncodeWithLengthPrefixVariable(ref Allocator allocator, T? item)
     {
-        var anchor = Allocator.Anchor(ref allocator, sizeof(int));
+        var anchor = Allocator.Anchor(ref allocator);
         Encode(ref allocator, item);
         Allocator.FinishAnchor(ref allocator, anchor);
     }

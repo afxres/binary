@@ -101,7 +101,7 @@ internal sealed class BitArrayConverter : VariableConverter<BitArray?, BitArrayC
 
         public static void EncodeWithLengthPrefix(ref Allocator allocator, BitArray? item)
         {
-            var anchor = Allocator.Anchor(ref allocator, sizeof(int));
+            var anchor = Allocator.Anchor(ref allocator);
             EncodeInternal(ref allocator, item);
             Allocator.FinishAnchor(ref allocator, anchor);
         }

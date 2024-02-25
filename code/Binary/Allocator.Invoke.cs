@@ -83,11 +83,11 @@ public ref partial struct Allocator
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static int Anchor(ref Allocator allocator, int length)
+    internal static int Anchor(ref Allocator allocator)
     {
-        Ensure(ref allocator, length);
+        Ensure(ref allocator, sizeof(int));
         var offset = allocator.offset;
-        allocator.offset = offset + length;
+        allocator.offset = offset + sizeof(int);
         return offset;
     }
 

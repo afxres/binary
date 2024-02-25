@@ -67,7 +67,7 @@ public ref partial struct Allocator
     public static void AppendWithLengthPrefix<T>(ref Allocator allocator, T data, AllocatorAction<T> action)
     {
         ArgumentNullException.ThrowIfNull(action);
-        var anchor = Anchor(ref allocator, sizeof(int));
+        var anchor = Anchor(ref allocator);
         action.Invoke(ref allocator, data);
         FinishAnchor(ref allocator, anchor);
     }

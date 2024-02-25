@@ -225,7 +225,7 @@ public class CodeContractsTests
     public void InternalTypeInstanceMemberAccessLevel()
     {
         var types = typeof(IConverter).Assembly.GetTypes();
-        var array = types.Where(x => x.IsPublic is false && x.IsSubclassOf(typeof(Delegate)) is false && x.IsEnum is false && x.Name.Contains('<') is false).ToList();
+        var array = types.Where(x => x.IsPublic is false && x.IsSubclassOf(typeof(Delegate)) is false && x.IsEnum is false && x.FullName?.Contains('<') is false).ToList();
         var filter = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         foreach (var t in array)
         {
