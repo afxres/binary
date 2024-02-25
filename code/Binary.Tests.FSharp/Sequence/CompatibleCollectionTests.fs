@@ -12,7 +12,7 @@ let Test (value : 'a when 'a :> 'e seq) =
     let converter = generator.GetConverter<'a>()
     let buffer = converter.Encode value
     let result : 'a = converter.Decode buffer
-    Assert.Equal<'e seq>(value, result)
+    Assert.Equal<'e>(value, result :> 'e seq)
 
     let alpha = converter.Encode Unchecked.defaultof<'a>
     Assert.NotNull alpha

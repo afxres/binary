@@ -62,8 +62,8 @@ type ImmutableCollectionTests() =
         let mutable spanLengthPrefix = ReadOnlySpan bufferLengthPrefix
         let resultAuto = converter.DecodeAuto &spanAuto
         let resultLengthPrefix = converter.DecodeWithLengthPrefix &spanLengthPrefix
-        Assert.Equal<'E>(item, resultAuto)
-        Assert.Equal<'E>(item, resultLengthPrefix)
+        Assert.Equal<'E>(item, resultAuto :> 'E seq)
+        Assert.Equal<'E>(item, resultLengthPrefix :> 'E seq)
         Assert.Equal(0, spanAuto.Length)
         Assert.Equal(0, spanLengthPrefix.Length)
         ()
@@ -72,7 +72,7 @@ type ImmutableCollectionTests() =
         let converter = TestConverter item
         let buffer = converter.Encode item
         let result = converter.Decode buffer
-        Assert.Equal<'E>(item, result)
+        Assert.Equal<'E>(item, result :> 'E seq)
 
         TestAutoAndLengthPrefix item converter
         ()
@@ -82,7 +82,7 @@ type ImmutableCollectionTests() =
         let buffer = converter.Encode item
         let result = converter.Decode buffer
         Assert.True(typeof<'T>.IsInterface)
-        Assert.Equal<'E>(item, result)
+        Assert.Equal<'E>(item, result :> 'E seq)
         Assert.Equal(item.GetType(), result.GetType())
 
         TestAutoAndLengthPrefix item converter

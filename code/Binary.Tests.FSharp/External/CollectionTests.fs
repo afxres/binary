@@ -14,7 +14,7 @@ let generator =
 let Test (value : 'a when 'a :> 'e seq) =
     let buffer = generator.Encode value
     let result : 'a = generator.Decode buffer
-    Assert.Equal<'e seq>(value, result)
+    Assert.Equal<'e>(value, result :> 'e seq)
     ()
 
 [<Fact>]
