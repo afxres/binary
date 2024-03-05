@@ -59,7 +59,7 @@ public sealed partial class InlineArrayConverterContext : SymbolConverterContext
     {
         var info = this.info;
         var element = info.ElementType;
-        AppendAssignConverterExplicit(element, "cvt0", GetConverterTypeFullName(0), GetTypeFullName(0));
+        AppendAssignConverterExplicit(element, "cvt0", GetTypeFullName(0));
         Output.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(cvt0);");
     }
 

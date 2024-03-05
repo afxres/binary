@@ -33,7 +33,7 @@ public abstract class SymbolConverterContext
         var output = Symbols.GetOutputFullName(symbol);
         this.context = context;
         this.tracker = tracker;
-        this.fullNameCache = new Dictionary<int, (string, string)>();
+        this.fullNameCache = [];
         Symbol = symbol;
         SymbolTypeFullName = context.GetTypeFullName(symbol);
         SymbolConverterTypeFullName = context.GetConverterTypeFullName(symbol);
@@ -90,9 +90,9 @@ public abstract class SymbolConverterContext
         CancellationToken.ThrowIfCancellationRequested();
     }
 
-    protected void AppendAssignConverterExplicit(ITypeSymbol member, string variableName, string converterTypeAlias, string memberTypeAlias)
+    protected void AppendAssignConverterExplicit(ITypeSymbol member, string variableName, string memberTypeAlias)
     {
-        Output.AppendIndent(3, $"var {variableName} = ({converterTypeAlias})context.GetConverter(typeof({memberTypeAlias}));");
+        Output.AppendIndent(3, $"var {variableName} = Mikodev.Binary.GeneratorContextExtensions.GetConverter<{memberTypeAlias}>(context);");
         this.tracker.Invoke(member);
         CancellationToken.ThrowIfCancellationRequested();
     }
@@ -104,7 +104,7 @@ public abstract class SymbolConverterContext
         else if (Symbols.GetConverterCreatorType(this.context, member.Symbol) is { } creator)
             AppendAssignConverterExplicitConverterCreator(creator, variableName, converterTypeAlias, memberTypeAlias);
         else
-            AppendAssignConverterExplicit(member.Type, variableName, converterTypeAlias, memberTypeAlias);
+            AppendAssignConverterExplicit(member.Type, variableName, memberTypeAlias);
     }
 
     protected abstract void Handle();

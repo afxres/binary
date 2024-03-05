@@ -137,7 +137,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
         for (var i = 0; i < elements.Length; i++)
         {
             var element = elements[i];
-            AppendAssignConverterExplicit(element, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i));
+            AppendAssignConverterExplicit(element, $"cvt{i}", GetTypeFullName(i));
             CancellationToken.ThrowIfCancellationRequested();
         }
         Output.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ");", elements.Length, x => $"cvt{x}");

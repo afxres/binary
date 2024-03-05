@@ -101,7 +101,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         var members = this.members;
         Output.AppendIndent(3, $"var names = new string[] {{ ", $" }};", members.Length, x => members[x].NamedKeyLiteral);
         Output.AppendIndent(3, $"var optional = new bool[] {{ ", $" }};", members.Length, x => members[x].IsOptional ? "true" : "false");
-        Output.AppendIndent(3, $"var encoding = (Mikodev.Binary.Converter<string>)context.GetConverter(typeof(string));");
+        Output.AppendIndent(3, $"var encoding = Mikodev.Binary.GeneratorContextExtensions.GetConverter<string>(context);");
         for (var i = 0; i < members.Length; i++)
         {
             var member = members[i];
