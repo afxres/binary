@@ -84,7 +84,7 @@ public class GeneratorAotTests
     public void GetEnumConverterInternalTest<T>(T source) where T : unmanaged
     {
         var method = typeof(Generator).GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
-            .Single(x => x.Name.Contains("Invoke") && x.GetParameters().Select(x => x.ParameterType).SequenceEqual(new[] { typeof(bool) }));
+            .Single(x => x.Name.Contains("Invoke") && x.GetParameters().Select(x => x.ParameterType).SequenceEqual([typeof(bool)]));
         var invoke = (Func<bool, Converter<T>>)Delegate.CreateDelegate(typeof(Func<bool, Converter<T>>), method.MakeGenericMethod(typeof(T)));
 
         var converterNative = invoke.Invoke(true);

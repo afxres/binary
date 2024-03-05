@@ -97,7 +97,7 @@ public readonly struct CustomValueEnumerable<T>(IEnumerable<T>? collection) : IE
 {
     public readonly IEnumerable<T>? Collection = collection;
 
-    public IEnumerator<T> GetEnumerator() => (this.Collection ?? Array.Empty<T>()).GetEnumerator();
+    public IEnumerator<T> GetEnumerator() => (this.Collection ?? []).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
@@ -108,7 +108,7 @@ public readonly struct CustomValueEnumerableInternalConstructor<T> : IEnumerable
 
     internal CustomValueEnumerableInternalConstructor(IEnumerable<T>? collection) => this.Collection = collection;
 
-    public IEnumerator<T> GetEnumerator() => (this.Collection ?? Array.Empty<T>()).GetEnumerator();
+    public IEnumerator<T> GetEnumerator() => (this.Collection ?? []).GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

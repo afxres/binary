@@ -106,7 +106,7 @@ public class FieldTests
         var source = ReadOnlyFieldPrivateConstructorType.Create(1333);
         var buffer = converter.Encode(source);
         var token = new Token(generator, buffer);
-        Assert.Equal(new string[] { "Field" }, token.Children.Keys);
+        Assert.Equal(["Field"], token.Children.Keys);
         Assert.Equal(source.Field, token["Field"].As<int>());
         var error = Assert.Throws<NotSupportedException>(() => converter.Decode(buffer));
         var message = $"No suitable constructor found, type: {typeof(ReadOnlyFieldPrivateConstructorType)}";

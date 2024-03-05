@@ -9,10 +9,10 @@ public class RecordTests
 
     record struct ValuePerson(int Id, string Name);
 
-    public static readonly IEnumerable<object[]> DataRecordArguments = new[]
-    {
-        new object[] { new Person(1024, "Sharp"), new ValuePerson(1024, "Sharp") },
-    };
+    public static readonly IEnumerable<object[]> DataRecordArguments =
+    [
+        [new Person(1024, "Sharp"), new ValuePerson(1024, "Sharp")],
+    ];
 
     [Theory(DisplayName = "Record And Record Struct Cross Test")]
     [MemberData(nameof(DataRecordArguments))]

@@ -7,15 +7,15 @@ using Xunit;
 
 public class VersionConverterInternalTests
 {
-    public static readonly IEnumerable<object?[]> DataNotEnoughSpace = new List<object?[]>
-    {
-        new object?[] { 0, null },
-        new object?[] { 15, null },
-        new object?[] { 0, new Version() },
-        new object?[] { 11, new Version(1, 3) },
-        new object?[] { 13, new Version(1, 2, 3) },
-        new object?[] { 15, new Version(2, 4, 8, 16) },
-    };
+    public static readonly IEnumerable<object?[]> DataNotEnoughSpace =
+    [
+        [0, null],
+        [15, null],
+        [0, new Version()],
+        [11, new Version(1, 3)],
+        [13, new Version(1, 2, 3)],
+        [15, new Version(2, 4, 8, 16)],
+    ];
 
     [Theory(DisplayName = "Not Enough Space For Writing")]
     [MemberData(nameof(DataNotEnoughSpace))]

@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 public class GeneratorBuilderExtensionsTests
@@ -85,7 +84,7 @@ public class GeneratorBuilderExtensionsTests
     {
         var builder = new FakeLinkedListGeneratorBuilder();
         Assert.Equal(0, builder.Id);
-        var returned = Assert.IsType<FakeLinkedListGeneratorBuilder>(builder.AddConverters(Enumerable.Empty<IConverter>()));
+        var returned = Assert.IsType<FakeLinkedListGeneratorBuilder>(builder.AddConverters([]));
         Assert.Equal(0, builder.Id);
         Assert.True(ReferenceEquals(builder, returned));
     }
@@ -117,7 +116,7 @@ public class GeneratorBuilderExtensionsTests
     {
         var builder = new FakeLinkedListGeneratorBuilder();
         Assert.Equal(0, builder.Id);
-        var returned = Assert.IsType<FakeLinkedListGeneratorBuilder>(builder.AddConverterCreators(Enumerable.Empty<IConverterCreator>()));
+        var returned = Assert.IsType<FakeLinkedListGeneratorBuilder>(builder.AddConverterCreators([]));
         Assert.Equal(0, builder.Id);
         Assert.True(ReferenceEquals(builder, returned));
     }
@@ -136,7 +135,7 @@ public class GeneratorBuilderExtensionsTests
     [Fact(DisplayName = "Add Converters (argument null)")]
     public void AddConvertersArgumentNull()
     {
-        var a = Assert.Throws<ArgumentNullException>(() => GeneratorBuilderExtensions.AddConverters(null!, Array.Empty<IConverter>()));
+        var a = Assert.Throws<ArgumentNullException>(() => GeneratorBuilderExtensions.AddConverters(null!, []));
         var b = Assert.Throws<ArgumentNullException>(() => GeneratorBuilderExtensions.AddConverters(new FakeGeneratorBuilder(), null!));
         var method = new Func<IGeneratorBuilder, IEnumerable<IConverter>, IGeneratorBuilder>(GeneratorBuilderExtensions.AddConverters).Method;
         Assert.Equal("builder", a.ParamName);
@@ -148,7 +147,7 @@ public class GeneratorBuilderExtensionsTests
     [Fact(DisplayName = "Add Converter Creators (argument null)")]
     public void AddConverterCreatorsArgumentNull()
     {
-        var a = Assert.Throws<ArgumentNullException>(() => GeneratorBuilderExtensions.AddConverterCreators(null!, Array.Empty<IConverterCreator>()));
+        var a = Assert.Throws<ArgumentNullException>(() => GeneratorBuilderExtensions.AddConverterCreators(null!, []));
         var b = Assert.Throws<ArgumentNullException>(() => GeneratorBuilderExtensions.AddConverterCreators(new FakeGeneratorBuilder(), null!));
         var method = new Func<IGeneratorBuilder, IEnumerable<IConverterCreator>, IGeneratorBuilder>(GeneratorBuilderExtensions.AddConverterCreators).Method;
         Assert.Equal("builder", a.ParamName);

@@ -84,7 +84,7 @@ public class MixedMembersTests
         var bufferSecond = converterSecond.Encode(source);
         var token = new Token(generator, buffer);
         var tokenSecond = new Token(generatorSecond, bufferSecond);
-        var keys = new HashSet<string>(new[] { "PublicInstanceField", "PublicInstanceProperty" });
+        var keys = new HashSet<string>(["PublicInstanceField", "PublicInstanceProperty"]);
         Assert.Equal(keys, token.Children.Keys.ToHashSet());
         Assert.Equal(keys, tokenSecond.Children.Keys.ToHashSet());
 

@@ -8,11 +8,11 @@ using Xunit;
 
 public class IPAddressConverterInternalTests
 {
-    public static readonly IEnumerable<object?[]> DataNotEnoughSpace = new List<object?[]>
-    {
-        new object?[] { 3, IPAddress.Loopback },
-        new object?[] { 15, IPAddress.IPv6Loopback },
-    };
+    public static readonly IEnumerable<object?[]> DataNotEnoughSpace =
+    [
+        [3, IPAddress.Loopback],
+        [15, IPAddress.IPv6Loopback],
+    ];
 
     [Theory(DisplayName = "Not Enough Space For Writing")]
     [MemberData(nameof(DataNotEnoughSpace))]

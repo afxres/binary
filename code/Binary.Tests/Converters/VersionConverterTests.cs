@@ -16,14 +16,14 @@ public class VersionConverterTests
         Assert.Equal(0, converter.Length);
     }
 
-    public static readonly IEnumerable<object?[]> DataVersion = new List<object?[]>
-    {
-        new object?[] { 0, null },
-        new object?[] { 8, new Version() },
-        new object?[] { 8, new Version(2, 4) },
-        new object?[] { 12, new Version(2, 4, 8) },
-        new object?[] { 16, new Version(2, 4, 8, 16) },
-    };
+    public static readonly IEnumerable<object?[]> DataVersion =
+    [
+        [0, null],
+        [8, new Version()],
+        [8, new Version(2, 4)],
+        [12, new Version(2, 4, 8)],
+        [16, new Version(2, 4, 8, 16)],
+    ];
 
     [Theory(DisplayName = "Encode Decode")]
     [MemberData(nameof(DataVersion))]

@@ -52,7 +52,7 @@ public class MissingDependenciesTests
             MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("System.Runtime")).Location),
         ]);
         var generator = new SourceGenerator();
-        var driver = CSharpGeneratorDriver.Create(generators: new[] { generator.AsSourceGenerator() }, parseOptions: CompilationModule.ParseOptions);
+        var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: CompilationModule.ParseOptions);
         _ = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var outputDiagnostics);
         var diagnostics = compilation.GetDiagnostics();
         var outputCompilationDiagnostics = outputCompilation.GetDiagnostics();

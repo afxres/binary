@@ -42,7 +42,7 @@ public class CollectionBenchmarks
         var generator = Generator.CreateDefaultBuilder().AddConverter(converter).Build();
 
         this.hashSet = [1313];
-        this.linkedList = new LinkedList<int>(new[] { 1313 });
+        this.linkedList = new LinkedList<int>([1313]);
         this.dictionary = new Dictionary<int, int> { [1313] = 1313 };
 
         this.hashSetConverter = generator.GetConverter<HashSet<int>>();

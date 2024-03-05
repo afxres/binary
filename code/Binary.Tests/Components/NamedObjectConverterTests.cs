@@ -39,8 +39,8 @@ public class NamedObjectConverterTests
     {
         var generator = Generator.CreateAot();
         var b = generator.GetConverter<string>();
-        var h = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>(b, Array.Empty<string>(), new[] { false }));
-        var i = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>(b, new[] { string.Empty }, Array.Empty<bool>()));
+        var h = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>(b, [], [false]));
+        var i = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>(b, [string.Empty], []));
         Assert.Null(h.ParamName);
         Assert.Null(i.ParamName);
         Assert.Equal($"Sequence contains no element.", h.Message);
@@ -52,7 +52,7 @@ public class NamedObjectConverterTests
     {
         var generator = Generator.CreateAot();
         var b = generator.GetConverter<string>();
-        var h = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>(b, new[] { string.Empty }, new[] { false, true }));
+        var h = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>(b, [string.Empty], [false, true]));
         Assert.Null(h.ParamName);
         Assert.Equal($"Sequence lengths not match.", h.Message);
     }

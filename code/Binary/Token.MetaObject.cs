@@ -30,6 +30,6 @@ public sealed partial class Token
             return new DynamicMetaObject(body, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
         }
 
-        public override IEnumerable<string> GetDynamicMemberNames() => ((Token?)Value)?.Children.Keys ?? Array.Empty<string>();
+        public override IEnumerable<string> GetDynamicMemberNames() => ((Token?)Value)?.Children.Keys ?? [];
     }
 }

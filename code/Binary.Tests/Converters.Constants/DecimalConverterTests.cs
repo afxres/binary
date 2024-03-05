@@ -17,14 +17,14 @@ public class DecimalConverterTests
         Assert.Equal(sizeof(int) * 4, converter.Length);
     }
 
-    public static IEnumerable<object[]> DataNumber => new List<object[]>
-    {
-        new object[] { decimal.MaxValue },
-        new object[] { decimal.MinusOne },
-        new object[] { decimal.MinValue },
-        new object[] { decimal.One },
-        new object[] { decimal.Zero },
-    };
+    public static IEnumerable<object[]> DataNumber =>
+    [
+        [decimal.MaxValue],
+        [decimal.MinusOne],
+        [decimal.MinValue],
+        [decimal.One],
+        [decimal.Zero],
+    ];
 
     [Theory(DisplayName = "Encode Decode")]
     [MemberData(nameof(DataNumber))]

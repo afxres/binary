@@ -16,14 +16,14 @@ public class BigIntegerConverterTests
         Assert.Equal(0, converter.Length);
     }
 
-    public static IEnumerable<object[]> DataNumber => new List<object[]>
-    {
-        new object[] { new BigInteger() },
-        new object[] { new BigInteger(long.MaxValue) },
-        new object[] { new BigInteger(long.MinValue) },
-        new object[] { BigInteger.Parse("91389681247993671255432112000000") },
-        new object[] { BigInteger.Parse("-90315837410896312071002088037140000") },
-    };
+    public static IEnumerable<object[]> DataNumber =>
+    [
+        [new BigInteger()],
+        [new BigInteger(long.MaxValue)],
+        [new BigInteger(long.MinValue)],
+        [BigInteger.Parse("91389681247993671255432112000000")],
+        [BigInteger.Parse("-90315837410896312071002088037140000")],
+    ];
 
     [Theory(DisplayName = "Encode Decode")]
     [MemberData(nameof(DataNumber))]

@@ -75,8 +75,8 @@ public class BinaryDictionaryBenchmarks
         this.functorHashCode3 = CreateHashCode(this.keys3);
         this.functorHashCode7 = CreateHashCode(this.keys7);
 
-        Trace.Assert(this.keys3.Select(x => x.Length).SequenceEqual(new[] { 2, 4, 7 }));
-        Trace.Assert(this.keys7.Select(x => x.Length).SequenceEqual(new[] { 15, 0, 14, 4, 13, 8, 12 }));
+        Trace.Assert(this.keys3.Select(x => x.Length).SequenceEqual([2, 4, 7]));
+        Trace.Assert(this.keys7.Select(x => x.Length).SequenceEqual([15, 0, 14, 4, 13, 8, 12]));
         Trace.Assert(Invoke(this.functorLongData3, this.keys3) == 3);
         Trace.Assert(Invoke(this.functorHashCode3, this.keys3) == 3);
         Trace.Assert(Invoke(this.functorLongData7, this.keys7) == 21);

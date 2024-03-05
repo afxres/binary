@@ -50,16 +50,16 @@ public class CollectionTests
         }
     }
 
-    public static IEnumerable<object[]> SimpleObjectData => new List<object[]>
-    {
-        new object[] { DateOnly.Parse("2001-02-03") },
-        new object[] { DateTimeOffset.Parse("2020-02-02T11:22:33+04:00") },
-        new object[] { DateTime.Parse("2001-02-03T04:05:06") },
-        new object[] { Guid.Parse("f28a5581-c80d-4d66-84cf-790d48e877d1") },
-        new object[] { (Rune)'#' },
-        new object[] { TimeOnly.Parse("12:34:56") },
-        new object[] { TimeSpan.Parse("01:23:45.6789") },
-    };
+    public static IEnumerable<object[]> SimpleObjectData =>
+    [
+        [DateOnly.Parse("2001-02-03")],
+        [DateTimeOffset.Parse("2020-02-02T11:22:33+04:00")],
+        [DateTime.Parse("2001-02-03T04:05:06")],
+        [Guid.Parse("f28a5581-c80d-4d66-84cf-790d48e877d1")],
+        [(Rune)'#'],
+        [TimeOnly.Parse("12:34:56")],
+        [TimeSpan.Parse("01:23:45.6789")],
+    ];
 
     [Theory(DisplayName = "Common Type Array Implementation")]
     [MemberData(nameof(SimpleObjectData))]

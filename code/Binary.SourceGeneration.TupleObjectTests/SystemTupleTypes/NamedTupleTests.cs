@@ -22,7 +22,7 @@ public class NamedTupleTests
     public void NamedTupleTest()
     {
         var dictionary = NamedTupleSourceGeneratorContext.ConverterCreators;
-        var expectedTypes = new HashSet<Type>(new[] { typeof((int, string)), typeof(TypeWithNamedTuple) });
+        var expectedTypes = new HashSet<Type>([typeof((int, string)), typeof(TypeWithNamedTuple)]);
         Assert.Equal(expectedTypes, dictionary.Keys.ToHashSet());
 
         var generator = Generator.CreateAotBuilder().AddConverterCreators(dictionary.Values).Build();

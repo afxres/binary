@@ -56,7 +56,7 @@ public class TupleObjectTests
     public void SequenceNullTest()
     {
         var methodInfo = new Func<IEnumerable<IConverter>, int>(TupleObject.GetConverterLength).Method;
-        var error = Assert.Throws<ArgumentException>(() => TupleObject.GetConverterLength(new IConverter[] { null! }));
+        var error = Assert.Throws<ArgumentException>(() => TupleObject.GetConverterLength([null!]));
         var parameters = methodInfo.GetParameters();
         Assert.Equal(parameters[0].Name, error.ParamName);
         Assert.StartsWith("Sequence contains null or invalid element.", error.Message);
@@ -66,7 +66,7 @@ public class TupleObjectTests
     public void SequenceInvalidTest()
     {
         var methodInfo = new Func<IEnumerable<IConverter>, int>(TupleObject.GetConverterLength).Method;
-        var error = Assert.Throws<ArgumentException>(() => TupleObject.GetConverterLength(new IConverter[] { new HideConverter() }));
+        var error = Assert.Throws<ArgumentException>(() => TupleObject.GetConverterLength([new HideConverter()]));
         var parameters = methodInfo.GetParameters();
         Assert.Equal(parameters[0].Name, error.ParamName);
         Assert.StartsWith("Sequence contains null or invalid element.", error.Message);
@@ -76,7 +76,7 @@ public class TupleObjectTests
     public void SequenceEmptyTest()
     {
         var methodInfo = new Func<IEnumerable<IConverter>, int>(TupleObject.GetConverterLength).Method;
-        var error = Assert.Throws<ArgumentException>(() => TupleObject.GetConverterLength(Array.Empty<IConverter>()));
+        var error = Assert.Throws<ArgumentException>(() => TupleObject.GetConverterLength([]));
         var parameters = methodInfo.GetParameters();
         Assert.Equal(parameters[0].Name, error.ParamName);
         Assert.StartsWith("Sequence contains no element.", error.Message);

@@ -8,12 +8,12 @@ using Xunit;
 
 public class BigIntegerConverterInternalTests
 {
-    public static readonly IEnumerable<object?[]> DataNotEnoughSpace = new List<object?[]>
-    {
-        new object?[] { 0, new BigInteger() },
-        new object?[] { 1, new BigInteger(1024) },
-        new object?[] { 3, new BigInteger(int.MaxValue) },
-    };
+    public static readonly IEnumerable<object?[]> DataNotEnoughSpace =
+    [
+        [0, new BigInteger()],
+        [1, new BigInteger(1024)],
+        [3, new BigInteger(int.MaxValue)],
+    ];
 
     [Theory(DisplayName = "Not Enough Space For Writing")]
     [MemberData(nameof(DataNotEnoughSpace))]

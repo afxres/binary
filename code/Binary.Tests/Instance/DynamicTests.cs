@@ -170,7 +170,7 @@ public class DynamicTests
         var type = types.Single(x => x.Name is "MetaObject");
         var instance = Assert.IsAssignableFrom<DynamicMetaObject>(Activator.CreateInstance(type, [Expression.Parameter(typeof(Token)), null]));
         var keys = instance.GetDynamicMemberNames();
-        Assert.Equal(Array.Empty<string>(), keys);
+        Assert.Equal([], keys);
         Assert.Null(instance.Value);
         Assert.True(ReferenceEquals(keys, Array.Empty<string>()));
     }

@@ -7,13 +7,13 @@ using Xunit;
 
 public partial class UriConverterTests
 {
-    public static readonly IEnumerable<object[]> NormalData = new[]
-    {
-        new object[] { Encoding.UTF8, new Uri("https://github.com") },
+    public static readonly IEnumerable<object[]> NormalData =
+    [
+        [Encoding.UTF8, new Uri("https://github.com")],
         [Encoding.UTF8, new Uri("https://github.com/dotnet/")],
         [Encoding.UTF32, new Uri("https://github.com")],
         [Encoding.UTF32, new Uri("https://github.com/dotnet/")],
-    };
+    ];
 
     [Theory(DisplayName = "Base Methods")]
     [MemberData(nameof(NormalData))]

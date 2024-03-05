@@ -99,14 +99,14 @@ public class CompilationTests
         const string AssemblyName = "TestAssembly";
         var compilation = CSharpCompilation.Create(
             AssemblyName,
-            syntaxTrees: new[] { CSharpSyntaxTree.ParseText(source, CompilationModule.ParseOptions) },
+            syntaxTrees: [CSharpSyntaxTree.ParseText(source, CompilationModule.ParseOptions)],
             references: builder.ToArray(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true));
         var originDiagnostics = compilation.GetDiagnostics();
         Assert.Equal(diagnosticId, Assert.Single(originDiagnostics.Where(x => x.Severity is DiagnosticSeverity.Error)).Id);
 
         var generator = new SourceGenerator();
-        var driver = CSharpGeneratorDriver.Create(generators: new[] { generator.AsSourceGenerator() }, parseOptions: CompilationModule.ParseOptions);
+        var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: CompilationModule.ParseOptions);
         _ = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var outputDiagnostics);
         var outputCompilationDiagnostics = outputCompilation.GetDiagnostics();
         Assert.Equal(diagnosticId, Assert.Single(outputCompilationDiagnostics.Where(x => x.Severity is DiagnosticSeverity.Error)).Id);

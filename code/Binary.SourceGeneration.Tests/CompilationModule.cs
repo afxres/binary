@@ -34,8 +34,8 @@ internal class CompilationModule
         const string AssemblyName = "TestAssembly";
         var compilation = CSharpCompilation.Create(
             AssemblyName,
-            syntaxTrees: new[] { CSharpSyntaxTree.ParseText(source, ParseOptions) },
-            references: references.ToArray(),
+            syntaxTrees: [CSharpSyntaxTree.ParseText(source, ParseOptions)],
+            references: [.. references],
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true));
         var diagnostics = compilation.GetDiagnostics();
         Assert.Empty(diagnostics.Where(x => x.Severity is DiagnosticSeverity.Error));

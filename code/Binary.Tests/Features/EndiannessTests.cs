@@ -28,30 +28,30 @@ public class EndiannessTests
     [StructLayout(LayoutKind.Explicit, Size = 64)]
     public struct Block64 { }
 
-    public static IEnumerable<object[]> EnumData => new List<object[]>
-    {
-        new object[] { 4, (Enum32)0 },
-        new object[] { 8, (Enum64)long.MinValue },
-        new object[] { 4, (EnumU32)uint.MaxValue },
-        new object[] { 8, (EnumU64)ulong.MaxValue },
-    };
+    public static IEnumerable<object[]> EnumData =>
+    [
+        [4, (Enum32)0],
+        [8, (Enum64)long.MinValue],
+        [4, (EnumU32)uint.MaxValue],
+        [8, (EnumU64)ulong.MaxValue],
+    ];
 
-    public static IEnumerable<object[]> NumberData => new List<object[]>
-    {
-        new object[] { 1, (byte)1 },
-        new object[] { 1, (sbyte)-1 },
-        new object[] { 2, (short)-3 },
-        new object[] { 2, (ushort)5 },
-        new object[] { 2, Half.MinValue },
-        new object[] { 2, Half.MaxValue },
-        new object[] { 2, Half.NaN },
-        new object[] { 4, 0 },
-        new object[] { 8, 0L },
-        new object[] { 4, 0U },
-        new object[] { 8, 0UL },
-        new object[] { 4, 2.0F },
-        new object[] { 8, 3.0 },
-    };
+    public static IEnumerable<object[]> NumberData =>
+    [
+        [1, (byte)1],
+        [1, (sbyte)-1],
+        [2, (short)-3],
+        [2, (ushort)5],
+        [2, Half.MinValue],
+        [2, Half.MaxValue],
+        [2, Half.NaN],
+        [4, 0],
+        [8, 0L],
+        [4, 0U],
+        [8, 0UL],
+        [4, 2.0F],
+        [8, 3.0],
+    ];
 
     [Theory(DisplayName = "Fallback Converter Info")]
     [MemberData(nameof(EnumData))]
@@ -104,11 +104,11 @@ public class EndiannessTests
         Assert.Equal(data, result);
     }
 
-    public static IEnumerable<object[]> InvalidBlockData => new List<object[]>
-    {
-        new object[] { 32, default(Block32) },
-        new object[] { 64, default(Block64) },
-    };
+    public static IEnumerable<object[]> InvalidBlockData =>
+    [
+        [32, default(Block32)],
+        [64, default(Block64)],
+    ];
 
     [Theory(DisplayName = "Internal Little Endian Converter Invalid Type")]
     [MemberData(nameof(InvalidBlockData))]

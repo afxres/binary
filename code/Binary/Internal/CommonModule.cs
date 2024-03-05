@@ -53,7 +53,7 @@ internal static class CommonModule
     {
         Debug.Assert(definition.IsInterface);
         Debug.Assert(definition.IsGenericTypeDefinition);
-        var interfaces = type.IsInterface ? (IEnumerable<Type>)ImmutableArray.Create(type).AddRange(type.GetInterfaces()) : type.GetInterfaces();
+        var interfaces = type.IsInterface ? (IEnumerable<Type>)[type, .. type.GetInterfaces()] : type.GetInterfaces();
         var types = interfaces.Where(x => x.IsGenericType && x.GetGenericTypeDefinition() == definition).ToList();
         var count = types.Count;
         if (count > 1)

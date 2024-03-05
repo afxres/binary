@@ -8,13 +8,13 @@ using Xunit;
 
 public class IPEndPointConverterInternalTests
 {
-    public static readonly IEnumerable<object?[]> DataNotEnoughSpace = new List<object?[]>
-    {
-        new object?[] { 5, new IPEndPoint(IPAddress.Loopback, IPEndPoint.MaxPort) },
-        new object?[] { 17, new IPEndPoint(IPAddress.IPv6Loopback, IPEndPoint.MaxPort) },
-        new object?[] { 5, new IPEndPoint(IPAddress.Any, IPEndPoint.MinPort) },
-        new object?[] { 17, new IPEndPoint(IPAddress.IPv6Any, IPEndPoint.MinPort) },
-    };
+    public static readonly IEnumerable<object?[]> DataNotEnoughSpace =
+    [
+        [5, new IPEndPoint(IPAddress.Loopback, IPEndPoint.MaxPort)],
+        [17, new IPEndPoint(IPAddress.IPv6Loopback, IPEndPoint.MaxPort)],
+        [5, new IPEndPoint(IPAddress.Any, IPEndPoint.MinPort)],
+        [17, new IPEndPoint(IPAddress.IPv6Any, IPEndPoint.MinPort)],
+    ];
 
     [Theory(DisplayName = "Not Enough Space For Writing")]
     [MemberData(nameof(DataNotEnoughSpace))]

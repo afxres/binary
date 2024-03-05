@@ -55,7 +55,7 @@ internal static class ContextMethods
         expressions.Add(Expression.Assign(item, constructor is null ? Expression.New(type) : Expression.New(constructor, objectIndexes.Select(x => targets[x]).ToList())));
         expressions.AddRange(memberIndexes.Select((x, i) => Expression.Assign(members[i].Invoke(item), targets[x])));
         expressions.Add(item);
-        var lambda = Expression.Lambda(delegateType, Expression.Block(ImmutableArray.Create(item).AddRange(targets), expressions), parameters);
+        var lambda = Expression.Lambda(delegateType, Expression.Block([item, .. targets], expressions), parameters);
         return lambda.Compile();
     }
 }

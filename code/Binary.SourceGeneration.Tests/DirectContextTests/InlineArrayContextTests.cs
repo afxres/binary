@@ -86,10 +86,10 @@ public class InlineArrayContextTests
         };
         var compilation = CSharpCompilation.Create(
             "TestAssembly",
-            syntaxTrees: new[] { CSharpSyntaxTree.ParseText(source, CompilationModule.ParseOptions) },
-            references: references.ToArray(),
+            syntaxTrees: [CSharpSyntaxTree.ParseText(source, CompilationModule.ParseOptions)],
+            references: [.. references],
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true));
-        var driver = CSharpGeneratorDriver.Create(generators: new ISourceGenerator[] { new SourceGenerator().AsSourceGenerator() }, parseOptions: CompilationModule.ParseOptions);
+        var driver = CSharpGeneratorDriver.Create(generators: [new SourceGenerator().AsSourceGenerator()], parseOptions: CompilationModule.ParseOptions);
         _ = driver.RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var outputDiagnostics);
         var diagnostic = Assert.Single(outputDiagnostics);
         var outputCompilationDiagnostics = outputCompilation.GetDiagnostics();

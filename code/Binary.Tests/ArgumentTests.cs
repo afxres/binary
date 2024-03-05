@@ -26,7 +26,7 @@ public static class ArgumentTests
     {
         var func = (Func<T, R>)Delegate.CreateDelegate(typeof(Func<T, R>), method);
         var a = Assert.Throws<ArgumentNullException>(() => func.Invoke(null!));
-        return new[] { a };
+        return [a];
     }
 
     private static IEnumerable<ArgumentNullException> ArgumentNullUnsafeTest<T, U, R>(MethodInfo method) where T : class where U : class
@@ -39,7 +39,7 @@ public static class ArgumentTests
         var u = Unsafe.As<object, U>(ref instance);
         var a = Assert.Throws<ArgumentNullException>(() => func.Invoke(null!, u));
         var b = Assert.Throws<ArgumentNullException>(() => func.Invoke(t, null!));
-        return new[] { a, b };
+        return [a, b];
     }
 
     private static IEnumerable<ArgumentNullException> ArgumentNullUnsafeTest<T, U, S, R>(MethodInfo method) where T : class where U : class where S : class
@@ -55,13 +55,13 @@ public static class ArgumentTests
         var a = Assert.Throws<ArgumentNullException>(() => func.Invoke(null!, u, s));
         var b = Assert.Throws<ArgumentNullException>(() => func.Invoke(t, null!, s));
         var c = Assert.Throws<ArgumentNullException>(() => func.Invoke(t, u, null!));
-        return new[] { a, b, c };
+        return [a, b, c];
     }
 
     public static void ArgumentNullExceptionTest(MethodInfo method)
     {
         var parameters = method.GetParameters();
-        var types = parameters.Select(x => x.ParameterType).Concat(new[] { method.ReturnType }).ToArray();
+        var types = parameters.Select(x => x.ParameterType).Concat([method.ReturnType]).ToArray();
         var test = ArgumentNullTestMethods[parameters.Length - 1].MakeGenericMethod(types);
         var errors = Assert.IsAssignableFrom<IEnumerable<ArgumentNullException>>(test.Invoke(null, [method]));
         var expectedParameterNames = parameters.Select(x => x.Name).ToList();

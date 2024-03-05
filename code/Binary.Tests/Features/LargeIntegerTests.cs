@@ -34,16 +34,16 @@ public class LargeIntegerTests
         Assert.Equal(expectedBuffer, buffer);
     }
 
-    public static IEnumerable<object[]> Int128Data => new List<object[]>
-    {
-        new object[] { 16, default(Int128) },
-        new object[] { 16, Int128.MinValue },
-        new object[] { 16, Int128.MaxValue },
-        new object[] { 16, Int128.Zero },
-        new object[] { 16, Int128.One },
-        new object[] { 16, Int128.NegativeOne },
-        new object[] { 16, Int128.Parse("11223344_55667788_99AABBCC_DDEEFF00".Replace("_", string.Empty), NumberStyles.HexNumber) },
-    };
+    public static IEnumerable<object[]> Int128Data =>
+    [
+        [16, default(Int128)],
+        [16, Int128.MinValue],
+        [16, Int128.MaxValue],
+        [16, Int128.Zero],
+        [16, Int128.One],
+        [16, Int128.NegativeOne],
+        [16, Int128.Parse("11223344_55667788_99AABBCC_DDEEFF00".Replace("_", string.Empty), NumberStyles.HexNumber)],
+    ];
 
     [Theory(DisplayName = "Int128 Converter Basic Info")]
     [MemberData(nameof(Int128Data))]
@@ -57,15 +57,15 @@ public class LargeIntegerTests
         BinaryIntegerBasicTest(size, item, little, "LittleEndianConverter`1");
     }
 
-    public static IEnumerable<object[]> UInt128Data => new List<object[]>
-    {
-        new object[] { 16, default(UInt128) },
-        new object[] { 16, UInt128.MinValue },
-        new object[] { 16, UInt128.MaxValue },
-        new object[] { 16, UInt128.Zero },
-        new object[] { 16, UInt128.One },
-        new object[] { 16, UInt128.Parse("11223344_55667788_99AABBCC_DDEEFF00".Replace("_", string.Empty), NumberStyles.HexNumber) },
-    };
+    public static IEnumerable<object[]> UInt128Data =>
+    [
+        [16, default(UInt128)],
+        [16, UInt128.MinValue],
+        [16, UInt128.MaxValue],
+        [16, UInt128.Zero],
+        [16, UInt128.One],
+        [16, UInt128.Parse("11223344_55667788_99AABBCC_DDEEFF00".Replace("_", string.Empty), NumberStyles.HexNumber)],
+    ];
 
     [Theory(DisplayName = "UInt128 Converter Basic Info")]
     [MemberData(nameof(UInt128Data))]

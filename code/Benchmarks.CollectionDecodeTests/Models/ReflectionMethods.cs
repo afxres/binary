@@ -18,7 +18,7 @@ public static class ReflectionMethods
         var result = Expression.Variable(typeof(T), "result");
         var target = Expression.Label("break");
         var expressions = Expression.Block(
-            new[] { result },
+            [result],
             Expression.Assign(result, Expression.New(constructor)),
             Expression.Loop(
                 Expression.IfThenElse(
