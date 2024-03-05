@@ -263,7 +263,7 @@ public class CodeContractsTests
         var groups = selections.GroupBy(x => x.Value.ReadState).ToDictionary(x => x.Key);
         var anonymous = groups[NullabilityState.Nullable].Select(x => x.Key).Where(x => x.Name is "anonymous").ToList();
         Assert.Equal(2, groups.Count);
-        Assert.Equal(6, anonymous.Count);
+        Assert.Equal(7, anonymous.Count);
         Assert.True(groups.ContainsKey(NullabilityState.Unknown));
         Assert.True(groups.ContainsKey(NullabilityState.Nullable));
         Assert.All(groups[NullabilityState.Unknown], x => Assert.True(x.Key.Member.DeclaringType?.IsSubclassOf(typeof(Delegate))));

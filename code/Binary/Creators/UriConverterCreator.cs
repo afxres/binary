@@ -6,6 +6,6 @@ internal sealed class UriConverterCreator : IConverterCreator
 {
     public IConverter? GetConverter(IGeneratorContext context, Type type)
     {
-        return type == typeof(Uri) ? new UriConverter((Converter<string>)context.GetConverter(typeof(string))) : null;
+        return type == typeof(Uri) ? new UriConverter(context.GetConverter<string>()) : null;
     }
 }

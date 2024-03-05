@@ -39,7 +39,7 @@ internal static class FallbackAttributesMethods
             return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, initializers);
 
         var optional = members.Select(x => x.IsOptional).ToImmutableArray();
-        var encoding = (Converter<string>)context.GetConverter(typeof(string));
+        var encoding = context.GetConverter<string>();
         return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, initializers, names, optional, encoding);
     }
 
