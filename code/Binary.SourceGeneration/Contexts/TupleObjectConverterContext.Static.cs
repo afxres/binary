@@ -9,31 +9,9 @@ public sealed partial class TupleObjectConverterContext
 {
     private static readonly ImmutableArray<string> SystemTupleMemberNames = ImmutableArray.Create(["Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Rest"]);
 
-    private static SymbolTupleMemberInfo GetTupleMember(ISymbol member)
+    private static int GetCustomTupleKey(SourceGeneratorContext context, ISymbol member)
     {
-        if (member is IFieldSymbol field)
-            return new SymbolTupleMemberInfo(field);
-        else
-            return new SymbolTupleMemberInfo((IPropertySymbol)member);
-    }
-
-    private static void GetCustomTupleMember(SourceGeneratorContext context, ISymbol member, SortedDictionary<int, SymbolTupleMemberInfo> dictionary)
-    {
-        var attribute = context.GetAttribute(member, Constants.TupleKeyAttributeTypeName);
-        if (attribute is null)
-            return;
-        var key = (int)attribute.ConstructorArguments.Single().Value!;
-        var info = GetTupleMember(member);
-        dictionary.Add(key, info);
-    }
-
-    private static void GetSystemTupleMember(ISymbol member, SortedDictionary<int, SymbolTupleMemberInfo> dictionary)
-    {
-        var key = SystemTupleMemberNames.IndexOf(member.Name);
-        if (key is -1)
-            return;
-        var info = GetTupleMember(member);
-        dictionary.Add(key, info);
+        return context.GetAttribute(member, Constants.TupleKeyAttributeTypeName)?.ConstructorArguments.Single().Value as int? ?? -1;
     }
 
     private static ImmutableHashSet<INamedTypeSymbol> CreateResource(Compilation compilation)
@@ -67,10 +45,13 @@ public sealed partial class TupleObjectConverterContext
         var cancellation = context.CancellationToken;
         foreach (var member in typeInfo.FilteredFieldsAndProperties)
         {
-            if (system)
-                GetSystemTupleMember(member, dictionary);
-            else
-                GetCustomTupleMember(context, member, dictionary);
+            var key = system
+                ? SystemTupleMemberNames.IndexOf(member.Name)
+                : GetCustomTupleKey(context, member);
+            if (key is -1)
+                continue;
+            var memberInfo = new SymbolTupleMemberInfo(member);
+            dictionary.Add(key, memberInfo);
             cancellation.ThrowIfCancellationRequested();
         }
         var members = dictionary.Values.ToImmutableArray();

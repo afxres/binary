@@ -2,21 +2,9 @@
 
 using Microsoft.CodeAnalysis;
 
-public class SymbolNamedMemberInfo : SymbolMemberInfo
+public class SymbolNamedMemberInfo(ISymbol symbol, string namedKeyLiteral, bool optional) : SymbolMemberInfo(symbol)
 {
-    public bool IsOptional { get; }
+    public bool IsOptional { get; } = optional;
 
-    public string NamedKeyLiteral { get; }
-
-    public SymbolNamedMemberInfo(IFieldSymbol field, string namedKeyLiteral, bool optional) : base(field)
-    {
-        IsOptional = optional;
-        NamedKeyLiteral = namedKeyLiteral;
-    }
-
-    public SymbolNamedMemberInfo(IPropertySymbol property, string namedKeyLiteral, bool optional) : base(property)
-    {
-        IsOptional = optional;
-        NamedKeyLiteral = namedKeyLiteral;
-    }
+    public string NamedKeyLiteral { get; } = namedKeyLiteral;
 }

@@ -19,12 +19,11 @@ public class SymbolTypeInfo(ITypeSymbol symbol, ImmutableSortedSet<string> confl
 
     public static SymbolTypeInfo Create(Compilation compilation, ITypeSymbol symbol, CancellationToken cancellation)
     {
-
         var originalMembers = Symbols.GetAllFieldsAndProperties(compilation, symbol, out var conflict, cancellation);
         if (conflict.Count is not 0)
             return new SymbolTypeInfo(symbol, conflict, ImmutableArray.Create<ISymbol>(), ImmutableArray.Create<ISymbol>(), ImmutableHashSet.Create<ISymbol>(SymbolEqualityComparer.Default));
         var filteredMembers = Symbols.FilterFieldsAndProperties(originalMembers, cancellation);
-        var requiredMembers = originalMembers.Where(Symbols.IsRequired).ToImmutableHashSet(SymbolEqualityComparer.Default);
+        var requiredMembers = originalMembers.Where(Symbols.IsRequiredFieldOrProperty).ToImmutableHashSet(SymbolEqualityComparer.Default);
         return new SymbolTypeInfo(symbol, ImmutableSortedSet.Create<string>(), originalMembers, filteredMembers, requiredMembers);
     }
 }

@@ -165,7 +165,7 @@ public static partial class Symbols
 
         var memberName = member.Name;
         var hasKey = namedKeyAttribute is not null || tupleKeyAttribute is not null;
-        var requiredMemberWithoutKey = hasKey is false && requiredMembers.Count is not 0 && IsRequired(member);
+        var requiredMemberWithoutKey = hasKey is false && requiredMembers.Count is not 0 && IsRequiredFieldOrProperty(member);
         if (requiredMemberWithoutKey && typeAttribute is NamedObjectAttribute)
             diagnostics.Add(Constants.RequireNamedKeyAttributeForRequiredMember.With(member, [memberName, containingTypeName]));
         if (requiredMemberWithoutKey && typeAttribute is TupleObjectAttribute)

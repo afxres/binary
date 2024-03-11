@@ -142,14 +142,18 @@ public static partial class Symbols
         return SyntaxFacts.GetKeywordKind(name) != SyntaxKind.None || SyntaxFacts.GetContextualKeywordKind(name) != SyntaxKind.None;
     }
 
-    public static bool IsRequired(ISymbol symbol)
+    public static bool IsRequiredFieldOrProperty(ISymbol symbol)
     {
-        return symbol switch
-        {
-            IFieldSymbol field => field.IsRequired,
-            IPropertySymbol property => property.IsRequired,
-            _ => false,
-        };
+        return symbol is IFieldSymbol field
+            ? field.IsRequired
+            : ((IPropertySymbol)symbol).IsRequired;
+    }
+
+    public static bool IsReadOnlyFieldOrProperty(ISymbol symbol)
+    {
+        return symbol is IFieldSymbol field
+            ? field.IsReadOnly
+            : HasPublicSetter((IPropertySymbol)symbol) is false;
     }
 
     public static bool IsReturnsByRefOrReturnsByRefReadonly(IPropertySymbol property)

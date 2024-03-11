@@ -7,29 +7,9 @@ using System.Linq;
 
 public sealed partial class NamedObjectConverterContext
 {
-    private static SymbolNamedMemberInfo GetNamedMember(ISymbol member, string literal, bool isTypeRequired)
+    private static string? GetCustomNamedKey(SourceGeneratorContext context, ISymbol member)
     {
-        if (member is IFieldSymbol field)
-            return new SymbolNamedMemberInfo(field, literal, isTypeRequired && (field.IsRequired is false));
-        else
-            return new SymbolNamedMemberInfo((IPropertySymbol)member, literal, isTypeRequired && (((IPropertySymbol)member).IsRequired is false));
-    }
-
-    private static void GetCustomNamedMember(SourceGeneratorContext context, ISymbol member, bool isTypeRequired, SortedDictionary<string, SymbolNamedMemberInfo> dictionary)
-    {
-        var attribute = context.GetAttribute(member, Constants.NamedKeyAttributeTypeName);
-        if (attribute is null)
-            return;
-        var key = (string)attribute.ConstructorArguments.Single().Value!;
-        var info = GetNamedMember(member, Symbols.ToLiteral(key), isTypeRequired);
-        dictionary.Add(key, info);
-    }
-
-    private static void GetSimpleNamedMember(ISymbol member, bool isTypeRequired, SortedDictionary<string, SymbolNamedMemberInfo> dictionary)
-    {
-        var key = member.Name;
-        var info = GetNamedMember(member, Symbols.ToLiteral(key), isTypeRequired);
-        dictionary.Add(key, info);
+        return context.GetAttribute(member, Constants.NamedKeyAttributeTypeName)?.ConstructorArguments.Single().Value as string;
     }
 
     public static SourceResult Invoke(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol)
@@ -43,10 +23,15 @@ public sealed partial class NamedObjectConverterContext
         var cancellation = context.CancellationToken;
         foreach (var member in typeInfo.FilteredFieldsAndProperties)
         {
-            if (attribute is null)
-                GetSimpleNamedMember(member, required, dictionary);
-            else
-                GetCustomNamedMember(context, member, required, dictionary);
+            var key = attribute is null
+                ? member.Name
+                : GetCustomNamedKey(context, member);
+            if (key is null)
+                continue;
+            var literal = Symbols.ToLiteral(key);
+            var optional = required && (Symbols.IsRequiredFieldOrProperty(member) is false);
+            var memberInfo = new SymbolNamedMemberInfo(member, literal, optional);
+            dictionary.Add(key, memberInfo);
             cancellation.ThrowIfCancellationRequested();
         }
 

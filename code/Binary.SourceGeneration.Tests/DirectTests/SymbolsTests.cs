@@ -510,7 +510,7 @@ public class SymbolsTests
         yield return new object[] { a, "Alpha", "RequiredProperty", true };
     }
 
-    [Theory(DisplayName = "Is Field Or Property Required")]
+    [Theory(DisplayName = "Is Required Field Or Property")]
     [MemberData(nameof(IsRequiredData))]
     public void IsRequiredTest(string source, string typeName, string memberName, bool required)
     {
@@ -526,10 +526,49 @@ public class SymbolsTests
             .Where(x => ((x as IFieldSymbol)?.Name ?? (x as IPropertySymbol)?.Name) == memberName)
             .FirstOrDefault();
         Assert.NotNull(member);
-        var a = Symbols.IsRequired(member);
-        var b = Symbols.IsRequired(symbol);
-        Assert.Equal(required, a);
-        Assert.False(b);
+        var actual = Symbols.IsRequiredFieldOrProperty(member);
+        Assert.Equal(required, actual);
+    }
+
+    public static IEnumerable<object[]> IsReadOnlyData()
+    {
+        var a =
+            """
+            class Alpha
+            {
+                public int Field;
+
+                public readonly int ReadOnlyField;
+
+                public string? Property { get; set; }
+
+                public string? ReadOnlyProperty { get; }
+            }
+            """;
+        yield return new object[] { a, "Alpha", "Field", false };
+        yield return new object[] { a, "Alpha", "ReadOnlyField", true };
+        yield return new object[] { a, "Alpha", "Property", false };
+        yield return new object[] { a, "Alpha", "ReadOnlyProperty", true };
+    }
+
+    [Theory(DisplayName = "Is ReadOnly Field Or Property")]
+    [MemberData(nameof(IsReadOnlyData))]
+    public void IsReadOnlyTest(string source, string typeName, string memberName, bool @readonly)
+    {
+        var compilation = CompilationModule.CreateCompilation(source);
+        var tree = compilation.SyntaxTrees.First();
+        var model = compilation.GetSemanticModel(tree);
+        var nodes = tree.GetRoot().DescendantNodes();
+        var declaration = nodes.OfType<TypeDeclarationSyntax>().Single();
+        var symbol = model.GetDeclaredSymbol(declaration);
+        Assert.NotNull(symbol);
+        Assert.Equal(typeName, symbol.Name);
+        var member = symbol.GetMembers()
+            .Where(x => ((x as IFieldSymbol)?.Name ?? (x as IPropertySymbol)?.Name) == memberName)
+            .FirstOrDefault();
+        Assert.NotNull(member);
+        var actual = Symbols.IsReadOnlyFieldOrProperty(member);
+        Assert.Equal(@readonly, actual);
     }
 
     public static IEnumerable<object[]> FilterFieldsAndPropertiesData()

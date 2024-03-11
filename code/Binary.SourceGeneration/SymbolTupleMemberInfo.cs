@@ -2,9 +2,4 @@
 
 using Microsoft.CodeAnalysis;
 
-public class SymbolTupleMemberInfo : SymbolMemberInfo
-{
-    public SymbolTupleMemberInfo(IFieldSymbol field) : base(field) { }
-
-    public SymbolTupleMemberInfo(IPropertySymbol property) : base(property) { }
-}
+public class SymbolTupleMemberInfo(ISymbol symbol) : SymbolMemberInfo(symbol) { }
