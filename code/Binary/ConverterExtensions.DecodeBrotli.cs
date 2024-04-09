@@ -25,14 +25,15 @@ public static partial class ConverterExtensions
                 offset += bytesConsumed;
                 length += bytesWritten;
 
+                var intent = new ReadOnlySpan<byte>(memory, 0, length);
                 if (status is OperationStatus.Done)
-                    return decode.Invoke(new ReadOnlySpan<byte>(memory, 0, length));
+                    return decode.Invoke(intent);
                 if (status is not OperationStatus.DestinationTooSmall)
                     throw new IOException($"Brotli decode failed, status: {status}");
 
                 limits = checked(limits * 2);
                 var buffer = arrays.Rent(limits);
-                new ReadOnlySpan<byte>(memory, 0, length).CopyTo(new Span<byte>(buffer));
+                intent.CopyTo(new Span<byte>(buffer));
                 arrays.Return(memory);
                 memory = buffer;
             }

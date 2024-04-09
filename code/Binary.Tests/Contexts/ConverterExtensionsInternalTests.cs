@@ -19,22 +19,38 @@ public class ConverterExtensionsInternalTests
 
     private delegate byte[] EncodeBrotliInternal<T>(AllocatorAction<T> action, T item, ArrayPool<byte> pool);
 
-    private class TestArrayPool<T> : ArrayPool<T>
+    private abstract class FakeAbstractArrayPool<T> : ArrayPool<T>
     {
-        public List<int> Rented { get; } = [];
+        public List<int> RentedMinimumLengths { get; } = [];
 
-        public List<int> Returned { get; } = [];
+        public List<T[]> RentedArrays { get; } = [];
 
-        public override T[] Rent(int minimumLength)
+        public List<T[]> ReturnedArrays { get; } = [];
+
+        public abstract T[] CreateArray(int minimumLength);
+
+        public sealed override T[] Rent(int minimumLength)
         {
-            var result = new T[minimumLength];
-            Rented.Add(result.Length);
+            var result = CreateArray(minimumLength);
+            RentedMinimumLengths.Add(minimumLength);
+            RentedArrays.Add(result);
             return result;
         }
 
-        public override void Return(T[] array, bool clearArray = false)
+        public sealed override void Return(T[] array, bool clearArray = false)
         {
-            Returned.Add(array.Length);
+            Assert.False(clearArray);
+            // always clear array, prevent reuse after return
+            Array.Clear(array);
+            ReturnedArrays.Add(array);
+        }
+    }
+
+    private class TestArrayPool<T> : FakeAbstractArrayPool<T>
+    {
+        public override T[] CreateArray(int minimumLength)
+        {
+            return new T[minimumLength];
         }
     }
 
@@ -80,9 +96,11 @@ public class ConverterExtensionsInternalTests
         var error = Assert.Throws<IOException>(() => action.Invoke([], arrays));
         var message = $"Brotli decode failed, status: {OperationStatus.NeedMoreData}";
         Assert.Equal(message, error.Message);
-        Assert.Equal(arrays.Rented.Count, arrays.Returned.Count);
-        Assert.Equal(64 * 1024, arrays.Rented.Single());
-        Assert.Equal(64 * 1024, arrays.Returned.Single());
+        Assert.Equal(arrays.RentedArrays.Count, arrays.ReturnedArrays.Count);
+        Assert.Equal(arrays.RentedMinimumLengths.Count, arrays.ReturnedArrays.Count);
+        Assert.Equal(64 * 1024, arrays.RentedArrays.Single().Length);
+        Assert.Equal(64 * 1024, arrays.RentedMinimumLengths.Single());
+        Assert.Equal(64 * 1024, arrays.ReturnedArrays.Single().Length);
     }
 
     public static IEnumerable<object[]> DecodeBrotliArrayPoolRentReturnData()
@@ -111,9 +129,51 @@ public class ConverterExtensionsInternalTests
         var arrays = new TestArrayPool<byte>();
         var result = action.Invoke(zipped, arrays);
         Assert.Equal(source, result);
-        Assert.Equal(arrays.Rented.Count, arrays.Returned.Count);
-        Assert.Equal(rented, arrays.Rented);
-        Assert.Equal(rented, arrays.Returned);
+        Assert.Equal(arrays.RentedArrays.Count, arrays.ReturnedArrays.Count);
+        Assert.Equal(arrays.RentedMinimumLengths.Count, arrays.ReturnedArrays.Count);
+        Assert.Equal(rented, arrays.RentedArrays.Select(x => x.Length).ToList());
+        Assert.Equal(rented, arrays.ReturnedArrays.Select(x => x.Length).ToList());
+    }
+
+    [Fact(DisplayName = "Decode Brotli Force Clear Array After Return To Array Pool Test")]
+    public void DecodeBrotliForceClearAfterReturnToArrayPoolTest()
+    {
+        var length = 256 * 1024;
+        var source = new byte[length];
+        for (var i = 0; i < source.Length; i++)
+            source[i] = (byte)i;
+        var buffer = new byte[BrotliEncoder.GetMaxCompressedLength(length)];
+        var status = BrotliEncoder.TryCompress(source, buffer, out var bytesWritten);
+        Assert.True(status);
+        var zipped = new ReadOnlySpan<byte>(buffer, 0, bytesWritten).ToArray();
+
+        var generator = Generator.CreateDefault();
+        var converter = generator.GetConverter<byte[]>();
+        var action = GetDecodeBrotliInternalMethod(converter);
+        var arrays = new TestArrayPool<byte>();
+        var result = action.Invoke(zipped, arrays);
+        Assert.Equal(source, result);
+        Assert.Equal(3, arrays.RentedMinimumLengths.Count);
+        Assert.Equal(3, arrays.RentedArrays.Count);
+        Assert.Equal(3, arrays.ReturnedArrays.Count);
+
+        var expectedLengths = new int[] { 64 * 1024, 128 * 1024, 256 * 1024 };
+        for (var i = 0; i < expectedLengths.Length; i++)
+        {
+            var expectedLength = expectedLengths[i];
+            var rented = arrays.RentedArrays[i];
+            var returned = arrays.ReturnedArrays[i];
+            Assert.Equal(expectedLength, arrays.RentedMinimumLengths[i]);
+            Assert.Equal(expectedLength, rented.Length);
+            Assert.Equal(expectedLength, returned.Length);
+            Assert.True(ReferenceEquals(rented, returned));
+
+            // ensure all returned arrays are cleared
+            var data = 0L;
+            foreach (var x in returned)
+                data += x;
+            Assert.Equal(0L, data);
+        }
     }
 
     public static IEnumerable<object[]> EncodeBrotliArrayPoolRentReturnData()
@@ -144,9 +204,10 @@ public class ConverterExtensionsInternalTests
         Assert.True(status);
         Assert.Equal(length, bytesWritten);
         Assert.Equal(source, actual);
-        Assert.Equal(arrays.Rented.Count, arrays.Returned.Count);
-        Assert.Equal(rented, arrays.Rented);
-        Assert.Equal(rented, arrays.Returned.Select(x => x).Reverse());
+        Assert.Equal(arrays.RentedArrays.Count, arrays.ReturnedArrays.Count);
+        Assert.Equal(arrays.RentedMinimumLengths.Count, arrays.ReturnedArrays.Count);
+        Assert.Equal(rented, arrays.RentedArrays.Select(x => x.Length).ToList());
+        Assert.Equal(rented, arrays.ReturnedArrays.Select(x => x.Length).Reverse().ToList());
     }
 
     [Fact(DisplayName = "Decode Brotli Input Overflow Test")]
@@ -214,22 +275,11 @@ public class ConverterExtensionsInternalTests
         Assert.Equal(new OverflowException().Message, error.Message);
     }
 
-    private class TestInvalidZeroSizeReturnsArrayPool<T> : ArrayPool<T>
+    private class TestInvalidZeroSizeReturnsArrayPool<T> : FakeAbstractArrayPool<T>
     {
-        public List<int> Rented { get; } = [];
-
-        public List<int> Returned { get; } = [];
-
-        public override T[] Rent(int minimumLength)
+        public override T[] CreateArray(int minimumLength)
         {
-            var result = Array.Empty<T>();
-            Rented.Add(minimumLength);
-            return result;
-        }
-
-        public override void Return(T[] array, bool clearArray = false)
-        {
-            Returned.Add(array.Length);
+            return [];
         }
     }
 
@@ -251,26 +301,15 @@ public class ConverterExtensionsInternalTests
         var action = GetDecodeBrotliInternalMethod(converter);
         var error = Assert.Throws<ArgumentOutOfRangeException>(() => action.Invoke(zipped, arrays));
         Assert.Equal(new ArgumentOutOfRangeException().Message, error.Message);
-        Assert.Equal(64 * 1024, arrays.Rented.Single());
-        Assert.Equal(0, arrays.Returned.Single());
+        Assert.Equal(64 * 1024, arrays.RentedMinimumLengths.Single());
+        Assert.Equal(0, arrays.ReturnedArrays.Select(x => x.Length).Single());
     }
 
-    private class TestDoubleSizeReturnsArrayPool<T> : ArrayPool<T>
+    private class TestDoubleSizeReturnsArrayPool<T> : FakeAbstractArrayPool<T>
     {
-        public List<int> Rented { get; } = [];
-
-        public List<int> Returned { get; } = [];
-
-        public override T[] Rent(int minimumLength)
+        public override T[] CreateArray(int minimumLength)
         {
-            var result = new T[minimumLength * 2];
-            Rented.Add(minimumLength);
-            return result;
-        }
-
-        public override void Return(T[] array, bool clearArray = false)
-        {
-            Returned.Add(array.Length);
+            return new T[minimumLength * 2];
         }
     }
 
@@ -292,7 +331,8 @@ public class ConverterExtensionsInternalTests
         var action = GetDecodeBrotliInternalMethod(converter);
         var result = action.Invoke(zipped, arrays);
         Assert.Equal(source, result);
-        Assert.Equal(new[] { 64 * 1024, 256 * 1024, 1024 * 1024 }, arrays.Rented);
-        Assert.Equal(new[] { 128 * 1024, 512 * 1024, 2 * 1024 * 1024 }, arrays.Returned);
+        Assert.Equal(new[] { 64 * 1024, 256 * 1024, 1024 * 1024 }, arrays.RentedMinimumLengths);
+        Assert.Equal(new[] { 128 * 1024, 512 * 1024, 2 * 1024 * 1024 }, arrays.RentedArrays.Select(x => x.Length).ToList());
+        Assert.Equal(new[] { 128 * 1024, 512 * 1024, 2 * 1024 * 1024 }, arrays.ReturnedArrays.Select(x => x.Length).ToList());
     }
 }

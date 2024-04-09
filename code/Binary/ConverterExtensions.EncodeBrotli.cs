@@ -31,19 +31,19 @@ public static partial class ConverterExtensions
         }
     }
 
-    private static byte[] EncodeBrotliInternal<T>(AllocatorAction<T> action, T item, ArrayPool<byte> pool)
+    private static byte[] EncodeBrotliInternal<T>(AllocatorAction<T> action, T item, ArrayPool<byte> arrays)
     {
-        var memory = pool.Rent(1024 * 1024);
+        var memory = arrays.Rent(1024 * 1024);
 
         try
         {
             var allocator = new Allocator(new Span<byte>(memory));
             action.Invoke(ref allocator, item);
-            return EncodeBrotliInternal(allocator.AsSpan(), pool);
+            return EncodeBrotliInternal(allocator.AsSpan(), arrays);
         }
         finally
         {
-            pool.Return(memory);
+            arrays.Return(memory);
         }
     }
 
