@@ -25,22 +25,22 @@ public sealed class SourceGenerator : IIncrementalGenerator
         public ImmutableDictionary<ITypeSymbol, AttributeData> Inclusions { get; } = inclusions;
     }
 
-    private static readonly ImmutableArray<TypeHandler> CustomTypeHandlers = ImmutableArray.CreateRange(new TypeHandler[]
-    {
+    private static readonly ImmutableArray<TypeHandler> CustomTypeHandlers =
+    [
         AttributeConverterContext.Invoke,
         AttributeConverterCreatorContext.Invoke,
         TupleObjectConverterContext.Invoke,
         NamedObjectConverterContext.Invoke,
-    });
+    ];
 
-    private static readonly ImmutableArray<TypeHandler> NativeTypeHandlers = ImmutableArray.CreateRange(new TypeHandler[]
-    {
+    private static readonly ImmutableArray<TypeHandler> NativeTypeHandlers =
+    [
         GenericConverterContext.Invoke,
         CollectionConverterContext.Invoke,
         InlineArrayConverterContext.Invoke,
         TupleObjectConverterContext.Invoke,
         NamedObjectConverterContext.Invoke,
-    });
+    ];
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {

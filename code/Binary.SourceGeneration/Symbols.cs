@@ -74,7 +74,7 @@ public static partial class Symbols
         var defaultConstructor = constructors.FirstOrDefault(x => x.Parameters.Length is 0);
         var hasDefaultConstructor = symbol.IsValueType || defaultConstructor is not null;
         if (hasDefaultConstructor && ValidateConstructorWithMembers(context, defaultConstructor, typeInfo.RequiredFieldsAndProperties, members))
-            return new SymbolConstructorInfo<T>(members, ImmutableArray.Create<int>(), Enumerable.Range(0, members.Length).ToImmutableArray());
+            return new SymbolConstructorInfo<T>(members, [], Enumerable.Range(0, members.Length).ToImmutableArray());
         if (CreateIgnoreCaseDictionary(members) is not { } dictionary)
             return null;
 
@@ -251,7 +251,7 @@ public static partial class Symbols
         }
         conflict = errors.ToImmutable();
         if (conflict.Count is not 0)
-            return ImmutableArray.Create<ISymbol>();
+            return [];
         result.AddRange(dictionary.Values);
         return result.ToImmutable();
     }

@@ -51,11 +51,11 @@ public sealed partial class GenericConverterContext
     private static TypeInfo? GetInfo(SourceGeneratorContext context, ITypeSymbol type)
     {
         if (type.TypeKind is TypeKind.Enum)
-            return new TypeInfo("Enum", TypeArgumentsOption.IncludeReturnType, ImmutableArray.Create<ITypeSymbol>());
+            return new TypeInfo("Enum", TypeArgumentsOption.IncludeReturnType, []);
         if (type is IArrayTypeSymbol array)
             return array.IsSZArray
-                ? new TypeInfo("Array", TypeArgumentsOption.None, ImmutableArray.Create(array.ElementType))
-                : new TypeInfo("VariableBoundArray", TypeArgumentsOption.IncludeReturnType, ImmutableArray.Create(array.ElementType));
+                ? new TypeInfo("Array", TypeArgumentsOption.None, [array.ElementType])
+                : new TypeInfo("VariableBoundArray", TypeArgumentsOption.IncludeReturnType, [array.ElementType]);
         if (type is not INamedTypeSymbol symbol || symbol.IsGenericType is false)
             return null;
         const string ResourceKey = "Generic";
