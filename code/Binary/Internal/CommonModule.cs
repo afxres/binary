@@ -186,7 +186,7 @@ internal static class CommonModule
                 ThrowHelper.ThrowAmbiguousMembers(i.Key, type);
         }
 
-        return result.ToImmutable();
+        return result.DrainToImmutable();
     }
 
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
