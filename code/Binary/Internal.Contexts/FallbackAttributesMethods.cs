@@ -57,7 +57,7 @@ internal static class FallbackAttributesMethods
             var key = keyAttributes.FirstOrDefault();
             var conversionAttributes = CommonModule.GetAttributes(member, a => a is ConverterAttribute or ConverterCreatorAttribute);
             var conversion = conversionAttributes.FirstOrDefault();
-            var indexer = property is not null && property.GetIndexParameters().Length is not 0;
+            var indexer = property is not null && CommonModule.IsIndexer(property);
             if (indexer && (key ?? conversion) is { } instance)
                 throw new ArgumentException($"Can not apply '{instance.GetType().Name}' to an indexer, type: {type}");
             if (indexer)

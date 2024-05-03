@@ -5,11 +5,11 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 
-public class SymbolTypeInfo(ITypeSymbol symbol, ImmutableSortedSet<string> conflictMembers, ImmutableArray<ISymbol> originalMembers, ImmutableArray<ISymbol> filteredMembers, ImmutableHashSet<ISymbol> requiredMembers)
+public class SymbolTypeInfo(ITypeSymbol symbol, ImmutableArray<string> conflictMembers, ImmutableArray<ISymbol> originalMembers, ImmutableArray<ISymbol> filteredMembers, ImmutableHashSet<ISymbol> requiredMembers)
 {
     public ITypeSymbol Symbol { get; } = symbol;
 
-    public ImmutableSortedSet<string> ConflictFieldsAndProperties { get; } = conflictMembers;
+    public ImmutableArray<string> ConflictFieldsAndProperties { get; } = conflictMembers;
 
     public ImmutableArray<ISymbol> OriginalFieldsAndProperties { get; } = originalMembers;
 
@@ -20,7 +20,7 @@ public class SymbolTypeInfo(ITypeSymbol symbol, ImmutableSortedSet<string> confl
     public static SymbolTypeInfo Create(Compilation compilation, ITypeSymbol symbol, CancellationToken cancellation)
     {
         var originalMembers = Symbols.GetAllFieldsAndProperties(compilation, symbol, out var conflict, cancellation);
-        if (conflict.Count is not 0)
+        if (conflict.Length is not 0)
             return new SymbolTypeInfo(symbol, conflict, [], [], ImmutableHashSet.Create<ISymbol>(SymbolEqualityComparer.Default));
         var filteredMembers = Symbols.FilterFieldsAndProperties(originalMembers, cancellation);
         var requiredMembers = originalMembers.Where(Symbols.IsRequiredFieldOrProperty).ToImmutableHashSet(SymbolEqualityComparer.Default);

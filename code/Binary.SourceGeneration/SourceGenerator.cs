@@ -167,7 +167,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         var symbolDisplay = Symbols.GetSymbolDiagnosticDisplayString(symbol);
         if (result?.Status is not SourceStatus.NoAvailableMember)
             context.Collect(Constants.NoConverterGenerated.With(attribute, [symbolDisplay]));
-        else if (context.GetTypeInfo(symbol).ConflictFieldsAndProperties is { Count: not 0 } conflict)
+        else if (context.GetTypeInfo(symbol).ConflictFieldsAndProperties is { Length: not 0 } conflict)
             foreach (var name in conflict)
                 context.Collect(Constants.AmbiguousMemberFound.With(attribute, [name, symbolDisplay]));
         else

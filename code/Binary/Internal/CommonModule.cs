@@ -112,48 +112,119 @@ internal static class CommonModule
         return attributes;
     }
 
-    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
-    internal static ImmutableArray<MemberInfo> GetAllFieldsAndProperties(Type type, BindingFlags flags)
+    internal static bool IsIndexer(PropertyInfo property)
     {
-        static ImmutableHashSet<Type> Expand(Type type)
+        return property.GetIndexParameters().Length is not 0;
+    }
+
+    internal static int CompareInheritance(Type? x, Type? y)
+    {
+        ArgumentNullException.ThrowIfNull(x);
+        ArgumentNullException.ThrowIfNull(y);
+        if (x.IsValueType || y.IsValueType)
+            throw new ArgumentException("Require reference type.");
+        if (x == y)
+            throw new ArgumentException("Identical types detected.");
+        if (x.IsAssignableTo(y))
+            return -1;
+        if (y.IsAssignableTo(x))
+            return 1;
+        return 0;
+    }
+
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    internal static ImmutableArray<MemberInfo> GetAllPropertiesForInterfaceType(Type type, BindingFlags flags)
+    {
+        if (type.IsInterface is false)
+            throw new ArgumentException("Require interface type.");
+
+        var source = ImmutableArray.CreateRange(type.GetInterfaces()).Add(type);
+        var result = ImmutableArray.CreateBuilder<MemberInfo>();
+        var dictionary = new SortedDictionary<string, List<PropertyInfo>>();
+
+        void Insert(PropertyInfo member)
         {
-            var result = ImmutableHashSet.CreateBuilder<Type>();
-            for (var i = type; i != null; i = i.BaseType)
-                _ = result.Add(i);
-            return result.ToImmutable();
+            var same = new List<PropertyInfo>();
+            var less = new List<PropertyInfo>();
+            if (dictionary.TryGetValue(member.Name, out var values))
+            {
+                foreach (var i in values)
+                {
+                    var signal = CompareInheritance(i.DeclaringType, member.DeclaringType);
+                    if (signal is 0)
+                        same.Add(i);
+                    else if (signal is -1)
+                        less.Add(i);
+                }
+            }
+
+            if (less.Count is 0)
+                less.Add(member);
+            less.AddRange(same);
+            dictionary[member.Name] = less;
         }
 
-        var source = type.IsInterface
-            ? ImmutableHashSet.Create(type).Union(type.GetInterfaces())
-            : Expand(type);
+        foreach (var target in source)
+        {
+            var members = target.GetProperties(flags);
+            foreach (var member in members)
+            {
+                // ignore overriding or shadowing
+                if (IsIndexer(member))
+                    result.Add(member);
+                else
+                    Insert(member);
+            }
+        }
+
+        foreach (var i in dictionary)
+        {
+            var values = i.Value;
+            if (values.Count is 1)
+                result.Add(values.First());
+            else
+                ThrowHelper.ThrowAmbiguousMembers(i.Key, type);
+        }
+
+        return result.ToImmutable();
+    }
+
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    internal static ImmutableArray<MemberInfo> GetAllFieldsAndPropertiesForNonInterfaceType(Type type, BindingFlags flags)
+    {
+        if (type.IsInterface)
+            throw new ArgumentException("Require not interface type.");
+
         var result = ImmutableArray.CreateBuilder<MemberInfo>();
         var dictionary = new SortedDictionary<string, MemberInfo>();
-        foreach (var target in source)
+        for (var target = type; target is not null; target = target.BaseType)
         {
             var members = target.GetMembers(flags);
             foreach (var member in members)
             {
                 if (target != member.DeclaringType)
                     continue;
-                var field = member as FieldInfo;
-                var property = member as PropertyInfo;
-                if (field is null && property is null)
+                if (member is not FieldInfo and not PropertyInfo)
                     continue;
-
                 // ignore overriding or shadowing
-                var indexer = property is not null && property.GetIndexParameters().Length is not 0;
-                if (indexer)
+                if (member is PropertyInfo property && IsIndexer(property))
                     result.Add(member);
                 else if (dictionary.TryGetValue(member.Name, out var exists) is false)
                     dictionary.Add(member.Name, member);
-                else if (target != exists.DeclaringType && target.IsAssignableTo(exists.DeclaringType))
-                    dictionary[member.Name] = member;
-                else if (target == exists.DeclaringType || target.IsAssignableFrom(exists.DeclaringType) is false)
-                    throw new ArgumentException($"Get members error, ambiguous members detected, member name: {member.Name}, type: {type}");
+                else if (target == exists.DeclaringType)
+                    ThrowHelper.ThrowAmbiguousMembers(member.Name, type);
             }
         }
         result.AddRange(dictionary.Values);
         return result.DrainToImmutable();
+    }
+
+    [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]
+    internal static ImmutableArray<MemberInfo> GetAllFieldsAndProperties(Type type, BindingFlags flags)
+    {
+        if (type.IsInterface)
+            return GetAllPropertiesForInterfaceType(type, flags);
+        return GetAllFieldsAndPropertiesForNonInterfaceType(type, flags);
     }
 
     [RequiresUnreferencedCode(RequiresUnreferencedCodeMessage)]

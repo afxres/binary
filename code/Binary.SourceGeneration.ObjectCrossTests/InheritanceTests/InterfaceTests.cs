@@ -89,6 +89,8 @@ public class InterfaceTests
         yield return new object[] { typeof(IDifferentTypeChild), new[] { "Id" } };
         yield return new object[] { typeof(IDeepChild), new[] { "Item" } };
         yield return new object[] { typeof(IMultipleChild), new[] { "B", "C" } };
+        yield return new object[] { typeof(IShadowingE), new[] { "Member" } };
+        yield return new object[] { typeof(IMessA3), new[] { "A" } };
     }
 
     [Theory(DisplayName = "Interface Ambiguous Test")]
@@ -108,7 +110,7 @@ public class InterfaceTests
 
         var symbolResult = Symbols.GetAllFieldsAndProperties(compilation, symbol, out var conflict, default);
         Assert.Empty(symbolResult);
-        Assert.Equal(names.ToImmutableHashSet(), conflict);
+        Assert.Equal(names, conflict);
 
         var error = Assert.Throws<ArgumentException>(() => reflectionFunction.Invoke(wanted, BindingFlags.Instance | BindingFlags.Public));
         var expected = new Regex("Get members error, ambiguous members detected, member name: (\\w*), type: (\\S*)");

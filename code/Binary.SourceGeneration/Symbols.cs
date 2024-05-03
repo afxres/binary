@@ -209,50 +209,118 @@ public static partial class Symbols
         return builder.ToImmutable();
     }
 
-    public static ImmutableArray<ISymbol> GetAllFieldsAndProperties(Compilation compilation, ITypeSymbol type, out ImmutableSortedSet<string> conflict, CancellationToken cancellation)
+    public static int CompareInheritance(Compilation compilation, ITypeSymbol x, ITypeSymbol y, CancellationToken cancellation)
     {
-        static ImmutableHashSet<ITypeSymbol> Expand(ITypeSymbol type)
+        if (x.IsValueType || y.IsValueType)
+            throw new ArgumentException("Require reference type.");
+        cancellation.ThrowIfCancellationRequested();
+        var alpha = compilation.ClassifyCommonConversion(x, y);
+        var bravo = compilation.ClassifyCommonConversion(y, x);
+        if (alpha.IsIdentity || bravo.IsIdentity)
+            throw new ArgumentException("Identical types detected.");
+        if (alpha.IsReference && alpha.IsImplicit)
+            return -1;
+        if (bravo.IsReference && bravo.IsImplicit)
+            return 1;
+        return 0;
+    }
+
+    public static ImmutableArray<ISymbol> GetAllPropertiesForInterfaceType(Compilation compilation, ITypeSymbol type, out ImmutableArray<string> conflict, CancellationToken cancellation)
+    {
+        if (type.TypeKind is not TypeKind.Interface)
+            throw new ArgumentException("Require interface type.");
+
+        var source = ImmutableArray.CreateRange<ITypeSymbol>(type.AllInterfaces).Add(type);
+        var result = ImmutableArray.CreateBuilder<ISymbol>();
+        var errors = ImmutableArray.CreateBuilder<string>();
+        var dictionary = new SortedDictionary<string, List<IPropertySymbol>>();
+
+        void Insert(IPropertySymbol member)
         {
-            var result = ImmutableHashSet.CreateBuilder<ITypeSymbol>(SymbolEqualityComparer.Default);
-            for (var i = type; i != null; i = i.BaseType)
-                _ = result.Add(i);
-            return result.ToImmutable();
+            var same = new List<IPropertySymbol>();
+            var less = new List<IPropertySymbol>();
+            if (dictionary.TryGetValue(member.Name, out var values))
+            {
+                foreach (var i in values)
+                {
+                    var signal = CompareInheritance(compilation, i.ContainingType, member.ContainingType, cancellation);
+                    if (signal is 0)
+                        same.Add(i);
+                    else if (signal is -1)
+                        less.Add(i);
+                }
+            }
+
+            if (less.Count is 0)
+                less.Add(member);
+            less.AddRange(same);
+            dictionary[member.Name] = less;
         }
 
-        var source = type.TypeKind is TypeKind.Interface
-            ? ImmutableHashSet.Create<ITypeSymbol>(SymbolEqualityComparer.Default, type).Union(type.AllInterfaces)
-            : Expand(type);
-        var result = ImmutableArray.CreateBuilder<ISymbol>();
-        var errors = ImmutableSortedSet.CreateBuilder<string>();
-        var dictionary = new SortedDictionary<string, ISymbol>();
         foreach (var target in source)
+        {
+            cancellation.ThrowIfCancellationRequested();
+            var members = target.GetMembers().OfType<IPropertySymbol>().ToList();
+            foreach (var member in members)
+            {
+                // ignore overriding or shadowing
+                if (member.IsIndexer)
+                    result.Add(member);
+                else
+                    Insert(member);
+                cancellation.ThrowIfCancellationRequested();
+            }
+        }
+
+        foreach (var i in dictionary)
+        {
+            var values = i.Value;
+            if (values.Count is 1)
+                result.Add(values.First());
+            else
+                errors.Add(i.Key);
+            cancellation.ThrowIfCancellationRequested();
+        }
+
+        conflict = errors.ToImmutable();
+        if (conflict.Length is not 0)
+            return [];
+        return result.ToImmutable();
+    }
+
+    public static ImmutableArray<ISymbol> GetAllFieldsAndPropertiesForNonInterfaceType(ITypeSymbol type, CancellationToken cancellation)
+    {
+        if (type.TypeKind is TypeKind.Interface)
+            throw new ArgumentException("Require not interface type.");
+
+        var result = ImmutableArray.CreateBuilder<ISymbol>();
+        var dictionary = new SortedDictionary<string, ISymbol>();
+        for (var target = type; target is not null; target = target.BaseType)
         {
             cancellation.ThrowIfCancellationRequested();
             var members = target.GetMembers();
             foreach (var member in members)
             {
                 cancellation.ThrowIfCancellationRequested();
-                var field = member as IFieldSymbol;
-                var property = member as IPropertySymbol;
-                if (field is null && property is null)
+                if (member is not IFieldSymbol and not IPropertySymbol)
                     continue;
-
                 // ignore overriding or shadowing
-                var indexer = property is not null && property.IsIndexer;
-                if (indexer)
+                if (member is IPropertySymbol { IsIndexer: true })
                     result.Add(member);
-                else if (dictionary.TryGetValue(member.Name, out var exists) is false)
+                else if (dictionary.ContainsKey(member.Name) is false)
                     dictionary.Add(member.Name, member);
-                else if (compilation.ClassifyConversion(target, exists.ContainingType) is { } alpha && (alpha.IsIdentity is false && alpha.IsImplicit && alpha.IsReference))
-                    dictionary[member.Name] = member;
-                else if (compilation.ClassifyConversion(exists.ContainingType, target) is { } bravo && (alpha.IsImplicit == bravo.IsImplicit))
-                    _ = errors.Add(member.Name);
+                cancellation.ThrowIfCancellationRequested();
             }
         }
-        conflict = errors.ToImmutable();
-        if (conflict.Count is not 0)
-            return [];
         result.AddRange(dictionary.Values);
         return result.ToImmutable();
+    }
+
+    public static ImmutableArray<ISymbol> GetAllFieldsAndProperties(Compilation compilation, ITypeSymbol type, out ImmutableArray<string> conflict, CancellationToken cancellation)
+    {
+        if (type.TypeKind is TypeKind.Interface)
+            return GetAllPropertiesForInterfaceType(compilation, type, out conflict, cancellation);
+        conflict = [];
+        return GetAllFieldsAndPropertiesForNonInterfaceType(type, cancellation);
     }
 }

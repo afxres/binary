@@ -47,6 +47,9 @@ internal static class ThrowHelper
     internal static void ThrowNotOverride(string auto, string prefix, Type type) => throw new InvalidOperationException($"Method '{auto}' should be overridden if method '{prefix}' has been overridden, type: {type}");
 
     [DoesNotReturn]
+    internal static void ThrowAmbiguousMembers(string memberName, Type type) => throw new ArgumentException($"Get members error, ambiguous members detected, member name: {memberName}, type: {type}");
+
+    [DoesNotReturn]
     internal static T ThrowNotConverter<T>(Type type) => throw new ArgumentException($"Can not get generic argument, '{type}' is not a subclass of '{typeof(Converter<>)}'");
 
     [DoesNotReturn]
