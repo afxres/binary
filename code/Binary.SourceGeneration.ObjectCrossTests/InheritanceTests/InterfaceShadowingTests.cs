@@ -155,7 +155,7 @@ public class InterfaceShadowingTests
         Assert.NotNull(symbolX);
         Assert.NotNull(symbolY);
 
-        var symbolResult = Symbols.CompareInheritance(compilation, symbolX, symbolY, CancellationToken.None);
+        var symbolResult = Symbols.CompareInheritance(compilation, symbolX, symbolY);
         var memberResult = reflectionFunction.Invoke(x, y);
         Assert.Equal(expected, symbolResult);
         Assert.Equal(expected, memberResult);
@@ -184,7 +184,7 @@ public class InterfaceShadowingTests
         Assert.NotNull(symbolX);
         Assert.NotNull(symbolY);
 
-        var alpha = Assert.Throws<ArgumentException>(() => Symbols.CompareInheritance(compilation, symbolX, symbolY, CancellationToken.None));
+        var alpha = Assert.Throws<ArgumentException>(() => Symbols.CompareInheritance(compilation, symbolX, symbolY));
         var bravo = Assert.Throws<ArgumentException>(() => reflectionFunction.Invoke(x, y));
         Assert.Null(alpha.ParamName);
         Assert.Null(bravo.ParamName);
@@ -235,20 +235,5 @@ public class InterfaceShadowingTests
         var message = "Require not interface type.";
         Assert.Equal(message, alpha.Message);
         Assert.Equal(message, bravo.Message);
-    }
-
-    [Fact(DisplayName = "Compare Inheritance With Cancellation Token Test")]
-    public void CompareInheritanceCancellationTest()
-    {
-        var source = new CancellationTokenSource();
-        var compilation = CompilationModule.CreateCompilationFromThisAssembly();
-        var symbolString = compilation.GetSpecialType(SpecialType.System_String);
-        var symbolObject = compilation.GetSpecialType(SpecialType.System_Object);
-        var result = Symbols.CompareInheritance(compilation, symbolObject, symbolString, source.Token);
-        Assert.Equal(1, result);
-
-        source.Cancel();
-        var exception = Assert.Throws<OperationCanceledException>(() => Symbols.CompareInheritance(compilation, symbolObject, symbolString, source.Token));
-        Assert.Equal(source.Token, exception.CancellationToken);
     }
 }

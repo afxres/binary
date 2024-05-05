@@ -209,11 +209,10 @@ public static partial class Symbols
         return builder.ToImmutable();
     }
 
-    public static int CompareInheritance(Compilation compilation, ITypeSymbol x, ITypeSymbol y, CancellationToken cancellation)
+    public static int CompareInheritance(Compilation compilation, ITypeSymbol x, ITypeSymbol y)
     {
         if (x.IsValueType || y.IsValueType)
             throw new ArgumentException("Require reference type.");
-        cancellation.ThrowIfCancellationRequested();
         var alpha = compilation.ClassifyCommonConversion(x, y);
         var bravo = compilation.ClassifyCommonConversion(y, x);
         if (alpha.IsIdentity || bravo.IsIdentity)
@@ -243,11 +242,12 @@ public static partial class Symbols
             {
                 foreach (var i in values)
                 {
-                    var signal = CompareInheritance(compilation, i.ContainingType, member.ContainingType, cancellation);
+                    var signal = CompareInheritance(compilation, i.ContainingType, member.ContainingType);
                     if (signal is 0)
                         same.Add(i);
                     else if (signal is -1)
                         less.Add(i);
+                    cancellation.ThrowIfCancellationRequested();
                 }
             }
 
