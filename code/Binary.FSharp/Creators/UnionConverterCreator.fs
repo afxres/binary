@@ -4,6 +4,7 @@ open Microsoft.FSharp.Reflection
 open Mikodev.Binary
 open Mikodev.Binary.Internal
 open System
+open System.Collections.Generic
 open System.Collections.Immutable
 open System.Linq.Expressions
 open System.Reflection
@@ -129,8 +130,7 @@ type internal UnionConverterCreator() =
                 let converters =
                     memberTypes
                     |> Seq.distinct
-                    |> Seq.map (fun x -> x, CommonHelper.GetConverter(context, x))
-                    |> dict
+                    |> Seq.map (fun x -> KeyValuePair.Create(x, CommonHelper.GetConverter(context, x)))
                     |> ImmutableDictionary.CreateRange
                 let tagMember = FSharpValue.PreComputeUnionTagMemberInfo(t)
                 let noNull = t.IsValueType = false && tagMember :? MethodInfo = false
