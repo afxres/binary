@@ -9,7 +9,7 @@
     <Authors>Mikodev</Authors>
     <Company>Mikodev</Company>
     <Product>Mikodev.Binary</Product>
-    <Version>5.6.4</Version>
+    <Version>5.6.5</Version>
     <Description>Serialization library for C# and F#.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
