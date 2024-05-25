@@ -27,7 +27,7 @@ public class ConverterThrowTests
         var converter = this.generator.GetConverter<T>();
         Assert.Equal(ConverterTypeName, converter.GetType().Name);
         var origin = converter.Encode(data);
-        var buffer = origin[0..length];
+        var buffer = origin.AsSpan(0, length).ToArray();
         var alpha = Assert.Throws<ArgumentException>(() => converter.Decode(buffer));
         var bravo = Assert.Throws<ArgumentException>(() => converter.Decode(new ReadOnlySpan<byte>(buffer)));
         Assert.Null(alpha.ParamName);
@@ -46,7 +46,7 @@ public class ConverterThrowTests
         var converter = this.generator.GetConverter<T>();
         Assert.Equal(ConverterTypeName, converter.GetType().Name);
         var origin = converter.Encode(data);
-        var buffer = origin[0..length];
+        var buffer = origin.AsSpan(0, length).ToArray();
         var error = Assert.Throws<ArgumentException>(() =>
         {
             var span = new ReadOnlySpan<byte>(buffer);

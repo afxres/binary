@@ -114,7 +114,7 @@ public class AdapterTests
     [MemberData(nameof(StringData))]
     public void ArrayAdapterTest<E>(E[] array, int start, int count)
     {
-        TestAllMethod<E[], E>(array.AsSpan().Slice(start, count).ToArray(), count, x => x);
+        TestAllMethod<E[], E>(array.AsSpan(start, count).ToArray(), count, x => x);
     }
 
     [Theory(DisplayName = "Array Adapter Null Or Empty Test")]

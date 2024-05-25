@@ -43,9 +43,10 @@ public class CollectionTests
         var source = Enumerable.Repeat(data, 16).ToArray();
         for (var i = 0; i < source.Length; i++)
         {
-            var values = source[0..i];
+            var values = source.AsSpan(0, i).ToArray();
             var buffer = converter.Encode(values);
             var result = converter.Decode(buffer);
+            Assert.Equal(i, result.Length);
             Assert.Equal(values, result);
         }
     }
@@ -73,9 +74,10 @@ public class CollectionTests
         var source = Enumerable.Repeat(data, 16).ToArray();
         for (var i = 0; i < source.Length; i++)
         {
-            var values = source[0..i];
+            var values = source.AsSpan(0, i).ToArray();
             var buffer = converter.Encode(values);
             var result = converter.Decode(buffer);
+            Assert.Equal(i, result.Length);
             Assert.Equal(values, result);
         }
     }
