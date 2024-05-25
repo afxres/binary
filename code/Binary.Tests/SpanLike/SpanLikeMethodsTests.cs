@@ -13,9 +13,9 @@ public class SpanLikeMethodsTests
 
     private const int NewLength = 64;
 
-    private delegate List<E> GetListRecursively<E>(Converter<E> converter, ref ReadOnlySpan<byte> span, int cursor);
+    private delegate List<E> GetPartialList<E>(Converter<E> converter, ref ReadOnlySpan<byte> span);
 
-    private delegate E[] GetArrayRecursively<E>(Converter<E> converter, ref ReadOnlySpan<byte> span, int cursor);
+    private delegate E[] GetPartialArray<E>(Converter<E> converter, ref ReadOnlySpan<byte> span);
 
     private delegate List<E> GetList<E>(Converter<E> converter, ReadOnlySpan<byte> span);
 
@@ -52,20 +52,20 @@ public class SpanLikeMethodsTests
     public void GetListTest<E>(IReadOnlyCollection<E> source, int countExpected, int capacityExpected)
     {
         var getList = GetMethod<GetList<E>>();
-        var getListRecursively = GetMethod<GetListRecursively<E>>();
+        var getPartialList = GetMethod<GetPartialList<E>>();
 
         var generator = Generator.CreateDefault();
         var buffer = generator.Encode(source);
         var converter = generator.GetConverter<E>();
         var result = getList.Invoke(converter, buffer);
         var span = new ReadOnlySpan<byte>(buffer);
-        var resultRecursively = getListRecursively.Invoke(converter, ref span, 0);
+        var resultPartial = getPartialList.Invoke(converter, ref span);
 
         Assert.Equal(source.Count, result.Count);
         Assert.Equal(source, result);
-        Assert.Equal(countExpected, resultRecursively.Count);
-        Assert.Equal(source.Take(countExpected), resultRecursively);
-        Assert.Equal(capacityExpected, resultRecursively.Capacity);
+        Assert.Equal(countExpected, resultPartial.Count);
+        Assert.Equal(source.Take(countExpected), resultPartial);
+        Assert.Equal(capacityExpected, resultPartial.Capacity);
     }
 
     [Theory(DisplayName = "Get Array Test")]
@@ -73,19 +73,19 @@ public class SpanLikeMethodsTests
     public void GetArrayTest<E>(IReadOnlyCollection<E> source, int countExpected, int capacityExpected)
     {
         var getArray = GetMethod<GetArray<E>>();
-        var getArrayRecursively = GetMethod<GetArrayRecursively<E>>();
+        var getArrayPartial = GetMethod<GetPartialArray<E>>();
 
         var generator = Generator.CreateDefault();
         var buffer = generator.Encode(source);
         var converter = generator.GetConverter<E>();
         var result = getArray.Invoke(converter, buffer, out var resultActual);
         var span = new ReadOnlySpan<byte>(buffer);
-        var resultRecursively = getArrayRecursively.Invoke(converter, ref span, 0);
+        var resultPartial = getArrayPartial.Invoke(converter, ref span);
 
         Assert.Equal(source.Count, resultActual);
         Assert.Equal(source, result.Take(resultActual));
-        Assert.Equal(countExpected, Math.Min(resultRecursively.Length, MaxLevels));
-        Assert.Equal(source.Take(countExpected), resultRecursively.Take(countExpected));
-        Assert.Equal(capacityExpected, resultRecursively.Length);
+        Assert.Equal(countExpected, Math.Min(resultPartial.Length, MaxLevels));
+        Assert.Equal(source.Take(countExpected), resultPartial.Take(countExpected));
+        Assert.Equal(capacityExpected, resultPartial.Length);
     }
 }
