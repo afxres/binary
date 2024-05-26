@@ -64,7 +64,6 @@ public class ConverterStreamTests
         var parameters = method.GetParameters();
         Assert.Equal("number", error.ParamName);
         Assert.Equal("number", parameters[1].Name);
-        Assert.StartsWith("Argument number must be greater than or equal to zero!", error.Message);
     }
 
     [Theory(DisplayName = "Encode Invalid Number Async")]
@@ -80,7 +79,6 @@ public class ConverterStreamTests
         var parameters = method.GetParameters();
         Assert.Equal("number", error.ParamName);
         Assert.Equal("number", parameters[1].Name);
-        Assert.StartsWith("Argument number must be greater than or equal to zero!", error.Message);
     }
 
     private class TestStream : Stream

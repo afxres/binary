@@ -35,8 +35,7 @@ public ref partial struct Allocator
     public static void Append<T>(ref Allocator allocator, int maxLength, T data, AllocatorWriter<T> writer)
     {
         ArgumentNullException.ThrowIfNull(writer);
-        if (maxLength < 0)
-            ThrowHelper.ThrowMaxLengthNegative();
+        ArgumentOutOfRangeException.ThrowIfNegative(maxLength);
         if (maxLength is 0)
             return;
         ref var target = ref Create(ref allocator, maxLength);
@@ -51,8 +50,7 @@ public ref partial struct Allocator
     public static void AppendWithLengthPrefix<T>(ref Allocator allocator, int maxLength, T data, AllocatorWriter<T> writer)
     {
         ArgumentNullException.ThrowIfNull(writer);
-        if (maxLength < 0)
-            ThrowHelper.ThrowMaxLengthNegative();
+        ArgumentOutOfRangeException.ThrowIfNegative(maxLength);
         var numberLength = NumberModule.EncodeLength((uint)maxLength);
         ref var target = ref Create(ref allocator, maxLength + numberLength);
         var actual = maxLength is 0 ? 0 : writer.Invoke(MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, numberLength), maxLength), data);

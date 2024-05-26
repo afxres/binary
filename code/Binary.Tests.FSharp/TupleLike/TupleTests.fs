@@ -33,11 +33,11 @@ let TestNull<'T> () =
     let value = Unchecked.defaultof<'T>
     let converter = generator.GetConverter<'T> ()
     let message = sprintf "Tuple can not be null, type: %O" typeof<'T>
-    let alpha = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = Allocator() in converter.Encode(&allocator, value))
-    Assert.Equal("item", alpha.ParamName)
+    let alpha = Assert.Throws<ArgumentException>(fun () -> let mutable allocator = Allocator() in converter.Encode(&allocator, value))
+    Assert.Null(alpha.ParamName)
     Assert.StartsWith(message, alpha.Message)
-    let bravo = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = Allocator() in converter.EncodeAuto(&allocator, value))
-    Assert.Equal("item", bravo.ParamName)
+    let bravo = Assert.Throws<ArgumentException>(fun () -> let mutable allocator = Allocator() in converter.EncodeAuto(&allocator, value))
+    Assert.Null(bravo.ParamName)
     Assert.StartsWith(message, bravo.Message)
     ()
 

@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary;
 
 using Mikodev.Binary.Internal;
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -9,8 +10,7 @@ public ref partial struct Allocator
 {
     private static void Resize(ref Allocator allocator, int length)
     {
-        if (length <= 0)
-            ThrowHelper.ThrowLengthNegative();
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(length);
         var offset = allocator.offset;
         Debug.Assert(offset >= 0);
         var limits = allocator.MaxCapacity;

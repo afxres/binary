@@ -28,8 +28,7 @@ public static partial class Converter
 
     public static void Encode(scoped Span<byte> span, int number, out int bytesWritten)
     {
-        if (number < 0)
-            ThrowHelper.ThrowNumberNegative();
+        ArgumentOutOfRangeException.ThrowIfNegative(number);
         var numberLength = NumberModule.EncodeLength((uint)number);
         if (span.Length < numberLength)
             ThrowHelper.ThrowNotEnoughBytesToWrite();
@@ -49,8 +48,7 @@ public static partial class Converter
 
     public static void Encode(ref Allocator allocator, int number)
     {
-        if (number < 0)
-            ThrowHelper.ThrowNumberNegative();
+        ArgumentOutOfRangeException.ThrowIfNegative(number);
         var numberLength = NumberModule.EncodeLength((uint)number);
         NumberModule.Encode(ref Allocator.Assign(ref allocator, numberLength), (uint)number, numberLength);
     }

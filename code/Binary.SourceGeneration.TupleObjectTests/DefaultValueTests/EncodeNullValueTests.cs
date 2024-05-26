@@ -3,7 +3,6 @@
 using Mikodev.Binary.Attributes;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 [SourceGeneratorContext]
@@ -43,29 +42,22 @@ public class EncodeNullValueTests
         var bufferSecond = converterSecond.Encode(source);
         Assert.Equal(buffer, bufferSecond);
 
-        var a = Assert.Throws<ArgumentNullException>(() => converter.Encode(null));
-        var b = Assert.Throws<ArgumentNullException>(() => converterSecond.Encode(null));
-        var c = Assert.Throws<ArgumentNullException>(() =>
+        var a = Assert.Throws<ArgumentException>(() => converter.Encode(null));
+        var b = Assert.Throws<ArgumentException>(() => converterSecond.Encode(null));
+        var c = Assert.Throws<ArgumentException>(() =>
         {
             var allocator = new Allocator();
             converter.EncodeAuto(ref allocator, null);
         });
-        var d = Assert.Throws<ArgumentNullException>(() =>
+        var d = Assert.Throws<ArgumentException>(() =>
         {
             var allocator = new Allocator();
             converterSecond.EncodeAuto(ref allocator, null);
         });
 
-        var h = Converter.GetMethod(converter, "Encode");
-        var i = Converter.GetMethod(converterSecond, "Encode");
-        var j = Converter.GetMethod(converter, "EncodeAuto");
-        var k = Converter.GetMethod(converterSecond, "EncodeAuto");
         var message = $"Tuple can not be null, type: {typeof(T)}";
         var exceptions = new[] { a, b, c, d };
-        var parameters = new[] { h, i, j, k }.Select(x => x.GetParameters()[1]);
-
-        Assert.All(parameters, x => Assert.Equal("item", x.Name));
-        Assert.All(exceptions, x => Assert.Equal("item", x.ParamName));
+        Assert.All(exceptions, x => Assert.Null(x.ParamName));
         Assert.All(exceptions, x => Assert.StartsWith(message, x.Message));
     }
 }

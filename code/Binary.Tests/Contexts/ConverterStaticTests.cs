@@ -32,7 +32,6 @@ public class ConverterStaticTests
         var parameters = method.GetParameters();
         Assert.Equal("number", error.ParamName);
         Assert.Equal("number", parameters[1].Name);
-        Assert.StartsWith("Argument number must be greater than or equal to zero!", error.Message);
     }
 
     private delegate void Write(Span<byte> span, int number, out int written);
@@ -47,7 +46,6 @@ public class ConverterStaticTests
         var parameters = method.GetParameters();
         Assert.Equal("number", error.ParamName);
         Assert.Equal("number", parameters[1].Name);
-        Assert.StartsWith("Argument number must be greater than or equal to zero!", error.Message);
     }
 
     [Theory(DisplayName = "Encode Decode Integration Test")]

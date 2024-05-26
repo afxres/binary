@@ -112,7 +112,7 @@ let ``Get Converter (non-generic collection)`` () =
 [<Fact>]
 let ``Encode (obj, instance)`` () =
     let source = obj()
-    let error = Assert.Throws<NotSupportedException>(fun () -> generator.Encode source |> ignore)
+    let error = Assert.Throws<ArgumentException>(fun () -> generator.Encode source |> ignore)
     Assert.Equal("Can not encode object, type: System.Object", error.Message)
     ()
 

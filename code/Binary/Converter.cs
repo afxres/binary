@@ -18,8 +18,7 @@ public abstract partial class Converter<T>
 
     protected Converter(int length)
     {
-        if (length < 0)
-            ThrowHelper.ThrowLengthNegative();
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
         var parent = typeof(Converter<T>);
         if (new DecodeDelegate<T>(DecodeAuto).Method.DeclaringType == parent && new DecodeDelegate<T>(DecodeWithLengthPrefix).Method.DeclaringType != parent)
             ThrowHelper.ThrowNotOverride(nameof(DecodeAuto), nameof(DecodeWithLengthPrefix), GetType());

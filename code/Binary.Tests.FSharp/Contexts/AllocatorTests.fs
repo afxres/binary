@@ -27,8 +27,6 @@ let ``Constructor (argument out of range)`` (limits : int) =
     Assert.Equal("maxCapacity", parameterName)
     Assert.Equal("maxCapacity", a.ParamName)
     Assert.Equal("maxCapacity", b.ParamName)
-    Assert.StartsWith("Argument max capacity must be greater than or equal to zero!", a.Message)
-    Assert.StartsWith("Argument max capacity must be greater than or equal to zero!", b.Message)
     ()
 
 [<Fact>]

@@ -37,10 +37,10 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     {
         if (Symbol.IsValueType)
             return;
-        Output.AppendIndent(2, $"[System.Diagnostics.CodeAnalysis.DoesNotReturn]");
+        Output.AppendIndent(2, $"[System.Diagnostics.DebuggerStepThrough, System.Diagnostics.CodeAnalysis.DoesNotReturn]");
         Output.AppendIndent(2, $"private static void Except()");
         Output.AppendIndent(2, $"{{");
-        Output.AppendIndent(3, $"throw new System.ArgumentNullException(\"item\", $\"Tuple can not be null, type: {{typeof({SymbolTypeFullName})}}\");");
+        Output.AppendIndent(3, $"throw new System.ArgumentException($\"Tuple can not be null, type: {{typeof({SymbolTypeFullName})}}\");");
         Output.AppendIndent(2, $"}}");
         Output.AppendIndent();
         CancellationToken.ThrowIfCancellationRequested();

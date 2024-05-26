@@ -39,8 +39,7 @@ public ref partial struct Allocator
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Allocator(Span<byte> span, int maxCapacity)
     {
-        if (maxCapacity < 0)
-            ThrowHelper.ThrowMaxCapacityNegative();
+        ArgumentOutOfRangeException.ThrowIfNegative(maxCapacity);
         this.underlying = null;
         this.target = ref MemoryMarshal.GetReference(span);
         this.bounds = Math.Min(span.Length, maxCapacity);
@@ -63,8 +62,7 @@ public ref partial struct Allocator
     public Allocator(IAllocator underlyingAllocator, int maxCapacity)
     {
         ArgumentNullException.ThrowIfNull(underlyingAllocator);
-        if (maxCapacity < 0)
-            ThrowHelper.ThrowMaxCapacityNegative();
+        ArgumentOutOfRangeException.ThrowIfNegative(maxCapacity);
         this.underlying = underlyingAllocator;
         this.target = ref Unsafe.NullRef<byte>();
         this.bounds = 0;

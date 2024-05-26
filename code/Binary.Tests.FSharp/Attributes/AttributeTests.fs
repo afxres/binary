@@ -820,12 +820,12 @@ type AttributeTests() =
     [<InlineData(typeof<ClassAsTupleObjectWithPartiallyKey>)>]
     member __.``Tuple Object Null`` (t : Type) =
         let converter = generator.GetConverter t |> box :?> IConverter
-        let alpha = Assert.Throws<ArgumentNullException>(fun () -> let mutable allocator = Allocator() in converter.Encode(&allocator, null))
-        let bravo = Assert.Throws<ArgumentNullException>(fun () -> converter.Encode null |> ignore)
+        let alpha = Assert.Throws<ArgumentException>(fun () -> let mutable allocator = Allocator() in converter.Encode(&allocator, null))
+        let bravo = Assert.Throws<ArgumentException>(fun () -> converter.Encode null |> ignore)
         let message = sprintf "Tuple can not be null, type: %O" t
-        Assert.Equal("item", alpha.ParamName)
+        Assert.Null(alpha.ParamName)
         Assert.StartsWith(message, alpha.Message)
-        Assert.Equal("item", bravo.ParamName)
+        Assert.Null(bravo.ParamName)
         Assert.StartsWith(message, bravo.Message)
         ()
 

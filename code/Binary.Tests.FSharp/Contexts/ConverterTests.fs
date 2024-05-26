@@ -175,7 +175,6 @@ type ConverterTests() =
         let error = Assert.Throws<ArgumentOutOfRangeException>(fun () -> CustomConverter<obj>(length) |> ignore)
         Assert.Equal("length", parameter.Name)
         Assert.Equal("length", error.ParamName)
-        Assert.StartsWith("Argument length must be greater than or equal to zero!", error.Message)
         ()
 
     [<Theory>]

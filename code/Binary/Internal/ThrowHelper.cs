@@ -11,25 +11,13 @@ internal static class ThrowHelper
     internal static void ThrowAllocatorInvalid() => throw new InvalidOperationException("Allocator has been modified unexpectedly!");
 
     [DoesNotReturn]
-    internal static void ThrowLengthNegative() => throw new ArgumentOutOfRangeException("length", "Argument length must be greater than or equal to zero!");
-
-    [DoesNotReturn]
-    internal static void ThrowNumberNegative() => throw new ArgumentOutOfRangeException("number", "Argument number must be greater than or equal to zero!");
-
-    [DoesNotReturn]
-    internal static void ThrowMaxLengthNegative() => throw new ArgumentOutOfRangeException("maxLength", "Argument max length must be greater than or equal to zero!");
-
-    [DoesNotReturn]
-    internal static void ThrowMaxCapacityNegative() => throw new ArgumentOutOfRangeException("maxCapacity", "Argument max capacity must be greater than or equal to zero!");
-
-    [DoesNotReturn]
     internal static void ThrowMaxCapacityOverflow() => throw new ArgumentException("Maximum capacity has been reached.");
 
     [DoesNotReturn]
     internal static void ThrowInvalidReturnValue() => throw new InvalidOperationException("Invalid return value.");
 
     [DoesNotReturn]
-    internal static void ThrowTupleNull<T>() => throw new ArgumentNullException("item", $"Tuple can not be null, type: {typeof(T)}");
+    internal static void ThrowTupleNull<T>() => throw new ArgumentException($"Tuple can not be null, type: {typeof(T)}");
 
     [DoesNotReturn]
     internal static void ThrowNotEnoughBytesCollection<T>(int byteLength) => throw new ArgumentException($"Not enough bytes for collection element, byte length: {byteLength}, element type: {typeof(T)}");

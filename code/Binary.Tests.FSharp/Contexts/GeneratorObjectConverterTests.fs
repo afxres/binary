@@ -102,7 +102,7 @@ type GeneratorObjectConverterTests() =
     [<Theory>]
     [<MemberData("Encode Arguments")>]
     member __.``Encode Object Instance`` (action : Action<obj>, _ : string) =
-        let error = Assert.Throws<NotSupportedException>(fun () -> action.Invoke(obj()))
+        let error = Assert.Throws<ArgumentException>(fun () -> action.Invoke(obj()))
         let message = "Can not encode object, type: System.Object"
         Assert.Equal(message, error.Message)
         ()
