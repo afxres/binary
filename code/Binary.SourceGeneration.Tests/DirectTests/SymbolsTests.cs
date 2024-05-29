@@ -48,10 +48,10 @@ public class SymbolsTests
                 public int[][] Entry;
             }
             """;
-        yield return new object[] { a, "Array", "global::System.Int32[,]", "Array2D_l_System_Int32_r" };
-        yield return new object[] { b, "Value", "global::System.String[]", "Array_l_System_String_r" };
-        yield return new object[] { c, "Items", "global::System.Double[,,,]", "Array4D_l_System_Double_r" };
-        yield return new object[] { d, "Entry", "global::System.Int32[][]", "Array_l_Array_l_System_Int32_r_r" };
+        yield return new object[] { a, "Array", "global::System.Int32[,]", "a_2_p_g_System_0_Int32_q" };
+        yield return new object[] { b, "Value", "global::System.String[]", "a_1_p_g_System_0_String_q" };
+        yield return new object[] { c, "Items", "global::System.Double[,,,]", "a_4_p_g_System_0_Double_q" };
+        yield return new object[] { d, "Entry", "global::System.Int32[][]", "a_1_p_a_1_p_g_System_0_Int32_q_q" };
     }
 
     public static IEnumerable<object[]> GlobalNamespaceTypeData()
@@ -74,8 +74,8 @@ public class SymbolsTests
                 public B<int> Data;
             }
             """;
-        yield return new object[] { a, "Item", "global::A", "g_A" };
-        yield return new object[] { b, "Data", "global::B<global::System.Int32>", "g_B_l_System_Int32_r" };
+        yield return new object[] { a, "Item", "global::A", "g_0_A" };
+        yield return new object[] { b, "Data", "global::B<global::System.Int32>", "g_1_B_b_g_System_0_Int32_d" };
     }
 
     public static IEnumerable<object[]> NestedTypeData()
@@ -112,8 +112,8 @@ public class SymbolsTests
                 public B<int>.X.Y<string> Data;
             }
             """;
-        yield return new object[] { a, "Item", "global::One.Two.A.X.Y", "One_Two_A_X_Y" };
-        yield return new object[] { b, "Data", "global::B<global::System.Int32>.X.Y<global::System.String>", "g_B_l_System_Int32_r_X_Y_l_System_String_r" };
+        yield return new object[] { a, "Item", "global::One.Two.A.X.Y", "g_One_Two_0_A_0_X_0_Y" };
+        yield return new object[] { b, "Data", "global::B<global::System.Int32>.X.Y<global::System.String>", "g_1_B_b_g_System_0_Int32_d_0_X_1_Y_b_g_System_0_String_d" };
     }
 
     public static IEnumerable<object[]> SpecialNameData()
@@ -134,8 +134,29 @@ public class SymbolsTests
                 public @public.@class Bravo;
             }
             """;
-        yield return new object[] { a, "Alpha", "global::@class.@yield.@namespace.@async.@await.@public", "class_yield_namespace_async_await_public" };
-        yield return new object[] { a, "Bravo", "global::@class.@yield.@namespace.@async.@await.@public.@class", "class_yield_namespace_async_await_public_class" };
+        yield return new object[] { a, "Alpha", "global::@class.@yield.@namespace.@async.@await.@public", "g_class_yield_namespace_async_await_0_public" };
+        yield return new object[] { a, "Bravo", "global::@class.@yield.@namespace.@async.@await.@public.@class", "g_class_yield_namespace_async_await_0_public_0_class" };
+    }
+
+    public static IEnumerable<object[]> NestedMultipleTypeArgumentsGenericTypeData()
+    {
+        var source =
+            """
+            namespace Alpha.Bravo;
+
+            class Generic<T, U>
+            {
+                public class NestedGeneric<X, Y, Z> { }
+            }
+
+            class Alpha
+            {
+                public Generic<int, string>.NestedGeneric<int, string, double> Intent;
+            }
+            """;
+        var symbolFullName = "global::Alpha.Bravo.Generic<global::System.Int32, global::System.String>.NestedGeneric<global::System.Int32, global::System.String, global::System.Double>";
+        var outputFullName = "g_Alpha_Bravo_2_Generic_b_g_System_0_Int32_g_System_0_String_d_3_NestedGeneric_b_g_System_0_Int32_g_System_0_String_g_System_0_Double_d";
+        yield return new object[] { source, "Intent", symbolFullName, outputFullName };
     }
 
     [Theory(DisplayName = "Get Full Name Test")]
@@ -143,6 +164,7 @@ public class SymbolsTests
     [MemberData(nameof(GlobalNamespaceTypeData))]
     [MemberData(nameof(NestedTypeData))]
     [MemberData(nameof(SpecialNameData))]
+    [MemberData(nameof(NestedMultipleTypeArgumentsGenericTypeData))]
     public void GetFullNameTest(string source, string memberName, string symbolFullName, string outputFullName)
     {
         var compilation = CompilationModule.CreateCompilation(source);

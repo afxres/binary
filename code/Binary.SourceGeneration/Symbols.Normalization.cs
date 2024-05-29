@@ -122,29 +122,21 @@ public static partial class Symbols
 
         static void InvokeNamespaceSymbol(StringBuilder target, INamespaceSymbol @namespace)
         {
-            if (@namespace.IsGlobalNamespace is false)
-            {
-                var source = @namespace.ToDisplayParts();
-                foreach (var i in source)
-                {
-                    if (i.Symbol is { } symbol)
-                        _ = target.Append(symbol.Name);
-                    else
-                        _ = target.Append('_');
-                }
+            _ = target.Append('g');
+            if (@namespace.IsGlobalNamespace)
                 return;
-            }
-            _ = target.Append("g_");
+            foreach (var i in @namespace.ToDisplayParts())
+                if (i.Symbol is { } symbol)
+                    _ = target.AppendFormat("_{0}", symbol.Name);
         }
 
         static void InvokeArrayTypeSymbol(StringBuilder target, IArrayTypeSymbol symbol)
         {
-            _ = target.Append("Array");
-            if (symbol.Rank is not 1)
-                _ = target.Append($"{symbol.Rank}D");
-            _ = target.Append("_l_");
+            _ = target.Append("a_");
+            _ = target.Append(symbol.Rank);
+            _ = target.Append("_p_");
             Invoke(target, symbol.ElementType);
-            _ = target.Append("_r");
+            _ = target.Append("_q");
         }
 
         static void InvokeNamedTypeSymbol(StringBuilder target, INamedTypeSymbol symbol)
@@ -156,22 +148,23 @@ public static partial class Symbols
             else
                 InvokeNamespaceSymbol(target, @namespace);
 
-            if (containing is not null || @namespace.IsGlobalNamespace is false)
-                _ = target.Append('_');
-            _ = target.Append(symbol.Name);
             var arguments = symbol.TypeArguments;
+            _ = target.Append('_');
+            _ = target.Append(arguments.Length);
+            _ = target.Append('_');
+            _ = target.Append(symbol.Name);
             if (arguments.Length is 0)
                 return;
 
-            _ = target.Append("_l_");
+            _ = target.Append("_b_");
             for (var i = 0; i < arguments.Length; i++)
             {
                 Invoke(target, arguments[i]);
                 if (i == arguments.Length - 1)
                     break;
-                _ = target.Append("_c_");
+                _ = target.Append('_');
             }
-            _ = target.Append("_r");
+            _ = target.Append("_d");
         }
 
         var target = new StringBuilder();
