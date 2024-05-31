@@ -42,19 +42,19 @@ public static partial class Symbols
         var diagnostics = new List<Diagnostic>();
         var attributes = new[] { converterAttribute, converterCreatorAttribute, namedObjectAttribute, tupleObjectAttribute }
             .OfType<AttributeData>()
-            .ToImmutableArray();
+            .ToList();
 
         ValidateConverterAttribute(context, converterAttribute, diagnostics);
         ValidateConverterCreatorAttribute(context, converterCreatorAttribute, diagnostics);
         cancellation.ThrowIfCancellationRequested();
 
-        if (attributes.Length > 1)
-            diagnostics.Add(Constants.MultipleAttributesFoundOnType.With(symbol, [symbolDisplay]));
-        else
+        if (attributes.Count is 0 or 1)
             ValidateType(context, symbol, symbolDisplay, attributes.SingleOrDefault(), diagnostics);
+        else
+            diagnostics.Add(Constants.MultipleAttributesFoundOnType.With(symbol, [symbolDisplay]));
 
         if (diagnostics.Count is 0)
-            return attributes.Length is 0 ? SymbolTypeKind.Native : SymbolTypeKind.Custom;
+            return attributes.Count is 0 ? SymbolTypeKind.Native : SymbolTypeKind.Custom;
         foreach (var diagnostic in diagnostics)
             context.Collect(diagnostic);
         return SymbolTypeKind.Ignore;

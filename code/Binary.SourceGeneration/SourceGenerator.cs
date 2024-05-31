@@ -96,7 +96,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
     private static ImmutableDictionary<ITypeSymbol, AttributeData> GetInclusions(SourceGeneratorContext context, INamedTypeSymbol type, INamedTypeSymbol? include)
     {
-        var builder = ImmutableDictionary.CreateBuilder<ITypeSymbol, AttributeData>(SymbolEqualityComparer.Default);
+        var result = ImmutableDictionary.CreateBuilder<ITypeSymbol, AttributeData>(SymbolEqualityComparer.Default);
         var attributes = type.GetAttributes();
         var cancellation = context.CancellationToken;
         foreach (var attribute in attributes)
@@ -109,11 +109,11 @@ public sealed class SourceGenerator : IIncrementalGenerator
             if (SymbolEqualityComparer.Default.Equals(definitions, include) is false)
                 continue;
             var includedType = attributeClass.TypeArguments.Single();
-            if (Symbols.ValidateIncludeType(context, builder, attribute, includedType) is false)
+            if (Symbols.ValidateIncludeType(context, result, attribute, includedType) is false)
                 continue;
-            builder.Add(includedType, attribute);
+            result.Add(includedType, attribute);
         }
-        return builder.ToImmutable();
+        return result.ToImmutable();
     }
 
     private static string Invoke(SourceGeneratorContext context, ContextInfo info)

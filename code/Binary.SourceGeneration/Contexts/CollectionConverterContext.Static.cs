@@ -48,58 +48,58 @@ public sealed partial class CollectionConverterContext
 
     private static ImmutableDictionary<INamedTypeSymbol, TypeBaseInfo> CreateResourceForSupportedTypes(Compilation compilation)
     {
-        static void Register(Compilation compilation, ImmutableDictionary<INamedTypeSymbol, TypeBaseInfo>.Builder builder, string name, ConstructorArgumentKind source, string method)
+        static void Register(Compilation compilation, ImmutableDictionary<INamedTypeSymbol, TypeBaseInfo>.Builder result, string name, ConstructorArgumentKind source, string method)
         {
             if (compilation.GetTypeByMetadataName(name) is not { } type)
                 return;
-            builder.Add(type.ConstructUnboundGenericType(), new TypeBaseInfo(source, method));
+            result.Add(type.ConstructUnboundGenericType(), new TypeBaseInfo(source, method));
         }
 
-        var builder = ImmutableDictionary.CreateBuilder<INamedTypeSymbol, TypeBaseInfo>(SymbolEqualityComparer.Default);
+        var result = ImmutableDictionary.CreateBuilder<INamedTypeSymbol, TypeBaseInfo>(SymbolEqualityComparer.Default);
 
-        Register(compilation, builder, "System.Collections.Frozen.FrozenSet`1", ConstructorArgumentKind.List, $"System.Collections.Frozen.FrozenSet.ToFrozenSet({ConstructorArgument})");
-        Register(compilation, builder, "System.Collections.Frozen.FrozenDictionary`2", ConstructorArgumentKind.ListKeyValuePair, $"System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary({ConstructorArgument})");
-        Register(compilation, builder, "System.Collections.Generic.IList`1", ConstructorArgumentKind.List, ConstructorArgument);
-        Register(compilation, builder, "System.Collections.Generic.ICollection`1", ConstructorArgumentKind.List, ConstructorArgument);
-        Register(compilation, builder, "System.Collections.Generic.IEnumerable`1", ConstructorArgumentKind.List, ConstructorArgument);
-        Register(compilation, builder, "System.Collections.Generic.IReadOnlyList`1", ConstructorArgumentKind.List, ConstructorArgument);
-        Register(compilation, builder, "System.Collections.Generic.IReadOnlyCollection`1", ConstructorArgumentKind.List, ConstructorArgument);
-        Register(compilation, builder, "System.Collections.Generic.ISet`1", ConstructorArgumentKind.HashSet, ConstructorArgument);
-        Register(compilation, builder, "System.Collections.Generic.IReadOnlySet`1", ConstructorArgumentKind.HashSet, ConstructorArgument);
-        Register(compilation, builder, "System.Collections.Generic.IDictionary`2", ConstructorArgumentKind.Dictionary, ConstructorArgument);
-        Register(compilation, builder, "System.Collections.Generic.IReadOnlyDictionary`2", ConstructorArgumentKind.Dictionary, ConstructorArgument);
-        Register(compilation, builder, "System.Collections.Immutable.IImmutableDictionary`2", ConstructorArgumentKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorArgument})");
-        Register(compilation, builder, "System.Collections.Immutable.IImmutableList`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableList.CreateRange({ConstructorArgument})");
-        Register(compilation, builder, "System.Collections.Immutable.IImmutableQueue`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableQueue.CreateRange({ConstructorArgument})");
-        Register(compilation, builder, "System.Collections.Immutable.IImmutableSet`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableHashSet.CreateRange({ConstructorArgument})");
-        Register(compilation, builder, "System.Collections.Immutable.ImmutableDictionary`2", ConstructorArgumentKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorArgument})");
-        Register(compilation, builder, "System.Collections.Immutable.ImmutableHashSet`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableHashSet.CreateRange({ConstructorArgument})");
-        Register(compilation, builder, "System.Collections.Immutable.ImmutableList`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableList.CreateRange({ConstructorArgument})");
-        Register(compilation, builder, "System.Collections.Immutable.ImmutableQueue`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableQueue.CreateRange({ConstructorArgument})");
-        Register(compilation, builder, "System.Collections.Immutable.ImmutableSortedDictionary`2", ConstructorArgumentKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableSortedDictionary.CreateRange({ConstructorArgument})");
-        Register(compilation, builder, "System.Collections.Immutable.ImmutableSortedSet`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableSortedSet.CreateRange({ConstructorArgument})");
+        Register(compilation, result, "System.Collections.Frozen.FrozenSet`1", ConstructorArgumentKind.List, $"System.Collections.Frozen.FrozenSet.ToFrozenSet({ConstructorArgument})");
+        Register(compilation, result, "System.Collections.Frozen.FrozenDictionary`2", ConstructorArgumentKind.ListKeyValuePair, $"System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary({ConstructorArgument})");
+        Register(compilation, result, "System.Collections.Generic.IList`1", ConstructorArgumentKind.List, ConstructorArgument);
+        Register(compilation, result, "System.Collections.Generic.ICollection`1", ConstructorArgumentKind.List, ConstructorArgument);
+        Register(compilation, result, "System.Collections.Generic.IEnumerable`1", ConstructorArgumentKind.List, ConstructorArgument);
+        Register(compilation, result, "System.Collections.Generic.IReadOnlyList`1", ConstructorArgumentKind.List, ConstructorArgument);
+        Register(compilation, result, "System.Collections.Generic.IReadOnlyCollection`1", ConstructorArgumentKind.List, ConstructorArgument);
+        Register(compilation, result, "System.Collections.Generic.ISet`1", ConstructorArgumentKind.HashSet, ConstructorArgument);
+        Register(compilation, result, "System.Collections.Generic.IReadOnlySet`1", ConstructorArgumentKind.HashSet, ConstructorArgument);
+        Register(compilation, result, "System.Collections.Generic.IDictionary`2", ConstructorArgumentKind.Dictionary, ConstructorArgument);
+        Register(compilation, result, "System.Collections.Generic.IReadOnlyDictionary`2", ConstructorArgumentKind.Dictionary, ConstructorArgument);
+        Register(compilation, result, "System.Collections.Immutable.IImmutableDictionary`2", ConstructorArgumentKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorArgument})");
+        Register(compilation, result, "System.Collections.Immutable.IImmutableList`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableList.CreateRange({ConstructorArgument})");
+        Register(compilation, result, "System.Collections.Immutable.IImmutableQueue`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableQueue.CreateRange({ConstructorArgument})");
+        Register(compilation, result, "System.Collections.Immutable.IImmutableSet`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableHashSet.CreateRange({ConstructorArgument})");
+        Register(compilation, result, "System.Collections.Immutable.ImmutableDictionary`2", ConstructorArgumentKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorArgument})");
+        Register(compilation, result, "System.Collections.Immutable.ImmutableHashSet`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableHashSet.CreateRange({ConstructorArgument})");
+        Register(compilation, result, "System.Collections.Immutable.ImmutableList`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableList.CreateRange({ConstructorArgument})");
+        Register(compilation, result, "System.Collections.Immutable.ImmutableQueue`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableQueue.CreateRange({ConstructorArgument})");
+        Register(compilation, result, "System.Collections.Immutable.ImmutableSortedDictionary`2", ConstructorArgumentKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableSortedDictionary.CreateRange({ConstructorArgument})");
+        Register(compilation, result, "System.Collections.Immutable.ImmutableSortedSet`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableSortedSet.CreateRange({ConstructorArgument})");
 
-        return builder.ToImmutable();
+        return result.ToImmutable();
     }
 
     private static ImmutableHashSet<INamedTypeSymbol> CreateResourceForUnsupportedTypes(Compilation compilation)
     {
-        static void Register(Compilation compilation, ImmutableHashSet<INamedTypeSymbol>.Builder builder, string name)
+        static void Register(Compilation compilation, ImmutableHashSet<INamedTypeSymbol>.Builder result, string name)
         {
             if (compilation.GetTypeByMetadataName(name) is not { } type)
                 return;
-            _ = builder.Add(type.IsGenericType ? type.ConstructUnboundGenericType() : type);
+            _ = result.Add(type.IsGenericType ? type.ConstructUnboundGenericType() : type);
         }
 
-        var builder = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+        var result = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>(SymbolEqualityComparer.Default);
 
-        Register(compilation, builder, "System.String");
-        Register(compilation, builder, "System.Collections.Generic.Stack`1");
-        Register(compilation, builder, "System.Collections.Concurrent.ConcurrentStack`1");
-        Register(compilation, builder, "System.Collections.Immutable.ImmutableStack`1");
-        Register(compilation, builder, "System.Collections.Immutable.IImmutableStack`1");
+        Register(compilation, result, "System.String");
+        Register(compilation, result, "System.Collections.Generic.Stack`1");
+        Register(compilation, result, "System.Collections.Concurrent.ConcurrentStack`1");
+        Register(compilation, result, "System.Collections.Immutable.ImmutableStack`1");
+        Register(compilation, result, "System.Collections.Immutable.IImmutableStack`1");
 
-        return builder.ToImmutable();
+        return result.ToImmutable();
     }
 
     private static Resource CreateResource(Compilation compilation)

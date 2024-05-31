@@ -23,29 +23,29 @@ public sealed partial class GenericConverterContext
 
     private static ImmutableHashSet<INamedTypeSymbol> CreateResource(Compilation compilation)
     {
-        static void Register(Compilation compilation, ImmutableHashSet<INamedTypeSymbol>.Builder builder, string name)
+        static void Register(Compilation compilation, ImmutableHashSet<INamedTypeSymbol>.Builder result, string name)
         {
             if (compilation.GetTypeByMetadataName(name)?.ConstructUnboundGenericType() is not { } type)
                 return;
-            _ = builder.Add(type);
+            _ = result.Add(type);
         }
 
-        var builder = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+        var result = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>(SymbolEqualityComparer.Default);
 
-        Register(compilation, builder, "System.ArraySegment`1");
-        Register(compilation, builder, "System.Memory`1");
-        Register(compilation, builder, "System.Nullable`1");
-        Register(compilation, builder, "System.ReadOnlyMemory`1");
-        Register(compilation, builder, "System.Buffers.ReadOnlySequence`1");
-        Register(compilation, builder, "System.Collections.Generic.List`1");
-        Register(compilation, builder, "System.Collections.Generic.Dictionary`2");
-        Register(compilation, builder, "System.Collections.Generic.HashSet`1");
-        Register(compilation, builder, "System.Collections.Generic.KeyValuePair`2");
-        Register(compilation, builder, "System.Collections.Generic.LinkedList`1");
-        Register(compilation, builder, "System.Collections.Generic.PriorityQueue`2");
-        Register(compilation, builder, "System.Collections.Immutable.ImmutableArray`1");
+        Register(compilation, result, "System.ArraySegment`1");
+        Register(compilation, result, "System.Memory`1");
+        Register(compilation, result, "System.Nullable`1");
+        Register(compilation, result, "System.ReadOnlyMemory`1");
+        Register(compilation, result, "System.Buffers.ReadOnlySequence`1");
+        Register(compilation, result, "System.Collections.Generic.List`1");
+        Register(compilation, result, "System.Collections.Generic.Dictionary`2");
+        Register(compilation, result, "System.Collections.Generic.HashSet`1");
+        Register(compilation, result, "System.Collections.Generic.KeyValuePair`2");
+        Register(compilation, result, "System.Collections.Generic.LinkedList`1");
+        Register(compilation, result, "System.Collections.Generic.PriorityQueue`2");
+        Register(compilation, result, "System.Collections.Immutable.ImmutableArray`1");
 
-        return builder.ToImmutable();
+        return result.ToImmutable();
     }
 
     private static TypeInfo? GetInfo(SourceGeneratorContext context, ITypeSymbol type)

@@ -187,7 +187,7 @@ public static partial class Symbols
 
     public static ImmutableArray<ISymbol> FilterFieldsAndProperties(ImmutableArray<ISymbol> members, CancellationToken cancellation)
     {
-        var builder = ImmutableArray.CreateBuilder<ISymbol>();
+        var result = ImmutableArray.CreateBuilder<ISymbol>();
         foreach (var member in members)
         {
             cancellation.ThrowIfCancellationRequested();
@@ -204,9 +204,9 @@ public static partial class Symbols
                 continue;
             if (IsTypeInvalid(memberType))
                 continue;
-            builder.Add(member);
+            result.Add(member);
         }
-        return builder.ToImmutable();
+        return result.ToImmutable();
     }
 
     public static int CompareInheritance(Compilation compilation, ITypeSymbol x, ITypeSymbol y)
