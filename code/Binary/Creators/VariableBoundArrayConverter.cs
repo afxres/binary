@@ -38,7 +38,7 @@ internal sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T 
             Converter.Encode(ref allocator, lengthList[i] = origin.GetLength(i));
         for (var i = 0; i < rank; i++)
             Converter.Encode(ref allocator, startsList[i] = origin.GetLowerBound(i));
-        var source = MemoryMarshal.CreateSpan(ref Unsafe.As<byte, E>(ref MemoryMarshal.GetArrayDataReference(origin)), origin.Length);
+        var source = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<byte, E>(ref MemoryMarshal.GetArrayDataReference(origin)), origin.Length);
         var converter = this.converter;
         foreach (var i in source)
             converter.EncodeAuto(ref allocator, i);

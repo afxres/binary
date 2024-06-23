@@ -29,7 +29,7 @@ internal sealed class RepeatLittleEndianConverter<T, E> : ConstantConverter<T, R
             Debug.Assert(Unsafe.SizeOf<T>() > Unsafe.SizeOf<E>());
             Debug.Assert(Unsafe.SizeOf<T>() % Unsafe.SizeOf<E>() is 0);
             var length = Unsafe.SizeOf<T>() / Unsafe.SizeOf<E>();
-            var source = MemoryMarshal.CreateSpan(ref Unsafe.As<T, E>(ref item), length);
+            var source = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, E>(ref item), length);
             for (var i = 0; i < source.Length; i++)
                 LittleEndianFallback.Encode(ref Unsafe.Add(ref target, i * Unsafe.SizeOf<E>()), source[i]);
             return;

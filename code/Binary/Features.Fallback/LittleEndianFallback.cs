@@ -38,7 +38,7 @@ internal static class LittleEndianFallback
     internal static T Decode<T>(ref byte source) where T : unmanaged
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static T MakeCast<E>(E data) => Unsafe.As<E, T>(ref data);
+        static T MakeCast<E>(E data) => Unsafe.ReadUnaligned<T>(ref Unsafe.As<E, byte>(ref data));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static ReadOnlySpan<byte> MakeSpan(ref byte location) => MemoryMarshal.CreateReadOnlySpan(ref location, Unsafe.SizeOf<T>());
@@ -58,7 +58,7 @@ internal static class LittleEndianFallback
     internal static void Encode<T>(ref byte target, T item) where T : unmanaged
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static E MakeCast<E>(T data) => Unsafe.As<T, E>(ref data);
+        static E MakeCast<E>(T data) => Unsafe.ReadUnaligned<E>(ref Unsafe.As<T, byte>(ref data));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static Span<byte> MakeSpan(ref byte location) => MemoryMarshal.CreateSpan(ref location, Unsafe.SizeOf<T>());
