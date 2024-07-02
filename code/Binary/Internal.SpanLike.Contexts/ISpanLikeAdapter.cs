@@ -2,11 +2,9 @@
 
 using System;
 
-internal interface ISpanLikeAdapter<in T, E>
+internal interface ISpanLikeAdapter<T, E>
 {
     static abstract ReadOnlySpan<E> AsSpan(T? item);
 
-    static abstract int Length(T? item);
-
-    static abstract void Encode(ref Allocator allocator, T? item, Converter<E> converter);
+    static abstract T Invoke(E[] values, int length);
 }

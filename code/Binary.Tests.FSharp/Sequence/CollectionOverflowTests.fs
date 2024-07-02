@@ -72,13 +72,3 @@ type CollectionOverflowTests () =
         let mutable buffer = Array.zeroCreate<byte> (1 <<< 30)
         Assert.Throws<OverflowException>(fun () -> expand.Invoke(&buffer, 0uy)) |> ignore
         ()
-
-    [<Fact>]
-    member __.``Large Collection Encode With Length Prefix (constant item length, overflow)`` () =
-        let backupConverter = BackupConverter<int>(0x10_0000)
-        let generator = Generator.CreateDefaultBuilder().AddConverter(backupConverter).Build()
-        let backup = { data = 4 }
-        Assert.Throws<OverflowException>(fun () ->
-            let mutable allocator = Allocator()
-            generator.GetConverter<Backup<int> array>().EncodeWithLengthPrefix(&allocator, Array.create 0x1000 backup)) |> ignore
-        ()

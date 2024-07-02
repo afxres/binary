@@ -10,7 +10,7 @@ type ImmutableArrayTests() =
     member private __.TestConverter<'T>() =
         let converter = generator.GetConverter<ImmutableArray<'T>>()
         let t = converter.GetType()
-        Assert.Equal("SpanLikeConverter`1", t.Name)
+        Assert.Matches("ArrayBased.*Converter`3", t.Name)
         converter
 
     [<Fact>]

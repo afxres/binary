@@ -66,14 +66,14 @@ public class IntegrationTests
 {
     public static IEnumerable<object[]> EnumerableTypesData()
     {
-        yield return new object[] { new List<int> { 1 }, 1, "SpanLikeConverter`1.*List`1.*Int32" };
-        yield return new object[] { new List<string> { "2" }, "2", "SpanLikeConverter`1.*List`1.*String" };
+        yield return new object[] { new List<int> { 1 }, 1, "ListNativeEndianConverter`1.*Int32" };
+        yield return new object[] { new List<string> { "2" }, "2", "ListConverter`1.*String" };
         yield return new object[] { new HashSet<int> { 3 }, 3, "SequenceConverter`1.*HashSet`1.*Int32" };
         yield return new object[] { new HashSet<string> { "4" }, "4", "SequenceConverter`1.*HashSet`1.*String" };
         yield return new object[] { new Dictionary<int, long> { { 5, 6 } }, new KeyValuePair<int, long>(5, 6), "SequenceConverter`1.*Dictionary`2.*Int32.*Int64" };
         yield return new object[] { new Dictionary<int, string> { { 7, "8" } }, new KeyValuePair<int, string>(7, "8"), "SequenceConverter`1.*Dictionary`2.*Int32.*String" };
-        yield return new object[] { ImmutableArray.Create(1), 1, "SpanLikeConverter`1.*ImmutableArray`1.*Int32" };
-        yield return new object[] { ImmutableArray.Create("2"), "2", "SpanLikeConverter`1.*ImmutableArray`1.*String" };
+        yield return new object[] { ImmutableArray.Create(1), 1, "ArrayBasedNativeEndianConverter`3.*ImmutableArrayAdapter`1.*Int32" };
+        yield return new object[] { ImmutableArray.Create("2"), "2", "ArrayBasedConverter`3.*ImmutableArrayAdapter`1.*String" };
         yield return new object[] { new LinkedList<int>([3]), 3, "LinkedListConverter`1.*Int32" };
         yield return new object[] { new LinkedList<string>(["4"]), "4", "LinkedListConverter`1.*String" };
     }

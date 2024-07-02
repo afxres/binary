@@ -72,39 +72,6 @@ let rec TestFieldTypeName (instance : obj) (fieldName : string) (fieldTypeName :
         Assert.Equal(fieldTypeName, fieldActualTypeName)
     ()
 
-let Test<'a> (generator : IGenerator) (encoderName : string) (decoderName : string) (collection : 'a) =
-    let converter = generator.GetConverter<'a>()
-    Assert.Equal("SpanLikeConverter`1", converter.GetType().Name)
-
-    // test internal field name
-    TestFieldTypeName converter "encoder" encoderName
-    TestFieldTypeName converter "decoder" decoderName
-
-    // test encode empty
-    TestEncode converter collection
-    TestEncodeAutoAndEncodeWithLengthPrefix converter collection
-
-    // ensure can decode
-    TestDecode converter
-    TestDecodeAuto converter
-    TestDecodeWithLengthPrefix converter
-    ()
-
-let TestNull<'a when 'a : null> (encoderName : string) (decoderName : string) (collection : 'a) =
-    let converter = generator.GetConverter<'a>()
-
-    Test generator encoderName decoderName collection
-
-    // test null
-    let delta = converter.Encode(null)
-    let mutable allocator = Allocator()
-    converter.EncodeWithLengthPrefix(&allocator, null)
-    let hotel = allocator.AsSpan().ToArray()
-
-    Assert.Empty(delta)
-    Assert.Equal(0uy, Assert.Single(hotel))
-    ()
-
 let TestSequence<'a when 'a : null> (encoderName : string) (decoderName : string) (collection : 'a) =
     let converter = generator.GetConverter<'a>()
     Assert.Equal("SequenceConverter`1", converter.GetType().Name)
@@ -141,36 +108,11 @@ let TestSequence<'a when 'a : null> (encoderName : string) (decoderName : string
     ()
 
 [<Fact>]
-let ``Collection Integration Test (span-like collection, null or empty collection test)`` () =
-    Test generator "ConstantEncoder`3" "ArrayDecoder`3" (ArraySegment<struct (int * int64)>())
-    Test generator "VariableEncoder`3" "ArrayDecoder`3" (ArraySegment<string>())
-    Test generator "->ConstantEncoder`2" "ConstantDecoder`2" (Array.zeroCreate<TimeSpan> 0)
-    Test generator "->ConstantEncoder`2" "->ConstantDecoder`2" (Memory<TimeSpan>())
-    Test generator "->NativeEndianEncoder`1" "NativeEndianDecoder`1" (Array.zeroCreate<double> 0)
-    Test generator "->NativeEndianEncoder`1" "->NativeEndianDecoder`1" (ReadOnlyMemory<int>())
-    Test generator "->NativeEndianEncoder`1" "->NativeEndianDecoder`1" (ImmutableArray<int>.Empty)
-    TestNull "ConstantEncoder`3" "ArrayDecoder`3" (Array.zeroCreate<struct (int16 * int64)> 0)
-    TestNull "VariableEncoder`3" "ListDecoder`1" (ResizeArray<string>())
-    TestNull "->ConstantEncoder`2" "ConstantDecoder`2" (Array.zeroCreate<DateTime> 0)
-    TestNull "->ConstantEncoder`2" "ConstantListDecoder`2" (ResizeArray<DateTime>())
-    TestNull "->NativeEndianEncoder`1" "NativeEndianDecoder`1" (Array.zeroCreate<int> 0)
-    TestNull "->NativeEndianEncoder`1" "NativeEndianListDecoder`1" (ResizeArray<int>())
-    ()
-
-[<Fact>]
-let ``Collection Integration Test (span-like collection, custom converter)`` () =
-    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<int64>(8)).Build()) "ConstantEncoder`3" "ArrayDecoder`3" (ReadOnlyMemory<int64>())
-    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<uint64>(0)).Build()) "VariableEncoder`3" "ArrayDecoder`3" (ReadOnlyMemory<uint64>())
-    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<string>(0)).Build()) "VariableEncoder`3" "ListDecoder`1" (ResizeArray<string>())
-    Test (Generator.CreateDefaultBuilder().AddConverter(TestConverter<string>(0)).Build()) "VariableEncoder`3" "ArrayDecoder`3" (ImmutableArray<string>.Empty)
-    ()
-
-[<Fact>]
 let ``Collection Integration Test (collection, null or empty collection test, default interface implementation test)`` () =
-    TestSequence<IList<_>> "EnumerableEncoder`2" "NativeEndianDecoder`1" (Array.zeroCreate<int> 0)
-    TestSequence<ICollection<_>> "EnumerableEncoder`2" "ConstantDecoder`2" (Array.zeroCreate<TimeSpan> 0)
+    TestSequence<IList<_>> "EnumerableEncoder`2" "SpanLikeNativeEndianMethods" (Array.zeroCreate<int> 0)
+    TestSequence<ICollection<_>> "EnumerableEncoder`2" "ListDecoder`1" (Array.zeroCreate<TimeSpan> 0)
     TestSequence<IEnumerable<_>> "EnumerableEncoder`2" "ListDecoder`1" (Array.zeroCreate<string> 0)
-    TestSequence<IReadOnlyList<_>> "EnumerableEncoder`2" "NativeEndianDecoder`1" (ResizeArray<int>())
+    TestSequence<IReadOnlyList<_>> "EnumerableEncoder`2" "SpanLikeNativeEndianMethods" (ResizeArray<int>())
     TestSequence<IReadOnlyCollection<_>> "EnumerableEncoder`2" "ListDecoder`1" (ResizeArray<string>())
 
     TestSequence<Queue<_>> "<lambda-encoder>" "<lambda-decoder>" (Queue<int> 0)

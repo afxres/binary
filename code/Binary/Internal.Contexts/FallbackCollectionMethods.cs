@@ -1,11 +1,11 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts;
 
+using Mikodev.Binary.Creators.Endianness;
 using Mikodev.Binary.Internal.Metadata;
 using Mikodev.Binary.Internal.Sequence;
 using Mikodev.Binary.Internal.Sequence.Decoders;
 using Mikodev.Binary.Internal.Sequence.Encoders;
-using Mikodev.Binary.Internal.SpanLike.Contexts;
-using Mikodev.Binary.Internal.SpanLike.Decoders;
+using Mikodev.Binary.Internal.SpanLike;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
@@ -98,9 +98,9 @@ internal static class FallbackCollectionMethods
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(type, InvalidTypeDefinitions.Contains))
             throw new ArgumentException($"Invalid collection type: {type}");
         if (CommonModule.TryGetInterfaceArguments(type, typeof(IDictionary<,>), out var types) || CommonModule.TryGetInterfaceArguments(type, typeof(IReadOnlyDictionary<,>), out types))
-            return GetConverter(context, GetConverter<IEnumerable<KeyValuePair<object, object>>, object, object>, [type, .. types]);
+            return GetConverter(context, GetDictionaryConverter<IEnumerable<KeyValuePair<object, object>>, object, object>, [type, .. types]);
         else
-            return GetConverter(context, GetConverter<IEnumerable<object>, object>, [type, .. arguments]);
+            return GetConverter(context, GetCollectionConverter<IEnumerable<object>, object>, [type, .. arguments]);
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
@@ -121,90 +121,92 @@ internal static class FallbackCollectionMethods
         return x => Expression.New(constructor, x);
     }
 
-    private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, R>(DecodePassSpanDelegate<R> decode)
+    private static DecodePassSpanDelegate<T> GetDirectCastDecodeDelegate<T, R>(DecodePassSpanDelegate<R> decode)
     {
         return CommonModule.CreateDelegate<DecodePassSpanDelegate<T>>(decode.Target, decode.Method);
     }
 
-    private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, R, I>(DecodePassSpanDelegate<R> decode, Func<Expression, Expression> method)
+    private static DecodePassSpanDelegate<T> GetMethodCastDecodeDelegate<T, R, I>(DecodePassSpanDelegate<R> decode, Func<Expression, Expression> method)
     {
         var source = Expression.Parameter(typeof(ReadOnlySpan<byte>), "source");
-        var invoke = method.Invoke(Expression.Convert(Expression.Call(Expression.Constant(decode.Target), decode.Method, source), typeof(I)));
-        var lambda = Expression.Lambda<DecodePassSpanDelegate<T>>(invoke, source);
+        var target = decode.Target;
+        var invoke = target is null
+            ? Expression.Call(decode.Method, source)
+            : Expression.Call(Expression.Constant(target), decode.Method, source);
+        var intent = method.Invoke(Expression.Convert(invoke, typeof(I)));
+        var lambda = Expression.Lambda<DecodePassSpanDelegate<T>>(intent, source);
         return lambda.Compile();
     }
 
-    private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, E>(Converter<E> converter, Func<Expression, Expression>? method) where T : IEnumerable<E>
+    private static DecodePassSpanDelegate<IEnumerable<E>> GetCollectionDecodeDelegate<E>(Converter<E> converter)
     {
-        DecodePassSpanDelegate<IEnumerable<E>> Invoke()
-        {
-            if (converter is ISpanLikeContextProvider<E> provider)
-                return provider.GetDecoder().Invoke;
-            return new ListDecoder<E>(converter).Invoke;
-        }
-
-        var target = Invoke();
-        if (method is null)
-            return GetDecodeDelegate<T, IEnumerable<E>>(target);
-        return GetDecodeDelegate<T, IEnumerable<E>, IEnumerable<E>>(target, method);
+        return converter is NativeEndianConverter<E> ? SpanLikeNativeEndianMethods.GetArray<E> : new ListDecoder<E>(converter).Invoke;
     }
 
-    private static DecodePassSpanDelegate<T> GetDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
+    private static DecodePassSpanDelegate<T> GetCollectionDecodeDelegate<T, E>(Converter<E> converter, Func<Expression, Expression>? method) where T : IEnumerable<E>
     {
-        return GetDecodeDelegate<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail).Invoke, method);
+        var target = GetCollectionDecodeDelegate(converter);
+        if (method is null)
+            return GetDirectCastDecodeDelegate<T, IEnumerable<E>>(target);
+        return GetMethodCastDecodeDelegate<T, IEnumerable<E>, IEnumerable<E>>(target, method);
+    }
+
+    private static DecodePassSpanDelegate<T> GetDictionaryDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail, Func<Expression, Expression> method) where T : IEnumerable<KeyValuePair<K, V>>
+    {
+        return GetMethodCastDecodeDelegate<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail).Invoke, method);
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    private static DecodePassSpanDelegate<T>? GetDecodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
+    private static DecodePassSpanDelegate<T>? GetCollectionDecodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
     {
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), ArrayOrListAssignableDefinitions.Contains))
-            return GetDecodeDelegate<T, E>(converter, null);
+            return GetCollectionDecodeDelegate<T, E>(converter, null);
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), HashSetAssignableDefinitions.Contains))
-            return GetDecodeDelegate<T, HashSet<E>>(new HashSetDecoder<E>(converter).Invoke);
+            return GetDirectCastDecodeDelegate<T, HashSet<E>>(new HashSetDecoder<E>(converter).Invoke);
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } result)
-            return GetDecodeDelegate<T, E>(converter, x => Expression.Call(result.MakeGenericMethod(typeof(E)), x));
+            return GetCollectionDecodeDelegate<T, E>(converter, x => Expression.Call(result.MakeGenericMethod(typeof(E)), x));
         if (GetConstructorOrDefault(typeof(T), typeof(IEnumerable<E>)) is { } method)
-            return GetDecodeDelegate<T, E>(converter, method);
+            return GetCollectionDecodeDelegate<T, E>(converter, method);
         else
             return null;
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    private static DecodePassSpanDelegate<T>? GetDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
+    private static DecodePassSpanDelegate<T>? GetDictionaryDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
     {
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), DictionaryAssignableDefinitions.Contains))
-            return GetDecodeDelegate<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail).Invoke);
+            return GetDirectCastDecodeDelegate<T, Dictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail).Invoke);
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), ImmutableCollectionCreateMethods.GetValueOrDefault) is { } result)
-            return GetDecodeDelegate<T, K, V>(init, tail, x => Expression.Call(result.MakeGenericMethod(typeof(K), typeof(V)), x));
+            return GetDictionaryDecodeDelegate<T, K, V>(init, tail, x => Expression.Call(result.MakeGenericMethod(typeof(K), typeof(V)), x));
         if (GetConstructorOrDefault(typeof(T), typeof(IDictionary<K, V>)) is { } target)
-            return GetDecodeDelegate<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail).Invoke, target);
+            return GetMethodCastDecodeDelegate<T, Dictionary<K, V>, IDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail).Invoke, target);
         if (GetConstructorOrDefault(typeof(T), typeof(IReadOnlyDictionary<K, V>)) is { } second)
-            return GetDecodeDelegate<T, Dictionary<K, V>, IReadOnlyDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail).Invoke, second);
+            return GetMethodCastDecodeDelegate<T, Dictionary<K, V>, IReadOnlyDictionary<K, V>>(new DictionaryDecoder<K, V>(init, tail).Invoke, second);
         if (GetConstructorOrDefault(typeof(T), typeof(IEnumerable<KeyValuePair<K, V>>)) is { } method)
-            return GetDecodeDelegate<T, K, V>(init, tail, method);
+            return GetDictionaryDecodeDelegate<T, K, V>(init, tail, method);
         else
             return null;
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    private static AllocatorAction<T?> GetEncodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
+    private static AllocatorAction<T?> GetCollectionEncodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
     {
         if (typeof(T) == typeof(HashSet<E>))
             return (AllocatorAction<T?>)(object)new AllocatorAction<HashSet<E>?>(new HashSetEncoder<E>(converter).Encode);
-        return GetEncodeDelegate<T, E>(converter.EncodeAuto) ?? new EnumerableEncoder<T, E>(converter).Encode;
+        return GetEnumeratorEncodeDelegate<T, E>(converter.EncodeAuto) ?? new EnumerableEncoder<T, E>(converter).Encode;
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    private static AllocatorAction<T?> GetEncodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
+    private static AllocatorAction<T?> GetDictionaryEncodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
     {
         if (typeof(T) == typeof(Dictionary<K, V>))
             return (AllocatorAction<T?>)(object)new AllocatorAction<Dictionary<K, V>>(new DictionaryEncoder<K, V>(init, tail).Encode);
         var source = new KeyValueEnumerableEncoder<T, K, V>(init, tail);
-        return GetEncodeDelegate<T, KeyValuePair<K, V>>(source.EncodeKeyValuePairAuto) ?? source.Encode;
+        return GetEnumeratorEncodeDelegate<T, KeyValuePair<K, V>>(source.EncodeKeyValuePairAuto) ?? source.Encode;
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    private static AllocatorAction<T?>? GetEncodeDelegate<T, E>(AllocatorAction<E> adapter)
+    private static AllocatorAction<T?>? GetEnumeratorEncodeDelegate<T, E>(AllocatorAction<E> adapter)
     {
         var initial = typeof(T).GetMethods(CommonModule.PublicInstanceBindingFlags).FirstOrDefault(x => x.Name is "GetEnumerator" && x.GetParameters().Length is 0);
         if (initial is null)
@@ -239,21 +241,21 @@ internal static class FallbackCollectionMethods
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    private static SequenceConverter<T> GetConverter<T, E>(IGeneratorContext context) where T : IEnumerable<E>
+    private static SequenceConverter<T> GetCollectionConverter<T, E>(IGeneratorContext context) where T : IEnumerable<E>
     {
         var converter = context.GetConverter<E>();
-        var encode = GetEncodeDelegate<T, E>(converter);
-        var decode = GetDecodeDelegate<T, E>(converter);
+        var encode = GetCollectionEncodeDelegate<T, E>(converter);
+        var decode = GetCollectionDecodeDelegate<T, E>(converter);
         return new SequenceConverter<T>(encode, decode);
     }
 
     [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
-    private static SequenceConverter<T> GetConverter<T, K, V>(IGeneratorContext context) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
+    private static SequenceConverter<T> GetDictionaryConverter<T, K, V>(IGeneratorContext context) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
     {
         var init = context.GetConverter<K>();
         var tail = context.GetConverter<V>();
-        var encode = GetEncodeDelegate<T, K, V>(init, tail);
-        var decode = GetDecodeDelegate<T, K, V>(init, tail);
+        var encode = GetDictionaryEncodeDelegate<T, K, V>(init, tail);
+        var decode = GetDictionaryDecodeDelegate<T, K, V>(init, tail);
         return new SequenceConverter<T>(encode, decode);
     }
 }

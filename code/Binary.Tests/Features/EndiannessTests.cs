@@ -120,11 +120,11 @@ public class EndiannessTests
         var decodeFunctor = (Decode<T>)Delegate.CreateDelegate(typeof(Decode<T>), converterType, "Decode");
         var encodeFunctor = (Encode<T>)Delegate.CreateDelegate(typeof(Encode<T>), converterType, "Encode");
 
-        // Invalid null reference, do not dereference!!!
+        // invalid null reference, do not dereference!!!
         var alpha = Assert.Throws<NotSupportedException>(() => decodeFunctor.Invoke(ref Unsafe.NullRef<byte>()));
         Assert.Equal(new NotSupportedException().Message, alpha.Message);
 
-        // Invalid null reference, do not dereference!!!
+        // invalid null reference, do not dereference!!!
         var bravo = Assert.Throws<NotSupportedException>(() => encodeFunctor.Invoke(ref Unsafe.NullRef<byte>(), data));
         Assert.Equal(new NotSupportedException().Message, bravo.Message);
     }

@@ -1,11 +1,9 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts;
 
+using Mikodev.Binary.Creators.Endianness;
 using Mikodev.Binary.Internal.SpanLike;
 using Mikodev.Binary.Internal.SpanLike.Adapters;
-using Mikodev.Binary.Internal.SpanLike.Builders;
 using Mikodev.Binary.Internal.SpanLike.Contexts;
-using Mikodev.Binary.Internal.SpanLike.Decoders;
-using Mikodev.Binary.Internal.SpanLike.Encoders;
 using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
@@ -74,26 +72,6 @@ internal static class FallbackSequentialMethods
         return ArrayCreateMethod.MakeGenericMethod(elementType);
     }
 
-    private static SpanLikeDecoder<T> GetDecoder<T, E, B>(Converter<E> converter) where B : struct, ISpanLikeBuilder<T, E>
-    {
-        var decoder = (converter as ISpanLikeContextProvider<E>)?.GetDecoder();
-        if (decoder is SpanLikeDecoder<T> actual)
-            return actual;
-        return decoder is null
-            ? new ArrayDecoder<T, E, B>(converter)
-            : new ArrayForwardDecoder<T, E, B>(decoder);
-    }
-
-    private static SpanLikeEncoder<T> GetEncoder<T, E, A>(Converter<E> converter) where A : struct, ISpanLikeAdapter<T, E>
-    {
-        var encoder = (converter as ISpanLikeContextProvider<E>)?.GetEncoder();
-        if (encoder is not null)
-            return new ConstantForwardEncoder<T, E, A>(encoder, converter.Length);
-        return converter.Length is 0
-            ? new VariableEncoder<T, E, A>(converter)
-            : new ConstantEncoder<T, E, A>(converter);
-    }
-
     private static object GetConverter<E>(MethodInfo method, object data)
     {
         var converter = (Converter<E>)data;
@@ -101,45 +79,38 @@ internal static class FallbackSequentialMethods
         return target.Invoke(converter);
     }
 
-    internal static SpanLikeConverter<E[]> GetArrayConverter<E>(Converter<E> converter)
+    private static Converter<T> GetConverter<T, E, A>(Converter<E> converter) where A : ISpanLikeAdapter<T, E>
     {
-        var decoder = GetDecoder<E[], E, ArrayBuilder<E>>(converter);
-        var encoder = GetEncoder<E[], E, ArrayAdapter<E>>(converter);
-        return new SpanLikeConverter<E[]>(encoder, decoder);
+        return converter is NativeEndianConverter<E> ? new ArrayBasedNativeEndianConverter<T, E, A>() : new ArrayBasedConverter<T, E, A>(converter);
     }
 
-    internal static SpanLikeConverter<ArraySegment<E>> GetArraySegmentConverter<E>(Converter<E> converter)
+    internal static Converter<E[]> GetArrayConverter<E>(Converter<E> converter)
     {
-        var decoder = GetDecoder<ArraySegment<E>, E, ArraySegmentBuilder<E>>(converter);
-        var encoder = GetEncoder<ArraySegment<E>, E, ArraySegmentAdapter<E>>(converter);
-        return new SpanLikeConverter<ArraySegment<E>>(encoder, decoder);
+        return GetConverter<E[], E, ArrayAdapter<E>>(converter);
     }
 
-    internal static SpanLikeConverter<ImmutableArray<E>> GetImmutableArrayConverter<E>(Converter<E> converter)
+    internal static Converter<ArraySegment<E>> GetArraySegmentConverter<E>(Converter<E> converter)
     {
-        var decoder = GetDecoder<ImmutableArray<E>, E, ImmutableArrayBuilder<E>>(converter);
-        var encoder = GetEncoder<ImmutableArray<E>, E, ImmutableArrayAdapter<E>>(converter);
-        return new SpanLikeConverter<ImmutableArray<E>>(encoder, decoder);
+        return GetConverter<ArraySegment<E>, E, ArraySegmentAdapter<E>>(converter);
     }
 
-    internal static SpanLikeConverter<List<E>> GetListConverter<E>(Converter<E> converter)
+    internal static Converter<ImmutableArray<E>> GetImmutableArrayConverter<E>(Converter<E> converter)
     {
-        var decoder = converter is ISpanLikeContextProvider<E> provider ? provider.GetListDecoder() : new ListDecoder<E>(converter);
-        var encoder = GetEncoder<List<E>, E, ListAdapter<E>>(converter);
-        return new SpanLikeConverter<List<E>>(encoder, decoder);
+        return GetConverter<ImmutableArray<E>, E, ImmutableArrayAdapter<E>>(converter);
     }
 
-    internal static SpanLikeConverter<Memory<E>> GetMemoryConverter<E>(Converter<E> converter)
+    internal static Converter<List<E>> GetListConverter<E>(Converter<E> converter)
     {
-        var decoder = GetDecoder<Memory<E>, E, MemoryBuilder<E>>(converter);
-        var encoder = GetEncoder<Memory<E>, E, MemoryAdapter<E>>(converter);
-        return new SpanLikeConverter<Memory<E>>(encoder, decoder);
+        return converter is NativeEndianConverter<E> ? new ListNativeEndianConverter<E>() : new ListConverter<E>(converter);
     }
 
-    internal static SpanLikeConverter<ReadOnlyMemory<E>> GetReadOnlyMemoryConverter<E>(Converter<E> converter)
+    internal static Converter<Memory<E>> GetMemoryConverter<E>(Converter<E> converter)
     {
-        var decoder = GetDecoder<ReadOnlyMemory<E>, E, ReadOnlyMemoryBuilder<E>>(converter);
-        var encoder = GetEncoder<ReadOnlyMemory<E>, E, ReadOnlyMemoryAdapter<E>>(converter);
-        return new SpanLikeConverter<ReadOnlyMemory<E>>(encoder, decoder);
+        return GetConverter<Memory<E>, E, MemoryAdapter<E>>(converter);
+    }
+
+    internal static Converter<ReadOnlyMemory<E>> GetReadOnlyMemoryConverter<E>(Converter<E> converter)
+    {
+        return GetConverter<ReadOnlyMemory<E>, E, ReadOnlyMemoryAdapter<E>>(converter);
     }
 }

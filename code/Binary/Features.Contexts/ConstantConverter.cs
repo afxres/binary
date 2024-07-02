@@ -1,40 +1,18 @@
 ﻿namespace Mikodev.Binary.Features.Contexts;
 
-using Mikodev.Binary.Features.Adapters;
 using Mikodev.Binary.Internal;
-using Mikodev.Binary.Internal.SpanLike;
-using Mikodev.Binary.Internal.SpanLike.Contexts;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-internal abstract class ConstantConverter<T, U> : Converter<T>, ISpanLikeContextProvider<T> where U : struct, IConstantConverterFunctions<T>
+internal abstract class ConstantConverter<T, U> : Converter<T> where U : struct, IConstantConverterFunctions<T>
 {
-    private readonly SpanLikeForwardEncoder<T> encoder;
-
-    private readonly SpanLikeDecoder<T[]> decoder;
-
-    private readonly SpanLikeDecoder<List<T>> decoderForList;
-
     public ConstantConverter() : base(U.Length)
     {
         Debug.Assert(U.Length >= 1);
         Debug.Assert(U.Length <= 64);
         Debug.Assert(NumberModule.EncodeLength((uint)U.Length) is 1);
-        if (default(U) is ISpanLikeContextProvider<T> provider)
-        {
-            this.encoder = provider.GetEncoder();
-            this.decoder = provider.GetDecoder();
-            this.decoderForList = provider.GetListDecoder();
-        }
-        else
-        {
-            this.encoder = new ConstantEncoder<T, U>();
-            this.decoder = new ConstantDecoder<T, U>();
-            this.decoderForList = new ConstantListDecoder<T, U>();
-        }
     }
 
     public override T Decode(byte[]? buffer)
@@ -80,20 +58,5 @@ internal abstract class ConstantConverter<T, U> : Converter<T>, ISpanLikeContext
         ref var target = ref Allocator.Assign(ref allocator, U.Length + prefix);
         NumberModule.Encode(ref target, (uint)U.Length, prefix);
         U.Encode(ref Unsafe.Add(ref target, prefix), item);
-    }
-
-    SpanLikeForwardEncoder<T> ISpanLikeContextProvider<T>.GetEncoder()
-    {
-        return this.encoder;
-    }
-
-    SpanLikeDecoder<T[]> ISpanLikeContextProvider<T>.GetDecoder()
-    {
-        return this.decoder;
-    }
-
-    SpanLikeDecoder<List<T>> ISpanLikeContextProvider<T>.GetListDecoder()
-    {
-        return this.decoderForList;
     }
 }
