@@ -38,11 +38,11 @@ internal static class ThrowHelper
     internal static void ThrowAmbiguousMembers(string memberName, Type type) => throw new ArgumentException($"Get members error, ambiguous members detected, member name: {memberName}, type: {type}");
 
     [DoesNotReturn]
-    internal static T ThrowNotConverter<T>(Type type) => throw new ArgumentException($"Can not get generic argument, '{type}' is not a subclass of '{typeof(Converter<>)}'");
+    internal static void ThrowNotConverter(Type type) => throw new ArgumentException($"Invalid converter instance, '{type}' is not a subclass of '{typeof(Converter<>)}'");
 
     [DoesNotReturn]
-    internal static T ThrowNoSuitableConstructor<T>() => throw new NotSupportedException($"No suitable constructor found, type: {typeof(T)}");
+    internal static void ThrowNoSuitableConstructor<T>() => throw new NotSupportedException($"No suitable constructor found, type: {typeof(T)}");
 
     [DoesNotReturn]
-    internal static T? ThrowNullableTagInvalid<T>(int tag) where T : struct => throw new ArgumentException($"Invalid nullable tag '{tag}', type: {typeof(T?)}");
+    internal static void ThrowNullableTagInvalid<T>(int tag) where T : struct => throw new ArgumentException($"Invalid nullable tag '{tag}', type: {typeof(T?)}");
 }

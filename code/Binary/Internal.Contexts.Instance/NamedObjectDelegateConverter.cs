@@ -9,17 +9,20 @@ internal sealed class NamedObjectDelegateConverter<T>(Converter<string> converte
 {
     private readonly AllocatorAction<T> encode = encode;
 
-    private readonly NamedObjectDecodeDelegate<T> decode = decode ?? (_ => ThrowHelper.ThrowNoSuitableConstructor<T>());
-
-    public override T Decode(NamedObjectParameter parameter)
-    {
-        return this.decode.Invoke(parameter);
-    }
+    private readonly NamedObjectDecodeDelegate<T>? decode = decode;
 
     public override void Encode(ref Allocator allocator, T? item)
     {
         if (item is null)
             return;
         this.encode.Invoke(ref allocator, item);
+    }
+
+    public override T Decode(NamedObjectParameter parameter)
+    {
+        var decode = this.decode;
+        if (decode is null)
+            ThrowHelper.ThrowNoSuitableConstructor<T>();
+        return decode.Invoke(parameter);
     }
 }

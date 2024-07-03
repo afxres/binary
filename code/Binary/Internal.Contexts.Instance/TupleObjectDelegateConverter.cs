@@ -2,7 +2,6 @@
 
 using Mikodev.Binary.Internal.Metadata;
 using System;
-using System.Diagnostics;
 
 internal sealed class TupleObjectDelegateConverter<T>(AllocatorAction<T> encode, AllocatorAction<T> encodeAuto, DecodeDelegate<T>? decode, DecodeDelegate<T>? decodeAuto, int length) : Converter<T>(length)
 {
@@ -10,9 +9,9 @@ internal sealed class TupleObjectDelegateConverter<T>(AllocatorAction<T> encode,
 
     private readonly AllocatorAction<T> encodeAuto = encodeAuto;
 
-    private readonly DecodeDelegate<T> decode = decode ?? ((ref ReadOnlySpan<byte> _) => ThrowHelper.ThrowNoSuitableConstructor<T>());
+    private readonly DecodeDelegate<T>? decode = decode;
 
-    private readonly DecodeDelegate<T> decodeAuto = decodeAuto ?? ((ref ReadOnlySpan<byte> _) => ThrowHelper.ThrowNoSuitableConstructor<T>());
+    private readonly DecodeDelegate<T>? decodeAuto = decodeAuto;
 
     public override void Encode(ref Allocator allocator, T? item)
     {
@@ -30,13 +29,18 @@ internal sealed class TupleObjectDelegateConverter<T>(AllocatorAction<T> encode,
 
     public override T Decode(in ReadOnlySpan<byte> span)
     {
-        Debug.Assert(this.decode is not null);
         var body = span;
-        return this.decode.Invoke(ref body);
+        var decode = this.decode;
+        if (decode is null)
+            ThrowHelper.ThrowNoSuitableConstructor<T>();
+        return decode.Invoke(ref body);
     }
 
     public override T DecodeAuto(ref ReadOnlySpan<byte> span)
     {
-        return this.decodeAuto.Invoke(ref span);
+        var decodeAuto = this.decodeAuto;
+        if (decodeAuto is null)
+            ThrowHelper.ThrowNoSuitableConstructor<T>();
+        return decodeAuto.Invoke(ref span);
     }
 }

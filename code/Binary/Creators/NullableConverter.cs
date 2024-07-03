@@ -35,7 +35,9 @@ internal sealed class NullableConverter<T>(Converter<T> converter) : Converter<T
         var head = Converter.Decode(ref body);
         if (head is Some)
             return this.converter.Decode(in body);
-        return head is None ? null : ThrowHelper.ThrowNullableTagInvalid<T>(head);
+        if (head is not None)
+            ThrowHelper.ThrowNullableTagInvalid<T>(head);
+        return null;
     }
 
     public override T? DecodeAuto(ref ReadOnlySpan<byte> span)
@@ -43,6 +45,8 @@ internal sealed class NullableConverter<T>(Converter<T> converter) : Converter<T
         var head = Converter.Decode(ref span);
         if (head is Some)
             return this.converter.DecodeAuto(ref span);
-        return head is None ? null : ThrowHelper.ThrowNullableTagInvalid<T>(head);
+        if (head is not None)
+            ThrowHelper.ThrowNullableTagInvalid<T>(head);
+        return null;
     }
 }

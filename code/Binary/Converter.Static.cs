@@ -12,18 +12,20 @@ public static partial class Converter
     public static Type GetGenericArgument(IConverter converter)
     {
         ArgumentNullException.ThrowIfNull(converter);
-        if (converter is IConverterMetadata metadata)
-            return metadata.GetGenericArgument();
-        return ThrowHelper.ThrowNotConverter<Type>(converter.GetType());
+        var metadata = converter as IConverterMetadata;
+        if (metadata is null)
+            ThrowHelper.ThrowNotConverter(converter.GetType());
+        return metadata.GetGenericArgument();
     }
 
     public static MethodInfo GetMethod(IConverter converter, string name)
     {
         ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(converter);
-        if (converter is IConverterMetadata metadata)
-            return metadata.GetMethod(name);
-        return ThrowHelper.ThrowNotConverter<MethodInfo>(converter.GetType());
+        var metadata = converter as IConverterMetadata;
+        if (metadata is null)
+            ThrowHelper.ThrowNotConverter(converter.GetType());
+        return metadata.GetMethod(name);
     }
 
     public static void Encode(scoped Span<byte> span, int number, out int bytesWritten)
