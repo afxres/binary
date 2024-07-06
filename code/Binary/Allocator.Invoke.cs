@@ -54,6 +54,24 @@ public ref partial struct Allocator
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool TryEnsure(ref Allocator allocator, int length)
+    {
+        Debug.Assert(allocator.bounds >= 0);
+        Debug.Assert(allocator.offset >= 0);
+        Debug.Assert(allocator.bounds >= allocator.offset);
+        return (uint)allocator.bounds >= (ulong)(uint)allocator.offset + (uint)length;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static ref byte TryCreate(ref Allocator allocator, int length)
+    {
+        if (TryEnsure(ref allocator, length) is false)
+            return ref Unsafe.NullRef<byte>();
+        var offset = allocator.offset;
+        return ref Unsafe.Add(ref allocator.target, offset);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static ref byte Create(ref Allocator allocator, int length)
     {
         Ensure(ref allocator, length);

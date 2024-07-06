@@ -12,24 +12,36 @@ public ref partial struct Allocator
     public static void Append(ref Allocator allocator, scoped ReadOnlySpan<char> span, Encoding encoding)
     {
         ArgumentNullException.ThrowIfNull(encoding);
-        var targetLimits = SharedModule.GetMaxByteCount(span, encoding);
-        Debug.Assert(targetLimits <= encoding.GetMaxByteCount(span.Length));
-        if (targetLimits is 0)
-            return;
-        ref var target = ref Create(ref allocator, targetLimits);
-        var targetLength = encoding.GetBytes(span, MemoryMarshal.CreateSpan(ref target, targetLimits));
-        FinishCreate(ref allocator, targetLength);
+        var limits = encoding.GetMaxByteCount(span.Length);
+        ref var target = ref TryCreate(ref allocator, limits);
+        if (Unsafe.IsNullRef(ref target))
+            target = ref Create(ref allocator, limits = encoding.GetByteCount(span));
+        var actual = encoding.GetBytes(span, MemoryMarshal.CreateSpan(ref target, limits));
+        if ((uint)actual > (uint)limits)
+            ThrowHelper.ThrowInvalidReturnValue();
+        Debug.Assert(actual >= 0);
+        Debug.Assert(actual <= limits);
+        FinishCreate(ref allocator, actual);
     }
 
     public static void AppendWithLengthPrefix(ref Allocator allocator, scoped ReadOnlySpan<char> span, Encoding encoding)
     {
         ArgumentNullException.ThrowIfNull(encoding);
-        var targetLimits = SharedModule.GetMaxByteCount(span, encoding);
-        Debug.Assert(targetLimits <= encoding.GetMaxByteCount(span.Length));
-        var prefixLength = NumberModule.EncodeLength((uint)targetLimits);
-        ref var target = ref Create(ref allocator, prefixLength + targetLimits);
-        var targetLength = targetLimits is 0 ? 0 : encoding.GetBytes(span, MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, prefixLength), targetLimits));
-        NumberModule.Encode(ref target, (uint)targetLength, prefixLength);
-        FinishCreate(ref allocator, targetLength + prefixLength);
+        var limits = encoding.GetMaxByteCount(span.Length);
+        var numberLength = NumberModule.EncodeLength((uint)limits);
+        ref var target = ref TryCreate(ref allocator, limits + numberLength);
+        if (Unsafe.IsNullRef(ref target))
+        {
+            limits = encoding.GetByteCount(span);
+            numberLength = NumberModule.EncodeLength((uint)limits);
+            target = ref Create(ref allocator, limits + numberLength);
+        }
+        var actual = encoding.GetBytes(span, MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, numberLength), limits));
+        if ((uint)actual > (uint)limits)
+            ThrowHelper.ThrowInvalidReturnValue();
+        Debug.Assert(actual >= 0);
+        Debug.Assert(actual <= limits);
+        NumberModule.Encode(ref target, (uint)actual, numberLength);
+        FinishCreate(ref allocator, actual + numberLength);
     }
 }

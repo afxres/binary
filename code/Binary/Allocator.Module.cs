@@ -73,7 +73,7 @@ public ref partial struct Allocator
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Ensure(ref Allocator allocator, int length)
     {
-        if ((ulong)(uint)allocator.offset + (uint)length > (uint)allocator.bounds)
+        if (TryEnsure(ref allocator, length) is false)
             Resize(ref allocator, length);
         Debug.Assert(allocator.bounds <= allocator.MaxCapacity);
         Debug.Assert(allocator.bounds >= allocator.offset + length);
