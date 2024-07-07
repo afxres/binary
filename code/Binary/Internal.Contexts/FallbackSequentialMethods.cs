@@ -79,7 +79,7 @@ internal static class FallbackSequentialMethods
         return target.Invoke(converter);
     }
 
-    private static Converter<T> GetConverter<T, E, A>(Converter<E> converter) where A : ISpanLikeAdapter<T, E>
+    private static Converter<T> GetConverter<T, E, A>(Converter<E> converter) where A : struct, ISpanLikeAdapter<T, E>
     {
         return converter is NativeEndianConverter<E> ? new ArrayBasedNativeEndianConverter<T, E, A>() : new ArrayBasedConverter<T, E, A>(converter);
     }

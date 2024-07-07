@@ -3,7 +3,7 @@
 using Mikodev.Binary.Internal.SpanLike.Contexts;
 using System;
 
-internal sealed class ArrayBasedConverter<T, E, A>(Converter<E> converter) : Converter<T> where A : ISpanLikeAdapter<T, E>
+internal sealed class ArrayBasedConverter<T, E, A>(Converter<E> converter) : Converter<T> where A : struct, ISpanLikeAdapter<T, E>
 {
     private readonly Converter<E> converter = converter;
 

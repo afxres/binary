@@ -3,7 +3,7 @@
 using Mikodev.Binary.Internal.SpanLike.Contexts;
 using System;
 
-internal sealed class ArrayBasedNativeEndianConverter<T, E, A> : Converter<T> where A : ISpanLikeAdapter<T, E>
+internal sealed class ArrayBasedNativeEndianConverter<T, E, A> : Converter<T> where A : struct, ISpanLikeAdapter<T, E>
 {
     public override void Encode(ref Allocator allocator, T? item)
     {
