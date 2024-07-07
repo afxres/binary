@@ -23,10 +23,10 @@ internal sealed class VersionConverter : VariableConverter<Version?, VersionConv
                 BinaryPrimitives.WriteInt32LittleEndian(span.Slice(offset * sizeof(int), sizeof(int)), data);
             }
 
-            if (span.Length < 16)
-                ThrowHelper.ThrowTryWriteBytesFailed();
             if (item is null)
                 return 0;
+            if (span.Length < 16)
+                ThrowHelper.ThrowTryWriteBytesFailed();
             Encode(span, 0, item.Major);
             Encode(span, 1, item.Minor);
             if (item.Build is -1)

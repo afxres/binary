@@ -9,8 +9,6 @@ public class VersionConverterInternalTests
 {
     public static readonly IEnumerable<object?[]> DataNotEnoughSpace =
     [
-        [0, null],
-        [15, null],
         [0, new Version()],
         [11, new Version(1, 3)],
         [13, new Version(1, 2, 3)],
@@ -24,6 +22,14 @@ public class VersionConverterInternalTests
         var functor = ReflectionExtensions.CreateDelegate<AllocatorWriter<Version?>>(x => x.FullName?.EndsWith("VersionConverter+Functions") is true, x => x.Name is "Append");
         var error = Assert.Throws<InvalidOperationException>(() => functor.Invoke(new Span<byte>(new byte[length]), data));
         Assert.Equal("Try write bytes failed.", error.Message);
+    }
+
+    [Fact(DisplayName = "Append Null Value")]
+    public void AppendNullValue()
+    {
+        var functor = ReflectionExtensions.CreateDelegate<AllocatorWriter<Version?>>(x => x.FullName?.EndsWith("VersionConverter+Functions") is true, x => x.Name is "Append");
+        var actual = functor.Invoke(new Span<byte>(), null);
+        Assert.Equal(0, actual);
     }
 
     public static IEnumerable<object?[]> DataMaxLength()

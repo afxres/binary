@@ -23,6 +23,14 @@ public class IPAddressConverterInternalTests
         Assert.Equal("Try write bytes failed.", error.Message);
     }
 
+    [Fact(DisplayName = "Append Null Value")]
+    public void AppendNullValue()
+    {
+        var functor = ReflectionExtensions.CreateDelegate<AllocatorWriter<IPAddress?>>(x => x.FullName?.EndsWith("IPAddressConverter+Functions") is true, x => x.Name is "Append");
+        var actual = functor.Invoke(new Span<byte>(), null);
+        Assert.Equal(0, actual);
+    }
+
     public static IEnumerable<object?[]> DataMaxLength()
     {
         yield return new object?[] { null, 0 };
