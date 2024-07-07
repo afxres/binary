@@ -21,8 +21,26 @@ public class VersionConverterInternalTests
     [MemberData(nameof(DataNotEnoughSpace))]
     public void NotEnoughSpace(int length, Version? data)
     {
-        var functor = ReflectionExtensions.CreateDelegate<AllocatorWriter<Version?>>(x => x.Name is "VersionConverter", x => x.Name.Contains("Invoke"));
+        var functor = ReflectionExtensions.CreateDelegate<AllocatorWriter<Version?>>(x => x.FullName?.EndsWith("VersionConverter+Functions") is true, x => x.Name is "Append");
         var error = Assert.Throws<InvalidOperationException>(() => functor.Invoke(new Span<byte>(new byte[length]), data));
         Assert.Equal("Try write bytes failed.", error.Message);
+    }
+
+    public static IEnumerable<object?[]> DataMaxLength()
+    {
+        yield return new object?[] { null, 0 };
+        yield return new object?[] { new Version(), 16 };
+        yield return new object?[] { new Version(9, 8), 16 };
+        yield return new object?[] { new Version(9, 8, 7), 16 };
+        yield return new object?[] { new Version(9, 8, 7, 6), 16 };
+    }
+
+    [Theory(DisplayName = "Max Length")]
+    [MemberData(nameof(DataMaxLength))]
+    public void MaxLengthTest(Version? item, int maxLengthExpected)
+    {
+        var functor = ReflectionExtensions.CreateDelegate<Func<Version?, int>>(x => x.FullName?.EndsWith("VersionConverter+Functions") is true, x => x.Name is "Limits");
+        var actual = functor.Invoke(item);
+        Assert.Equal(maxLengthExpected, actual);
     }
 }

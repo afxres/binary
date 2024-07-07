@@ -1,7 +1,6 @@
 ﻿namespace Mikodev.Binary.Creators.Isolated.Variables;
 
 using Mikodev.Binary;
-using Mikodev.Binary.Features.Contexts;
 using Mikodev.Binary.Internal;
 using System;
 using System.Buffers.Binary;
@@ -10,7 +9,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-internal sealed class BitArrayConverter : VariableConverter<BitArray?, BitArrayConverter.Functions>
+internal sealed class BitArrayConverter : Converter<BitArray?>
 {
     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "m_array")]
     private static extern ref int[]? AccessFunction(BitArray array);
@@ -53,7 +52,7 @@ internal sealed class BitArrayConverter : VariableConverter<BitArray?, BitArrayC
         target[bounds] = (int)FilterFunction(buffer, remain);
     }
 
-    private static void EncodeInternal(ref Allocator allocator, BitArray? item)
+    public override void Encode(ref Allocator allocator, BitArray? item)
     {
         if (item is null)
             return;
@@ -69,7 +68,7 @@ internal sealed class BitArrayConverter : VariableConverter<BitArray?, BitArrayC
         EncodeContents(buffer, source, length);
     }
 
-    private static BitArray? DecodeInternal(in ReadOnlySpan<byte> span)
+    public override BitArray? Decode(in ReadOnlySpan<byte> span)
     {
         if (span.Length is 0)
             return null;
@@ -85,25 +84,5 @@ internal sealed class BitArrayConverter : VariableConverter<BitArray?, BitArrayC
         var target = AccessFunction(result);
         DecodeContents(target, cursor, length);
         return result;
-    }
-
-    internal readonly struct Functions : IVariableConverterFunctions<BitArray?>
-    {
-        public static BitArray? Decode(in ReadOnlySpan<byte> span)
-        {
-            return DecodeInternal(in span);
-        }
-
-        public static void Encode(ref Allocator allocator, BitArray? item)
-        {
-            EncodeInternal(ref allocator, item);
-        }
-
-        public static void EncodeWithLengthPrefix(ref Allocator allocator, BitArray? item)
-        {
-            var anchor = Allocator.Anchor(ref allocator);
-            EncodeInternal(ref allocator, item);
-            Allocator.FinishAnchor(ref allocator, anchor);
-        }
     }
 }

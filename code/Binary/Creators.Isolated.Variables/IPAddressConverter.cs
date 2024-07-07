@@ -1,6 +1,5 @@
 ﻿namespace Mikodev.Binary.Creators.Isolated.Variables;
 
-using Mikodev.Binary;
 using Mikodev.Binary.Features.Contexts;
 using Mikodev.Binary.Internal;
 using System;
@@ -8,13 +7,14 @@ using System.Net;
 
 internal sealed class IPAddressConverter : VariableConverter<IPAddress?, IPAddressConverter.Functions>
 {
-    private const int MaxLength = 16;
-
-    private static readonly AllocatorWriter<IPAddress?> EncodeFunction;
-
-    static IPAddressConverter()
+    internal readonly struct Functions : IVariableConverterFunctions<IPAddress?>
     {
-        static int Invoke(Span<byte> span, IPAddress? item)
+        public static int Limits(IPAddress? item)
+        {
+            return item is null ? 0 : 16;
+        }
+
+        public static int Append(Span<byte> span, IPAddress? item)
         {
             if (item is null)
                 return 0;
@@ -22,31 +22,12 @@ internal sealed class IPAddressConverter : VariableConverter<IPAddress?, IPAddre
                 ThrowHelper.ThrowTryWriteBytesFailed();
             return actual;
         }
-        EncodeFunction = Invoke;
-    }
 
-    private static IPAddress? DecodeInternal(ReadOnlySpan<byte> span)
-    {
-        if (span.Length is 0)
-            return null;
-        return new IPAddress(span);
-    }
-
-    internal readonly struct Functions : IVariableConverterFunctions<IPAddress?>
-    {
         public static IPAddress? Decode(in ReadOnlySpan<byte> span)
         {
-            return DecodeInternal(span);
-        }
-
-        public static void Encode(ref Allocator allocator, IPAddress? item)
-        {
-            Allocator.Append(ref allocator, MaxLength, item, EncodeFunction);
-        }
-
-        public static void EncodeWithLengthPrefix(ref Allocator allocator, IPAddress? item)
-        {
-            Allocator.AppendWithLengthPrefix(ref allocator, MaxLength, item, EncodeFunction);
+            if (span.Length is 0)
+                return null;
+            return new IPAddress(span);
         }
     }
 }

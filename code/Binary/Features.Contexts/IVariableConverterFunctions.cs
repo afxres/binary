@@ -4,9 +4,9 @@ using System;
 
 internal interface IVariableConverterFunctions<T>
 {
+    static abstract int Limits(T? item);
+
+    static abstract int Append(Span<byte> span, T? item);
+
     static abstract T Decode(in ReadOnlySpan<byte> span);
-
-    static abstract void Encode(ref Allocator allocator, T? item);
-
-    static abstract void EncodeWithLengthPrefix(ref Allocator allocator, T? item);
 }

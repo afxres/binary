@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Creators.Isolated.Primitive;
+﻿namespace Mikodev.Binary.Creators.Isolated.Variables;
 
 using System;
 using System.Text;

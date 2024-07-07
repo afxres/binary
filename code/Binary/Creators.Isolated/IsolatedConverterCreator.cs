@@ -1,7 +1,6 @@
 ﻿namespace Mikodev.Binary.Creators.Isolated;
 
 using Mikodev.Binary.Creators.Isolated.Constants;
-using Mikodev.Binary.Creators.Isolated.Primitive;
 using Mikodev.Binary.Creators.Isolated.Variables;
 using System;
 using System.Collections.Frozen;

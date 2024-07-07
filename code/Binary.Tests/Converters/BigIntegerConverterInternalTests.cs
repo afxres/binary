@@ -19,8 +19,24 @@ public class BigIntegerConverterInternalTests
     [MemberData(nameof(DataNotEnoughSpace))]
     public void NotEnoughSpace(int length, BigInteger data)
     {
-        var functor = ReflectionExtensions.CreateDelegate<AllocatorWriter<BigInteger>>(x => x.Name is "BigIntegerConverter", x => x.Name.Contains("Invoke"));
+        var functor = ReflectionExtensions.CreateDelegate<AllocatorWriter<BigInteger>>(x => x.FullName?.EndsWith("BigIntegerConverter+Functions") is true, x => x.Name is "Append");
         var error = Assert.Throws<InvalidOperationException>(() => functor.Invoke(new Span<byte>(new byte[length]), data));
         Assert.Equal("Try write bytes failed.", error.Message);
+    }
+
+    public static IEnumerable<object?[]> DataMaxLength()
+    {
+        yield return new object[] { new BigInteger() };
+        yield return new object[] { new BigInteger(ulong.MaxValue) };
+    }
+
+    [Theory(DisplayName = "Max Length")]
+    [MemberData(nameof(DataMaxLength))]
+    public void MaxLengthTest(BigInteger data)
+    {
+        var functor = ReflectionExtensions.CreateDelegate<Func<BigInteger, int>>(x => x.FullName?.EndsWith("BigIntegerConverter+Functions") is true, x => x.Name is "Limits");
+        var expected = data.GetByteCount();
+        var actual = functor.Invoke(data);
+        Assert.Equal(expected, actual);
     }
 }
