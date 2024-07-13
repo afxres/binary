@@ -54,7 +54,7 @@ public ref partial struct Allocator
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool TryEnsure(ref Allocator allocator, int length)
+    private static bool Enough(ref Allocator allocator, int length)
     {
         Debug.Assert(allocator.bounds >= 0);
         Debug.Assert(allocator.offset >= 0);
@@ -63,10 +63,11 @@ public ref partial struct Allocator
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static ref byte TryCreate(ref Allocator allocator, int length)
+    private static ref byte Cursor(ref Allocator allocator)
     {
-        if (TryEnsure(ref allocator, length) is false)
-            return ref Unsafe.NullRef<byte>();
+        Debug.Assert(allocator.bounds >= 0);
+        Debug.Assert(allocator.offset >= 0);
+        Debug.Assert(allocator.bounds >= allocator.offset);
         var offset = allocator.offset;
         return ref Unsafe.Add(ref allocator.target, offset);
     }

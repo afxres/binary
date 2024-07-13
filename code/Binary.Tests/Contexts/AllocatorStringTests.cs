@@ -157,4 +157,158 @@ public class AllocatorStringTests
         });
         Assert.Equal("Invalid return value.", error.Message);
     }
+
+    [Theory(DisplayName = "Append String Fake Encoding Test")]
+    [InlineData(80, 80, 80, 80, -1, 80)]
+    [InlineData(80, 80, 20, 80, -1, 20)]
+    [InlineData(80, 80, 20, 81, 20, 20)]
+    [InlineData(80, 160, 81, 81, 81, 81)]
+    [InlineData(80, 160, 81, 320, 81, 81)]
+    public void AppendStringFakeEncodingTest(int allocatorInitialCapacity, int allocatorFinalCapacity, int allocatorFinalLength, int getMaxByteCountReturn, int getByteCountReturn, int getBytesReturn)
+    {
+        var encoding = new FakeEncoding
+        {
+            GetMaxByteCountCallback = _ => getMaxByteCountReturn,
+            GetByteCountCallback = getByteCountReturn is -1 ? (_ => throw new NotSupportedException()) : (_ => getByteCountReturn),
+            GetBytesCallback = (_, _) => getBytesReturn,
+        };
+        var allocator = new Allocator(new Span<byte>(new byte[allocatorInitialCapacity]));
+        Assert.Equal(0, allocator.Length);
+        Assert.Equal(allocatorInitialCapacity, allocator.Capacity);
+        Allocator.Append(ref allocator, string.Empty, encoding);
+        Assert.Equal(allocatorFinalLength, allocator.Length);
+        Assert.Equal(allocatorFinalCapacity, allocator.Capacity);
+    }
+
+    [Theory(DisplayName = "Append String With Length Prefix Fake Encoding Test")]
+    [InlineData(120, 120, 117, 116, -1, 116, 1)]
+    [InlineData(120, 120, 101, 116, -1, 100, 1)]
+    [InlineData(120, 120, 101, 117, 100, 100, 1)]
+    [InlineData(120, 240, 118, 117, 117, 117, 1)]
+    [InlineData(120, 240, 118, 240, 117, 117, 1)]
+    [InlineData(120, 240, 134, 240, 130, 130, 4)]
+    [InlineData(120, 240, 134, 480, 130, 130, 4)]
+    public void AppendStringWithLengthPrefixFakeEncodingTest(int allocatorInitialCapacity, int allocatorFinalCapacity, int allocatorFinalLength, int getMaxByteCountReturn, int getByteCountReturn, int getBytesReturn, int prefixLength)
+    {
+        var encoding = new FakeEncoding
+        {
+            GetMaxByteCountCallback = _ => getMaxByteCountReturn,
+            GetByteCountCallback = getByteCountReturn is -1 ? (_ => throw new NotSupportedException()) : (_ => getByteCountReturn),
+            GetBytesCallback = (_, _) => getBytesReturn,
+        };
+        var allocator = new Allocator(new Span<byte>(new byte[allocatorInitialCapacity]));
+        Assert.Equal(0, allocator.Length);
+        Assert.Equal(allocatorInitialCapacity, allocator.Capacity);
+        Allocator.AppendWithLengthPrefix(ref allocator, string.Empty, encoding);
+        Assert.Equal(allocatorFinalLength, allocator.Length);
+        Assert.Equal(allocatorFinalCapacity, allocator.Capacity);
+        var buffer = allocator.AsSpan();
+        var length = Converter.Decode(buffer, out var bytesRead);
+        Assert.Equal(getBytesReturn, length);
+        Assert.Equal(prefixLength, bytesRead);
+    }
+
+    [Theory(DisplayName = "Append String Fake Encoding Invalid Return Value Test")]
+    [InlineData(-1)]
+    [InlineData(-4)]
+    [InlineData(-5)]
+    [InlineData(int.MinValue)]
+    public void AppendStringFakeEncodingInvalidReturnValueTest(int byteCount)
+    {
+        var a = Assert.Throws<NotSupportedException>(() =>
+        {
+            var encoding = new FakeEncoding
+            {
+                GetMaxByteCountCallback = _ => byteCount,
+                GetByteCountCallback = _ => throw new NotSupportedException("Tag A"),
+                GetBytesCallback = (_, _) => throw new NotSupportedException(),
+            };
+            var allocator = new Allocator(new Span<byte>(new byte[3]));
+            Assert.Equal(3, allocator.Capacity);
+            Allocator.Append(ref allocator, string.Empty, encoding);
+        });
+        Assert.Equal("Tag A", a.Message);
+
+        var b = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        {
+            var encoding = new FakeEncoding
+            {
+                GetMaxByteCountCallback = _ => 1024,
+                GetByteCountCallback = _ => byteCount,
+                GetBytesCallback = (_, _) => throw new NotSupportedException(),
+            };
+            var allocator = new Allocator(new Span<byte>(new byte[3]));
+            Assert.Equal(3, allocator.Capacity);
+            Allocator.Append(ref allocator, string.Empty, encoding);
+        });
+        Assert.Equal("length", b.ParamName);
+    }
+
+    [Theory(DisplayName = "Append String With Length Prefix Fake Encoding Invalid Return Value Test")]
+    [InlineData(-5)]
+    [InlineData(int.MinValue)]
+    public void AppendStringWithLengthPrefixFakeEncodingInvalidReturnValueTest(int byteCount)
+    {
+        var a = Assert.Throws<NotSupportedException>(() =>
+        {
+            var encoding = new FakeEncoding
+            {
+                GetMaxByteCountCallback = _ => byteCount,
+                GetByteCountCallback = _ => throw new NotSupportedException("Tag A"),
+                GetBytesCallback = (_, _) => throw new NotSupportedException(),
+            };
+            var allocator = new Allocator(new Span<byte>(new byte[3]));
+            Assert.Equal(3, allocator.Capacity);
+            Allocator.AppendWithLengthPrefix(ref allocator, string.Empty, encoding);
+        });
+        Assert.Equal("Tag A", a.Message);
+
+        var b = Assert.Throws<ArgumentOutOfRangeException>(() =>
+        {
+            var encoding = new FakeEncoding
+            {
+                GetMaxByteCountCallback = _ => 1024,
+                GetByteCountCallback = _ => byteCount,
+                GetBytesCallback = (_, _) => throw new NotSupportedException(),
+            };
+            var allocator = new Allocator(new Span<byte>(new byte[3]));
+            Assert.Equal(3, allocator.Capacity);
+            Allocator.AppendWithLengthPrefix(ref allocator, string.Empty, encoding);
+        });
+        Assert.Equal("length", b.ParamName);
+    }
+
+    [Theory(DisplayName = "Append String With Length Prefix Fake Encoding Special Invalid Return Value Test")]
+    [InlineData(-1)]
+    [InlineData(-2)]
+    [InlineData(-3)]
+    [InlineData(-4)]
+    public void AppendStringWithLengthPrefixFakeEncodingSpecialInvalidReturnValueTest(int byteCount)
+    {
+        _ = Assert.Throws<InvalidOperationException>(() =>
+        {
+            var encoding = new FakeEncoding
+            {
+                GetMaxByteCountCallback = _ => byteCount,
+                GetByteCountCallback = _ => throw new NotSupportedException(),
+                GetBytesCallback = (_, _) => throw new NotSupportedException(),
+            };
+            var allocator = new Allocator(new Span<byte>(new byte[3]));
+            Assert.Equal(3, allocator.Capacity);
+            Allocator.AppendWithLengthPrefix(ref allocator, string.Empty, encoding);
+        });
+
+        _ = Assert.Throws<InvalidOperationException>(() =>
+        {
+            var encoding = new FakeEncoding
+            {
+                GetMaxByteCountCallback = _ => 1024,
+                GetByteCountCallback = _ => byteCount,
+                GetBytesCallback = (_, _) => throw new NotSupportedException(),
+            };
+            var allocator = new Allocator(new Span<byte>(new byte[3]));
+            Assert.Equal(3, allocator.Capacity);
+            Allocator.AppendWithLengthPrefix(ref allocator, string.Empty, encoding);
+        });
+    }
 }

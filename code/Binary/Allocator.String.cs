@@ -12,10 +12,10 @@ public ref partial struct Allocator
     public static void Append(ref Allocator allocator, scoped ReadOnlySpan<char> span, Encoding encoding)
     {
         ArgumentNullException.ThrowIfNull(encoding);
-        var limits = encoding.GetMaxByteCount(span.Length);
-        ref var target = ref TryCreate(ref allocator, limits);
-        if (Unsafe.IsNullRef(ref target))
-            target = ref Create(ref allocator, limits = encoding.GetByteCount(span));
+        int limits;
+        if (Enough(ref allocator, (limits = encoding.GetMaxByteCount(span.Length))) is false)
+            Ensure(ref allocator, (limits = encoding.GetByteCount(span)));
+        ref var target = ref Cursor(ref allocator);
         var actual = encoding.GetBytes(span, MemoryMarshal.CreateSpan(ref target, limits));
         if ((uint)actual > (uint)limits)
             ThrowHelper.ThrowInvalidReturnValue();
@@ -27,15 +27,13 @@ public ref partial struct Allocator
     public static void AppendWithLengthPrefix(ref Allocator allocator, scoped ReadOnlySpan<char> span, Encoding encoding)
     {
         ArgumentNullException.ThrowIfNull(encoding);
-        var limits = encoding.GetMaxByteCount(span.Length);
+        int limits;
+        if (Enough(ref allocator, (limits = encoding.GetMaxByteCount(span.Length)) + 4) is false)
+            Ensure(ref allocator, (limits = encoding.GetByteCount(span)) + 4);
+        if (limits < 0)
+            ThrowHelper.ThrowInvalidReturnValue();
+        ref var target = ref Cursor(ref allocator);
         var numberLength = NumberModule.EncodeLength((uint)limits);
-        ref var target = ref TryCreate(ref allocator, limits + numberLength);
-        if (Unsafe.IsNullRef(ref target))
-        {
-            limits = encoding.GetByteCount(span);
-            numberLength = NumberModule.EncodeLength((uint)limits);
-            target = ref Create(ref allocator, limits + numberLength);
-        }
         var actual = encoding.GetBytes(span, MemoryMarshal.CreateSpan(ref Unsafe.Add(ref target, numberLength), limits));
         if ((uint)actual > (uint)limits)
             ThrowHelper.ThrowInvalidReturnValue();
