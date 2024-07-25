@@ -42,10 +42,12 @@ internal sealed class DetectEndianConverterCreator : IConverterCreator
         Register<float>(dictionary);
         Register<double>(dictionary);
         Register<Half>(dictionary);
+        Register<Index>(dictionary);
         Register<BitVector32>(dictionary);
         Register<Int128>(dictionary);
         Register<UInt128>(dictionary);
 
+        RegisterRepeat<Range, int>(dictionary);
         RegisterRepeat<Complex, double>(dictionary);
         RegisterRepeat<Matrix3x2, float>(dictionary);
         RegisterRepeat<Matrix4x4, float>(dictionary);

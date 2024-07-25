@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Converters.Numerics;
+﻿namespace Mikodev.Binary.Tests.Converters.Primitive;
 
 using Mikodev.Binary.Tests.Internal;
 using System;
@@ -8,13 +8,14 @@ using System.Numerics;
 using System.Reflection;
 using Xunit;
 
-public class ConverterBasicTests
+public class NativeEndianOrRepeatLittleEndianInfoTests
 {
     [Fact(DisplayName = "Shared Converters With Known Types")]
     public void SharedConverters()
     {
         var knownTypes = new[]
         {
+            typeof(Range),
             typeof(Complex),
             typeof(Matrix3x2),
             typeof(Matrix4x4),

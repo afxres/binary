@@ -1,11 +1,11 @@
-﻿namespace Mikodev.Binary.Tests.Features;
+﻿namespace Mikodev.Binary.Tests.Converters.Primitive;
 
 using System;
 using System.Collections.Generic;
 using System.Text;
 using Xunit;
 
-public class IntegrationTests
+public class NativeEndianOrLittleEndianDataTests
 {
     public static IEnumerable<object[]> SimpleObjectData =>
     [
@@ -44,6 +44,14 @@ public class IntegrationTests
         [double.PositiveInfinity],
         [double.NegativeInfinity],
     ];
+
+    public static IEnumerable<object[]> IndexData()
+    {
+        yield return new object[] { Index.Start };
+        yield return new object[] { Index.End };
+        yield return new object[] { Index.FromStart(2) };
+        yield return new object[] { Index.FromEnd(3) };
+    }
 
     public static IEnumerable<object[]> DateOnlyData =>
     [
@@ -100,6 +108,7 @@ public class IntegrationTests
 
     [Theory(DisplayName = "Encode Decode")]
     [MemberData(nameof(NumberData))]
+    [MemberData(nameof(IndexData))]
     [MemberData(nameof(DateOnlyData))]
     [MemberData(nameof(DateTimeOffsetData))]
     [MemberData(nameof(DateTimeData))]
@@ -127,6 +136,7 @@ public class IntegrationTests
 
     [Theory(DisplayName = "Encode Decode Auto")]
     [MemberData(nameof(NumberData))]
+    [MemberData(nameof(IndexData))]
     [MemberData(nameof(DateOnlyData))]
     [MemberData(nameof(DateTimeOffsetData))]
     [MemberData(nameof(DateTimeData))]
@@ -153,6 +163,7 @@ public class IntegrationTests
 
     [Theory(DisplayName = "Encode Decode With Length Prefix")]
     [MemberData(nameof(NumberData))]
+    [MemberData(nameof(IndexData))]
     [MemberData(nameof(DateOnlyData))]
     [MemberData(nameof(DateTimeOffsetData))]
     [MemberData(nameof(DateTimeData))]

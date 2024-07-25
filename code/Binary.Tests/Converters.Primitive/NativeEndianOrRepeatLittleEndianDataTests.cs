@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Converters.Numerics;
+﻿namespace Mikodev.Binary.Tests.Converters.Primitive;
 
 using Mikodev.Binary.Tests.Contexts;
 using Mikodev.Binary.Tests.Internal;
@@ -10,8 +10,17 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Xunit;
 
-public class ConverterIntegrationTests
+public class NativeEndianOrRepeatLittleEndianDataTests
 {
+    public static IEnumerable<object[]> RangeData()
+    {
+        yield return new object[] { Range.All };
+        yield return new object[] { Range.StartAt(Index.FromStart(2)) };
+        yield return new object[] { Range.StartAt(Index.FromEnd(3)) };
+        yield return new object[] { Range.EndAt(Index.FromStart(4)) };
+        yield return new object[] { Range.EndAt(Index.FromEnd(5)) };
+    }
+
     public static IEnumerable<object[]> ComplexData()
     {
         yield return new object[] { Complex.Zero };
@@ -77,6 +86,7 @@ public class ConverterIntegrationTests
     }
 
     [Theory(DisplayName = "Encode Decode")]
+    [MemberData(nameof(RangeData))]
     [MemberData(nameof(ComplexData))]
     [MemberData(nameof(Matrix3x2Data))]
     [MemberData(nameof(Matrix4x4Data))]
@@ -101,6 +111,7 @@ public class ConverterIntegrationTests
     }
 
     [Theory(DisplayName = "Encode Decode Multiple")]
+    [MemberData(nameof(RangeData))]
     [MemberData(nameof(ComplexData))]
     [MemberData(nameof(Matrix3x2Data))]
     [MemberData(nameof(Matrix4x4Data))]

@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Features;
+﻿namespace Mikodev.Binary.Tests.Converters.Primitive;
 
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xunit;
 
-public class EndiannessTests
+public class NativeEndianOrLittleEndianInfoTests
 {
     private delegate T Decode<T>(ref byte source);
 
@@ -53,9 +53,18 @@ public class EndiannessTests
         [8, 3.0],
     ];
 
+    public static IEnumerable<object[]> IndexData()
+    {
+        yield return new object[] { 4, Index.Start };
+        yield return new object[] { 4, Index.End };
+        yield return new object[] { 4, Index.FromStart(1) };
+        yield return new object[] { 4, Index.FromEnd(1) };
+    }
+
     [Theory(DisplayName = "Fallback Converter Info")]
     [MemberData(nameof(EnumData))]
     [MemberData(nameof(NumberData))]
+    [MemberData(nameof(IndexData))]
     public void FallbackConverterBasicInfo<T>(int length, T data)
     {
         var generator = Generator.CreateDefault();
@@ -71,6 +80,7 @@ public class EndiannessTests
     [Theory(DisplayName = "Internal Native Endian Converter Info")]
     [MemberData(nameof(EnumData))]
     [MemberData(nameof(NumberData))]
+    [MemberData(nameof(IndexData))]
     public void InternalNativeEndianConverterInfo<T>(int length, T data)
     {
         var creatorName = typeof(T).IsEnum ? "DetectEndianEnumConverterCreator" : "DetectEndianConverterCreator";
@@ -89,6 +99,7 @@ public class EndiannessTests
     [Theory(DisplayName = "Internal Little Endian Converter Info")]
     [MemberData(nameof(EnumData))]
     [MemberData(nameof(NumberData))]
+    [MemberData(nameof(IndexData))]
     public void InternalLittleEndianConverterInfo<T>(int length, T data)
     {
         var creatorName = typeof(T).IsEnum ? "DetectEndianEnumConverterCreator" : "DetectEndianConverterCreator";
