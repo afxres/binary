@@ -38,7 +38,7 @@ internal static class ThrowHelper
     internal static void ThrowAmbiguousMembers(string memberName, Type type) => throw new ArgumentException($"Get members error, ambiguous members detected, member name: {memberName}, type: {type}");
 
     [DoesNotReturn]
-    internal static void ThrowNotConverter(Type type) => throw new ArgumentException($"Invalid converter instance, '{type}' is not a subclass of '{typeof(Converter<>)}'");
+    internal static void ThrowNotConverter(Type type) => throw new ArgumentException($"Invalid converter instance, type: {type}");
 
     [DoesNotReturn]
     internal static void ThrowNoSuitableConstructor<T>() => throw new NotSupportedException($"No suitable constructor found, type: {typeof(T)}");

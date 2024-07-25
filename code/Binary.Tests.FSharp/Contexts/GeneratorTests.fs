@@ -236,7 +236,7 @@ let ``Bad Creator (item type mismatch)`` () =
 let ``Bad Creator (not a subclass)`` () =
     let generator = Generator.CreateDefaultBuilder().AddConverterCreator(BadConverterCreatorInterfaceImplementation()).Build()
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter typeof<BadType> |> ignore)
-    let message = $"Invalid converter instance, '{typeof<BadConverterInterfaceImplementation>}' is not a subclass of '{typedefof<Converter<_>>}'"
+    let message = $"Invalid converter instance, type: {typeof<BadConverterInterfaceImplementation>}"
     Assert.Equal(message, error.Message)
     ()
 
