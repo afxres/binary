@@ -107,6 +107,6 @@ public class InlineArrayContextTests
         Assert.NotNull(result);
         Assert.Empty(result.SourceCode);
         Assert.Empty(result.ConverterCreatorTypeName);
-        Assert.Equal(SourceStatus.Skip, result.Status);
+        Assert.Equal(SourceStatus.Ignored, result.Status);
     }
 }

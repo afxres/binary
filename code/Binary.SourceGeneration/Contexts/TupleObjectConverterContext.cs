@@ -13,7 +13,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
 
     private TupleObjectConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, ImmutableArray<SymbolTupleMemberInfo> members, SymbolConstructorInfo<SymbolTupleMemberInfo>? constructor) : base(context, tracker, symbol)
     {
-        members.AsSpan().ForEach((index, value) => AddType(index, value.Type));
+        members.ForEach((index, value) => AddType(index, value.Type));
         this.members = members;
         this.constructor = constructor;
     }

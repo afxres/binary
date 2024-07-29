@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Text;
 
 public static class SystemExtensions
@@ -50,7 +51,14 @@ public static class SystemExtensions
         return true;
     }
 
-    public static void ForEach<T>(this ReadOnlySpan<T> values, Action<int, T> action)
+    public static void ForEach<T>(this ImmutableArray<T> values, Action<T> action)
+    {
+        foreach (var i in values)
+            action.Invoke(i);
+        return;
+    }
+
+    public static void ForEach<T>(this ImmutableArray<T> values, Action<int, T> action)
     {
         for (var i = 0; i < values.Length; i++)
             action.Invoke(i, values[i]);

@@ -140,38 +140,31 @@ public sealed class SourceGenerator : IIncrementalGenerator
     private static SourceResult? Handle(SourceGeneratorContext context, SourceGeneratorTracker tracker, ContextInfo info, ITypeSymbol symbol)
     {
         var kind = context.ValidateType(symbol);
-        if (kind is SymbolTypeKind.Ignore)
+        if (kind is SymbolTypeKind.BadType)
             return null;
 
         var inclusions = info.Inclusions;
         var cancellation = context.CancellationToken;
-        var result = default(SourceResult);
-        var handlers = kind is SymbolTypeKind.Native
+        var handlers = kind is SymbolTypeKind.RawType
             ? NativeTypeHandlers
             : CustomTypeHandlers;
+        var result = handlers
+            .Select(x => x.Invoke(context, tracker, symbol))
+            .FirstOrDefault(x => x is not null);
 
-        foreach (var handler in handlers)
-        {
-            result = handler.Invoke(context, tracker, symbol);
-            cancellation.ThrowIfCancellationRequested();
-            if (result is null)
-                continue;
-            if (result.Status is SourceStatus.Ok)
-                return result;
-            break;
-        }
-
+        if (result?.Status is SourceStatus.Ok)
+            return result;
         if (inclusions.TryGetValue(symbol, out var attribute) is false)
             return null;
 
-        var symbolDisplay = Symbols.GetSymbolDiagnosticDisplayString(symbol);
-        if (result?.Status is not SourceStatus.NoAvailableMember)
-            context.Collect(Constants.NoConverterGenerated.With(attribute, [symbolDisplay]));
-        else if (context.GetTypeInfo(symbol).ConflictFieldsAndProperties is { Length: not 0 } conflict)
-            foreach (var name in conflict)
-                context.Collect(Constants.AmbiguousMemberFound.With(attribute, [name, symbolDisplay]));
+        var symbolText = Symbols.GetSymbolDiagnosticDisplayString(symbol);
+        if (result?.Status is SourceStatus.NoAvailableMember)
+            if (context.GetTypeInfo(symbol).ConflictFieldsAndProperties is { Length: not 0 } targets)
+                targets.ForEach(name => context.Collect(Constants.AmbiguousMemberFound.With(attribute, [name, symbolText])));
+            else
+                context.Collect(Constants.NoAvailableMemberFound.With(attribute, [symbolText]));
         else
-            context.Collect(Constants.NoAvailableMemberFound.With(attribute, [symbolDisplay]));
+            context.Collect(Constants.NoConverterGenerated.With(attribute, [symbolText]));
         return null;
     }
 

@@ -2,9 +2,9 @@
 
 public enum SymbolTypeKind
 {
-    Ignore,
+    BadType,
 
-    Native,
+    RawType,
 
-    Custom,
+    CustomType,
 }

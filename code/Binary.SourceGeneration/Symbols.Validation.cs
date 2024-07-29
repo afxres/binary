@@ -38,8 +38,8 @@ public static partial class Symbols
         var namedObjectAttribute = context.GetAttribute(symbol, Constants.NamedObjectAttributeTypeName);
         var tupleObjectAttribute = context.GetAttribute(symbol, Constants.TupleObjectAttributeTypeName);
 
-        var symbolDisplay = GetSymbolDiagnosticDisplayString(symbol);
         var diagnostics = new List<Diagnostic>();
+        var symbolText = GetSymbolDiagnosticDisplayString(symbol);
         var attributes = new[] { converterAttribute, converterCreatorAttribute, namedObjectAttribute, tupleObjectAttribute }
             .OfType<AttributeData>()
             .ToList();
@@ -49,15 +49,15 @@ public static partial class Symbols
         cancellation.ThrowIfCancellationRequested();
 
         if (attributes.Count is 0 or 1)
-            ValidateType(context, symbol, symbolDisplay, attributes.SingleOrDefault(), diagnostics);
+            ValidateType(context, symbol, symbolText, attributes.SingleOrDefault(), diagnostics);
         else
-            diagnostics.Add(Constants.MultipleAttributesFoundOnType.With(symbol, [symbolDisplay]));
+            diagnostics.Add(Constants.MultipleAttributesFoundOnType.With(symbol, [symbolText]));
 
         if (diagnostics.Count is 0)
-            return attributes.Count is 0 ? SymbolTypeKind.Native : SymbolTypeKind.Custom;
+            return attributes.Count is 0 ? SymbolTypeKind.RawType : SymbolTypeKind.CustomType;
         foreach (var diagnostic in diagnostics)
             context.Collect(diagnostic);
-        return SymbolTypeKind.Ignore;
+        return SymbolTypeKind.BadType;
     }
 
     private static DiagnosticDescriptor? ValidateContextType(TypeDeclarationSyntax declaration, INamedTypeSymbol symbol)
@@ -82,17 +82,17 @@ public static partial class Symbols
         return null;
     }
 
-    private static void ValidateType(SourceGeneratorContext context, ITypeSymbol symbol, string symbolDisplay, AttributeData? attribute, List<Diagnostic> diagnostics)
+    private static void ValidateType(SourceGeneratorContext context, ITypeSymbol symbol, string symbolText, AttributeData? attribute, List<Diagnostic> diagnostics)
     {
         var tupleMembers = new SortedDictionary<int, ISymbol>();
         var namedMembers = new SortedDictionary<string, ISymbol>();
         var typeInfo = context.GetTypeInfo(symbol);
         var typeAttribute = attribute?.AttributeClass;
         foreach (var member in typeInfo.OriginalFieldsAndProperties)
-            ValidateMember(context, symbolDisplay, typeAttribute?.Name, member, typeInfo.RequiredFieldsAndProperties, diagnostics, namedMembers, tupleMembers);
+            ValidateMember(context, symbolText, typeAttribute?.Name, member, typeInfo.RequiredFieldsAndProperties, diagnostics, namedMembers, tupleMembers);
         var tupleKeys = tupleMembers.Keys;
         if (tupleKeys.Count is not 0 && (tupleKeys.First() is not 0 || tupleKeys.Last() != tupleKeys.Count - 1))
-            diagnostics.Add(Constants.TupleKeyNotSequential.With(symbol, [symbolDisplay]));
+            diagnostics.Add(Constants.TupleKeyNotSequential.With(symbol, [symbolText]));
         if (diagnostics.Count is not 0)
             return;
 
@@ -104,11 +104,10 @@ public static partial class Symbols
         };
         if (members is null)
             return;
-        else if (typeInfo.ConflictFieldsAndProperties is { Length: not 0 } conflict)
-            foreach (var name in conflict)
-                diagnostics.Add(Constants.AmbiguousMemberFound.With(attribute, [name, symbolDisplay]));
+        else if (typeInfo.ConflictFieldsAndProperties is { Length: not 0 } targets)
+            targets.ForEach(name => diagnostics.Add(Constants.AmbiguousMemberFound.With(attribute, [name, symbolText])));
         else if (typeInfo.FilteredFieldsAndProperties.Intersect(members, SymbolEqualityComparer.Default).Any() is false)
-            diagnostics.Add(Constants.NoAvailableMemberFound.With(attribute, [symbolDisplay]));
+            diagnostics.Add(Constants.NoAvailableMemberFound.With(attribute, [symbolText]));
         return;
     }
 

@@ -13,7 +13,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
 
     private NamedObjectConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, ImmutableArray<SymbolNamedMemberInfo> members, SymbolConstructorInfo<SymbolNamedMemberInfo>? constructor) : base(context, tracker, symbol)
     {
-        members.AsSpan().ForEach((index, value) => AddType(index, value.Type));
+        members.ForEach((index, value) => AddType(index, value.Type));
         this.members = members;
         this.constructor = constructor;
     }
