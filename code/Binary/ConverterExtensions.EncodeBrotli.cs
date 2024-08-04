@@ -33,7 +33,7 @@ public static partial class ConverterExtensions
 
     private static byte[] EncodeBrotliInternal<T>(AllocatorAction<T> action, T item, ArrayPool<byte> arrays)
     {
-        var memory = arrays.Rent(1024 * 1024);
+        var memory = arrays.Rent(64 * 1024);
 
         try
         {

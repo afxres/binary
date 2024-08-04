@@ -179,9 +179,9 @@ public class ConverterExtensionsInternalTests
     public static IEnumerable<object[]> EncodeBrotliArrayPoolRentReturnData()
     {
         var limits = 10_000_000;
-        yield return new object[] { 0, new int[] { 1 << 20, BrotliEncoder.GetMaxCompressedLength(0) } };
-        yield return new object[] { 1, new int[] { 1 << 20, BrotliEncoder.GetMaxCompressedLength(1) } };
-        yield return new object[] { limits, new int[] { 1 << 20, BrotliEncoder.GetMaxCompressedLength(limits) } };
+        yield return new object[] { 0, new int[] { 1 << 16, BrotliEncoder.GetMaxCompressedLength(0) } };
+        yield return new object[] { 1, new int[] { 1 << 16, BrotliEncoder.GetMaxCompressedLength(1) } };
+        yield return new object[] { limits, new int[] { 1 << 16, BrotliEncoder.GetMaxCompressedLength(limits) } };
     }
 
     [Theory(DisplayName = "Encode Brotli Array Pool Test")]
