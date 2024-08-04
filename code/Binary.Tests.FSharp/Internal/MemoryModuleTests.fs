@@ -8,8 +8,6 @@ open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
 open Xunit
 
-type Ensure<'T> = delegate of item : 'T * swap : bool -> 'T
-
 type Encode<'T> = delegate of location : byref<byte> * item : 'T -> unit
 
 type Decode<'T> = delegate of location : byref<byte> -> 'T
@@ -36,56 +34,6 @@ type MemoryModuleTests () =
             Assert.NotNull m
             let d = Delegate.CreateDelegate(typeof<'T>, m.MakeGenericMethod(typeof<'T>.GetGenericArguments()))
             d :?> 'T
-
-    static member ``Data Alpha`` : (obj array) seq = seq {
-        yield [| int16 0x3389 |]
-        yield [| int32 0xB5A7_3EF8 |]
-        yield [| int64 0x87A6_E592_66DF_1A36UL |]
-    }
-
-    [<Theory>]
-    [<MemberData("Data Alpha")>]
-    member me.``Ensure (origin)`` (item : 'a) =
-        let f = me.MakeDelegate<Ensure<'a>>("MemoryModule.EnsureEndian")
-        let result = f.Invoke(item, false)
-        Assert.Equal<'a>(item, result)
-        ()
-
-    static member ``Data Bravo`` : (obj array) seq = seq {
-        yield [| int16 0x3CED; int16 0xED3C |]
-        yield [| int32 0x2B9C_6E74; int32 0x746E_9C2B |]
-        yield [| int64 0x11223344_5566AADDL; int64 0xDDAA6655_44332211UL |]
-    }
-
-    [<Theory>]
-    [<MemberData("Data Bravo")>]
-    member me.``Ensure (invert)`` (item : 'a, invert : 'a) =
-        let f = me.MakeDelegate<Ensure<'a>>("MemoryModule.EnsureEndian")
-        let result = f.Invoke(item, true)
-        Assert.Equal<'a>(invert, result)
-        ()
-
-    static member ``Data Charlie`` : (obj array) seq = seq {
-        yield [| byte 0x81 |]
-        yield [| sbyte 0x23 |]
-        yield [| char 0x6666 |]
-        yield [| uint16 0x7887 |]
-        yield [| uint32 0xCCDD_AABB |]
-        yield [| uint64 0xFFEEDDCC_88775544UL |]
-        yield [| single 2.1 |]
-        yield [| double 3.4 |]
-    }
-
-    [<Theory>]
-    [<MemberData("Data Charlie")>]
-    member me.``Ensure (invalid type)`` (item : 'a) =
-        let f = me.MakeDelegate<Ensure<'a>>("MemoryModule.EnsureEndian")
-        let alpha = Assert.Throws<NotSupportedException>(fun () -> f.Invoke(item, true) |> ignore)
-        let bravo = Assert.Throws<NotSupportedException>(fun () -> f.Invoke(item, false) |> ignore)
-        let message = NotSupportedException().Message
-        Assert.Equal(message, alpha.Message)
-        Assert.Equal(message, bravo.Message)
-        ()
 
     static member ``Data Delta`` : (obj array) seq = seq {
         yield [| int16 0xAC96 ; [| 0x96uy; 0xACuy |] |]

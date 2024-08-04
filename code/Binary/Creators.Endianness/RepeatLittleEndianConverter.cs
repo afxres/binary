@@ -1,7 +1,7 @@
 ﻿namespace Mikodev.Binary.Creators.Endianness;
 
 using Mikodev.Binary.Features.Contexts;
-using Mikodev.Binary.Features.Fallback;
+using Mikodev.Binary.Internal;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -20,7 +20,7 @@ internal sealed class RepeatLittleEndianConverter<T, E> : ConstantConverter<T, R
             var result = default(T);
             var target = MemoryMarshal.CreateSpan(ref Unsafe.As<T, E>(ref result), length);
             for (var i = 0; i < target.Length; i++)
-                target[i] = LittleEndianFallback.Decode<E>(ref Unsafe.Add(ref source, i * Unsafe.SizeOf<E>()));
+                target[i] = LittleEndian.Decode<E>(ref Unsafe.Add(ref source, i * Unsafe.SizeOf<E>()));
             return result;
         }
 
@@ -31,7 +31,7 @@ internal sealed class RepeatLittleEndianConverter<T, E> : ConstantConverter<T, R
             var length = Unsafe.SizeOf<T>() / Unsafe.SizeOf<E>();
             var source = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, E>(ref item), length);
             for (var i = 0; i < source.Length; i++)
-                LittleEndianFallback.Encode(ref Unsafe.Add(ref target, i * Unsafe.SizeOf<E>()), source[i]);
+                LittleEndian.Encode(ref Unsafe.Add(ref target, i * Unsafe.SizeOf<E>()), source[i]);
             return;
         }
     }

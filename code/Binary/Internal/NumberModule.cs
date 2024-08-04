@@ -1,8 +1,9 @@
 ﻿namespace Mikodev.Binary.Internal;
 
-using System;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 internal static class NumberModule
 {
@@ -24,7 +25,7 @@ internal static class NumberModule
         if (numberLength is 1)
             Unsafe.WriteUnaligned(ref location, (byte)number);
         else
-            Unsafe.WriteUnaligned(ref location, MemoryModule.EnsureEndian((int)(number | 0x8000_0000U), BitConverter.IsLittleEndian));
+            BinaryPrimitives.WriteUInt32BigEndian(MemoryMarshal.CreateSpan(ref location, sizeof(uint)), number | 0x8000_0000U);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -42,7 +43,7 @@ internal static class NumberModule
             return (int)header;
         if ((uint)(limits - offset) < 3U)
             ThrowHelper.ThrowNotEnoughBytes();
-        var result = (uint)MemoryModule.EnsureEndian(Unsafe.ReadUnaligned<int>(ref source), BitConverter.IsLittleEndian);
+        var result = BinaryPrimitives.ReadUInt32BigEndian(MemoryMarshal.CreateReadOnlySpan(ref source, sizeof(uint)));
         offset += 3;
         return (int)(result & 0x7FFF_FFFFU);
     }
