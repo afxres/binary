@@ -11,7 +11,7 @@ type HelperMethodTests() =
         Assert.NotNull invoke
         let parameterTypes = invoke.GetParameters() |> Array.map (fun x -> x.ParameterType)
         let t = typeof<GeneratorBuilderFSharpExtensions>.Assembly.GetTypes() |> Seq.filter (fun x -> x.Name = "CommonHelper") |> Seq.exactlyOne
-        let method = t.GetMethod(methodName, BindingFlags.Static ||| BindingFlags.NonPublic, null, parameterTypes, null)
+        let method = t.GetMethod(methodName, BindingFlags.Static ||| BindingFlags.Public ||| BindingFlags.NonPublic, null, parameterTypes, null)
         Assert.NotNull method
         Delegate.CreateDelegate(typeof<'T>, method) :?> 'T
 
