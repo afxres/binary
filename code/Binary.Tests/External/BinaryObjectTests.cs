@@ -36,8 +36,8 @@ public class BinaryObjectTests
     public void CreateItemCountLimited()
     {
         var create = GetInternalCreateDelegate();
-        var a = new[] { 1, 2, 3, 4, 5, 6, 7 };
-        var b = new[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+        var a = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+        var b = new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
         var da = create.Invoke(a.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString()))).ToImmutableArray());
         var db = create.Invoke(b.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString()))).ToImmutableArray());
         Assert.Equal("LongDataList", da.GetType().Name);

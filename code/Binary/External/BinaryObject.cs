@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary.External;
 
 using Mikodev.Binary.External.Contexts;
+using Mikodev.Binary.Internal;
 using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -9,14 +10,10 @@ using System.Runtime.InteropServices;
 
 internal static class BinaryObject
 {
-    internal const int ItemLimits = 7;
-
-    internal const int LongDataLimits = 15;
-
     internal static ByteViewList? Create(ImmutableArray<ReadOnlyMemory<byte>> items)
     {
         Debug.Assert(items.Any());
-        if (items.Length <= ItemLimits && items.All(x => x.Length <= LongDataLimits))
+        if (items.Length <= BinaryDefine.LongDataListItemCountLimits && items.All(x => x.Length <= BinaryDefine.LongDataListItemBytesLimits))
             return CreateLongDataList(items);
         else
             return CreateHashCodeList(items);
@@ -34,7 +31,7 @@ internal static class BinaryObject
     private static HashCodeList? CreateHashCodeList(ImmutableArray<ReadOnlyMemory<byte>> items)
     {
         var records = new HashCodeSlot[items.Length];
-        var buckets = new int[BinaryModule.GetCapacity(records.Length)];
+        var buckets = new int[DetectHashCodeListBucketLength(records.Length)];
         Array.Fill(buckets, -1);
 
         for (var i = 0; i < items.Length; i++)
@@ -57,5 +54,13 @@ internal static class BinaryObject
 
         Debug.Assert(records.Select(x => x.Next).All(next => next is -1 || (uint)next < (uint)records.Length));
         return new HashCodeList(buckets, records);
+    }
+
+    private static int DetectHashCodeListBucketLength(int capacity)
+    {
+        var result = BinaryDefine.HashCodeListPrimes.FirstOrDefault(x => x >= capacity);
+        if (result is 0)
+            ThrowHelper.ThrowMaxCapacityOverflow();
+        return result;
     }
 }

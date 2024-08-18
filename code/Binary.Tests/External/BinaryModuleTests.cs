@@ -26,40 +26,40 @@ public class BinaryModuleTests
 
     private delegate ReadOnlySpan<int> GetPrimes();
 
-    private static MethodInfo GetInternalMethod(string name)
+    private static MethodInfo GetInternalMethod(string typeName, string methodName)
     {
-        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryModule");
+        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name == typeName);
         Assert.NotNull(type);
-        var method = type.GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic);
+        var method = type.GetMethod(methodName, BindingFlags.Static | BindingFlags.NonPublic);
         Assert.NotNull(method);
         return method;
     }
 
-    private static T GetInternalDelegate<T>(string name) where T : Delegate
+    private static T GetInternalDelegate<T>(string typeName, string methodName) where T : Delegate
     {
-        var method = GetInternalMethod(name);
+        var method = GetInternalMethod(typeName, methodName);
         Assert.NotNull(method);
         return (T)Delegate.CreateDelegate(typeof(T), Assert.IsAssignableFrom<MethodInfo>(method));
     }
 
     private static HashCode GetHashCodeDelegate()
     {
-        return GetInternalDelegate<HashCode>("GetHashCode");
+        return GetInternalDelegate<HashCode>("BinaryModule", "GetHashCode");
     }
 
     private static Equality GetEqualityDelegate()
     {
-        return GetInternalDelegate<Equality>("GetEquality");
+        return GetInternalDelegate<Equality>("BinaryModule", "GetEquality");
     }
 
     private static Capacity GetCapacityDelegate()
     {
-        return GetInternalDelegate<Capacity>("GetCapacity");
+        return GetInternalDelegate<Capacity>("BinaryObject", "DetectHashCodeListBucketLength");
     }
 
     private static unsafe delegate*<ref byte, int, LongDataSlot> GetLongDataDelegate()
     {
-        var method = GetInternalMethod("GetLongData");
+        var method = GetInternalMethod("BinaryModule", "GetLongData");
         var handle = method.MethodHandle;
         return (delegate*<ref byte, int, LongDataSlot>)handle.GetFunctionPointer();
     }
@@ -173,8 +173,8 @@ public class BinaryModuleTests
         var getPrimes = (GetPrimes)Delegate.CreateDelegate(typeof(GetPrimes), getMethod);
         var systemPrimeTable = getPrimes.Invoke().ToArray();
 
-        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryModule");
-        var field = Assert.IsAssignableFrom<FieldInfo>(type.GetField("Primes", BindingFlags.Static | BindingFlags.NonPublic));
+        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryDefine");
+        var field = Assert.IsAssignableFrom<FieldInfo>(type.GetFields(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name.Contains("Primes")));
         var customPrimeTable = Assert.IsAssignableFrom<IReadOnlyList<int>>(field.GetValue(null));
 
         Assert.NotNull(systemPrimeTable);
@@ -191,8 +191,8 @@ public class BinaryModuleTests
     [InlineData(63356)]
     public void CapacityTest(int capacity)
     {
-        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryModule");
-        var field = Assert.IsAssignableFrom<FieldInfo>(type.GetField("Primes", BindingFlags.Static | BindingFlags.NonPublic));
+        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryDefine");
+        var field = Assert.IsAssignableFrom<FieldInfo>(type.GetFields(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name.Contains("Primes")));
         var customPrimeTable = Assert.IsAssignableFrom<IReadOnlyList<int>>(field.GetValue(null));
 
         var function = GetCapacityDelegate();
@@ -214,8 +214,8 @@ public class BinaryModuleTests
     [Fact(DisplayName = "Capacity (match prime table)")]
     public void CapacityEqual()
     {
-        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryModule");
-        var field = Assert.IsAssignableFrom<FieldInfo>(type.GetField("Primes", BindingFlags.Static | BindingFlags.NonPublic));
+        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryDefine");
+        var field = Assert.IsAssignableFrom<FieldInfo>(type.GetFields(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name.Contains("Primes")));
         var customPrimeTable = Assert.IsAssignableFrom<IReadOnlyList<int>>(field.GetValue(null));
 
         var function = GetCapacityDelegate();
