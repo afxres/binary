@@ -3,9 +3,11 @@
 using Mikodev.Binary.Attributes;
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 
+[RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal sealed class MetaMemberInfo
 {
     private readonly bool optional;
@@ -32,7 +34,7 @@ internal sealed class MetaMemberInfo
 
     public ContextMemberInitializer Initializer => this.initializer;
 
-    public Type Type => this.member is FieldInfo field ? field.FieldType : ((PropertyInfo)this.member).PropertyType;
+    public Type Type => this.member is FieldInfo field ? @field.FieldType : ((PropertyInfo)this.member).PropertyType;
 
     public MetaMemberInfo(MemberInfo member, Attribute? key, Attribute? conversion, bool optional)
     {
