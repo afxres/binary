@@ -10,9 +10,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 
+[RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal static class ContextMethodsOfTupleObject
 {
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static IConverter GetConverterAsTupleObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<ContextMemberInitializer> members)
     {
         Debug.Assert(converters.Length == members.Length);
@@ -26,7 +26,6 @@ internal static class ContextMethodsOfTupleObject
         return (IConverter)converter;
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static Delegate GetEncodeDelegateAsTupleObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<ContextMemberInitializer> members, bool auto)
     {
         Debug.Assert(converters.Length == members.Length);
@@ -46,7 +45,6 @@ internal static class ContextMethodsOfTupleObject
         return lambda.Compile();
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static Delegate? GetDecodeDelegateAsTupleObject(Type type, ImmutableArray<IConverter> converters, ContextObjectConstructor? constructor, bool auto)
     {
         ImmutableArray<Expression> Initialize(ImmutableArray<ParameterExpression> parameters)

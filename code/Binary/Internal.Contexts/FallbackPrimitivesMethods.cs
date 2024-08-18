@@ -9,6 +9,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
+[RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal static class FallbackPrimitivesMethods
 {
     private static readonly ImmutableArray<string> Names = ["Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Rest"];
@@ -40,7 +41,6 @@ internal static class FallbackPrimitivesMethods
         return CommonModule.SelectGenericTypeDefinitionOrDefault(type, Types.Contains);
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static IConverter GetTupleConverter(IGeneratorContext context, Type type)
     {
         var names = Names.Take(type.GetGenericArguments().Length);
@@ -53,7 +53,6 @@ internal static class FallbackPrimitivesMethods
         return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, initializers);
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static IConverter GetValueTupleConverter(IGeneratorContext context, Type type)
     {
         static void Invoke(Type type, Action<FieldInfo> action)
@@ -82,7 +81,6 @@ internal static class FallbackPrimitivesMethods
         return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, members);
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static IConverter? GetConverter(IGeneratorContext context, Type type)
     {
         if (IsTupleOrValueTuple(type) is false)

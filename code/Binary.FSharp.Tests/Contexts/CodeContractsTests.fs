@@ -20,7 +20,7 @@ let ``Public Types`` () =
 let ``Public Members With Requires Unreferenced Code Attribute`` () =
     let t = typeof<GeneratorBuilderFSharpExtensions>
     let members = t.GetMembers(BindingFlags.Instance ||| BindingFlags.Static ||| BindingFlags.Public)
-    let common = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "CommonModule") |> Array.exactlyOne
+    let common = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "CommonDefine") |> Array.exactlyOne
     let messageField = common.GetField("RequiresUnreferencedCodeMessage", BindingFlags.Static ||| BindingFlags.NonPublic)
     Assert.NotNull messageField
     let message = messageField.GetValue(null)

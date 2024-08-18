@@ -13,7 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using TokenValue = (System.Collections.Immutable.ImmutableDictionary<string, Token> Tokens, System.Exception? Error);
 
-[DebuggerDisplay(CommonModule.DebuggerDisplayValue)]
+[DebuggerDisplay(CommonDefine.DebuggerDisplayValue)]
 public sealed partial class Token : IDynamicMetaObjectProvider
 {
     private readonly IGenerator generator;

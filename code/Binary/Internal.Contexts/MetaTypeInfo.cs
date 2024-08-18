@@ -3,9 +3,11 @@
 using Mikodev.Binary.Attributes;
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
+[RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal sealed class MetaTypeInfo
 {
     private readonly bool required;

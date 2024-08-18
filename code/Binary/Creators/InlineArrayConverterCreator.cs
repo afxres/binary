@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-[RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
+[RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal sealed class InlineArrayConverterCreator : IConverterCreator
 {
     public IConverter? GetConverter(IGeneratorContext context, Type type)

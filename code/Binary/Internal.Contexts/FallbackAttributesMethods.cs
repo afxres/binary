@@ -10,9 +10,9 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
+[RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal static class FallbackAttributesMethods
 {
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static IConverter GetConverter(IGeneratorContext context, MetaTypeInfo typeInfo)
     {
         var type = typeInfo.Type;
@@ -43,12 +43,11 @@ internal static class FallbackAttributesMethods
         return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, initializers, names, optional, encoding);
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static ImmutableArray<MetaMemberInfo> GetMemberVariables(MetaTypeInfo typeInfo)
     {
         var type = typeInfo.Type;
         var builder = ImmutableArray.CreateBuilder<MetaMemberInfo>();
-        var members = CommonModule.GetAllFieldsAndProperties(type, CommonModule.PublicInstanceBindingFlags);
+        var members = CommonModule.GetAllFieldsAndProperties(type, CommonDefine.PublicInstanceBindingFlags);
         foreach (var member in members)
         {
             Debug.Assert(member is FieldInfo or PropertyInfo);
@@ -93,7 +92,7 @@ internal static class FallbackAttributesMethods
         return false;
     }
 
-    private static T GetConverterOrCreator<T>([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type instance, Type reflected, string? memberName)
+    private static T GetConverterOrCreator<T>(Type instance, Type reflected, string? memberName)
     {
         try
         {
@@ -111,15 +110,14 @@ internal static class FallbackAttributesMethods
         }
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static IConverter GetConverter(IGeneratorContext context, Type reflected, MetaMemberInfo? memberInfo, Attribute? attribute)
     {
         var type = memberInfo is null ? reflected : memberInfo.Type;
         Debug.Assert(attribute is null or ConverterAttribute or ConverterCreatorAttribute);
         if (attribute is ConverterAttribute alpha)
-            return CommonModule.GetConverter(GetConverterOrCreator<IConverter>(alpha.Type, reflected, memberInfo?.Name), type, null);
+            return EnsureModule.GetConverter(GetConverterOrCreator<IConverter>(alpha.Type, reflected, memberInfo?.Name), type, null);
         if (attribute is ConverterCreatorAttribute bravo)
-            return CommonModule.GetConverter(GetConverterOrCreator<IConverterCreator>(bravo.Type, reflected, memberInfo?.Name).GetConverter(context, type), type, bravo.Type);
+            return EnsureModule.GetConverter(GetConverterOrCreator<IConverterCreator>(bravo.Type, reflected, memberInfo?.Name).GetConverter(context, type), type, bravo.Type);
         Debug.Assert(attribute is null);
         return context.GetConverter(type);
     }
@@ -187,7 +185,6 @@ internal static class FallbackAttributesMethods
         return [.. map.Values];
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static ContextObjectConstructor? GetConstructor(Type type, ImmutableArray<MetaMemberInfo> members, ImmutableArray<ContextMemberInitializer> initializers)
     {
         static Dictionary<string, int>? CreateIgnoreCaseDictionary(ImmutableArray<MetaMemberInfo> members)

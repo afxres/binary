@@ -5,7 +5,7 @@ using System;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 
-[RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
+[RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal sealed class ReadOnlySequenceConverterCreator : IConverterCreator
 {
     public IConverter? GetConverter(IGeneratorContext context, Type type)

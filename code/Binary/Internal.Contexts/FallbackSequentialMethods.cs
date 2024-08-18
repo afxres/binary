@@ -1,9 +1,6 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts;
 
-using Mikodev.Binary.Creators.Endianness;
 using Mikodev.Binary.Internal.SpanLike;
-using Mikodev.Binary.Internal.SpanLike.Adapters;
-using Mikodev.Binary.Internal.SpanLike.Contexts;
 using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
@@ -12,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
+[RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal static class FallbackSequentialMethods
 {
     private static readonly MethodInfo ArrayCreateMethod;
@@ -27,22 +25,21 @@ internal static class FallbackSequentialMethods
             return func.Method.GetGenericMethodDefinition();
         }
 
-        var array = Info(GetArrayConverter);
+        var array = Info(SpanLikeFactory.GetArrayConverter);
         var unbox = new Func<MethodInfo, object, object>(GetConverter<object>).Method.GetGenericMethodDefinition();
         var create = new Dictionary<Type, MethodInfo>
         {
-            [typeof(List<>)] = Info(GetListConverter),
-            [typeof(Memory<>)] = Info(GetMemoryConverter),
-            [typeof(ArraySegment<>)] = Info(GetArraySegmentConverter),
-            [typeof(ReadOnlyMemory<>)] = Info(GetReadOnlyMemoryConverter),
-            [typeof(ImmutableArray<>)] = Info(GetImmutableArrayConverter),
+            [typeof(List<>)] = Info(SpanLikeFactory.GetListConverter),
+            [typeof(Memory<>)] = Info(SpanLikeFactory.GetMemoryConverter),
+            [typeof(ArraySegment<>)] = Info(SpanLikeFactory.GetArraySegmentConverter),
+            [typeof(ReadOnlyMemory<>)] = Info(SpanLikeFactory.GetReadOnlyMemoryConverter),
+            [typeof(ImmutableArray<>)] = Info(SpanLikeFactory.GetImmutableArrayConverter),
         };
         CreateMethods = create.ToFrozenDictionary();
         UnboxCreateMethod = unbox;
         ArrayCreateMethod = array;
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static IConverter? GetConverter(IGeneratorContext context, Type type)
     {
         MethodInfo? Invoke()
@@ -64,7 +61,6 @@ internal static class FallbackSequentialMethods
         return (IConverter)converter;
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static MethodInfo GetArrayMethodInfo(Type type, Type elementType)
     {
         if (type.IsSZArray is false)
@@ -77,40 +73,5 @@ internal static class FallbackSequentialMethods
         var converter = (Converter<E>)data;
         var target = CommonModule.CreateDelegate<Func<Converter<E>, object>>(null, method);
         return target.Invoke(converter);
-    }
-
-    private static Converter<T> GetConverter<T, E, A>(Converter<E> converter) where A : struct, ISpanLikeAdapter<T, E>
-    {
-        return converter is NativeEndianConverter<E> ? new ArrayBasedNativeEndianConverter<T, E, A>() : new ArrayBasedConverter<T, E, A>(converter);
-    }
-
-    internal static Converter<E[]> GetArrayConverter<E>(Converter<E> converter)
-    {
-        return GetConverter<E[], E, ArrayAdapter<E>>(converter);
-    }
-
-    internal static Converter<ArraySegment<E>> GetArraySegmentConverter<E>(Converter<E> converter)
-    {
-        return GetConverter<ArraySegment<E>, E, ArraySegmentAdapter<E>>(converter);
-    }
-
-    internal static Converter<ImmutableArray<E>> GetImmutableArrayConverter<E>(Converter<E> converter)
-    {
-        return GetConverter<ImmutableArray<E>, E, ImmutableArrayAdapter<E>>(converter);
-    }
-
-    internal static Converter<List<E>> GetListConverter<E>(Converter<E> converter)
-    {
-        return converter is NativeEndianConverter<E> ? new ListNativeEndianConverter<E>() : new ListConverter<E>(converter);
-    }
-
-    internal static Converter<Memory<E>> GetMemoryConverter<E>(Converter<E> converter)
-    {
-        return GetConverter<Memory<E>, E, MemoryAdapter<E>>(converter);
-    }
-
-    internal static Converter<ReadOnlyMemory<E>> GetReadOnlyMemoryConverter<E>(Converter<E> converter)
-    {
-        return GetConverter<ReadOnlyMemory<E>, E, ReadOnlyMemoryAdapter<E>>(converter);
     }
 }

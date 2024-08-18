@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[DebuggerDisplay(CommonModule.DebuggerDisplayValue)]
+[DebuggerDisplay(CommonDefine.DebuggerDisplayValue)]
 public ref partial struct Allocator
 {
     private readonly IAllocator? underlying;

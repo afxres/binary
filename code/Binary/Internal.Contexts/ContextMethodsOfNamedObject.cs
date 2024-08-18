@@ -11,6 +11,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
+[RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal static class ContextMethodsOfNamedObject
 {
     private static readonly MethodInfo AppendMethodInfo = new AllocatorAction<byte[]>(ObjectModule.Append).Method;
@@ -21,7 +22,6 @@ internal static class ContextMethodsOfNamedObject
 
     private static readonly MethodInfo EnsureMethodInfo = new Func<object, bool>(ObjectModule.NotDefaultValue).Method.GetGenericMethodDefinition();
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<ContextMemberInitializer> members, ImmutableArray<string> names, ImmutableArray<bool> optional, Converter<string> encoding)
     {
         Debug.Assert(members.Length == names.Length);
@@ -34,7 +34,6 @@ internal static class ContextMethodsOfNamedObject
         return (IConverter)converter;
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static Delegate GetEncodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<ContextMemberInitializer> members, ImmutableArray<string> names, ImmutableArray<bool> optional, Converter<string> encoding)
     {
         var item = Expression.Parameter(type, "item");
@@ -61,7 +60,6 @@ internal static class ContextMethodsOfNamedObject
         return lambda.Compile();
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static Delegate? GetDecodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<bool> optional, ContextObjectConstructor? constructor)
     {
         ImmutableArray<Expression> Initialize(ImmutableArray<ParameterExpression> parameters)

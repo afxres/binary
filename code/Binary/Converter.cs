@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-[DebuggerDisplay(CommonModule.DebuggerDisplayValue)]
+[DebuggerDisplay(CommonDefine.DebuggerDisplayValue)]
 public abstract partial class Converter<T>
 {
     private readonly int length;

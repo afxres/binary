@@ -55,7 +55,7 @@ internal sealed class GeneratorContext(ImmutableArray<IConverterCreator> creator
             throw new ArgumentException($"Circular type reference detected, type: {type}");
         foreach (var creator in this.creators)
             if ((converter = creator.GetConverter(this, type)) is not null)
-                return CommonModule.GetConverter(converter, type, creator.GetType());
+                return EnsureModule.GetConverter(converter, type, creator.GetType());
 
         if (this.fallback is { } fallback)
             return fallback.GetConverter(this, type);

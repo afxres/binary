@@ -2,10 +2,10 @@
 
 using Mikodev.Binary.Creators;
 using Mikodev.Binary.Creators.Endianness;
-using Mikodev.Binary.Internal.Contexts;
 using Mikodev.Binary.Internal.Sequence;
 using Mikodev.Binary.Internal.Sequence.Decoders;
 using Mikodev.Binary.Internal.Sequence.Encoders;
+using Mikodev.Binary.Internal.SpanLike;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -40,37 +40,37 @@ public static partial class Generator
     public static Converter<E[]> GetArrayConverter<E>(Converter<E> converter)
     {
         ArgumentNullException.ThrowIfNull(converter);
-        return FallbackSequentialMethods.GetArrayConverter(converter);
+        return SpanLikeFactory.GetArrayConverter(converter);
     }
 
     public static Converter<ArraySegment<E>> GetArraySegmentConverter<E>(Converter<E> converter)
     {
         ArgumentNullException.ThrowIfNull(converter);
-        return FallbackSequentialMethods.GetArraySegmentConverter(converter);
+        return SpanLikeFactory.GetArraySegmentConverter(converter);
     }
 
     public static Converter<ImmutableArray<E>> GetImmutableArrayConverter<E>(Converter<E> converter)
     {
         ArgumentNullException.ThrowIfNull(converter);
-        return FallbackSequentialMethods.GetImmutableArrayConverter(converter);
+        return SpanLikeFactory.GetImmutableArrayConverter(converter);
     }
 
     public static Converter<List<E>> GetListConverter<E>(Converter<E> converter)
     {
         ArgumentNullException.ThrowIfNull(converter);
-        return FallbackSequentialMethods.GetListConverter(converter);
+        return SpanLikeFactory.GetListConverter(converter);
     }
 
     public static Converter<Memory<E>> GetMemoryConverter<E>(Converter<E> converter)
     {
         ArgumentNullException.ThrowIfNull(converter);
-        return FallbackSequentialMethods.GetMemoryConverter(converter);
+        return SpanLikeFactory.GetMemoryConverter(converter);
     }
 
     public static Converter<ReadOnlyMemory<E>> GetReadOnlyMemoryConverter<E>(Converter<E> converter)
     {
         ArgumentNullException.ThrowIfNull(converter);
-        return FallbackSequentialMethods.GetReadOnlyMemoryConverter(converter);
+        return SpanLikeFactory.GetReadOnlyMemoryConverter(converter);
     }
 
     public static Converter<KeyValuePair<K, V>> GetKeyValuePairConverter<K, V>(Converter<K> key, Converter<V> value)

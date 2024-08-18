@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 
-[DebuggerDisplay(CommonModule.DebuggerDisplayValue)]
+[DebuggerDisplay(CommonDefine.DebuggerDisplayValue)]
 internal sealed class GeneratorBuilder : IGeneratorBuilder
 {
     private readonly LinkedList<IConverterCreator> creators = new LinkedList<IConverterCreator>();

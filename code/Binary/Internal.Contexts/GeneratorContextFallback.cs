@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 
-[RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
+[RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal sealed class GeneratorContextFallback : IGeneratorContextFallback
 {
     public IConverter GetConverter(IGeneratorContext context, Type type)

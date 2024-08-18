@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-[DebuggerDisplay(CommonModule.DebuggerDisplayValue)]
+[DebuggerDisplay(CommonDefine.DebuggerDisplayValue)]
 public readonly ref struct NamedObjectParameter
 {
     private readonly ReadOnlySpan<byte> source;

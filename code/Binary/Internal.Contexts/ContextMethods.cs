@@ -15,9 +15,9 @@ internal delegate Expression ContextMemberInitializer(Expression expression);
 
 internal delegate ImmutableArray<Expression> ContextObjectInitializer(ImmutableArray<ParameterExpression> parameters);
 
+[RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal static class ContextMethods
 {
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static Delegate GetDecodeDelegate(Type delegateType, ContextObjectInitializer initializer, ConstructorInfo constructor)
     {
         var parameters = constructor.GetParameters();
@@ -26,7 +26,6 @@ internal static class ContextMethods
         return GetDecodeDelegate(delegateType, initializer, constructor, objectIndexes, [], []);
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static Delegate GetDecodeDelegate(Type delegateType, ContextObjectInitializer initializer, ImmutableArray<ContextMemberInitializer> members)
     {
         Debug.Assert(members.Any());
@@ -34,7 +33,6 @@ internal static class ContextMethods
         return GetDecodeDelegate(delegateType, initializer, null, [], members, memberIndexes);
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static Delegate GetDecodeDelegate(Type delegateType, ContextObjectInitializer initializer, ConstructorInfo? constructor, ImmutableArray<int> objectIndexes, ImmutableArray<ContextMemberInitializer> members, ImmutableArray<int> memberIndexes)
     {
         var delegateInvoke = CommonModule.GetPublicInstanceMethod(delegateType, "Invoke");

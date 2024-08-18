@@ -16,6 +16,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
+[RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal static class FallbackCollectionMethods
 {
     private static readonly ImmutableArray<Type> InvalidTypeDefinitions;
@@ -90,7 +91,6 @@ internal static class FallbackCollectionMethods
         ImmutableCollectionCreateMethods = immutable.ToFrozenDictionary();
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     internal static IConverter? GetConverter(IGeneratorContext context, Type type)
     {
         if (CommonModule.TryGetInterfaceArguments(type, typeof(IEnumerable<>), out var arguments) is false)
@@ -103,7 +103,6 @@ internal static class FallbackCollectionMethods
             return GetConverter(context, GetCollectionConverter<IEnumerable<object>, object>, [type, .. arguments]);
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static IConverter GetConverter(IGeneratorContext context, Func<IGeneratorContext, IConverter> func, ImmutableArray<Type> types)
     {
         var method = func.Method.GetGenericMethodDefinition().MakeGenericMethod([.. types]);
@@ -111,7 +110,7 @@ internal static class FallbackCollectionMethods
         return target.Invoke(context);
     }
 
-    private static Func<Expression, Expression>? GetConstructorOrDefault([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type, Type enumerable)
+    private static Func<Expression, Expression>? GetConstructorOrDefault(Type type, Type enumerable)
     {
         if (type.IsAbstract || type.IsInterface)
             return null;
@@ -156,7 +155,6 @@ internal static class FallbackCollectionMethods
         return GetMethodCastDecodeDelegate<T, IEnumerable<KeyValuePair<K, V>>, IEnumerable<KeyValuePair<K, V>>>(new KeyValueEnumerableDecoder<K, V>(init, tail).Invoke, method);
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static DecodePassSpanDelegate<T>? GetCollectionDecodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
     {
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), ArrayOrListAssignableDefinitions.Contains))
@@ -171,7 +169,6 @@ internal static class FallbackCollectionMethods
             return null;
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static DecodePassSpanDelegate<T>? GetDictionaryDecodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
     {
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), DictionaryAssignableDefinitions.Contains))
@@ -188,7 +185,6 @@ internal static class FallbackCollectionMethods
             return null;
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static AllocatorAction<T?> GetCollectionEncodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
     {
         if (typeof(T) == typeof(HashSet<E>))
@@ -196,7 +192,6 @@ internal static class FallbackCollectionMethods
         return GetEnumeratorEncodeDelegate<T, E>(converter.EncodeAuto) ?? new EnumerableEncoder<T, E>(converter).Encode;
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static AllocatorAction<T?> GetDictionaryEncodeDelegate<T, K, V>(Converter<K> init, Converter<V> tail) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
     {
         if (typeof(T) == typeof(Dictionary<K, V>))
@@ -205,17 +200,16 @@ internal static class FallbackCollectionMethods
         return GetEnumeratorEncodeDelegate<T, KeyValuePair<K, V>>(source.EncodeKeyValuePairAuto) ?? source.Encode;
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static AllocatorAction<T?>? GetEnumeratorEncodeDelegate<T, E>(AllocatorAction<E> adapter)
     {
-        var initial = typeof(T).GetMethods(CommonModule.PublicInstanceBindingFlags).FirstOrDefault(x => x.Name is "GetEnumerator" && x.GetParameters().Length is 0);
+        var initial = typeof(T).GetMethods(CommonDefine.PublicInstanceBindingFlags).FirstOrDefault(x => x.Name is "GetEnumerator" && x.GetParameters().Length is 0);
         if (initial is null)
             return null;
         var enumeratorType = initial.ReturnType;
         if (enumeratorType.IsValueType is false)
             return null;
-        var methods = enumeratorType.GetMethods(CommonModule.PublicInstanceBindingFlags);
-        var properties = enumeratorType.GetProperties(CommonModule.PublicInstanceBindingFlags);
+        var methods = enumeratorType.GetMethods(CommonDefine.PublicInstanceBindingFlags);
+        var properties = enumeratorType.GetProperties(CommonDefine.PublicInstanceBindingFlags);
         var dispose = methods.FirstOrDefault(x => x.Name is "Dispose" && x.GetParameters().Length is 0 && x.ReturnType == typeof(void));
         var functor = methods.FirstOrDefault(x => x.Name is "MoveNext" && x.GetParameters().Length is 0 && x.ReturnType == typeof(bool));
         var current = properties.FirstOrDefault(x => x.Name is "Current" && x.GetGetMethod() is { } method && method.GetParameters().Length is 0 && x.PropertyType == typeof(E));
@@ -240,7 +234,6 @@ internal static class FallbackCollectionMethods
         return lambda.Compile();
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static SequenceConverter<T> GetCollectionConverter<T, E>(IGeneratorContext context) where T : IEnumerable<E>
     {
         var converter = context.GetConverter<E>();
@@ -249,7 +242,6 @@ internal static class FallbackCollectionMethods
         return new SequenceConverter<T>(encode, decode);
     }
 
-    [RequiresUnreferencedCode(CommonModule.RequiresUnreferencedCodeMessage)]
     private static SequenceConverter<T> GetDictionaryConverter<T, K, V>(IGeneratorContext context) where K : notnull where T : IEnumerable<KeyValuePair<K, V>>
     {
         var init = context.GetConverter<K>();

@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Diagnostics;
 
-[DebuggerDisplay(CommonModule.DebuggerDisplayValue)]
+[DebuggerDisplay(CommonDefine.DebuggerDisplayValue)]
 internal sealed class Generator : IGenerator
 {
     private readonly IGeneratorContextFallback? fallback;
