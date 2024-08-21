@@ -2,7 +2,6 @@
 
 using BenchmarkDotNet.Attributes;
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -48,32 +47,23 @@ public class BinaryDictionaryBenchmarks
 
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "BinaryObject");
         var methods = type.GetMethods(BindingFlags.Static | BindingFlags.NonPublic);
-        var createLongData = methods.Single(x => x.Name is "CreateLongDataDictionary");
-        var createHashCode = methods.Single(x => x.Name is "CreateHashCodeDictionary").MakeGenericMethod(typeof(int));
 
-        GetValueOrDefault CreateLongData(byte[][] keys)
+        GetValueOrDefault CreateDelegate(string create, byte[][] keys)
         {
+            var method = methods.Single(x => x.Name == create);
             var source = keys.Select(x => new ReadOnlyMemory<byte>(x)).ToImmutableArray();
-            var target = createLongData.Invoke(null, [(object)source]);
-            var result = Delegate.CreateDelegate(typeof(GetValueOrDefault), target!, "GetValue");
-            return (GetValueOrDefault)result;
-        }
-
-        GetValueOrDefault CreateHashCode(byte[][] keys)
-        {
-            var source = keys.Select((x, i) => KeyValuePair.Create(new ReadOnlyMemory<byte>(x), i)).ToImmutableArray();
-            var target = createHashCode.Invoke(null, [(object)source, -1]);
-            var result = Delegate.CreateDelegate(typeof(GetValueOrDefault), target!, "GetValue");
+            var target = method.Invoke(null, [source]);
+            var result = Delegate.CreateDelegate(typeof(GetValueOrDefault), target!, "Invoke");
             return (GetValueOrDefault)result;
         }
 
         this.keys3 = data3.Select(Encoding.UTF8.GetBytes).ToArray();
         this.keys7 = data7.Select(Encoding.UTF8.GetBytes).ToArray();
 
-        this.functorLongData3 = CreateLongData(this.keys3);
-        this.functorLongData7 = CreateLongData(this.keys7);
-        this.functorHashCode3 = CreateHashCode(this.keys3);
-        this.functorHashCode7 = CreateHashCode(this.keys7);
+        this.functorLongData3 = CreateDelegate("CreateLongDataList", this.keys3);
+        this.functorLongData7 = CreateDelegate("CreateLongDataList", this.keys7);
+        this.functorHashCode3 = CreateDelegate("CreateHashCodeList", this.keys3);
+        this.functorHashCode7 = CreateDelegate("CreateHashCodeList", this.keys7);
 
         Trace.Assert(this.keys3.Select(x => x.Length).SequenceEqual([2, 4, 7]));
         Trace.Assert(this.keys7.Select(x => x.Length).SequenceEqual([15, 0, 14, 4, 13, 8, 12]));
