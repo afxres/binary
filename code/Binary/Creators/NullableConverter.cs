@@ -36,7 +36,7 @@ internal sealed class NullableConverter<T>(Converter<T> converter) : Converter<T
         if (head is Some)
             return this.converter.Decode(in body);
         if (head is not None)
-            ThrowHelper.ThrowNullableTagInvalid<T>(head);
+            ThrowHelper.ThrowInvalidNullableTag<T>(head);
         return null;
     }
 
@@ -46,7 +46,7 @@ internal sealed class NullableConverter<T>(Converter<T> converter) : Converter<T
         if (head is Some)
             return this.converter.DecodeAuto(ref span);
         if (head is not None)
-            ThrowHelper.ThrowNullableTagInvalid<T>(head);
+            ThrowHelper.ThrowInvalidNullableTag<T>(head);
         return null;
     }
 }

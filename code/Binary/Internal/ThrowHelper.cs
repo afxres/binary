@@ -8,7 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 internal static class ThrowHelper
 {
     [DoesNotReturn]
-    internal static void ThrowAllocatorInvalid() => throw new InvalidOperationException("Allocator has been modified unexpectedly!");
+    internal static void ThrowInvalidAllocator() => throw new InvalidOperationException("Allocator has been modified unexpectedly!");
 
     [DoesNotReturn]
     internal static void ThrowMaxCapacityOverflow() => throw new ArgumentException("Maximum capacity has been reached.");
@@ -44,5 +44,5 @@ internal static class ThrowHelper
     internal static void ThrowNoSuitableConstructor<T>() => throw new NotSupportedException($"No suitable constructor found, type: {typeof(T)}");
 
     [DoesNotReturn]
-    internal static void ThrowNullableTagInvalid<T>(int tag) where T : struct => throw new ArgumentException($"Invalid nullable tag '{tag}', type: {typeof(T?)}");
+    internal static void ThrowInvalidNullableTag<T>(int tag) where T : struct => throw new ArgumentException($"Invalid nullable tag '{tag}', type: {typeof(T?)}");
 }

@@ -116,7 +116,7 @@ public ref partial struct Allocator
         var offset = allocator.offset;
         var result = (long)(uint)offset - (uint)anchor - sizeof(int);
         if (result < 0)
-            ThrowHelper.ThrowAllocatorInvalid();
+            ThrowHelper.ThrowInvalidAllocator();
         var length = (int)result;
         ref var target = ref Unsafe.Add(ref allocator.target, anchor);
         if (length <= Limits && allocator.bounds - offset >= ((-length) & 7))
