@@ -4,6 +4,7 @@ using Mikodev.Binary.Internal;
 using System;
 using System.Diagnostics.CodeAnalysis;
 
+[RequiresDynamicCode(CommonDefine.RequiresDynamicCodeMessage)]
 [RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal sealed class NullableConverterCreator : IConverterCreator
 {

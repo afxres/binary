@@ -12,14 +12,15 @@ public sealed partial class Token
     {
         private static readonly MethodInfo IndexerMethodInfo = new Func<Token, string, Token>(GetToken).Method;
 
-        private static readonly MethodInfo ConvertMethodInfo = new Func<Token, object>(GetValue<object>).Method.GetGenericMethodDefinition();
+        private static readonly MethodInfo ConvertMethodInfo = new Func<Token, Type, object?>(GetValue).Method;
 
         public override DynamicMetaObject BindConvert(ConvertBinder binder)
         {
             var type = binder.Type;
-            var body = type.IsAssignableFrom(typeof(Token))
-                ? Expression.Convert(Expression, type) as Expression
-                : Expression.Call(ConvertMethodInfo.MakeGenericMethod(type), Expression.Convert(Expression, typeof(Token)));
+            var data = Expression;
+            if (type.IsAssignableFrom(typeof(Token)) is false)
+                data = Expression.Call(ConvertMethodInfo, Expression.Convert(data, typeof(Token)), Expression.Constant(type));
+            var body = Expression.Convert(data, type);
             return new DynamicMetaObject(body, BindingRestrictions.GetTypeRestriction(Expression, LimitType));
         }
 

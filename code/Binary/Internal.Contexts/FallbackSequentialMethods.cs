@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
+[RequiresDynamicCode(CommonDefine.RequiresDynamicCodeMessage)]
 [RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal static class FallbackSequentialMethods
 {

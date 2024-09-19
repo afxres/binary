@@ -16,6 +16,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
+[RequiresDynamicCode(CommonDefine.RequiresDynamicCodeMessage)]
 [RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal static class FallbackCollectionMethods
 {

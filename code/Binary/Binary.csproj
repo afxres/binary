@@ -21,7 +21,7 @@
 
   <PropertyGroup>
     <Nullable>enable</Nullable>
-    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>

@@ -10,6 +10,7 @@ using System.Diagnostics.CodeAnalysis;
 
 public static partial class Generator
 {
+    [RequiresDynamicCode(CommonDefine.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
     private static IEnumerable<IConverterCreator> GetConverterCreators()
     {
@@ -26,12 +27,14 @@ public static partial class Generator
         yield return new DetectEndianEnumConverterCreator();
     }
 
+    [RequiresDynamicCode(CommonDefine.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
     public static IGenerator CreateDefault()
     {
         return CreateDefaultBuilder().Build();
     }
 
+    [RequiresDynamicCode(CommonDefine.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
     public static IGeneratorBuilder CreateDefaultBuilder()
     {

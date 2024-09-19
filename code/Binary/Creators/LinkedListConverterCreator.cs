@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
+[RequiresDynamicCode(CommonDefine.RequiresDynamicCodeMessage)]
 [RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal sealed class LinkedListConverterCreator : IConverterCreator
 {

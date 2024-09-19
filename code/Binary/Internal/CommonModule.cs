@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 
+[RequiresDynamicCode(CommonDefine.RequiresDynamicCodeMessage)]
 [RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal static class CommonModule
 {

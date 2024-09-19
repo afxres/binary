@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 
+[RequiresDynamicCode(CommonDefine.RequiresDynamicCodeMessage)]
 [RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal sealed class GeneratorContextFallback : IGeneratorContextFallback
 {

@@ -15,6 +15,7 @@ internal delegate Expression ContextMemberInitializer(Expression expression);
 
 internal delegate ImmutableArray<Expression> ContextObjectInitializer(ImmutableArray<ParameterExpression> parameters);
 
+[RequiresDynamicCode(CommonDefine.RequiresDynamicCodeMessage)]
 [RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal static class ContextMethods
 {

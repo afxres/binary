@@ -3,11 +3,9 @@
 using Mikodev.Binary.Attributes;
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
 
-[RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal sealed class MetaMemberInfo
 {
     private readonly bool optional;
