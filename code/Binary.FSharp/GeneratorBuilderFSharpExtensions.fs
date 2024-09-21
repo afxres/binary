@@ -7,8 +7,8 @@ open System.Runtime.CompilerServices
 [<Extension>]
 type GeneratorBuilderFSharpExtensions =
     [<Extension>]
-    [<RequiresDynamicCode("Requires dynamic code for binary serialization.")>]
-    [<RequiresUnreferencedCode("Requires public members for binary serialization.")>]
+    [<RequiresDynamicCode("Require dynamic code for binary serialization.")>]
+    [<RequiresUnreferencedCode("Require public members for binary serialization.")>]
     static member AddFSharpConverterCreators(builder : IGeneratorBuilder) =
         builder
             .AddConverterCreator(ListConverterCreator())

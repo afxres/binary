@@ -45,7 +45,7 @@ public class TrimAnalyzerTests
         var memberWithKnownAttributes = memberAttributes.Where(x => x.Value.Any(x => x is RequiresDynamicCodeAttribute)).ToImmutableDictionary();
         var messages = memberWithKnownAttributes.Select(x => x.Value.OfType<RequiresDynamicCodeAttribute>().Single().Message).ToHashSet();
         var message = Assert.Single(messages);
-        Assert.Equal("Requires dynamic code for binary serialization.", message);
+        Assert.Equal("Require dynamic code for binary serialization.", message);
     }
 
     [Fact(DisplayName = "Known 'RequiresUnreferencedCodeAttribute' Message")]
@@ -57,6 +57,6 @@ public class TrimAnalyzerTests
         var memberWithKnownAttributes = memberAttributes.Where(x => x.Value.Any(x => x is RequiresUnreferencedCodeAttribute)).ToImmutableDictionary();
         var messages = memberWithKnownAttributes.Select(x => x.Value.OfType<RequiresUnreferencedCodeAttribute>().Single().Message).ToHashSet();
         var message = Assert.Single(messages);
-        Assert.Equal("Requires public members for binary serialization.", message);
+        Assert.Equal("Require public members for binary serialization.", message);
     }
 }
