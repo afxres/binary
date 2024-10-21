@@ -24,7 +24,11 @@ public ref partial struct Allocator
         Unsafe.CopyBlockUnaligned(ref Assign(ref allocator, length), ref MemoryMarshal.GetReference(span), (uint)length);
     }
 
+#if NET9_0_OR_GREATER
+    public static void Append<T>(ref Allocator allocator, int length, T data, SpanAction<byte, T> action) where T : allows ref struct
+#else
     public static void Append<T>(ref Allocator allocator, int length, T data, SpanAction<byte, T> action)
+#endif
     {
         ArgumentNullException.ThrowIfNull(action);
         if (length is 0)
@@ -32,7 +36,11 @@ public ref partial struct Allocator
         action.Invoke(MemoryMarshal.CreateSpan(ref Assign(ref allocator, length), length), data);
     }
 
+#if NET9_0_OR_GREATER
+    public static void Append<T>(ref Allocator allocator, int maxLength, T data, AllocatorWriter<T> writer) where T : allows ref struct
+#else
     public static void Append<T>(ref Allocator allocator, int maxLength, T data, AllocatorWriter<T> writer)
+#endif
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentOutOfRangeException.ThrowIfNegative(maxLength);
@@ -47,7 +55,11 @@ public ref partial struct Allocator
         FinishCreate(ref allocator, actual);
     }
 
+#if NET9_0_OR_GREATER
+    public static void AppendWithLengthPrefix<T>(ref Allocator allocator, int maxLength, T data, AllocatorWriter<T> writer) where T : allows ref struct
+#else
     public static void AppendWithLengthPrefix<T>(ref Allocator allocator, int maxLength, T data, AllocatorWriter<T> writer)
+#endif
     {
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentOutOfRangeException.ThrowIfNegative(maxLength);
@@ -63,7 +75,11 @@ public ref partial struct Allocator
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if NET9_0_OR_GREATER
+    public static void AppendWithLengthPrefix<T>(ref Allocator allocator, T data, AllocatorAction<T> action) where T : allows ref struct
+#else
     public static void AppendWithLengthPrefix<T>(ref Allocator allocator, T data, AllocatorAction<T> action)
+#endif
     {
         ArgumentNullException.ThrowIfNull(action);
         var anchor = Anchor(ref allocator);
@@ -87,7 +103,11 @@ public ref partial struct Allocator
         allocator.offset += length;
     }
 
+#if NET9_0_OR_GREATER
+    public static byte[] Invoke<T>(T data, AllocatorAction<T> action) where T : allows ref struct
+#else
     public static byte[] Invoke<T>(T data, AllocatorAction<T> action)
+#endif
     {
         ArgumentNullException.ThrowIfNull(action);
         var handle = BufferModule.Borrow();

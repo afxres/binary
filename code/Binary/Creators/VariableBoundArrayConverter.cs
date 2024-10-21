@@ -3,7 +3,6 @@
 using Mikodev.Binary.Internal;
 using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -47,10 +46,6 @@ internal sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T 
 
     public override T? Decode(in ReadOnlySpan<byte> span)
     {
-        // TODO: use 'Array.CreateInstanceFromArrayType'
-        [UnconditionalSuppressMessage("AotAnalysis", "IL3050:RequiresDynamicCode")]
-        static Array Create(int[] lengths, int[] lowerBounds) => Array.CreateInstance(typeof(E), lengths, lowerBounds);
-
         static void Ensure(ReadOnlySpan<int> lengths, int converterLength, int remainingLength)
         {
             Debug.Assert(remainingLength >= 0);
@@ -76,7 +71,13 @@ internal sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T 
             startsList[i] = Converter.Decode(ref intent);
         var converter = this.converter;
         Ensure(lengthList, converter.Length, intent.Length);
+#if NET9_0_OR_GREATER
+        var result = Array.CreateInstanceFromArrayType(typeof(T), lengthList, startsList);
+#else
+        [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AotAnalysis", "IL3050:RequiresDynamicCode")]
+        static Array Create(int[] lengths, int[] lowerBounds) => Array.CreateInstance(typeof(E), lengths, lowerBounds);
         var result = Create(lengthList, startsList);
+#endif
         var target = MemoryMarshal.CreateSpan(ref Unsafe.As<byte, E>(ref MemoryMarshal.GetArrayDataReference(result)), result.Length);
         for (var i = 0; i < target.Length; i++)
             target[i] = converter.DecodeAuto(ref intent);

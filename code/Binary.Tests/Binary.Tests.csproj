@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0</TargetFrameworks>
+    <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
     <AssemblyName>Mikodev.Binary.Tests</AssemblyName>
     <RootNamespace>Mikodev.Binary.Tests</RootNamespace>
-    <LangVersion>12</LangVersion>
+    <LangVersion>13</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
