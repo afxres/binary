@@ -12,11 +12,16 @@ public class AllowsReferenceStructureTests
     public void AllocatorMethodAllowsReferenceStructureTest()
     {
         var methods = typeof(Allocator).GetMethods(BindingFlags.Public | BindingFlags.Static).Where(x => x.IsGenericMethod).ToImmutableArray();
-        foreach (var i in methods)
+        foreach (var method in methods)
         {
-            var genericArgument = Assert.Single(i.GetGenericArguments());
+            var genericArgument = Assert.Single(method.GetGenericArguments());
             var genericArgumentAttributes = genericArgument.GenericParameterAttributes;
             Assert.True((genericArgumentAttributes | GenericParameterAttributes.AllowByRefLike) is not 0);
+            var parameters = method.GetParameters();
+            var parameter = parameters.Single(x => x.ParameterType == genericArgument);
+            var attributes = parameter.GetCustomAttributes();
+            var attribute = Assert.Single(attributes, x => x.GetType().Name is "ScopedRefAttribute");
+            Assert.Equal("System.Runtime.CompilerServices", attribute.GetType().Namespace);
         }
     }
 }

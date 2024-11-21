@@ -25,7 +25,7 @@ public ref partial struct Allocator
     }
 
 #if NET9_0_OR_GREATER
-    public static void Append<T>(ref Allocator allocator, int length, T data, SpanAction<byte, T> action) where T : allows ref struct
+    public static void Append<T>(ref Allocator allocator, int length, scoped T data, SpanAction<byte, T> action) where T : allows ref struct
 #else
     public static void Append<T>(ref Allocator allocator, int length, T data, SpanAction<byte, T> action)
 #endif
@@ -37,7 +37,7 @@ public ref partial struct Allocator
     }
 
 #if NET9_0_OR_GREATER
-    public static void Append<T>(ref Allocator allocator, int maxLength, T data, AllocatorWriter<T> writer) where T : allows ref struct
+    public static void Append<T>(ref Allocator allocator, int maxLength, scoped T data, AllocatorWriter<T> writer) where T : allows ref struct
 #else
     public static void Append<T>(ref Allocator allocator, int maxLength, T data, AllocatorWriter<T> writer)
 #endif
@@ -56,7 +56,7 @@ public ref partial struct Allocator
     }
 
 #if NET9_0_OR_GREATER
-    public static void AppendWithLengthPrefix<T>(ref Allocator allocator, int maxLength, T data, AllocatorWriter<T> writer) where T : allows ref struct
+    public static void AppendWithLengthPrefix<T>(ref Allocator allocator, int maxLength, scoped T data, AllocatorWriter<T> writer) where T : allows ref struct
 #else
     public static void AppendWithLengthPrefix<T>(ref Allocator allocator, int maxLength, T data, AllocatorWriter<T> writer)
 #endif
@@ -76,7 +76,7 @@ public ref partial struct Allocator
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #if NET9_0_OR_GREATER
-    public static void AppendWithLengthPrefix<T>(ref Allocator allocator, T data, AllocatorAction<T> action) where T : allows ref struct
+    public static void AppendWithLengthPrefix<T>(ref Allocator allocator, scoped T data, AllocatorAction<T> action) where T : allows ref struct
 #else
     public static void AppendWithLengthPrefix<T>(ref Allocator allocator, T data, AllocatorAction<T> action)
 #endif
@@ -104,7 +104,7 @@ public ref partial struct Allocator
     }
 
 #if NET9_0_OR_GREATER
-    public static byte[] Invoke<T>(T data, AllocatorAction<T> action) where T : allows ref struct
+    public static byte[] Invoke<T>(scoped T data, AllocatorAction<T> action) where T : allows ref struct
 #else
     public static byte[] Invoke<T>(T data, AllocatorAction<T> action)
 #endif
