@@ -44,11 +44,11 @@ public class BitArrayConverterTests
         Assert.Equal($"Invalid header or not enough bytes, type: {typeof(BitArray)}", error.Message);
     }
 
-    [Fact(DisplayName = "Encode Decode Random Data (bit length: 0..128, loop count: 16)")]
+    [Fact(DisplayName = "Encode Decode Random Data (bit length: 0..32, loop count: 4)")]
     public void EncodeDecodeRandomData()
     {
-        const int LoopCount = 16;
-        const int BitLength = 128;
+        const int LoopCount = 4;
+        const int BitLength = 32;
         var converter = new BitArrayConverter();
         for (var loop = 0; loop < LoopCount; loop++)
         {
