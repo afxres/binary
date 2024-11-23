@@ -372,14 +372,14 @@ let ``Append With Length Prefix`` (length : int) =
 let ``Allocator Action (contravariant)`` () =
     let t = typedefof<AllocatorAction<_>>
     let parameter = t.GetGenericArguments() |> Array.exactlyOne
-    Assert.Equal(GenericParameterAttributes.Contravariant, parameter.GenericParameterAttributes)
+    Assert.Equal(GenericParameterAttributes.Contravariant, parameter.GenericParameterAttributes &&& GenericParameterAttributes.Contravariant)
     ()
 
 [<Fact>]
 let ``Allocator Writer (contravariant)`` () =
     let t = typedefof<AllocatorWriter<_>>
     let parameter = t.GetGenericArguments() |> Array.exactlyOne
-    Assert.Equal(GenericParameterAttributes.Contravariant, parameter.GenericParameterAttributes)
+    Assert.Equal(GenericParameterAttributes.Contravariant, parameter.GenericParameterAttributes &&& GenericParameterAttributes.Contravariant)
     ()
 
 [<Fact>]
