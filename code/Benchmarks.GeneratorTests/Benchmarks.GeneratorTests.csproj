@@ -2,10 +2,10 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <AssemblyName>Mikodev.Binary.Benchmarks.GeneratorTests</AssemblyName>
     <RootNamespace>Mikodev.Binary.Benchmarks.GeneratorTests</RootNamespace>
-    <LangVersion>12</LangVersion>
+    <LangVersion>13</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

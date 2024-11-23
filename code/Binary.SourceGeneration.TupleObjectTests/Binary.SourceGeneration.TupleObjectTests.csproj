@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>12</LangVersion>
+    <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
+    <LangVersion>13</LangVersion>
     <AssemblyName>Mikodev.Binary.SourceGeneration.TupleObjectTests</AssemblyName>
     <RootNamespace>Mikodev.Binary.SourceGeneration.TupleObjectTests</RootNamespace>
     <Nullable>enable</Nullable>

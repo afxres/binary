@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0</TargetFrameworks>
+    <TargetFrameworks>net9.0;net8.0</TargetFrameworks>
     <AssemblyName>Mikodev.Binary.FSharp</AssemblyName>
     <RootNamespace>Mikodev.Binary</RootNamespace>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9</LangVersion>
     <Copyright>Mikodev $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
     <Authors>Mikodev</Authors>
     <Company>Mikodev</Company>
