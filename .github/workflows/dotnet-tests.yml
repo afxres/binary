@@ -8,13 +8,12 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "9.0.x"
-          dotnet-quality: "preview"
 
       - name: Test
-        run: sh scripts/workflow-test.sh
+        run: sh scripts/workflows/test.sh
 
       - name: Coverage
-        run: sh scripts/workflow-coverage.sh
+        run: sh scripts/workflows/coverage.sh
 
       - name: Coveralls
         uses: coverallsapp/github-action@v2
