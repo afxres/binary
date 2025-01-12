@@ -13,8 +13,6 @@ using System.Runtime.InteropServices;
 
 internal sealed class NamedObjectDecoder
 {
-    private readonly int required;
-
     private readonly Type type;
 
     private readonly ByteViewList view;
@@ -44,7 +42,6 @@ internal sealed class NamedObjectDecoder
         this.view = view;
         this.names = head;
         this.optional = tail;
-        this.required = tail.Count(x => x is false);
     }
 
     [DebuggerStepThrough, DoesNotReturn]
@@ -54,25 +51,14 @@ internal sealed class NamedObjectDecoder
     }
 
     [DebuggerStepThrough, DoesNotReturn]
-    private void ExceptNotFound(ReadOnlySpan<long> span)
+    private void ExceptNotFound(int cursor)
     {
-        var cursor = -1;
-        var optional = this.optional;
-        for (var i = 0; i < span.Length; i++)
-        {
-            if (span[i] is not 0 || optional[i])
-                continue;
-            cursor = i;
-            break;
-        }
         throw new ArgumentException($"Named key '{this.names[cursor]}' does not exist, type: {this.type}");
     }
 
     public void Invoke(ReadOnlySpan<byte> span, Span<long> slices)
     {
-        // maybe 'StackOverflowException', just let it crash
         var optional = this.optional;
-        var remain = this.required;
         var record = this.view;
         ref var source = ref MemoryMarshal.GetReference(span);
 
@@ -93,15 +79,13 @@ internal sealed class NamedObjectDecoder
             if (handle is not 0)
                 ExceptKeyFound(cursor);
             handle = (long)((ulong)(uint)offset << 32 | (uint)length);
-            if (optional[cursor])
-                continue;
-            remain--;
         }
 
-        Debug.Assert(remain >= 0);
-        Debug.Assert(remain <= optional.Length);
-        if (remain is 0)
-            return;
-        ExceptNotFound(slices);
+        for (var i = 0; i < slices.Length; i++)
+        {
+            if (slices[i] is not 0 || optional[i])
+                continue;
+            ExceptNotFound(i);
+        }
     }
 }
