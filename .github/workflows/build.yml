@@ -1,0 +1,28 @@
+name: build
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Setup Environment
+        run: sh scripts/setup.sh
+
+      - name: Build Tests
+        run: sh scripts/build-tests.sh
+
+      - name: Coverage
+        run: sh scripts/run-coverage.sh
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          fail-on-error: false
+          file: "build-result/lcov.info"
