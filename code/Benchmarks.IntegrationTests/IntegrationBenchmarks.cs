@@ -79,12 +79,6 @@ public class IntegrationBenchmarks
         Trace.Assert(tupleResultAot.Item2 is "csharp");
     }
 
-    [Benchmark(Description = "Encode Named Object (jit, generator)")]
-    public byte[] B01()
-    {
-        return this.generatorJit.Encode(this.value);
-    }
-
     [Benchmark(Description = "Encode Named Object (jit)")]
     public void B02()
     {
@@ -111,12 +105,6 @@ public class IntegrationBenchmarks
     {
         var allocator = new Allocator(this.buffer);
         this.tupleConverterAot.Encode(ref allocator, this.tuple);
-    }
-
-    [Benchmark(Description = "Decode Named Object (jit, generator)")]
-    public Type01 B04()
-    {
-        return this.generatorJit.Decode<Type01>(this.valueBytes);
     }
 
     [Benchmark(Description = "Decode Named Object (jit)")]
