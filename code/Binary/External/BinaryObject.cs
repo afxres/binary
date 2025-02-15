@@ -3,6 +3,7 @@
 using Mikodev.Binary.External.Contexts;
 using Mikodev.Binary.Internal;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -10,26 +11,40 @@ using System.Runtime.InteropServices;
 
 internal static class BinaryObject
 {
-    internal static ByteViewList? Create(ImmutableArray<ReadOnlyMemory<byte>> items)
+    internal static ByteViewList? Create(ImmutableArray<ReadOnlyMemory<byte>> items, out int error)
     {
         Debug.Assert(items.Any());
         if (items.Length <= BinaryDefine.LongDataListItemCountLimits && items.All(x => x.Length <= BinaryDefine.LongDataListItemBytesLimits))
-            return CreateLongDataList(items);
+            return CreateLongDataList(items, out error);
         else
-            return CreateHashCodeList(items);
+            return CreateHashCodeList(items, out error);
     }
 
-    private static LongDataList? CreateLongDataList(ImmutableArray<ReadOnlyMemory<byte>> items)
+    private static LongDataList? CreateLongDataList(ImmutableArray<ReadOnlyMemory<byte>> items, out int error)
     {
-        static LongDataSlot Invoke(ReadOnlySpan<byte> span) => BinaryModule.GetLongData(ref MemoryMarshal.GetReference(span), span.Length);
-        var records = items.Select(x => Invoke(x.Span)).ToArray();
-        if (records.DistinctBy(x => (x.Head, x.Tail)).Count() != items.Length)
+        error = -1;
+        if (items.Length > BinaryDefine.LongDataListItemCountLimits)
             return null;
-        return new LongDataList(records);
+        var records = new List<LongDataSlot>();
+        for (var i = 0; i < items.Length; i++)
+        {
+            var span = items[i].Span;
+            if (span.Length > BinaryDefine.LongDataListItemBytesLimits)
+                return null;
+            var slot = BinaryModule.GetLongData(ref MemoryMarshal.GetReference(span), span.Length);
+            if (records.Any(x => x.Head == slot.Head && x.Tail == slot.Tail))
+            {
+                error = i;
+                return null;
+            }
+            records.Add(slot);
+        }
+        return new LongDataList([.. records]);
     }
 
-    private static HashCodeList? CreateHashCodeList(ImmutableArray<ReadOnlyMemory<byte>> items)
+    private static HashCodeList? CreateHashCodeList(ImmutableArray<ReadOnlyMemory<byte>> items, out int error)
     {
+        error = -1;
         var records = new HashCodeSlot[items.Length];
         var buckets = new int[DetectHashCodeListBucketLength(records.Length)];
         Array.Fill(buckets, -1);
@@ -45,7 +60,10 @@ internal static class BinaryObject
             {
                 ref var slot = ref records[next];
                 if (hash == slot.Hash && BinaryModule.GetEquality(ref source, length, slot.Head))
+                {
+                    error = i;
                     return null;
+                }
                 next = ref slot.Next;
             }
             records[i] = new HashCodeSlot { Head = buffer, Hash = hash, Next = -1 };

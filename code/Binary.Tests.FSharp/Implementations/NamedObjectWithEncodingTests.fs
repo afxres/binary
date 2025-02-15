@@ -100,6 +100,6 @@ let ``Named Key Duplicated (bad string converter)`` () =
     let generator = Generator.CreateDefaultBuilder().AddConverter(BadStringConverter()).Build()
     let anonymous = {| alpha = 0; bravo = String.Empty |}
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(anonymous = anonymous) |> ignore)
-    let message = sprintf "Named object error, duplicate binary string keys detected, type: %O, string converter type: %O" (anonymous.GetType()) typeof<BadStringConverter>
+    let message = $"Named key 'bravo' already exists, type: {anonymous.GetType()}"
     Assert.Equal(message, error.Message)
     ()

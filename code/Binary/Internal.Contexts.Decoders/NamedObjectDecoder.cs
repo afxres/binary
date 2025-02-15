@@ -4,7 +4,6 @@ using Mikodev.Binary.External;
 using Mikodev.Binary.Internal;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -34,13 +33,13 @@ internal sealed class NamedObjectDecoder
             throw new ArgumentException($"Sequence contains no element.");
         if (head.Length != tail.Length)
             throw new ArgumentException($"Sequence lengths not match.");
-        var data = head.Select(x => new ReadOnlyMemory<byte>(converter.Encode(x))).ToImmutableArray();
-        var view = BinaryObject.Create(data);
-        if (view is null)
-            throw new ArgumentException($"Named object error, duplicate binary string keys detected, type: {type}, string converter type: {converter.GetType()}");
         this.type = type;
-        this.view = view;
         this.names = head;
+        var view = BinaryObject.Create([.. head.Select(x => new ReadOnlyMemory<byte>(converter.Encode(x)))], out var error);
+        Debug.Assert(view is null || error is -1);
+        if (view is null)
+            ExceptKeyFound(error);
+        this.view = view;
         this.optional = tail;
     }
 

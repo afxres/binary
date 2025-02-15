@@ -13,7 +13,7 @@ public class HashCodeListTests
 {
     private delegate uint HashCode(ref byte source, int length);
 
-    private delegate object CreateDictionary(ImmutableArray<ReadOnlyMemory<byte>> items);
+    private delegate object CreateDictionary(ImmutableArray<ReadOnlyMemory<byte>> items, out int error);
 
     private delegate T GetValue<T>(ref byte source, int length);
 
@@ -44,7 +44,7 @@ public class HashCodeListTests
     {
         var method = dictionary.GetType().GetMethod("Invoke", BindingFlags.Instance | BindingFlags.Public);
         Assert.NotNull(method);
-        return (GetValue<T>)Delegate.CreateDelegate(typeof(GetValue<T>), dictionary, Assert.IsAssignableFrom<MethodInfo>(method));
+        return (GetValue<T>)Delegate.CreateDelegate(typeof(GetValue<T>), dictionary, method);
     }
 
     [Theory(DisplayName = "Hash Conflicts")]
@@ -76,8 +76,9 @@ public class HashCodeListTests
         _ = Assert.Single(codes.Distinct());
 
         var arguments = buffers.Select(x => new ReadOnlyMemory<byte>(x)).ToImmutableArray();
-        var dictionary = create.Invoke(arguments);
+        var dictionary = create.Invoke(arguments, out var error);
         Assert.NotNull(dictionary);
+        Assert.Equal(-1, error);
         var query = GetGetValueDelegate<int>(dictionary);
 
         var actual = new List<int>();
@@ -94,15 +95,16 @@ public class HashCodeListTests
     }
 
     [Theory(DisplayName = "Duplicate Keys")]
-    [InlineData(new[] { 1, 33, 1024, 33 })]
-    [InlineData(new[] { 2, 2, 3, 4 })]
-    [InlineData(new[] { 32768, 65535, 65536, 65536 })]
-    public void DictionaryDuplicateKey(int[] values)
+    [InlineData(new[] { 1, 33, 1024, 33 }, 3)]
+    [InlineData(new[] { 2, 2, 3, 4 }, 1)]
+    [InlineData(new[] { 32768, 65535, 65536, 65536 }, 3)]
+    public void DictionaryDuplicateKey(int[] values, int index)
     {
         var create = GetCreateDictionaryDelegate();
         var arguments = values.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString()))).ToImmutableArray();
-        var result = create.Invoke(arguments);
+        var result = create.Invoke(arguments, out var error);
         Assert.Null(result);
+        Assert.Equal(index, error);
     }
 
     [Fact(DisplayName = "Integration Test With System Member Names")]
@@ -115,8 +117,9 @@ public class HashCodeListTests
 
         var arguments = names.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x))).ToImmutableArray();
         var create = GetCreateDictionaryDelegate();
-        var dictionary = create.Invoke(arguments);
+        var dictionary = create.Invoke(arguments, out var error);
         Assert.NotNull(dictionary);
+        Assert.Equal(-1, error);
         var query = GetGetValueDelegate<int>(dictionary);
 
         var actual = new List<int>();
@@ -140,9 +143,10 @@ public class HashCodeListTests
     {
         var create = GetCreateDictionaryDelegate();
         var arguments = values.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString()))).ToImmutableArray();
-        var result = create.Invoke(arguments);
+        var result = create.Invoke(arguments, out var error);
         var query = GetGetValueDelegate<int>(result);
         Assert.NotNull(result);
+        Assert.Equal(-1, error);
         for (var i = 0; i < others.Length; i++)
         {
             var buffer = Encoding.UTF8.GetBytes(others[i].ToString()).AsSpan();
