@@ -1,0 +1,30 @@
+name: benchmark
+on:
+  push:
+    branches:
+      - main
+permissions:
+  deployments: write
+  contents: write
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Build Benchmarks
+        run: sh scripts/build-benchmarks.sh
+
+      - name: Benchmark
+        run: sh scripts/run-benchmark-report.sh
+
+      - name: Store Benchmark Result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: "benchmarkdotnet"
+          output-file-path: "build-result/benchmark-result.json"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true

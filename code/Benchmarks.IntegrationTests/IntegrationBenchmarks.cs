@@ -13,6 +13,8 @@ using TypeX1 = System.ValueTuple<int, string, int[], System.ValueTuple<double, S
 public partial class IntegrationGeneratorContext { }
 
 [MemoryDiagnoser]
+[JsonExporterAttribute.Full]
+[JsonExporterAttribute.FullCompressed]
 public class IntegrationBenchmarks
 {
     private IGenerator generatorJit = null!;
