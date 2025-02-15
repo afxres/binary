@@ -56,12 +56,12 @@ internal static class BinaryModule
     {
         Debug.Assert(length >= 0);
         Debug.Assert(length <= 15);
-        var head = (length & 8) is 0 ? 0UL : Load<BIN8>(ref source, length & 7);
-        var tail = (length & 4) is 0 ? 0UL : Load<BIN4>(ref source, length & 3);
+        var tail = (length & 8) is 0 ? 0UL : Load<BIN8>(ref source, length & 7);
+        var head = (length & 4) is 0 ? 0UL : Load<BIN4>(ref source, length & 3);
         if ((length & 2) is not 0)
-            tail = (tail << 0x10) | Load<BIN2>(ref source, length & 1);
+            head = (head << 0x10) | Load<BIN2>(ref source, length & 1);
         if ((length & 1) is not 0)
-            tail = (tail << 0x08) | Load<BIN1>(ref source, length & 0);
-        return new LongDataSlot { Head = head, Tail = (tail << 0x08) | (uint)length };
+            head = (head << 0x08) | Load<BIN1>(ref source, length & 0);
+        return new LongDataSlot { Head = (head << 0x08) | (uint)length, Tail = tail };
     }
 }

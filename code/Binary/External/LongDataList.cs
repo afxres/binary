@@ -11,7 +11,7 @@ internal sealed class LongDataList : ByteViewList
     public LongDataList(LongDataSlot[] bits)
     {
         Debug.Assert(bits.Length is not 0);
-        Debug.Assert(bits.All(x => (uint)(x.Tail & 0xFF) <= BinaryDefine.LongDataListItemBytesLimits));
+        Debug.Assert(bits.All(x => (uint)(x.Head & 0xFF) <= BinaryDefine.LongDataListItemBytesLimits));
         Debug.Assert(bits.Length <= BinaryDefine.LongDataListItemCountLimits);
         this.bits = bits;
     }

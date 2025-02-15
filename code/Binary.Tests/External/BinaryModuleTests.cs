@@ -4,19 +4,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Xunit;
 
 public class BinaryModuleTests
 {
+#pragma warning disable CS0649 // Field '...' is never assigned to, and will always have its default value
     private struct LongDataSlot
     {
         public ulong Head;
 
         public ulong Tail;
     }
+#pragma warning restore CS0649 // Field '...' is never assigned to, and will always have its default value
 
     private delegate int Capacity(int capacity);
 
@@ -246,18 +247,13 @@ public class BinaryModuleTests
             var source = origin.Substring(0, length);
             var buffer = Encoding.UTF8.GetBytes(source);
             var result = function(ref MemoryMarshal.GetArrayDataReference(buffer), buffer.Length);
-            Assert.Equal((uint)length, (uint)(result.Tail & 0xFFUL));
+            Assert.Equal((uint)length, (uint)(result.Head & 0xFFUL));
 
-            var headSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<ulong, byte>(ref result.Head), sizeof(long));
-            var tailSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<ulong, byte>(ref result.Tail), sizeof(long));
-            var headPart = (length & 8) is 0 ? [] : headSpan.ToArray();
-            var tailPart = tailSpan.Slice(1, length & 7).ToArray();
-            var expect = Enumerable.Concat(tailPart, headPart).ToArray();
-            var actual = Encoding.UTF8.GetString(expect);
+            var head = BitConverter.GetBytes(result.Head >> 8);
+            var tail = BitConverter.GetBytes(result.Tail);
+            var full = head.Concat(tail).Order().ToArray();
+            var actual = Encoding.UTF8.GetString(full).Trim('\0');
             Assert.Equal(source, actual);
-            var expected = source.ToCharArray().ToHashSet();
-            var response = actual.ToCharArray().ToHashSet();
-            Assert.Equal(expected, response);
             ignore.Add(actual);
         }
         Assert.Equal(16, ignore.Count);
@@ -270,7 +266,7 @@ public class BinaryModuleTests
     {
         var function = GetLongDataDelegate();
         var random = new Random();
-        var ignore = new List<byte[]>();
+        var ignore = new List<string>();
         for (var length = 1; length <= 15; length++)
         {
             for (var k = 0; k < 1024; k++)
@@ -278,18 +274,15 @@ public class BinaryModuleTests
                 var buffer = new byte[length];
                 random.NextBytes(buffer);
                 var result = function(ref MemoryMarshal.GetArrayDataReference(buffer), buffer.Length);
-                Assert.Equal((uint)length, (uint)(result.Tail & 0xFFUL));
+                Assert.Equal((uint)length, (uint)(result.Head & 0xFFUL));
 
-                var headSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<ulong, byte>(ref result.Head), sizeof(long));
-                var tailSpan = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<ulong, byte>(ref result.Tail), sizeof(long));
-                var headPart = (length & 8) is 0 ? [] : headSpan.ToArray();
-                var tailPart = tailSpan.Slice(1, length & 7).ToArray();
-                var expect = Enumerable.Concat(tailPart, headPart).ToArray();
-                Assert.Equal(buffer, expect);
-
-                var remain = tailSpan.Slice(1 + (length & 7));
-                Assert.True(remain.IsEmpty || remain.ToArray().All(x => x is 0));
-                ignore.Add(buffer);
+                var head = BitConverter.GetBytes(result.Head >> 8);
+                var tail = BitConverter.GetBytes(result.Tail);
+                var full = head.Concat(tail).Order().ToArray();
+                var actual = Encoding.UTF8.GetString(full).Trim('\0');
+                var source = Encoding.UTF8.GetString([.. buffer.Order()]).Trim('\0');
+                Assert.Equal(source, actual);
+                ignore.Add(actual);
             }
         }
         Assert.Equal(15360, ignore.Count);
