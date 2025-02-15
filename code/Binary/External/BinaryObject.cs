@@ -14,10 +14,10 @@ internal static class BinaryObject
     internal static ByteViewList? Create(ImmutableArray<ReadOnlyMemory<byte>> items, out int error)
     {
         Debug.Assert(items.Any());
-        if (items.Length <= BinaryDefine.LongDataListItemCountLimits && items.All(x => x.Length <= BinaryDefine.LongDataListItemBytesLimits))
-            return CreateLongDataList(items, out error);
-        else
+        var view = CreateLongDataList(items, out error);
+        if (view is null && error is -1)
             return CreateHashCodeList(items, out error);
+        return view;
     }
 
     private static LongDataList? CreateLongDataList(ImmutableArray<ReadOnlyMemory<byte>> items, out int error)
