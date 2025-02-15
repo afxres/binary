@@ -3,6 +3,7 @@
 [![GitHub repo size](https://img.shields.io/github/repo-size/afxres/binary)](#)
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/afxres/binary/build.yml?branch=main)](#)
 [![Coverage Status](https://coveralls.io/repos/github/afxres/binary/badge.svg?branch=main)](https://coveralls.io/github/afxres/binary?branch=main)
+[![Benchmark](https://img.shields.io/badge/benchmark_result-GitHub_Pages-blue)](https://afxres.github.io/binary/dev/bench/)
 
 | Package                       | Version             | Downloads             | Descriptions                 |
 | :---------------------------- | :------------------ | :-------------------- | :--------------------------- |
