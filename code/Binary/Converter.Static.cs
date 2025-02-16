@@ -65,6 +65,7 @@ public static partial class Converter
         return length;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void EncodeWithLengthPrefix(ref Allocator allocator, scoped ReadOnlySpan<byte> span)
     {
         var length = span.Length;
@@ -76,6 +77,7 @@ public static partial class Converter
         Unsafe.CopyBlockUnaligned(ref Unsafe.Add(ref target, numberLength), ref MemoryMarshal.GetReference(span), (uint)length);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ReadOnlySpan<byte> DecodeWithLengthPrefix(ref ReadOnlySpan<byte> span)
     {
         ref var source = ref MemoryMarshal.GetReference(span);

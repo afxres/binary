@@ -21,7 +21,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
     private void AppendConverterHead()
     {
         var members = this.members;
-        var tail = ", byte[][] buffers, System.Collections.Generic.IEnumerable<System.Collections.Generic.IEnumerable<byte>> headers, System.Collections.Generic.IEnumerable<string> names, System.Collections.Generic.IEnumerable<bool> optional)";
+        var tail = ", byte[][] headers, System.Collections.Generic.IEnumerable<string> names, System.Collections.Generic.IEnumerable<bool> optional)";
         Output.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", tail, members.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
         Output.AppendIndent(2, $": Mikodev.Binary.Components.NamedObjectConverter<{SymbolTypeFullName}>(headers, names, optional)");
         Output.AppendIndent(1, $"{{");
@@ -53,7 +53,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         {
             if (members[i].IsOptional is false)
             {
-                Output.AppendIndent(3, $"Mikodev.Binary.Allocator.Append(ref allocator, buffers[{i}]);");
+                Output.AppendIndent(3, $"Mikodev.Binary.Converter.EncodeWithLengthPrefix(ref allocator, headers[{i}]);");
                 Output.AppendIndent(3, $"cvt{i}.EncodeWithLengthPrefix(ref allocator, item.{members[i].NameInSourceCode});");
             }
             else
@@ -61,7 +61,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
                 Output.AppendIndent(3, $"var var{i} = item.{members[i].NameInSourceCode};");
                 Output.AppendIndent(3, $"if (System.Collections.Generic.EqualityComparer<{GetTypeFullName(i)}>.Default.Equals(var{i}, default) is false)");
                 Output.AppendIndent(3, $"{{");
-                Output.AppendIndent(4, $"Mikodev.Binary.Allocator.Append(ref allocator, buffers[{i}]);");
+                Output.AppendIndent(4, $"Mikodev.Binary.Converter.EncodeWithLengthPrefix(ref allocator, headers[{i}]);");
                 Output.AppendIndent(4, $"cvt{i}.EncodeWithLengthPrefix(ref allocator, var{i});");
                 Output.AppendIndent(3, $"}}");
             }
@@ -109,8 +109,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             CancellationToken.ThrowIfCancellationRequested();
         }
         Output.AppendIndent(3, $"var headers = System.Array.ConvertAll(names, x => Mikodev.Binary.Allocator.Invoke(x, encoding.Encode));");
-        Output.AppendIndent(3, $"var buffers = System.Array.ConvertAll(names, x => Mikodev.Binary.Allocator.Invoke(x, encoding.EncodeWithLengthPrefix));");
-        Output.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ", buffers, headers, names, optional);", members.Length, x => $"cvt{x}");
+        Output.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ", headers, names, optional);", members.Length, x => $"cvt{x}");
     }
 
     protected override void Handle()
