@@ -31,9 +31,9 @@ internal static class CommonModule
                 return result;
             throw new InvalidOperationException($"Invalid null instance detected, type: {type}");
         }
-        catch (TargetInvocationException e)
+        catch (Exception e)
         {
-            if (e.InnerException is { } inner)
+            if (e is TargetInvocationException { InnerException: { } inner })
                 ExceptionDispatchInfo.Throw(inner);
             throw;
         }
