@@ -79,6 +79,6 @@ public class TupleObjectTests
         var error = Assert.Throws<ArgumentException>(() => TupleObject.GetConverterLength([]));
         var parameters = methodInfo.GetParameters();
         Assert.Equal(parameters[0].Name, error.ParamName);
-        Assert.StartsWith("Sequence contains no element.", error.Message);
+        Assert.StartsWith("Sequence is empty.", error.Message);
     }
 }

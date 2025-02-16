@@ -79,13 +79,21 @@ public class InternalMethodTests
         Assert.Equal(message, error.Message);
     }
 
+    private class FakeTypeThrowFromConstructorWithInnerException
+    {
+        public FakeTypeThrowFromConstructorWithInnerException(string message)
+        {
+            throw new NotSupportedException(message);
+        }
+    }
+
     [Fact(DisplayName = "Create Instance Internal Invoke Method Test")]
     public void CreateInstanceInternalInvokeMethodTest()
     {
-        var invoke = GetCommonModuleMethod<Func<Func<object>, object>>("Invoke");
-        var a = Assert.Throws<NotSupportedException>(() => invoke.Invoke(() => throw new TargetInvocationException(new NotSupportedException("Text 01"))));
+        var invoke = GetCommonModuleMethod<Func<Type, object[]?, object>>("CreateInstance");
+        var a = Assert.Throws<NotSupportedException>(() => invoke.Invoke(typeof(FakeTypeThrowFromConstructorWithInnerException), ["Text 01"]));
         Assert.Equal("Text 01", a.Message);
-        var b = Assert.Throws<TargetInvocationException>(() => invoke.Invoke(() => throw new TargetInvocationException("Text 02", null)));
+        var b = Assert.Throws<NotSupportedException>(() => invoke.Invoke(typeof(FakeTypeThrowFromConstructorWithInnerException), ["Text 02"]));
         Assert.Null(b.InnerException);
         Assert.Equal("Text 02", b.Message);
     }

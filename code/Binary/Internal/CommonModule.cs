@@ -25,24 +25,18 @@ internal static class CommonModule
 
     internal static object CreateInstance(Type type, object?[]? arguments)
     {
-        static object? Invoke(Func<object?> func)
+        try
         {
-            try
-            {
-                return func.Invoke();
-            }
-            catch (TargetInvocationException e)
-            {
-                if (e.InnerException is { } inner)
-                    ExceptionDispatchInfo.Throw(inner);
-                throw;
-            }
-        }
-
-        var result = Invoke(() => Activator.CreateInstance(type, arguments));
-        if (result is null)
+            if (Activator.CreateInstance(type, arguments) is { } result)
+                return result;
             throw new InvalidOperationException($"Invalid null instance detected, type: {type}");
-        return result;
+        }
+        catch (TargetInvocationException e)
+        {
+            if (e.InnerException is { } inner)
+                ExceptionDispatchInfo.Throw(inner);
+            throw;
+        }
     }
 
     internal static bool TryGetInterfaceArguments(Type type, Type definition, [MaybeNullWhen(false)] out Type[] arguments)

@@ -21,7 +21,7 @@ public static class TupleObject
         }
 
         if (result is 0)
-            throw new ArgumentException("Sequence contains no element.", nameof(converters));
+            throw new ArgumentException($"Sequence is empty.", nameof(converters));
         return result;
     }
 }
