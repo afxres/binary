@@ -11,7 +11,7 @@ using Xunit;
 
 public class LongDataListTests
 {
-    private delegate object CreateDictionary(ImmutableArray<ReadOnlyMemory<byte>> items, out int error);
+    private delegate object CreateDictionary(ImmutableArray<ImmutableArray<byte>> items, out int error);
 
     private delegate int GetValue(ref byte source, int length);
 
@@ -38,7 +38,7 @@ public class LongDataListTests
     public void DictionaryDuplicateKey(int[] values, int index)
     {
         var create = GetCreateDictionaryDelegate();
-        var arguments = values.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString()))).ToImmutableArray();
+        var arguments = values.Select(x => Encoding.UTF8.GetBytes(x.ToString()).ToImmutableArray()).ToImmutableArray();
         var result = create.Invoke(arguments, out var error);
         Assert.Null(result);
         Assert.Equal(index, error);
@@ -52,14 +52,14 @@ public class LongDataListTests
     {
         var create = GetCreateDictionaryDelegate();
         var values = sizes.Select(x => new string('\0', x)).ToList();
-        var arguments = values.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString()))).ToImmutableArray();
+        var arguments = values.Select(x => Encoding.UTF8.GetBytes(x.ToString()).ToImmutableArray()).ToImmutableArray();
         var result = create.Invoke(arguments, out var error);
         var query = GetGetValueDelegate(result);
         Assert.NotNull(result);
         Assert.Equal(-1, error);
         for (var i = 0; i < arguments.Length; i++)
         {
-            var buffer = arguments[i].Span;
+            var buffer = arguments[i].AsSpan();
             var actual = query.Invoke(ref MemoryMarshal.GetReference(buffer), buffer.Length);
             Assert.Equal(i, actual);
         }
@@ -74,7 +74,7 @@ public class LongDataListTests
     {
         var create = GetCreateDictionaryDelegate();
         var values = new[] { string.Empty };
-        var arguments = values.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString()))).ToImmutableArray();
+        var arguments = values.Select(x => Encoding.UTF8.GetBytes(x.ToString()).ToImmutableArray()).ToImmutableArray();
         var result = create.Invoke(arguments, out var error);
         var query = GetGetValueDelegate(result);
         Assert.NotNull(result);
@@ -90,7 +90,7 @@ public class LongDataListTests
     public void DictionaryQueryNotFound(int[] values, int[] others)
     {
         var create = GetCreateDictionaryDelegate();
-        var arguments = values.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString()))).ToImmutableArray();
+        var arguments = values.Select(x => Encoding.UTF8.GetBytes(x.ToString()).ToImmutableArray()).ToImmutableArray();
         var result = create.Invoke(arguments, out var error);
         var query = GetGetValueDelegate(result);
         Assert.NotNull(result);

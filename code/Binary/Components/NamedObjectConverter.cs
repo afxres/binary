@@ -4,10 +4,12 @@ using Mikodev.Binary.Internal;
 using Mikodev.Binary.Internal.Contexts.Decoders;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 
-public abstract class NamedObjectConverter<T>(Converter<string> converter, IEnumerable<string> names, IEnumerable<bool> optional) : Converter<T?>
+public abstract class NamedObjectConverter<T>(IEnumerable<IEnumerable<byte>> headers, IEnumerable<string> names, IEnumerable<bool> optional) : Converter<T?>
 {
-    private readonly NamedObjectDecoder invoke = new NamedObjectDecoder(converter, names, optional, typeof(T));
+    private readonly NamedObjectDecoder invoke = new NamedObjectDecoder([.. (headers ?? []).Select(x => x.ToImmutableArray())], [.. names ?? []], [.. optional ?? []], typeof(T));
 
     public sealed override T? Decode(in ReadOnlySpan<byte> span)
     {

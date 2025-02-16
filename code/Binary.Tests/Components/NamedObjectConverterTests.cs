@@ -4,13 +4,11 @@ using Mikodev.Binary;
 using Mikodev.Binary.Components;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using Xunit;
 
 public class NamedObjectConverterTests
 {
-    private sealed class FakeNamedObjectConverter<T>(Converter<string> converter, IEnumerable<string> names, IEnumerable<bool> optional) : NamedObjectConverter<T>(converter, names, optional)
+    private sealed class FakeNamedObjectConverter<T>(IEnumerable<IEnumerable<byte>> headers, IEnumerable<string> names, IEnumerable<bool> optional) : NamedObjectConverter<T>(headers, names, optional)
     {
         public override T Decode(NamedObjectParameter parameter) => throw new NotImplementedException();
 
@@ -20,40 +18,42 @@ public class NamedObjectConverterTests
     [Fact(DisplayName = "Argument Null Test")]
     public void ArgumentNullTest()
     {
-        var generator = Generator.CreateAot();
-        var b = generator.GetConverter<string>();
-        var c = Enumerable.Empty<string>();
-        var d = Enumerable.Empty<bool>();
-        var i = Assert.Throws<ArgumentNullException>(() => new FakeNamedObjectConverter<object>(null!, c, d));
-        var j = Assert.Throws<ArgumentNullException>(() => new FakeNamedObjectConverter<object>(b, null!, d));
-        var k = Assert.Throws<ArgumentNullException>(() => new FakeNamedObjectConverter<object>(b, c, null!));
-        var constructorInfo = typeof(NamedObjectConverter<object>).GetConstructors(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Single();
-        var parameterNames = constructorInfo.GetParameters();
-        Assert.Equal(parameterNames[0].Name, i.ParamName);
-        Assert.Equal(parameterNames[1].Name, j.ParamName);
-        Assert.Equal(parameterNames[2].Name, k.ParamName);
+        var h = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>(null!, [], []));
+        var i = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>([], null!, []));
+        var k = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>([], [], null!));
+        Assert.Null(h.ParamName);
+        Assert.Null(i.ParamName);
+        Assert.Null(k.ParamName);
+        Assert.Equal($"Sequence is null or empty.", h.Message);
+        Assert.Equal($"Sequence is null or empty.", i.Message);
+        Assert.Equal($"Sequence is null or empty.", k.Message);
     }
 
     [Fact(DisplayName = "Argument Collection Empty Test")]
     public void ArgumentCollectionEmptyTest()
     {
-        var generator = Generator.CreateAot();
-        var b = generator.GetConverter<string>();
-        var h = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>(b, [], [false]));
-        var i = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>(b, [string.Empty], []));
+        var h = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>([], [string.Empty], [default]));
+        var i = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>([[]], [], [default]));
+        var k = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>([[]], [string.Empty], []));
         Assert.Null(h.ParamName);
         Assert.Null(i.ParamName);
-        Assert.Equal($"Sequence contains no element.", h.Message);
-        Assert.Equal($"Sequence contains no element.", i.Message);
+        Assert.Null(k.ParamName);
+        Assert.Equal($"Sequence is null or empty.", h.Message);
+        Assert.Equal($"Sequence is null or empty.", i.Message);
+        Assert.Equal($"Sequence is null or empty.", k.Message);
     }
 
     [Fact(DisplayName = "Argument Collection Lengths Not Match Test")]
     public void ArgumentCollectionLengthsNotMatch()
     {
-        var generator = Generator.CreateAot();
-        var b = generator.GetConverter<string>();
-        var h = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>(b, [string.Empty], [false, true]));
+        var h = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>([[]], [string.Empty], [default, default]));
+        var i = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>([[]], [string.Empty, string.Empty], [default]));
+        var k = Assert.Throws<ArgumentException>(() => new FakeNamedObjectConverter<object>([[], []], [string.Empty], [default]));
         Assert.Null(h.ParamName);
+        Assert.Null(i.ParamName);
+        Assert.Null(k.ParamName);
         Assert.Equal($"Sequence lengths not match.", h.Message);
+        Assert.Equal($"Sequence lengths not match.", i.Message);
+        Assert.Equal($"Sequence lengths not match.", k.Message);
     }
 }

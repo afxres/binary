@@ -39,9 +39,10 @@ internal static class FallbackAttributesMethods
         if (attribute is TupleObjectAttribute)
             return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, initializers);
 
+        var converter = context.GetConverter<string>();
+        var headers = names.Select(x => Allocator.Invoke(x, converter.Encode).ToImmutableArray()).ToImmutableArray();
         var optional = members.Select(x => x.IsOptional).ToImmutableArray();
-        var encoding = context.GetConverter<string>();
-        return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, initializers, names, optional, encoding);
+        return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, optional, names, headers, initializers);
     }
 
     private static ImmutableArray<MetaMemberInfo> GetMemberVariables(MetaTypeInfo typeInfo)
@@ -148,7 +149,7 @@ internal static class FallbackAttributesMethods
         if (typeInfo.IsNamedObject)
             return GetSortedNamedMembers(type, named, out list);
         var result = source.OrderBy(x => x.Name).ToImmutableArray();
-        list = result.Select(x => x.Name).ToImmutableArray();
+        list = [.. result.Select(x => x.Name)];
         return result;
     }
 
@@ -233,7 +234,7 @@ internal static class FallbackAttributesMethods
             if (objectIndexes.Length != parameters.Length)
                 continue;
             var directIndexes = Enumerable.Range(0, members.Length).Except(objectIndexes).ToImmutableArray();
-            if (ValidateMembers(directIndexes.Select(x => members[x]).ToImmutableArray()) is false)
+            if (ValidateMembers([.. directIndexes.Select(x => members[x])]) is false)
                 continue;
             var directInitializers = directIndexes.Select(x => members[x].Initializer).ToImmutableArray();
             Debug.Assert(members.Length == objectIndexes.Length + directIndexes.Length);

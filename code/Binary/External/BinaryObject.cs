@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 
 internal static class BinaryObject
 {
-    internal static ByteViewList? Create(ImmutableArray<ReadOnlyMemory<byte>> items, out int error)
+    internal static ByteViewList? Create(ImmutableArray<ImmutableArray<byte>> items, out int error)
     {
         Debug.Assert(items.Any());
         var view = CreateLongDataList(items, out error);
@@ -20,7 +20,7 @@ internal static class BinaryObject
         return view;
     }
 
-    private static LongDataList? CreateLongDataList(ImmutableArray<ReadOnlyMemory<byte>> items, out int error)
+    private static LongDataList? CreateLongDataList(ImmutableArray<ImmutableArray<byte>> items, out int error)
     {
         error = -1;
         if (items.Length > BinaryDefine.LongDataListItemCountLimits)
@@ -28,7 +28,7 @@ internal static class BinaryObject
         var records = new List<LongDataSlot>();
         for (var i = 0; i < items.Length; i++)
         {
-            var span = items[i].Span;
+            var span = items[i].AsSpan();
             if (span.Length > BinaryDefine.LongDataListItemBytesLimits)
                 return null;
             var slot = BinaryModule.GetLongData(ref MemoryMarshal.GetReference(span), span.Length);
@@ -42,7 +42,7 @@ internal static class BinaryObject
         return new LongDataList([.. records]);
     }
 
-    private static HashCodeList? CreateHashCodeList(ImmutableArray<ReadOnlyMemory<byte>> items, out int error)
+    private static HashCodeList? CreateHashCodeList(ImmutableArray<ImmutableArray<byte>> items, out int error)
     {
         error = -1;
         var records = new HashCodeSlot[items.Length];

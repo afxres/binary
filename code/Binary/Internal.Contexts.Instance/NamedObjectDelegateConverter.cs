@@ -3,17 +3,17 @@
 using Mikodev.Binary.Components;
 using Mikodev.Binary.Internal.Contexts.Decoders;
 using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 
 internal delegate T NamedObjectDecodeDelegate<out T>(scoped NamedObjectParameter parameter);
 
-internal sealed class NamedObjectDelegateConverter<T>(Converter<string> converter, IEnumerable<string> names, IEnumerable<bool> optional, AllocatorAction<T> encode, NamedObjectDecodeDelegate<T>? decode) : Converter<T?>()
+internal sealed class NamedObjectDelegateConverter<T>(ImmutableArray<ImmutableArray<byte>> headers, ImmutableArray<string> names, ImmutableArray<bool> optional, AllocatorAction<T> encode, NamedObjectDecodeDelegate<T>? decode) : Converter<T?>()
 {
     private readonly AllocatorAction<T> encode = encode;
 
     private readonly NamedObjectDecodeDelegate<T>? decode = decode;
 
-    private readonly NamedObjectDecoder invoke = new NamedObjectDecoder(converter, names, optional, typeof(T));
+    private readonly NamedObjectDecoder invoke = new NamedObjectDecoder(headers, names, optional, typeof(T));
 
     public override void Encode(ref Allocator allocator, T? item)
     {

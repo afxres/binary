@@ -30,7 +30,7 @@ public class NamedObjectParameterTests
 
     private delegate T FakeNamedObjectDecodeDelegate<T>(scoped NamedObjectParameter parameter);
 
-    private sealed class FakeNamedObjectConverter<T>(FakeNamedObjectDecodeDelegate<T> decodeDelegate, Converter<string> converter, IEnumerable<string> names, IEnumerable<bool> optional) : NamedObjectConverter<T>(converter, names, optional)
+    private sealed class FakeNamedObjectConverter<T>(FakeNamedObjectDecodeDelegate<T> decodeDelegate, IEnumerable<IEnumerable<byte>> headers, IEnumerable<string> names, IEnumerable<bool> optional) : NamedObjectConverter<T>(headers, names, optional)
     {
         public FakeNamedObjectDecodeDelegate<T> DecodeDelegate { get; } = decodeDelegate;
 
@@ -67,7 +67,7 @@ public class NamedObjectParameterTests
         Assert.NotEmpty(token.Children);
         var names = token.Children.Keys.ToList();
         Assert.NotEmpty(names);
-        var converter = new FakeNamedObjectConverter<object?>(constructor, generator.GetConverter<string>(), names, Enumerable.Repeat(false, names.Count));
+        var converter = new FakeNamedObjectConverter<object?>(constructor, [.. names.Select(x => generator.Encode(x))], names, Enumerable.Repeat(false, names.Count));
         Assert.Null(message);
         Assert.Null(converter.Decode(buffer));
         Assert.NotNull(message);

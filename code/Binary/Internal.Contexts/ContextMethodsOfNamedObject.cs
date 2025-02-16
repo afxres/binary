@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -23,23 +22,22 @@ internal static class ContextMethodsOfNamedObject
 
     private static readonly MethodInfo EnsureMethodInfo = new Func<object, bool>(ObjectModule.NotDefaultValue).Method.GetGenericMethodDefinition();
 
-    internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<ContextMemberInitializer> members, ImmutableArray<string> names, ImmutableArray<bool> optional, Converter<string> encoding)
+    internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<bool> optional, ImmutableArray<string> names, ImmutableArray<ImmutableArray<byte>> headers, ImmutableArray<ContextMemberInitializer> members)
     {
         Debug.Assert(members.Length == names.Length);
         Debug.Assert(members.Length == optional.Length);
         Debug.Assert(members.Length == converters.Length);
-        var encode = GetEncodeDelegateAsNamedObject(type, converters, members, names, optional, encoding);
+        var encode = GetEncodeDelegateAsNamedObject(type, converters, optional, headers, members);
         var decode = GetDecodeDelegateAsNamedObject(type, converters, optional, constructor);
         var converterType = typeof(NamedObjectDelegateConverter<>).MakeGenericType(type);
-        var converter = CommonModule.CreateInstance(converterType, [encoding, names, optional, encode, decode]);
+        var converter = CommonModule.CreateInstance(converterType, [headers, names, optional, encode, decode]);
         return (IConverter)converter;
     }
 
-    private static Delegate GetEncodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<ContextMemberInitializer> members, ImmutableArray<string> names, ImmutableArray<bool> optional, Converter<string> encoding)
+    private static Delegate GetEncodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<bool> optional, ImmutableArray<ImmutableArray<byte>> headers, ImmutableArray<ContextMemberInitializer> members)
     {
         var item = Expression.Parameter(type, "item");
         var result = new List<Expression>();
-        var headers = names.Select(x => Allocator.Invoke(x, encoding.EncodeWithLengthPrefix)).ToList();
         var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
 
         for (var i = 0; i < members.Length; i++)
@@ -47,8 +45,9 @@ internal static class ContextMethodsOfNamedObject
             var converter = converters[i];
             var invoke = new List<Expression>();
             var target = members[i].Invoke(item);
+            var headed = Allocator.Invoke(headers[i], (ref Allocator allocator, ImmutableArray<byte> header) => Converter.EncodeWithLengthPrefix(ref allocator, header.AsSpan()));
             // append named key with length prefix (cached), then append value with length prefix
-            invoke.Add(Expression.Call(AppendMethodInfo, allocator, Expression.Constant(headers[i])));
+            invoke.Add(Expression.Call(AppendMethodInfo, allocator, Expression.Constant(headed)));
             invoke.Add(Expression.Call(Expression.Constant(converter), Converter.GetMethod(converter, nameof(IConverter.EncodeWithLengthPrefix)), allocator, target));
             if (optional[i] is false)
                 result.AddRange(invoke);

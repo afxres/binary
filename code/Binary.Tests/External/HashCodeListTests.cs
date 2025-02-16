@@ -13,7 +13,7 @@ public class HashCodeListTests
 {
     private delegate uint HashCode(ref byte source, int length);
 
-    private delegate object CreateDictionary(ImmutableArray<ReadOnlyMemory<byte>> items, out int error);
+    private delegate object CreateDictionary(ImmutableArray<ImmutableArray<byte>> items, out int error);
 
     private delegate T GetValue<T>(ref byte source, int length);
 
@@ -75,7 +75,7 @@ public class HashCodeListTests
         Assert.Equal(sizes.Length, codes.Count);
         _ = Assert.Single(codes.Distinct());
 
-        var arguments = buffers.Select(x => new ReadOnlyMemory<byte>(x)).ToImmutableArray();
+        var arguments = buffers.Select(x => x.ToImmutableArray()).ToImmutableArray();
         var dictionary = create.Invoke(arguments, out var error);
         Assert.NotNull(dictionary);
         Assert.Equal(-1, error);
@@ -86,7 +86,7 @@ public class HashCodeListTests
         {
             var buffer = arguments[i];
             var length = buffer.Length;
-            ref var source = ref MemoryMarshal.GetReference(buffer.Span);
+            ref var source = ref MemoryMarshal.GetReference(buffer.AsSpan());
             var result = query.Invoke(ref source, length);
             actual.Add(result);
             Assert.Equal(i, result);
@@ -101,7 +101,7 @@ public class HashCodeListTests
     public void DictionaryDuplicateKey(int[] values, int index)
     {
         var create = GetCreateDictionaryDelegate();
-        var arguments = values.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString()))).ToImmutableArray();
+        var arguments = values.Select(x => Encoding.UTF8.GetBytes(x.ToString()).ToImmutableArray()).ToImmutableArray();
         var result = create.Invoke(arguments, out var error);
         Assert.Null(result);
         Assert.Equal(index, error);
@@ -115,7 +115,7 @@ public class HashCodeListTests
         var names = types.Select(x => x.Name).Concat(members.Select(x => x.Name)).ToHashSet().ToArray();
         Assert.True(names.Length > 1000);
 
-        var arguments = names.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x))).ToImmutableArray();
+        var arguments = names.Select(x => Encoding.UTF8.GetBytes(x).ToImmutableArray()).ToImmutableArray();
         var create = GetCreateDictionaryDelegate();
         var dictionary = create.Invoke(arguments, out var error);
         Assert.NotNull(dictionary);
@@ -125,7 +125,7 @@ public class HashCodeListTests
         var actual = new List<int>();
         for (var i = 0; i < arguments.Length; i++)
         {
-            var buffer = arguments[i].Span;
+            var buffer = arguments[i].AsSpan();
             var length = buffer.Length;
             ref var source = ref MemoryMarshal.GetReference(buffer);
             var result = query.Invoke(ref source, length);
@@ -142,7 +142,7 @@ public class HashCodeListTests
     public void DictionaryQueryNotFound(int[] values, int[] others)
     {
         var create = GetCreateDictionaryDelegate();
-        var arguments = values.Select(x => new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes(x.ToString()))).ToImmutableArray();
+        var arguments = values.Select(x => Encoding.UTF8.GetBytes(x.ToString()).ToImmutableArray()).ToImmutableArray();
         var result = create.Invoke(arguments, out var error);
         var query = GetGetValueDelegate<int>(result);
         Assert.NotNull(result);

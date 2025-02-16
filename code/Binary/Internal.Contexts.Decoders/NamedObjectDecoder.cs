@@ -3,10 +3,9 @@
 using Mikodev.Binary.External;
 using Mikodev.Binary.Internal;
 using System;
-using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -22,25 +21,20 @@ internal sealed class NamedObjectDecoder
 
     public int Length => this.optional.Length;
 
-    public NamedObjectDecoder(Converter<string> converter, IEnumerable<string> names, IEnumerable<bool> optional, Type type)
+    public NamedObjectDecoder(ImmutableArray<ImmutableArray<byte>> headers, ImmutableArray<string> names, ImmutableArray<bool> optional, Type type)
     {
-        ArgumentNullException.ThrowIfNull(converter);
-        ArgumentNullException.ThrowIfNull(names);
-        ArgumentNullException.ThrowIfNull(optional);
-        var head = names.ToArray();
-        var tail = optional.ToArray();
-        if (head.Length is 0 || tail.Length is 0)
-            throw new ArgumentException($"Sequence contains no element.");
-        if (head.Length != tail.Length)
+        if (headers.Length is 0 || names.Length is 0 || optional.Length is 0)
+            throw new ArgumentException($"Sequence is null or empty.");
+        if (headers.Length != names.Length || headers.Length != optional.Length)
             throw new ArgumentException($"Sequence lengths not match.");
         this.type = type;
-        this.names = head;
-        var view = BinaryObject.Create([.. head.Select(x => new ReadOnlyMemory<byte>(converter.Encode(x)))], out var error);
+        this.names = [.. names];
+        var view = BinaryObject.Create(headers, out var error);
         Debug.Assert(view is null || error is -1);
         if (view is null)
             ExceptKeyFound(error);
         this.view = view;
-        this.optional = tail;
+        this.optional = [.. optional];
     }
 
     [DebuggerStepThrough, DoesNotReturn]
