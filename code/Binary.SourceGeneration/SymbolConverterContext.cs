@@ -97,12 +97,14 @@ public abstract class SymbolConverterContext
         CancellationToken.ThrowIfCancellationRequested();
     }
 
-    protected void AppendAssignConverter(SymbolMemberInfo member, string variableName, string converterTypeAlias, string memberTypeAlias)
+    protected void AppendAssignConverter(SymbolMemberInfo member, string variableName, string converterTypeAlias, string memberTypeAlias, bool allowsSelfTypeReference)
     {
         if (Symbols.GetConverterType(this.context, member.Symbol) is { } converter)
             AppendAssignConverterExplicitConverter(converter, variableName, converterTypeAlias);
         else if (Symbols.GetConverterCreatorType(this.context, member.Symbol) is { } creator)
             AppendAssignConverterExplicitConverterCreator(creator, variableName, converterTypeAlias, memberTypeAlias);
+        else if (allowsSelfTypeReference && SymbolEqualityComparer.Default.Equals(member.Type, Symbol))
+            Output.AppendIndent(3, $"var {variableName} = converter;");
         else
             AppendAssignConverterExplicit(member.Type, variableName, memberTypeAlias);
     }

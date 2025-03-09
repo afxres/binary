@@ -20,12 +20,35 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
 
     private void AppendConverterHead()
     {
-        var members = this.members;
-        var tail = ", byte[][] headers, System.Collections.Generic.IEnumerable<string> names, System.Collections.Generic.IEnumerable<bool> optional)";
-        Output.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", tail, members.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
+        Output.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(byte[][] headers, System.Collections.Generic.IEnumerable<string> names, System.Collections.Generic.IEnumerable<bool> optional)");
         Output.AppendIndent(2, $": Mikodev.Binary.Components.NamedObjectConverter<{SymbolTypeFullName}>(headers, names, optional)");
         Output.AppendIndent(1, $"{{");
         CancellationToken.ThrowIfCancellationRequested();
+    }
+
+    private void AppendFields()
+    {
+        var members = this.members;
+        for (var i = 0; i < members.Length; i++)
+        {
+            Output.AppendIndent(2, $"private {GetConverterTypeFullName(i)} cvt{i};");
+            Output.AppendIndent();
+            CancellationToken.ThrowIfCancellationRequested();
+        }
+    }
+
+    private void AppendInitializeMethod()
+    {
+        var members = this.members;
+        Output.AppendIndent(2, $"public void Initialize(", ")", members.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
+        Output.AppendIndent(2, $"{{");
+        for (var i = 0; i < members.Length; i++)
+        {
+            Output.AppendIndent(3, $"this.cvt{i} = cvt{i};");
+            CancellationToken.ThrowIfCancellationRequested();
+        }
+        Output.AppendIndent(2, $"}}");
+        Output.AppendIndent();
     }
 
     private void AppendConverterTail()
@@ -40,6 +63,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             return;
         Output.AppendIndent(3, $"if (item is null)");
         Output.AppendIndent(4, $"return;");
+        Output.AppendIndent(3, $"System.Runtime.CompilerServices.RuntimeHelpers.EnsureSufficientExecutionStack();");
         CancellationToken.ThrowIfCancellationRequested();
     }
 
@@ -102,19 +126,23 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         Output.AppendIndent(3, $"var names = new string[] {{ ", $" }};", members.Length, x => members[x].NamedKeyLiteral);
         Output.AppendIndent(3, $"var optional = new bool[] {{ ", $" }};", members.Length, x => members[x].IsOptional ? "true" : "false");
         Output.AppendIndent(3, $"var encoding = Mikodev.Binary.GeneratorContextExtensions.GetConverter<string>(context);");
+        Output.AppendIndent(3, $"var headers = System.Array.ConvertAll(names, x => Mikodev.Binary.Allocator.Invoke(x, encoding.Encode));");
+        Output.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(headers, names, optional);");
         for (var i = 0; i < members.Length; i++)
         {
             var member = members[i];
-            AppendAssignConverter(member, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i));
+            AppendAssignConverter(member, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i), allowsSelfTypeReference: true);
             CancellationToken.ThrowIfCancellationRequested();
         }
-        Output.AppendIndent(3, $"var headers = System.Array.ConvertAll(names, x => Mikodev.Binary.Allocator.Invoke(x, encoding.Encode));");
-        Output.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ", headers, names, optional);", members.Length, x => $"cvt{x}");
+        Output.AppendIndent(3, $"converter.Initialize(", ");", members.Length, x => $"cvt{x}");
     }
 
     protected override void Handle()
     {
         AppendConverterHead();
+        AppendFields();
+        AppendInitializeMethod();
+
         AppendEncodeMethod();
         AppendDecodeMethod();
         AppendConverterTail();

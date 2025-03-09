@@ -55,9 +55,9 @@ public class CompilationTests
         var a =
             """
             namespace Tests;
-            
+
             using Mikodev.Binary.Attributes;
-            
+
             [SourceGeneratorContext]
             [SourceGeneratorInclude<NotExistType>]
             partial class TestGeneratorContext { }

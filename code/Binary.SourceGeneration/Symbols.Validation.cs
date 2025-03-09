@@ -209,6 +209,10 @@ public static partial class Symbols
             diagnostics.Add(Constants.RequireValidTypeForMember.With(member, [GetSymbolDiagnosticDisplayString(memberType), memberName, containingTypeName]));
         cancellation.ThrowIfCancellationRequested();
 
+        if (tupleKeyAttribute is not null && SymbolEqualityComparer.Default.Equals(memberType, member.ContainingType))
+            diagnostics.Add(Constants.SelfTypeReferenceFound.With(member, [memberName, containingTypeName]));
+        cancellation.ThrowIfCancellationRequested();
+
         if (hasKey is false && converterAttribute is not null)
             diagnostics.Add(Constants.RequireKeyAttributeForConverterAttribute.With(converterAttribute, [memberName, containingTypeName]));
         if (hasKey is false && converterCreatorAttribute is not null)

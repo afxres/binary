@@ -96,10 +96,10 @@ public class SourceGeneratorContextTests
         var source =
             """
             namespace OuterNamespace;
-            
+
             using Mikodev.Binary.Attributes;
             using System.Collections.Generic;
-            
+
             [SourceGeneratorContext]
             [SourceGeneratorInclude<List<int>>]
             [SourceGeneratorInclude<List<int>>]
@@ -120,9 +120,9 @@ public class SourceGeneratorContextTests
         var source =
             """
             namespace SomeTest;
-            
+
             using Mikodev.Binary.Attributes;
-            
+
             [SourceGeneratorContext]
             [SourceGeneratorInclude<string>]
             public partial class WhateverContext { }
@@ -142,9 +142,9 @@ public class SourceGeneratorContextTests
         var source =
             """
             namespace SomeTest;
-            
+
             using Mikodev.Binary.Attributes;
-            
+
             [SourceGeneratorContext]
             [SourceGeneratorInclude<int>]
             [SourceGeneratorInclude<string>]

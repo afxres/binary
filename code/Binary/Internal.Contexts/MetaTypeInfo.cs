@@ -2,7 +2,6 @@
 
 using Mikodev.Binary.Attributes;
 using System;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -13,26 +12,24 @@ internal sealed class MetaTypeInfo
 {
     private readonly bool required;
 
-    private readonly ImmutableArray<Attribute> attributes;
+    private readonly Attribute? attribute;
 
     private readonly Type type;
 
     public bool HasRequiredMember => this.required;
 
-    public bool IsNamedObject => this.attributes is { Length: 1 } attributes && attributes.Single() is NamedObjectAttribute;
-
-    public bool IsTupleObject => this.attributes is { Length: 1 } attributes && attributes.Single() is TupleObjectAttribute;
-
     public Type Type => this.type;
 
-    public ImmutableArray<Attribute> Attributes => this.attributes;
+    public Attribute? Attribute => this.attribute;
 
     public MetaTypeInfo(Type type)
     {
         var required = CommonModule.GetAttributes(type, x => x is RequiredMemberAttribute).Any();
         var attributes = CommonModule.GetAttributes(type, a => a is NamedObjectAttribute or TupleObjectAttribute or ConverterAttribute or ConverterCreatorAttribute);
+        if (attributes.Length > 1)
+            throw new ArgumentException($"Multiple attributes found, type: {type}");
         this.type = type;
         this.required = required;
-        this.attributes = attributes;
+        this.attribute = attributes.SingleOrDefault();
     }
 }

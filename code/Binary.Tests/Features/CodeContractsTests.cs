@@ -15,7 +15,11 @@ public class CodeContractsTests
         Assert.NotEmpty(types);
         foreach (var i in types)
         {
-            var parameter = i.BaseType!.GetGenericArguments().First();
+            if (i.Name is "IConverterPlaceholder")
+                continue;
+            var baseType = i.BaseType;
+            Assert.NotNull(baseType);
+            var parameter = baseType.GetGenericArguments().First();
             if (parameter == typeof(object))
                 continue;
             var expectedName = parameter.Name + "Converter";

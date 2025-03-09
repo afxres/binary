@@ -119,7 +119,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
         for (var i = 0; i < members.Length; i++)
         {
             var member = members[i];
-            AppendAssignConverter(member, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i));
+            AppendAssignConverter(member, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i), allowsSelfTypeReference: false);
             CancellationToken.ThrowIfCancellationRequested();
         }
         Output.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ");", members.Length, x => $"cvt{x}");

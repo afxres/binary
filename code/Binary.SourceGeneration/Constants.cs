@@ -100,6 +100,14 @@ public static class Constants
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    public static DiagnosticDescriptor SelfTypeReferenceFound { get; } = new DiagnosticDescriptor(
+        id: "BINSRCGEN23",
+        title: "Self Type Reference Found.",
+        messageFormat: "Self type reference found, member name: {0}, containing type: {1}",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     // ↑ not valid
 
     // ↓ member

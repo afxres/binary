@@ -1,12 +1,15 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts;
 
 using Mikodev.Binary.Components;
+using Mikodev.Binary.Internal.Contexts.Decoders;
 using Mikodev.Binary.Internal.Contexts.Instance;
+using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -27,11 +30,15 @@ internal static class ContextMethodsOfNamedObject
         Debug.Assert(members.Length == names.Length);
         Debug.Assert(members.Length == optional.Length);
         Debug.Assert(members.Length == converters.Length);
+        var converterType = typeof(NamedObjectDelegateConverter<>).MakeGenericType(type);
+        var converter = (IConverter)CommonModule.CreateInstance(converterType, null);
+        if (converters.Any(x => x is IConverterPlaceholder))
+            converters = [.. converters.Select(x => x is IConverterPlaceholder ? converter : x)];
         var encode = GetEncodeDelegateAsNamedObject(type, converters, optional, headers, members);
         var decode = GetDecodeDelegateAsNamedObject(type, converters, optional, constructor);
-        var converterType = typeof(NamedObjectDelegateConverter<>).MakeGenericType(type);
-        var converter = CommonModule.CreateInstance(converterType, [headers, names, optional, encode, decode]);
-        return (IConverter)converter;
+        var invoke = new NamedObjectDecoder(headers, names, optional, type);
+        _ = CommonModule.GetPublicInstanceMethod(converterType, "Initialize").Invoke(converter, [encode, decode, invoke]);
+        return converter;
     }
 
     private static Delegate GetEncodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<bool> optional, ImmutableArray<ImmutableArray<byte>> headers, ImmutableArray<ContextMemberInitializer> members)

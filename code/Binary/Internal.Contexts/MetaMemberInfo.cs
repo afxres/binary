@@ -32,18 +32,10 @@ internal sealed class MetaMemberInfo
 
     public ContextMemberInitializer Initializer => this.initializer;
 
-    public Type Type => this.member is FieldInfo field ? @field.FieldType : ((PropertyInfo)this.member).PropertyType;
+    public Type Type => GetMemberType(this.member);
 
     public MetaMemberInfo(MemberInfo member, Attribute? key, Attribute? conversion, bool optional)
     {
-        static ContextMemberInitializer Invoke(MemberInfo member)
-        {
-            if (member is FieldInfo field)
-                return e => Expression.Field(e, field);
-            var property = (PropertyInfo)member;
-            return e => Expression.Property(e, property);
-        }
-
         Debug.Assert(member is FieldInfo || ((PropertyInfo)member).GetGetMethod() is not null);
         Debug.Assert(key is null or NamedKeyAttribute or TupleKeyAttribute);
         Debug.Assert(conversion is null or ConverterAttribute or ConverterCreatorAttribute);
@@ -52,6 +44,22 @@ internal sealed class MetaMemberInfo
         this.key = key;
         this.conversion = conversion;
         this.member = member;
-        this.initializer = Invoke(member);
+        this.initializer = GetMemberInitializer(member);
+    }
+
+    private static Type GetMemberType(MemberInfo member)
+    {
+        if (member is FieldInfo field)
+            return field.FieldType;
+        var property = (PropertyInfo)member;
+        return property.PropertyType;
+    }
+
+    private static ContextMemberInitializer GetMemberInitializer(MemberInfo member)
+    {
+        if (member is FieldInfo field)
+            return e => Expression.Field(e, field);
+        var property = (PropertyInfo)member;
+        return e => Expression.Property(e, property);
     }
 }

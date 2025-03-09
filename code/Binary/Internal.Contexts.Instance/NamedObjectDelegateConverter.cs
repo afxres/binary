@@ -3,22 +3,35 @@
 using Mikodev.Binary.Components;
 using Mikodev.Binary.Internal.Contexts.Decoders;
 using System;
-using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 internal delegate T NamedObjectDecodeDelegate<out T>(scoped NamedObjectParameter parameter);
 
-internal sealed class NamedObjectDelegateConverter<T>(ImmutableArray<ImmutableArray<byte>> headers, ImmutableArray<string> names, ImmutableArray<bool> optional, AllocatorAction<T> encode, NamedObjectDecodeDelegate<T>? decode) : Converter<T?>()
+internal sealed class NamedObjectDelegateConverter<T> : Converter<T?>
 {
-    private readonly AllocatorAction<T> encode = encode;
+    [AllowNull] private AllocatorAction<T> encode;
 
-    private readonly NamedObjectDecodeDelegate<T>? decode = decode;
+    private NamedObjectDecodeDelegate<T>? decode;
 
-    private readonly NamedObjectDecoder invoke = new NamedObjectDecoder(headers, names, optional, typeof(T));
+    [AllowNull] private NamedObjectDecoder invoke;
+
+    public void Initialize(AllocatorAction<T> encode, NamedObjectDecodeDelegate<T>? decode, NamedObjectDecoder invoke)
+    {
+        Debug.Assert(this.encode is null);
+        Debug.Assert(this.invoke is null);
+        this.encode = encode;
+        this.decode = decode;
+        this.invoke = invoke;
+    }
 
     public override void Encode(ref Allocator allocator, T? item)
     {
         if (item is null)
             return;
+        RuntimeHelpers.EnsureSufficientExecutionStack();
+        Debug.Assert(this.encode is not null);
         this.encode.Invoke(ref allocator, item);
     }
 
@@ -31,6 +44,7 @@ internal sealed class NamedObjectDelegateConverter<T>(ImmutableArray<ImmutableAr
         if (decode is null)
             ThrowHelper.ThrowNoSuitableConstructor<T>();
 
+        Debug.Assert(this.invoke is not null);
         var invoke = this.invoke;
         var slices = (stackalloc long[invoke.Length]);
         invoke.Invoke(span, slices);

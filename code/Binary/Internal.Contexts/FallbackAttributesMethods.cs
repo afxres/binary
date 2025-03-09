@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts;
 
 using Mikodev.Binary.Attributes;
+using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -17,22 +18,18 @@ internal static class FallbackAttributesMethods
     internal static IConverter GetConverter(IGeneratorContext context, MetaTypeInfo typeInfo)
     {
         var type = typeInfo.Type;
-        var attributes = typeInfo.Attributes;
-        if (attributes.Length > 1)
-            throw new ArgumentException($"Multiple attributes found, type: {type}");
-
-        var attribute = attributes.FirstOrDefault();
+        var attribute = typeInfo.Attribute;
         var memberInfoArrayUnsorted = GetMemberVariables(typeInfo);
 
         if (attribute is ConverterAttribute or ConverterCreatorAttribute)
-            return GetConverter(context, type, null, attribute);
+            return GetConverter(context, typeInfo, null);
         if (memberInfoArrayUnsorted.Length is 0)
             throw new ArgumentException($"No available member found, type: {type}");
         if (memberInfoArrayUnsorted.All(x => x.IsOptional))
             throw new ArgumentException($"No available required member found, type: {type}");
 
         var members = GetSortedMembers(typeInfo, memberInfoArrayUnsorted, out var names);
-        var converters = members.Select(x => GetConverter(context, type, x, x.ConverterOrConverterCreatorAttribute)).ToImmutableArray();
+        var converters = members.Select(x => GetConverter(context, typeInfo, x)).ToImmutableArray();
         var initializers = members.Select(x => x.Initializer).ToImmutableArray();
         var constructor = GetConstructor(type, members, initializers);
 
@@ -69,9 +66,9 @@ internal static class FallbackAttributesMethods
                 throw new ArgumentException($"Multiple attributes found, member name: {member.Name}, type: {type}");
             if (key is null && conversion is not null)
                 throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' for '{conversion.GetType().Name}', member name: {member.Name}, type: {type}");
-            if (key is NamedKeyAttribute && typeInfo.IsNamedObject is false)
+            if (key is NamedKeyAttribute && typeInfo.Attribute is not NamedObjectAttribute)
                 throw new ArgumentException($"Require '{nameof(NamedObjectAttribute)}' for '{nameof(NamedKeyAttribute)}', member name: {member.Name}, type: {type}");
-            if (key is TupleKeyAttribute && typeInfo.IsTupleObject is false)
+            if (key is TupleKeyAttribute && typeInfo.Attribute is not TupleObjectAttribute)
                 throw new ArgumentException($"Require '{nameof(TupleObjectAttribute)}' for '{nameof(TupleKeyAttribute)}', member name: {member.Name}, type: {type}");
             var optional = GetMemberIsOptional(typeInfo, member, key);
             var memberInfo = new MetaMemberInfo(member, key, conversion, optional);
@@ -87,9 +84,9 @@ internal static class FallbackAttributesMethods
         var required = CommonModule.GetAttributes(member, x => x is RequiredMemberAttribute).Any();
         if (required is false)
             return true;
-        if (typeInfo.IsNamedObject && key is not NamedKeyAttribute)
+        if (typeInfo.Attribute is NamedObjectAttribute && key is not NamedKeyAttribute)
             throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' for required member, member name: {member.Name}, type: {typeInfo.Type}");
-        if (typeInfo.IsTupleObject && key is not TupleKeyAttribute)
+        if (typeInfo.Attribute is TupleObjectAttribute && key is not TupleKeyAttribute)
             throw new ArgumentException($"Require '{nameof(TupleKeyAttribute)}' for required member, member name: {member.Name}, type: {typeInfo.Type}");
         return false;
     }
@@ -112,16 +109,22 @@ internal static class FallbackAttributesMethods
         }
     }
 
-    private static IConverter GetConverter(IGeneratorContext context, Type reflected, MetaMemberInfo? memberInfo, Attribute? attribute)
+    private static IConverter GetConverter(IGeneratorContext context, MetaTypeInfo typeInfo, MetaMemberInfo? memberInfo)
     {
+        var reflected = typeInfo.Type;
         var type = memberInfo is null ? reflected : memberInfo.Type;
+        var attribute = memberInfo is null ? typeInfo.Attribute : memberInfo.ConverterOrConverterCreatorAttribute;
         Debug.Assert(attribute is null or ConverterAttribute or ConverterCreatorAttribute);
         if (attribute is ConverterAttribute alpha)
             return EnsureModule.GetConverter(GetConverterOrCreator<IConverter>(alpha.Type, reflected, memberInfo?.Name), type, null);
         if (attribute is ConverterCreatorAttribute bravo)
             return EnsureModule.GetConverter(GetConverterOrCreator<IConverterCreator>(bravo.Type, reflected, memberInfo?.Name).GetConverter(context, type), type, bravo.Type);
         Debug.Assert(attribute is null);
-        return context.GetConverter(type);
+        if (memberInfo is null || memberInfo.Type != reflected)
+            return context.GetConverter(type);
+        if (typeInfo.Attribute is TupleObjectAttribute)
+            throw new ArgumentException($"Self type reference detected, type: {reflected}");
+        return IConverterPlaceholder.Instance;
     }
 
     private static ImmutableArray<MetaMemberInfo> GetSortedMembers(MetaTypeInfo typeInfo, ImmutableArray<MetaMemberInfo> source, out ImmutableArray<string> list)
@@ -138,15 +141,15 @@ internal static class FallbackAttributesMethods
         var type = typeInfo.Type;
         var named = Choose<NamedKeyAttribute>();
         var tuple = Choose<TupleKeyAttribute>();
-        if (named.Count is 0 && typeInfo.IsNamedObject)
+        if (named.Count is 0 && typeInfo.Attribute is NamedObjectAttribute)
             throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' for '{nameof(NamedObjectAttribute)}', type: {type}");
-        if (tuple.Count is 0 && typeInfo.IsTupleObject)
+        if (tuple.Count is 0 && typeInfo.Attribute is TupleObjectAttribute)
             throw new ArgumentException($"Require '{nameof(TupleKeyAttribute)}' for '{nameof(TupleObjectAttribute)}', type: {type}");
 
         list = default;
-        if (typeInfo.IsTupleObject)
+        if (typeInfo.Attribute is TupleObjectAttribute)
             return GetSortedTupleMembers(type, tuple);
-        if (typeInfo.IsNamedObject)
+        if (typeInfo.Attribute is NamedObjectAttribute)
             return GetSortedNamedMembers(type, named, out list);
         var result = source.OrderBy(x => x.Name).ToImmutableArray();
         list = [.. result.Select(x => x.Name)];
