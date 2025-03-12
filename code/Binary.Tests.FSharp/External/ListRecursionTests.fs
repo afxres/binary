@@ -21,8 +21,7 @@ type LargeBlockConverter() =
         Allocator.Append(&allocator, MemoryMarshal.CreateReadOnlySpan(&Unsafe.As<LargeBlock, byte>(&Unsafe.AsRef(&item)), Unsafe.SizeOf<LargeBlock>()))
         ()
 
-    override __.Decode(span : inref<ReadOnlySpan<byte>>) : LargeBlock =
-        MemoryMarshal.AsRef<LargeBlock>(span)
+    override __.Decode(span: inref<ReadOnlySpan<byte>>) : LargeBlock = MemoryMarshal.AsRef<LargeBlock>(span)
 
 [<Literal>]
 let CommonLinuxStackSize = 8388608
@@ -30,18 +29,14 @@ let CommonLinuxStackSize = 8388608
 [<Theory>]
 [<InlineData(8192)>]
 [<InlineData(32768)>]
-let ``List Decode With Large Value Type`` (count : int) =
+let ``List Decode With Large Value Type`` (count: int) =
     let source = Array.zeroCreate<LargeBlock> count
     let span = MemoryMarshal.AsBytes(Span source)
     Random().NextBytes span
 
     Assert.True(span.Length >= CommonLinuxStackSize)
 
-    let generator =
-        Generator.CreateDefaultBuilder()
-            .AddFSharpConverterCreators()
-            .AddConverter(LargeBlockConverter())
-            .Build()
+    let generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().AddConverter(LargeBlockConverter()).Build()
 
     let list = List.ofArray source
     let converter = generator.GetConverter<LargeBlock list>()
@@ -55,22 +50,22 @@ let ``List Decode With Large Value Type`` (count : int) =
 [<Theory>]
 [<InlineData(8192)>]
 [<InlineData(32768)>]
-let ``List Decode Recursion With Large Value Type`` (count : int) =
+let ``List Decode Recursion With Large Value Type`` (count: int) =
     let rec DetectStackSize () =
         let mutable i = 0
         let address = &&i |> NativePtr.toVoidPtr |> IntPtr
         if not (RuntimeHelpers.TryEnsureSufficientExecutionStack()) then
             address |> List.singleton
         else
-            address :: DetectStackSize ()
+            address :: DetectStackSize()
 
     let Detect () =
-        let list = DetectStackSize ()
+        let list = DetectStackSize()
         let head = list |> List.head
         let last = list |> List.last
         head - last
 
-    let length = Detect ()
+    let length = Detect()
     let buffer = NativePtr.stackalloc<byte> (int length + 1024)
     Assert.NotEqual(IntPtr.Zero, buffer |> NativePtr.toVoidPtr |> IntPtr)
     Assert.False(RuntimeHelpers.TryEnsureSufficientExecutionStack())

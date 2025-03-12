@@ -5,7 +5,7 @@ open System
 open System.Diagnostics
 
 [<CompiledName("FSharpListConverter`1")>]
-type internal ListConverter<'T>(converter : Converter<'T>) =
+type internal ListConverter<'T>(converter: Converter<'T>) =
     inherit Converter<'T list>(0)
 
     [<Literal>]
@@ -14,13 +14,13 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
     let constant = converter.Length > 0
 
     [<DebuggerStepThrough>]
-    member private __.ExceptConstant(length : int) : unit =
+    member private __.ExceptConstant(length: int) : unit =
         raise (ArgumentException $"Not enough bytes for collection element, byte length: {length}, element type: {typeof<'T>}")
 
-    member private me.DecodeConstant(span : ReadOnlySpan<byte>) : 'T list =
+    member private me.DecodeConstant(span: ReadOnlySpan<byte>) : 'T list =
         let converter = converter
         let itemLength = converter.Length
-        let spanLength = span.Length;
+        let spanLength = span.Length
         if (spanLength % itemLength) <> 0 then
             me.ExceptConstant spanLength
         let mutable list = []
@@ -32,7 +32,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
             i <- i - itemLength
         list
 
-    member private __.SelectVariable(span : byref<ReadOnlySpan<byte>>) : 'T list =
+    member private __.SelectVariable(span: byref<ReadOnlySpan<byte>>) : 'T list =
         let converter = converter
         let data = ResizeArray<'T> capacity
         while not span.IsEmpty do
@@ -45,7 +45,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
             i <- i - 1
         list
 
-    member private me.DecodeVariable(span : byref<ReadOnlySpan<byte>>, loop : int) : 'T list =
+    member private me.DecodeVariable(span: byref<ReadOnlySpan<byte>>, loop: int) : 'T list =
         if span.IsEmpty then
             []
         elif loop > 0 then
@@ -62,7 +62,7 @@ type internal ListConverter<'T>(converter : Converter<'T>) =
                 converter.EncodeAuto(&allocator, i)
         ()
 
-    override me.Decode(span : inref<ReadOnlySpan<byte>>) : 'T list =
+    override me.Decode(span: inref<ReadOnlySpan<byte>>) : 'T list =
         if span.IsEmpty then
             []
         elif constant then

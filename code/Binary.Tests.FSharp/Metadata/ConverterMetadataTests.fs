@@ -11,7 +11,7 @@ type MetadataFakeConverter<'T>() =
 
     override __.Encode(_, _) = raise (NotSupportedException())
 
-    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : 'T = raise(NotSupportedException())
+    override __.Decode(_: inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 
     override __.EncodeAuto(_, _) = raise (NotSupportedException())
 
@@ -29,7 +29,7 @@ type ConverterMetadataTests() =
     [<InlineData("Encode")>]
     [<InlineData("Decode")>]
     [<InlineData("EncodeAuto")>]
-    member me.``Get Method For Override`` (methodName : string) =
+    member me.``Get Method For Override``(methodName: string) =
         let interfaceMethod = me.GetInterfaceMethod()
         let converter = MetadataFakeConverter<obj>()
         let method = interfaceMethod.Invoke(converter, methodName)
@@ -42,7 +42,7 @@ type ConverterMetadataTests() =
     [<InlineData("DecodeAuto")>]
     [<InlineData("DecodeWithLengthPrefix")>]
     [<InlineData("EncodeWithLengthPrefix")>]
-    member me.``Get Method For Non Override`` (methodName : string) =
+    member me.``Get Method For Non Override``(methodName: string) =
         let interfaceMethod = me.GetInterfaceMethod()
         let converter = MetadataFakeConverter<obj>()
         let method = interfaceMethod.Invoke(converter, methodName)
@@ -56,7 +56,7 @@ type ConverterMetadataTests() =
     [<InlineData("")>]
     [<InlineData("Length")>]
     [<InlineData("GetGenericArgument")>]
-    member me.``Get Method Invalid Name`` (name : string) =
+    member me.``Get Method Invalid Name``(name: string) =
         let interfaceMethod = me.GetInterfaceMethod()
         let converter = MetadataFakeConverter<obj>()
         let error = Assert.Throws<ArgumentException>(fun () -> interfaceMethod.Invoke(converter, name) |> ignore)

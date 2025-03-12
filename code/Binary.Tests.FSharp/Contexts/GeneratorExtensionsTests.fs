@@ -9,21 +9,21 @@ type FakeConverter<'a>() =
 
     override __.Encode(_, _) = raise (NotSupportedException("Text alpha"))
 
-    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : 'a = raise (NotSupportedException("Text bravo"))
+    override __.Decode(_: inref<ReadOnlySpan<byte>>) : 'a = raise (NotSupportedException("Text bravo"))
 
     override __.Encode(_) = raise (NotSupportedException("Text charlie"))
 
-    override __.Decode(_ : byte array) : 'a = raise (NotSupportedException("Text delta"))
+    override __.Decode(_: byte array) : 'a = raise (NotSupportedException("Text delta"))
 
 type GeneratorExtensionsTests() =
     let generator = Generator.CreateDefault()
 
-    let GeneratorBuilder() =
+    let GeneratorBuilder () =
         let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "GeneratorBuilder") |> Array.exactlyOne
         let builder = Activator.CreateInstance(t)
         builder :?> IGeneratorBuilder
 
-    static member ``Data Alpha`` : (obj array) seq = seq {
+    static member ``Data Alpha``: (obj array) seq = seq {
         yield [| 256 |]
         yield [| 2.0 |]
         yield [| struct (2L, 'Z') |]
@@ -32,7 +32,7 @@ type GeneratorExtensionsTests() =
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member __.``Decode No Generic`` (value : obj) =
+    member __.``Decode No Generic``(value: obj) =
         let buffer = generator.Encode(value, value.GetType())
         let memory = ReadOnlySpan buffer
 
@@ -44,7 +44,7 @@ type GeneratorExtensionsTests() =
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member __.``Decode`` (value : 'A) =
+    member __.``Decode``(value: 'A) =
         let buffer = generator.Encode value
         let memory = ReadOnlySpan buffer
 
@@ -56,7 +56,7 @@ type GeneratorExtensionsTests() =
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member __.``Decode With Anonymous`` (value : 'A) =
+    member __.``Decode With Anonymous``(value: 'A) =
         let buffer = generator.Encode value
         let memory = ReadOnlySpan buffer
 
@@ -67,21 +67,21 @@ type GeneratorExtensionsTests() =
         ()
 
     [<Fact>]
-    member __.``Route Encode`` () =
+    member __.``Route Encode``() =
         let generator = GeneratorBuilder().AddConverter(FakeConverter<int>()).Build()
         let error = Assert.Throws<NotSupportedException>(fun () -> generator.Encode(0) |> ignore)
         Assert.Equal("Text charlie", error.Message)
         ()
 
     [<Fact>]
-    member __.``Route Encode Non Generic`` () =
+    member __.``Route Encode Non Generic``() =
         let generator = GeneratorBuilder().AddConverter(FakeConverter<string>()).Build()
         let error = Assert.Throws<NotSupportedException>(fun () -> generator.Encode(null, typeof<string>) |> ignore)
         Assert.Equal("Text charlie", error.Message)
         ()
 
     [<Fact>]
-    member __.``Route Decode Span`` () =
+    member __.``Route Decode Span``() =
         let generator = GeneratorBuilder().AddConverter(FakeConverter<string>()).Build()
         let a = Assert.Throws<NotSupportedException>(fun () -> let span = ReadOnlySpan<byte>() in generator.Decode(span, typeof<string>) |> ignore)
         let b = Assert.Throws<NotSupportedException>(fun () -> let span = ReadOnlySpan<byte>() in generator.Decode<string> span |> ignore)
@@ -93,7 +93,7 @@ type GeneratorExtensionsTests() =
         ()
 
     [<Fact>]
-    member __.``Route Decode Byte Array`` () =
+    member __.``Route Decode Byte Array``() =
         let generator = GeneratorBuilder().AddConverter(FakeConverter<string>()).Build()
         let buffer = Array.empty<byte>
         let a = Assert.Throws<NotSupportedException>(fun () -> generator.Decode(buffer, typeof<string>) |> ignore)

@@ -6,17 +6,17 @@ open System.Collections.Generic
 open System.Runtime.InteropServices
 open Xunit
 
-type ArrayWrapper<'T> = { array : 'T array }
+type ArrayWrapper<'T> = { array: 'T array }
 
-type ArrayWrapperConverter<'T when 'T : struct and 'T :> ValueType and 'T : (new : unit -> 'T)> () =
-    inherit Converter<ArrayWrapper<'T>> ()
+type ArrayWrapperConverter<'T when 'T: struct and 'T :> ValueType and 'T: (new: unit -> 'T)>() =
+    inherit Converter<ArrayWrapper<'T>>()
 
     override __.Encode(allocator, item) =
         let span = MemoryMarshal.Cast<'T, byte>(ReadOnlySpan item.array)
         Allocator.Append(&allocator, span)
         ()
 
-    override __.Decode(span : inref<ReadOnlySpan<byte>>) : ArrayWrapper<'T> =
+    override __.Decode(span: inref<ReadOnlySpan<byte>>) : ArrayWrapper<'T> =
         let span = MemoryMarshal.Cast<byte, 'T> span
         { array = span.ToArray() }
 

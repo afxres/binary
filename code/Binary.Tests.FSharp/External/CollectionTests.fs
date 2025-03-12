@@ -6,14 +6,11 @@ open System.Linq
 open System.Net
 open Xunit
 
-let generator =
-    Generator.CreateDefaultBuilder()
-        .AddFSharpConverterCreators()
-        .Build();
+let generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().Build()
 
-let Test (value : 'a when 'a :> 'e seq) =
+let Test (value: 'a :> 'e seq) =
     let buffer = generator.Encode value
-    let result : 'a = generator.Decode buffer
+    let result: 'a = generator.Decode buffer
     Assert.Equal<'e>(value, result :> 'e seq)
     ()
 
@@ -28,9 +25,9 @@ let ``Array Instance`` () =
 
 [<Fact>]
 let ``Array (empty)`` () =
-    let source : int array = Array.empty
+    let source: int array = Array.empty
     let buffer = generator.Encode source
-    let result : int array = generator.Decode buffer
+    let result: int array = generator.Decode buffer
 
     Assert.Empty(buffer)
     Assert.Equal<int seq>(source, result)
@@ -47,9 +44,9 @@ let ``List Instance`` () =
 
 [<Fact>]
 let ``List (empty)`` () =
-    let source : string list = []
+    let source: string list = []
     let buffer = generator.Encode source
-    let result : string list = generator.Decode buffer
+    let result: string list = generator.Decode buffer
 
     Assert.Empty(buffer)
     Assert.Equal<string>(ResizeArray source, ResizeArray result)
@@ -59,7 +56,7 @@ let ``List (empty)`` () =
 let ``List (null)`` () =
     let source = Unchecked.defaultof<int list>
     let buffer = generator.Encode source
-    let result : int list = generator.Decode buffer
+    let result: int list = generator.Decode buffer
 
     Assert.Empty(buffer)
     Assert.Empty(result)
@@ -69,7 +66,7 @@ let ``List (null)`` () =
 [<InlineData(1)>]
 [<InlineData(4)>]
 [<InlineData(23)>]
-let ``List (value type, invalid byte count)`` (bytes : int) =
+let ``List (value type, invalid byte count)`` (bytes: int) =
     let buffer = Array.zeroCreate<byte> bytes
     let converter = generator.GetConverter<double list>()
     let otherConverter = generator.GetConverter<double array>()
@@ -86,7 +83,7 @@ let ``List (value type, invalid byte count)`` (bytes : int) =
 [<InlineData(0)>]
 [<InlineData(1)>]
 [<InlineData(32768)>]
-let ``List (value type, no stack overflow)`` (count : int) =
+let ``List (value type, no stack overflow)`` (count: int) =
     let source = Array.zeroCreate<byte> count |> Array.toList
     let buffer = generator.Encode source
     let result = generator.Decode<byte list> buffer
@@ -97,8 +94,13 @@ let ``List (value type, no stack overflow)`` (count : int) =
 [<InlineData(0)>]
 [<InlineData(1)>]
 [<InlineData(32768)>]
-let ``List (class type, no stack overflow)`` (count : int) =
-    let source = seq { for i in 0..(count - 1) do yield sprintf "%d" i } |> Seq.toList
+let ``List (class type, no stack overflow)`` (count: int) =
+    let source =
+        seq {
+            for i in 0 .. (count - 1) do
+                yield sprintf "%d" i
+        }
+        |> Seq.toList
     let buffer = generator.Encode source
     let result = generator.Decode<string list> buffer
     Assert.Equal<string>(ResizeArray source, ResizeArray result)
@@ -106,7 +108,10 @@ let ``List (class type, no stack overflow)`` (count : int) =
 
 [<Fact>]
 let ``Sequence`` () =
-    let alpha = seq { for i in 3..9 do yield i * 3 }
+    let alpha = seq {
+        for i in 3..9 do
+            yield i * 3
+    }
     let bravo = Seq.empty<string>
 
     Test alpha
@@ -117,7 +122,7 @@ let ``Sequence`` () =
 [<InlineData(0)>]
 [<InlineData(1)>]
 [<InlineData(32768)>]
-let ``Set`` (count : int) =
+let ``Set`` (count: int) =
     let alpha = Enumerable.Range(0, count) |> Set
     let bravo = alpha |> Seq.map string |> Set
 
@@ -129,7 +134,7 @@ let ``Set`` (count : int) =
 let ``Set (null)`` () =
     let source = Unchecked.defaultof<Set<string>>
     let buffer = generator.Encode source
-    let result : Set<string> = generator.Decode buffer
+    let result: Set<string> = generator.Decode buffer
 
     Assert.Empty(buffer)
     Assert.Empty(result)
@@ -139,7 +144,7 @@ let ``Set (null)`` () =
 [<InlineData(0)>]
 [<InlineData(1)>]
 [<InlineData(32768)>]
-let ``Map`` (count : int) =
+let ``Map`` (count: int) =
     let alpha = Enumerable.Range(0, count) |> Seq.map (fun a -> a, string a) |> Map
     let bravo = Enumerable.Range(0, count) |> Seq.map (fun a -> string a, a) |> Map
 
@@ -151,7 +156,7 @@ let ``Map`` (count : int) =
 let ``Map (null)`` () =
     let source = Unchecked.defaultof<Map<string, int>>
     let buffer = generator.Encode source
-    let result : Map<string, int> = generator.Decode buffer
+    let result: Map<string, int> = generator.Decode buffer
 
     Assert.Empty(buffer)
     Assert.Empty(result)

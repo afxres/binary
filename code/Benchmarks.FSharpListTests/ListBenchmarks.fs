@@ -9,23 +9,23 @@ open System.Runtime.InteropServices
 
 [<MemoryDiagnoser>]
 type ListBenchmarks() =
-    let mutable buffer : byte array = null
+    let mutable buffer: byte array = null
 
-    let mutable intConverter : Converter<int> = null
+    let mutable intConverter: Converter<int> = null
 
-    let mutable intListConverter : Converter<List<int>> = null
+    let mutable intListConverter: Converter<List<int>> = null
 
     let mutable intList = List.empty<int>
 
-    let mutable intListBuffer : byte array = null
+    let mutable intListBuffer: byte array = null
 
-    let mutable stringConverter : Converter<string> = null
+    let mutable stringConverter: Converter<string> = null
 
-    let mutable stringListConverter : Converter<List<string>> = null
+    let mutable stringListConverter: Converter<List<string>> = null
 
     let mutable stringList = List.empty<string>
 
-    let mutable stringListBuffer : byte array = null
+    let mutable stringListBuffer: byte array = null
 
     [<Params(0, 1, 4, 16, 1024)>]
     member val public Count = 0 with get, set
@@ -33,11 +33,7 @@ type ListBenchmarks() =
     [<GlobalSetup>]
     member me.Setup() =
         buffer <- Array.zeroCreate 65536
-        let generator =
-            Generator.CreateDefaultBuilder()
-                .AddConverter(BinaryStringConverter())
-                .AddFSharpConverterCreators()
-                .Build()
+        let generator = Generator.CreateDefaultBuilder().AddConverter(BinaryStringConverter()).AddFSharpConverterCreators().Build()
         intConverter <- generator.GetConverter<_>()
         intListConverter <- generator.GetConverter<_>()
         intList <- Enumerable.Range(0, me.Count) |> Seq.toList
@@ -49,8 +45,7 @@ type ListBenchmarks() =
         ()
 
     [<Benchmark(Description = "Decode List Of Int (converter)")>]
-    member __.LD01() : List<int> =
-        intListConverter.Decode intListBuffer
+    member __.LD01() : List<int> = intListConverter.Decode intListBuffer
 
     [<Benchmark(Description = "Decode List Of Int (cast span)")>]
     member __.LD02() : List<int> =
@@ -73,8 +68,7 @@ type ListBenchmarks() =
         list
 
     [<Benchmark(Description = "Decode List Of String (converter)")>]
-    member __.LD11() : List<string> =
-        stringListConverter.Decode stringListBuffer
+    member __.LD11() : List<string> = stringListConverter.Decode stringListBuffer
 
     [<Benchmark(Description = "Decode List Of String (resize array)")>]
     member __.LD12() : List<string> =
@@ -88,7 +82,7 @@ type ListBenchmarks() =
             list <- data[i] :: list
         list
 
-    static member private Decode(converter : Converter<_>, span : byref<ReadOnlySpan<byte>>) : List<_> =
+    static member private Decode(converter: Converter<_>, span: byref<ReadOnlySpan<byte>>) : List<_> =
         if not span.IsEmpty then
             let head = converter.DecodeAuto &span
             let tail = ListBenchmarks.Decode(converter, &span)

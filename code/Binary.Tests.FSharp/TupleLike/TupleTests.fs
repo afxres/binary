@@ -5,13 +5,10 @@ open System
 open System.Net
 open Xunit
 
-let generator =
-    Generator.CreateDefaultBuilder()
-        .AddFSharpConverterCreators()
-        .Build();
+let generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().Build()
 
-let Test (ls : int) (ll : int) (value : 'T) =
-    let c = generator.GetConverter<'T> ()
+let Test (ls: int) (ll: int) (value: 'T) =
+    let c = generator.GetConverter<'T>()
     let mutable allocator = Allocator()
     c.Encode(&allocator, value)
     let ba = allocator.AsSpan().ToArray()
@@ -31,7 +28,7 @@ let Test (ls : int) (ll : int) (value : 'T) =
 
 let TestNull<'T> () =
     let value = Unchecked.defaultof<'T>
-    let converter = generator.GetConverter<'T> ()
+    let converter = generator.GetConverter<'T>()
     let message = sprintf "Tuple can not be null, type: %O" typeof<'T>
     let alpha = Assert.Throws<ArgumentException>(fun () -> let mutable allocator = Allocator() in converter.Encode(&allocator, value))
     Assert.Null(alpha.ParamName)
@@ -43,42 +40,42 @@ let TestNull<'T> () =
 
 [<Fact>]
 let ``Tuple Null 1`` () =
-    TestNull<Tuple<int>> ()
+    TestNull<Tuple<int>>()
     ()
 
 [<Fact>]
 let ``Tuple Null 2`` () =
-    TestNull<string * string> ()
+    TestNull<string * string>()
     ()
 
 [<Fact>]
 let ``Tuple Null 3`` () =
-    TestNull<int * double * string> ()
+    TestNull<int * double * string>()
     ()
 
 [<Fact>]
 let ``Tuple Null 4`` () =
-    TestNull<int * double * Guid * string> ()
+    TestNull<int * double * Guid * string>()
     ()
 
 [<Fact>]
 let ``Tuple Null 5`` () =
-    TestNull<int16 * int * double * Guid * string> ()
+    TestNull<int16 * int * double * Guid * string>()
     ()
 
 [<Fact>]
 let ``Tuple Null 6`` () =
-    TestNull<byte * int16 * int * double * Guid * string> ()
+    TestNull<byte * int16 * int * double * Guid * string>()
     ()
 
 [<Fact>]
 let ``Tuple Null 7`` () =
-    TestNull<byte * int16 * int * double * Guid * string * IPAddress> ()
+    TestNull<byte * int16 * int * double * Guid * string * IPAddress>()
     ()
 
 [<Fact>]
 let ``Tuple Null 8`` () =
-    TestNull<byte * int16 * int * double * Guid * string * IPAddress * IPEndPoint> ()
+    TestNull<byte * int16 * int * double * Guid * string * IPAddress * IPEndPoint>()
     ()
 
 [<Fact>]
@@ -179,7 +176,7 @@ let ``Tuple N`` () =
     ()
 
 let TestSize<'T> size =
-    let converter = generator.GetConverter<'T> ()
+    let converter = generator.GetConverter<'T>()
     Assert.Equal(size, converter.Length)
     ()
 
@@ -195,14 +192,14 @@ let ``Tuple Length`` () =
     TestSize<int * int * int * int * int * int * int * int * int> 36
     ()
 
-type Fix = { some : obj }
+type Fix = { some: obj }
 
-type FixConverter(length : int) =
+type FixConverter(length: int) =
     inherit Converter<Fix>(length)
 
     override __.Encode(_, _) = raise (NotSupportedException())
 
-    override __.Decode (_ : inref<ReadOnlySpan<byte>>) : Fix = raise (NotSupportedException())
+    override __.Decode(_: inref<ReadOnlySpan<byte>>) : Fix = raise (NotSupportedException())
 
 [<Fact>]
 let ``Tuple Length (overflow)`` () =

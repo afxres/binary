@@ -7,11 +7,12 @@ open System.Net.Sockets
 open Xunit
 
 type IPEndPointTests() =
-    let GetConverterType() = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "IPEndPointConverter") |> Array.exactlyOne
+    let GetConverterType () =
+        typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "IPEndPointConverter") |> Array.exactlyOne
 
-    let GetConverter() = GetConverterType() |> Activator.CreateInstance :?> Converter<IPEndPoint>
+    let GetConverter () = GetConverterType() |> Activator.CreateInstance :?> Converter<IPEndPoint>
 
-    static member ``Data Alpha`` : (obj array) seq = seq {
+    static member ``Data Alpha``: (obj array) seq = seq {
         yield [| null |]
         yield [| IPEndPoint(IPAddress.Parse("255.255.255.255"), 0) |]
         yield [| IPEndPoint(IPAddress.Parse("0.0.0.0"), 65535) |]
@@ -21,7 +22,7 @@ type IPEndPointTests() =
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member __.``Encode Then Decode (span methods & bytes methods)`` (item : IPEndPoint) =
+    member __.``Encode Then Decode (span methods & bytes methods)``(item: IPEndPoint) =
         let converter = GetConverter()
         let b1 = Allocator.Invoke((), fun allocator _ -> converter.Encode(&allocator, item))
         let b2 = converter.Encode item
@@ -45,7 +46,7 @@ type IPEndPointTests() =
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member __.``Encode Then Decode (auto methods & length prefix methods)`` (item : IPEndPoint) =
+    member __.``Encode Then Decode (auto methods & length prefix methods)``(item: IPEndPoint) =
         let converter = GetConverter()
         let b1 = Allocator.Invoke((), fun allocator _ -> converter.EncodeAuto(&allocator, item))
         let b2 = Allocator.Invoke((), fun allocator _ -> converter.EncodeWithLengthPrefix(&allocator, item))
@@ -72,7 +73,7 @@ type IPEndPointTests() =
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member __.``Layout`` (item : IPEndPoint) =
+    member __.``Layout``(item: IPEndPoint) =
         let converter = GetConverter()
         let b1 = converter.Encode item
         let b2 =
@@ -89,7 +90,7 @@ type IPEndPointTests() =
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member __.``Layout (with length prefix)`` (item : IPEndPoint) =
+    member __.``Layout (with length prefix)``(item: IPEndPoint) =
         let converter = GetConverter()
         let b1 = Allocator.Invoke((), fun allocator _ -> converter.EncodeWithLengthPrefix(&allocator, item))
         let b2 =
@@ -113,7 +114,7 @@ type IPEndPointTests() =
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member __.``Decode With Multiple Length Prefix (auto methods & length prefix methods)`` (item : IPEndPoint) =
+    member __.``Decode With Multiple Length Prefix (auto methods & length prefix methods)``(item: IPEndPoint) =
         let converter = GetConverter()
         let buffer = converter.Encode item
         let byteLength =
@@ -126,13 +127,13 @@ type IPEndPointTests() =
         let b1 = Array.concat [| [| byte byteLength |]; buffer |]
         let b4 = Array.concat [| [| 0x80uy; 0x00uy; 0x00uy; byte byteLength |]; buffer |]
 
-        let DecodeAuto (buffer : byte array) =
+        let DecodeAuto (buffer: byte array) =
             let mutable span = ReadOnlySpan buffer
             let result = converter.DecodeAuto &span
             Assert.True span.IsEmpty
             result
 
-        let DecodeWithLengthPrefix (buffer : byte array) =
+        let DecodeWithLengthPrefix (buffer: byte array) =
             let mutable span = ReadOnlySpan buffer
             let result = converter.DecodeWithLengthPrefix &span
             Assert.True span.IsEmpty
@@ -145,7 +146,7 @@ type IPEndPointTests() =
         ()
 
     [<Fact>]
-    member __.``Not Enough Bytes (length 1)`` () =
+    member __.``Not Enough Bytes (length 1)``() =
         let converter = GetConverter()
         let buffer = Array.zeroCreate<byte> 1
         let error = Assert.Throws<ArgumentException>(fun () -> converter.Decode buffer |> ignore)
@@ -154,9 +155,13 @@ type IPEndPointTests() =
         ()
 
     [<Fact>]
-    member __.``Not Enough Bytes (length from 2 to max)`` () =
+    member __.``Not Enough Bytes (length from 2 to max)``() =
         let converter = GetConverter()
-        let parameters = [ for i = 2 to 63 do if i <> 6 && i <> 18 then yield i ]
+        let parameters = [
+            for i = 2 to 63 do
+                if i <> 6 && i <> 18 then
+                    yield i
+        ]
         Assert.Equal(2, parameters |> List.head)
         Assert.Equal(63, parameters |> List.last)
         Assert.Equal(60, parameters |> List.length)
@@ -170,7 +175,7 @@ type IPEndPointTests() =
         ()
 
     [<Fact>]
-    member __.``Port (no overflow)`` () =
+    member __.``Port (no overflow)``() =
         let converter = GetConverter()
         let source = IPEndPoint(IPAddress.Any, IPEndPoint.MaxPort)
         let buffer = converter.Encode source

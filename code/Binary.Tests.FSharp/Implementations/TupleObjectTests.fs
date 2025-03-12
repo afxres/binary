@@ -7,17 +7,17 @@ open Xunit
 
 let generator = Generator.CreateDefault()
 
-type Raw<'a> = { data : 'a }
+type Raw<'a> = { data: 'a }
 
-type RawConverter<'a>(length : int) =
+type RawConverter<'a>(length: int) =
     inherit Converter<Raw<'a>>(length)
 
     override __.Encode(_, _) = raise (NotSupportedException())
 
-    override __.Decode (_ : inref<ReadOnlySpan<byte>>) : Raw<'a> = raise (NotSupportedException())
+    override __.Decode(_: inref<ReadOnlySpan<byte>>) : Raw<'a> = raise (NotSupportedException())
 
 [<TupleObject>]
-type Two<'a, 'b>(a : 'a, b : 'b) =
+type Two<'a, 'b>(a: 'a, b: 'b) =
     [<TupleKey(0)>]
     member __.A = a
 
@@ -28,10 +28,7 @@ type Two<'a, 'b>(a : 'a, b : 'b) =
 let ``Tuple Object Length (max value)`` () =
     let singleConverter = RawConverter<single>(0x3000_0000)
     let doubleConverter = RawConverter<double>(0x4FFF_FFFF)
-    let generator = Generator.CreateDefaultBuilder()
-                        .AddConverter(singleConverter)
-                        .AddConverter(doubleConverter)
-                        .Build();
+    let generator = Generator.CreateDefaultBuilder().AddConverter(singleConverter).AddConverter(doubleConverter).Build()
     let alpha = generator.GetConverter<Two<Raw<single>, Raw<double>>>()
     Assert.Equal(Int32.MaxValue, alpha.Length)
     ()
@@ -40,10 +37,7 @@ let ``Tuple Object Length (max value)`` () =
 let ``Tuple Object Length (overflow)`` () =
     let singleConverter = RawConverter<single>(0x2000_0000)
     let doubleConverter = RawConverter<double>(0x6000_0000)
-    let generator = Generator.CreateDefaultBuilder()
-                        .AddConverter(singleConverter)
-                        .AddConverter(doubleConverter)
-                        .Build();
+    let generator = Generator.CreateDefaultBuilder().AddConverter(singleConverter).AddConverter(doubleConverter).Build()
     Assert.Throws<OverflowException>(fun () -> generator.GetConverter<Two<Raw<single>, Raw<double>>>() |> ignore) |> ignore
     ()
 
@@ -51,14 +45,14 @@ let ``Tuple Object Length (overflow)`` () =
 [<TupleObject>]
 type ICar =
     [<TupleKey(0)>]
-    abstract Name : string
+    abstract Name: string
 
     [<TupleKey(1)>]
-    abstract Rank : int
+    abstract Rank: int
 
 [<AbstractClass>]
 [<TupleObject>]
-type BasicCar(name : string, rank : int) =
+type BasicCar(name: string, rank: int) =
     [<TupleKey(1)>]
     member val Name = name with get, set
 
@@ -67,13 +61,13 @@ type BasicCar(name : string, rank : int) =
 
 [<AbstractClass>]
 [<TupleObject>]
-type AbstractCar(name : string, rank : int) =
+type AbstractCar(name: string, rank: int) =
     inherit BasicCar(name, rank)
 
-    new (rank : int, name : string) = AbstractCar(name, rank)
+    new(rank: int, name: string) = AbstractCar(name, rank)
 
 [<TupleObject>]
-type Car(name : string, rank : int) =
+type Car(name: string, rank: int) =
     inherit AbstractCar(name, rank)
 
     [<TupleKey(2)>]
@@ -84,7 +78,7 @@ type Car(name : string, rank : int) =
 
         member me.Rank = me.Rank
 
-let Test (instance : 'a) (anonymous : 'b) =
+let Test (instance: 'a) (anonymous: 'b) =
     let converter = generator.GetConverter<'a>()
     Assert.StartsWith("TupleObjectDelegateConverter`1", converter.GetType().Name)
     let buffer = converter.Encode instance

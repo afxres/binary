@@ -45,7 +45,7 @@ type Tango() =
 [<InlineData(typeof<Echo>, "NamedObjectAttribute", "NamedKeyAttribute", "D")>]
 [<InlineData(typeof<Charlie>, "TupleObjectAttribute", "TupleKeyAttribute", "A")>]
 [<InlineData(typeof<Foxtrot>, "NamedObjectAttribute", "NamedKeyAttribute", "D")>]
-let ``Require Object Attribute For Key Attribute`` (t: Type, required : string, existed : string, propertyName : string) =
+let ``Require Object Attribute For Key Attribute`` (t: Type, required: string, existed: string, propertyName: string) =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
     let message = sprintf "Require '%s' for '%s', member name: %s, type: %O" required existed propertyName t
     Assert.Equal(message, error.Message)
@@ -54,23 +54,23 @@ let ``Require Object Attribute For Key Attribute`` (t: Type, required : string, 
 [<Theory>]
 [<InlineData(typeof<Sierra>, "NamedKeyAttribute", "NamedObjectAttribute")>]
 [<InlineData(typeof<Tango>, "TupleKeyAttribute", "TupleObjectAttribute")>]
-let ``Require Key Attribute For Object Attribute`` (t: Type, required : string, existed : string) =
+let ``Require Key Attribute For Object Attribute`` (t: Type, required: string, existed: string) =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
     let message = sprintf "Require '%s' for '%s', type: %O" required existed t
     Assert.Equal(message, error.Message)
     ()
 
-type Golf () =
+type Golf() =
     [<TupleKey(0)>]
     [<NamedKey("G")>]
     member val G = Guid.Empty with get, set
 
-type Hotel () =
+type Hotel() =
     inherit Golf()
 
 [<Theory>]
 [<InlineData(typeof<Hotel>, "G")>]
-let ``Multiple Attributes On Base Class Property`` (t : Type, propertyName : string) =
+let ``Multiple Attributes On Base Class Property`` (t: Type, propertyName: string) =
     let thisError = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t |> ignore)
     let baseError = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t.BaseType |> ignore)
     let thisMessage = sprintf "Multiple attributes found, member name: %s, type: %O" propertyName t
@@ -79,12 +79,12 @@ let ``Multiple Attributes On Base Class Property`` (t : Type, propertyName : str
     Assert.Equal(baseMessage, baseError.Message)
     ()
 
-type India () =
+type India() =
     [<TupleKey(0)>]
     member val I = 0 with get, set
 
 [<TupleObject>]
-type Juliet () =
+type Juliet() =
     inherit India()
 
     [<TupleKey(0)>]
@@ -92,18 +92,18 @@ type Juliet () =
 
 [<Theory>]
 [<InlineData(typeof<Juliet>, 0)>]
-let ``Tuple Key Duplicated`` (t : Type, key : int) =
+let ``Tuple Key Duplicated`` (t: Type, key: int) =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
     let message = sprintf "Tuple key '%d' already exists, type: %O" key t
     Assert.Equal(message, error.Message)
     ()
 
-type Kilo () =
+type Kilo() =
     [<NamedKey("item")>]
     member val K = String.Empty with get, set
 
 [<NamedObject>]
-type Lima () =
+type Lima() =
     inherit Kilo()
 
     [<NamedKey("item")>]
@@ -111,25 +111,25 @@ type Lima () =
 
 [<Theory>]
 [<InlineData(typeof<Lima>, "item")>]
-let ``Named Key Duplicated`` (t : Type, key : string) =
+let ``Named Key Duplicated`` (t: Type, key: string) =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
     let message = sprintf "Named key '%s' already exists, type: %O" key t
     Assert.Equal(message, error.Message)
     ()
 
 [<NamedObject>]
-type Mike () =
+type Mike() =
     [<NamedKey("M")>]
     member val M = 3L with get, set
 
-type November () =
+type November() =
     class
-    inherit Mike()
+        inherit Mike()
     end
 
 [<Theory>]
 [<InlineData(typeof<November>, "NamedObjectAttribute", "NamedKeyAttribute", "M")>]
-let ``Require Object Attribute On This Class For Base Class Key Attribute`` (t: Type, required : string, existed : string, propertyName : string) =
+let ``Require Object Attribute On This Class For Base Class Key Attribute`` (t: Type, required: string, existed: string, propertyName: string) =
     // ensure base class works
     generator.GetConverter t.BaseType |> ignore
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
@@ -138,24 +138,27 @@ let ``Require Object Attribute On This Class For Base Class Key Attribute`` (t: 
     ()
 
 [<TupleObject>]
-type Oscar () =
-    abstract member O : int with get, set
+type Oscar() =
+    abstract member O: int with get, set
 
     [<TupleKey(0)>]
     default val O = 0 with get, set
 
-    override me.Equals obj = match obj with | :? Oscar as a -> a.O = me.O | _ -> false
+    override me.Equals obj =
+        match obj with
+        | :? Oscar as a -> a.O = me.O
+        | _ -> false
 
-    override me.GetHashCode () = me.O.GetHashCode()
+    override me.GetHashCode() = me.O.GetHashCode()
 
 [<TupleObject>]
-type Papa () =
+type Papa() =
     inherit Oscar()
 
     override val O = 1 with get, set
 
 [<NamedObject>]
-type Quebec () =
+type Quebec() =
     inherit Oscar()
 
     [<NamedKey("Oscar")>]
@@ -163,7 +166,7 @@ type Quebec () =
 
 [<Theory>]
 [<InlineData(typeof<Papa>, "TupleKeyAttribute", "TupleObjectAttribute")>]
-let ``Require Key Attribute On This Type For Object Attribute`` (t: Type, required : string, existed : string) =
+let ``Require Key Attribute On This Type For Object Attribute`` (t: Type, required: string, existed: string) =
     // ensure base class works
     generator.GetConverter t.BaseType |> ignore
     let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(t) |> ignore)
@@ -173,7 +176,7 @@ let ``Require Key Attribute On This Type For Object Attribute`` (t: Type, requir
 
 [<Theory>]
 [<InlineData(typeof<Quebec>, "NamedObjectDelegateConverter`1", "TupleObjectDelegateConverter`1")>]
-let ``Rewrite Base Class Attribute On This Class`` (t : Type, thisConverterDefinition : string, baseConverterDefinition : string) =
+let ``Rewrite Base Class Attribute On This Class`` (t: Type, thisConverterDefinition: string, baseConverterDefinition: string) =
     let thisConverter = generator.GetConverter t
     let baseConverter = generator.GetConverter t.BaseType
     let thisDefinition = thisConverter.GetType().GetGenericTypeDefinition()

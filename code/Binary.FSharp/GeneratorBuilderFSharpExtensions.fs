@@ -9,7 +9,7 @@ type GeneratorBuilderFSharpExtensions =
     [<Extension>]
     [<RequiresDynamicCode("Require dynamic code for binary serialization.")>]
     [<RequiresUnreferencedCode("Require public members for binary serialization.")>]
-    static member AddFSharpConverterCreators(builder : IGeneratorBuilder) =
+    static member AddFSharpConverterCreators(builder: IGeneratorBuilder) =
         builder
             .AddConverterCreator(ListConverterCreator())
             .AddConverterCreator(MapConverterCreator())

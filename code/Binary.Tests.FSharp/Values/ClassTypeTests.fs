@@ -7,7 +7,7 @@ open Xunit
 
 let generator = Generator.CreateDefault()
 
-let TestWithSpan (value : 'a) (expected : 'a) =
+let TestWithSpan (value: 'a) (expected: 'a) =
     let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
@@ -21,7 +21,7 @@ let TestWithSpan (value : 'a) (expected : 'a) =
     Assert.Equal<'a>(expected, result)
     ()
 
-let TestWithBytes (value : 'a) (expected : 'a) =
+let TestWithBytes (value: 'a) (expected: 'a) =
     let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
@@ -32,7 +32,7 @@ let TestWithBytes (value : 'a) (expected : 'a) =
     Assert.Equal<'a>(expected, result)
     ()
 
-let TestAuto (value : 'a) (expected : 'a) =
+let TestAuto (value: 'a) (expected: 'a) =
     let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
@@ -52,7 +52,7 @@ let TestAuto (value : 'a) (expected : 'a) =
     Assert.Equal(bufferOrigin.Length + 1, buffer.Length)
     ()
 
-let TestWithLengthPrefix (value : 'a) (expected : 'a) =
+let TestWithLengthPrefix (value: 'a) (expected: 'a) =
     let bufferOrigin = generator.Encode value
     let converter = generator.GetConverter<'a>()
 
@@ -72,9 +72,9 @@ let TestWithLengthPrefix (value : 'a) (expected : 'a) =
     Assert.Equal(bufferOrigin.Length + 1, buffer.Length)
     ()
 
-let Test (value : 'a) (expected : 'a) =
+let Test (value: 'a) (expected: 'a) =
     let buffer = generator.Encode value
-    let result : 'a = generator.Decode buffer
+    let result: 'a = generator.Decode buffer
     Assert.Equal<'a>(expected, result)
 
     // convert via Converter
@@ -90,14 +90,14 @@ let Test (value : 'a) (expected : 'a) =
 [<Theory>]
 [<InlineData("sharp")>]
 [<InlineData("上山打老虎")>]
-let ``String Instance`` (text : string) =
+let ``String Instance`` (text: string) =
     Test text text
     ()
 
 [<Theory>]
 [<InlineData("")>]
 [<InlineData(null)>]
-let ``String Empty Or Null`` (text : string) =
+let ``String Empty Or Null`` (text: string) =
     Test text String.Empty
     ()
 
@@ -114,7 +114,7 @@ let ``String From Default Value Of Span`` () =
 [<InlineData("Udp://SomeHost:2048")>]
 [<InlineData("tcp://loop/q?=some")>]
 [<InlineData("HTTP://bing.com")>]
-let ``Uri Instance`` (data : string) =
+let ``Uri Instance`` (data: string) =
     let item = Uri(data)
 
     Test item item
@@ -129,14 +129,14 @@ let ``Uri Instance`` (data : string) =
 
 [<Fact>]
 let ``Uri Null`` () =
-    let item : Uri = null
+    let item: Uri = null
 
     Test item item
 
     let buffer = generator.Encode item
     let result = generator.Decode<Uri> buffer
 
-    let _ = Assert.Throws<UriFormatException> (fun () -> Uri(String.Empty) |> ignore)
+    let _ = Assert.Throws<UriFormatException>(fun () -> Uri(String.Empty) |> ignore)
     Assert.Null(result)
     Assert.Empty(buffer)
     Assert.Equal(item, result)
@@ -144,7 +144,7 @@ let ``Uri Null`` () =
 
 [<Fact>]
 let ``Uri Null With Length Prefix`` () =
-    let item : Uri = null
+    let item: Uri = null
     let converter = generator.GetConverter<Uri>()
     let mutable allocator = Allocator()
     converter.EncodeWithLengthPrefix(&allocator, item)
@@ -160,19 +160,19 @@ let ``Uri Null With Length Prefix`` () =
 [<Theory>]
 [<InlineData("192.168.16.32")>]
 [<InlineData("fe80::3c03:feef:ec25:e40d")>]
-let ``IPAddress Instance`` (address : string) =
+let ``IPAddress Instance`` (address: string) =
     let value = IPAddress.Parse address
     Test value value
     ()
 
 [<Fact>]
 let ``IPAddress Null`` () =
-    let address : IPAddress = null
+    let address: IPAddress = null
 
     Test address address
 
     let buffer = generator.Encode address
-    let result : IPAddress = generator.Decode buffer
+    let result: IPAddress = generator.Decode buffer
 
     Assert.Null(result)
     Assert.Empty(buffer)

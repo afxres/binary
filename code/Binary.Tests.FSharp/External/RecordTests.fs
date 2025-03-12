@@ -6,15 +6,15 @@ open Xunit
 
 let generator = Generator.CreateDefault()
 
-type Person = { name : string; age : int }
+type Person = { name: string; age: int }
 
-type PersonDetail = { id : Guid; person : Person; tag : string}
+type PersonDetail = { id: Guid; person: Person; tag: string }
 
 [<Fact>]
 let ``Person`` () =
     let person = { name = "coder"; age = 24 }
     let buffer = generator.Encode person
-    let result : Person = generator.Decode buffer
+    let result: Person = generator.Decode buffer
     Assert.Equal(person, result)
     ()
 
@@ -23,7 +23,7 @@ let ``Person Detail`` () =
     let person = { name = "alice"; age = 20 }
     let detail = { id = Guid.NewGuid(); person = person; tag = "girl" }
     let buffer = generator.Encode detail
-    let result : PersonDetail = generator.Decode buffer
+    let result: PersonDetail = generator.Decode buffer
     Assert.Equal(detail, result)
     ()
 

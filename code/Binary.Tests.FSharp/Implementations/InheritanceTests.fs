@@ -6,9 +6,9 @@ open Xunit
 
 [<Interface>]
 type IPerson =
-    abstract member Id : unit -> Guid with get
+    abstract member Id: unit -> Guid with get
 
-    abstract member Name : unit -> string with get
+    abstract member Name: unit -> string with get
 
 type Person(id, name) =
     interface IPerson with
@@ -17,24 +17,24 @@ type Person(id, name) =
         member __.Name = name
 
 [<AbstractClass>]
-type Book () =
-    abstract member Name : unit -> string with get
+type Book() =
+    abstract member Name: unit -> string with get
 
-    abstract member Pages : unit -> int with get
+    abstract member Pages: unit -> int with get
 
 type SomeBook(name, pages, price) =
-    inherit Book ()
+    inherit Book()
 
     override __.Name = name
 
     override __.Pages = pages
 
-    member __.Price : decimal = price
+    member __.Price: decimal = price
 
 type MiscBook(count, name, pages, price) =
     inherit SomeBook(name, pages, price)
 
-    member __.Count : int = count
+    member __.Count: int = count
 
 let generator = Generator.CreateDefault()
 

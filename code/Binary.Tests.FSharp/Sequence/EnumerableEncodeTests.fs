@@ -11,11 +11,11 @@ type FakeEnumerable<'T>() =
     member val Steps = ResizeArray<string>()
 
     interface IEnumerable<'T> with
-        member __.GetEnumerator(): IEnumerator = raise (NotSupportedException())
+        member __.GetEnumerator() : IEnumerator = raise (NotSupportedException())
 
-        member __.GetEnumerator(): IEnumerator<'T> = raise (NotSupportedException())
+        member __.GetEnumerator() : IEnumerator<'T> = raise (NotSupportedException())
 
-let TestType (collection : 'T) (steps : 'T -> string seq) =
+let TestType (collection: 'T) (steps: 'T -> string seq) =
     let generator = Generator.CreateDefault()
     let converter = generator.GetConverter<'T>()
     let converterType = converter.GetType()
@@ -26,7 +26,7 @@ let TestType (collection : 'T) (steps : 'T -> string seq) =
     Assert.Empty(steps collection)
     converter
 
-let TestNull (collection : 'T when 'T :> FakeEnumerable<'E>) =
+let TestNull (collection: 'T :> FakeEnumerable<'E>) =
     let converter = TestType collection (fun x -> x.Steps :> _)
     Assert.Empty collection.Steps
     let nullInstance = Unchecked.defaultof<'T>
@@ -37,7 +37,7 @@ let TestNull (collection : 'T when 'T :> FakeEnumerable<'E>) =
     Assert.Empty collection.Steps
     ()
 
-let Test (collection : 'T when 'T :> FakeEnumerable<'E>) (expected : string seq) =
+let Test (collection: 'T :> FakeEnumerable<'E>) (expected: string seq) =
     let converter = TestType collection (fun x -> x.Steps :> _)
     let steps = collection.Steps
     Assert.Empty steps
@@ -45,7 +45,7 @@ let Test (collection : 'T when 'T :> FakeEnumerable<'E>) (expected : string seq)
     Assert.Equal<string>(expected, steps)
     ()
 
-let TestValue (collection : 'T) (expected : string seq) (steps : 'T -> string seq) =
+let TestValue (collection: 'T) (expected: string seq) (steps: 'T -> string seq) =
     let converter = TestType collection steps
     Assert.Empty(steps collection)
     converter.Encode collection |> ignore
@@ -54,9 +54,9 @@ let TestValue (collection : 'T) (expected : string seq) (steps : 'T -> string se
 
 type FakeValueTypeEnumerator<'T> =
     struct
-        val Steps : ResizeArray<string>
+        val Steps: ResizeArray<string>
 
-        new (steps) = { Steps = steps }
+        new(steps) = { Steps = steps }
 
         member me.MoveNext() : bool =
             if (me.Steps.Count = 0) then
@@ -66,7 +66,7 @@ type FakeValueTypeEnumerator<'T> =
                 me.Steps.Add "end"
                 false
 
-        member me.Current with get () =
+        member me.Current =
             me.Steps.Add "current"
             Unchecked.defaultof<'T>
 
@@ -82,15 +82,15 @@ type FakeValueTypeEnumeratorSource<'T>() =
 
 type FakeValueTypeEnumeratorValueSource<'T> =
     struct
-        val Steps : ResizeArray<string>
+        val Steps: ResizeArray<string>
     end
 
-    new (steps) = { Steps = steps }
+    new(steps) = { Steps = steps }
 
     interface IEnumerable<'T> with
-        member __.GetEnumerator(): IEnumerator = raise (NotSupportedException())
+        member __.GetEnumerator() : IEnumerator = raise (NotSupportedException())
 
-        member __.GetEnumerator(): IEnumerator<'T> = raise (NotSupportedException())
+        member __.GetEnumerator() : IEnumerator<'T> = raise (NotSupportedException())
 
     member me.GetEnumerator() = FakeValueTypeEnumerator<'T> me.Steps
 
@@ -108,14 +108,14 @@ let ``Encode Custom Value Type Enumerator Can Dispose Value Type Source`` () =
 
 [<Fact>]
 let ``Encode Custom Value Type Enumerator Can Dispose For Null Instance`` () =
-    TestNull (FakeValueTypeEnumeratorSource<int>())
+    TestNull(FakeValueTypeEnumeratorSource<int>())
     ()
 
 type FakeValueTypeEnumeratorNoDispose<'T> =
     struct
-        val Steps : ResizeArray<string>
+        val Steps: ResizeArray<string>
 
-        new (steps) = { Steps = steps }
+        new(steps) = { Steps = steps }
 
         member me.MoveNext() : bool =
             if (me.Steps.Count = 0) then
@@ -125,7 +125,7 @@ type FakeValueTypeEnumeratorNoDispose<'T> =
                 me.Steps.Add "3"
                 false
 
-        member me.Current with get () =
+        member me.Current =
             me.Steps.Add "2"
             Unchecked.defaultof<'T>
     end
@@ -137,15 +137,15 @@ type FakeValueTypeEnumeratorNoDisposeSource<'T>() =
 
 type FakeValueTypeEnumeratorNoDisposeValueSource<'T> =
     struct
-        val Steps : ResizeArray<string>
+        val Steps: ResizeArray<string>
     end
 
-    new (steps) = { Steps = steps }
+    new(steps) = { Steps = steps }
 
     interface IEnumerable<'T> with
-        member __.GetEnumerator(): IEnumerator = raise (NotSupportedException())
+        member __.GetEnumerator() : IEnumerator = raise (NotSupportedException())
 
-        member __.GetEnumerator(): IEnumerator<'T> = raise (NotSupportedException())
+        member __.GetEnumerator() : IEnumerator<'T> = raise (NotSupportedException())
 
     member me.GetEnumerator() = FakeValueTypeEnumeratorNoDispose<'T> me.Steps
 
@@ -163,16 +163,16 @@ let ``Encode Custom Value Type Enumerator No 'Dispose' Value Type Source`` () =
 
 [<Fact>]
 let ``Encode Custom Value Type Enumerator No 'Dispose' For Null Instance`` () =
-    TestNull (FakeValueTypeEnumeratorNoDisposeSource<int>())
+    TestNull(FakeValueTypeEnumeratorNoDisposeSource<int>())
     ()
 
 type FakeValueTypeEnumeratorMultipleOverload<'T> =
     struct
-        val Steps : ResizeArray<string>
+        val Steps: ResizeArray<string>
 
-        new (steps) = { Steps = steps }
+        new(steps) = { Steps = steps }
 
-        member __.MoveNext(_a : obj) : bool = raise (NotSupportedException())
+        member __.MoveNext(_a: obj) : bool = raise (NotSupportedException())
 
         member me.MoveNext() : bool =
             if (me.Steps.Count = 0) then
@@ -182,45 +182,45 @@ type FakeValueTypeEnumeratorMultipleOverload<'T> =
                 me.Steps.Add "c"
                 false
 
-        member __.MoveNext(_a : int, _b : string) : bool = raise (NotSupportedException())
+        member __.MoveNext(_a: int, _b: string) : bool = raise (NotSupportedException())
 
-        member me.Current with get () =
+        member me.Current =
             me.Steps.Add "b"
             Unchecked.defaultof<'T>
 
-        member __.Dispose(_a : string, _b : int) : Guid = raise (NotSupportedException())
+        member __.Dispose(_a: string, _b: int) : Guid = raise (NotSupportedException())
 
         member __.Dispose() : string = raise (NotSupportedException())
 
-        member __.Dispose(_a : obj) : unit = raise (NotSupportedException())
+        member __.Dispose(_a: obj) : unit = raise (NotSupportedException())
     end
 
 type FakeValueTypeEnumeratorMultipleOverloadSource<'T>() =
     inherit FakeEnumerable<'T>()
 
-    member __.GetEnumerator(_a : obj) = raise (NotSupportedException())
+    member __.GetEnumerator(_a: obj) = raise (NotSupportedException())
 
     member me.GetEnumerator() = FakeValueTypeEnumeratorMultipleOverload<'T> me.Steps
 
-    member __.GetEnumerator(_a : int, _base : single) = raise (NotSupportedException())
+    member __.GetEnumerator(_a: int, _base: single) = raise (NotSupportedException())
 
 type FakeValueTypeEnumeratorMultipleOverloadValueSource<'T> =
     struct
-        val Steps : ResizeArray<string>
+        val Steps: ResizeArray<string>
     end
 
-    new (steps) = { Steps = steps }
+    new(steps) = { Steps = steps }
 
     interface IEnumerable<'T> with
-        member __.GetEnumerator(): IEnumerator = raise (NotSupportedException())
+        member __.GetEnumerator() : IEnumerator = raise (NotSupportedException())
 
-        member __.GetEnumerator(): IEnumerator<'T> = raise (NotSupportedException())
+        member __.GetEnumerator() : IEnumerator<'T> = raise (NotSupportedException())
 
-    member __.GetEnumerator(_a : obj) = raise (NotSupportedException())
+    member __.GetEnumerator(_a: obj) = raise (NotSupportedException())
 
     member me.GetEnumerator() = FakeValueTypeEnumeratorMultipleOverload<'T> me.Steps
 
-    member __.GetEnumerator(_a : int, _base : single) = raise (NotSupportedException())
+    member __.GetEnumerator(_a: int, _base: single) = raise (NotSupportedException())
 
 [<Fact>]
 let ``Encode Custom Value Type Enumerator With Bad 'Dispose' And Overload Methods`` () =
@@ -236,10 +236,10 @@ let ``Encode Custom Value Type Enumerator With Bad 'Dispose' And Overload Method
 
 [<Fact>]
 let ``Encode Custom Value Type Enumerator With Bad 'Dispose' And Overload Methods For Null Instance`` () =
-    TestNull (FakeValueTypeEnumeratorMultipleOverloadSource<int>())
+    TestNull(FakeValueTypeEnumeratorMultipleOverloadSource<int>())
     ()
 
-let TestInvalid (collection : 'T when 'T :> FakeEnumerable<'E>) =
+let TestInvalid (collection: 'T :> FakeEnumerable<'E>) =
     let generator = Generator.CreateDefault()
     let converter = generator.GetConverter<'T>()
     let converterType = converter.GetType()
@@ -253,7 +253,7 @@ type FakeValueTypeEnumeratorMoveNextReturnTypeMismatch<'T> =
     struct
         member __.MoveNext() : bool voption = raise (NotSupportedException())
 
-        member __.Current with get () : 'T = raise (NotSupportedException())
+        member __.Current: 'T = raise (NotSupportedException())
     end
 
 type FakeValueTypeEnumeratorMoveNextReturnTypeMismatchSource<'T>() =
@@ -263,14 +263,14 @@ type FakeValueTypeEnumeratorMoveNextReturnTypeMismatchSource<'T>() =
 
 [<Fact>]
 let ``Encode Custom Value Type Invalid Enumerator 'MoveNext' Return Type Mismatch`` () =
-    TestInvalid (FakeValueTypeEnumeratorMoveNextReturnTypeMismatchSource<single>())
+    TestInvalid(FakeValueTypeEnumeratorMoveNextReturnTypeMismatchSource<single>())
     ()
 
 type FakeValueTypeEnumeratorCurrentPropertyTypeMismatch<'T> =
     struct
         member __.MoveNext() : bool = raise (NotSupportedException())
 
-        member __.Current with get () : 'T voption = raise (NotSupportedException())
+        member __.Current: 'T voption = raise (NotSupportedException())
     end
 
 type FakeValueTypeEnumeratorCurrentPropertyTypeMismatchSource<'T>() =
@@ -280,16 +280,18 @@ type FakeValueTypeEnumeratorCurrentPropertyTypeMismatchSource<'T>() =
 
 [<Fact>]
 let ``Encode Custom Value Type Invalid Enumerator 'Current' Property Type Mismatch`` () =
-    TestInvalid (FakeValueTypeEnumeratorCurrentPropertyTypeMismatchSource<double>())
+    TestInvalid(FakeValueTypeEnumeratorCurrentPropertyTypeMismatchSource<double>())
     ()
 
 type FakeValueTypeEnumeratorCurrentPropertySignatureMismatch<'T> =
     struct
         member __.MoveNext() : bool = raise (NotSupportedException())
 
-        member __.Current with set (_i : int) (_a : 'T) = raise (NotSupportedException())
+        member __.Current
+            with set (_i: int) (_a: 'T) = raise (NotSupportedException())
 
-        member __.Current with get (_a : int, _b : string) : 'T = raise (NotSupportedException())
+        member __.Current
+            with get (_a: int, _b: string): 'T = raise (NotSupportedException())
     end
 
 type FakeValueTypeEnumeratorCurrentPropertySignatureMismatchSource<'T>() =
@@ -299,18 +301,18 @@ type FakeValueTypeEnumeratorCurrentPropertySignatureMismatchSource<'T>() =
 
 [<Fact>]
 let ``Encode Custom Value Type Invalid Enumerator 'Current' Property No Getter Or Is Indexer`` () =
-    TestInvalid (FakeValueTypeEnumeratorCurrentPropertySignatureMismatchSource<uint64>())
+    TestInvalid(FakeValueTypeEnumeratorCurrentPropertySignatureMismatchSource<uint64>())
     ()
 
 type FakeValueTypeEnumeratorMoveNextThrowException<'T> =
     struct
-        val Steps : ResizeArray<string>
+        val Steps: ResizeArray<string>
 
-        new (steps) = { Steps = steps }
+        new(steps) = { Steps = steps }
 
         member __.MoveNext() : bool = raise (Exception("Error!"))
 
-        member __.Current : 'T = raise (Exception("Unknown"))
+        member __.Current: 'T = raise (Exception("Unknown"))
 
         member me.Dispose() : unit = me.Steps.Add "Dispose"
     end
@@ -331,18 +333,20 @@ let ``Encode Custom Value Type Enumerator 'MoveNext' Throw Exception`` () =
 
 [<Fact>]
 let ``Encode Custom Value Type Enumerator 'MoveNext' Throw Exception For Null Instance`` () =
-    TestNull (FakeValueTypeEnumeratorMoveNextThrowExceptionSource<int>())
+    TestNull(FakeValueTypeEnumeratorMoveNextThrowExceptionSource<int>())
     ()
 
 type FakeValueTypeEnumeratorCurrentThrowException<'T> =
     struct
-        val Steps : ResizeArray<string>
+        val Steps: ResizeArray<string>
 
-        new (steps) = { Steps = steps }
+        new(steps) = { Steps = steps }
 
-        member me.MoveNext() : bool = me.Steps.Add "MoveNext"; true
+        member me.MoveNext() : bool =
+            me.Steps.Add "MoveNext"
+            true
 
-        member __.Current : 'T = raise (Exception("Unknown!"))
+        member __.Current: 'T = raise (Exception("Unknown!"))
 
         member me.Dispose() : unit = me.Steps.Add "Dispose"
     end
@@ -363,5 +367,5 @@ let ``Encode Custom Value Type Enumerator 'Current' Throw Exception`` () =
 
 [<Fact>]
 let ``Encode Custom Value Type Enumerator 'Current' Throw Exception For Null Instance`` () =
-    TestNull (FakeValueTypeEnumeratorCurrentThrowExceptionSource<int>())
+    TestNull(FakeValueTypeEnumeratorCurrentThrowExceptionSource<int>())
     ()

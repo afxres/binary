@@ -4,14 +4,14 @@ open Mikodev.Binary
 open System
 open Xunit
 
-type TestConverter<'a> (text : string, list : ResizeArray<string>) =
+type TestConverter<'a>(text: string, list: ResizeArray<string>) =
     inherit Converter<'a>(0)
 
     override __.Encode(_, _) =
         list.Add(sprintf "%s e" text)
         ()
 
-    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : 'a =
+    override __.Decode(_: inref<ReadOnlySpan<byte>>) : 'a =
         list.Add(sprintf "%s d" text)
         Unchecked.defaultof<'a>
 
@@ -27,12 +27,13 @@ type TestConverter<'a> (text : string, list : ResizeArray<string>) =
 let ``Value Tuple Expand`` () =
     let list = ResizeArray<string>()
     let generator =
-        Generator.CreateDefaultBuilder()
+        Generator
+            .CreateDefaultBuilder()
             .AddConverter(TestConverter<int>("int", list))
             .AddConverter(TestConverter<string>("string", list))
             .AddConverter(TestConverter<single>("single", list))
             .AddConverter(TestConverter<double>("double", list))
-            .Build();
+            .Build()
     let source = struct (0, "1", struct (single 2, double 3))
     let converter = generator.GetConverter(anonymous = source)
     let buffer = converter.Encode source
@@ -49,13 +50,14 @@ let ``Value Tuple Expand`` () =
 let ``Value Tuple Expand Limited`` () =
     let list = ResizeArray<string>()
     let generator =
-        Generator.CreateDefaultBuilder()
+        Generator
+            .CreateDefaultBuilder()
             .AddConverter(TestConverter<int>("int", list))
             .AddConverter(TestConverter<string>("string", list))
             .AddConverter(TestConverter<single>("single", list))
             .AddConverter(TestConverter<double>("double", list))
             .AddConverter(TestConverter<struct (single * double)>("value (f32, f64)", list))
-            .Build();
+            .Build()
     let source = struct (0, "1", struct (single 2, double 3))
     let converter = generator.GetConverter(anonymous = source)
     let buffer = converter.Encode source

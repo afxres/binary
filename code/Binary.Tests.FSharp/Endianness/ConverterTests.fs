@@ -32,30 +32,37 @@ type EnumUInt64 =
     | Data = 0xEEDDCCBBAA998877UL
 
 type ConverterTests() =
-    static let EnsureEnumName (t : Type) =
+    static let EnsureEnumName (t: Type) =
         if t.IsEnum && t.Assembly = typeof<ConverterTests>.Assembly then
             let underlying = Enum.GetUnderlyingType t
             let expectedName = sprintf "Enum%s" underlying.Name
             Assert.Equal(expectedName, t.Name)
         ()
 
-    static let MakeConverter (creatorName : string) (t : Type) (native : bool) =
+    static let MakeConverter (creatorName: string) (t: Type) (native: bool) =
         let types = typeof<IConverter>.Assembly.GetTypes()
         let value = types |> Array.filter (fun x -> x.Name = creatorName) |> Array.exactlyOne
-        let method = value.GetMethods(BindingFlags.Static ||| BindingFlags.NonPublic) |> Array.filter (fun x -> x.ReturnType = typeof<IConverter> && x.Name.Contains("Invoke")) |> Array.exactlyOne
+        let method =
+            value.GetMethods(BindingFlags.Static ||| BindingFlags.NonPublic)
+            |> Array.filter (fun x -> x.ReturnType = typeof<IConverter> && x.Name.Contains("Invoke"))
+            |> Array.exactlyOne
         let converter = method.Invoke(null, [| box t; box native |])
         converter :?> IConverter
 
-    static let MakeConverters (t : Type) =
+    static let MakeConverters (t: Type) =
         EnsureEnumName t
-        let creatorName = if t.IsEnum then "DetectEndianEnumConverterCreator" else "DetectEndianConverterCreator"
+        let creatorName =
+            if t.IsEnum then
+                "DetectEndianEnumConverterCreator"
+            else
+                "DetectEndianConverterCreator"
         let rn = MakeConverter creatorName t true
         let rl = MakeConverter creatorName t false
         Assert.Matches(".*NativeEndianConverter`1.*", rn.GetType().FullName)
         Assert.Matches(".*LittleEndianConverter`1.*", rl.GetType().FullName)
-        [ rn; rl; ]
+        [ rn; rl ]
 
-    static member ``Data Alpha`` : (obj array) seq = seq {
+    static member ``Data Alpha``: (obj array) seq = seq {
         [| box true |]
         [| box false |]
         [| box (byte 0xEF) |]
@@ -73,7 +80,7 @@ type ConverterTests() =
         [| box (BitVector32(0xAABBCCDD)) |]
     }
 
-    static member ``Data Enum`` : (obj array) seq = seq {
+    static member ``Data Enum``: (obj array) seq = seq {
         [| box EnumByte.Data |]
         [| box EnumSByte.Data |]
         [| box EnumInt16.Data |]
@@ -87,7 +94,7 @@ type ConverterTests() =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     [<MemberData("Data Enum")>]
-    member __.``Encode Then Decode`` (item : 'T) =
+    member __.``Encode Then Decode``(item: 'T) =
         let converters = MakeConverters typeof<'T> |> Seq.cast<Converter<'T>>
         for converter in converters do
             let mutable allocator = Allocator()
@@ -103,7 +110,7 @@ type ConverterTests() =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     [<MemberData("Data Enum")>]
-    member __.``Decode (not enough bytes)`` (item : 'T) =
+    member __.``Decode (not enough bytes)``(item: 'T) =
         let converters = MakeConverters typeof<'T> |> Seq.cast<Converter<'T>>
         for converter in converters do
             let mutable allocator = Allocator()
@@ -125,7 +132,7 @@ type ConverterTests() =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     [<MemberData("Data Enum")>]
-    member __.``Decode Auto (not enough bytes)`` (item : 'T) =
+    member __.``Decode Auto (not enough bytes)``(item: 'T) =
         let converters = MakeConverters typeof<'T> |> Seq.cast<Converter<'T>>
         for converter in converters do
             let mutable allocator = Allocator()
@@ -147,7 +154,7 @@ type ConverterTests() =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     [<MemberData("Data Enum")>]
-    member __.``Decode (enough bytes)`` (item : 'T) =
+    member __.``Decode (enough bytes)``(item: 'T) =
         let converters = MakeConverters typeof<'T> |> Seq.cast<Converter<'T>>
         for converter in converters do
             let mutable allocator = Allocator()
@@ -165,7 +172,7 @@ type ConverterTests() =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     [<MemberData("Data Enum")>]
-    member __.``Decode Auto (enough bytes)`` (item : 'T) =
+    member __.``Decode Auto (enough bytes)``(item: 'T) =
         let converters = MakeConverters typeof<'T> |> Seq.cast<Converter<'T>>
         for converter in converters do
             let mutable allocator = Allocator()

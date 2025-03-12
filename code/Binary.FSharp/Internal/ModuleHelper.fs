@@ -21,7 +21,7 @@ let DecodeNumberMethodInfo = CommonHelper.GetMethod(typeof<Converter>, "Decode",
 #nowarn "42" // This construct is deprecated: it is only for use in the F# library
 
 [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
-let HandleToAllocator (data : nativeint) = (# "" data : byref<Allocator> #)
+let HandleToAllocator (data: nativeint) = (# "" data : byref<Allocator> #)
 
 [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
-let AllocatorToHandle (data : byref<Allocator>) = Unsafe.As<ToHandleDefinition>(IdentityDelegate).Invoke &data
+let AllocatorToHandle (data: byref<Allocator>) = Unsafe.As<ToHandleDefinition>(IdentityDelegate).Invoke &data

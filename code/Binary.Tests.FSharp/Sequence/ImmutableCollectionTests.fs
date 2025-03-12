@@ -18,19 +18,19 @@ type ImmutableCollectionTests() =
 
     let TestInternalConverter =
         let g = Generator.CreateDefault()
-        let context = {
-            new IGeneratorContext with
+        let context =
+            { new IGeneratorContext with
                 member __.GetConverter t =
                     Assert.Equal("System", t.Namespace)
                     g.GetConverter t
-        }
+            }
 
         let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "FallbackCollectionMethods") |> Array.exactlyOne
         let m = t.GetMethod("GetConverter", BindingFlags.Static ||| BindingFlags.NonPublic, null, [| typeof<IGeneratorContext>; typeof<Type> |], null)
         let d = Delegate.CreateDelegate(typeof<Func<Type, IConverter>>, context, m)
         d :?> Func<Type, IConverter>
 
-    let TestConverter (item : 'T when 'T :> 'E seq) =
+    let TestConverter (item: 'T :> 'E seq) =
         Assert.NotNull item
         let converter = TestInternalConverter.Invoke typeof<'T> :?> Converter<'T>
         let converterType = converter.GetType()
@@ -38,7 +38,11 @@ type ImmutableCollectionTests() =
         let encoder = converterType.GetField("encode", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
         let encoderMethod = encoder.Method
         if typeof<'T>.IsInterface then
-            let encoderName = if typeof<'T>.GetGenericArguments().Length = 1 then "EnumerableEncoder`2" else "KeyValueEnumerableEncoder`3"
+            let encoderName =
+                if typeof<'T>.GetGenericArguments().Length = 1 then
+                    "EnumerableEncoder`2"
+                else
+                    "KeyValueEnumerableEncoder`3"
             Assert.Equal(encoderName, encoderMethod.DeclaringType.Name)
         else
             Assert.Null(encoderMethod.DeclaringType)
@@ -49,7 +53,7 @@ type ImmutableCollectionTests() =
         Assert.Contains("lambda", decoder.Method.Name)
         converter
 
-    let TestAutoAndLengthPrefix (item : 'T when 'T :> 'E seq) (converter : Converter<'T>) =
+    let TestAutoAndLengthPrefix (item: 'T :> 'E seq) (converter: Converter<'T>) =
         let mutable allocatorAuto = Allocator()
         let mutable allocatorLengthPrefix = Allocator()
         converter.EncodeAuto(&allocatorAuto, item)
@@ -68,7 +72,7 @@ type ImmutableCollectionTests() =
         Assert.Equal(0, spanLengthPrefix.Length)
         ()
 
-    let Test (item : 'T when 'T :> 'E seq) =
+    let Test (item: 'T :> 'E seq) =
         let converter = TestConverter item
         let buffer = converter.Encode item
         let result = converter.Decode buffer
@@ -77,7 +81,7 @@ type ImmutableCollectionTests() =
         TestAutoAndLengthPrefix item converter
         ()
 
-    let TestInterface (item : 'T when 'T :> 'E seq) =
+    let TestInterface (item: 'T :> 'E seq) =
         let converter = TestConverter item
         let buffer = converter.Encode item
         let result = converter.Decode buffer
@@ -96,7 +100,7 @@ type ImmutableCollectionTests() =
         TestAutoAndLengthPrefix resultDefault converter
         ()
 
-    let TestInvalid (item : 'T when 'T :> 'E seq) =
+    let TestInvalid (item: 'T :> 'E seq) =
         Assert.Empty item
         let error = Assert.Throws<ArgumentException>(fun () -> TestInternalConverter.Invoke typeof<'T> |> ignore)
         let message = sprintf "Invalid collection type: %O" typeof<'T>
@@ -105,79 +109,79 @@ type ImmutableCollectionTests() =
         ()
 
     [<Fact>]
-    member __.``Immutable Array`` () =
-        Test (ImmutableArray.CreateRange TestNumberArray)
-        Test (ImmutableArray.CreateRange TestStringArray)
+    member __.``Immutable Array``() =
+        Test(ImmutableArray.CreateRange TestNumberArray)
+        Test(ImmutableArray.CreateRange TestStringArray)
         ()
 
     [<Fact>]
-    member __.``Immutable HashSet`` () =
-        Test (ImmutableHashSet.CreateRange TestNumberArray)
-        Test (ImmutableHashSet.CreateRange TestStringArray)
+    member __.``Immutable HashSet``() =
+        Test(ImmutableHashSet.CreateRange TestNumberArray)
+        Test(ImmutableHashSet.CreateRange TestStringArray)
         ()
 
     [<Fact>]
-    member __.``Immutable List`` () =
-        Test (ImmutableList.CreateRange TestNumberArray)
-        Test (ImmutableList.CreateRange TestStringArray)
+    member __.``Immutable List``() =
+        Test(ImmutableList.CreateRange TestNumberArray)
+        Test(ImmutableList.CreateRange TestStringArray)
         ()
 
     [<Fact>]
-    member __.``Immutable Queue`` () =
-        Test (ImmutableQueue.CreateRange TestNumberArray)
-        Test (ImmutableQueue.CreateRange TestStringArray)
+    member __.``Immutable Queue``() =
+        Test(ImmutableQueue.CreateRange TestNumberArray)
+        Test(ImmutableQueue.CreateRange TestStringArray)
         ()
 
     [<Fact>]
-    member __.``Immutable SortedSet`` () =
-        Test (ImmutableSortedSet.CreateRange TestNumberArray)
-        Test (ImmutableSortedSet.CreateRange TestStringArray)
+    member __.``Immutable SortedSet``() =
+        Test(ImmutableSortedSet.CreateRange TestNumberArray)
+        Test(ImmutableSortedSet.CreateRange TestStringArray)
         ()
 
     [<Fact>]
-    member __.``Immutable Dictionary`` () =
-        Test (ImmutableDictionary.CreateRange TestNumberStringPairArray)
-        Test (ImmutableDictionary.CreateRange TestStringNumberPairArray)
+    member __.``Immutable Dictionary``() =
+        Test(ImmutableDictionary.CreateRange TestNumberStringPairArray)
+        Test(ImmutableDictionary.CreateRange TestStringNumberPairArray)
         ()
 
     [<Fact>]
-    member __.``Immutable SortedDictionary`` () =
-        Test (ImmutableSortedDictionary.CreateRange TestNumberStringPairArray)
-        Test (ImmutableSortedDictionary.CreateRange TestStringNumberPairArray)
+    member __.``Immutable SortedDictionary``() =
+        Test(ImmutableSortedDictionary.CreateRange TestNumberStringPairArray)
+        Test(ImmutableSortedDictionary.CreateRange TestStringNumberPairArray)
         ()
 
     [<Fact>]
-    member __.``Interface Immutable List`` () =
-        TestInterface (ImmutableList.CreateRange TestNumberArray :> IImmutableList<_>)
-        TestInterface (ImmutableList.CreateRange TestStringArray :> IImmutableList<_>)
+    member __.``Interface Immutable List``() =
+        TestInterface(ImmutableList.CreateRange TestNumberArray :> IImmutableList<_>)
+        TestInterface(ImmutableList.CreateRange TestStringArray :> IImmutableList<_>)
         ()
 
     [<Fact>]
-    member __.``Interface Immutable Queue`` () =
-        TestInterface (ImmutableQueue.CreateRange TestNumberArray :> IImmutableQueue<_>)
-        TestInterface (ImmutableQueue.CreateRange TestStringArray :> IImmutableQueue<_>)
+    member __.``Interface Immutable Queue``() =
+        TestInterface(ImmutableQueue.CreateRange TestNumberArray :> IImmutableQueue<_>)
+        TestInterface(ImmutableQueue.CreateRange TestStringArray :> IImmutableQueue<_>)
         ()
 
     [<Fact>]
-    member __.``Interface Immutable Set`` () =
-        TestInterface (ImmutableHashSet.CreateRange TestNumberArray :> IImmutableSet<_>)
-        TestInterface (ImmutableHashSet.CreateRange TestStringArray :> IImmutableSet<_>)
+    member __.``Interface Immutable Set``() =
+        TestInterface(ImmutableHashSet.CreateRange TestNumberArray :> IImmutableSet<_>)
+        TestInterface(ImmutableHashSet.CreateRange TestStringArray :> IImmutableSet<_>)
         ()
 
     [<Fact>]
-    member __.``Interface Immutable Dictionary`` () =
-        TestInterface (ImmutableDictionary.CreateRange TestNumberStringPairArray :> IImmutableDictionary<_, _>)
-        TestInterface (ImmutableDictionary.CreateRange TestStringNumberPairArray :> IImmutableDictionary<_, _>)
+    member __.``Interface Immutable Dictionary``() =
+        TestInterface(ImmutableDictionary.CreateRange TestNumberStringPairArray :> IImmutableDictionary<_, _>)
+        TestInterface(ImmutableDictionary.CreateRange TestStringNumberPairArray :> IImmutableDictionary<_, _>)
         ()
 
     [<Fact>]
-    member __.``Invalid Immutable Stack`` () =
+    member __.``Invalid Immutable Stack``() =
         TestInvalid ImmutableStack<int>.Empty
         TestInvalid ImmutableStack<string>.Empty
         ()
 
     [<Fact>]
-    member __.``Invalid Interface Immutable Stack`` () =
-        TestInvalid (ImmutableStack<int>.Empty :> IImmutableStack<_>)
-        TestInvalid (ImmutableStack<string>.Empty :> IImmutableStack<_>)
+    member __.``Invalid Interface Immutable Stack``() =
+        TestInvalid(ImmutableStack<int>.Empty :> IImmutableStack<_>)
+        TestInvalid(ImmutableStack<string>.Empty :> IImmutableStack<_>)
         ()

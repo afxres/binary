@@ -5,27 +5,27 @@ open System
 open System.Collections.Generic
 open Xunit
 
-type FakeReadOnlySet<'T>(data : ICollection<'T>) =
+type FakeReadOnlySet<'T>(data: ICollection<'T>) =
     interface IReadOnlySet<'T> with
-        member __.Contains(_ : 'T): bool = raise (NotSupportedException())
+        member __.Contains(_: 'T) : bool = raise (NotSupportedException())
 
         member __.Count: int = data.Count
 
-        member __.GetEnumerator(): IEnumerator<'T> = data.GetEnumerator()
+        member __.GetEnumerator() : IEnumerator<'T> = data.GetEnumerator()
 
-        member __.GetEnumerator(): System.Collections.IEnumerator = raise (NotSupportedException())
+        member __.GetEnumerator() : System.Collections.IEnumerator = raise (NotSupportedException())
 
-        member __.IsProperSubsetOf(_ : IEnumerable<'T>): bool = raise (NotSupportedException())
+        member __.IsProperSubsetOf(_: IEnumerable<'T>) : bool = raise (NotSupportedException())
 
-        member __.IsProperSupersetOf(_ : IEnumerable<'T>): bool = raise (NotSupportedException())
+        member __.IsProperSupersetOf(_: IEnumerable<'T>) : bool = raise (NotSupportedException())
 
-        member __.IsSubsetOf(_ : IEnumerable<'T>): bool = raise (NotSupportedException())
+        member __.IsSubsetOf(_: IEnumerable<'T>) : bool = raise (NotSupportedException())
 
-        member __.IsSupersetOf(_ : IEnumerable<'T>): bool = raise (NotSupportedException())
+        member __.IsSupersetOf(_: IEnumerable<'T>) : bool = raise (NotSupportedException())
 
-        member __.Overlaps(_ : IEnumerable<'T>): bool = raise (NotSupportedException())
+        member __.Overlaps(_: IEnumerable<'T>) : bool = raise (NotSupportedException())
 
-        member __.SetEquals(_ : IEnumerable<'T>): bool = raise (NotSupportedException())
+        member __.SetEquals(_: IEnumerable<'T>) : bool = raise (NotSupportedException())
 
 [<Fact>]
 let ``IReadOnlySet`` () =

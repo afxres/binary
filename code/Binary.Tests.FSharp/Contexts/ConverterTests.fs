@@ -6,30 +6,31 @@ open System.Reflection
 open System.Runtime.CompilerServices
 open Xunit
 
-type CustomConverter<'T>(length : int) =
+type CustomConverter<'T>(length: int) =
     inherit Converter<'T>(length)
 
     override __.Encode(_, _) = raise (NotSupportedException())
 
-    override __.Decode (_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
+    override __.Decode(_: inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 
     override __.EncodeAuto(_, _) = raise (NotSupportedException())
 
     override __.DecodeAuto _ = raise (NotSupportedException())
 
-type CustomConverterWithInvalidAllocation<'T>(length : int) =
+type CustomConverterWithInvalidAllocation<'T>(length: int) =
     inherit Converter<'T>(length)
 
-    override __.Encode(allocator, _) = let _ = Allocator.Append(&allocator, length + 1, null :> obj, fun a b -> ()) in ()
+    override __.Encode(allocator, _) =
+        let _ = Allocator.Append(&allocator, length + 1, null :> obj, fun a b -> ()) in ()
 
-    override __.Decode (_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
+    override __.Decode(_: inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 
-type CustomConverterAllOverride<'T>(length : int) =
+type CustomConverterAllOverride<'T>(length: int) =
     inherit Converter<'T>(length)
 
     override __.Encode(_, _) = raise (NotSupportedException("01"))
 
-    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException("02"))
+    override __.Decode(_: inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException("02"))
 
     override __.EncodeAuto(_, _) = raise (NotSupportedException("03"))
 
@@ -41,19 +42,19 @@ type CustomConverterAllOverride<'T>(length : int) =
 
     override __.Encode(_) = raise (NotSupportedException("07"))
 
-    override __.Decode(_ : byte array) : 'T = raise (NotSupportedException("08"))
+    override __.Decode(_: byte array) : 'T = raise (NotSupportedException("08"))
 
 type ConverterTests() =
     let generator = Generator.CreateDefault()
 
-    static member ``Data Alpha`` : (obj array) seq = seq {
+    static member ``Data Alpha``: (obj array) seq = seq {
         yield [| typeof<int>; 4 |]
         yield [| typeof<double>; 8 |]
         yield [| typeof<string>; 0 |]
     }
 
     [<Fact>]
-    member __.``Equals (reference equals)`` () =
+    member __.``Equals (reference equals)``() =
         let a = CustomConverter<obj>(0)
         let b = CustomConverter<obj>(0)
         Assert.True(a.Equals a)
@@ -62,7 +63,7 @@ type ConverterTests() =
         ()
 
     [<Fact>]
-    member __.``Get Hash Code (runtime hash code)`` () =
+    member __.``Get Hash Code (runtime hash code)``() =
         let a = CustomConverter<obj>(0)
         let b = CustomConverter<obj>(0)
         Assert.Equal(RuntimeHelpers.GetHashCode a, a.GetHashCode())
@@ -71,13 +72,13 @@ type ConverterTests() =
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member __.``To String (debug)`` (t : Type, length : int) =
+    member __.``To String (debug)``(t: Type, length: int) =
         let converter = generator.GetConverter t
         let message = sprintf "Length = %d, T = %s" length t.Name
         Assert.Equal(message, converter.ToString())
         ()
 
-    member __.Test<'T> (item : 'T) =
+    member __.Test<'T>(item: 'T) =
         let mutable aa = Allocator()
         let mutable ab = Allocator()
         let ca = generator.GetConverter<'T>()
@@ -94,7 +95,7 @@ type ConverterTests() =
         Assert.Equal(ra, rb)
         ()
 
-    member __.TestAuto<'T> (item : 'T) =
+    member __.TestAuto<'T>(item: 'T) =
         let mutable aa = Allocator()
         let mutable ab = Allocator()
         let ca = generator.GetConverter<'T>()
@@ -113,7 +114,7 @@ type ConverterTests() =
         Assert.Equal(0, bb.Length)
         ()
 
-    member __.TestWithLengthPrefix<'T> (item : 'T) =
+    member __.TestWithLengthPrefix<'T>(item: 'T) =
         let mutable aa = Allocator()
         let mutable ab = Allocator()
         let ca = generator.GetConverter<'T>()
@@ -133,7 +134,7 @@ type ConverterTests() =
         ()
 
     [<Fact>]
-    member me.``Interface Method 'Encode' And 'Decode'`` () =
+    member me.``Interface Method 'Encode' And 'Decode'``() =
         me.Test<int> 2048
         me.Test<string> null
         me.Test<string> "1024"
@@ -141,7 +142,7 @@ type ConverterTests() =
         ()
 
     [<Fact>]
-    member me.``Interface Method 'EncodeAuto' And 'DecodeAuto'`` () =
+    member me.``Interface Method 'EncodeAuto' And 'DecodeAuto'``() =
         me.TestAuto<int> 4096
         me.TestAuto<string> null
         me.TestAuto<string> "8192"
@@ -149,7 +150,7 @@ type ConverterTests() =
         ()
 
     [<Fact>]
-    member me.``Interface Method 'EncodeWithLengthPrefix' And 'DecodeWithLengthPrefix'`` () =
+    member me.``Interface Method 'EncodeWithLengthPrefix' And 'DecodeWithLengthPrefix'``() =
         me.TestWithLengthPrefix<int> 16
         me.TestWithLengthPrefix<string> null
         me.TestWithLengthPrefix<string> "32"
@@ -161,7 +162,7 @@ type ConverterTests() =
     [<InlineData(1)>]
     [<InlineData(127)>]
     [<InlineData(1024)>]
-    member __.``Valid Converter Length`` (length : int) =
+    member __.``Valid Converter Length``(length: int) =
         let converter = CustomConverter<obj>(length)
         Assert.Equal(length, converter.Length)
         ()
@@ -169,7 +170,7 @@ type ConverterTests() =
     [<Theory>]
     [<InlineData(-1)>]
     [<InlineData(-65)>]
-    member __.``Invalid Converter Length`` (length : int) =
+    member __.``Invalid Converter Length``(length: int) =
         let constructorInfo = typeof<Converter<int>>.GetConstructor(BindingFlags.Instance ||| BindingFlags.NonPublic, null, [| typeof<int> |], null)
         let parameter = constructorInfo.GetParameters() |> Array.exactlyOne
         let error = Assert.Throws<ArgumentOutOfRangeException>(fun () -> CustomConverter<obj>(length) |> ignore)
@@ -180,14 +181,14 @@ type ConverterTests() =
     [<Theory>]
     [<InlineData(1)>]
     [<InlineData(127)>]
-    member __.``Invalid Converter Allocation`` (length : int) =
+    member __.``Invalid Converter Allocation``(length: int) =
         let converter = CustomConverterWithInvalidAllocation<int>(length)
         let error = Assert.Throws<ArgumentException>(fun () -> converter.Encode(Unchecked.defaultof<int>) |> ignore)
         Assert.Equal("Maximum capacity has been reached.", error.Message)
         ()
 
     [<Fact>]
-    member __.``Interface Method All Forwarded`` () =
+    member __.``Interface Method All Forwarded``() =
         let converter = CustomConverterAllOverride<obj>(0) :> IConverter
         let e1 = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = Allocator() in converter.Encode(&allocator, null))
         let ea = Assert.Throws<NotSupportedException>(fun () -> let mutable allocator = Allocator() in converter.EncodeAuto(&allocator, null))

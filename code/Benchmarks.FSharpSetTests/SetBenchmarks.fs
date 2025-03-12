@@ -8,13 +8,13 @@ open System.Linq
 
 [<MemoryDiagnoser>]
 type SetBenchmarks() =
-    let mutable buffer : byte array = null
+    let mutable buffer: byte array = null
 
-    let mutable intSetConverter : Converter<Set<int>> = null
+    let mutable intSetConverter: Converter<Set<int>> = null
 
     let mutable intSet = Set.empty<int>
 
-    let mutable intSetBuffer : byte array = null
+    let mutable intSetBuffer: byte array = null
 
     [<Params(0, 1, 1024)>]
     member val public Count = 0 with get, set
@@ -22,11 +22,7 @@ type SetBenchmarks() =
     [<GlobalSetup>]
     member me.Setup() =
         buffer <- Array.zeroCreate 65536
-        let generator =
-            Generator.CreateDefaultBuilder()
-                .AddConverter(BinaryStringConverter())
-                .AddFSharpConverterCreators()
-                .Build()
+        let generator = Generator.CreateDefaultBuilder().AddConverter(BinaryStringConverter()).AddFSharpConverterCreators().Build()
         intSetConverter <- generator.GetConverter<_>()
         intSet <- Enumerable.Range(0, me.Count) |> Set
         intSetBuffer <- intSetConverter.Encode intSet
@@ -39,5 +35,4 @@ type SetBenchmarks() =
         ()
 
     [<Benchmark(Description = "Decode Set Of Int (converter)")>]
-    member __.SD01() : Set<int> =
-        intSetConverter.Decode intSetBuffer
+    member __.SD01() : Set<int> = intSetConverter.Decode intSetBuffer

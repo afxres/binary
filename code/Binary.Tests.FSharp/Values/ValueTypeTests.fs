@@ -12,9 +12,9 @@ let randomCount = 64
 
 let MakeConverters<'a> () =
     let converter = generator.GetConverter<'a>()
-    [ converter; ]
+    [ converter ]
 
-let TestWithSpan (converters : Converter<'a> list) (value : 'a) (size : int) =
+let TestWithSpan (converters: Converter<'a> list) (value: 'a) (size: int) =
     let bufferOrigin = generator.Encode value
     for converter in converters do
         let mutable allocator = Allocator()
@@ -28,7 +28,7 @@ let TestWithSpan (converters : Converter<'a> list) (value : 'a) (size : int) =
         Assert.Equal<'a>(value, result)
     ()
 
-let TestWithBytes (converters : Converter<'a> list) (value : 'a) (size : int) =
+let TestWithBytes (converters: Converter<'a> list) (value: 'a) (size: int) =
     let bufferOrigin = generator.Encode value
     for converter in converters do
         let buffer = converter.Encode value
@@ -39,7 +39,7 @@ let TestWithBytes (converters : Converter<'a> list) (value : 'a) (size : int) =
         Assert.Equal<'a>(value, result)
     ()
 
-let TestAuto (converters : Converter<'a> list) (value : 'a) (size : int) =
+let TestAuto (converters: Converter<'a> list) (value: 'a) (size: int) =
     let bufferOrigin = generator.Encode value
     for converter in converters do
         let mutable allocator = Allocator()
@@ -54,7 +54,7 @@ let TestAuto (converters : Converter<'a> list) (value : 'a) (size : int) =
         Assert.Equal<'a>(value, result)
     ()
 
-let TestWithLengthPrefix (converters : Converter<'a> list) (value : 'a) (size : int) =
+let TestWithLengthPrefix (converters: Converter<'a> list) (value: 'a) (size: int) =
     let bufferOrigin = generator.Encode value
     for converter in converters do
         let mutable allocator = Allocator()
@@ -73,15 +73,15 @@ let TestWithLengthPrefix (converters : Converter<'a> list) (value : 'a) (size : 
         Assert.Equal<'a>(value, result)
     ()
 
-let TestExplicit (value : 'a) (size : int) =
+let TestExplicit (value: 'a) (size: int) =
     // convert via Generator
     let buffer = generator.Encode value
     Assert.Equal(size, buffer.Length)
 
-    let result : 'a = generator.Decode buffer
+    let result: 'a = generator.Decode buffer
     Assert.Equal<'a>(value, result)
 
-    let converters = MakeConverters<'a> ()
+    let converters = MakeConverters<'a>()
     for converter in converters do
         Assert.Equal(size, converter.Length)
 
@@ -95,8 +95,7 @@ let TestExplicit (value : 'a) (size : int) =
     TestWithLengthPrefix converters value size
     ()
 
-let Test (value : 'a when 'a : unmanaged) =
-    TestExplicit value sizeof<'a>
+let Test (value: 'a when 'a: unmanaged) = TestExplicit value sizeof<'a>
 
 [<Fact>]
 let ``Int & UInit 16, 32, 64`` () =
@@ -119,8 +118,8 @@ let ``Int & UInit 16, 32, 64`` () =
 [<Fact>]
 let ``Single Double`` () =
     for _ = 0 to randomCount do
-        let single : single = single (Random.Shared.NextDouble())
-        let double : double = double (Random.Shared.NextDouble())
+        let single: single = single (Random.Shared.NextDouble())
+        let double: double = double (Random.Shared.NextDouble())
 
         Test single
         Test double
@@ -129,10 +128,10 @@ let ``Single Double`` () =
 [<Fact>]
 let ``Bool Char Byte SByte`` () =
     for _ = 0 to randomCount do
-        let u8 : byte = byte (Random.Shared.NextInt64())
-        let i8 : sbyte = sbyte (Random.Shared.NextInt64())
-        let char : char = char (Random.Shared.NextInt64())
-        let bool : bool = int (Random.Shared.NextInt64()) &&& 1 = 0
+        let u8: byte = byte (Random.Shared.NextInt64())
+        let i8: sbyte = sbyte (Random.Shared.NextInt64())
+        let char: char = char (Random.Shared.NextInt64())
+        let bool: bool = int (Random.Shared.NextInt64()) &&& 1 = 0
 
         Test u8
         Test i8
@@ -143,8 +142,8 @@ let ``Bool Char Byte SByte`` () =
 [<Fact>]
 let ``Decimal`` () =
     for _ = 0 to randomCount do
-        let number : decimal = decimal (Random.Shared.NextDouble())
-        for converter in MakeConverters<decimal> () do
+        let number: decimal = decimal (Random.Shared.NextDouble())
+        for converter in MakeConverters<decimal>() do
             let alpha = converter.Encode number
             let bravo = Decimal.GetBits(number) |> Array.map (fun x -> BitConverter.GetBytes x) |> Array.concat
             Assert.Equal<byte>(alpha, bravo)
@@ -154,7 +153,7 @@ let ``Decimal`` () =
 [<Fact>]
 let ``Half`` () =
     for _ = 0 to randomCount do
-        Test (Random.Shared.NextDouble() |> Half.op_Explicit)
+        Test(Random.Shared.NextDouble() |> Half.op_Explicit)
 
     Test Half.MaxValue
     Test Half.MinValue
@@ -163,22 +162,22 @@ let ``Half`` () =
 [<Fact>]
 let ``BitVector32`` () =
     for _ = 0 to randomCount do
-        Test (Random.Shared.Next() |> BitVector32)
+        Test(Random.Shared.Next() |> BitVector32)
 
-    Test (BitVector32 0x11223344)
-    Test (BitVector32 0xAABBCCDD)
+    Test(BitVector32 0x11223344)
+    Test(BitVector32 0xAABBCCDD)
     ()
 
 [<Fact>]
 let ``Guid`` () =
     for _ = 0 to randomCount do
-        let guid : Guid = Guid.NewGuid()
+        let guid: Guid = Guid.NewGuid()
         let bytes = generator.Encode<Guid> guid
 
         Test guid
 
         let hex = guid.ToString("N")
-        let items = [ 0..2..(hex.Length - 1) ] |> Seq.map (fun x -> Convert.ToByte(hex.Substring(x, 2), 16))
+        let items = [ 0..2 .. (hex.Length - 1) ] |> Seq.map (fun x -> Convert.ToByte(hex.Substring(x, 2), 16))
         Assert.Equal(16, items |> Seq.length)
         if BitConverter.IsLittleEndian then
             let array = guid.ToByteArray()
@@ -187,8 +186,8 @@ let ``Guid`` () =
 
 [<Fact>]
 let ``TimeSpan Instance`` () =
-    Test (DateTime.Now - DateTime.MinValue)
-    Test (DateTime.MaxValue - DateTime.Now)
+    Test(DateTime.Now - DateTime.MinValue)
+    Test(DateTime.MaxValue - DateTime.Now)
     Test TimeSpan.MaxValue
     Test TimeSpan.MinValue
     ()
@@ -207,8 +206,8 @@ let ``DateTime Instance`` () =
     Ensure DateTime.UtcNow
     Ensure DateTime.MaxValue
     Ensure DateTime.MinValue
-    Ensure (DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified))
-    Ensure (DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified))
+    Ensure(DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified))
+    Ensure(DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified))
     ()
 
 [<Fact>]
@@ -235,10 +234,10 @@ let ``DateTimeOffset Instance`` () =
     Ensure DateTimeOffset.UtcNow
     Ensure DateTimeOffset.MaxValue
     Ensure DateTimeOffset.MinValue
-    Ensure (DateTimeOffset(DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified), TimeSpan.FromMinutes(float 180)))
-    Ensure (DateTimeOffset(DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified), TimeSpan.FromMinutes(float -300)))
-    Ensure (DateTimeOffset(DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified), TimeSpan.FromMinutes(float 30)))
-    Ensure (DateTimeOffset(DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified), TimeSpan.FromMinutes(float -90)))
+    Ensure(DateTimeOffset(DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified), TimeSpan.FromMinutes(float 180)))
+    Ensure(DateTimeOffset(DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Unspecified), TimeSpan.FromMinutes(float -300)))
+    Ensure(DateTimeOffset(DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified), TimeSpan.FromMinutes(float 30)))
+    Ensure(DateTimeOffset(DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Unspecified), TimeSpan.FromMinutes(float -90)))
     ()
 
 [<Fact>]
@@ -259,8 +258,8 @@ let ``Enum`` () =
 [<Theory>]
 [<InlineData(0x1F600)>]
 [<InlineData(0x1F610)>]
-let ``Rune`` (data : int) =
-    let converters = MakeConverters<Rune> ()
+let ``Rune`` (data: int) =
+    let converters = MakeConverters<Rune>()
     for converter in converters do
         let rune = Rune data
         let buffer = converter.Encode rune
@@ -281,7 +280,7 @@ let ``Rune`` (data : int) =
 [<Theory>]
 [<InlineData(0xD800)>]
 [<InlineData(0xDFFF)>]
-let ``Rune (decode invalid)`` (data : int) =
+let ``Rune (decode invalid)`` (data: int) =
     let generator = Generator.CreateDefault()
     let error = Assert.Throws<ArgumentOutOfRangeException>(fun () -> generator.Decode<Rune>(generator.Encode data) |> ignore)
     Assert.StartsWith(ArgumentOutOfRangeException().Message, error.Message)

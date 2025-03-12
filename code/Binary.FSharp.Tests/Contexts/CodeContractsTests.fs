@@ -29,7 +29,13 @@ let ``Public Members With Requires Dynamic Code Attribute`` () =
     let sequence = seq {
         for m in members do
             if m.DeclaringType <> typeof<obj> then
-                let attribute = m.GetCustomAttributes() |> Seq.choose (fun x -> match x with | :? RequiresDynamicCodeAttribute as a -> Some a | _ -> None) |> Seq.exactlyOne
+                let attribute =
+                    m.GetCustomAttributes()
+                    |> Seq.choose (fun x ->
+                        match x with
+                        | :? RequiresDynamicCodeAttribute as a -> Some a
+                        | _ -> None)
+                    |> Seq.exactlyOne
                 yield attribute.Message
     }
     let actual = sequence |> Seq.exactlyOne
@@ -49,7 +55,13 @@ let ``Public Members With Requires Unreferenced Code Attribute`` () =
     let sequence = seq {
         for m in members do
             if m.DeclaringType <> typeof<obj> then
-                let attribute = m.GetCustomAttributes() |> Seq.choose (fun x -> match x with | :? RequiresUnreferencedCodeAttribute as a -> Some a | _ -> None) |> Seq.exactlyOne
+                let attribute =
+                    m.GetCustomAttributes()
+                    |> Seq.choose (fun x ->
+                        match x with
+                        | :? RequiresUnreferencedCodeAttribute as a -> Some a
+                        | _ -> None)
+                    |> Seq.exactlyOne
                 yield attribute.Message
     }
     let actual = sequence |> Seq.exactlyOne

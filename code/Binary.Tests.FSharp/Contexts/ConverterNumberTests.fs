@@ -20,7 +20,7 @@ let ``Encode Number From 0 To 127`` () =
 [<InlineData(0x0000_8642)>]
 [<InlineData(0x00AB_CDEF)>]
 [<InlineData(0x7FFF_FFFF)>]
-let ``Encode Number From 128`` (i : int) =
+let ``Encode Number From 128`` (i: int) =
     let buffer = Array.zeroCreate<byte> 4
     let mutable allocator = Allocator(Span buffer)
     Converter.Encode(&allocator, i)
@@ -37,7 +37,7 @@ let ``Encode Number From 128`` (i : int) =
 [<InlineData(127, 1)>]
 [<InlineData(128, 4)>]
 [<InlineData(Int32.MaxValue, 4)>]
-let ``Encode Number Then Decode`` (number : int, length : int) =
+let ``Encode Number Then Decode`` (number: int, length: int) =
     let mutable allocator = Allocator()
     Converter.Encode(&allocator, number)
     let mutable span = allocator.AsSpan()
@@ -57,7 +57,7 @@ let ``Decode Number (empty bytes)`` () =
 
 [<Fact>]
 let ``Decode Number (not enough bytes)`` () =
-    let Test (bytes : byte array) =
+    let Test (bytes: byte array) =
         let error = Assert.Throws<ArgumentException>(fun () -> let mutable span = ReadOnlySpan<byte> bytes in Converter.Decode(&span) |> ignore)
         let message = "Not enough bytes or byte sequence invalid."
         Assert.Equal(message, error.Message)

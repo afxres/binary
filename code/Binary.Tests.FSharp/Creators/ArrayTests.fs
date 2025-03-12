@@ -6,13 +6,13 @@ open System.Linq
 open System.Reflection
 open Xunit
 
-type ArrayTests () =
+type ArrayTests() =
     let generator = Generator.CreateDefault()
 
     [<Fact>]
-    member __.``Array`` () =
-        let a : int array = [| 1; 4; 16; |]
-        let b : string array = [| "alpha"; "beta"; "release" |]
+    member __.``Array``() =
+        let a: int array = [| 1; 4; 16 |]
+        let b: string array = [| "alpha"; "beta"; "release" |]
         let bytesA = generator.Encode a
         let bytesB = generator.Encode b
         Assert.Equal(12, bytesA.Length)
@@ -24,7 +24,7 @@ type ArrayTests () =
         ()
 
     [<Fact>]
-    member __.``Array Of String (from 0 to 1024)`` () =
+    member __.``Array Of String (from 0 to 1024)``() =
         let converter = generator.GetConverter<string array>()
         for i = 0 to 1024 do
             let source = Enumerable.Range(0, i) |> Seq.map string |> Seq.toArray
@@ -35,28 +35,28 @@ type ArrayTests () =
         ()
 
     [<Fact>]
-    member __.``Array of Arrays`` () =
-        let array = [| [| 1; 2|]; [| 5; 7; 9|] |]
+    member __.``Array of Arrays``() =
+        let array = [| [| 1; 2 |]; [| 5; 7; 9 |] |]
         Assert.Equal(1, array.Rank)
         let bytes = generator.Encode array
         Assert.Equal(1 * 2 + 4 * 5, bytes |> Array.length)
-        let value = generator.Decode<int [] []> bytes
-        Assert.Equal<int []>(array, value)
+        let value = generator.Decode<int[][]> bytes
+        Assert.Equal<int[]>(array, value)
         ()
 
-    static member ``Data Alpha`` : (obj array) seq = seq {
+    static member ``Data Alpha``: (obj array) seq = seq {
         yield [| typeof<int> |]
         yield [| typeof<double seq> |]
     }
 
-    static member ``Data Bravo`` : (obj array) seq = seq {
+    static member ``Data Bravo``: (obj array) seq = seq {
         yield [| Array2D.zeroCreate<int> 2 3 |]
         yield [| Array.CreateInstance(typeof<int>, [| 3; 4 |], [| 1; 2 |]) |]
     }
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member __.``Non Array Type`` (t : Type) =
+    member __.``Non Array Type``(t: Type) =
         let methodType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "FallbackSequentialMethods") |> Array.exactlyOne
         let method = methodType.GetMethod("GetConverter", BindingFlags.Static ||| BindingFlags.NonPublic, [| typeof<IGeneratorContext>; typeof<Type> |])
         let converter = method.Invoke(null, [| null; box t |])
@@ -65,7 +65,7 @@ type ArrayTests () =
 
     [<Theory>]
     [<MemberData("Data Bravo")>]
-    member __.``Non SZ Array`` (o : obj) =
+    member __.``Non SZ Array``(o: obj) =
         let methodType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "FallbackSequentialMethods") |> Array.exactlyOne
         let method = methodType.GetMethod("GetConverter", BindingFlags.Static ||| BindingFlags.NonPublic, [| typeof<IGeneratorContext>; typeof<Type> |])
         let t = o.GetType()

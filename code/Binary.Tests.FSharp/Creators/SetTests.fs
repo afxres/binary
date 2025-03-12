@@ -17,7 +17,13 @@ let ``HashSet Instance`` () =
 
 [<Fact>]
 let ``ISet Interface`` () =
-    let a = seq { for i in 9..16 do yield sprintf "%x" i } |> HashSet :> ISet<string>
+    let a =
+        seq {
+            for i in 9..16 do
+                yield sprintf "%x" i
+        }
+        |> HashSet
+        :> ISet<string>
     let bytes = generator.Encode a
     let value = generator.Decode<ISet<string>> bytes
     Assert.Equal<string>(a, value)

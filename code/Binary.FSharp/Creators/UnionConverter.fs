@@ -5,11 +5,11 @@ open System
 open System.Diagnostics
 open System.Runtime.CompilerServices
 
-type internal UnionEncoder<'T> = delegate of allocator : byref<Allocator> * item : 'T * mark : byref<int> -> unit
+type internal UnionEncoder<'T> = delegate of allocator: byref<Allocator> * item: 'T * mark: byref<int> -> unit
 
-type internal UnionDecoder<'T> = delegate of span : byref<ReadOnlySpan<byte>> * mark : byref<int> -> 'T
+type internal UnionDecoder<'T> = delegate of span: byref<ReadOnlySpan<byte>> * mark: byref<int> -> 'T
 
-type internal UnionConverter<'T>(encode : UnionEncoder<'T>, encodeAuto : UnionEncoder<'T>, decode : UnionDecoder<'T>, decodeAuto : UnionDecoder<'T>, noNull : bool) =
+type internal UnionConverter<'T>(encode: UnionEncoder<'T>, encodeAuto: UnionEncoder<'T>, decode: UnionDecoder<'T>, decodeAuto: UnionDecoder<'T>, noNull: bool) =
     inherit Converter<'T>(0)
 
     [<Literal>]
@@ -20,19 +20,18 @@ type internal UnionConverter<'T>(encode : UnionEncoder<'T>, encodeAuto : UnionEn
         raise (ArgumentNullException("item", $"Union can not be null, type: {typeof<'T>}"))
 
     [<DebuggerStepThrough>]
-    member private __.ExceptMark(mark : int) : unit =
-        raise (ArgumentException $"Invalid union tag '{mark}', type: {typeof<'T>}")
+    member private __.ExceptMark(mark: int) : unit = raise (ArgumentException $"Invalid union tag '{mark}', type: {typeof<'T>}")
 
     [<DebuggerStepThrough>]
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
-    member private me.HandleNull(item : 'T) : unit =
+    member private me.HandleNull(item: 'T) : unit =
         if noNull && isNull (box item) then
             me.ExceptNull()
         ()
 
     [<DebuggerStepThrough>]
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
-    member private me.HandleMark(mark : int) : unit =
+    member private me.HandleMark(mark: int) : unit =
         if mark <> constant then
             me.ExceptMark mark
         ()
@@ -51,7 +50,7 @@ type internal UnionConverter<'T>(encode : UnionEncoder<'T>, encodeAuto : UnionEn
         me.HandleMark mark
         ()
 
-    override me.Decode(span : inref<ReadOnlySpan<byte>>) : 'T =
+    override me.Decode(span: inref<ReadOnlySpan<byte>>) : 'T =
         let mutable body = span
         let mutable mark = constant
         let item = decode.Invoke(&body, &mark)

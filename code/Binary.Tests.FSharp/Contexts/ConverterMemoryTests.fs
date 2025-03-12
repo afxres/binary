@@ -11,7 +11,7 @@ open Xunit
 [<InlineData(128)>]
 [<InlineData(4096)>]
 [<InlineData(65536)>]
-let ``Encode Then Decode With Length Prefix`` (length : int) =
+let ``Encode Then Decode With Length Prefix`` (length: int) =
     let source = Array.zeroCreate<byte> length
     Random.Shared.NextBytes source
     let mutable allocator = Allocator()
@@ -24,15 +24,23 @@ let ``Encode Then Decode With Length Prefix`` (length : int) =
 
 [<Fact>]
 let ``Decode With Length Prefix (empty bytes)`` () =
-    let error = Assert.Throws<ArgumentException>(fun () -> let mutable span = ReadOnlySpan<byte>() in let _ = Converter.DecodeWithLengthPrefix(&span) in ())
+    let error =
+        Assert.Throws<ArgumentException>(fun () ->
+            let mutable span = ReadOnlySpan<byte>() in
+            let _ = Converter.DecodeWithLengthPrefix(&span) in
+            ())
     let message = "Not enough bytes or byte sequence invalid."
     Assert.Equal(message, error.Message)
     ()
 
 [<Fact>]
 let ``Decode With Length Prefix (not enough bytes)`` () =
-    let Test (bytes : byte array) =
-        let error = Assert.Throws<ArgumentException>(fun () -> let mutable span = ReadOnlySpan<byte> bytes in let _ = Converter.DecodeWithLengthPrefix(&span) in ())
+    let Test (bytes: byte array) =
+        let error =
+            Assert.Throws<ArgumentException>(fun () ->
+                let mutable span = ReadOnlySpan<byte> bytes in
+                let _ = Converter.DecodeWithLengthPrefix(&span) in
+                ())
         let message = "Not enough bytes or byte sequence invalid."
         Assert.Equal(message, error.Message)
         ()

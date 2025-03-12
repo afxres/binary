@@ -7,21 +7,21 @@ open Xunit
 
 let generator = Generator.CreateDefault()
 
-let Encode<'a> (c : Converter<'a>) v =
+let Encode<'a> (c: Converter<'a>) v =
     let mutable allocator = Allocator()
     c.Encode(&allocator, v)
     allocator.AsSpan().ToArray()
 
-let EncodeAuto<'a> (c : Converter<'a>) v =
+let EncodeAuto<'a> (c: Converter<'a>) v =
     let mutable allocator = Allocator()
     c.EncodeAuto(&allocator, v)
     allocator.AsSpan().ToArray()
 
-let Decode<'a> (c : Converter<'a>) (buffer : byte array) =
+let Decode<'a> (c: Converter<'a>) (buffer: byte array) =
     let span = ReadOnlySpan<byte>(buffer)
     c.Decode &span
 
-let DecodeAuto<'a> (c : Converter<'a>) (buffer : byte array) =
+let DecodeAuto<'a> (c: Converter<'a>) (buffer: byte array) =
     let mutable span = ReadOnlySpan<byte>(buffer)
     c.DecodeAuto &span
 
@@ -30,11 +30,11 @@ let DecodeAuto<'a> (c : Converter<'a>) (buffer : byte array) =
 [<InlineData("", -2.4, 0, 9, 9)>]
 [<InlineData(-4, 256L, 12, 12, 12)>]
 [<InlineData("key", "value", 0, 9, 10)>]
-let ``Key-Value Pair``<'K, 'V> (k : 'K) (v : 'V) define normal headed =
+let ``Key-Value Pair``<'K, 'V> (k: 'K) (v: 'V) define normal headed =
     let i = KeyValuePair(k, v)
     let t = k, v
-    let alpha = generator.GetConverter<KeyValuePair<'K, 'V>> ()
-    let tuple = generator.GetConverter<'K * 'V> ()
+    let alpha = generator.GetConverter<KeyValuePair<'K, 'V>>()
+    let tuple = generator.GetConverter<'K * 'V>()
 
     let bka = Encode alpha i
     let rka = Decode alpha bka
@@ -83,23 +83,20 @@ let ``Key-Value Pair Array`` () =
     Assert.Equal<byte * uint32>(array, (alpha |> Array.map (|KeyValue|)))
     ()
 
-type Raw<'a> = { data : 'a }
+type Raw<'a> = { data: 'a }
 
-type RawConverter<'a>(length : int) =
+type RawConverter<'a>(length: int) =
     inherit Converter<Raw<'a>>(length)
 
     override __.Encode(_, _) = raise (NotSupportedException())
 
-    override __.Decode (_ : inref<ReadOnlySpan<byte>>) : Raw<'a> = raise (NotSupportedException())
+    override __.Decode(_: inref<ReadOnlySpan<byte>>) : Raw<'a> = raise (NotSupportedException())
 
 [<Fact>]
 let ``Key-Value Pair Length`` () =
     let singleConverter = RawConverter<single>(0x2000_0000) :> IConverter
     let doubleConverter = RawConverter<double>(0x4000_0000) :> IConverter
-    let generator = Generator.CreateDefaultBuilder()
-                        .AddConverter(singleConverter)
-                        .AddConverter(doubleConverter)
-                        .Build();
+    let generator = Generator.CreateDefaultBuilder().AddConverter(singleConverter).AddConverter(doubleConverter).Build()
     let alpha = generator.GetConverter<KeyValuePair<Raw<single>, Raw<single>>>()
     let bravo = generator.GetConverter<KeyValuePair<Raw<single>, Raw<double>>>()
     Assert.Equal(0x4000_0000, alpha.Length)
@@ -110,10 +107,7 @@ let ``Key-Value Pair Length`` () =
 let ``Key-Value Pair Length (max value)`` () =
     let doubleConverter = RawConverter<double>(0x4000_0000) :> IConverter
     let stringConverter = RawConverter<string>(0x3FFF_FFFF) :> IConverter
-    let generator = Generator.CreateDefaultBuilder()
-                        .AddConverter(doubleConverter)
-                        .AddConverter(stringConverter)
-                        .Build();
+    let generator = Generator.CreateDefaultBuilder().AddConverter(doubleConverter).AddConverter(stringConverter).Build()
     let delta = generator.GetConverter<KeyValuePair<Raw<double>, Raw<string>>>()
     Assert.Equal(Int32.MaxValue, delta.Length)
     ()
@@ -121,8 +115,6 @@ let ``Key-Value Pair Length (max value)`` () =
 [<Fact>]
 let ``Key-Value Pair Length (overflow)`` () =
     let doubleConverter = RawConverter<double>(0x4000_0000) :> IConverter
-    let generator = Generator.CreateDefaultBuilder()
-                        .AddConverter(doubleConverter)
-                        .Build();
+    let generator = Generator.CreateDefaultBuilder().AddConverter(doubleConverter).Build()
     Assert.Throws<OverflowException>(fun () -> generator.GetConverter<KeyValuePair<Raw<double>, Raw<double>>>() |> ignore) |> ignore
     ()

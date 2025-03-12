@@ -6,7 +6,7 @@ open System.Collections.Generic
 open System.Text
 open Xunit
 
-type EncodingStringConverter(encoding : Encoding) =
+type EncodingStringConverter(encoding: Encoding) =
     inherit Converter<string> 0
 
     override __.Encode(allocator, item) =
@@ -14,8 +14,7 @@ type EncodingStringConverter(encoding : Encoding) =
         Allocator.Append(&allocator, ReadOnlySpan<byte> bytes)
         ()
 
-    override __.Decode(span : inref<ReadOnlySpan<byte>>) : string =
-        encoding.GetString (span.ToArray())
+    override __.Decode(span: inref<ReadOnlySpan<byte>>) : string = encoding.GetString(span.ToArray())
 
 [<Fact>]
 let ``Named Object Encode (default generator)`` () =
@@ -86,14 +85,13 @@ let ``Named Object As Token (utf32 string converter)`` () =
     ()
 
 type BadStringConverter() =
-    inherit Converter<string> ()
+    inherit Converter<string>()
 
     override __.Encode(_, _) =
         // do nothing (append empty string)
         ()
 
-    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : string =
-        raise (NotSupportedException())
+    override __.Decode(_: inref<ReadOnlySpan<byte>>) : string = raise (NotSupportedException())
 
 [<Fact>]
 let ``Named Key Duplicated (bad string converter)`` () =

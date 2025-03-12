@@ -4,7 +4,7 @@ open Mikodev.Binary
 open System
 open Xunit
 
-let GeneratorBuilder() =
+let GeneratorBuilder () =
     let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "GeneratorBuilder") |> Array.exactlyOne
     let builder = Activator.CreateInstance(t)
     builder :?> IGeneratorBuilder
@@ -14,14 +14,14 @@ type FakeConverterA<'T>() =
 
     override __.Encode(_, _) = raise (NotSupportedException())
 
-    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
+    override __.Decode(_: inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 
 type FakeConverterB<'T>() =
     inherit Converter<'T>()
 
     override __.Encode(_, _) = raise (NotSupportedException())
 
-    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
+    override __.Decode(_: inref<ReadOnlySpan<byte>>) : 'T = raise (NotSupportedException())
 
 type FakeConverterCreatorA() =
     interface IConverterCreator with
@@ -59,10 +59,7 @@ let ``Add Null Converter Creator`` () =
 [<Fact>]
 let ``Add Two Converters For One Type`` () =
     let Test a b =
-        let builder =
-            GeneratorBuilder()
-                .AddConverter(a)
-                .AddConverter(b)
+        let builder = GeneratorBuilder().AddConverter(a).AddConverter(b)
         let generator = builder.Build()
         Assert.Equal("Converter Count = 2, Converter Creator Count = 0", generator.ToString())
         let converter = generator.GetConverter<int>()
@@ -76,10 +73,7 @@ let ``Add Two Converters For One Type`` () =
 [<Fact>]
 let ``Last Added Creator First Executed`` () =
     let Test a b message =
-        let builder =
-            GeneratorBuilder()
-                .AddConverterCreator(a)
-                .AddConverterCreator(b)
+        let builder = GeneratorBuilder().AddConverterCreator(a).AddConverterCreator(b)
         let generator = builder.Build()
         Assert.Equal("Converter Count = 1, Converter Creator Count = 2", generator.ToString())
         let error = Assert.Throws<NotSupportedException>(fun () -> generator.GetConverter<int>() |> ignore)

@@ -6,20 +6,16 @@ open Xunit
 
 let Key = "D6D65841-19FC-4F29-AC4D-B852664F8D3E"
 
-type Fake() =
-    class
-    end
+type Fake() = class end
 
-type FakeType() =
-    class
-    end
+type FakeType() = class end
 
 type FakeConverter() =
     inherit Converter<Fake>()
 
     override __.Encode(_, _) = raise (NotSupportedException())
 
-    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : Fake = raise (NotSupportedException())
+    override __.Decode(_: inref<ReadOnlySpan<byte>>) : Fake = raise (NotSupportedException())
 
 type FakeConverterCreator() =
     member val Converter = Unchecked.defaultof<IConverter> with get, set

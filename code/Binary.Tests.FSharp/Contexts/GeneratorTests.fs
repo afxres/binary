@@ -7,9 +7,7 @@ open Xunit
 
 let generator = Generator.CreateDefault()
 
-type EmptyStructure =
-    struct
-    end
+type EmptyStructure = struct end
 
 [<Fact>]
 let ``Get Converter (via type)`` () =
@@ -111,7 +109,7 @@ let ``Get Converter (non-generic collection)`` () =
 
 [<Fact>]
 let ``Encode (obj, instance)`` () =
-    let source = obj()
+    let source = obj ()
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Encode source |> ignore)
     Assert.Equal("Can not encode object, type: System.Object", error.Message)
     ()
@@ -126,7 +124,7 @@ let ``Encode (obj, null)`` () =
 [<Theory>]
 [<InlineData(43, 4)>]
 [<InlineData("magic", 5)>]
-let ``Encode (via type)`` (item : obj, count : int) =
+let ``Encode (via type)`` (item: obj, count: int) =
     let buffer = generator.Encode(item, item.GetType())
     Assert.Equal(count, buffer.Length)
     ()
@@ -140,7 +138,7 @@ let ``Encode (via type, null)`` () =
 [<Theory>]
 [<InlineData(3.14)>]
 [<InlineData("pi")>]
-let ``Encode (as object)`` (value : obj) =
+let ``Encode (as object)`` (value: obj) =
     let source = box value
     let buffer = generator.Encode<obj> source
     Assert.NotEmpty(buffer)
@@ -156,7 +154,7 @@ let ``Decode (as object)`` () =
 [<Theory>]
 [<InlineData(2.71)>]
 [<InlineData("e")>]
-let ``Decode (via type)`` (value : obj) =
+let ``Decode (via type)`` (value: obj) =
     let buffer = generator.Encode value
     let result = generator.Decode(buffer, value.GetType())
     Assert.Equal(value, result)
@@ -171,7 +169,7 @@ let ``Decode (via type, argument null)`` () =
 [<Theory>]
 [<InlineData(6)>]
 [<InlineData("fox")>]
-let ``Encode and Decode``<'a> (data : 'a) =
+let ``Encode and Decode``<'a> (data: 'a) =
     let buffer = generator.Encode data
     let result = generator.Decode<'a> buffer
     Assert.Equal<'a>(data, result)
@@ -188,47 +186,50 @@ let ``Internal Types`` () =
     ()
 
 // Bad creator operation
-type BadType = { some : obj }
+type BadType = { some: obj }
 
-type BadConverterCreator () =
+type BadConverterCreator() =
     interface IConverterCreator with
         member __.GetConverter(context, ``type``) =
             if ``type`` = typeof<BadType> then
                 context.GetConverter typeof<int> // bad return value
-            else null
+            else
+                null
 
-type BadConverterInterfaceImplementation () =
+type BadConverterInterfaceImplementation() =
     interface IConverter with
-        member __.Decode(span: inref<ReadOnlySpan<byte>>): obj = raise (NotSupportedException())
+        member __.Decode(span: inref<ReadOnlySpan<byte>>) : obj = raise (NotSupportedException())
 
-        member __.Decode(_: byte []): obj = raise (NotSupportedException())
+        member __.Decode(_: byte[]) : obj = raise (NotSupportedException())
 
-        member __.DecodeAuto(span: byref<ReadOnlySpan<byte>>): obj = raise (NotSupportedException())
+        member __.DecodeAuto(span: byref<ReadOnlySpan<byte>>) : obj = raise (NotSupportedException())
 
-        member __.DecodeWithLengthPrefix(span: byref<ReadOnlySpan<byte>>): obj = raise (NotSupportedException())
+        member __.DecodeWithLengthPrefix(span: byref<ReadOnlySpan<byte>>) : obj = raise (NotSupportedException())
 
-        member __.Encode(_: obj): byte [] = raise (NotSupportedException())
+        member __.Encode(_: obj) : byte[] = raise (NotSupportedException())
 
-        member __.Encode(allocator: byref<Allocator>, _: obj): unit = raise (NotSupportedException())
+        member __.Encode(allocator: byref<Allocator>, _: obj) : unit = raise (NotSupportedException())
 
-        member __.EncodeAuto(allocator: byref<Allocator>, _: obj): unit = raise (NotSupportedException())
+        member __.EncodeAuto(allocator: byref<Allocator>, _: obj) : unit = raise (NotSupportedException())
 
-        member __.EncodeWithLengthPrefix(allocator: byref<Allocator>, _: obj): unit = raise (NotSupportedException())
+        member __.EncodeWithLengthPrefix(allocator: byref<Allocator>, _: obj) : unit = raise (NotSupportedException())
 
         member __.Length: int = raise (NotSupportedException())
 
-type BadConverterCreatorInterfaceImplementation () =
+type BadConverterCreatorInterfaceImplementation() =
     interface IConverterCreator with
         member __.GetConverter(_, ``type``) =
             if ``type`` = typeof<BadType> then
                 BadConverterInterfaceImplementation() :> IConverter // bad return value
-            else null
+            else
+                null
 
 [<Fact>]
 let ``Bad Creator (item type mismatch)`` () =
     let generator = Generator.CreateDefaultBuilder().AddConverterCreator(BadConverterCreator()).Build()
     let error = Assert.Throws<InvalidOperationException>(fun () -> generator.GetConverter typeof<BadType> |> ignore)
-    let message = $"Invalid converter, expected: converter for '{typeof<BadType>}', actual: {generator.GetConverter<int>().GetType()}, converter creator type: {typeof<BadConverterCreator>}"
+    let message =
+        $"Invalid converter, expected: converter for '{typeof<BadType>}', actual: {generator.GetConverter<int>().GetType()}, converter creator type: {typeof<BadConverterCreator>}"
     Assert.Equal(message, error.Message)
     ()
 

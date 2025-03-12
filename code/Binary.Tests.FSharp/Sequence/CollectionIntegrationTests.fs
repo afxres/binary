@@ -8,40 +8,37 @@ open System.Collections.Immutable
 open System.Reflection
 open Xunit
 
-type TestConverter<'a> (length : int) =
+type TestConverter<'a>(length: int) =
     inherit Converter<'a>(length)
 
     override __.Encode(_, _) = raise (NotSupportedException())
 
-    override __.Decode(_ : inref<ReadOnlySpan<byte>>) : 'a = raise (NotSupportedException())
+    override __.Decode(_: inref<ReadOnlySpan<byte>>) : 'a = raise (NotSupportedException())
 
 let generator = Generator.CreateDefault()
 
-let TestEncode<'a> (converter : Converter<'a>) (collection : 'a) =
+let TestEncode<'a> (converter: Converter<'a>) (collection: 'a) =
     let alpha = converter.Encode collection
     let bravo = Allocator.Invoke(collection, fun allocator item -> converter.Encode(&allocator, item))
     Assert.Empty alpha
     Assert.Empty bravo
     ()
 
-let TestEncodeAutoAndEncodeWithLengthPrefix (converter : Converter<'a>) (collection : 'a) =
+let TestEncodeAutoAndEncodeWithLengthPrefix (converter: Converter<'a>) (collection: 'a) =
     let alpha = Allocator.Invoke(collection, fun allocator item -> converter.EncodeAuto(&allocator, item))
     let bravo = Allocator.Invoke(collection, fun allocator item -> converter.EncodeWithLengthPrefix(&allocator, item))
     Assert.Equal<byte>([| 0uy |], alpha)
     Assert.Equal<byte>([| 0uy |], bravo)
     ()
 
-let TestDecode (converter : Converter<'a>) =
+let TestDecode (converter: Converter<'a>) =
     let span = ReadOnlySpan<byte>()
     converter.Decode &span |> Assert.IsAssignableFrom<'a> |> ignore
     converter.Decode Array.empty |> Assert.IsAssignableFrom<'a> |> ignore
     ()
 
-let TestDecodeAuto (converter : Converter<'a>) =
-    let buffers = [|
-        [| 0uy |]
-        [| 0x80uy; 0uy; 0uy; 0uy |]
-    |]
+let TestDecodeAuto (converter: Converter<'a>) =
+    let buffers = [| [| 0uy |]; [| 0x80uy; 0uy; 0uy; 0uy |] |]
     for i in buffers do
         let mutable span = ReadOnlySpan i
         converter.DecodeAuto &span |> Assert.IsAssignableFrom<'a> |> ignore
@@ -49,11 +46,8 @@ let TestDecodeAuto (converter : Converter<'a>) =
         ()
     ()
 
-let TestDecodeWithLengthPrefix (converter : Converter<'a>) =
-    let buffers = [|
-        [| 0uy |]
-        [| 0x80uy; 0uy; 0uy; 0uy |]
-    |]
+let TestDecodeWithLengthPrefix (converter: Converter<'a>) =
+    let buffers = [| [| 0uy |]; [| 0x80uy; 0uy; 0uy; 0uy |] |]
     for i in buffers do
         let mutable span = ReadOnlySpan i
         converter.DecodeWithLengthPrefix &span |> Assert.IsAssignableFrom<'a> |> ignore
@@ -61,7 +55,7 @@ let TestDecodeWithLengthPrefix (converter : Converter<'a>) =
         ()
     ()
 
-let rec TestFieldTypeName (instance : obj) (fieldName : string) (fieldTypeName : string) =
+let rec TestFieldTypeName (instance: obj) (fieldName: string) (fieldTypeName: string) =
     let field = instance.GetType().GetField(fieldName, BindingFlags.Instance ||| BindingFlags.NonPublic)
     let fieldValue = field.GetValue(instance)
     let fieldActualTypeName = fieldValue.GetType().Name
@@ -72,7 +66,7 @@ let rec TestFieldTypeName (instance : obj) (fieldName : string) (fieldTypeName :
         Assert.Equal(fieldTypeName, fieldActualTypeName)
     ()
 
-let TestSequence<'a when 'a : null> (encoderName : string) (decoderName : string) (collection : 'a) =
+let TestSequence<'a when 'a: null> (encoderName: string) (decoderName: string) (collection: 'a) =
     let converter = generator.GetConverter<'a>()
     Assert.Equal("SequenceConverter`1", converter.GetType().Name)
 
@@ -80,12 +74,20 @@ let TestSequence<'a when 'a : null> (encoderName : string) (decoderName : string
     let encoder = converter.GetType().GetField("encode", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
     let encoderMethod = encoder.Method
     let encoderActualType = encoderMethod.DeclaringType
-    let encoderActualName = if isNull (box encoderActualType) then "<lambda-encoder>" else encoderActualType.Name
+    let encoderActualName =
+        if isNull (box encoderActualType) then
+            "<lambda-encoder>"
+        else
+            encoderActualType.Name
     Assert.Equal(encoderName, encoderActualName)
     let decoder = converter.GetType().GetField("decode", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
     let decoderMethod = decoder.Method
     let decoderActualType = decoderMethod.DeclaringType
-    let decoderActualName = if isNull (box decoderActualType) then "<lambda-decoder>" else decoderActualType.Name
+    let decoderActualName =
+        if isNull (box decoderActualType) then
+            "<lambda-decoder>"
+        else
+            decoderActualType.Name
     Assert.Equal(decoderName, decoderActualName)
 
     // test encode empty

@@ -14,13 +14,13 @@ type ImmutableArrayTests() =
         converter
 
     [<Fact>]
-    member me.``Converter Type Name And Length`` () =
+    member me.``Converter Type Name And Length``() =
         let converter = me.TestConverter<int>()
         Assert.Equal(0, converter.Length)
         ()
 
     [<Fact>]
-    member me.``Default Array`` () =
+    member me.``Default Array``() =
         let source = ImmutableArray<int>()
         Assert.True source.IsDefault
         let converter = me.TestConverter<int>()
@@ -31,7 +31,7 @@ type ImmutableArrayTests() =
         Assert.Equal(0, result.Length)
         ()
 
-    static member ``Data Alpha`` : (obj array) seq = seq {
+    static member ``Data Alpha``: (obj array) seq = seq {
         yield [| Array.empty<string> |]
         yield [| [| -3; 1; 65565 |] |]
         yield [| [| ""; "alpha"; "bravo"; "charlie" |] |]
@@ -39,7 +39,7 @@ type ImmutableArrayTests() =
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member me.``Encode Decode`` (values : 'T array) =
+    member me.``Encode Decode``(values: 'T array) =
         let source = ImmutableArray.CreateRange values
         let converter = me.TestConverter<'T>()
         let buffer = converter.Encode source

@@ -32,7 +32,7 @@ let ``Anonymous Class Record Encode (from null value)`` () =
     Assert.Equal(0, allocator.Length)
     converter.EncodeWithLengthPrefix(&allocator, null |> Unchecked.unbox)
     Assert.Equal(1, allocator.Length)
-    let mutable span = ReadOnlySpan (allocator.AsSpan().ToArray())
+    let mutable span = ReadOnlySpan(allocator.AsSpan().ToArray())
     Assert.Equal(0, Converter.Decode(&span))
     ()
 
@@ -52,7 +52,7 @@ let ``Bytes To Anonymous Value Record (from empty bytes, expect bytes not enough
     Assert.Equal("Not enough bytes or byte sequence invalid.", error.Message)
     ()
 
-type ``Item 48`` () =
+type ``Item 48``() =
     member val Item00 = "0x00" with get, set
 
     member val Item01 = "0x01" with get, set
@@ -152,10 +152,39 @@ type ``Item 48`` () =
 [<Fact>]
 let ``Type With 32 Properties (via constructor)`` () =
     let source = {|
-        X00 = 0x00; X01 = 0x01; X02 = 0x02; X03 = 0x03; X04 = 0x04; X05 = 0x05; X06 = 0x06; X07 = 0x07;
-        X08 = 0x08; X09 = 0x09; X0A = 0x0A; X0B = 0x0B; X0C = 0x0C; X0D = 0x0D; X0E = 0x0E; X0F = 0x0F;
-        X10 = 0x10; X11 = 0x11; X12 = 0x12; X13 = 0x13; X14 = 0x14; X15 = 0x15; X16 = 0x16; X17 = 0x17;
-        X18 = 0x18; X19 = 0x19; X1A = 0x1A; X1B = 0x1B; X1C = 0x1C; X1D = 0x1D; X1E = 0x1E; X1F = 0x1F; |}
+        X00 = 0x00
+        X01 = 0x01
+        X02 = 0x02
+        X03 = 0x03
+        X04 = 0x04
+        X05 = 0x05
+        X06 = 0x06
+        X07 = 0x07
+        X08 = 0x08
+        X09 = 0x09
+        X0A = 0x0A
+        X0B = 0x0B
+        X0C = 0x0C
+        X0D = 0x0D
+        X0E = 0x0E
+        X0F = 0x0F
+        X10 = 0x10
+        X11 = 0x11
+        X12 = 0x12
+        X13 = 0x13
+        X14 = 0x14
+        X15 = 0x15
+        X16 = 0x16
+        X17 = 0x17
+        X18 = 0x18
+        X19 = 0x19
+        X1A = 0x1A
+        X1B = 0x1B
+        X1C = 0x1C
+        X1D = 0x1D
+        X1E = 0x1E
+        X1F = 0x1F
+    |}
     let converter = generator.GetConverter(source)
     Assert.StartsWith("NamedObjectDelegateConverter`1", converter.GetType().Name)
     let mutable allocator = Allocator()
@@ -168,7 +197,7 @@ let ``Type With 32 Properties (via constructor)`` () =
 
 [<Fact>]
 let ``Type With 48 Properties (via properties)`` () =
-    let source = ``Item 48``()
+    let source = ``Item 48`` ()
     let converter = generator.GetConverter(source)
     Assert.StartsWith("NamedObjectDelegateConverter`1", converter.GetType().Name)
     let mutable allocator = Allocator()
@@ -182,23 +211,23 @@ let ``Type With 48 Properties (via properties)`` () =
 
 [<Interface>]
 type IPerson =
-    abstract Name : string
+    abstract Name: string
 
-    abstract Age : int
+    abstract Age: int
 
 [<AbstractClass>]
-type BasicPerson (name : string, age : int) =
+type BasicPerson(name: string, age: int) =
     member val Name = name with get, set
 
     member val Age = age with get, set
 
 [<AbstractClass>]
-type AbstractPerson (name : string, age : int) =
+type AbstractPerson(name: string, age: int) =
     inherit BasicPerson(name, age)
 
-    new (age : int, name : string) = AbstractPerson(name, age)
+    new(age: int, name: string) = AbstractPerson(name, age)
 
-type Student (name : string, age : int) =
+type Student(name: string, age: int) =
     inherit AbstractPerson(name, age)
 
     member __.View = sprintf "%s, %d" name age
@@ -208,12 +237,12 @@ type Student (name : string, age : int) =
 
         member me.Age = me.Age
 
-type BadType(key : int, Key : string) =
+type BadType(key: int, Key: string) =
     member __.key = key
 
     member __.Key = Key
 
-let Test (instance : 'a) (anonymous : 'b) =
+let Test (instance: 'a) (anonymous: 'b) =
     let converter = generator.GetConverter<'a>()
     Assert.StartsWith("NamedObjectDelegateConverter`1", converter.GetType().Name)
     let buffer = converter.Encode instance
@@ -231,7 +260,8 @@ let ``No Suitable Constructor (interface)`` () = Test (Student("Tom", 18) :> IPe
 let ``No Suitable Constructor (abstract class with single pattern-constructors)`` () = Test (Student("Bob", 24) :> BasicPerson) ({| Name = "Bob"; Age = 24 |})
 
 [<Fact>]
-let ``No Suitable Constructor (abstract class with multiple pattern-constructors)`` () = Test (Student("Alice", 20) :> AbstractPerson) ({| Name = "Alice"; Age = 20 |})
+let ``No Suitable Constructor (abstract class with multiple pattern-constructors)`` () =
+    Test (Student("Alice", 20) :> AbstractPerson) ({| Name = "Alice"; Age = 20 |})
 
 [<Fact>]
 let ``No Suitable Constructor (class with some get-only property)`` () = Test (Student("Ann", 22)) ({| Name = "Ann"; Age = 22; View = "Ann, 22" |})
@@ -240,23 +270,23 @@ let ``No Suitable Constructor (class with some get-only property)`` () = Test (S
 let ``No Suitable Constructor (case sensitive)`` () = Test (BadType(18, "Fox")) ({| key = 18; Key = "Fox" |})
 
 type TypeWithLongNameMember = {
-    LongName : string;
-    VeryLongName : int;
-    VeryVeryLongName : Guid;
-    VeryVeryLongLongName : double;
-    Short : int16;
-    LongLongAgoOneManHaveAVeryVeryVeryLongNameThenDead : string;
+    LongName: string
+    VeryLongName: int
+    VeryVeryLongName: Guid
+    VeryVeryLongLongName: double
+    Short: int16
+    LongLongAgoOneManHaveAVeryVeryVeryLongNameThenDead: string
 }
 
 [<Fact>]
 let ``Type With Long Name Member`` () =
     let source = {
-        LongName = "name";
-        VeryLongName = -65535;
-        VeryVeryLongName = Guid.NewGuid();
-        VeryVeryLongLongName = 7.654321;
-        Short = (int16 -255);
-        LongLongAgoOneManHaveAVeryVeryVeryLongNameThenDead = "Laughing my ass off.";
+        LongName = "name"
+        VeryLongName = -65535
+        VeryVeryLongName = Guid.NewGuid()
+        VeryVeryLongLongName = 7.654321
+        Short = (int16 -255)
+        LongLongAgoOneManHaveAVeryVeryVeryLongNameThenDead = "Laughing my ass off."
     }
     let converter = generator.GetConverter<TypeWithLongNameMember>()
     let buffer = converter.Encode source

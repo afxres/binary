@@ -6,7 +6,7 @@ open Xunit
 type ConverterExtensionsTests() =
     let generator = Generator.CreateDefault()
 
-    static member ``Data Alpha`` : (obj array) seq = seq {
+    static member ``Data Alpha``: (obj array) seq = seq {
         yield [| 1024 |]
         yield [| 512.0 |]
         yield [| "some" |]
@@ -16,7 +16,7 @@ type ConverterExtensionsTests() =
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member __.``Encode`` (value : 'A) =
+    member __.``Encode``(value: 'A) =
         let converter = generator.GetConverter<'A>()
         let bytes = generator.Encode(value)
 
@@ -26,7 +26,7 @@ type ConverterExtensionsTests() =
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member __.``Encode No Generic`` (value : obj) =
+    member __.``Encode No Generic``(value: obj) =
         let converter = generator.GetConverter(value.GetType()) |> box :?> IConverter
         let bytes = generator.Encode(value, value.GetType())
 
@@ -36,7 +36,7 @@ type ConverterExtensionsTests() =
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member __.``Decode`` (value : 'A) =
+    member __.``Decode``(value: 'A) =
         let converter = generator.GetConverter<'A>()
         let bytes = generator.Encode(value)
 
@@ -46,7 +46,7 @@ type ConverterExtensionsTests() =
 
     [<Theory>]
     [<MemberData("Data Alpha")>]
-    member __.``Decode No Generic`` (value : obj) =
+    member __.``Decode No Generic``(value: obj) =
         let converter = generator.GetConverter(value.GetType()) |> box :?> IConverter
         let bytes = generator.Encode(value, value.GetType())
 

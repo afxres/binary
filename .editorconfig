@@ -4,3 +4,16 @@ root = true
 insert_final_newline = true
 csharp_style_prefer_range_operator = false
 dotnet_style_qualification_for_field = true
+
+[*.fs]
+insert_final_newline = true
+max_line_length = 160
+fsharp_max_record_width = 160
+fsharp_max_array_or_list_width = 160
+fsharp_max_value_binding_width = 160
+fsharp_max_function_binding_width = 80
+fsharp_max_if_then_else_short_width = 80
+fsharp_max_infix_operator_expression = 160
+fsharp_multiline_bracket_style = stroustrup
+fsharp_blank_lines_around_nested_multiline_expressions = false
+fsharp_newline_before_multiline_computation_expression = false
