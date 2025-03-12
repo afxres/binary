@@ -119,10 +119,12 @@ type internal UnionConverterCreator() =
                     for i in constructorInfos do
                         for p in i.Value.GetParameters() -> p.ParameterType
                 }
+                let converterType = typedefof<UnionConverter<_>>.MakeGenericType t
+                let converter = Activator.CreateInstance(converterType, null) :?> IConverter
                 let converters =
                     memberTypes
                     |> Seq.distinct
-                    |> Seq.map (fun x -> KeyValuePair.Create(x, CommonHelper.GetConverter(context, x)))
+                    |> Seq.map (fun x -> KeyValuePair.Create(x, if x = t then converter else CommonHelper.GetConverter(context, x)))
                     |> ImmutableDictionary.CreateRange
                 let tagMember = FSharpValue.PreComputeUnionTagMemberInfo(t)
                 let noNull = t.IsValueType = false && tagMember :? MethodInfo = false
@@ -130,11 +132,14 @@ type internal UnionConverterCreator() =
                 let encodeAuto = GetEncodeExpression t converters caseInfos tagMember true
                 let decode = GetDecodeExpression t converters constructorInfos false
                 let decodeAuto = GetDecodeExpression t converters constructorInfos true
-                let converterType = typedefof<UnionConverter<_>>.MakeGenericType t
                 let delegates = [| encode; encodeAuto; decode; decodeAuto |] |> Array.map (fun x -> x.Compile())
-                let converterArguments = Array.append (delegates |> Array.map box) [| box noNull |]
-                let converter = Activator.CreateInstance(converterType, converterArguments)
-                converter :?> IConverter
+                let initializeArguments = Array.append (delegates |> Array.map box) [| box noNull |]
+                let initializeMethod =
+                    converterType.GetMethods(BindingFlags.Instance ||| BindingFlags.Public ||| BindingFlags.NonPublic)
+                    |> Array.filter (fun x -> x.Name = "Initialize")
+                    |> Array.exactlyOne
+                initializeMethod.Invoke(converter, initializeArguments) |> ignore
+                converter
 
             if FSharpType.IsUnion(t) = false || (t.IsGenericType && t.GetGenericTypeDefinition() = typedefof<_ list>) then
                 null

@@ -36,6 +36,7 @@
     <Compile Include="External\ListRecursionTests.fs" />
     <Compile Include="External\RecordTests.fs" />
     <Compile Include="External\UnionTests.fs" />
+    <Compile Include="External\UnionWithCircularTypeReferenceTests.fs" />
     <Compile Include="Implementations\InheritanceTests.fs" />
     <Compile Include="Implementations\NamedObjectDecodeImplementationTests.fs" />
     <Compile Include="Implementations\NamedObjectTests.fs" />

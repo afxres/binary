@@ -9,11 +9,26 @@ type internal UnionEncoder<'T> = delegate of allocator: byref<Allocator> * item:
 
 type internal UnionDecoder<'T> = delegate of span: byref<ReadOnlySpan<byte>> * mark: byref<int> -> 'T
 
-type internal UnionConverter<'T>(encode: UnionEncoder<'T>, encodeAuto: UnionEncoder<'T>, decode: UnionDecoder<'T>, decodeAuto: UnionDecoder<'T>, noNull: bool) =
+type internal UnionConverter<'T>() =
     inherit Converter<'T>(0)
 
     [<Literal>]
     let constant = 0
+
+    [<DefaultValue>]
+    val mutable encode: UnionEncoder<'T>
+
+    [<DefaultValue>]
+    val mutable encodeAuto: UnionEncoder<'T>
+
+    [<DefaultValue>]
+    val mutable decode: UnionDecoder<'T>
+
+    [<DefaultValue>]
+    val mutable decodeAuto: UnionDecoder<'T>
+
+    [<DefaultValue>]
+    val mutable noNull: bool
 
     [<DebuggerStepThrough>]
     member private __.ExceptNull() : unit =
@@ -25,7 +40,7 @@ type internal UnionConverter<'T>(encode: UnionEncoder<'T>, encodeAuto: UnionEnco
     [<DebuggerStepThrough>]
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
     member private me.HandleNull(item: 'T) : unit =
-        if noNull && isNull (box item) then
+        if me.noNull && isNull (box item) then
             me.ExceptNull()
         ()
 
@@ -36,29 +51,39 @@ type internal UnionConverter<'T>(encode: UnionEncoder<'T>, encodeAuto: UnionEnco
             me.ExceptMark mark
         ()
 
+    member me.Initialize(encode: UnionEncoder<'T>, encodeAuto: UnionEncoder<'T>, decode: UnionDecoder<'T>, decodeAuto: UnionDecoder<'T>, noNull: bool) =
+        assert (isNull me.encode)
+        assert (isNull me.encodeAuto)
+        me.encode <- encode
+        me.encodeAuto <- encodeAuto
+        me.decode <- decode
+        me.decodeAuto <- decodeAuto
+        me.noNull <- noNull
+        ()
+
     override me.Encode(allocator, item) =
         me.HandleNull item
         let mutable mark = constant
-        encode.Invoke(&allocator, item, &mark)
+        me.encode.Invoke(&allocator, item, &mark)
         me.HandleMark mark
         ()
 
     override me.EncodeAuto(allocator, item) =
         me.HandleNull item
         let mutable mark = constant
-        encodeAuto.Invoke(&allocator, item, &mark)
+        me.encodeAuto.Invoke(&allocator, item, &mark)
         me.HandleMark mark
         ()
 
     override me.Decode(span: inref<ReadOnlySpan<byte>>) : 'T =
         let mutable body = span
         let mutable mark = constant
-        let item = decode.Invoke(&body, &mark)
+        let item = me.decode.Invoke(&body, &mark)
         me.HandleMark mark
         item
 
     override me.DecodeAuto span =
         let mutable mark = constant
-        let item = decodeAuto.Invoke(&span, &mark)
+        let item = me.decodeAuto.Invoke(&span, &mark)
         me.HandleMark mark
         item
