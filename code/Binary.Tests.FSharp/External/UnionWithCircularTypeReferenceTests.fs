@@ -5,33 +5,34 @@ open Xunit
 
 type Tree =
     | Tip
-    | Node of int * Tree * Tree
+    | Node of byte * Tree * Tree
 
-let nodeV t =
+let getV t =
     match t with
     | Tip -> raise (exn "bad access")
     | Node(v, _, _) -> v
 
-let nodeL t =
+let getL t =
     match t with
     | Tip -> raise (exn "bad access")
     | Node(_, l, _) -> l
 
-let nodeR t =
+let getR t =
     match t with
     | Tip -> raise (exn "bad access")
     | Node(_, _, r) -> r
 
 [<Fact>]
 let ``Custom Binary Tree Test`` () =
-    let tree = Node(0, Node(1, Node(2, Tip, Tip), Node(3, Tip, Tip)), Node(4, Tip, Tip))
+    let tree = Node(0uy, Node(1uy, Node(2uy, Tip, Tip), Node(3uy, Tip, Tip)), Node(4uy, Tip, Tip))
     let generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().Build()
     let converter = generator.GetConverter<Tree>()
     let buffer = converter.Encode tree
+    Assert.Equal(1 + 5 * 3, buffer.Length)
     let result = converter.Decode buffer
-    Assert.Equal(0, result |> nodeV)
-    Assert.Equal(1, result |> nodeL |> nodeV)
-    Assert.Equal(2, result |> nodeL |> nodeL |> nodeV)
-    Assert.Equal(3, result |> nodeL |> nodeR |> nodeV)
-    Assert.Equal(4, result |> nodeR |> nodeV)
+    Assert.Equal(0uy, result |> getV)
+    Assert.Equal(1uy, result |> getL |> getV)
+    Assert.Equal(2uy, result |> getL |> getL |> getV)
+    Assert.Equal(3uy, result |> getL |> getR |> getV)
+    Assert.Equal(4uy, result |> getR |> getV)
     ()
