@@ -155,7 +155,7 @@ let ``Invalid Null Value (encode & encode auto)`` () =
 let ``Value Union With Null Testing`` () =
     let converter = generator.GetConverter<Box>()
     Assert.True typeof<Box>.IsValueType
-    let field = converter.GetType().GetField("noNull", BindingFlags.Instance ||| BindingFlags.NonPublic)
+    let field = converter.GetType().GetField("needNullCheck", BindingFlags.Instance ||| BindingFlags.NonPublic)
     Assert.NotNull field
     Assert.False(field.GetValue(converter) |> unbox<bool>)
     ()

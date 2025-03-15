@@ -4,19 +4,11 @@ open Microsoft.FSharp.Reflection
 open Mikodev.Binary
 open Mikodev.Binary.Internal
 open System
-open System.Collections.Generic
-open System.Collections.Immutable
 open System.Linq.Expressions
 open System.Reflection
 
 type internal UnionConverterCreator() =
-    static let GetEncodeExpression
-        (t: Type)
-        (converters: ImmutableDictionary<Type, IConverter>)
-        (caseInfos: Map<int, UnionCaseInfo>)
-        (tagMember: MemberInfo)
-        (auto: bool)
-        =
+    static let GetEncodeExpression (t: Type) (getConverter: Type -> IConverter) (caseInfos: Map<int, UnionCaseInfo>) (tagMember: MemberInfo) (auto: bool) =
         let allocator = Expression.Parameter(ModuleHelper.AllocatorByRefType, "allocator")
         let mark = Expression.Parameter(typeof<int>.MakeByRefType(), "mark")
         let item = Expression.Parameter(t, "item")
@@ -26,7 +18,7 @@ type internal UnionConverterCreator() =
             for i = 0 to properties.Length - 1 do
                 let property = properties[i]
                 let propertyType = property.PropertyType
-                let converter = converters[propertyType]
+                let converter = getConverter propertyType
                 let method = Converter.GetMethod(converter, if auto || i <> properties.Length - 1 then "EncodeAuto" else "Encode")
                 let invoke = Expression.Call(Expression.Constant(converter), method, allocator, Expression.Property(instance, property))
                 invoke
@@ -67,7 +59,7 @@ type internal UnionConverterCreator() =
         let lambda = Expression.Lambda(delegateType, block, allocator, item, mark)
         lambda
 
-    static let GetDecodeExpression (t: Type) (converters: ImmutableDictionary<Type, IConverter>) (constructorInfos: Map<int, MethodInfo>) (auto: bool) =
+    static let GetDecodeExpression (t: Type) (getConverter: Type -> IConverter) (constructorInfos: Map<int, MethodInfo>) (auto: bool) =
         let span = Expression.Parameter(ModuleHelper.ReadOnlySpanByteByRefType, "span")
         let mark = Expression.Parameter(typeof<int>.MakeByRefType(), "mark")
         let flag = Expression.Variable(typeof<int>, "flag")
@@ -79,7 +71,7 @@ type internal UnionConverterCreator() =
                 let result = [|
                     for i = 0 to parameters.Length - 1 do
                         let parameterType = parameters[i].ParameterType
-                        let converter = converters[parameterType]
+                        let converter = getConverter parameterType
                         let method = Converter.GetMethod(converter, if auto || i <> parameters.Length - 1 then "DecodeAuto" else "Decode")
                         let variable = Expression.Variable(parameterType, string i)
                         let invoke = Expression.Call(Expression.Constant(converter), method, span)
@@ -122,18 +114,16 @@ type internal UnionConverterCreator() =
                 let converterType = typedefof<UnionConverter<_>>.MakeGenericType t
                 let converter = Activator.CreateInstance(converterType, null) :?> IConverter
                 let converters =
-                    memberTypes
-                    |> Seq.distinct
-                    |> Seq.map (fun x -> KeyValuePair.Create(x, if x = t then converter else CommonHelper.GetConverter(context, x)))
-                    |> ImmutableDictionary.CreateRange
+                    memberTypes |> Seq.distinct |> Seq.map (fun x -> x, if x = t then converter else CommonHelper.GetConverter(context, x)) |> readOnlyDict
+                let getConverter = fun x -> converters[x]
                 let tagMember = FSharpValue.PreComputeUnionTagMemberInfo(t)
-                let noNull = t.IsValueType = false && tagMember :? MethodInfo = false
-                let encode = GetEncodeExpression t converters caseInfos tagMember false
-                let encodeAuto = GetEncodeExpression t converters caseInfos tagMember true
-                let decode = GetDecodeExpression t converters constructorInfos false
-                let decodeAuto = GetDecodeExpression t converters constructorInfos true
+                let needNullCheck = t.IsValueType = false && tagMember :? MethodInfo = false
+                let encode = GetEncodeExpression t getConverter caseInfos tagMember false
+                let encodeAuto = GetEncodeExpression t getConverter caseInfos tagMember true
+                let decode = GetDecodeExpression t getConverter constructorInfos false
+                let decodeAuto = GetDecodeExpression t getConverter constructorInfos true
                 let delegates = [| encode; encodeAuto; decode; decodeAuto |] |> Array.map (fun x -> x.Compile())
-                let initializeArguments = Array.append (delegates |> Array.map box) [| box noNull |]
+                let initializeArguments = Array.append (delegates |> Array.map box) [| box needNullCheck |]
                 let initializeMethod =
                     converterType.GetMethods(BindingFlags.Instance ||| BindingFlags.Public ||| BindingFlags.NonPublic)
                     |> Array.filter (fun x -> x.Name = "Initialize")

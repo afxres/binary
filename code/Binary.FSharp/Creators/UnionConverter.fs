@@ -28,7 +28,7 @@ type internal UnionConverter<'T>() =
     val mutable decodeAuto: UnionDecoder<'T>
 
     [<DefaultValue>]
-    val mutable noNull: bool
+    val mutable needNullCheck: bool
 
     [<DebuggerStepThrough>]
     member private __.ExceptNull() : unit =
@@ -40,7 +40,7 @@ type internal UnionConverter<'T>() =
     [<DebuggerStepThrough>]
     [<MethodImpl(MethodImplOptions.AggressiveInlining)>]
     member private me.HandleNull(item: 'T) : unit =
-        if me.noNull && isNull (box item) then
+        if me.needNullCheck && isNull (box item) then
             me.ExceptNull()
         ()
 
@@ -51,14 +51,14 @@ type internal UnionConverter<'T>() =
             me.ExceptMark mark
         ()
 
-    member me.Initialize(encode: UnionEncoder<'T>, encodeAuto: UnionEncoder<'T>, decode: UnionDecoder<'T>, decodeAuto: UnionDecoder<'T>, noNull: bool) =
+    member me.Initialize(encode: UnionEncoder<'T>, encodeAuto: UnionEncoder<'T>, decode: UnionDecoder<'T>, decodeAuto: UnionDecoder<'T>, needNullCheck: bool) =
         assert (isNull me.encode)
         assert (isNull me.encodeAuto)
         me.encode <- encode
         me.encodeAuto <- encodeAuto
         me.decode <- decode
         me.decodeAuto <- decodeAuto
-        me.noNull <- noNull
+        me.needNullCheck <- needNullCheck
         ()
 
     override me.Encode(allocator, item) =
