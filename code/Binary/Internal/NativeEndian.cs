@@ -7,9 +7,9 @@ internal static class NativeEndian
 {
     internal static bool IsNativeEndianConverter(IConverter converter)
     {
-        static bool Invoke(IConverter converter, bool native)
+        static bool Invoke(IConverter converter, bool isLittleEndian)
         {
-            if (native is false)
+            if (isLittleEndian is false)
                 return false;
             var type = converter.GetType();
             if (type.IsGenericType is false)
