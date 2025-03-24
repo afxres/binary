@@ -10,7 +10,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Xunit;
 
-public class NativeEndianOrRepeatLittleEndianDataTests
+public class RepeatLittleEndianDataTests
 {
     public static IEnumerable<object[]> RangeData()
     {
@@ -97,17 +97,11 @@ public class NativeEndianOrRepeatLittleEndianDataTests
     [MemberData(nameof(Vector4Data))]
     public void EncodeDecode<T>(T data) where T : unmanaged
     {
-        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "DetectEndianConverterCreator");
+        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "LittleEndianConverterCreator");
         var field = ReflectionExtensions.GetFieldNotNull(type, "SharedConverters", BindingFlags.Static | BindingFlags.NonPublic);
-        var actual = Assert.IsAssignableFrom<IReadOnlyDictionary<Type, (IConverter, IConverter)>>(field.GetValue(null));
-
-        var (little, native) = actual[typeof(T)];
-        var a = little.Encode(data);
-        var b = native.Encode(data);
-        Assert.Equal(a, b);
-
-        ConverterTests.TestConstantEncodeDecodeMethods((Converter<T>)little, data);
-        ConverterTests.TestConstantEncodeDecodeMethods((Converter<T>)native, data);
+        var actual = Assert.IsType<IReadOnlyDictionary<Type, IConverter>>(field.GetValue(null), exactMatch: false);
+        var converter = actual[typeof(T)];
+        ConverterTests.TestConstantEncodeDecodeMethods((Converter<T>)converter, data);
     }
 
     [Theory(DisplayName = "Encode Decode Multiple")]

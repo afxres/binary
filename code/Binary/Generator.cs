@@ -23,8 +23,8 @@ public static partial class Generator
         yield return new UriConverterCreator();
         yield return new VariableBoundArrayConverterCreator();
         yield return new IsolatedConverterCreator();
-        yield return new DetectEndianConverterCreator();
-        yield return new DetectEndianEnumConverterCreator();
+        yield return new LittleEndianConverterCreator();
+        yield return new LittleEndianEnumConverterCreator();
     }
 
     [RequiresDynamicCode(CommonDefine.RequiresDynamicCodeMessage)]

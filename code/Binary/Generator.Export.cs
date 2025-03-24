@@ -15,16 +15,9 @@ public static partial class Generator
 {
     public static Converter<E> GetEnumConverter<E>() where E : unmanaged
     {
-        static Converter<E> Invoke(bool native)
-        {
-            if (typeof(E).IsEnum is false)
-                throw new ArgumentException($"Require an enumeration type!");
-            return native
-                ? new NativeEndianConverter<E>()
-                : new LittleEndianConverter<E>();
-        }
-
-        return Invoke(BitConverter.IsLittleEndian);
+        if (typeof(E).IsEnum is false)
+            throw new ArgumentException($"Require an enumeration type!");
+        return new LittleEndianConverter<E>();
     }
 
     public static Converter<T?> GetVariableBoundArrayConverter<T, E>(Converter<E> converter) where T : class

@@ -1,6 +1,5 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts;
 
-using Mikodev.Binary.Creators.Endianness;
 using Mikodev.Binary.Internal.Metadata;
 using Mikodev.Binary.Internal.Sequence;
 using Mikodev.Binary.Internal.Sequence.Decoders;
@@ -140,7 +139,7 @@ internal static class FallbackCollectionMethods
 
     private static DecodePassSpanDelegate<IEnumerable<E>> GetCollectionDecodeDelegate<E>(Converter<E> converter)
     {
-        return converter is NativeEndianConverter<E> ? SpanLikeNativeEndianMethods.GetArray<E> : new ListDecoder<E>(converter).Invoke;
+        return NativeEndian.IsNativeEndianConverter(converter) ? SpanLikeNativeEndianMethods.GetArray<E> : new ListDecoder<E>(converter).Invoke;
     }
 
     private static DecodePassSpanDelegate<T> GetCollectionDecodeDelegate<T, E>(Converter<E> converter, Func<Expression, Expression>? method) where T : IEnumerable<E>

@@ -3,7 +3,6 @@
 open Mikodev.Binary
 open System
 open System.Collections.Specialized
-open System.Reflection
 open System.Runtime.CompilerServices
 open Xunit
 
@@ -39,28 +38,18 @@ type ConverterTests() =
             Assert.Equal(expectedName, t.Name)
         ()
 
-    static let MakeConverter (creatorName: string) (t: Type) (native: bool) =
-        let types = typeof<IConverter>.Assembly.GetTypes()
-        let value = types |> Array.filter (fun x -> x.Name = creatorName) |> Array.exactlyOne
-        let method =
-            value.GetMethods(BindingFlags.Static ||| BindingFlags.NonPublic)
-            |> Array.filter (fun x -> x.ReturnType = typeof<IConverter> && x.Name.Contains("Invoke"))
-            |> Array.exactlyOne
-        let converter = method.Invoke(null, [| box t; box native |])
-        converter :?> IConverter
-
-    static let MakeConverters (t: Type) =
+    static let MakeConverter (t: Type) =
         EnsureEnumName t
         let creatorName =
             if t.IsEnum then
-                "DetectEndianEnumConverterCreator"
+                "LittleEndianEnumConverterCreator"
             else
-                "DetectEndianConverterCreator"
-        let rn = MakeConverter creatorName t true
-        let rl = MakeConverter creatorName t false
-        Assert.Matches(".*NativeEndianConverter`1.*", rn.GetType().FullName)
-        Assert.Matches(".*LittleEndianConverter`1.*", rl.GetType().FullName)
-        [ rn; rl ]
+                "LittleEndianConverterCreator"
+        let types = typeof<IConverter>.Assembly.GetTypes()
+        let creatorType = types |> Array.filter (fun x -> x.Name = creatorName) |> Array.exactlyOne
+        let creator = Assert.IsType<IConverterCreator>(Activator.CreateInstance(creatorType), exactMatch = false)
+        let converter = creator.GetConverter(null, t)
+        converter
 
     static member ``Data Alpha``: (obj array) seq = seq {
         [| box true |]
@@ -95,14 +84,72 @@ type ConverterTests() =
     [<MemberData("Data Alpha")>]
     [<MemberData("Data Enum")>]
     member __.``Encode Then Decode``(item: 'T) =
-        let converters = MakeConverters typeof<'T> |> Seq.cast<Converter<'T>>
-        for converter in converters do
-            let mutable allocator = Allocator()
-            converter.Encode(&allocator, item)
-            let buffer = allocator.ToArray()
-            Assert.Equal(Unsafe.SizeOf<'T>(), buffer.Length)
+        let converter = MakeConverter typeof<'T> :?> Converter<'T>
+        let mutable allocator = Allocator()
+        converter.Encode(&allocator, item)
+        let buffer = allocator.ToArray()
+        Assert.Equal(Unsafe.SizeOf<'T>(), buffer.Length)
 
-            let span = ReadOnlySpan buffer
+        let span = ReadOnlySpan buffer
+        let result = converter.Decode &span
+        Assert.Equal<'T>(item, result)
+        ()
+
+    [<Theory>]
+    [<MemberData("Data Alpha")>]
+    [<MemberData("Data Enum")>]
+    member __.``Decode (not enough bytes)``(item: 'T) =
+        let converter = MakeConverter typeof<'T> :?> Converter<'T>
+        let mutable allocator = Allocator()
+        converter.Encode(&allocator, item)
+        let buffer = allocator.ToArray()
+        Assert.Equal(Unsafe.SizeOf<'T>(), buffer.Length)
+
+        let mutable list = []
+        for i = 0 to buffer.Length - 1 do
+            let slice = Array.sub buffer 0 i
+            let error = Assert.Throws<ArgumentException>(fun () -> let span = ReadOnlySpan slice in converter.Decode &span |> ignore)
+            list <- error :: list
+
+        Assert.Equal(Unsafe.SizeOf<'T>(), List.length list)
+        let message = "Not enough bytes or byte sequence invalid."
+        Assert.All(list, fun x -> Assert.Equal(message, x.Message))
+        ()
+
+    [<Theory>]
+    [<MemberData("Data Alpha")>]
+    [<MemberData("Data Enum")>]
+    member __.``Decode Auto (not enough bytes)``(item: 'T) =
+        let converter = MakeConverter typeof<'T> :?> Converter<'T>
+        let mutable allocator = Allocator()
+        converter.Encode(&allocator, item)
+        let buffer = allocator.ToArray()
+        Assert.Equal(Unsafe.SizeOf<'T>(), buffer.Length)
+
+        let mutable list = []
+        for i = 0 to buffer.Length - 1 do
+            let slice = Array.sub buffer 0 i
+            let error = Assert.Throws<ArgumentException>(fun () -> let mutable span = ReadOnlySpan slice in converter.DecodeAuto &span |> ignore)
+            list <- error :: list
+
+        Assert.Equal(Unsafe.SizeOf<'T>(), List.length list)
+        let message = "Not enough bytes or byte sequence invalid."
+        Assert.All(list, fun x -> Assert.Equal(message, x.Message))
+        ()
+
+    [<Theory>]
+    [<MemberData("Data Alpha")>]
+    [<MemberData("Data Enum")>]
+    member __.``Decode (enough bytes)``(item: 'T) =
+        let converter = MakeConverter typeof<'T> :?> Converter<'T>
+        let mutable allocator = Allocator()
+        converter.Encode(&allocator, item)
+        let buffer = allocator.ToArray()
+        Assert.Equal(Unsafe.SizeOf<'T>(), buffer.Length)
+
+        for i = 0 to 8 do
+            let array = Array.concat [| buffer; Array.zeroCreate i |]
+            let span = ReadOnlySpan array
             let result = converter.Decode &span
             Assert.Equal<'T>(item, result)
         ()
@@ -110,80 +157,17 @@ type ConverterTests() =
     [<Theory>]
     [<MemberData("Data Alpha")>]
     [<MemberData("Data Enum")>]
-    member __.``Decode (not enough bytes)``(item: 'T) =
-        let converters = MakeConverters typeof<'T> |> Seq.cast<Converter<'T>>
-        for converter in converters do
-            let mutable allocator = Allocator()
-            converter.Encode(&allocator, item)
-            let buffer = allocator.ToArray()
-            Assert.Equal(Unsafe.SizeOf<'T>(), buffer.Length)
-
-            let mutable list = []
-            for i = 0 to buffer.Length - 1 do
-                let slice = Array.sub buffer 0 i
-                let error = Assert.Throws<ArgumentException>(fun () -> let span = ReadOnlySpan slice in converter.Decode &span |> ignore)
-                list <- error :: list
-
-            Assert.Equal(Unsafe.SizeOf<'T>(), List.length list)
-            let message = "Not enough bytes or byte sequence invalid."
-            Assert.All(list, fun x -> Assert.Equal(message, x.Message))
-        ()
-
-    [<Theory>]
-    [<MemberData("Data Alpha")>]
-    [<MemberData("Data Enum")>]
-    member __.``Decode Auto (not enough bytes)``(item: 'T) =
-        let converters = MakeConverters typeof<'T> |> Seq.cast<Converter<'T>>
-        for converter in converters do
-            let mutable allocator = Allocator()
-            converter.Encode(&allocator, item)
-            let buffer = allocator.ToArray()
-            Assert.Equal(Unsafe.SizeOf<'T>(), buffer.Length)
-
-            let mutable list = []
-            for i = 0 to buffer.Length - 1 do
-                let slice = Array.sub buffer 0 i
-                let error = Assert.Throws<ArgumentException>(fun () -> let mutable span = ReadOnlySpan slice in converter.DecodeAuto &span |> ignore)
-                list <- error :: list
-
-            Assert.Equal(Unsafe.SizeOf<'T>(), List.length list)
-            let message = "Not enough bytes or byte sequence invalid."
-            Assert.All(list, fun x -> Assert.Equal(message, x.Message))
-        ()
-
-    [<Theory>]
-    [<MemberData("Data Alpha")>]
-    [<MemberData("Data Enum")>]
-    member __.``Decode (enough bytes)``(item: 'T) =
-        let converters = MakeConverters typeof<'T> |> Seq.cast<Converter<'T>>
-        for converter in converters do
-            let mutable allocator = Allocator()
-            converter.Encode(&allocator, item)
-            let buffer = allocator.ToArray()
-            Assert.Equal(Unsafe.SizeOf<'T>(), buffer.Length)
-
-            for i = 0 to 8 do
-                let array = Array.concat [| buffer; Array.zeroCreate i |]
-                let span = ReadOnlySpan array
-                let result = converter.Decode &span
-                Assert.Equal<'T>(item, result)
-        ()
-
-    [<Theory>]
-    [<MemberData("Data Alpha")>]
-    [<MemberData("Data Enum")>]
     member __.``Decode Auto (enough bytes)``(item: 'T) =
-        let converters = MakeConverters typeof<'T> |> Seq.cast<Converter<'T>>
-        for converter in converters do
-            let mutable allocator = Allocator()
-            converter.Encode(&allocator, item)
-            let buffer = allocator.ToArray()
-            Assert.Equal(Unsafe.SizeOf<'T>(), buffer.Length)
+        let converter = MakeConverter typeof<'T> :?> Converter<'T>
+        let mutable allocator = Allocator()
+        converter.Encode(&allocator, item)
+        let buffer = allocator.ToArray()
+        Assert.Equal(Unsafe.SizeOf<'T>(), buffer.Length)
 
-            for i = 0 to 8 do
-                let array = Array.concat [| buffer; Array.zeroCreate i |]
-                let mutable span = ReadOnlySpan array
-                let result = converter.DecodeAuto &span
-                Assert.Equal<'T>(item, result)
-                Assert.Equal(i, span.Length)
+        for i = 0 to 8 do
+            let array = Array.concat [| buffer; Array.zeroCreate i |]
+            let mutable span = ReadOnlySpan array
+            let result = converter.DecodeAuto &span
+            Assert.Equal<'T>(item, result)
+            Assert.Equal(i, span.Length)
         ()

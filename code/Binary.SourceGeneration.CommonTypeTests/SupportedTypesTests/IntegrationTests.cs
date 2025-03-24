@@ -36,8 +36,8 @@ public class IntegrationTests
 
     public static IEnumerable<object[]> EnumData()
     {
-        yield return new object[] { DayOfWeek.Sunday, "NativeEndianConverter`1.*DayOfWeek" };
-        yield return new object[] { ConsoleColor.White, "NativeEndianConverter`1.*ConsoleColor" };
+        yield return new object[] { DayOfWeek.Sunday, "LittleEndianConverter`1.*DayOfWeek" };
+        yield return new object[] { ConsoleColor.White, "LittleEndianConverter`1.*ConsoleColor" };
     }
 
     public static IEnumerable<object[]> KeyValuePairData()

@@ -8,7 +8,7 @@ using System.Numerics;
 using System.Reflection;
 using Xunit;
 
-public class NativeEndianOrRepeatLittleEndianInfoTests
+public class RepeatLittleEndianInfoTests
 {
     [Fact(DisplayName = "Shared Converters With Known Types")]
     public void SharedConverters()
@@ -26,9 +26,9 @@ public class NativeEndianOrRepeatLittleEndianInfoTests
             typeof(Vector4),
         };
 
-        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "DetectEndianConverterCreator");
+        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "LittleEndianConverterCreator");
         var field = ReflectionExtensions.GetFieldNotNull(type, "SharedConverters", BindingFlags.Static | BindingFlags.NonPublic);
-        var actual = Assert.IsAssignableFrom<IReadOnlyDictionary<Type, (IConverter, IConverter)>>(field.GetValue(null));
+        var actual = Assert.IsType<IReadOnlyDictionary<Type, IConverter>>(field.GetValue(null), exactMatch: false);
 
         const BindingFlags Flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         static Type[] GetFieldTypeOrInternalFieldTypes(FieldInfo fieldInfo)
@@ -36,19 +36,18 @@ public class NativeEndianOrRepeatLittleEndianInfoTests
             var type = fieldInfo.FieldType;
             if (type == typeof(float) || type == typeof(double))
                 return [type];
-            return type.GetFields(Flags).Select(x => x.FieldType).ToArray();
+            return [.. type.GetFields(Flags).Select(x => x.FieldType)];
         }
 
         foreach (var i in knownTypes)
         {
-            var (little, native) = actual[i];
-            Assert.Equal("NativeEndianConverter`1", native.GetType().Name);
-            Assert.Equal("RepeatLittleEndianConverter`2", little.GetType().Name);
+            var converter = actual[i];
+            Assert.Equal("RepeatLittleEndianConverter`2", converter.GetType().Name);
             var fields = i.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             Assert.NotNull(fields);
             Assert.NotEmpty(fields);
             var elementType = fields.SelectMany(GetFieldTypeOrInternalFieldTypes).Distinct().Single();
-            var arguments = little.GetType().GetGenericArguments();
+            var arguments = converter.GetType().GetGenericArguments();
             Assert.Equal(2, arguments.Length);
             Assert.Equal(i, arguments[0]);
             Assert.Equal(elementType, arguments[1]);

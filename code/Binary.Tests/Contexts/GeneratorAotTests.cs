@@ -71,39 +71,12 @@ public class GeneratorAotTests
         var converter = Generator.GetEnumConverter<T>();
         Assert.Equal(Unsafe.SizeOf<T>(), converter.Length);
         var converterType = converter.GetType();
-        Assert.Equal("NativeEndianConverter`1", converterType.Name);
+        Assert.Equal("LittleEndianConverter`1", converterType.Name);
 
         var buffer = converter.Encode(source);
         Assert.Equal(Unsafe.SizeOf<T>(), buffer.Length);
         var result = converter.Decode(buffer);
         Assert.Equal(source, result);
-    }
-
-    [Theory(DisplayName = "Get Enum Converter Internal Test")]
-    [MemberData(nameof(EnumData))]
-    public void GetEnumConverterInternalTest<T>(T source) where T : unmanaged
-    {
-        var method = typeof(Generator).GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
-            .Single(x => x.Name.Contains("Invoke") && x.GetParameters().Select(x => x.ParameterType).SequenceEqual([typeof(bool)]));
-        var invoke = (Func<bool, Converter<T>>)Delegate.CreateDelegate(typeof(Func<bool, Converter<T>>), method.MakeGenericMethod(typeof(T)));
-
-        var converterNative = invoke.Invoke(true);
-        var converterLittle = invoke.Invoke(false);
-        var converterNativeType = converterNative.GetType();
-        var converterLittleType = converterLittle.GetType();
-        Assert.Equal(Unsafe.SizeOf<T>(), converterNative.Length);
-        Assert.Equal(Unsafe.SizeOf<T>(), converterLittle.Length);
-        Assert.Equal("NativeEndianConverter`1", converterNativeType.Name);
-        Assert.Equal("LittleEndianConverter`1", converterLittleType.Name);
-
-        var bufferNative = converterNative.Encode(source);
-        var bufferLittle = converterLittle.Encode(source);
-        Assert.Equal(bufferNative, bufferLittle);
-
-        var resultNative = converterNative.Decode(bufferNative);
-        var resultLittle = converterLittle.Decode(bufferLittle);
-        Assert.Equal(source, resultNative);
-        Assert.Equal(source, resultLittle);
     }
 
     public static IEnumerable<object[]> NonEnumData()

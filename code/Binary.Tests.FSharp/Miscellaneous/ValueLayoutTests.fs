@@ -9,7 +9,7 @@ let generator = Generator.CreateDefault()
 
 let Encode (item: 'a) =
     let converter = generator.GetConverter<'a>()
-    Assert.Matches(".*\.NativeEndianConverter`1.*", converter.GetType().FullName)
+    Assert.Matches(".*\.LittleEndianConverter`1.*", converter.GetType().FullName)
     converter.Encode item
 
 [<Theory>]

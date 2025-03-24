@@ -5,29 +5,24 @@ using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Numerics;
-using ConverterPair = (IConverter Little, IConverter Native);
 
-internal sealed class DetectEndianConverterCreator : IConverterCreator
+internal sealed class LittleEndianConverterCreator : IConverterCreator
 {
-    private static readonly FrozenDictionary<Type, ConverterPair> SharedConverters;
+    private static readonly FrozenDictionary<Type, IConverter> SharedConverters;
 
-    static DetectEndianConverterCreator()
+    static LittleEndianConverterCreator()
     {
-        static void Register<T>(Dictionary<Type, ConverterPair> dictionary) where T : unmanaged
+        static void Register<T>(Dictionary<Type, IConverter> dictionary) where T : unmanaged
         {
-            var little = new LittleEndianConverter<T>();
-            var native = new NativeEndianConverter<T>();
-            dictionary.Add(typeof(T), (little, native));
+            dictionary.Add(typeof(T), new LittleEndianConverter<T>());
         }
 
-        static void RegisterRepeat<T, E>(Dictionary<Type, ConverterPair> dictionary) where T : unmanaged where E : unmanaged
+        static void RegisterRepeat<T, E>(Dictionary<Type, IConverter> dictionary) where T : unmanaged where E : unmanaged
         {
-            var little = new RepeatLittleEndianConverter<T, E>();
-            var native = new NativeEndianConverter<T>();
-            dictionary.Add(typeof(T), (little, native));
+            dictionary.Add(typeof(T), new RepeatLittleEndianConverter<T, E>());
         }
 
-        var dictionary = new Dictionary<Type, ConverterPair>();
+        var dictionary = new Dictionary<Type, IConverter>();
 
         Register<bool>(dictionary);
         Register<byte>(dictionary);
@@ -62,13 +57,6 @@ internal sealed class DetectEndianConverterCreator : IConverterCreator
 
     public IConverter? GetConverter(IGeneratorContext context, Type type)
     {
-        static IConverter? Invoke(Type type, bool native)
-        {
-            if (SharedConverters.TryGetValue(type, out var result))
-                return native ? result.Native : result.Little;
-            return null;
-        }
-
-        return Invoke(type, BitConverter.IsLittleEndian);
+        return SharedConverters.TryGetValue(type, out var result) ? result : null;
     }
 }

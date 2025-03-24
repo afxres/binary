@@ -1,6 +1,5 @@
 ﻿namespace Mikodev.Binary.Internal.SpanLike;
 
-using Mikodev.Binary.Creators.Endianness;
 using Mikodev.Binary.Internal.SpanLike.Adapters;
 using Mikodev.Binary.Internal.SpanLike.Contexts;
 using System;
@@ -11,7 +10,7 @@ internal static class SpanLikeFactory
 {
     private static Converter<T> GetConverter<T, E, A>(Converter<E> converter) where A : struct, ISpanLikeAdapter<T, E>
     {
-        return converter is NativeEndianConverter<E> ? new ArrayBasedNativeEndianConverter<T, E, A>() : new ArrayBasedConverter<T, E, A>(converter);
+        return NativeEndian.IsNativeEndianConverter(converter) ? new ArrayBasedNativeEndianConverter<T, E, A>() : new ArrayBasedConverter<T, E, A>(converter);
     }
 
     internal static Converter<E[]> GetArrayConverter<E>(Converter<E> converter)
@@ -31,7 +30,7 @@ internal static class SpanLikeFactory
 
     internal static Converter<List<E>> GetListConverter<E>(Converter<E> converter)
     {
-        return converter is NativeEndianConverter<E> ? new ListNativeEndianConverter<E>() : new ListConverter<E>(converter);
+        return NativeEndian.IsNativeEndianConverter(converter) ? new ListNativeEndianConverter<E>() : new ListConverter<E>(converter);
     }
 
     internal static Converter<Memory<E>> GetMemoryConverter<E>(Converter<E> converter)

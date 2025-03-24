@@ -12,7 +12,7 @@ public static partial class Generator
     {
         yield return new UriConverterCreator();
         yield return new IsolatedConverterCreator();
-        yield return new DetectEndianConverterCreator();
+        yield return new LittleEndianConverterCreator();
     }
 
     public static IGenerator CreateAot()

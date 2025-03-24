@@ -15,13 +15,13 @@ public class InternalTypeCollectionTests
     {
         var expected = typeof(IConverter).Assembly.GetTypes()
             .Where(x => x.Namespace?.StartsWith("Mikodev.Binary.Creators.Isolated") is true && x.IsAssignableTo(typeof(IConverter)))
-            .Select(x => Assert.IsAssignableFrom<IConverter>(Activator.CreateInstance(x, null)))
+            .Select(x => Assert.IsType<IConverter>(Activator.CreateInstance(x, null), exactMatch: false))
             .ToImmutableDictionary(Converter.GetGenericArgument);
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "IsolatedConverterCreator");
         var field = type.GetFieldNotNull("SharedConverters", BindingFlags.Static | BindingFlags.NonPublic);
-        var actual = Assert.IsAssignableFrom<IReadOnlyDictionary<Type, IConverter>>(field.GetValue(null));
-        Assert.Equal(expected.Keys.ToHashSet(), actual.Keys.ToHashSet());
-        Assert.Equal(expected.Values.Select(x => x.GetType()).ToHashSet(), actual.Values.Select(x => x.GetType()).ToHashSet());
+        var actual = Assert.IsType<IReadOnlyDictionary<Type, IConverter>>(field.GetValue(null), exactMatch: false);
+        Assert.Equal(expected.Keys.ToHashSet(), [.. actual.Keys]);
+        Assert.Equal(expected.Values.Select(x => x.GetType()).ToHashSet(), [.. actual.Values.Select(x => x.GetType())]);
     }
 
     [Fact(DisplayName = "Generator Shared Converter Creators")]
@@ -29,27 +29,25 @@ public class InternalTypeCollectionTests
     {
         var expected = typeof(IConverter).Assembly.GetTypes()
             .Where(x => x.IsAbstract is false && typeof(IConverterCreator).IsAssignableFrom(x))
-            .Select(x => Assert.IsAssignableFrom<IConverterCreator>(Activator.CreateInstance(x, null)))
+            .Select(x => Assert.IsType<IConverterCreator>(Activator.CreateInstance(x, null), exactMatch: false))
             .ToList();
         // ensure internal converter creators
         _ = Generator.CreateDefaultBuilder();
         var method = typeof(Generator).GetMethodNotNull("GetConverterCreators", BindingFlags.Static | BindingFlags.NonPublic);
-        var actual = Assert.IsAssignableFrom<IEnumerable<IConverterCreator>>(method.Invoke(null, null)).ToList();
-        Assert.Equal(expected.Select(x => x.GetType()).ToHashSet(), actual.Select(x => x.GetType()).ToHashSet());
+        var actual = Assert.IsType<IEnumerable<IConverterCreator>>(method.Invoke(null, null), exactMatch: false).ToList();
+        Assert.Equal(expected.Select(x => x.GetType()).ToHashSet(), [.. actual.Select(x => x.GetType())]);
     }
 
     [Fact(DisplayName = "Endianness Shared Converters")]
     public void EndiannessSharedConverters()
     {
-        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "DetectEndianConverterCreator");
+        var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "LittleEndianConverterCreator");
         var field = ReflectionExtensions.GetFieldNotNull(type, "SharedConverters", BindingFlags.Static | BindingFlags.NonPublic);
-        var actual = Assert.IsAssignableFrom<IReadOnlyDictionary<Type, (IConverter, IConverter)>>(field.GetValue(null));
-        foreach (var (key, (little, native)) in actual)
+        var actual = Assert.IsType<IReadOnlyDictionary<Type, IConverter>>(field.GetValue(null), exactMatch: false);
+        foreach (var (key, converter) in actual)
         {
-            Assert.Equal(key, Converter.GetGenericArgument(little));
-            Assert.Equal(key, Converter.GetGenericArgument(native));
-            Assert.True(little.GetType().Name is "LittleEndianConverter`1" or "RepeatLittleEndianConverter`2");
-            Assert.Equal("NativeEndianConverter`1", native.GetType().Name);
+            Assert.Equal(key, Converter.GetGenericArgument(converter));
+            Assert.True(converter.GetType().Name is "LittleEndianConverter`1" or "RepeatLittleEndianConverter`2");
         }
     }
 }

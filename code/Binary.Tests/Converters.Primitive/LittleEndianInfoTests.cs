@@ -3,12 +3,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xunit;
 
-public class NativeEndianOrLittleEndianInfoTests
+public class LittleEndianInfoTests
 {
     private delegate T Decode<T>(ref byte source);
 
@@ -70,26 +69,7 @@ public class NativeEndianOrLittleEndianInfoTests
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<T>();
         var converterType = converter.GetType();
-        Assert.Equal("NativeEndianConverter`1", converterType.Name);
-        Assert.Equal(length, converter.Length);
-        var buffer = converter.Encode(data);
-        var result = converter.Decode(buffer);
-        Assert.Equal(data, result);
-    }
-
-    [Theory(DisplayName = "Internal Native Endian Converter Info")]
-    [MemberData(nameof(EnumData))]
-    [MemberData(nameof(NumberData))]
-    [MemberData(nameof(IndexData))]
-    public void InternalNativeEndianConverterInfo<T>(int length, T data)
-    {
-        var creatorName = typeof(T).IsEnum ? "DetectEndianEnumConverterCreator" : "DetectEndianConverterCreator";
-        var creatorType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name == creatorName);
-        var creatorInvokeMethod = creatorType.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name.Contains("Invoke"));
-        var creatorInvokeFunctor = (Func<Type, bool, IConverter>)Delegate.CreateDelegate(typeof(Func<Type, bool, IConverter>), creatorInvokeMethod);
-        var converter = (Converter<T>)creatorInvokeFunctor.Invoke(typeof(T), true);
-        var converterType = converter.GetType();
-        Assert.Equal("NativeEndianConverter`1", converterType.Name);
+        Assert.Equal("LittleEndianConverter`1", converterType.Name);
         Assert.Equal(length, converter.Length);
         var buffer = converter.Encode(data);
         var result = converter.Decode(buffer);
@@ -102,11 +82,10 @@ public class NativeEndianOrLittleEndianInfoTests
     [MemberData(nameof(IndexData))]
     public void InternalLittleEndianConverterInfo<T>(int length, T data)
     {
-        var creatorName = typeof(T).IsEnum ? "DetectEndianEnumConverterCreator" : "DetectEndianConverterCreator";
+        var creatorName = typeof(T).IsEnum ? "LittleEndianEnumConverterCreator" : "LittleEndianConverterCreator";
         var creatorType = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name == creatorName);
-        var creatorInvokeMethod = creatorType.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name.Contains("Invoke"));
-        var creatorInvokeFunctor = (Func<Type, bool, IConverter>)Delegate.CreateDelegate(typeof(Func<Type, bool, IConverter>), creatorInvokeMethod);
-        var converter = (Converter<T>)creatorInvokeFunctor.Invoke(typeof(T), false);
+        var creator = Assert.IsType<IConverterCreator>(Activator.CreateInstance(creatorType), exactMatch: false);
+        var converter = Assert.IsType<Converter<T>>(creator.GetConverter(null!, typeof(T)), exactMatch: false);
         var converterType = converter.GetType();
         Assert.Equal("LittleEndianConverter`1", converterType.Name);
         Assert.Equal(length, converter.Length);
