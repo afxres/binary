@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 internal static class LittleEndian
 {
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining)]
     internal static T Decode<T>(ref byte source) where T : unmanaged
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -27,7 +27,7 @@ internal static class LittleEndian
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    [MethodImpl(MethodImplOptions.NoInlining)]
     internal static void Encode<T>(ref byte target, T item) where T : unmanaged
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
