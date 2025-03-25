@@ -62,7 +62,6 @@ public ref partial struct Allocator
         FinishCreate(ref allocator, actual + numberLength);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void AppendWithLengthPrefix<T>(ref Allocator allocator, T data, AllocatorAction<T> action)
     {
         ArgumentNullException.ThrowIfNull(action);

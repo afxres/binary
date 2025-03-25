@@ -42,8 +42,6 @@ internal static class SpanLikeNativeEndianMethods
     {
         Debug.Assert(RuntimeHelpers.IsReferenceOrContainsReferences<E>() is false);
         var number = checked(data.Length * Unsafe.SizeOf<E>());
-        var numberLength = NumberModule.EncodeLength((uint)number);
-        NumberModule.Encode(ref Allocator.Assign(ref allocator, numberLength), (uint)number, numberLength);
-        Allocator.Append(ref allocator, MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<E, byte>(ref MemoryMarshal.GetReference(data)), number));
+        Converter.EncodeWithLengthPrefix(ref allocator, MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<E, byte>(ref MemoryMarshal.GetReference(data)), number));
     }
 }
