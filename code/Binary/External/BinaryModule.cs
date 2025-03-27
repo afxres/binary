@@ -31,7 +31,6 @@ internal static class BinaryModule
         return result;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool GetEquality(ref byte source, int length, byte[] buffer)
     {
         if (length != buffer.Length)
@@ -51,7 +50,6 @@ internal static class BinaryModule
         return true;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static LongDataSlot GetLongData(ref byte source, int length)
     {
         Debug.Assert(length >= 0);
