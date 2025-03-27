@@ -11,6 +11,8 @@ using System.Text;
 
 public class BinaryDictionaryBenchmarks
 {
+    private delegate object CreateByteViewList(ImmutableArray<ImmutableArray<byte>> items, out int error);
+
     private delegate int GetValueOrDefault(ref byte source, int length);
 
     private byte[][] keys3 = null!;
@@ -51,14 +53,17 @@ public class BinaryDictionaryBenchmarks
         GetValueOrDefault CreateDelegate(string create, byte[][] keys)
         {
             var method = methods.Single(x => x.Name == create);
-            var source = keys.Select(x => new ReadOnlyMemory<byte>(x)).ToImmutableArray();
-            var target = method.Invoke(null, [source]);
+            var source = keys.Select(ImmutableArray.Create).ToImmutableArray();
+            var action = Delegate.CreateDelegate(typeof(CreateByteViewList), method);
+            var target = ((CreateByteViewList)action).Invoke(source, out var error);
+            Trace.Assert(error is -1);
+            Trace.Assert(target is not null);
             var result = Delegate.CreateDelegate(typeof(GetValueOrDefault), target!, "Invoke");
             return (GetValueOrDefault)result;
         }
 
-        this.keys3 = data3.Select(Encoding.UTF8.GetBytes).ToArray();
-        this.keys7 = data7.Select(Encoding.UTF8.GetBytes).ToArray();
+        this.keys3 = [.. data3.Select(Encoding.UTF8.GetBytes)];
+        this.keys7 = [.. data7.Select(Encoding.UTF8.GetBytes)];
 
         this.functorLongData3 = CreateDelegate("CreateLongDataList", this.keys3);
         this.functorLongData7 = CreateDelegate("CreateLongDataList", this.keys7);
