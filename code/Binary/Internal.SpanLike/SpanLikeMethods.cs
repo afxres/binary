@@ -15,11 +15,7 @@ internal static class SpanLikeMethods
     [InlineArray(MaxLevels)]
     private struct InlineBuffer<T>
     {
-#pragma warning disable IDE0044 // Add readonly modifier
-#pragma warning disable IDE0051 // Remove unused private members
         private T item;
-#pragma warning restore IDE0051 // Remove unused private members
-#pragma warning restore IDE0044 // Add readonly modifier
     }
 
     private static List<E> GetPartialList<E>(Converter<E> converter, ref ReadOnlySpan<byte> span)
