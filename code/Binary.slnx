@@ -1,0 +1,38 @@
+<Solution>
+  <Folder Name="/Benchmarks/">
+    <Project Path="Benchmarks.Abstractions/Benchmarks.Abstractions.csproj" />
+    <Project Path="Benchmarks.AllocatorStringTests/Benchmarks.AllocatorStringTests.csproj" />
+    <Project Path="Benchmarks.AllocatorTests/Benchmarks.AllocatorTests.csproj" />
+    <Project Path="Benchmarks.ArrayTests/Benchmarks.ArrayTests.csproj" />
+    <Project Path="Benchmarks.BinaryDictionaryTests/Benchmarks.BinaryDictionaryTests.csproj" />
+    <Project Path="Benchmarks.CollectionDecodeTests/Benchmarks.CollectionDecodeTests.csproj" />
+    <Project Path="Benchmarks.CollectionTests/Benchmarks.CollectionTests.csproj" />
+    <Project Path="Benchmarks.ConverterTests/Benchmarks.ConverterTests.csproj" />
+    <Project Path="Benchmarks.EnumerationTests/Benchmarks.EnumerationTests.csproj" />
+    <Project Path="Benchmarks.FSharpListTests/Benchmarks.FSharpListTests.fsproj" />
+    <Project Path="Benchmarks.FSharpSetTests/Benchmarks.FSharpSetTests.fsproj" />
+    <Project Path="Benchmarks.GeneratorTests/Benchmarks.GeneratorTests.csproj" />
+    <Project Path="Benchmarks.IntegrationTests/Benchmarks.IntegrationTests.csproj" />
+    <Project Path="Benchmarks.LengthPrefixEncodeTests/Benchmarks.LengthPrefixEncodeTests.csproj" />
+    <Project Path="Benchmarks.ListDecodeTests/Benchmarks.ListDecodeTests.csproj" />
+    <Project Path="Benchmarks.ObjectConverterTests/Benchmarks.ObjectConverterTests.csproj" />
+    <Project Path="Benchmarks.ObjectTests/Benchmarks.ObjectTests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Binary.Experimental.Tests/Binary.Experimental.Tests.csproj" />
+    <Project Path="Binary.FSharp.Tests/Binary.FSharp.Tests.fsproj" />
+    <Project Path="Binary.SourceGeneration.AttributeTests/Binary.SourceGeneration.AttributeTests.csproj" />
+    <Project Path="Binary.SourceGeneration.CollectionTests/Binary.SourceGeneration.CollectionTests.csproj" />
+    <Project Path="Binary.SourceGeneration.CommonTypeTests/Binary.SourceGeneration.CommonTypeTests.csproj" />
+    <Project Path="Binary.SourceGeneration.NamedObjectTests/Binary.SourceGeneration.NamedObjectTests.csproj" />
+    <Project Path="Binary.SourceGeneration.ObjectCrossTests/Binary.SourceGeneration.ObjectCrossTests.csproj" />
+    <Project Path="Binary.SourceGeneration.Tests/Binary.SourceGeneration.Tests.csproj" />
+    <Project Path="Binary.SourceGeneration.TupleObjectTests/Binary.SourceGeneration.TupleObjectTests.csproj" />
+    <Project Path="Binary.Tests.FSharp/Binary.Tests.FSharp.fsproj" />
+    <Project Path="Binary.Tests/Binary.Tests.csproj" />
+  </Folder>
+  <Project Path="Binary.Experimental/Binary.Experimental.csproj" />
+  <Project Path="Binary.FSharp/Binary.FSharp.fsproj" />
+  <Project Path="Binary.SourceGeneration/Binary.SourceGeneration.csproj" />
+  <Project Path="Binary/Binary.csproj" />
+</Solution>
