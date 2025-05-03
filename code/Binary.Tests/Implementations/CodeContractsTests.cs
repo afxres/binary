@@ -79,7 +79,7 @@ public class CodeContractsTests
         var bravo = new HashSet<Type>(types.Where(x => x.Name.Any(c => c is '<' or '>' or '-')));
         var delta = new HashSet<Type>(types.Except(alpha).Except(bravo));
         Assert.Equal(types.Count, alpha.Count + bravo.Count + delta.Count);
-        Assert.Equal(types, new HashSet<Type>(alpha.Union(bravo).Union(delta)));
+        Assert.Equal(types, [.. alpha.Union(bravo).Union(delta)]);
         Assert.True(alpha.All(x => x.IsPublic));
         Assert.True(delta.All(x => !x.IsPublic));
     }
@@ -99,7 +99,7 @@ public class CodeContractsTests
             var attributes = new[] { equalMethod, hashMethod, stringMethod }.Select(x => x.GetCustomAttribute<EditorBrowsableAttribute>()).ToList();
             Assert.Equal(3, attributes.Count);
             Assert.All(attributes, Assert.NotNull);
-            Assert.True(attributes.All(x => Assert.IsAssignableFrom<EditorBrowsableAttribute>(x).State == EditorBrowsableState.Never));
+            Assert.True(attributes.All(x => Assert.IsType<EditorBrowsableAttribute>(x, exactMatch: false).State == EditorBrowsableState.Never));
         }
     }
 
@@ -154,7 +154,7 @@ public class CodeContractsTests
         var types = typeof(IConverter).Assembly.GetTypes();
         var selection = types.Where(x => x.Name.Contains('<') is false);
         var attributes = selection.Select(x => (Type: x, Attribute: x.GetCustomAttribute<DebuggerDisplayAttribute>(inherit: false))).Where(x => x.Attribute is not null).ToList();
-        var overridden = types.Where(x => x.Name.Contains('<') is false && x.GetMethod("ToString")?.DeclaringType == x).ToList();
+        var overridden = types.Where(x => x.Name.Contains('<') is false && x.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic).Any(x => x.Name is "EqualityContract") is false && x.GetMethod("ToString")?.DeclaringType == x).ToList();
         Assert.Equal(6, overridden.Count);
         Assert.Equal([.. overridden], attributes.Select(x => x.Type).ToHashSet());
         var display = attributes.Select(x => x.Attribute?.Value).Distinct().Single();
@@ -202,7 +202,7 @@ public class CodeContractsTests
         Assert.All(attributedMethods, x => Assert.True((x.DeclaringType?.Name is "ThrowHelper" && x.Name.StartsWith("Throw")) || x.Name.StartsWith("Except")));
 
         var expectedMethods = methods.Where(x => x.Name.Contains("Throw") || x.Name.Contains("Except")).ToList();
-        Assert.Equal(new HashSet<MethodInfo>(attributedMethods), new HashSet<MethodInfo>(expectedMethods));
+        Assert.Equal([.. attributedMethods], [.. expectedMethods]);
 
         var misspelledMethods = methods.Where(x => x.Name.Contains("Expect", StringComparison.InvariantCultureIgnoreCase)).ToList();
         Assert.Empty(misspelledMethods);
@@ -225,18 +225,19 @@ public class CodeContractsTests
     public void InternalTypeInstanceMemberAccessLevel()
     {
         var types = typeof(IConverter).Assembly.GetTypes();
-        var array = types.Where(x => x.IsPublic is false && x.IsSubclassOf(typeof(Delegate)) is false && x.IsEnum is false && x.FullName?.Contains('<') is false).ToList();
+        var array = types.Where(x => x.IsPublic is false && x.IsSubclassOf(typeof(Delegate)) is false && x.IsEnum is false && x.FullName?.Contains('<') is false && x.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic).Any(x => x.Name is "EqualityContract") is false).ToList();
         var filter = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        Assert.NotEmpty(array);
         foreach (var t in array)
         {
             var fields = t.GetFields(filter);
             var methods = t.GetMethods(filter);
             var constructors = t.GetConstructors(filter);
             var properties = t.GetProperties(filter);
-            Assert.All(properties, x => Assert.True(Assert.IsAssignableFrom<MethodInfo>(x.GetGetMethod()).IsPublic));
+            Assert.All(properties, x => Assert.True(Assert.IsType<MethodInfo>(x.GetGetMethod(), exactMatch: false).IsPublic));
             Assert.All(fields, x => Assert.True(x.IsPublic || x.IsPrivate));
             Assert.All(methods, x => Assert.True(x.Name.Contains('<') || x.DeclaringType == typeof(object) || x.IsPublic || x.IsPrivate));
-            Assert.All(constructors, x => Assert.True((Assert.IsAssignableFrom<Type>(x.DeclaringType).IsAbstract && x.GetParameters().Length is 0) || x.IsPublic || x.IsPrivate));
+            Assert.All(constructors, x => Assert.True((Assert.IsType<Type>(x.DeclaringType, exactMatch: false).IsAbstract && x.GetParameters().Length is 0) || x.IsPublic || x.IsPrivate));
         }
     }
 
@@ -293,7 +294,7 @@ public class CodeContractsTests
         var types = typeof(IConverter).Assembly.GetTypes();
         var publicAbstractTypes = types.Where(x => x.IsPublic && x.IsAbstract && x.IsInterface is false && x.IsSealed is false).ToList();
         var knownTypeNames = new HashSet<string> { "Converter`1", "NamedObjectConverter`1" };
-        Assert.Equal(knownTypeNames, publicAbstractTypes.Select(x => x.Name).ToHashSet());
+        Assert.Equal(knownTypeNames, [.. publicAbstractTypes.Select(x => x.Name)]);
 
         foreach (var type in publicAbstractTypes)
         {

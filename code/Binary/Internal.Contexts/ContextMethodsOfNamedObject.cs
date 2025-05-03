@@ -12,6 +12,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 [RequiresDynamicCode(CommonDefine.RequiresDynamicCodeMessage)]
 [RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
@@ -25,6 +26,8 @@ internal static class ContextMethodsOfNamedObject
 
     private static readonly MethodInfo EnsureMethodInfo = new Func<object, bool>(ObjectModule.NotDefaultValue).Method.GetGenericMethodDefinition();
 
+    private static readonly Expression EnsureSufficientExecutionStackExpression = Expression.Call(new Action(RuntimeHelpers.EnsureSufficientExecutionStack).Method);
+
     internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<bool> optional, ImmutableArray<string> names, ImmutableArray<ImmutableArray<byte>> headers, ImmutableArray<ContextMemberInitializer> members)
     {
         Debug.Assert(members.Length == names.Length);
@@ -32,19 +35,20 @@ internal static class ContextMethodsOfNamedObject
         Debug.Assert(members.Length == converters.Length);
         var converterType = typeof(NamedObjectDelegateConverter<>).MakeGenericType(type);
         var converter = (IConverter)CommonModule.CreateInstance(converterType, null);
-        if (converters.Any(x => x is IConverterPlaceholder))
+        var hasSelfTypeReference = converters.Any(x => x is IConverterPlaceholder);
+        if (hasSelfTypeReference)
             converters = [.. converters.Select(x => x is IConverterPlaceholder ? converter : x)];
-        var encode = GetEncodeDelegateAsNamedObject(type, converters, optional, headers, members);
-        var decode = GetDecodeDelegateAsNamedObject(type, converters, optional, constructor);
+        var encode = GetEncodeDelegateAsNamedObject(type, converters, optional, hasSelfTypeReference, headers, members);
+        var decode = GetDecodeDelegateAsNamedObject(type, converters, optional, hasSelfTypeReference, constructor);
         var invoke = new NamedObjectDecoder(headers, names, optional, type);
         _ = CommonModule.GetPublicInstanceMethod(converterType, "Initialize").Invoke(converter, [encode, decode, invoke]);
         return converter;
     }
 
-    private static Delegate GetEncodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<bool> optional, ImmutableArray<ImmutableArray<byte>> headers, ImmutableArray<ContextMemberInitializer> members)
+    private static Delegate GetEncodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<bool> optional, bool hasSelfTypeReference, ImmutableArray<ImmutableArray<byte>> headers, ImmutableArray<ContextMemberInitializer> members)
     {
         var item = Expression.Parameter(type, "item");
-        var result = new List<Expression>();
+        var result = new List<Expression>(hasSelfTypeReference ? [EnsureSufficientExecutionStackExpression] : []);
         var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
 
         for (var i = 0; i < members.Length; i++)
@@ -67,9 +71,9 @@ internal static class ContextMethodsOfNamedObject
         return lambda.Compile();
     }
 
-    private static Delegate? GetDecodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<bool> optional, ContextObjectConstructor? constructor)
+    private static Delegate? GetDecodeDelegateAsNamedObject(Type type, ImmutableArray<IConverter> converters, ImmutableArray<bool> optional, bool hasSelfTypeReference, ContextObjectConstructor? constructor)
     {
-        ImmutableArray<Expression> Initialize(ImmutableArray<ParameterExpression> parameters)
+        ContextObjectInitializationData Initialize(ImmutableArray<ParameterExpression> parameters)
         {
             Debug.Assert(parameters.Length is 1);
             var source = parameters[0];
@@ -88,7 +92,7 @@ internal static class ContextMethodsOfNamedObject
             }
             Debug.Assert(converters.Length == result.Count);
             Debug.Assert(converters.Length == result.Capacity);
-            return result.MoveToImmutable();
+            return new ContextObjectInitializationData(hasSelfTypeReference ? [EnsureSufficientExecutionStackExpression] : [], result.MoveToImmutable());
         }
 
         return constructor?.Invoke(typeof(NamedObjectDecodeDelegate<>).MakeGenericType(type), Initialize);

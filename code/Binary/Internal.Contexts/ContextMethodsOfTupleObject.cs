@@ -48,7 +48,7 @@ internal static class ContextMethodsOfTupleObject
 
     private static Delegate? GetDecodeDelegateAsTupleObject(Type type, ImmutableArray<IConverter> converters, ContextObjectConstructor? constructor, bool auto)
     {
-        ImmutableArray<Expression> Initialize(ImmutableArray<ParameterExpression> parameters)
+        ContextObjectInitializationData Initialize(ImmutableArray<ParameterExpression> parameters)
         {
             Debug.Assert(parameters.Length is 1);
             var source = parameters[0];
@@ -62,7 +62,7 @@ internal static class ContextMethodsOfTupleObject
             }
             Debug.Assert(converters.Length == result.Count);
             Debug.Assert(converters.Length == result.Capacity);
-            return result.MoveToImmutable();
+            return new ContextObjectInitializationData([], result.MoveToImmutable());
         }
 
         return constructor?.Invoke(typeof(DecodeDelegate<>).MakeGenericType(type), Initialize);

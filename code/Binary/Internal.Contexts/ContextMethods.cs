@@ -9,11 +9,13 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
+internal sealed record ContextObjectInitializationData(ImmutableArray<Expression> BeforeInitializationExpressions, ImmutableArray<Expression> MemberExpressions);
+
 internal delegate Delegate ContextObjectConstructor(Type delegateType, ContextObjectInitializer initializer);
 
 internal delegate Expression ContextMemberInitializer(Expression expression);
 
-internal delegate ImmutableArray<Expression> ContextObjectInitializer(ImmutableArray<ParameterExpression> parameters);
+internal delegate ContextObjectInitializationData ContextObjectInitializer(ImmutableArray<ParameterExpression> parameters);
 
 [RequiresDynamicCode(CommonDefine.RequiresDynamicCodeMessage)]
 [RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
@@ -42,14 +44,15 @@ internal static class ContextMethods
         var parameterTypes = delegateInvoke.GetParameters().Select(x => x.ParameterType).ToList();
         var parameters = parameterTypes.Select((x, i) => Expression.Parameter(x, $"arg{i}")).ToImmutableArray();
         var item = Expression.Variable(type, "item");
+        var data = initializer.Invoke(parameters);
 
-        var sources = initializer.Invoke(parameters);
+        var sources = data.MemberExpressions;
         var targets = sources.Select((x, i) => Expression.Variable(x.Type, $"var{i}")).ToList();
         Debug.Assert(sources.Length == objectIndexes.Length + memberIndexes.Length);
         Debug.Assert(members.Length == memberIndexes.Length);
         Debug.Assert(Enumerable.Range(0, sources.Length).Except(objectIndexes).Except(memberIndexes).Any() is false);
 
-        var expressions = new List<Expression>();
+        var expressions = new List<Expression>(data.BeforeInitializationExpressions);
         expressions.AddRange(sources.Select((x, i) => Expression.Assign(targets[i], x)));
         expressions.Add(Expression.Assign(item, constructor is null ? Expression.New(type) : Expression.New(constructor, objectIndexes.Select(x => targets[x]).ToList())));
         expressions.AddRange(memberIndexes.Select((x, i) => Expression.Assign(members[i].Invoke(item), targets[x])));

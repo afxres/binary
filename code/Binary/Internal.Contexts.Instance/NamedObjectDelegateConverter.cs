@@ -5,7 +5,6 @@ using Mikodev.Binary.Internal.Contexts.Decoders;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 
 internal delegate T NamedObjectDecodeDelegate<out T>(scoped NamedObjectParameter parameter);
 
@@ -30,7 +29,6 @@ internal sealed class NamedObjectDelegateConverter<T> : Converter<T?>
     {
         if (item is null)
             return;
-        RuntimeHelpers.EnsureSufficientExecutionStack();
         Debug.Assert(this.encode is not null);
         this.encode.Invoke(ref allocator, item);
     }
@@ -39,11 +37,9 @@ internal sealed class NamedObjectDelegateConverter<T> : Converter<T?>
     {
         if (span.Length is 0)
             return ObjectModule.GetNullValueOrNotEnoughBytes<T>();
-
         var decode = this.decode;
         if (decode is null)
             ThrowHelper.ThrowNoSuitableConstructor<T>();
-
         Debug.Assert(this.invoke is not null);
         var invoke = this.invoke;
         var slices = (stackalloc long[invoke.Length]);

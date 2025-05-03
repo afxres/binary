@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Mikodev.Binary.SourceGeneration;
 using Mikodev.Binary.SourceGeneration.Internal;
 using System.Collections.Immutable;
+using System.Linq;
 
 public sealed partial class NamedObjectConverterContext : SymbolConverterContext
 {
@@ -11,11 +12,14 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
 
     private readonly SymbolConstructorInfo<SymbolNamedMemberInfo>? constructor;
 
+    private readonly bool hasSelfTypeReference;
+
     private NamedObjectConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, ImmutableArray<SymbolNamedMemberInfo> members, SymbolConstructorInfo<SymbolNamedMemberInfo>? constructor) : base(context, tracker, symbol)
     {
         members.ForEach((index, value) => AddType(index, value.Type));
         this.members = members;
         this.constructor = constructor;
+        this.hasSelfTypeReference = members.Any(x => SymbolEqualityComparer.Default.Equals(x.Type, Symbol));
     }
 
     private void AppendConverterHead()
@@ -57,12 +61,10 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         Output.AppendIndent();
     }
 
-    private void AppendEnsureContext()
+    private void AppendEnsureSufficientExecutionStack()
     {
-        if (Symbol.IsValueType)
+        if (hasSelfTypeReference is false)
             return;
-        Output.AppendIndent(3, $"if (item is null)");
-        Output.AppendIndent(4, $"return;");
         Output.AppendIndent(3, $"System.Runtime.CompilerServices.RuntimeHelpers.EnsureSufficientExecutionStack();");
         CancellationToken.ThrowIfCancellationRequested();
     }
@@ -72,7 +74,12 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         var members = this.members;
         Output.AppendIndent(2, $"public override void Encode(ref Mikodev.Binary.Allocator allocator, {SymbolTypeFullName} item)");
         Output.AppendIndent(2, $"{{");
-        AppendEnsureContext();
+        if (!Symbol.IsValueType)
+        {
+            Output.AppendIndent(3, $"if (item is null)");
+            Output.AppendIndent(4, $"return;");
+        }
+        AppendEnsureSufficientExecutionStack();
         for (var i = 0; i < members.Length; i++)
         {
             if (members[i].IsOptional is false)
@@ -107,6 +114,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         }
         else
         {
+            AppendEnsureSufficientExecutionStack();
             for (var i = 0; i < members.Length; i++)
             {
                 if (members[i].IsOptional is false)
@@ -131,7 +139,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         for (var i = 0; i < members.Length; i++)
         {
             var member = members[i];
-            AppendAssignConverter(member, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i), allowsSelfTypeReference: true);
+            AppendAssignConverter(member, $"cvt{i}", GetConverterTypeFullName(i), GetTypeFullName(i), allowsSelfTypeReference: hasSelfTypeReference);
             CancellationToken.ThrowIfCancellationRequested();
         }
         Output.AppendIndent(3, $"converter.Initialize(", ");", members.Length, x => $"cvt{x}");

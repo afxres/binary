@@ -4,10 +4,12 @@ using Mikodev.Binary.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Xunit;
 
 [SourceGeneratorContext]
+[SourceGeneratorInclude<LinkedList<byte>>]
 [SourceGeneratorInclude<LinkedList<int>>]
 [SourceGeneratorInclude<LinkedList<long>>]
 [SourceGeneratorInclude<CustomLinkedListWithCustomConverterAttribute>]
@@ -174,5 +176,37 @@ public class LinkedListTests
         var token = new Token(generator, buffer);
         Assert.Equal("Alice", token["data"].As<string>());
         Assert.Equal("Item = Delta", token["node"].As<string>());
+    }
+
+    [Fact(DisplayName = "Custom Linked List Decode Large Data Test")]
+    public void CustomLinkedListDecodeLargeDataTest()
+    {
+        static InsufficientExecutionStackException InvokeWithInsufficientExecutionStack(Action action)
+        {
+            var buffer = (stackalloc byte[1024]);
+            buffer[0] = 1;
+            _ = buffer[0];
+            if (RuntimeHelpers.TryEnsureSufficientExecutionStack())
+                return InvokeWithInsufficientExecutionStack(action);
+            else
+                return Assert.Throws<InsufficientExecutionStackException>(action);
+        }
+
+        var generator = Generator.CreateAotBuilder()
+            .AddConverterCreators(LinkedListGeneratorContext.ConverterCreators.Values)
+            .Build();
+        var generatorSecond = Generator.CreateDefault();
+        var converter = generator.GetConverter<LinkedList<byte>>();
+        var converterSecond = generatorSecond.GetConverter<LinkedList<byte>>();
+        Assert.NotEqual(converter.GetType(), converterSecond.GetType());
+
+        var source = new LinkedList<byte>(1);
+        var buffer = converter.Encode(source);
+        var bufferSecond = converterSecond.Encode(source);
+        Assert.Equal(buffer, bufferSecond);
+
+        var error = InvokeWithInsufficientExecutionStack(() => converter.Decode(buffer));
+        var errorSecond = InvokeWithInsufficientExecutionStack(() => converterSecond.Decode(bufferSecond));
+        Assert.Equal(error.Message, errorSecond.Message);
     }
 }
