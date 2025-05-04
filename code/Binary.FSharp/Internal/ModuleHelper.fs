@@ -12,6 +12,8 @@ let EncodeNumberMethodInfo = CommonHelper.GetMethod(typeof<Converter>, "Encode",
 
 let DecodeNumberMethodInfo = CommonHelper.GetMethod(typeof<Converter>, "Decode", [| ReadOnlySpanByteByRefType |])
 
+let EnsureSufficientExecutionStackMethodInfo = CommonHelper.GetMethod(typeof<RuntimeHelpers>, "EnsureSufficientExecutionStack", Array.empty)
+
 #nowarn "42" // This construct is deprecated: it is only for use in the F# library
 
 [<MethodImpl(MethodImplOptions.AggressiveInlining)>]

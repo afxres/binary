@@ -7,8 +7,14 @@ open System
 open System.Linq.Expressions
 open System.Reflection
 
+type internal UnionTypeRecord = { Type: Type; GetConverter: Type -> IConverter; HasSelfTypeReference: bool }
+
 type internal UnionConverterCreator() =
-    static let GetEncodeExpression (t: Type) (getConverter: Type -> IConverter) (caseInfos: Map<int, UnionCaseInfo>) (tagMember: MemberInfo) (auto: bool) =
+    static let EnsureSufficientExecutionStackExpression: Expression = Expression.Call(ModuleHelper.EnsureSufficientExecutionStackMethodInfo)
+
+    static let GetEncodeExpression (typeRecord: UnionTypeRecord) (caseInfos: Map<int, UnionCaseInfo>) (tagMember: MemberInfo) (auto: bool) =
+        let t = typeRecord.Type
+        let getConverter = typeRecord.GetConverter
         let allocator = Expression.Parameter(ModuleHelper.AllocatorByRefType, "allocator")
         let mark = Expression.Parameter(typeof<int>.MakeByRefType(), "mark")
         let item = Expression.Parameter(t, "item")
@@ -48,18 +54,24 @@ type internal UnionConverterCreator() =
             | :? PropertyInfo as p -> Expression.Property(item, p) :> Expression
             | _ -> Expression.Call(tagMember :?> MethodInfo, item) :> Expression
         let defaultBlock = Expression.Block(Expression.Assign(mark, flag), Expression.Empty())
-        let block =
-            Expression.Block(
-                Seq.singleton flag,
-                Expression.Assign(flag, tagExpression),
-                Expression.Call(ModuleHelper.EncodeNumberMethodInfo, allocator, flag),
-                Expression.Switch(flag, defaultBlock, switchCases)
-            )
+        let basicExpressions: Expression array = [|
+            Expression.Assign(flag, tagExpression)
+            Expression.Call(ModuleHelper.EncodeNumberMethodInfo, allocator, flag)
+            Expression.Switch(flag, defaultBlock, switchCases)
+        |]
+        let blockExpressions =
+            if typeRecord.HasSelfTypeReference then
+                Array.append [| EnsureSufficientExecutionStackExpression |] basicExpressions
+            else
+                basicExpressions
+        let block = Expression.Block(Seq.singleton flag, blockExpressions)
         let delegateType = typedefof<UnionEncoder<_>>.MakeGenericType t
         let lambda = Expression.Lambda(delegateType, block, allocator, item, mark)
         lambda
 
-    static let GetDecodeExpression (t: Type) (getConverter: Type -> IConverter) (constructorInfos: Map<int, MethodInfo>) (auto: bool) =
+    static let GetDecodeExpression (typeRecord: UnionTypeRecord) (constructorInfos: Map<int, MethodInfo>) (auto: bool) =
+        let t = typeRecord.Type
+        let getConverter = typeRecord.GetConverter
         let span = Expression.Parameter(ModuleHelper.ReadOnlySpanByteByRefType, "span")
         let mark = Expression.Parameter(typeof<int>.MakeByRefType(), "mark")
         let flag = Expression.Variable(typeof<int>, "flag")
@@ -90,12 +102,16 @@ type internal UnionConverterCreator() =
 
         let switchCases = constructorInfos |> Seq.map (fun x -> Expression.SwitchCase(MakeBody x.Value, Expression.Constant(x.Key))) |> Seq.toArray
         let defaultBlock = Expression.Block(Expression.Assign(mark, flag), Expression.Default(t))
-        let block =
-            Expression.Block(
-                Seq.singleton flag,
-                Expression.Assign(flag, Expression.Call(ModuleHelper.DecodeNumberMethodInfo, span)),
-                Expression.Switch(flag, defaultBlock, switchCases)
-            )
+        let basicExpressions: Expression array = [|
+            Expression.Assign(flag, Expression.Call(ModuleHelper.DecodeNumberMethodInfo, span))
+            Expression.Switch(flag, defaultBlock, switchCases)
+        |]
+        let blockExpressions =
+            if typeRecord.HasSelfTypeReference then
+                Array.append [| EnsureSufficientExecutionStackExpression |] basicExpressions
+            else
+                basicExpressions
+        let block = Expression.Block(Seq.singleton flag, blockExpressions)
         let delegateType = typedefof<UnionDecoder<_>>.MakeGenericType t
         let lambda = Expression.Lambda(delegateType, block, span, mark)
         lambda
@@ -118,10 +134,11 @@ type internal UnionConverterCreator() =
                 let getConverter = fun x -> converters[x]
                 let tagMember = FSharpValue.PreComputeUnionTagMemberInfo(t)
                 let needNullCheck = t.IsValueType = false && tagMember :? MethodInfo = false
-                let encode = GetEncodeExpression t getConverter caseInfos tagMember false
-                let encodeAuto = GetEncodeExpression t getConverter caseInfos tagMember true
-                let decode = GetDecodeExpression t getConverter constructorInfos false
-                let decodeAuto = GetDecodeExpression t getConverter constructorInfos true
+                let typeRecord = { Type = t; GetConverter = getConverter; HasSelfTypeReference = memberTypes |> Seq.contains t }
+                let encode = GetEncodeExpression typeRecord caseInfos tagMember false
+                let encodeAuto = GetEncodeExpression typeRecord caseInfos tagMember true
+                let decode = GetDecodeExpression typeRecord constructorInfos false
+                let decodeAuto = GetDecodeExpression typeRecord constructorInfos true
                 let delegates = [| encode; encodeAuto; decode; decodeAuto |] |> Array.map (fun x -> x.Compile())
                 let initializeArguments = Array.append (delegates |> Array.map box) [| box needNullCheck |]
                 let initializeMethod =
