@@ -11,13 +11,9 @@ public sealed partial class CollectionConverterContext
     private enum ConstructorArgumentKind
     {
         Null,
-
         List,
-
         HashSet,
-
         Dictionary,
-
         ListKeyValuePair,
     }
 

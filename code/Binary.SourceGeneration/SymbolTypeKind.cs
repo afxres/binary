@@ -3,8 +3,6 @@
 public enum SymbolTypeKind
 {
     BadType,
-
     RawType,
-
     CustomType,
 }

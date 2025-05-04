@@ -74,7 +74,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         var members = this.members;
         Output.AppendIndent(2, $"public override void Encode(ref Mikodev.Binary.Allocator allocator, {SymbolTypeFullName} item)");
         Output.AppendIndent(2, $"{{");
-        if (!Symbol.IsValueType)
+        if (Symbol.IsValueType is false)
         {
             Output.AppendIndent(3, $"if (item is null)");
             Output.AppendIndent(4, $"return;");

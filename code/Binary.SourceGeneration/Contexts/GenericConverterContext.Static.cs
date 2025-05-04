@@ -8,7 +8,6 @@ public sealed partial class GenericConverterContext
     private enum TypeArgumentsOption
     {
         None,
-
         IncludeReturnType,
     }
 

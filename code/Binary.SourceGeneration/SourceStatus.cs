@@ -3,10 +3,7 @@
 public enum SourceStatus
 {
     None,
-
     Ok,
-
     Ignored,
-
     NoAvailableMember,
 }
