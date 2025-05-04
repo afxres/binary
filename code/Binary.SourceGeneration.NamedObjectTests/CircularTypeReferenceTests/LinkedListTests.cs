@@ -14,6 +14,8 @@ using Xunit;
 [SourceGeneratorInclude<LinkedList<long>>]
 [SourceGeneratorInclude<CustomLinkedListWithCustomConverterAttribute>]
 [SourceGeneratorInclude<CustomLinkedListWithCustomConverterCreatorAttribute>]
+[SourceGeneratorInclude<ControlGroupNamedObject<byte>>]
+[SourceGeneratorInclude<ControlGroupPlainObject<byte>>]
 public partial class LinkedListGeneratorContext { }
 
 [NamedObject]
@@ -86,6 +88,18 @@ public class CustomLinkedListWithCustomConverterCreatorAttributeConverterCreator
             return null;
         return new CustomLinkedListWithCustomConverterCreatorAttributeConverter(context.GetConverter<string>());
     }
+}
+
+public class ControlGroupPlainObject<T>
+{
+    public T? Data { get; set; }
+}
+
+[NamedObject]
+public class ControlGroupNamedObject<T>
+{
+    [NamedKey("item")]
+    public T? Item { get; set; }
 }
 
 public class LinkedListTests
@@ -178,20 +192,20 @@ public class LinkedListTests
         Assert.Equal("Item = Delta", token["node"].As<string>());
     }
 
-    [Fact(DisplayName = "Custom Linked List Decode Large Data Test")]
-    public void CustomLinkedListDecodeLargeDataTest()
+    private static T InvokeWithInsufficientExecutionStack<T>(Func<T> action)
     {
-        static InsufficientExecutionStackException InvokeWithInsufficientExecutionStack(Action action)
-        {
-            var buffer = (stackalloc byte[1024]);
-            buffer[0] = 1;
-            _ = buffer[0];
-            if (RuntimeHelpers.TryEnsureSufficientExecutionStack())
-                return InvokeWithInsufficientExecutionStack(action);
-            else
-                return Assert.Throws<InsufficientExecutionStackException>(action);
-        }
+        var buffer = (stackalloc byte[1024]);
+        buffer[0] = 1;
+        _ = buffer[0];
+        if (RuntimeHelpers.TryEnsureSufficientExecutionStack())
+            return InvokeWithInsufficientExecutionStack(action);
+        else
+            return action.Invoke();
+    }
 
+    [Fact(DisplayName = "Custom Linked List Encode Decode With Insufficient Execution Stack Test")]
+    public void CustomLinkedListEncodeDecodeWithInsufficientExecutionStackTest()
+    {
         var generator = Generator.CreateAotBuilder()
             .AddConverterCreators(LinkedListGeneratorContext.ConverterCreators.Values)
             .Build();
@@ -200,13 +214,44 @@ public class LinkedListTests
         var converterSecond = generatorSecond.GetConverter<LinkedList<byte>>();
         Assert.NotEqual(converter.GetType(), converterSecond.GetType());
 
-        var source = new LinkedList<byte>(1);
+        var source = new LinkedList<byte>(2);
         var buffer = converter.Encode(source);
-        var bufferSecond = converterSecond.Encode(source);
-        Assert.Equal(buffer, bufferSecond);
+        _ = Assert.Throws<InsufficientExecutionStackException>(() => InvokeWithInsufficientExecutionStack(() => converter.Encode(source)));
+        _ = Assert.Throws<InsufficientExecutionStackException>(() => InvokeWithInsufficientExecutionStack(() => converterSecond.Encode(source)));
+        _ = Assert.Throws<InsufficientExecutionStackException>(() => InvokeWithInsufficientExecutionStack(() => converter.Decode(buffer)));
+        _ = Assert.Throws<InsufficientExecutionStackException>(() => InvokeWithInsufficientExecutionStack(() => converterSecond.Decode(buffer)));
+    }
 
-        var error = InvokeWithInsufficientExecutionStack(() => converter.Decode(buffer));
-        var errorSecond = InvokeWithInsufficientExecutionStack(() => converterSecond.Decode(bufferSecond));
-        Assert.Equal(error.Message, errorSecond.Message);
+    [Fact(DisplayName = "Control Group Encode Decode With Insufficient Execution Stack Test")]
+    public void ControlGroupEncodeDecodeWithInsufficientExecutionStackTest()
+    {
+        var generator = Generator.CreateAotBuilder()
+            .AddConverterCreators(LinkedListGeneratorContext.ConverterCreators.Values)
+            .Build();
+        var generatorSecond = Generator.CreateDefault();
+        var converterPlain = generator.GetConverter<ControlGroupPlainObject<byte>>();
+        var converterPlainSecond = generatorSecond.GetConverter<ControlGroupPlainObject<byte>>();
+        var converterNamed = generator.GetConverter<ControlGroupNamedObject<byte>>();
+        var converterNamedSecond = generatorSecond.GetConverter<ControlGroupNamedObject<byte>>();
+        Assert.NotEqual(converterNamed.GetType(), converterNamedSecond.GetType());
+        Assert.NotEqual(converterPlain.GetType(), converterPlainSecond.GetType());
+
+        var sourcePlain = new ControlGroupPlainObject<byte> { Data = 2 };
+        var sourceNamed = new ControlGroupNamedObject<byte> { Item = 4 };
+        var bufferPlain = InvokeWithInsufficientExecutionStack(() => converterPlain.Encode(sourcePlain));
+        var bufferPlainSecond = InvokeWithInsufficientExecutionStack(() => converterPlainSecond.Encode(sourcePlain));
+        var bufferNamed = InvokeWithInsufficientExecutionStack(() => converterNamed.Encode(sourceNamed));
+        var bufferNamedSecond = InvokeWithInsufficientExecutionStack(() => converterNamedSecond.Encode(sourceNamed));
+        Assert.Equal(bufferPlain, bufferPlainSecond);
+        Assert.Equal(bufferNamed, bufferNamedSecond);
+
+        var resultPlain = InvokeWithInsufficientExecutionStack(() => converterPlain.Decode(bufferPlain));
+        var resultPlainSecond = InvokeWithInsufficientExecutionStack(() => converterPlainSecond.Decode(bufferPlain));
+        var resultNamed = InvokeWithInsufficientExecutionStack(() => converterNamed.Decode(bufferNamed));
+        var resultNamedSecond = InvokeWithInsufficientExecutionStack(() => converterNamedSecond.Decode(bufferNamed));
+        Assert.Equal(sourcePlain.Data, resultPlain.Data);
+        Assert.Equal(sourcePlain.Data, resultPlainSecond.Data);
+        Assert.Equal(sourceNamed.Item, resultNamed.Item);
+        Assert.Equal(sourceNamed.Item, resultNamedSecond.Item);
     }
 }
