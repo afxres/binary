@@ -10,6 +10,7 @@
     <Compile Include="CircularTypeReferenceTests\LinkedListTests.fs" />
     <Compile Include="Contexts\CodeContractsTests.fs" />
     <Compile Include="Contexts\ConverterCreatorTests.fs" />
+    <Compile Include="Creators\ListConverterTests.fs" />
     <Compile Include="Creators\UnionConverterCreatorTests.fs" />
     <Compile Include="Internal\HelperMethodTests.fs" />
   </ItemGroup>
