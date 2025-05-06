@@ -22,6 +22,7 @@
   <ItemGroup>
     <Compile Include="Internal\CommonHelper.fs" />
     <Compile Include="Internal\ModuleHelper.fs" />
+    <Compile Include="Internal\ObjectHelper.fs" />
     <Compile Include="Creators\ListConverter.fs" />
     <Compile Include="Creators\ListConverterCreator.fs" />
     <Compile Include="Creators\MapConverter.fs" />
