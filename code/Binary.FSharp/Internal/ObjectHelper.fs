@@ -42,11 +42,11 @@ let GetPartialList<'E> (converter: Converter<'E>, span: byref<ReadOnlySpan<byte>
         cursor <- cursor + 1
     let source = target.Slice(0, cursor)
     if span.Length = 0 then
-        Choice1Of2(GetListFromSpan source)
+        box (GetListFromSpan source)
     else
         let result = ResizeArray<'E> NewLength
-        CollectionExtensions.AddRange(result, source)
-        Choice2Of2 result
+        result.AddRange source
+        box result
 
 let GetListWithConstantConverter<'E> (converter: Converter<'E>, span: ReadOnlySpan<byte>) =
     let itemLength = converter.Length
@@ -65,8 +65,9 @@ let GetListWithConstantConverter<'E> (converter: Converter<'E>, span: ReadOnlySp
 let GetListWithVariableConverter<'E> (converter: Converter<'E>, span: ReadOnlySpan<byte>) =
     let mutable body = span
     match GetPartialList(converter, &body) with
-    | Choice1Of2 result -> result
-    | Choice2Of2 source ->
+    | :? list<'E> as result -> result
+    | _ as intent ->
+        let source = unbox<ResizeArray<'E>> intent
         assert (source.Count = MaxLevels)
         assert (source.Capacity = NewLength)
         while body.Length <> 0 do
