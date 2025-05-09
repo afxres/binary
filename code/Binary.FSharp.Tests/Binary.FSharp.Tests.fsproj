@@ -13,6 +13,7 @@
     <Compile Include="Creators\ListConverterTests.fs" />
     <Compile Include="Creators\UnionConverterCreatorTests.fs" />
     <Compile Include="Internal\HelperMethodTests.fs" />
+    <Compile Include="Internal\ObjectHelperTests.fs" />
   </ItemGroup>
 
   <ItemGroup>
