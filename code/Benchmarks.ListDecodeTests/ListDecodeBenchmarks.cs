@@ -19,7 +19,7 @@ public partial class ListDecodeBenchmarks
 
     private Converter<List<int>> converterList = null!;
 
-    [Params(0, 4, 8, 16, 24, 32)]
+    [Params(0, 1, 16, 32, 64, 128)]
     public int Length;
 
     [GlobalSetup]
@@ -33,7 +33,6 @@ public partial class ListDecodeBenchmarks
 
         var decodeKnowCapacityResult = Decode(this.converter, this.bytes, this.Length);
         var decodeUnknownCapacityResult = Decode(this.converter, this.bytes, FallbackCapacity);
-        var decodeStackBasedResult = DecodeStackBased(this.converter, this.bytes);
         var decodeRecursivelyResult = DecodeRecursively(this.converter, this.bytes);
         var decodeViaConverterResult = this.converterList.Decode(this.bytes);
         var decodeViaArrayConverterResult = this.converterArray.Decode(this.bytes);
@@ -42,7 +41,6 @@ public partial class ListDecodeBenchmarks
         Trace.Assert(this.bytes.Length == this.Length * 5);
         Trace.Assert(values.SequenceEqual(decodeKnowCapacityResult));
         Trace.Assert(values.SequenceEqual(decodeUnknownCapacityResult));
-        Trace.Assert(values.SequenceEqual(decodeStackBasedResult));
         Trace.Assert(values.SequenceEqual(decodeRecursivelyResult));
         Trace.Assert(values.SequenceEqual(decodeViaConverterResult));
         Trace.Assert(values.SequenceEqual(decodeViaArrayConverterResult));
@@ -58,12 +56,6 @@ public partial class ListDecodeBenchmarks
     public List<int> M01()
     {
         return Decode(this.converter, this.bytes, FallbackCapacity);
-    }
-
-    [Benchmark(Description = "Decode List Stack Based")]
-    public List<int> M02()
-    {
-        return DecodeStackBased(this.converter, this.bytes);
     }
 
     [Benchmark(Description = "Decode List Recursively")]
