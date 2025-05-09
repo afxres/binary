@@ -88,7 +88,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
         Output.AppendIndent(3, $"}}");
     }
 
-    private void AppendDecodeListKeyValuePair()
+    private void AppendDecodeKeyValueEnumerable()
     {
         Output.AppendIndent(3, $"var item = new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<{GetTypeFullName(0)}, {GetTypeFullName(1)}>>();");
         Output.AppendIndent(3, $"while (body.Length is not 0)");
@@ -107,7 +107,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
             ConstructorArgumentKind.List => AppendDecodeList,
             ConstructorArgumentKind.HashSet => AppendDecodeHashSet,
             ConstructorArgumentKind.Dictionary => AppendDecodeDictionary,
-            ConstructorArgumentKind.ListKeyValuePair => AppendDecodeListKeyValuePair,
+            ConstructorArgumentKind.KeyValueEnumerable => AppendDecodeKeyValueEnumerable,
             _ => default(Action),
         };
         Output.AppendIndent();

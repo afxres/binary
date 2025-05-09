@@ -14,7 +14,7 @@ public sealed partial class CollectionConverterContext
         List,
         HashSet,
         Dictionary,
-        ListKeyValuePair,
+        KeyValueEnumerable,
     }
 
     private class TypeBaseInfo(ConstructorArgumentKind kind, string expression)
@@ -54,7 +54,7 @@ public sealed partial class CollectionConverterContext
         var result = ImmutableDictionary.CreateBuilder<INamedTypeSymbol, TypeBaseInfo>(SymbolEqualityComparer.Default);
 
         Register(compilation, result, "System.Collections.Frozen.FrozenSet`1", ConstructorArgumentKind.List, $"System.Collections.Frozen.FrozenSet.ToFrozenSet({ConstructorArgument})");
-        Register(compilation, result, "System.Collections.Frozen.FrozenDictionary`2", ConstructorArgumentKind.ListKeyValuePair, $"System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary({ConstructorArgument})");
+        Register(compilation, result, "System.Collections.Frozen.FrozenDictionary`2", ConstructorArgumentKind.KeyValueEnumerable, $"System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary({ConstructorArgument})");
         Register(compilation, result, "System.Collections.Generic.IList`1", ConstructorArgumentKind.List, ConstructorArgument);
         Register(compilation, result, "System.Collections.Generic.ICollection`1", ConstructorArgumentKind.List, ConstructorArgument);
         Register(compilation, result, "System.Collections.Generic.IEnumerable`1", ConstructorArgumentKind.List, ConstructorArgument);
@@ -64,15 +64,15 @@ public sealed partial class CollectionConverterContext
         Register(compilation, result, "System.Collections.Generic.IReadOnlySet`1", ConstructorArgumentKind.HashSet, ConstructorArgument);
         Register(compilation, result, "System.Collections.Generic.IDictionary`2", ConstructorArgumentKind.Dictionary, ConstructorArgument);
         Register(compilation, result, "System.Collections.Generic.IReadOnlyDictionary`2", ConstructorArgumentKind.Dictionary, ConstructorArgument);
-        Register(compilation, result, "System.Collections.Immutable.IImmutableDictionary`2", ConstructorArgumentKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorArgument})");
+        Register(compilation, result, "System.Collections.Immutable.IImmutableDictionary`2", ConstructorArgumentKind.KeyValueEnumerable, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorArgument})");
         Register(compilation, result, "System.Collections.Immutable.IImmutableList`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableList.CreateRange({ConstructorArgument})");
         Register(compilation, result, "System.Collections.Immutable.IImmutableQueue`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableQueue.CreateRange({ConstructorArgument})");
         Register(compilation, result, "System.Collections.Immutable.IImmutableSet`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableHashSet.CreateRange({ConstructorArgument})");
-        Register(compilation, result, "System.Collections.Immutable.ImmutableDictionary`2", ConstructorArgumentKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorArgument})");
+        Register(compilation, result, "System.Collections.Immutable.ImmutableDictionary`2", ConstructorArgumentKind.KeyValueEnumerable, $"System.Collections.Immutable.ImmutableDictionary.CreateRange({ConstructorArgument})");
         Register(compilation, result, "System.Collections.Immutable.ImmutableHashSet`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableHashSet.CreateRange({ConstructorArgument})");
         Register(compilation, result, "System.Collections.Immutable.ImmutableList`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableList.CreateRange({ConstructorArgument})");
         Register(compilation, result, "System.Collections.Immutable.ImmutableQueue`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableQueue.CreateRange({ConstructorArgument})");
-        Register(compilation, result, "System.Collections.Immutable.ImmutableSortedDictionary`2", ConstructorArgumentKind.ListKeyValuePair, $"System.Collections.Immutable.ImmutableSortedDictionary.CreateRange({ConstructorArgument})");
+        Register(compilation, result, "System.Collections.Immutable.ImmutableSortedDictionary`2", ConstructorArgumentKind.KeyValueEnumerable, $"System.Collections.Immutable.ImmutableSortedDictionary.CreateRange({ConstructorArgument})");
         Register(compilation, result, "System.Collections.Immutable.ImmutableSortedSet`1", ConstructorArgumentKind.List, $"System.Collections.Immutable.ImmutableSortedSet.CreateRange({ConstructorArgument})");
 
         return result.ToImmutable();
@@ -134,7 +134,7 @@ public sealed partial class CollectionConverterContext
         var typeArguments = dictionaryInterface?.TypeArguments ?? readonlyDictionaryInterface?.TypeArguments;
         var hasConstructor = HasConstructor(symbol, enumerableInterface);
         var constructorArgumentKind = hasConstructor
-            ? (typeArguments is null ? ConstructorArgumentKind.List : ConstructorArgumentKind.ListKeyValuePair)
+            ? (typeArguments is null ? ConstructorArgumentKind.List : ConstructorArgumentKind.KeyValueEnumerable)
             : ConstructorArgumentKind.Null;
         return new TypeInfo(constructorArgumentKind, string.Empty, typeArguments ?? enumerableInterface.TypeArguments);
     }
