@@ -48,10 +48,10 @@ public class SymbolsTests
                 public int[][] Entry;
             }
             """;
-        yield return new object[] { a, "Array", "global::System.Int32[,]", "a_2_p_g_System_0_Int32_q" };
-        yield return new object[] { b, "Value", "global::System.String[]", "a_1_p_g_System_0_String_q" };
-        yield return new object[] { c, "Items", "global::System.Double[,,,]", "a_4_p_g_System_0_Double_q" };
-        yield return new object[] { d, "Entry", "global::System.Int32[][]", "a_1_p_a_1_p_g_System_0_Int32_q_q" };
+        yield return new object[] { a, "Array", "global::System.Int32[,]", "_Z7Array2DIN6System5Int32EE" };
+        yield return new object[] { b, "Value", "global::System.String[]", "_Z5ArrayIN6System6StringEE" };
+        yield return new object[] { c, "Items", "global::System.Double[,,,]", "_Z7Array4DIN6System6DoubleEE" };
+        yield return new object[] { d, "Entry", "global::System.Int32[][]", "_Z5ArrayI5ArrayIN6System5Int32EEE" };
     }
 
     public static IEnumerable<object[]> GlobalNamespaceTypeData()
@@ -74,8 +74,8 @@ public class SymbolsTests
                 public B<int> Data;
             }
             """;
-        yield return new object[] { a, "Item", "global::A", "g_0_A" };
-        yield return new object[] { b, "Data", "global::B<global::System.Int32>", "g_1_B_b_g_System_0_Int32_d" };
+        yield return new object[] { a, "Item", "global::A", "_Z1A" };
+        yield return new object[] { b, "Data", "global::B<global::System.Int32>", "_Z1BIN6System5Int32EE" };
     }
 
     public static IEnumerable<object[]> NestedTypeData()
@@ -112,8 +112,8 @@ public class SymbolsTests
                 public B<int>.X.Y<string> Data;
             }
             """;
-        yield return new object[] { a, "Item", "global::One.Two.A.X.Y", "g_One_Two_0_A_0_X_0_Y" };
-        yield return new object[] { b, "Data", "global::B<global::System.Int32>.X.Y<global::System.String>", "g_1_B_b_g_System_0_Int32_d_0_X_1_Y_b_g_System_0_String_d" };
+        yield return new object[] { a, "Item", "global::One.Two.A.X.Y", "_ZN3One3Two1A1X1YE" };
+        yield return new object[] { b, "Data", "global::B<global::System.Int32>.X.Y<global::System.String>", "_ZN1BIN6System5Int32EE1X1YIN6System6StringEEE" };
     }
 
     public static IEnumerable<object[]> SpecialNameData()
@@ -134,8 +134,8 @@ public class SymbolsTests
                 public @public.@class Bravo;
             }
             """;
-        yield return new object[] { a, "Alpha", "global::@class.@yield.@namespace.@async.@await.@public", "g_class_yield_namespace_async_await_0_public" };
-        yield return new object[] { a, "Bravo", "global::@class.@yield.@namespace.@async.@await.@public.@class", "g_class_yield_namespace_async_await_0_public_0_class" };
+        yield return new object[] { a, "Alpha", "global::@class.@yield.@namespace.@async.@await.@public", "_ZN5class5yield9namespace5async5await6publicE" };
+        yield return new object[] { a, "Bravo", "global::@class.@yield.@namespace.@async.@await.@public.@class", "_ZN5class5yield9namespace5async5await6public5classE" };
     }
 
     public static IEnumerable<object[]> NestedMultipleTypeArgumentsGenericTypeData()
@@ -155,7 +155,7 @@ public class SymbolsTests
             }
             """;
         var symbolFullName = "global::Alpha.Bravo.Generic<global::System.Int32, global::System.String>.NestedGeneric<global::System.Int32, global::System.String, global::System.Double>";
-        var outputFullName = "g_Alpha_Bravo_2_Generic_b_g_System_0_Int32_g_System_0_String_d_3_NestedGeneric_b_g_System_0_Int32_g_System_0_String_g_System_0_Double_d";
+        var outputFullName = "_ZN5Alpha5Bravo7GenericIN6System5Int32EN6System6StringEE13NestedGenericIN6System5Int32EN6System6StringEN6System6DoubleEEE";
         yield return new object[] { source, "Intent", symbolFullName, outputFullName };
     }
 
@@ -658,7 +658,7 @@ public class SymbolsTests
         Assert.Contains(members, x => x is IPropertySymbol property && property.ReturnsByRefReadonly);
 
         var filtered = Symbols.FilterFieldsAndProperties(members, default);
-        Assert.Equal(new HashSet<string>(expectedMemberNames), new HashSet<string>(filtered.Select(x => x.Name)));
+        Assert.Equal(new HashSet<string>(expectedMemberNames), [.. filtered.Select(x => x.Name)]);
     }
 
     public static IEnumerable<object[]> KeywordData()

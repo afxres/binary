@@ -2,6 +2,7 @@
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Collections.Generic;
 using System.Text;
 
 public static partial class Symbols
@@ -117,57 +118,50 @@ public static partial class Symbols
             if (symbol is IArrayTypeSymbol array)
                 InvokeArrayTypeSymbol(target, array);
             else
-                InvokeNamedTypeSymbol(target, (INamedTypeSymbol)symbol);
-        }
-
-        static void InvokeNamespaceSymbol(StringBuilder target, INamespaceSymbol @namespace)
-        {
-            _ = target.Append('g');
-            if (@namespace.IsGlobalNamespace)
-                return;
-            foreach (var i in @namespace.ToDisplayParts())
-                if (i.Symbol is { } symbol)
-                    _ = target.AppendFormat("_{0}", symbol.Name);
+                InvokeOtherTypeSymbol(target, (INamedTypeSymbol)symbol);
         }
 
         static void InvokeArrayTypeSymbol(StringBuilder target, IArrayTypeSymbol symbol)
         {
-            _ = target.Append("a_");
-            _ = target.Append(symbol.Rank);
-            _ = target.Append("_p_");
+            var prefix = symbol.IsSZArray ? "Array" : $"Array{symbol.Rank}D";
+            _ = target.AppendFormat("{0}{1}", prefix.Length, prefix);
+            _ = target.Append('I');
             Invoke(target, symbol.ElementType);
-            _ = target.Append("_q");
+            _ = target.Append('E');
+        }
+
+        static void InvokeOtherTypeSymbol(StringBuilder target, INamedTypeSymbol symbol)
+        {
+            var tokens = new LinkedList<INamedTypeSymbol>();
+            for (var i = symbol; i is not null; i = i.ContainingType)
+                _ = tokens.AddFirst(i);
+            var @namespace = tokens.First.Value.ContainingNamespace;
+            var nested = @namespace.IsGlobalNamespace is false || tokens.Count is not 1;
+            if (nested)
+                _ = target.Append('N');
+            foreach (var i in @namespace.ToDisplayParts())
+                if (i.Symbol?.Name is { Length: not 0 } name)
+                    _ = target.AppendFormat("{0}{1}", name.Length, name);
+            foreach (var i in tokens)
+                InvokeNamedTypeSymbol(target, i);
+            if (nested)
+                _ = target.Append('E');
         }
 
         static void InvokeNamedTypeSymbol(StringBuilder target, INamedTypeSymbol symbol)
         {
-            var containing = symbol.ContainingType;
-            var @namespace = symbol.ContainingNamespace;
-            if (containing is not null)
-                Invoke(target, containing);
-            else
-                InvokeNamespaceSymbol(target, @namespace);
-
+            _ = target.AppendFormat("{0}{1}", symbol.Name.Length, symbol.Name);
             var arguments = symbol.TypeArguments;
-            _ = target.Append('_');
-            _ = target.Append(arguments.Length);
-            _ = target.Append('_');
-            _ = target.Append(symbol.Name);
             if (arguments.Length is 0)
                 return;
 
-            _ = target.Append("_b_");
+            _ = target.Append('I');
             for (var i = 0; i < arguments.Length; i++)
-            {
                 Invoke(target, arguments[i]);
-                if (i == arguments.Length - 1)
-                    break;
-                _ = target.Append('_');
-            }
-            _ = target.Append("_d");
+            _ = target.Append('E');
         }
 
-        var target = new StringBuilder();
+        var target = new StringBuilder("_Z");
         Invoke(target, symbol);
         return target.ToString();
     }
