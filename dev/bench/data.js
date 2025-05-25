@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1746798707192,
+  "lastUpdate": 1748151264124,
   "repoUrl": "https://github.com/afxres/binary",
   "entries": {
     "Benchmark": [
@@ -1800,6 +1800,78 @@ window.BENCHMARK_DATA = {
             "value": 147.13951873779297,
             "unit": "ns",
             "range": "± 1.7231991155567115"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "stdarg@outlook.com",
+            "name": "miko",
+            "username": "afxres"
+          },
+          "committer": {
+            "email": "stdarg@outlook.com",
+            "name": "miko",
+            "username": "afxres"
+          },
+          "distinct": true,
+          "id": "85a4a6b342f93327080bad7054896a346f8e7144",
+          "message": "Update version number to 5.8.2",
+          "timestamp": "2025-05-25T13:27:55+08:00",
+          "tree_id": "275baa4e6f72c9aed95be7546eec112fc319c083",
+          "url": "https://github.com/afxres/binary/commit/85a4a6b342f93327080bad7054896a346f8e7144"
+        },
+        "date": 1748151263757,
+        "tool": "benchmarkdotnet",
+        "benches": [
+          {
+            "name": "'Encode Named Object (jit)'",
+            "value": 100.51391971111298,
+            "unit": "ns",
+            "range": "± 0.5144245577568681"
+          },
+          {
+            "name": "'Encode Tuple Object (jit)'",
+            "value": 58.89508903026581,
+            "unit": "ns",
+            "range": "± 0.07986989642581156"
+          },
+          {
+            "name": "'Encode Named Object (aot)'",
+            "value": 88.78023966153462,
+            "unit": "ns",
+            "range": "± 0.08921781683000442"
+          },
+          {
+            "name": "'Encode Tuple Object (aot)'",
+            "value": 55.75769406557083,
+            "unit": "ns",
+            "range": "± 0.09195527573176568"
+          },
+          {
+            "name": "'Decode Named Object (jit)'",
+            "value": 207.05901527404785,
+            "unit": "ns",
+            "range": "± 1.1315157031072183"
+          },
+          {
+            "name": "'Decode Tuple Object (jit)'",
+            "value": 143.7378672758738,
+            "unit": "ns",
+            "range": "± 0.5536380694146193"
+          },
+          {
+            "name": "'Decode Named Object (aot)'",
+            "value": 223.41280436515808,
+            "unit": "ns",
+            "range": "± 1.4330030486246879"
+          },
+          {
+            "name": "'Decode Tuple Object (aot)'",
+            "value": 144.25020305315653,
+            "unit": "ns",
+            "range": "± 0.7036401015181322"
           }
         ]
       }
