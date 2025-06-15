@@ -2,7 +2,6 @@
 
 open BenchmarkDotNet.Attributes
 open Mikodev.Binary
-open Mikodev.Binary.Benchmarks.Abstractions
 open System
 open System.Linq
 open System.Runtime.InteropServices
@@ -33,7 +32,7 @@ type ListBenchmarks() =
     [<GlobalSetup>]
     member me.Setup() =
         buffer <- Array.zeroCreate 65536
-        let generator = Generator.CreateDefaultBuilder().AddConverter(BinaryStringConverter()).AddFSharpConverterCreators().Build()
+        let generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().Build()
         intConverter <- generator.GetConverter<_>()
         intListConverter <- generator.GetConverter<_>()
         intList <- Enumerable.Range(0, me.Count) |> Seq.toList

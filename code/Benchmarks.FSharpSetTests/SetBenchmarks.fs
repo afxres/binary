@@ -2,7 +2,6 @@
 
 open BenchmarkDotNet.Attributes
 open Mikodev.Binary
-open Mikodev.Binary.Benchmarks.Abstractions
 open System
 open System.Linq
 
@@ -22,7 +21,7 @@ type SetBenchmarks() =
     [<GlobalSetup>]
     member me.Setup() =
         buffer <- Array.zeroCreate 65536
-        let generator = Generator.CreateDefaultBuilder().AddConverter(BinaryStringConverter()).AddFSharpConverterCreators().Build()
+        let generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().Build()
         intSetConverter <- generator.GetConverter<_>()
         intSet <- Enumerable.Range(0, me.Count) |> Set
         intSetBuffer <- intSetConverter.Encode intSet
