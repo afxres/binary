@@ -2,7 +2,7 @@
 
 using System;
 
-public sealed class EmptyBytesConverter : Converter<int>
+public sealed class EmptyBytesConverter(int length) : Converter<int>(length)
 {
     public override int Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException();
 
