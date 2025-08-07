@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>Mikodev.Binary.Benchmarks.ArrayTests</AssemblyName>
     <RootNamespace>Mikodev.Binary.Benchmarks.ArrayTests</RootNamespace>
     <LangVersion>13</LangVersion>
