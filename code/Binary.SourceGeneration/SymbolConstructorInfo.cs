@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 using System.Text;
 using System.Threading;
 
-public class SymbolConstructorInfo<T>(ImmutableArray<T> members, ImmutableArray<int> objectIndexes, ImmutableArray<int> directIndexes) where T : SymbolMemberInfo
+public class SymbolConstructorInfo<T>(ImmutableArray<T> members, ImmutableArray<int> objectIndexes, ImmutableArray<int> directIndexes) where T : SymbolObjectMemberInfo
 {
     public void AppendTo(StringBuilder target, string typeName, CancellationToken cancellation)
     {

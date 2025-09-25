@@ -19,7 +19,7 @@ public sealed partial class NamedObjectConverterContext
             return new SourceResult(SourceStatus.Ignored);
         var typeInfo = context.GetTypeInfo(symbol);
         var required = typeInfo.RequiredFieldsAndProperties.Count is not 0;
-        var dictionary = new SortedDictionary<string, SymbolNamedMemberInfo>();
+        var dictionary = new SortedDictionary<string, SymbolNamedObjectMemberInfo>();
         var cancellation = context.CancellationToken;
         foreach (var member in typeInfo.FilteredFieldsAndProperties)
         {
@@ -30,7 +30,7 @@ public sealed partial class NamedObjectConverterContext
                 continue;
             var literal = Symbols.ToLiteral(key);
             var optional = required && (Symbols.IsRequiredFieldOrProperty(member) is false);
-            var memberInfo = new SymbolNamedMemberInfo(member, literal, optional);
+            var memberInfo = new SymbolNamedObjectMemberInfo(member, literal, optional);
             dictionary.Add(key, memberInfo);
             cancellation.ThrowIfCancellationRequested();
         }

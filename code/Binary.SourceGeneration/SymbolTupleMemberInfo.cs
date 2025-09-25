@@ -2,4 +2,7 @@
 
 using Microsoft.CodeAnalysis;
 
-public class SymbolTupleMemberInfo(ISymbol symbol) : SymbolMemberInfo(symbol) { }
+public class SymbolTupleMemberInfo(ISymbol symbol, string path) : SymbolMemberInfo(symbol)
+{
+    public string Path => path;
+}

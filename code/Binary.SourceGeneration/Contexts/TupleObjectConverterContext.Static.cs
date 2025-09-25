@@ -14,24 +14,12 @@ public sealed partial class TupleObjectConverterContext
         return context.GetAttribute(member, Constants.TupleKeyAttributeTypeName)?.ConstructorArguments.Single().Value as int? ?? -1;
     }
 
-    private static ImmutableHashSet<INamedTypeSymbol> CreateResource(Compilation compilation)
-    {
-        return Enumerable.Range(1, 8)
-            .Select(x => compilation.GetTypeByMetadataName($"System.Tuple`{x}")?.ConstructUnboundGenericType())
-            .OfType<INamedTypeSymbol>()
-            .ToImmutableHashSet<INamedTypeSymbol>(SymbolEqualityComparer.Default);
-    }
-
     private static bool IsSystemTuple(SourceGeneratorContext context, ITypeSymbol type)
     {
-        if (type.IsTupleType)
-            return true;
         if (type is not INamedTypeSymbol symbol || symbol.IsGenericType is false)
             return false;
-        const string ResourceKey = "Tuple";
-        var types = (ImmutableHashSet<INamedTypeSymbol>)context.GetOrCreateResource(ResourceKey, CreateResource);
-        var unbound = symbol.ConstructUnboundGenericType();
-        return types.Contains(unbound);
+        var fullName = context.GetTypeFullName(type);
+        return fullName.StartsWith("global::System.Tuple");
     }
 
     public static SourceResult? Invoke(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol)
@@ -41,7 +29,7 @@ public sealed partial class TupleObjectConverterContext
         if (system is false && attribute is null)
             return null;
         var typeInfo = context.GetTypeInfo(symbol);
-        var dictionary = new SortedDictionary<int, SymbolTupleMemberInfo>();
+        var dictionary = new SortedDictionary<int, SymbolTupleObjectMemberInfo>();
         var cancellation = context.CancellationToken;
         foreach (var member in typeInfo.FilteredFieldsAndProperties)
         {
@@ -50,7 +38,7 @@ public sealed partial class TupleObjectConverterContext
                 : GetCustomTupleKey(context, member);
             if (key is -1)
                 continue;
-            var memberInfo = new SymbolTupleMemberInfo(member);
+            var memberInfo = new SymbolTupleObjectMemberInfo(member);
             dictionary.Add(key, memberInfo);
             cancellation.ThrowIfCancellationRequested();
         }

@@ -14,8 +14,7 @@ public class LargeValueTupleTests
     public void LargeValueTuple()
     {
         var creators = LargeValueTupleSourceGeneratorContext.ConverterCreators;
-        Assert.Equal(2, creators.Count);
-        Assert.Contains(typeof(ValueTuple<long, UInt128, Int128>), creators.Keys);
+        _ = Assert.Single(creators);
         Assert.Contains(typeof(ValueTuple<byte, sbyte, ushort, short, uint, int, ulong, ValueTuple<long, UInt128, Int128>>), creators.Keys);
 
         var generator = Generator.CreateAotBuilder().AddConverterCreators(creators.Values).Build();

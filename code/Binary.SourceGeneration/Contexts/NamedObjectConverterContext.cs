@@ -8,13 +8,13 @@ using System.Linq;
 
 public sealed partial class NamedObjectConverterContext : SymbolConverterContext
 {
-    private readonly ImmutableArray<SymbolNamedMemberInfo> members;
+    private readonly ImmutableArray<SymbolNamedObjectMemberInfo> members;
 
-    private readonly SymbolConstructorInfo<SymbolNamedMemberInfo>? constructor;
+    private readonly SymbolConstructorInfo<SymbolNamedObjectMemberInfo>? constructor;
 
     private readonly bool hasSelfTypeReference;
 
-    private NamedObjectConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, ImmutableArray<SymbolNamedMemberInfo> members, SymbolConstructorInfo<SymbolNamedMemberInfo>? constructor) : base(context, tracker, symbol)
+    private NamedObjectConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, ImmutableArray<SymbolNamedObjectMemberInfo> members, SymbolConstructorInfo<SymbolNamedObjectMemberInfo>? constructor) : base(context, tracker, symbol)
     {
         members.ForEach((index, value) => AddType(index, value.Type));
         this.members = members;

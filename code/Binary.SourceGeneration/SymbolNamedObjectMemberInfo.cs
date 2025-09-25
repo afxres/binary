@@ -2,7 +2,7 @@
 
 using Microsoft.CodeAnalysis;
 
-public class SymbolNamedMemberInfo(ISymbol symbol, string namedKeyLiteral, bool optional) : SymbolMemberInfo(symbol)
+public class SymbolNamedObjectMemberInfo(ISymbol symbol, string namedKeyLiteral, bool optional) : SymbolObjectMemberInfo(symbol)
 {
     public bool IsOptional { get; } = optional;
 

@@ -411,7 +411,7 @@ public class SymbolsTests
             .OfType<IPropertySymbol>()
             .Where(x => memberNames.Contains(x.Name))
             .ToList();
-        var members = memberSymbols.Select(x => new SymbolTupleMemberInfo(x)).ToImmutableArray();
+        var members = memberSymbols.Select(x => new SymbolTupleObjectMemberInfo(x)).ToImmutableArray();
         Assert.NotEmpty(members);
 
         var context = new SourceGeneratorContext(compilation, _ => Assert.Fail("Invalid Call!"), CancellationToken.None);
@@ -499,7 +499,7 @@ public class SymbolsTests
             .OfType<IPropertySymbol>()
             .Where(x => memberNames.Contains(x.Name))
             .ToList();
-        var members = memberSymbols.Select(x => new SymbolTupleMemberInfo(x)).ToImmutableArray();
+        var members = memberSymbols.Select(x => new SymbolTupleObjectMemberInfo(x)).ToImmutableArray();
         Assert.NotEmpty(members);
 
         var context = new SourceGeneratorContext(compilation, _ => Assert.Fail("Invalid Call!"), CancellationToken.None);

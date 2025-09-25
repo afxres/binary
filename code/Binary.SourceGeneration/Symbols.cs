@@ -31,7 +31,7 @@ public static partial class Symbols
         return result;
     }
 
-    public static SymbolConstructorInfo<T>? GetConstructor<T>(SourceGeneratorContext context, SymbolTypeInfo typeInfo, ImmutableArray<T> members) where T : SymbolMemberInfo
+    public static SymbolConstructorInfo<T>? GetConstructor<T>(SourceGeneratorContext context, SymbolTypeInfo typeInfo, ImmutableArray<T> members) where T : SymbolObjectMemberInfo
     {
         static Dictionary<string, int>? CreateIgnoreCaseDictionary(ImmutableArray<T> members)
         {

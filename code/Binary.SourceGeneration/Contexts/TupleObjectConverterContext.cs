@@ -7,11 +7,11 @@ using System.Collections.Immutable;
 
 public sealed partial class TupleObjectConverterContext : SymbolConverterContext
 {
-    private readonly ImmutableArray<SymbolTupleMemberInfo> members;
+    private readonly ImmutableArray<SymbolTupleObjectMemberInfo> members;
 
-    private readonly SymbolConstructorInfo<SymbolTupleMemberInfo>? constructor;
+    private readonly SymbolConstructorInfo<SymbolTupleObjectMemberInfo>? constructor;
 
-    private TupleObjectConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, ImmutableArray<SymbolTupleMemberInfo> members, SymbolConstructorInfo<SymbolTupleMemberInfo>? constructor) : base(context, tracker, symbol)
+    private TupleObjectConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, ImmutableArray<SymbolTupleObjectMemberInfo> members, SymbolConstructorInfo<SymbolTupleObjectMemberInfo>? constructor) : base(context, tracker, symbol)
     {
         members.ForEach((index, value) => AddType(index, value.Type));
         this.members = members;

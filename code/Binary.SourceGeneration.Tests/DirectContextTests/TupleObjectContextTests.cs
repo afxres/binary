@@ -24,8 +24,18 @@ public class TupleObjectContextTests
     [Fact(DisplayName = "No Available Member Found")]
     public void NoAvailableMemberTest()
     {
-        var compilation = CompilationModule.CreateCompilation(string.Empty);
-        var valueTupleSymbol = compilation.GetTypeByMetadataName("System.ValueTuple");
+        var source =
+            """
+            // no member
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+
+            [TupleObject]
+            struct TupleObjectWithoutMember { }
+            """;
+        var compilation = CompilationModule.CreateCompilation(source);
+        var valueTupleSymbol = compilation.GetTypeByMetadataName("Tests.TupleObjectWithoutMember");
         Assert.NotNull(valueTupleSymbol);
         var context = new SourceGeneratorContext(compilation, _ => Assert.Fail("Invalid Call!"), CancellationToken.None);
         var tracker = new SourceGeneratorTracker(_ => Assert.Fail("Invalid Call!"));
