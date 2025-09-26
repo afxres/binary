@@ -517,9 +517,28 @@ public class CompilationTests
                 public short Tail;
             }
             """;
+        var d =
+            """
+            // struct tuple object
+            namespace TestNamespace;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<Hotel>]
+            public partial class TestGeneratorContext { }
+
+            [TupleObject]
+            public struct Hotel
+            {
+                [TupleKey(0)]
+                public int Field;
+            }
+            """;
         yield return new object[] { a };
         yield return new object[] { b };
         yield return new object[] { c };
+        yield return new object[] { d };
     }
 
     public static IEnumerable<object[]> CustomPlainObjectData()

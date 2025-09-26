@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary.SourceGeneration;
 
 using Microsoft.CodeAnalysis;
+using System.Collections.Immutable;
 
 public static class Constants
 {
@@ -25,6 +26,8 @@ public static class Constants
     public const string ConverterCreatorAttributeTypeName = "Mikodev.Binary.Attributes.ConverterCreatorAttribute";
 
     public const string DiagnosticCategory = "SourceGeneration";
+
+    public static ImmutableArray<string> SystemTupleMemberNames { get; } = ["Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Rest"];
 
     // ↓ source generator context
 

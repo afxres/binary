@@ -1,7 +1,6 @@
 ﻿namespace Mikodev.Binary.SourceGeneration.Contexts;
 
 using Microsoft.CodeAnalysis;
-using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
@@ -17,9 +16,8 @@ public sealed partial class TupleConverterContext
     {
         Debug.Assert(IsSystemValueTuple(symbol));
         var realFields = symbol.GetMembers()
-            .Select(x => (x as IFieldSymbol)?.CorrespondingTupleField)
             .OfType<IFieldSymbol>()
-            .OrderBy(x => x.Name, StringComparer.InvariantCulture)
+            .Where(x => Constants.SystemTupleMemberNames.Contains(x.Name))
             .ToImmutableArray();
         foreach (var i in realFields)
         {

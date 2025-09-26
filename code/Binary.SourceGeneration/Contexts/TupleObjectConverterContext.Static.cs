@@ -7,8 +7,6 @@ using System.Linq;
 
 public sealed partial class TupleObjectConverterContext
 {
-    private static readonly ImmutableArray<string> SystemTupleMemberNames = ImmutableArray.Create(["Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Rest"]);
-
     private static int GetCustomTupleKey(SourceGeneratorContext context, ISymbol member)
     {
         return context.GetAttribute(member, Constants.TupleKeyAttributeTypeName)?.ConstructorArguments.Single().Value as int? ?? -1;
@@ -34,7 +32,7 @@ public sealed partial class TupleObjectConverterContext
         foreach (var member in typeInfo.FilteredFieldsAndProperties)
         {
             var key = system
-                ? SystemTupleMemberNames.IndexOf(member.Name)
+                ? Constants.SystemTupleMemberNames.IndexOf(member.Name)
                 : GetCustomTupleKey(context, member);
             if (key is -1)
                 continue;
