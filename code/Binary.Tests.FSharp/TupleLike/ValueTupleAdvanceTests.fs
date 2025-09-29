@@ -62,10 +62,10 @@ let ``Value Tuple Expand Limited`` () =
     let converter = generator.GetConverter(anonymous = source)
     let buffer = converter.Encode source
     Assert.Empty buffer
-    Assert.Equal<string>([| "int ea"; "string ea"; "value (f32, f64) e" |], list)
+    Assert.Equal<string>([| "int ea"; "string ea"; "single ea"; "double e" |], list)
 
     list.Clear()
     let result = converter.Decode Array.empty
     Assert.Equal(Unchecked.defaultof<struct (int * string * struct (single * double))>, result)
-    Assert.Equal<string>([| "int da"; "string da"; "value (f32, f64) d" |], list)
+    Assert.Equal<string>([| "int da"; "string da"; "single da"; "double d" |], list)
     ()

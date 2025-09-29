@@ -1,6 +1,5 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts;
 
-using Mikodev.Binary.Internal.Contexts.Instance;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -63,21 +62,20 @@ internal static class FallbackPrimitivesMethods
             return;
         }
 
-        static void Expand(IGeneratorContext context, List<(Type, ContextMemberInitializer, IConverter)> result, FieldInfo field, ContextMemberInitializer parent)
+        static void Expand(List<(Type, ContextMemberInitializer)> result, FieldInfo field, ContextMemberInitializer parent)
         {
             var type = field.FieldType;
             var init = new ContextMemberInitializer(x => Expression.Field(parent.Invoke(x), field));
-            var converter = context.GetConverter(type);
-            if (type.IsValueType && IsTupleOrValueTuple(type) && converter.GetType() == typeof(TupleObjectDelegateConverter<>).MakeGenericType(type))
-                Invoke(type, x => Expand(context, result, x, init));
+            if (type.IsValueType && IsTupleOrValueTuple(type))
+                Invoke(type, x => Expand(result, x, init));
             else
-                result.Add((type, init, converter));
+                result.Add((type, init));
         }
 
-        var result = new List<(Type Type, ContextMemberInitializer Member, IConverter Converter)>();
-        Invoke(type, x => Expand(context, result, x, v => v));
+        var result = new List<(Type Type, ContextMemberInitializer Member)>();
+        Invoke(type, x => Expand(result, x, v => v));
         var members = result.Select(x => x.Member).ToImmutableArray();
-        var converters = result.Select(x => x.Converter).ToImmutableArray();
+        var converters = result.Select(x => context.GetConverter(x.Type)).ToImmutableArray();
         var constructor = new ContextObjectConstructor((delegateType, initializer) => ContextMethods.GetDecodeDelegate(delegateType, initializer, members));
         return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, members);
     }
