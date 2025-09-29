@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Mikodev.Binary.SourceGeneration;
 using Mikodev.Binary.SourceGeneration.Internal;
 using System.Collections.Immutable;
+using System.Linq;
 
 public sealed partial class TupleConverterContext : SymbolConverterContext
 {
@@ -11,7 +12,8 @@ public sealed partial class TupleConverterContext : SymbolConverterContext
 
     private TupleConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, ImmutableArray<SymbolTupleMemberInfo> members) : base(context, tracker, symbol)
     {
-        members.ForEach((index, value) => AddType(index, value.Type));
+        var types = members.Select(x => x.Type).ToImmutableArray();
+        types.ForEach(AddType);
         this.members = members;
     }
 

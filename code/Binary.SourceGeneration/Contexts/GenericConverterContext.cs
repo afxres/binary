@@ -11,8 +11,8 @@ public sealed partial class GenericConverterContext : SymbolConverterContext
 
     private GenericConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, TypeInfo info) : base(context, tracker, symbol)
     {
-        var elements = info.ElementTypes;
-        elements.ForEach(AddType);
+        var types = info.ElementTypes;
+        types.ForEach(AddType);
         this.info = info;
     }
 

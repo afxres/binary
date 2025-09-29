@@ -16,7 +16,8 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
 
     private NamedObjectConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, ImmutableArray<SymbolNamedObjectMemberInfo> members, SymbolConstructorInfo<SymbolNamedObjectMemberInfo>? constructor) : base(context, tracker, symbol)
     {
-        members.ForEach((index, value) => AddType(index, value.Type));
+        var types = members.Select(x => x.Type).ToImmutableArray();
+        types.ForEach(AddType);
         this.members = members;
         this.constructor = constructor;
         this.hasSelfTypeReference = members.Any(x => SymbolEqualityComparer.Default.Equals(x.Type, Symbol));
