@@ -5,7 +5,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>Mikodev.Binary.Benchmarks.EnumerationTests</AssemblyName>
     <RootNamespace>Mikodev.Binary.Benchmarks.EnumerationTests</RootNamespace>
-    <LangVersion>13</LangVersion>
+    <LangVersion>14</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

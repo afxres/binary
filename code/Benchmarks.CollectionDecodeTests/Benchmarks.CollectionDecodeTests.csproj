@@ -5,7 +5,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <AssemblyName>Mikodev.Binary.Benchmarks.CollectionDecodeTests</AssemblyName>
     <RootNamespace>Mikodev.Binary.Benchmarks.CollectionDecodeTests</RootNamespace>
-    <LangVersion>13</LangVersion>
+    <LangVersion>14</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 

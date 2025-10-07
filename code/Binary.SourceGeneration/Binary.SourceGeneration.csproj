@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Mikodev.Binary.SourceGeneration</AssemblyName>
     <RootNamespace>Mikodev.Binary.SourceGeneration</RootNamespace>
-    <LangVersion>13</LangVersion>
+    <LangVersion>14</LangVersion>
     <Copyright>Mikodev $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
     <Authors>Mikodev</Authors>
     <Company>Mikodev</Company>

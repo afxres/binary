@@ -4,7 +4,7 @@
     <TargetFrameworks>net10.0</TargetFrameworks>
     <AssemblyName>Mikodev.Binary</AssemblyName>
     <RootNamespace>Mikodev.Binary</RootNamespace>
-    <LangVersion>13</LangVersion>
+    <LangVersion>14</LangVersion>
     <Copyright>Mikodev $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
     <Authors>Mikodev</Authors>
     <Company>Mikodev</Company>

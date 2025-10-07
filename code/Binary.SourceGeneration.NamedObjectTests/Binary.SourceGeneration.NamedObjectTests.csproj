@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net10.0</TargetFrameworks>
-    <LangVersion>13</LangVersion>
+    <LangVersion>14</LangVersion>
     <AssemblyName>Mikodev.Binary.SourceGeneration.NamedObjectTests</AssemblyName>
     <RootNamespace>Mikodev.Binary.SourceGeneration.NamedObjectTests</RootNamespace>
     <Nullable>enable</Nullable>
