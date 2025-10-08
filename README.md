@@ -102,6 +102,11 @@ new { id = 1024, name = "C#" }
 
 Equivalent to:
 ```csharp
+new (string, object)[] { ("id", 1024), ("name", "C#") }
+```
+
+Equivalent to:
+```csharp
 new SortedDictionary<string, object> { ["id"] = 1024, ["name"] = "C#" }
 ```
 
@@ -126,6 +131,36 @@ Bytes:
 04  54 65 78 74
     3.14
     c3 f5 48 40
+```
+
+### Array of Int
+
+Value:
+```csharp
+new int[] { 1, 2 }
+```
+
+Bytes:
+```
+1
+01 00 00 00
+2
+02 00 00 00
+```
+
+### Array of String
+
+Value:
+```csharp
+new string[] { "C#", ".Net" }
+```
+
+Bytes:
+```
+   C  #
+02 43 23
+   .  N  e  t
+04 2e 4e 65 74
 ```
 
 [PC]:https://www.nuget.org/packages/Mikodev.Binary/
