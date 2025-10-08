@@ -106,9 +106,9 @@ public class ConverterExtensionsInternalTests
     public static IEnumerable<object[]> DecodeBrotliArrayPoolRentReturnData()
     {
         var limits = 10_000_000;
-        yield return new object[] { 0, new int[] { 64 * 1024 } };
-        yield return new object[] { 1, new int[] { 64 * 1024 } };
-        yield return new object[] { limits, new int[] { 1 << 16, 1 << 17, 1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24 } };
+        yield return [0, new int[] { 64 * 1024 }];
+        yield return [1, new int[] { 64 * 1024 }];
+        yield return [limits, new int[] { 1 << 16, 1 << 17, 1 << 18, 1 << 19, 1 << 20, 1 << 21, 1 << 22, 1 << 23, 1 << 24 }];
     }
 
     [Theory(DisplayName = "Decode Brotli Array Pool Test")]
@@ -179,9 +179,9 @@ public class ConverterExtensionsInternalTests
     public static IEnumerable<object[]> EncodeBrotliArrayPoolRentReturnData()
     {
         var limits = 10_000_000;
-        yield return new object[] { 0, new int[] { 1 << 16, BrotliEncoder.GetMaxCompressedLength(0) } };
-        yield return new object[] { 1, new int[] { 1 << 16, BrotliEncoder.GetMaxCompressedLength(1) } };
-        yield return new object[] { limits, new int[] { 1 << 16, BrotliEncoder.GetMaxCompressedLength(limits) } };
+        yield return [0, new int[] { 1 << 16, BrotliEncoder.GetMaxCompressedLength(0) }];
+        yield return [1, new int[] { 1 << 16, BrotliEncoder.GetMaxCompressedLength(1) }];
+        yield return [limits, new int[] { 1 << 16, BrotliEncoder.GetMaxCompressedLength(limits) }];
     }
 
     [Theory(DisplayName = "Encode Brotli Array Pool Test")]

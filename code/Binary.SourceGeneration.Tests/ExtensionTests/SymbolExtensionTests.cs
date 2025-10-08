@@ -34,8 +34,8 @@ public class SymbolExtensionTests
             [Test("data")]
             class TestClass { }
             """;
-        yield return new object[] { a, 1 };
-        yield return new object[] { b, "data" };
+        yield return [a, 1];
+        yield return [b, "data"];
     }
 
     [Theory(DisplayName = "Attribute Constructor Argument Test")]
@@ -81,8 +81,8 @@ public class SymbolExtensionTests
             [Test("1", "2")]
             class TestClass { }
             """;
-        yield return new object[] { a };
-        yield return new object[] { b };
+        yield return [a];
+        yield return [b];
     }
 
     [Theory(DisplayName = "Attribute Constructor Argument Invalid Count Test")]

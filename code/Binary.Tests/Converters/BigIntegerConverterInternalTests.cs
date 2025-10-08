@@ -26,8 +26,8 @@ public class BigIntegerConverterInternalTests
 
     public static IEnumerable<object?[]> DataMaxLength()
     {
-        yield return new object[] { new BigInteger() };
-        yield return new object[] { new BigInteger(ulong.MaxValue) };
+        yield return [new BigInteger()];
+        yield return [new BigInteger(ulong.MaxValue)];
     }
 
     [Theory(DisplayName = "Max Length")]

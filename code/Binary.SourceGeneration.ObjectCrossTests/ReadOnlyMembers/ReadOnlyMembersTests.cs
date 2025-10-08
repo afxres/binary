@@ -100,22 +100,22 @@ public class ReadOnlyMembersTests
 {
     public static IEnumerable<object[]> ReadOnlyPropertyData()
     {
-        yield return new object[] { ReadOnlyPropertyNamedObject.Create(86) };
-        yield return new object[] { ReadOnlyPropertyTupleObject.Create("name") };
+        yield return [ReadOnlyPropertyNamedObject.Create(86)];
+        yield return [ReadOnlyPropertyTupleObject.Create("name")];
     }
 
     public static IEnumerable<object[]> ReadOnlyFieldData()
     {
-        yield return new object[] { ReadOnlyFieldNamedObject.Create("someone") };
-        yield return new object[] { ReadOnlyFieldTupleObject.Create(42) };
+        yield return [ReadOnlyFieldNamedObject.Create("someone")];
+        yield return [ReadOnlyFieldTupleObject.Create(42)];
     }
 
     public static IEnumerable<object[]> PropertyWithNonPublicSetterData()
     {
-        yield return new object[] { PropertyWithPrivateSetterNamedObject.Create("private-name") };
-        yield return new object[] { PropertyWithPrivateSetterTupleObject.Create(34) };
-        yield return new object[] { PropertyWithInternalSetterNamedObject.Create(-273) };
-        yield return new object[] { PropertyWithInternalSetterTupleObject.Create("internal-tags") };
+        yield return [PropertyWithPrivateSetterNamedObject.Create("private-name")];
+        yield return [PropertyWithPrivateSetterTupleObject.Create(34)];
+        yield return [PropertyWithInternalSetterNamedObject.Create(-273)];
+        yield return [PropertyWithInternalSetterTupleObject.Create("internal-tags")];
     }
 
     [Theory(DisplayName = "Read Only Members Test")]

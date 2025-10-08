@@ -9,7 +9,7 @@ using System.Diagnostics;
 [DebuggerDisplay(CommonDefine.DebuggerDisplayValue)]
 internal sealed class GeneratorBuilder : IGeneratorBuilder
 {
-    private readonly LinkedList<IConverterCreator> creators = new LinkedList<IConverterCreator>();
+    private readonly LinkedList<IConverterCreator> creators = [];
 
     private readonly Dictionary<Type, IConverter> converters = [];
 

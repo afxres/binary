@@ -47,10 +47,10 @@ public class NativeEndianOrLittleEndianDataTests
 
     public static IEnumerable<object[]> IndexData()
     {
-        yield return new object[] { Index.Start };
-        yield return new object[] { Index.End };
-        yield return new object[] { Index.FromStart(2) };
-        yield return new object[] { Index.FromEnd(3) };
+        yield return [Index.Start];
+        yield return [Index.End];
+        yield return [Index.FromStart(2)];
+        yield return [Index.FromEnd(3)];
     }
 
     public static IEnumerable<object[]> DateOnlyData =>

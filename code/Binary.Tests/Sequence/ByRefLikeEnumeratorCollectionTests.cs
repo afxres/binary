@@ -10,8 +10,8 @@ public class ByRefLikeEnumeratorCollectionTests
     public static IEnumerable<object[]> TestData()
     {
         var source = Enumerable.Range(0, 100).ToList();
-        yield return new object[] { source };
-        yield return new object[] { source.Select(x => x.ToString()).ToList() };
+        yield return [source];
+        yield return [source.Select(x => x.ToString()).ToList()];
     }
 
     [Theory(DisplayName = "Stack Only Value Enumerator Custom Collection Test")]

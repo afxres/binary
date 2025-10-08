@@ -152,32 +152,32 @@ public class IntegrationTests
     {
         var a = new EnumerableTypeAsNamedObject<int> { Alpha = 1, Bravo = 2 };
         var b = new EnumerableTypeAsNamedObject<string> { Alpha = "three", Bravo = "four" };
-        yield return new object[] { a, new { alpha = 1, bravo = 2 } };
-        yield return new object[] { b, new { alpha = "three", bravo = "four" } };
+        yield return [a, new { alpha = 1, bravo = 2 }];
+        yield return [b, new { alpha = "three", bravo = "four" }];
     }
 
     public static IEnumerable<object[]> EnumerableTypeAsTupleObjectData()
     {
         var a = new EnumerableTypeAsTupleObject<int> { A = 1, B = 2, C = 3 };
         var b = new EnumerableTypeAsTupleObject<string> { A = "four", B = "five", C = "six" };
-        yield return new object[] { a, (1, 2, 3) };
-        yield return new object[] { b, ("four", "five", "six") };
+        yield return [a, (1, 2, 3)];
+        yield return [b, ("four", "five", "six")];
     }
 
     public static IEnumerable<object[]> NonGenericEnumerableTypeAsNamedObjectData()
     {
         var a = new NonGenericEnumerableTypeAsNamedObject<int> { Data = 1 };
         var b = new NonGenericEnumerableTypeAsNamedObject<string> { Data = "two" };
-        yield return new object[] { a, new { data = 1 } };
-        yield return new object[] { b, new { data = "two" } };
+        yield return [a, new { data = 1 }];
+        yield return [b, new { data = "two" }];
     }
 
     public static IEnumerable<object[]> NonGenericEnumerableTypeAsTupleObjectData()
     {
         var a = new NonGenericEnumerableTypeAsTupleObject<int> { Item = 3 };
         var b = new NonGenericEnumerableTypeAsTupleObject<string> { Item = "four" };
-        yield return new object[] { a, ValueTuple.Create(3) };
-        yield return new object[] { b, ValueTuple.Create("four") };
+        yield return [a, ValueTuple.Create(3)];
+        yield return [b, ValueTuple.Create("four")];
     }
 
     [Theory(DisplayName = "Encode Decode Test")]

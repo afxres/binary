@@ -15,7 +15,7 @@ public class EmbeddedValueTupleTests
 {
     public static IEnumerable<object[]> EmbeddedValueTupleData()
     {
-        yield return new object[] { (1, (2L, 3), 4.0, (short)5, (6UL, 7f, (byte)8), 9, 10), (1, 2L, 3, 4.0, (short)5, 6UL, 7f, (byte)8, 9, 10) };
+        yield return [(1, (2L, 3), 4.0, (short)5, (6UL, 7f, (byte)8), 9, 10), (1, 2L, 3, 4.0, (short)5, 6UL, 7f, (byte)8, 9, 10)];
     }
 
     [Theory(DisplayName = "Embedded Value Tuple Integration Test")]

@@ -103,9 +103,9 @@ public class InterfaceShadowingTests
 {
     public static IEnumerable<object[]> InterfaceShadowingData()
     {
-        yield return new object[] { typeof(IMessA4), "A", typeof(string) };
-        yield return new object[] { typeof(IShadowingC), "Member", typeof(double) };
-        yield return new object[] { typeof(IShadowingF), "Member", typeof(long) };
+        yield return [typeof(IMessA4), "A", typeof(string)];
+        yield return [typeof(IShadowingC), "Member", typeof(double)];
+        yield return [typeof(IShadowingF), "Member", typeof(long)];
     }
 
     [Theory(DisplayName = "Interface Shadowing Test")]

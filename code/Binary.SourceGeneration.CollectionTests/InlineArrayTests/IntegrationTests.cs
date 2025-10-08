@@ -62,10 +62,10 @@ public class IntegrationTests
         var k = Enumerable.Range(0, 10).Select(x => x.ToString()).ToArray();
         new ReadOnlySpan<string>(k).CopyTo(j);
 
-        yield return new object[] { a, b, 16 };
-        yield return new object[] { c, d, 0 };
-        yield return new object[] { h, i, 40 };
-        yield return new object[] { j, k, 0 };
+        yield return [a, b, 16];
+        yield return [c, d, 0];
+        yield return [h, i, 40];
+        yield return [j, k, 0];
     }
 
     [Theory(DisplayName = "Integration Test")]

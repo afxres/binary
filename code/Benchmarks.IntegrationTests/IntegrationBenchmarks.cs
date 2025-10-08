@@ -55,7 +55,7 @@ public class IntegrationBenchmarks
                 Tags = ["one", "two", "three"],
             }
         };
-        this.tuple = (1024, "csharp", new[] { 7, 11, 555, 1313 }, (2.2D, new List<string> { "one", "two", "three" }));
+        this.tuple = (1024, "csharp", [7, 11, 555, 1313], (2.2D, ["one", "two", "three"]));
 
         this.generatorJit = Generator.CreateDefault();
         this.valueConverterJit = this.generatorJit.GetConverter<Type01>();

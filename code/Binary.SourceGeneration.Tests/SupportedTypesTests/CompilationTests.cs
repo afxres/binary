@@ -28,7 +28,7 @@ public class CompilationTests
             [SourceGeneratorInclude<ImmutableArray<int>>]
             public partial class TestGeneratorContext { }
             """;
-        yield return new object[] { a };
+        yield return [a];
     }
 
     public static IEnumerable<object[]> VariableBoundArrayData()
@@ -45,7 +45,7 @@ public class CompilationTests
             [SourceGeneratorInclude<string[,,]>]
             public partial class TestGeneratorContext { }
             """;
-        yield return new object[] { a };
+        yield return [a];
     }
 
     public static IEnumerable<object[]> EnumTypesData()
@@ -63,7 +63,7 @@ public class CompilationTests
             [SourceGeneratorInclude<DateTimeKind>]
             public partial class TestGeneratorContext { }
             """;
-        yield return new object[] { a };
+        yield return [a];
     }
 
     public static IEnumerable<object[]> CommonGenericTypesData()
@@ -86,7 +86,7 @@ public class CompilationTests
             [SourceGeneratorInclude<ReadOnlySequence<string>>]
             public partial class TestGeneratorContext { }
             """;
-        yield return new object[] { a };
+        yield return [a];
     }
 
     public static IEnumerable<object[]> CommonCollectionTypesData()
@@ -105,7 +105,7 @@ public class CompilationTests
             [SourceGeneratorInclude<HashSet<int>>]
             public partial class TestGeneratorContext { }
             """;
-        yield return new object[] { a };
+        yield return [a];
     }
 
     public static IEnumerable<object[]> CommonCollectionInterfaceTypesData()
@@ -130,7 +130,7 @@ public class CompilationTests
             [SourceGeneratorInclude<IReadOnlyDictionary<long, string>>]
             public partial class TestGeneratorContext { }
             """;
-        yield return new object[] { a };
+        yield return [a];
     }
 
     public static IEnumerable<object[]> FrozenCollectionTypesData()
@@ -148,7 +148,7 @@ public class CompilationTests
             [SourceGeneratorInclude<FrozenSet<int>>]
             public partial class TestGeneratorContext { }
             """;
-        yield return new object[] { a };
+        yield return [a];
     }
 
     public static IEnumerable<object[]> ImmutableCollectionTypesData()
@@ -174,7 +174,7 @@ public class CompilationTests
             [SourceGeneratorInclude<ImmutableSortedSet<int>>]
             public partial class TestGeneratorContext { }
             """;
-        yield return new object[] { a };
+        yield return [a];
     }
 
     public static IEnumerable<object[]> SystemTupleData()
@@ -196,7 +196,7 @@ public class CompilationTests
             [SourceGeneratorInclude<Tuple<byte, sbyte, ushort, short, uint, int, ulong, Tuple<long, UInt128, Int128>>>]
             public partial class TestGeneratorContext { }
             """;
-        yield return new object[] { a };
+        yield return [a];
     }
 
     public static IEnumerable<object[]> CustomConverterData()
@@ -252,8 +252,8 @@ public class CompilationTests
                 public int Data { get; set; }
             }
             """;
-        yield return new object[] { a };
-        yield return new object[] { b };
+        yield return [a];
+        yield return [b];
     }
 
     public static IEnumerable<object[]> CustomConverterCreatorData()
@@ -305,8 +305,8 @@ public class CompilationTests
                 public string Data { get; set; }
             }
             """;
-        yield return new object[] { a };
-        yield return new object[] { b };
+        yield return [a];
+        yield return [b];
     }
 
     public static IEnumerable<object[]> CustomNamedObjectData()
@@ -431,11 +431,11 @@ public class CompilationTests
                 public T Data;
             }
             """;
-        yield return new object[] { a };
-        yield return new object[] { b };
-        yield return new object[] { c };
-        yield return new object[] { d };
-        yield return new object[] { e };
+        yield return [a];
+        yield return [b];
+        yield return [c];
+        yield return [d];
+        yield return [e];
     }
 
     public static IEnumerable<object[]> CustomTupleObjectData()
@@ -535,10 +535,10 @@ public class CompilationTests
                 public int Field;
             }
             """;
-        yield return new object[] { a };
-        yield return new object[] { b };
-        yield return new object[] { c };
-        yield return new object[] { d };
+        yield return [a];
+        yield return [b];
+        yield return [c];
+        yield return [d];
     }
 
     public static IEnumerable<object[]> CustomPlainObjectData()
@@ -661,11 +661,11 @@ public class CompilationTests
                 public ConstructorTypeMismatch(string id, int number) => throw new System.NotSupportedException();
             }
             """;
-        yield return new object[] { a };
-        yield return new object[] { b };
-        yield return new object[] { c };
-        yield return new object[] { d };
-        yield return new object[] { e };
+        yield return [a];
+        yield return [b];
+        yield return [c];
+        yield return [d];
+        yield return [e];
     }
 
     public static IEnumerable<object[]> ContextWithMiscellaneousAttributesData()
@@ -687,7 +687,7 @@ public class CompilationTests
             [SourceGeneratorInclude<List<int>>]
             public partial class TestGeneratorContext { }
             """;
-        yield return new object[] { a };
+        yield return [a];
     }
 
     public static IEnumerable<object[]> NamedTupleData()
@@ -709,7 +709,7 @@ public class CompilationTests
                 public (int Id, string Name) Person;
             }
             """;
-        yield return new object[] { a };
+        yield return [a];
     }
 
     public static IEnumerable<object[]> CustomCollectionData()
@@ -823,9 +823,9 @@ public class CompilationTests
                 IEnumerator IEnumerable.GetEnumerator() => throw new NotSupportedException();
             }
             """;
-        yield return new object[] { a };
-        yield return new object[] { b };
-        yield return new object[] { c };
+        yield return [a];
+        yield return [b];
+        yield return [c];
     }
 
     public static IEnumerable<object[]> CustomInterfaceOrAbstractCollectionData()
@@ -896,10 +896,10 @@ public class CompilationTests
                 readonly IEnumerator<E> IEnumerable<E>.GetEnumerator() => throw new NotSupportedException();
             }
             """;
-        yield return new object[] { a };
-        yield return new object[] { b };
-        yield return new object[] { c };
-        yield return new object[] { d };
+        yield return [a];
+        yield return [b];
+        yield return [c];
+        yield return [d];
     }
 
     public static IEnumerable<object[]> InlineArrayData()
@@ -941,8 +941,8 @@ public class CompilationTests
                 private float element;
             }
             """;
-        yield return new object[] { a };
-        yield return new object[] { b };
+        yield return [a];
+        yield return [b];
     }
 
     [Theory(DisplayName = "Compilation Test")]

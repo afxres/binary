@@ -48,10 +48,10 @@ public class SymbolsTests
                 public int[][] Entry;
             }
             """;
-        yield return new object[] { a, "Array", "global::System.Int32[,]", "_Z7Array2DIN6System5Int32EE" };
-        yield return new object[] { b, "Value", "global::System.String[]", "_Z5ArrayIN6System6StringEE" };
-        yield return new object[] { c, "Items", "global::System.Double[,,,]", "_Z7Array4DIN6System6DoubleEE" };
-        yield return new object[] { d, "Entry", "global::System.Int32[][]", "_Z5ArrayI5ArrayIN6System5Int32EEE" };
+        yield return [a, "Array", "global::System.Int32[,]", "_Z7Array2DIN6System5Int32EE"];
+        yield return [b, "Value", "global::System.String[]", "_Z5ArrayIN6System6StringEE"];
+        yield return [c, "Items", "global::System.Double[,,,]", "_Z7Array4DIN6System6DoubleEE"];
+        yield return [d, "Entry", "global::System.Int32[][]", "_Z5ArrayI5ArrayIN6System5Int32EEE"];
     }
 
     public static IEnumerable<object[]> GlobalNamespaceTypeData()
@@ -74,8 +74,8 @@ public class SymbolsTests
                 public B<int> Data;
             }
             """;
-        yield return new object[] { a, "Item", "global::A", "_Z1A" };
-        yield return new object[] { b, "Data", "global::B<global::System.Int32>", "_Z1BIN6System5Int32EE" };
+        yield return [a, "Item", "global::A", "_Z1A"];
+        yield return [b, "Data", "global::B<global::System.Int32>", "_Z1BIN6System5Int32EE"];
     }
 
     public static IEnumerable<object[]> NestedTypeData()
@@ -112,8 +112,8 @@ public class SymbolsTests
                 public B<int>.X.Y<string> Data;
             }
             """;
-        yield return new object[] { a, "Item", "global::One.Two.A.X.Y", "_ZN3One3Two1A1X1YE" };
-        yield return new object[] { b, "Data", "global::B<global::System.Int32>.X.Y<global::System.String>", "_ZN1BIN6System5Int32EE1X1YIN6System6StringEEE" };
+        yield return [a, "Item", "global::One.Two.A.X.Y", "_ZN3One3Two1A1X1YE"];
+        yield return [b, "Data", "global::B<global::System.Int32>.X.Y<global::System.String>", "_ZN1BIN6System5Int32EE1X1YIN6System6StringEEE"];
     }
 
     public static IEnumerable<object[]> SpecialNameData()
@@ -134,8 +134,8 @@ public class SymbolsTests
                 public @public.@class Bravo;
             }
             """;
-        yield return new object[] { a, "Alpha", "global::@class.@yield.@namespace.@async.@await.@public", "_ZN5class5yield9namespace5async5await6publicE" };
-        yield return new object[] { a, "Bravo", "global::@class.@yield.@namespace.@async.@await.@public.@class", "_ZN5class5yield9namespace5async5await6public5classE" };
+        yield return [a, "Alpha", "global::@class.@yield.@namespace.@async.@await.@public", "_ZN5class5yield9namespace5async5await6publicE"];
+        yield return [a, "Bravo", "global::@class.@yield.@namespace.@async.@await.@public.@class", "_ZN5class5yield9namespace5async5await6public5classE"];
     }
 
     public static IEnumerable<object[]> NestedMultipleTypeArgumentsGenericTypeData()
@@ -156,7 +156,7 @@ public class SymbolsTests
             """;
         var symbolFullName = "global::Alpha.Bravo.Generic<global::System.Int32, global::System.String>.NestedGeneric<global::System.Int32, global::System.String, global::System.Double>";
         var outputFullName = "_ZN5Alpha5Bravo7GenericIN6System5Int32EN6System6StringEE13NestedGenericIN6System5Int32EN6System6StringEN6System6DoubleEEE";
-        yield return new object[] { source, "Intent", symbolFullName, outputFullName };
+        yield return [source, "Intent", symbolFullName, outputFullName];
     }
 
     [Theory(DisplayName = "Get Full Name Test")]
@@ -209,9 +209,9 @@ public class SymbolsTests
                 public Bravo(int a, int b) { }
             }
             """;
-        yield return new object[] { a, "Alpha" };
-        yield return new object[] { b, "IAlpha" };
-        yield return new object[] { c, "Bravo" };
+        yield return [a, "Alpha"];
+        yield return [b, "IAlpha"];
+        yield return [c, "Bravo"];
     }
 
     [Theory(DisplayName = "Get Constructor By Argument Not Found Test")]
@@ -257,8 +257,8 @@ public class SymbolsTests
                 public Hotel(Hotel structure) { }
             }
             """;
-        yield return new object[] { a, "Delta", "another" };
-        yield return new object[] { b, "Hotel", "structure" };
+        yield return [a, "Delta", "another"];
+        yield return [b, "Hotel", "structure"];
     }
 
     [Theory(DisplayName = "Get Constructor By Argument Test")]
@@ -339,10 +339,10 @@ public class SymbolsTests
                 }
             }
             """;
-        yield return new object[] { a, "Alpha", new string[] { "Id" } };
-        yield return new object[] { b, "Bravo", new string[] { "Name" } };
-        yield return new object[] { c, "Delta", new string[] { "Id", "Tag" } };
-        yield return new object[] { d, "Hotel", new string[] { "A", "B", "C" } };
+        yield return [a, "Alpha", new string[] { "Id" }];
+        yield return [b, "Bravo", new string[] { "Name" }];
+        yield return [c, "Delta", new string[] { "Id", "Tag" }];
+        yield return [d, "Hotel", new string[] { "A", "B", "C" }];
     }
 
     public static IEnumerable<object[]> GetConstructorByMemberWithRequiredData()
@@ -386,11 +386,11 @@ public class SymbolsTests
                 public Delta() { }
             }
             """;
-        yield return new object[] { a, "Alpha", new string[] { "A", "B" } };
-        yield return new object[] { b, "Bravo", new string[] { "A", "B" } };
-        yield return new object[] { c, "Delta", new string[] { "X" } };
-        yield return new object[] { c, "Delta", new string[] { "X", "Y" } };
-        yield return new object[] { c, "Delta", new string[] { "X", "Y", "Z" } };
+        yield return [a, "Alpha", new string[] { "A", "B" }];
+        yield return [b, "Bravo", new string[] { "A", "B" }];
+        yield return [c, "Delta", new string[] { "X" }];
+        yield return [c, "Delta", new string[] { "X", "Y" }];
+        yield return [c, "Delta", new string[] { "X", "Y", "Z" }];
     }
 
     [Theory(DisplayName = "Get Constructor By Member")]
@@ -441,8 +441,8 @@ public class SymbolsTests
                 string Name { get; }
             }
             """;
-        yield return new object[] { a, "Alpha", new string[] { "Id" } };
-        yield return new object[] { b, "IAlpha", new string[] { "Name" } };
+        yield return [a, "Alpha", new string[] { "Id" }];
+        yield return [b, "IAlpha", new string[] { "Name" }];
     }
 
     public static IEnumerable<object[]> GetConstructorByMemberWithRequiredNotFoundData()
@@ -475,10 +475,10 @@ public class SymbolsTests
                 }
             }
             """;
-        yield return new object[] { a, "Alpha", new string[] { "A" } };
-        yield return new object[] { a, "Alpha", new string[] { "A", "B" } };
-        yield return new object[] { a, "Alpha", new string[] { "A", "B", "C" } };
-        yield return new object[] { b, "Bravo", new string[] { "A", "B" } };
+        yield return [a, "Alpha", new string[] { "A" }];
+        yield return [a, "Alpha", new string[] { "A", "B" }];
+        yield return [a, "Alpha", new string[] { "A", "B", "C" }];
+        yield return [b, "Bravo", new string[] { "A", "B" }];
     }
 
     [Theory(DisplayName = "Get Constructor By Member Not Found Test")]
@@ -526,10 +526,10 @@ public class SymbolsTests
                 public required string? RequiredProperty { get; set; }
             }
             """;
-        yield return new object[] { a, "Alpha", "Field", false };
-        yield return new object[] { a, "Alpha", "RequiredField", true };
-        yield return new object[] { a, "Alpha", "Property", false };
-        yield return new object[] { a, "Alpha", "RequiredProperty", true };
+        yield return [a, "Alpha", "Field", false];
+        yield return [a, "Alpha", "RequiredField", true];
+        yield return [a, "Alpha", "Property", false];
+        yield return [a, "Alpha", "RequiredProperty", true];
     }
 
     [Theory(DisplayName = "Is Required Field Or Property")]
@@ -567,10 +567,10 @@ public class SymbolsTests
                 public string? ReadOnlyProperty { get; }
             }
             """;
-        yield return new object[] { a, "Alpha", "Field", false };
-        yield return new object[] { a, "Alpha", "ReadOnlyField", true };
-        yield return new object[] { a, "Alpha", "Property", false };
-        yield return new object[] { a, "Alpha", "ReadOnlyProperty", true };
+        yield return [a, "Alpha", "Field", false];
+        yield return [a, "Alpha", "ReadOnlyField", true];
+        yield return [a, "Alpha", "Property", false];
+        yield return [a, "Alpha", "ReadOnlyProperty", true];
     }
 
     [Theory(DisplayName = "Is ReadOnly Field Or Property")]
@@ -630,7 +630,7 @@ public class SymbolsTests
                 internal short this[short key] => default;
             }
             """;
-        yield return new object[] { a, "Alpha", new string[] { "PublicInstanceField", "PublicInstanceProperty" } };
+        yield return [a, "Alpha", new string[] { "PublicInstanceField", "PublicInstanceProperty" }];
     }
 
     [Theory(DisplayName = "Filter Fields And Properties Test")]
@@ -663,19 +663,19 @@ public class SymbolsTests
 
     public static IEnumerable<object[]> KeywordData()
     {
-        yield return new object[] { "bool", true, "@bool" };
-        yield return new object[] { "public", true, "@public" };
-        yield return new object[] { "operator", true, "@operator" };
+        yield return ["bool", true, "@bool"];
+        yield return ["public", true, "@public"];
+        yield return ["operator", true, "@operator"];
 
-        yield return new object[] { "yield", true, "@yield" };
-        yield return new object[] { "var", true, "@var" };
-        yield return new object[] { "async", true, "@async" };
-        yield return new object[] { "await", true, "@await" };
+        yield return ["yield", true, "@yield"];
+        yield return ["var", true, "@var"];
+        yield return ["async", true, "@async"];
+        yield return ["await", true, "@await"];
 
-        yield return new object[] { "list", false, "list" };
-        yield return new object[] { "dictionary", false, "dictionary" };
-        yield return new object[] { "Class", false, "Class" };
-        yield return new object[] { "Namespace", false, "Namespace" };
+        yield return ["list", false, "list"];
+        yield return ["dictionary", false, "dictionary"];
+        yield return ["Class", false, "Class"];
+        yield return ["Namespace", false, "Namespace"];
     }
 
     [Theory(DisplayName = "Keyword In Source Code Test")]

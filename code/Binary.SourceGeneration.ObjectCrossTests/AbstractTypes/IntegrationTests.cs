@@ -87,7 +87,7 @@ public class IntegrationTests
 
     public static IEnumerable<object[]> InstanceData()
     {
-        yield return new object[] { new Person(18, "Tom") };
+        yield return [new Person(18, "Tom")];
     }
 
     [Theory(DisplayName = "Encode Decode Test")]
@@ -111,7 +111,7 @@ public class IntegrationTests
 
     public static IEnumerable<object[]> InstanceEncodeOnlyData()
     {
-        yield return new object[] { new PersonWithInterfaceConstructor(16, "Anonymous") };
+        yield return [new PersonWithInterfaceConstructor(16, "Anonymous")];
     }
 
     [Theory(DisplayName = "Encode Only Test")]
@@ -136,8 +136,8 @@ public class IntegrationTests
 
     public static IEnumerable<object[]> InterfaceOrAbstractClassData()
     {
-        yield return new object[] { typeof(IPerson), new Person(20, "Alpha") };
-        yield return new object[] { typeof(AbstractPerson), new Person(22, "Bravo") };
+        yield return [typeof(IPerson), new Person(20, "Alpha")];
+        yield return [typeof(AbstractPerson), new Person(22, "Bravo")];
     }
 
     [Theory(DisplayName = "Interface Or Abstract Class Encode Only Test")]

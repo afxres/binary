@@ -34,8 +34,8 @@ public class NoAvailableMemberFoundTests
             [TupleObject]
             public class AnotherTupleClass { }
             """;
-        yield return new object[] { namedObject, "NamedObject", "TestNamedClass" };
-        yield return new object[] { tupleObject, "TupleObject", "AnotherTupleClass" };
+        yield return [namedObject, "NamedObject", "TestNamedClass"];
+        yield return [tupleObject, "TupleObject", "AnotherTupleClass"];
     }
 
     public static IEnumerable<object[]> NoAvailableMemberReferencedTypeData()
@@ -78,8 +78,8 @@ public class NoAvailableMemberFoundTests
             [TupleObject]
             public class R2Object { }
             """;
-        yield return new object[] { a, "NamedObject", "L2Object" };
-        yield return new object[] { b, "TupleObject", "R2Object" };
+        yield return [a, "NamedObject", "L2Object"];
+        yield return [b, "TupleObject", "R2Object"];
     }
 
     [Theory(DisplayName = "No Available Member Found")]
@@ -110,7 +110,7 @@ public class NoAvailableMemberFoundTests
 
             public class PlainClass { }
             """;
-        yield return new object[] { plainObject, "PlainClass" };
+        yield return [plainObject, "PlainClass"];
     }
 
     [Theory(DisplayName = "No Available Member Found On Plain Object")]
@@ -145,7 +145,7 @@ public class NoAvailableMemberFoundTests
 
             public class N2Object { }
             """;
-        yield return new object[] { a };
+        yield return [a];
     }
 
     [Theory(DisplayName = "No Available Member Found On Referenced Plain Object")]

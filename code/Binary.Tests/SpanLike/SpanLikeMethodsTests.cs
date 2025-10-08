@@ -33,18 +33,18 @@ public class SpanLikeMethodsTests
 
     public static IEnumerable<object[]> CollectionData()
     {
-        yield return new object[] { ImmutableArray.Create<int>(), 0, 0 };
-        yield return new object[] { ImmutableArray.Create<string>(), 0, 0 };
-        yield return new object[] { Enumerable.Range(0, 1).ToImmutableArray(), 1, 1 };
-        yield return new object[] { Enumerable.Range(0, 1).Select(x => x.ToString()).ToImmutableArray(), 1, 1 };
-        yield return new object[] { Enumerable.Range(0, MaxLevels - 1).ToImmutableArray(), MaxLevels - 1, MaxLevels - 1 };
-        yield return new object[] { Enumerable.Range(0, MaxLevels - 1).Select(x => x.ToString()).ToImmutableArray(), MaxLevels - 1, MaxLevels - 1 };
-        yield return new object[] { Enumerable.Range(0, MaxLevels).ToImmutableArray(), MaxLevels, MaxLevels };
-        yield return new object[] { Enumerable.Range(0, MaxLevels).Select(x => x.ToString()).ToImmutableArray(), MaxLevels, MaxLevels };
-        yield return new object[] { Enumerable.Range(0, MaxLevels + 1).ToImmutableArray(), MaxLevels, NewLength };
-        yield return new object[] { Enumerable.Range(0, MaxLevels + 1).Select(x => x.ToString()).ToImmutableArray(), MaxLevels, NewLength };
-        yield return new object[] { Enumerable.Range(0, MaxLevels + 127).ToImmutableArray(), MaxLevels, NewLength };
-        yield return new object[] { Enumerable.Range(0, MaxLevels + 127).Select(x => x.ToString()).ToImmutableArray(), MaxLevels, NewLength };
+        yield return [ImmutableArray.Create<int>(), 0, 0];
+        yield return [ImmutableArray.Create<string>(), 0, 0];
+        yield return [Enumerable.Range(0, 1).ToImmutableArray(), 1, 1];
+        yield return [Enumerable.Range(0, 1).Select(x => x.ToString()).ToImmutableArray(), 1, 1];
+        yield return [Enumerable.Range(0, MaxLevels - 1).ToImmutableArray(), MaxLevels - 1, MaxLevels - 1];
+        yield return [Enumerable.Range(0, MaxLevels - 1).Select(x => x.ToString()).ToImmutableArray(), MaxLevels - 1, MaxLevels - 1];
+        yield return [Enumerable.Range(0, MaxLevels).ToImmutableArray(), MaxLevels, MaxLevels];
+        yield return [Enumerable.Range(0, MaxLevels).Select(x => x.ToString()).ToImmutableArray(), MaxLevels, MaxLevels];
+        yield return [Enumerable.Range(0, MaxLevels + 1).ToImmutableArray(), MaxLevels, NewLength];
+        yield return [Enumerable.Range(0, MaxLevels + 1).Select(x => x.ToString()).ToImmutableArray(), MaxLevels, NewLength];
+        yield return [Enumerable.Range(0, MaxLevels + 127).ToImmutableArray(), MaxLevels, NewLength];
+        yield return [Enumerable.Range(0, MaxLevels + 127).Select(x => x.ToString()).ToImmutableArray(), MaxLevels, NewLength];
     }
 
     [Theory(DisplayName = "Get List Test")]

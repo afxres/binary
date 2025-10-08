@@ -54,10 +54,10 @@ public class LittleEndianInfoTests
 
     public static IEnumerable<object[]> IndexData()
     {
-        yield return new object[] { 4, Index.Start };
-        yield return new object[] { 4, Index.End };
-        yield return new object[] { 4, Index.FromStart(1) };
-        yield return new object[] { 4, Index.FromEnd(1) };
+        yield return [4, Index.Start];
+        yield return [4, Index.End];
+        yield return [4, Index.FromStart(1)];
+        yield return [4, Index.FromEnd(1)];
     }
 
     [Theory(DisplayName = "Fallback Converter Info")]

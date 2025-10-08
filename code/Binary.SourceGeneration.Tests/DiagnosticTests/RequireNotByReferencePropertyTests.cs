@@ -44,8 +44,8 @@ public class RequireNotByReferencePropertyTests
                 public ref readonly string ReadOnlyLocation => throw new NotSupportedException();
             }
             """;
-        yield return new object[] { a, "Location", "Alpha" };
-        yield return new object[] { b, "ReadOnlyLocation", "Bravo" };
+        yield return [a, "Location", "Alpha"];
+        yield return [b, "ReadOnlyLocation", "Bravo"];
     }
 
     [Theory(DisplayName = "Require Not By Reference Property Test")]
@@ -95,8 +95,8 @@ public class RequireNotByReferencePropertyTests
                 public ref readonly long ReadOnlyLocation => throw new NotSupportedException();
             }
             """;
-        yield return new object[] { a, "Alpha" };
-        yield return new object[] { b, "Bravo" };
+        yield return [a, "Alpha"];
+        yield return [b, "Bravo"];
     }
 
     [Theory(DisplayName = "Require By Reference Property Plain Object Test")]

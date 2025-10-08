@@ -36,56 +36,56 @@ public class IntegrationTests
 
     public static IEnumerable<object[]> EnumData()
     {
-        yield return new object[] { DayOfWeek.Sunday, "LittleEndianConverter`1.*DayOfWeek" };
-        yield return new object[] { ConsoleColor.White, "LittleEndianConverter`1.*ConsoleColor" };
+        yield return [DayOfWeek.Sunday, "LittleEndianConverter`1.*DayOfWeek"];
+        yield return [ConsoleColor.White, "LittleEndianConverter`1.*ConsoleColor"];
     }
 
     public static IEnumerable<object[]> KeyValuePairData()
     {
-        yield return new object[] { KeyValuePair.Create(1, "2"), "KeyValuePairConverter`2.*Int32.*String" };
-        yield return new object[] { KeyValuePair.Create("3", 4), "KeyValuePairConverter`2.*String.*Int32" };
+        yield return [KeyValuePair.Create(1, "2"), "KeyValuePairConverter`2.*Int32.*String"];
+        yield return [KeyValuePair.Create("3", 4), "KeyValuePairConverter`2.*String.*Int32"];
     }
 
     public static IEnumerable<object[]> VariableBoundArrayData()
     {
-        yield return new object[] { new int[1, 1] { { 1 } }, @"VariableBoundArrayConverter`2.*Int32\[,\].*Int32" };
-        yield return new object[] { new string[1, 1, 1] { { { "2" } } }, @"VariableBoundArrayConverter`2.*String\[,,\].*String" };
+        yield return [new int[1, 1] { { 1 } }, @"VariableBoundArrayConverter`2.*Int32\[,\].*Int32"];
+        yield return [new string[1, 1, 1] { { { "2" } } }, @"VariableBoundArrayConverter`2.*String\[,,\].*String"];
     }
 
     public static IEnumerable<object[]> ArrayData()
     {
-        yield return new object[] { new[] { 1 }, @"ArrayBasedNativeEndianConverter`3.*Int32\[\]" };
-        yield return new object[] { new[] { "2" }, @"ArrayBasedConverter`3.*String\[\]" };
+        yield return [new[] { 1 }, @"ArrayBasedNativeEndianConverter`3.*Int32\[\]"];
+        yield return [new[] { "2" }, @"ArrayBasedConverter`3.*String\[\]"];
     }
 
     public static IEnumerable<object[]> ArraySegmentData()
     {
-        yield return new object[] { new ArraySegment<int>([1]), "ArrayBasedNativeEndianConverter`3.*ArraySegment`1.*Int32" };
-        yield return new object[] { new ArraySegment<string>(["2"]), "ArrayBasedConverter`3.*ArraySegment`1.*String" };
+        yield return [new ArraySegment<int>([1]), "ArrayBasedNativeEndianConverter`3.*ArraySegment`1.*Int32"];
+        yield return [new ArraySegment<string>(["2"]), "ArrayBasedConverter`3.*ArraySegment`1.*String"];
     }
 
     public static IEnumerable<object[]> MemoryData()
     {
-        yield return new object[] { new Memory<int>([3]), "ArrayBasedNativeEndianConverter`3.*Memory`1.*Int32" };
-        yield return new object[] { new Memory<string>(["4"]), "ArrayBasedConverter`3.*Memory`1.*String" };
+        yield return [new Memory<int>([3]), "ArrayBasedNativeEndianConverter`3.*Memory`1.*Int32"];
+        yield return [new Memory<string>(["4"]), "ArrayBasedConverter`3.*Memory`1.*String"];
     }
 
     public static IEnumerable<object[]> ReadOnlyMemoryData()
     {
-        yield return new object[] { new ReadOnlyMemory<int>([5]), "ArrayBasedNativeEndianConverter`3.*ReadOnlyMemory`1.*Int32" };
-        yield return new object[] { new ReadOnlyMemory<string>(["6"]), "ArrayBasedConverter`3.*ReadOnlyMemory`1.*String" };
+        yield return [new ReadOnlyMemory<int>([5]), "ArrayBasedNativeEndianConverter`3.*ReadOnlyMemory`1.*Int32"];
+        yield return [new ReadOnlyMemory<string>(["6"]), "ArrayBasedConverter`3.*ReadOnlyMemory`1.*String"];
     }
 
     public static IEnumerable<object[]> ReadOnlySequenceData()
     {
-        yield return new object[] { new ReadOnlySequence<int>([1]), "ReadOnlySequenceConverter`1.*Int32" };
-        yield return new object[] { new ReadOnlySequence<string>(["2"]), "ReadOnlySequenceConverter`1.*String" };
+        yield return [new ReadOnlySequence<int>([1]), "ReadOnlySequenceConverter`1.*Int32"];
+        yield return [new ReadOnlySequence<string>(["2"]), "ReadOnlySequenceConverter`1.*String"];
     }
 
     public static IEnumerable<object[]> PriorityQueueData()
     {
-        yield return new object[] { new PriorityQueue<int, long>([(1, 2L)]), "PriorityQueueConverter`2.*Int32.*Int64" };
-        yield return new object[] { new PriorityQueue<string, int>([("3", 4)]), "PriorityQueueConverter`2.*String.*Int32" };
+        yield return [new PriorityQueue<int, long>([(1, 2L)]), "PriorityQueueConverter`2.*Int32.*Int64"];
+        yield return [new PriorityQueue<string, int>([("3", 4)]), "PriorityQueueConverter`2.*String.*Int32"];
     }
 
     [Theory(DisplayName = "Get Converter Test")]
@@ -116,10 +116,10 @@ public class IntegrationTests
 
     public static IEnumerable<object?[]> NullableData()
     {
-        yield return new object?[] { Box<int?>(null), "NullableConverter`1.*Int32" };
-        yield return new object?[] { Box<int?>(1024), "NullableConverter`1.*Int32" };
-        yield return new object?[] { Box<ConsoleKey?>(null), "NullableConverter`1.*ConsoleKey" };
-        yield return new object?[] { Box<ConsoleKey?>(ConsoleKey.Enter), "NullableConverter`1.*ConsoleKey" };
+        yield return [Box<int?>(null), "NullableConverter`1.*Int32"];
+        yield return [Box<int?>(1024), "NullableConverter`1.*Int32"];
+        yield return [Box<ConsoleKey?>(null), "NullableConverter`1.*ConsoleKey"];
+        yield return [Box<ConsoleKey?>(ConsoleKey.Enter), "NullableConverter`1.*ConsoleKey"];
     }
 
     [Theory(DisplayName = "Get Converter With Boxed Data Test")]

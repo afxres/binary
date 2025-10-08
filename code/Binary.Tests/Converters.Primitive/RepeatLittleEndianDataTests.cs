@@ -14,75 +14,75 @@ public class RepeatLittleEndianDataTests
 {
     public static IEnumerable<object[]> RangeData()
     {
-        yield return new object[] { Range.All };
-        yield return new object[] { Range.StartAt(Index.FromStart(2)) };
-        yield return new object[] { Range.StartAt(Index.FromEnd(3)) };
-        yield return new object[] { Range.EndAt(Index.FromStart(4)) };
-        yield return new object[] { Range.EndAt(Index.FromEnd(5)) };
+        yield return [Range.All];
+        yield return [Range.StartAt(Index.FromStart(2))];
+        yield return [Range.StartAt(Index.FromEnd(3))];
+        yield return [Range.EndAt(Index.FromStart(4))];
+        yield return [Range.EndAt(Index.FromEnd(5))];
     }
 
     public static IEnumerable<object[]> ComplexData()
     {
-        yield return new object[] { Complex.Zero };
-        yield return new object[] { Complex.NaN };
-        yield return new object[] { Complex.Infinity };
-        yield return new object[] { Complex.One };
-        yield return new object[] { Complex.ImaginaryOne };
-        yield return new object[] { new Complex(1.1, 2.2) };
+        yield return [Complex.Zero];
+        yield return [Complex.NaN];
+        yield return [Complex.Infinity];
+        yield return [Complex.One];
+        yield return [Complex.ImaginaryOne];
+        yield return [new Complex(1.1, 2.2)];
     }
 
     public static IEnumerable<object[]> Matrix3x2Data()
     {
-        yield return new object[] { Matrix3x2.Identity };
-        yield return new object[] { new Matrix3x2(1.1F, 1.2F, 2.1F, 2.2F, 3.1F, 3.2F) };
+        yield return [Matrix3x2.Identity];
+        yield return [new Matrix3x2(1.1F, 1.2F, 2.1F, 2.2F, 3.1F, 3.2F)];
     }
 
     public static IEnumerable<object[]> Matrix4x4Data()
     {
-        yield return new object[] { Matrix4x4.Identity };
-        yield return new object[] { new Matrix4x4(1.1F, 1.2F, 1.3F, 1.4F, 2.1F, 2.2F, 2.3F, 2.4F, 3.1F, 3.2F, 3.3F, 3.4F, 4.1F, 4.2F, 4.3F, 4.4F) };
+        yield return [Matrix4x4.Identity];
+        yield return [new Matrix4x4(1.1F, 1.2F, 1.3F, 1.4F, 2.1F, 2.2F, 2.3F, 2.4F, 3.1F, 3.2F, 3.3F, 3.4F, 4.1F, 4.2F, 4.3F, 4.4F)];
     }
 
     public static IEnumerable<object[]> PlaneData()
     {
-        yield return new object[] { new Plane(1.1F, 2.2F, 3.4F, 4.4F) };
+        yield return [new Plane(1.1F, 2.2F, 3.4F, 4.4F)];
     }
 
     public static IEnumerable<object[]> QuaternionData()
     {
-        yield return new object[] { Quaternion.Zero };
-        yield return new object[] { Quaternion.Identity };
-        yield return new object[] { new Quaternion(1.1F, 2.2F, 3.3F, 4.4F) };
+        yield return [Quaternion.Zero];
+        yield return [Quaternion.Identity];
+        yield return [new Quaternion(1.1F, 2.2F, 3.3F, 4.4F)];
     }
 
     public static IEnumerable<object[]> Vector2Data()
     {
-        yield return new object[] { Vector2.Zero };
-        yield return new object[] { Vector2.One };
-        yield return new object[] { Vector2.UnitX };
-        yield return new object[] { Vector2.UnitY };
-        yield return new object[] { new Vector2(1.1F, 2.2F) };
+        yield return [Vector2.Zero];
+        yield return [Vector2.One];
+        yield return [Vector2.UnitX];
+        yield return [Vector2.UnitY];
+        yield return [new Vector2(1.1F, 2.2F)];
     }
 
     public static IEnumerable<object[]> Vector3Data()
     {
-        yield return new object[] { Vector3.Zero };
-        yield return new object[] { Vector3.One };
-        yield return new object[] { Vector3.UnitX };
-        yield return new object[] { Vector3.UnitY };
-        yield return new object[] { Vector3.UnitZ };
-        yield return new object[] { new Vector3(1.1F, 2.2F, 3.3F) };
+        yield return [Vector3.Zero];
+        yield return [Vector3.One];
+        yield return [Vector3.UnitX];
+        yield return [Vector3.UnitY];
+        yield return [Vector3.UnitZ];
+        yield return [new Vector3(1.1F, 2.2F, 3.3F)];
     }
 
     public static IEnumerable<object[]> Vector4Data()
     {
-        yield return new object[] { Vector4.Zero };
-        yield return new object[] { Vector4.One };
-        yield return new object[] { Vector4.UnitX };
-        yield return new object[] { Vector4.UnitY };
-        yield return new object[] { Vector4.UnitZ };
-        yield return new object[] { Vector4.UnitW };
-        yield return new object[] { new Vector4(1.1F, 2.2F, 3.3F, 4.4F) };
+        yield return [Vector4.Zero];
+        yield return [Vector4.One];
+        yield return [Vector4.UnitX];
+        yield return [Vector4.UnitY];
+        yield return [Vector4.UnitZ];
+        yield return [Vector4.UnitW];
+        yield return [new Vector4(1.1F, 2.2F, 3.3F, 4.4F)];
     }
 
     [Theory(DisplayName = "Encode Decode")]

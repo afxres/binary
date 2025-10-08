@@ -19,8 +19,8 @@ public class ReadOnlySequenceConverterTests
 
     public static IEnumerable<object[]> EmptySequenceData()
     {
-        yield return new object[] { ReadOnlySequence<int>.Empty };
-        yield return new object[] { ReadOnlySequence<string>.Empty };
+        yield return [ReadOnlySequence<int>.Empty];
+        yield return [ReadOnlySequence<string>.Empty];
     }
 
     [Theory(DisplayName = "Empty Or Default Test")]
@@ -44,12 +44,12 @@ public class ReadOnlySequenceConverterTests
     {
         var alpha = Enumerable.Range(0, 100).ToArray();
         var bravo = Enumerable.Range(0, 100).Select(x => x.ToString()).ToArray();
-        yield return new object[] { new ReadOnlySequence<int>(alpha) };
-        yield return new object[] { new ReadOnlySequence<int>(alpha, 33, 34) };
-        yield return new object[] { new ReadOnlySequence<int>(alpha, 66, 0) };
-        yield return new object[] { new ReadOnlySequence<string>(bravo) };
-        yield return new object[] { new ReadOnlySequence<string>(bravo, 43, 21) };
-        yield return new object[] { new ReadOnlySequence<string>(bravo, 55, 0) };
+        yield return [new ReadOnlySequence<int>(alpha)];
+        yield return [new ReadOnlySequence<int>(alpha, 33, 34)];
+        yield return [new ReadOnlySequence<int>(alpha, 66, 0)];
+        yield return [new ReadOnlySequence<string>(bravo)];
+        yield return [new ReadOnlySequence<string>(bravo, 43, 21)];
+        yield return [new ReadOnlySequence<string>(bravo, 55, 0)];
     }
 
     [Theory(DisplayName = "Single Segment Test")]
@@ -93,16 +93,16 @@ public class ReadOnlySequenceConverterTests
             .Append(Invoke(x => x, 100, 0, 100))
             .Append(Invoke(x => x, 50, 25, 0))
             .Append(Invoke(x => x, 100, 45, 50));
-        yield return new object[] { new ReadOnlySequence<int>(alphaStart, 0, alphaEnd, alphaEnd.Memory.Length) };
-        yield return new object[] { new ReadOnlySequence<int>(alphaStart, 11, alphaEnd, 25) };
+        yield return [new ReadOnlySequence<int>(alphaStart, 0, alphaEnd, alphaEnd.Memory.Length)];
+        yield return [new ReadOnlySequence<int>(alphaStart, 11, alphaEnd, 25)];
 
         var bravoStart = new MemorySegment<string>(Invoke(x => x.ToString(), 80, 12, 66));
         var bravoEnd = bravoStart
             .Append(Invoke(x => x.ToString(), 44, 0, 44))
             .Append(Invoke(x => x.ToString(), 30, 16, 0))
             .Append(Invoke(x => x.ToString(), 100, 24, 70));
-        yield return new object[] { new ReadOnlySequence<string>(bravoStart, 0, bravoEnd, bravoEnd.Memory.Length) };
-        yield return new object[] { new ReadOnlySequence<string>(bravoStart, 22, bravoEnd, 54) };
+        yield return [new ReadOnlySequence<string>(bravoStart, 0, bravoEnd, bravoEnd.Memory.Length)];
+        yield return [new ReadOnlySequence<string>(bravoStart, 22, bravoEnd, 54)];
     }
 
     [Theory(DisplayName = "Multiple Segment Test")]

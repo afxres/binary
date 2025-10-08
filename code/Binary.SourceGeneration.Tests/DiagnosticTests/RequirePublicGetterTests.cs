@@ -61,9 +61,9 @@ public class RequirePublicGetterTests
                 public string Tags { internal get; set; }
             }
             """;
-        yield return new object[] { a, "Id", "Alpha" };
-        yield return new object[] { b, "Name", "Bravo" };
-        yield return new object[] { c, "Tags", "Delta" };
+        yield return [a, "Id", "Alpha"];
+        yield return [b, "Name", "Bravo"];
+        yield return [c, "Tags", "Delta"];
     }
 
     [Theory(DisplayName = "Require Public Getter")]

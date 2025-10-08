@@ -68,9 +68,9 @@ public class InlineArrayContextTests
                 public int A;
             }
             """;
-        yield return new object[] { a };
-        yield return new object[] { b };
-        yield return new object[] { c };
+        yield return [a];
+        yield return [b];
+        yield return [c];
     }
 
     [Theory(DisplayName = "Invalid Inline Array Test")]

@@ -34,8 +34,8 @@ public class ConverterCreatorAttributeTests
             [ConverterCreator(typeof(object))]
             public class XB { }
             """;
-        yield return new object[] { alpha, "ConverterCreator(null)" };
-        yield return new object[] { bravo, "ConverterCreator(typeof(object))" };
+        yield return [alpha, "ConverterCreator(null)"];
+        yield return [bravo, "ConverterCreator(typeof(object))"];
     }
 
     public static IEnumerable<object[]> MemberNullOrInvalidConverterData()
@@ -76,8 +76,8 @@ public class ConverterCreatorAttributeTests
                 public string? Name { get; set; }
             }
             """;
-        yield return new object[] { alpha, "ConverterCreator(null)" };
-        yield return new object[] { bravo, "ConverterCreator(typeof(string))" };
+        yield return [alpha, "ConverterCreator(null)"];
+        yield return [bravo, "ConverterCreator(typeof(string))"];
     }
 
     [Theory(DisplayName = "Null Or Invalid Converter Test")]

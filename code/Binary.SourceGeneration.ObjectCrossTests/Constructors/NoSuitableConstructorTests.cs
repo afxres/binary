@@ -30,8 +30,8 @@ public class NoSuitableConstructorTests
 {
     public static IEnumerable<object[]> NoSuitableConstructorData()
     {
-        yield return new object[] { new InternalSetterOnlyType { A = 1 } };
-        yield return new object[] { new BestConstructorNotPublic(2) };
+        yield return [new InternalSetterOnlyType { A = 1 }];
+        yield return [new BestConstructorNotPublic(2)];
     }
 
     [Theory(DisplayName = "No Suitable Constructor Test")]

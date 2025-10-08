@@ -18,20 +18,20 @@ public class ConverterExtensionsTests
     {
         static List<TestNamedObject> Create(int count) => Enumerable.Range(0, count).Select(x => new TestNamedObject(x, x.ToString())).ToList();
 
-        yield return new object[] { new List<TestNamedObject>() };
-        yield return new object[] { Create(1) };
-        yield return new object[] { Create(1_000) };
-        yield return new object[] { Create(100_000) };
+        yield return [new List<TestNamedObject>()];
+        yield return [Create(1)];
+        yield return [Create(1_000)];
+        yield return [Create(100_000)];
     }
 
     public static IEnumerable<object[]> TestTupleObjectData()
     {
         static List<TestTupleObject> Create(int count) => Enumerable.Range(0, count).Select(x => new TestTupleObject(x, x.ToString())).ToList();
 
-        yield return new object[] { new List<TestTupleObject>() };
-        yield return new object[] { Create(1) };
-        yield return new object[] { Create(1_000) };
-        yield return new object[] { Create(100_000) };
+        yield return [new List<TestTupleObject>()];
+        yield return [Create(1)];
+        yield return [Create(1_000)];
+        yield return [Create(100_000)];
     }
 
     [Theory(DisplayName = "Encode Decode Brotli Test")]

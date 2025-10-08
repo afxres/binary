@@ -42,7 +42,7 @@ public class PriorityQueueConverterTests
             Assert.Equal(source.UnorderedItems, result.UnorderedItems);
         }
 
-        Invoke(new[] { ("Alpha", 3), ("Bravo", 10) });
-        Invoke(new[] { (2.1, "A"), (5.5, "B+"), (7.6, "C") });
+        Invoke([("Alpha", 3), ("Bravo", 10)]);
+        Invoke([(2.1, "A"), (5.5, "B+"), (7.6, "C")]);
     }
 }

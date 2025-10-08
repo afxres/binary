@@ -48,7 +48,7 @@ public class TupleObjectTests
     public void OverflowTest()
     {
         var converter = new FakeConverter<int>(0x4000_0000);
-        var error = Assert.Throws<OverflowException>(() => TupleObject.GetConverterLength(new[] { converter, converter }));
+        var error = Assert.Throws<OverflowException>(() => TupleObject.GetConverterLength([converter, converter]));
         Assert.Equal(new OverflowException().Message, error.Message);
     }
 

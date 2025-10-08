@@ -92,8 +92,8 @@ public class TupleObjectTests
                 public ushort D;
             }
             """;
-        yield return new object[] { a, "Alpha" };
-        yield return new object[] { b, "Bravo" };
+        yield return [a, "Alpha"];
+        yield return [b, "Bravo"];
     }
 
     [Theory(DisplayName = "Tuple Key Not Sequential")]

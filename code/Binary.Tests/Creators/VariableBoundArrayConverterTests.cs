@@ -17,8 +17,8 @@ public partial class VariableBoundArrayConverterTests
         for (var i = 0; i < bravo.GetLength(0); i++)
             for (var k = 0; k < bravo.GetLength(1); k++)
                 bravo[i, k] = $"({i}, {k})";
-        yield return new object[] { alpha };
-        yield return new object[] { bravo };
+        yield return [alpha];
+        yield return [bravo];
     }
 
     public static IEnumerable<object[]> Array2DNonZeroBasedData()
@@ -31,8 +31,8 @@ public partial class VariableBoundArrayConverterTests
         for (var i = bravo.GetLowerBound(0); i <= bravo.GetUpperBound(0); i++)
             for (var k = bravo.GetLowerBound(1); k <= bravo.GetUpperBound(1); k++)
                 bravo[i, k] = $"({i}, {k})";
-        yield return new object[] { alpha };
-        yield return new object[] { bravo };
+        yield return [alpha];
+        yield return [bravo];
     }
 
     [Theory(DisplayName = "Array2D Test")]
@@ -57,12 +57,12 @@ public partial class VariableBoundArrayConverterTests
 
     public static IEnumerable<object[]> EmptyArrayData()
     {
-        yield return new object[] { new int[3, 0] };
-        yield return new object[] { new string[0, 2, 4] };
+        yield return [new int[3, 0]];
+        yield return [new string[0, 2, 4]];
         var alpha = Array.CreateInstance(typeof(int), [2, 0, 2, 3], [0, 1, 0, 2]);
         var bravo = Array.CreateInstance(typeof(string), [0, 2, 4], [4, 2, 0]);
-        yield return new object[] { alpha };
-        yield return new object[] { bravo };
+        yield return [alpha];
+        yield return [bravo];
     }
 
     [Theory(DisplayName = "Empty Or Null Array Test")]
@@ -110,8 +110,8 @@ public partial class VariableBoundArrayConverterTests
         var bravo = Array.CreateInstance(typeof(string), [20], [21]);
         for (var i = bravo.GetLowerBound(0); i <= bravo.GetUpperBound(0); i++)
             bravo.SetValue(i.ToString(), i);
-        yield return new object[] { alpha };
-        yield return new object[] { bravo };
+        yield return [alpha];
+        yield return [bravo];
     }
 
     [Theory(DisplayName = "Array1D Non Zero Based Test")]

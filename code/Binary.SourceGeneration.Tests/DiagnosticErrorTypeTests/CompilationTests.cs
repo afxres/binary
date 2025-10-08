@@ -46,8 +46,8 @@ public class CompilationTests
 
             static class StaticType { }
             """;
-        yield return new object[] { a, "CS0718" };
-        yield return new object[] { b, "CS0723" };
+        yield return [a, "CS0718"];
+        yield return [b, "CS0723"];
     }
 
     public static IEnumerable<object[]> IncludeNotExistTypeData()
@@ -82,8 +82,8 @@ public class CompilationTests
                 public NotExistType NotExistType;
             }
             """;
-        yield return new object[] { a, "CS0246" };
-        yield return new object[] { b, "CS0246" };
+        yield return [a, "CS0246"];
+        yield return [b, "CS0246"];
     }
 
     [Theory(DisplayName = "Include Error Type Test")]

@@ -33,12 +33,12 @@ public class InlineArrayConverterTests
         var a = new InlineInt32Array();
         var b = Enumerable.Range(0, 10).ToArray();
         new ReadOnlySpan<int>(b).CopyTo(a);
-        yield return new object[] { a, b, 40 };
+        yield return [a, b, 40];
 
         var c = new InlineGenericArray<string>();
         var d = Enumerable.Range(0, 4).Select(x => x.ToString()).ToArray();
         new ReadOnlySpan<string?>(d).CopyTo(c);
-        yield return new object[] { c, d, 0 };
+        yield return [c, d, 0];
     }
 
     [Theory(DisplayName = "Integration Test")]

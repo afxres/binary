@@ -18,16 +18,16 @@ public class SystemTupleTests
 {
     public static IEnumerable<object[]> TupleData()
     {
-        yield return new object[] { Tuple.Create((short)1, 2), 6 };
-        yield return new object[] { Tuple.Create(4096, "String"), 0 };
-        yield return new object[] { Tuple.Create("First", 2, 3.0), 0 };
+        yield return [Tuple.Create((short)1, 2), 6];
+        yield return [Tuple.Create(4096, "String"), 0];
+        yield return [Tuple.Create("First", 2, 3.0), 0];
     }
 
     public static IEnumerable<object[]> ValueTupleData()
     {
-        yield return new object[] { (1, 2L), 12 };
-        yield return new object[] { (4096, "String"), 0 };
-        yield return new object[] { ("First", 2, 3.0), 0 };
+        yield return [(1, 2L), 12];
+        yield return [(4096, "String"), 0];
+        yield return [("First", 2, 3.0), 0];
     }
 
     [Theory(DisplayName = "System Tuple Integration Test")]

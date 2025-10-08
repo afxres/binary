@@ -44,8 +44,8 @@ public class RequireNamedObjectAttributeTests
                 public string Name { get; set; }
             }
             """;
-        yield return new object[] { a, "Id", "Alpha" };
-        yield return new object[] { b, "Name", "Bravo" };
+        yield return [a, "Id", "Alpha"];
+        yield return [b, "Name", "Bravo"];
     }
 
     public static IEnumerable<object[]> ImplicitData()
@@ -71,7 +71,7 @@ public class RequireNamedObjectAttributeTests
                 public Back Back { get; set; }
             }
             """;
-        yield return new object[] { a, "Key", "Back" };
+        yield return [a, "Key", "Back"];
     }
 
     [Theory(DisplayName = "Require 'NamedObjectAttribute' Test")]

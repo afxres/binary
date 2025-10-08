@@ -21,8 +21,8 @@ public class EncodeNullValueTests
 {
     public static IEnumerable<object[]> TupleData()
     {
-        yield return new object[] { new Tuple<int>(7) };
-        yield return new object[] { new TupleAlpha<string> { Data = "11" } };
+        yield return [new Tuple<int>(7)];
+        yield return [new TupleAlpha<string> { Data = "11" }];
     }
 
     [Theory(DisplayName = "Encode Null Value Test")]

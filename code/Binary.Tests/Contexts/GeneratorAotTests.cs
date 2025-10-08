@@ -59,9 +59,9 @@ public class GeneratorAotTests
 
     public static IEnumerable<object[]> EnumData()
     {
-        yield return new object[] { DayOfWeek.Sunday };
-        yield return new object[] { ConsoleKey.Clear };
-        yield return new object[] { ConsoleColor.White };
+        yield return [DayOfWeek.Sunday];
+        yield return [ConsoleKey.Clear];
+        yield return [ConsoleColor.White];
     }
 
     [Theory(DisplayName = "Get Enum Converter Test")]
@@ -81,8 +81,8 @@ public class GeneratorAotTests
 
     public static IEnumerable<object[]> NonEnumData()
     {
-        yield return new object[] { 0 };
-        yield return new object[] { 1L };
+        yield return [0];
+        yield return [1L];
     }
 
     [Theory(DisplayName = "Get Enum Converter Invalid Type")]

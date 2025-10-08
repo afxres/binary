@@ -51,9 +51,9 @@ public class MultipleAttributesTests
             [ConverterCreator(typeof(object))]
             public class Delta { }
             """;
-        yield return new object[] { alpha, "Alpha" };
-        yield return new object[] { bravo, "Bravo" };
-        yield return new object[] { delta, "Delta" };
+        yield return [alpha, "Alpha"];
+        yield return [bravo, "Bravo"];
+        yield return [delta, "Delta"];
     }
 
     [Theory(DisplayName = "Multiple Attributes Found On Type")]
@@ -90,7 +90,7 @@ public class MultipleAttributesTests
                 public string? Tag { get; }
             }
             """;
-        yield return new object[] { alpha, "T01", "Tag" };
+        yield return [alpha, "T01", "Tag"];
     }
 
     [Theory(DisplayName = "Multiple Attributes Found On Member")]

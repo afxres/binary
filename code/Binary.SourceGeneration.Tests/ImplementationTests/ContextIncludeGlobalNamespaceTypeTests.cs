@@ -40,8 +40,8 @@ public class ContextIncludeGlobalNamespaceTypeTests
                 public partial class TestContext { }
             }
             """;
-        yield return new object[] { a };
-        yield return new object[] { b };
+        yield return [a];
+        yield return [b];
     }
 
     [Theory(DisplayName = "Context Including Global Namespace Type Test")]

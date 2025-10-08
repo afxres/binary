@@ -60,8 +60,8 @@ public class NamedObjectWithDefaultValueTests
 {
     public static IEnumerable<object[]> ValueTypeData()
     {
-        yield return new object[] { new StructureAlpha("Hello, Roslyn!") };
-        yield return new object[] { new StructureBravo { Data = 1 } };
+        yield return [new StructureAlpha("Hello, Roslyn!")];
+        yield return [new StructureBravo { Data = 1 }];
     }
 
     [Theory(DisplayName = "Value Type Named Object Default Value Test")]
@@ -96,8 +96,8 @@ public class NamedObjectWithDefaultValueTests
 
     public static IEnumerable<object[]> ClassData()
     {
-        yield return new object[] { new ClassAlpha { Member = "Item" } };
-        yield return new object[] { new ClassBravo { Number = 2, Text = "Data" } };
+        yield return [new ClassAlpha { Member = "Item" }];
+        yield return [new ClassBravo { Number = 2, Text = "Data" }];
     }
 
     [Theory(DisplayName = "Reference Type Named Object Default Value Test")]
@@ -129,8 +129,8 @@ public class NamedObjectWithDefaultValueTests
 
     public static IEnumerable<object[]> InterfaceData()
     {
-        yield return new object[] { typeof(ISome), new Some { Item = "None" } };
-        yield return new object[] { typeof(IData), new Data { Item = 0x1234 } };
+        yield return [typeof(ISome), new Some { Item = "None" }];
+        yield return [typeof(IData), new Data { Item = 0x1234 }];
     }
 
     [Theory(DisplayName = "Interface Type Named Object Default Value Test")]

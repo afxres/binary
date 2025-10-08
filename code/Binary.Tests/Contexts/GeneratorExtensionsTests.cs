@@ -9,12 +9,12 @@ public class GeneratorExtensionsTests
 {
     public static IEnumerable<object[]> TestData()
     {
-        yield return new object[] { Array.Empty<int>() };
-        yield return new object[] { Array.Empty<string>() };
-        yield return new object[] { Enumerable.Range(0, 1).ToArray() };
-        yield return new object[] { Enumerable.Range(0, 1).Select(x => x.ToString()).ToArray() };
-        yield return new object[] { Enumerable.Range(0, 10_000).ToArray() };
-        yield return new object[] { Enumerable.Range(0, 10_000).Select(x => x.ToString()).ToArray() };
+        yield return [Array.Empty<int>()];
+        yield return [Array.Empty<string>()];
+        yield return [Enumerable.Range(0, 1).ToArray()];
+        yield return [Enumerable.Range(0, 1).Select(x => x.ToString()).ToArray()];
+        yield return [Enumerable.Range(0, 10_000).ToArray()];
+        yield return [Enumerable.Range(0, 10_000).Select(x => x.ToString()).ToArray()];
     }
 
     [Theory(DisplayName = "Encode Decode Brotli Test")]

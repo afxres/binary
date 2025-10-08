@@ -71,37 +71,37 @@ public class RequiredMembersTests
     public static IEnumerable<object[]> FieldOnlyAllMemberSetData()
     {
         var keys = new[] { "alpha", "bravo" };
-        yield return new object[] { keys, new FieldOnlyItem { Required = 5, Optional = "6" } };
-        yield return new object[] { keys, new FieldOnlyItem { Required = 7, Optional = "8" } };
+        yield return [keys, new FieldOnlyItem { Required = 5, Optional = "6" }];
+        yield return [keys, new FieldOnlyItem { Required = 7, Optional = "8" }];
     }
 
     public static IEnumerable<object[]> FieldOnlyRequiredMemberSetData()
     {
         var keys = new[] { "alpha" };
-        yield return new object[] { keys, new FieldOnlyItem { Required = 10 } };
-        yield return new object[] { keys, new FieldOnlyItem { Required = 11 } };
+        yield return [keys, new FieldOnlyItem { Required = 10 }];
+        yield return [keys, new FieldOnlyItem { Required = 11 }];
     }
 
     public static IEnumerable<object[]> PropertyOnlyAllMemberSetData()
     {
         var keys = new[] { "required", "optional" };
-        yield return new object[] { keys, new PropertyOnlyItem { RequiredMember = 1, OptionalMember = "1" } };
-        yield return new object[] { keys, new PropertyOnlyItem { RequiredMember = 2, OptionalMember = "Second" } };
+        yield return [keys, new PropertyOnlyItem { RequiredMember = 1, OptionalMember = "1" }];
+        yield return [keys, new PropertyOnlyItem { RequiredMember = 2, OptionalMember = "Second" }];
     }
 
     public static IEnumerable<object[]> PropertyOnlyRequiredMemberSetData()
     {
         var keys = new[] { "required" };
-        yield return new object[] { keys, new PropertyOnlyItem { RequiredMember = 255 } };
-        yield return new object[] { keys, new PropertyOnlyItem { RequiredMember = 256 } };
+        yield return [keys, new PropertyOnlyItem { RequiredMember = 255 }];
+        yield return [keys, new PropertyOnlyItem { RequiredMember = 256 }];
     }
 
     public static IEnumerable<object[]> MixedData()
     {
-        yield return new object[] { new string[] { "a", "b" }, new MixedItem { A = 1, B = "2" } };
-        yield return new object[] { new string[] { "a", "b", "opt-a" }, new MixedItem { A = 3, B = "4", OptionalA = "five" } };
-        yield return new object[] { new string[] { "a", "b", "opt-b" }, new MixedItem { A = 6, B = "7", OptionalB = 8 } };
-        yield return new object[] { new string[] { "a", "b", "opt-a", "opt-b" }, new MixedItem { A = 9, B = "10", OptionalA = "11", OptionalB = 12 } };
+        yield return [new string[] { "a", "b" }, new MixedItem { A = 1, B = "2" }];
+        yield return [new string[] { "a", "b", "opt-a" }, new MixedItem { A = 3, B = "4", OptionalA = "five" }];
+        yield return [new string[] { "a", "b", "opt-b" }, new MixedItem { A = 6, B = "7", OptionalB = 8 }];
+        yield return [new string[] { "a", "b", "opt-a", "opt-b" }, new MixedItem { A = 9, B = "10", OptionalA = "11", OptionalB = 12 }];
     }
 
     [Theory(DisplayName = "Encode Decode Test")]

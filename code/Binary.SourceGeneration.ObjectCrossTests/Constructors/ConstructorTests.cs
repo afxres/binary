@@ -111,12 +111,12 @@ public class ConstructorTests
 {
     public static IEnumerable<object[]> ConstructorData()
     {
-        yield return new object[] { new TestNamedObject(3) { Name = "Zero", Role = "None" } };
-        yield return new object[] { new TestNamedObject(10) { Name = "Alpha", Role = "Administrator" } };
-        yield return new object[] { new TestTupleObject(255, 1L) { Message = "Error" } };
-        yield return new object[] { new TestTupleObject(127, 3L) { Message = "Warning" } };
-        yield return new object[] { new TestPlainObject(new Uri("https://github.com/"), 4096) { Content = "Nice!" } };
-        yield return new object[] { new TestPlainObject(new Uri("https://www.bing.com/"), 6666) { Content = "Bravo!" } };
+        yield return [new TestNamedObject(3) { Name = "Zero", Role = "None" }];
+        yield return [new TestNamedObject(10) { Name = "Alpha", Role = "Administrator" }];
+        yield return [new TestTupleObject(255, 1L) { Message = "Error" }];
+        yield return [new TestTupleObject(127, 3L) { Message = "Warning" }];
+        yield return [new TestPlainObject(new Uri("https://github.com/"), 4096) { Content = "Nice!" }];
+        yield return [new TestPlainObject(new Uri("https://www.bing.com/"), 6666) { Content = "Bravo!" }];
     }
 
     [Theory(DisplayName = "Constructor Test")]

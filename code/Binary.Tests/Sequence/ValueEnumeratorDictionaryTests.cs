@@ -11,10 +11,10 @@ public class ValueEnumeratorDictionaryTests
     public static IEnumerable<object[]> KeyValuePairData()
     {
         var source = Enumerable.Range(0, 100).ToList();
-        yield return new object[] { source.Select(x => KeyValuePair.Create(x, x)).ToList() };
-        yield return new object[] { source.Select(x => KeyValuePair.Create(x, x.ToString())).ToList() };
-        yield return new object[] { source.Select(x => KeyValuePair.Create(x.ToString(), x)).ToList() };
-        yield return new object[] { source.Select(x => KeyValuePair.Create(x.ToString(), x.ToString())).ToList() };
+        yield return [source.Select(x => KeyValuePair.Create(x, x)).ToList()];
+        yield return [source.Select(x => KeyValuePair.Create(x, x.ToString())).ToList()];
+        yield return [source.Select(x => KeyValuePair.Create(x.ToString(), x)).ToList()];
+        yield return [source.Select(x => KeyValuePair.Create(x.ToString(), x.ToString())).ToList()];
     }
 
     [Theory(DisplayName = "Value Enumerator System Dictionary Test")]

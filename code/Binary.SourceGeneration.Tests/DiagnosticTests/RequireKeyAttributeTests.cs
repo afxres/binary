@@ -34,7 +34,7 @@ public class RequireKeyAttributeTests
                 public int Id { get; set; }
             }
             """;
-        yield return new object[] { a, "Id", "Alpha" };
+        yield return [a, "Id", "Alpha"];
     }
 
     [Theory(DisplayName = "Require Key Attribute For Converter Attribute Test")]
@@ -75,7 +75,7 @@ public class RequireKeyAttributeTests
                 public string Name;
             }
             """;
-        yield return new object[] { a, "Name", "Delta" };
+        yield return [a, "Name", "Delta"];
     }
 
     [Theory(DisplayName = "Require Key Attribute For Converter Creator Attribute Test")]
@@ -131,8 +131,8 @@ public class RequireKeyAttributeTests
                 public required string Tail;
             }
             """;
-        yield return new object[] { a, "Second", "Alpha", "Named" };
-        yield return new object[] { b, "Head", "Bravo", "Tuple" };
+        yield return [a, "Second", "Alpha", "Named"];
+        yield return [b, "Head", "Bravo", "Tuple"];
     }
 
     public static IEnumerable<object[]> RequiredMemberBaseTypeData()
@@ -181,8 +181,8 @@ public class RequireKeyAttributeTests
                 public required int Id { get; set; }
             }
             """;
-        yield return new object[] { a, "BaseMember", "Self", "Named" };
-        yield return new object[] { b, "Name", "Student", "Tuple" };
+        yield return [a, "BaseMember", "Self", "Named"];
+        yield return [b, "Name", "Student", "Tuple"];
     }
 
     [Theory(DisplayName = "Require Key Attribute For Required Member Test")]

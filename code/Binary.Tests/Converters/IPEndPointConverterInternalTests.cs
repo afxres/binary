@@ -35,9 +35,9 @@ public class IPEndPointConverterInternalTests
 
     public static IEnumerable<object?[]> DataMaxLength()
     {
-        yield return new object?[] { null, 0 };
-        yield return new object?[] { new IPEndPoint(IPAddress.Any, IPEndPoint.MinPort), 18 };
-        yield return new object?[] { new IPEndPoint(IPAddress.IPv6Any, IPEndPoint.MinPort), 18 };
+        yield return [null, 0];
+        yield return [new IPEndPoint(IPAddress.Any, IPEndPoint.MinPort), 18];
+        yield return [new IPEndPoint(IPAddress.IPv6Any, IPEndPoint.MinPort), 18];
     }
 
     [Theory(DisplayName = "Max Length")]

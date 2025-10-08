@@ -74,16 +74,16 @@ public class MemberOrderTests
 {
     public static IEnumerable<object[]> OrderedMembersData()
     {
-        yield return new object[] { new Person { Id = 100, Name = "Nice!" }, (100, "Nice!") };
-        yield return new object[] { new Person { Id = 1024, Name = "nAmE" }, (1024, "nAmE") };
-        yield return new object[] { new ValuePerson { Id = 286, Name = "Classical" }, (286, "Classical") };
-        yield return new object[] { new ValuePerson { Id = 686, Name = "History" }, (686, "History") };
+        yield return [new Person { Id = 100, Name = "Nice!" }, (100, "Nice!")];
+        yield return [new Person { Id = 1024, Name = "nAmE" }, (1024, "nAmE")];
+        yield return [new ValuePerson { Id = 286, Name = "Classical" }, (286, "Classical")];
+        yield return [new ValuePerson { Id = 686, Name = "History" }, (686, "History")];
     }
 
     public static IEnumerable<object[]> UnorderedMembersData()
     {
-        yield return new object[] { new Student { Age = 20, Class = "C-2", Id = "A8402", Name = "Tom" }, (20, "Tom", "A8402", "C-2") };
-        yield return new object[] { new Student { Age = 18, Class = "A-1", Id = "S3031", Name = "Jerry" }, (18, "Jerry", "S3031", "A-1") };
+        yield return [new Student { Age = 20, Class = "C-2", Id = "A8402", Name = "Tom" }, (20, "Tom", "A8402", "C-2")];
+        yield return [new Student { Age = 18, Class = "A-1", Id = "S3031", Name = "Jerry" }, (18, "Jerry", "S3031", "A-1")];
     }
 
     [Theory(DisplayName = "Member Order Test")]

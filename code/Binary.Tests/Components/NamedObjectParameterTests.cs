@@ -47,8 +47,8 @@ public class NamedObjectParameterTests
 
     public static IEnumerable<object[]> ConstructorParameterStructureToStringData()
     {
-        yield return new[] { new { Id = 1, Name = "First" } };
-        yield return new[] { new { Age = 18, Tag = "Good", Pass = true } };
+        yield return [new { Id = 1, Name = "First" }];
+        yield return [new { Age = 18, Tag = "Good", Pass = true }];
     }
 
     [Theory(DisplayName = "Constructor Parameter Structure To String Test")]

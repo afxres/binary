@@ -29,8 +29,8 @@ public class NativeMemoryAllocatorTests
     {
         var alpha = Enumerable.Range(0, 65536).ToList();
         var bravo = Enumerable.Range(0, 32768).Select(x => x.ToString()).ToList();
-        yield return new object[] { alpha };
-        yield return new object[] { bravo };
+        yield return [alpha];
+        yield return [bravo];
     }
 
     [Theory(DisplayName = "Encode Large Array")]

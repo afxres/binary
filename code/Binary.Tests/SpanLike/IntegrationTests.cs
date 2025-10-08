@@ -95,32 +95,32 @@ public class IntegrationTests
     public static IEnumerable<object?[]> NumberData()
     {
         var sequence = Enumerable.Range(0, 100).ToArray();
-        yield return new object[] { sequence, 0, sequence.Length };
-        yield return new object[] { sequence, 11, 66 };
-        yield return new object[] { sequence, 50, 0 };
+        yield return [sequence, 0, sequence.Length];
+        yield return [sequence, 11, 66];
+        yield return [sequence, 50, 0];
     }
 
     public static IEnumerable<object?[]> TimeSpanData()
     {
         var sequence = Enumerable.Range(0, 100).Select(x => TimeSpan.FromSeconds(x)).ToArray();
-        yield return new object[] { sequence, 0, sequence.Length };
-        yield return new object[] { sequence, 47, 33 };
-        yield return new object[] { sequence, 20, 0 };
+        yield return [sequence, 0, sequence.Length];
+        yield return [sequence, 47, 33];
+        yield return [sequence, 20, 0];
     }
 
     public static IEnumerable<object?[]> StringData()
     {
         var sequence = Enumerable.Range(0, 96).Select(x => new string(Enumerable.Range(32, x).Select(i => (char)i).ToArray())).ToArray();
-        yield return new object[] { sequence, 0, sequence.Length };
-        yield return new object[] { sequence, 16, 10 };
-        yield return new object[] { sequence, 20, 0 };
+        yield return [sequence, 0, sequence.Length];
+        yield return [sequence, 16, 10];
+        yield return [sequence, 20, 0];
     }
 
     public static IEnumerable<object?[]> EmptyData()
     {
-        yield return new object[] { Array.Empty<int>() };
-        yield return new object[] { Array.Empty<TimeSpan>() };
-        yield return new object[] { Array.Empty<string>() };
+        yield return [Array.Empty<int>()];
+        yield return [Array.Empty<TimeSpan>()];
+        yield return [Array.Empty<string>()];
     }
 
     [Theory(DisplayName = "Array Test")]
@@ -197,7 +197,7 @@ public class IntegrationTests
     [MemberData(nameof(StringData))]
     public void ListTest<E>(E[] array, int start, int count)
     {
-        TestConverterMethods<List<E>, E>(new List<E>(array.Skip(start).Take(count)), x => CollectionsMarshal.AsSpan(x));
+        TestConverterMethods<List<E>, E>([.. array.Skip(start).Take(count)], x => CollectionsMarshal.AsSpan(x));
     }
 
     [Theory(DisplayName = "List Null Or Empty Test")]

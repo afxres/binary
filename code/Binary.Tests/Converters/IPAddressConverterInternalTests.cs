@@ -33,9 +33,9 @@ public class IPAddressConverterInternalTests
 
     public static IEnumerable<object?[]> DataMaxLength()
     {
-        yield return new object?[] { null, 0 };
-        yield return new object?[] { IPAddress.Any, 16 };
-        yield return new object?[] { IPAddress.IPv6Any, 16 };
+        yield return [null, 0];
+        yield return [IPAddress.Any, 16];
+        yield return [IPAddress.IPv6Any, 16];
     }
 
     [Theory(DisplayName = "Max Length")]

@@ -74,8 +74,8 @@ public class NamedObjectTests
                 public string? Name { get; set; }
             }
             """;
-        yield return new object[] { alpha, "NamedKey(null)" };
-        yield return new object[] { bravo, """NamedKey("")""" };
+        yield return [alpha, "NamedKey(null)"];
+        yield return [bravo, """NamedKey("")"""];
     }
 
     [Theory(DisplayName = "Key Null Or Empty")]

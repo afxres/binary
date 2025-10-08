@@ -34,11 +34,11 @@ public class VersionConverterInternalTests
 
     public static IEnumerable<object?[]> DataMaxLength()
     {
-        yield return new object?[] { null, 0 };
-        yield return new object?[] { new Version(), 16 };
-        yield return new object?[] { new Version(9, 8), 16 };
-        yield return new object?[] { new Version(9, 8, 7), 16 };
-        yield return new object?[] { new Version(9, 8, 7, 6), 16 };
+        yield return [null, 0];
+        yield return [new Version(), 16];
+        yield return [new Version(9, 8), 16];
+        yield return [new Version(9, 8, 7), 16];
+        yield return [new Version(9, 8, 7, 6), 16];
     }
 
     [Theory(DisplayName = "Max Length")]

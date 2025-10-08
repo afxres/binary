@@ -32,7 +32,7 @@ public class CustomLinkedListTests
                 public LinkedList<T> Next = next;
             }
             """;
-        yield return new object[] { a };
+        yield return [a];
     }
 
     public static IEnumerable<object[]> CustomLinkedListAsPlainObjectData()
@@ -54,7 +54,7 @@ public class CustomLinkedListTests
                 public LinkedList<T> Next = next;
             }
             """;
-        yield return new object[] { a };
+        yield return [a];
     }
 
     public static IEnumerable<object[]> CustomLinkedListAsTupleObjectData()
@@ -79,7 +79,7 @@ public class CustomLinkedListTests
                 public LinkedList<T> Next = next;
             }
             """;
-        yield return new object[] { a, "Next", "LinkedList<String>" };
+        yield return [a, "Next", "LinkedList<String>"];
     }
 
     [Theory(DisplayName = "Custom Linked List As Named Object Test")]

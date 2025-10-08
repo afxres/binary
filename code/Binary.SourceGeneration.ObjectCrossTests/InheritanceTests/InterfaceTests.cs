@@ -84,13 +84,13 @@ public class InterfaceTests
 {
     public static IEnumerable<object[]> InterfaceAmbiguousData()
     {
-        yield return new object[] { typeof(ISameSignatureChild), new[] { "Name" } };
-        yield return new object[] { typeof(IDifferentSetterChild), new[] { "Key" } };
-        yield return new object[] { typeof(IDifferentTypeChild), new[] { "Id" } };
-        yield return new object[] { typeof(IDeepChild), new[] { "Item" } };
-        yield return new object[] { typeof(IMultipleChild), new[] { "B", "C" } };
-        yield return new object[] { typeof(IShadowingE), new[] { "Member" } };
-        yield return new object[] { typeof(IMessA3), new[] { "A" } };
+        yield return [typeof(ISameSignatureChild), new[] { "Name" }];
+        yield return [typeof(IDifferentSetterChild), new[] { "Key" }];
+        yield return [typeof(IDifferentTypeChild), new[] { "Id" }];
+        yield return [typeof(IDeepChild), new[] { "Item" }];
+        yield return [typeof(IMultipleChild), new[] { "B", "C" }];
+        yield return [typeof(IShadowingE), new[] { "Member" }];
+        yield return [typeof(IMessA3), new[] { "A" }];
     }
 
     [Theory(DisplayName = "Interface Ambiguous Test")]

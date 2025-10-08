@@ -50,14 +50,14 @@ public class PropertyOnlyTests
 {
     public static IEnumerable<object[]> ClassData()
     {
-        yield return new object[] { new Equipment { Id = 886, Name = "十分厚重的双语词典" } };
-        yield return new object[] { new Equipment { Id = 686, Name = "棱角分明的百科全书" } };
+        yield return [new Equipment { Id = 886, Name = "十分厚重的双语词典" }];
+        yield return [new Equipment { Id = 686, Name = "棱角分明的百科全书" }];
     }
 
     public static IEnumerable<object[]> ValueData()
     {
-        yield return new object[] { new ValueItem { Tag = 22, Content = "苹果" } };
-        yield return new object[] { new ValueItem { Tag = 14, Content = "Player" } };
+        yield return [new ValueItem { Tag = 22, Content = "苹果" }];
+        yield return [new ValueItem { Tag = 14, Content = "Player" }];
     }
 
     [Theory(DisplayName = "Encode Decode Test")]

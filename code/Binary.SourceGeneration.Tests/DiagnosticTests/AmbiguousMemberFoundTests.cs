@@ -63,8 +63,8 @@ public class AmbiguousMemberFoundTests
 
             interface IMultipleChild : IMultipleA, IMultipleB { }
             """;
-        yield return new object[] { a, new string[] { "Name" }, "INameChild", "SourceGeneratorInclude<INameChild>" };
-        yield return new object[] { b, new string[] { "B", "C" }, "IMultipleChild", "SourceGeneratorInclude<IMultipleChild>" };
+        yield return [a, new string[] { "Name" }, "INameChild", "SourceGeneratorInclude<INameChild>"];
+        yield return [b, new string[] { "B", "C" }, "IMultipleChild", "SourceGeneratorInclude<IMultipleChild>"];
     }
 
     public static IEnumerable<object[]> AmbiguousInterfaceWithObjectAttributeData()
@@ -124,8 +124,8 @@ public class AmbiguousMemberFoundTests
             [TupleObject]
             interface IMultipleChild : IMultipleA, IMultipleB { }
             """;
-        yield return new object[] { a, new string[] { "Name" }, "INameChild", "NamedObject" };
-        yield return new object[] { b, new string[] { "B", "C" }, "IMultipleChild", "TupleObject" };
+        yield return [a, new string[] { "Name" }, "INameChild", "NamedObject"];
+        yield return [b, new string[] { "B", "C" }, "IMultipleChild", "TupleObject"];
     }
 
     [Theory(DisplayName = "Ambiguous Member Found")]

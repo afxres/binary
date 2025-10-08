@@ -46,9 +46,9 @@ public class NoPublicConstructorTests
 {
     public static IEnumerable<object[]> NoPublicConstructorData()
     {
-        yield return new object[] { new NoPublicConstructorNamedObject(-3) };
-        yield return new object[] { new NoPublicConstructorTupleObject("Invalid") };
-        yield return new object[] { new NoPublicConstructorPlainObject(6.6) };
+        yield return [new NoPublicConstructorNamedObject(-3)];
+        yield return [new NoPublicConstructorTupleObject("Invalid")];
+        yield return [new NoPublicConstructorPlainObject(6.6)];
     }
 
     [Theory(DisplayName = "No Public Constructor Test")]

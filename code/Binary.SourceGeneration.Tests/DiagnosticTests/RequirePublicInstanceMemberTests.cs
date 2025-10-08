@@ -42,8 +42,8 @@ public class RequirePublicInstanceMemberTests
                 internal string? InternalField;
             }
             """;
-        yield return new object[] { a, "PrivateProperty", "Alpha" };
-        yield return new object[] { b, "InternalField", "Bravo" };
+        yield return [a, "PrivateProperty", "Alpha"];
+        yield return [b, "InternalField", "Bravo"];
     }
 
     public static IEnumerable<object[]> NonInstanceMemberData()
@@ -99,9 +99,9 @@ public class RequirePublicInstanceMemberTests
                 public const int Constant = 1;
             }
             """;
-        yield return new object[] { a, "StaticProperty", "Alpha" };
-        yield return new object[] { b, "StaticField", "Bravo" };
-        yield return new object[] { c, "Constant", "Delta" };
+        yield return [a, "StaticProperty", "Alpha"];
+        yield return [b, "StaticField", "Bravo"];
+        yield return [c, "Constant", "Delta"];
     }
 
     public static IEnumerable<object[]> NonPublicInstanceMemberData()
@@ -140,8 +140,8 @@ public class RequirePublicInstanceMemberTests
                 internal static string? InternalStaticField;
             }
             """;
-        yield return new object[] { a, "PrivateStaticProperty", "Alpha" };
-        yield return new object[] { b, "InternalStaticField", "Bravo" };
+        yield return [a, "PrivateStaticProperty", "Alpha"];
+        yield return [b, "InternalStaticField", "Bravo"];
     }
 
     [Theory(DisplayName = "Require Public Instance Member")]

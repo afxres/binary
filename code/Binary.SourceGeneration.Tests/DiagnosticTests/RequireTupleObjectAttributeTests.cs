@@ -53,8 +53,8 @@ public class RequireTupleObjectAttributeTests
                 public long Value;
             }
             """;
-        yield return new object[] { a, "Entry", "Delta" };
-        yield return new object[] { b, "Value", "Hotel" };
+        yield return [a, "Entry", "Delta"];
+        yield return [b, "Value", "Hotel"];
     }
 
     [Theory(DisplayName = "Require 'TupleObjectAttribute' Test")]

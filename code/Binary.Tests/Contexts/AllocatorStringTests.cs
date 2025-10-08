@@ -38,9 +38,9 @@ public class AllocatorStringTests
 
     public static IEnumerable<object[]> StringData()
     {
-        yield return new object[] { string.Empty };
-        yield return new object[] { "Alpha" };
-        yield return new object[] { "一二三四" };
+        yield return [string.Empty];
+        yield return ["Alpha"];
+        yield return ["一二三四"];
     }
 
     [Theory(DisplayName = "Append String UTF8 Encoding")]

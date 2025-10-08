@@ -48,10 +48,10 @@ public class FrozenCollectionTests
         var b = source.Select(x => KeyValuePair.Create(x, x.ToString())).ToFrozenDictionary();
         var c = source.Select(x => KeyValuePair.Create(x.ToString(), x)).ToFrozenDictionary();
         var d = source.Select(x => KeyValuePair.Create(x.ToString(), x.ToString())).ToFrozenDictionary();
-        yield return new object[] { a };
-        yield return new object[] { b };
-        yield return new object[] { c };
-        yield return new object[] { d };
+        yield return [a];
+        yield return [b];
+        yield return [c];
+        yield return [d];
     }
 
     [Theory(DisplayName = "Frozen Dictionary Force Base Type Converter")]
@@ -86,8 +86,8 @@ public class FrozenCollectionTests
         var source = Enumerable.Range(0, 100).ToList();
         var a = source.ToFrozenSet();
         var b = source.Select(x => x.ToString()).ToFrozenSet();
-        yield return new object[] { a };
-        yield return new object[] { b };
+        yield return [a];
+        yield return [b];
     }
 
     [Theory(DisplayName = "Frozen Set Force Base Type Converter")]

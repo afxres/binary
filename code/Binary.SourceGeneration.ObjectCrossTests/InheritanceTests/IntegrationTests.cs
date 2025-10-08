@@ -186,14 +186,14 @@ public class IntegrationTests
     public static IEnumerable<object[]> PlainObjectData()
     {
         var b = new B { H = 1, I = 2 };
-        yield return new object[] { typeof(A), b, new { H = 1 } };
-        yield return new object[] { typeof(B), b, new { H = 1, I = 2 } };
+        yield return [typeof(A), b, new { H = 1 }];
+        yield return [typeof(B), b, new { H = 1, I = 2 }];
         var d = new D { H = 3, I = "Four", J = 5, K = "Six" };
         ((B)d).I = 4;
         ((C)d).K = 6;
-        yield return new object[] { typeof(B), d, new { H = 3, I = 4 } };
-        yield return new object[] { typeof(C), d, new { H = 3, I = "Four", J = 5, K = 6 } };
-        yield return new object[] { typeof(D), d, new { H = 3, I = "Four", J = 5, K = "Six" } };
+        yield return [typeof(B), d, new { H = 3, I = 4 }];
+        yield return [typeof(C), d, new { H = 3, I = "Four", J = 5, K = 6 }];
+        yield return [typeof(D), d, new { H = 3, I = "Four", J = 5, K = "Six" }];
     }
 
     public static IEnumerable<object[]> PlainInterfaceObjectData()
@@ -203,25 +203,25 @@ public class IntegrationTests
         ((IP)q).V = 2;
         ((IQ)q).V = "Two";
         ((IQ)q).W = 3;
-        yield return new object[] { typeof(IO), q, new { U = 1 } };
-        yield return new object[] { typeof(IP), q, new { U = 1, V = 2 } };
-        yield return new object[] { typeof(IQ), q, new { U = 1, V = "Two", W = 3 } };
+        yield return [typeof(IO), q, new { U = 1 }];
+        yield return [typeof(IP), q, new { U = 1, V = 2 }];
+        yield return [typeof(IQ), q, new { U = 1, V = "Two", W = 3 }];
     }
 
     public static IEnumerable<object[]> PlainObjectWithIndexerData()
     {
         var d = new IndexerD { Item = "One" };
         ((IndexerA)d).Item = 1;
-        yield return new object[] { typeof(IndexerA), d, new { Item = 1 } };
-        yield return new object[] { typeof(IndexerB), d, new { Item = 1 } };
-        yield return new object[] { typeof(IndexerC), d, new { Item = 1 } };
-        yield return new object[] { typeof(IndexerD), d, new { Item = "One" } };
+        yield return [typeof(IndexerA), d, new { Item = 1 }];
+        yield return [typeof(IndexerB), d, new { Item = 1 }];
+        yield return [typeof(IndexerC), d, new { Item = 1 }];
+        yield return [typeof(IndexerD), d, new { Item = "One" }];
         var f = new IndexerF { Item = "Two", @this = 3, Location = 4 };
         ((IndexerA)f).Item = 5;
         ((IndexerE)f).Location = 6;
-        yield return new object[] { typeof(IndexerA), f, new { Item = 5 } };
-        yield return new object[] { typeof(IndexerE), f, new { Item = "Two", Location = 6L, @this = 3L } };
-        yield return new object[] { typeof(IndexerF), f, new { Item = "Two", Location = 4L, @this = 3L } };
+        yield return [typeof(IndexerA), f, new { Item = 5 }];
+        yield return [typeof(IndexerE), f, new { Item = "Two", Location = 6L, @this = 3L }];
+        yield return [typeof(IndexerF), f, new { Item = "Two", Location = 4L, @this = 3L }];
     }
 
     public static IEnumerable<object[]> PlainObjectWithSpecialMemberNameData()
@@ -233,9 +233,9 @@ public class IntegrationTests
         c.@this = "Six";
         ((SpecialMemberNameB)c).@class = 7;
         c.join = 8;
-        yield return new object[] { typeof(SpecialMemberNameA), c, new { @namespace = 5, @this = 4, yield = 3 } };
-        yield return new object[] { typeof(SpecialMemberNameB), c, new { @class = 7, join = 8, @namespace = 5, @this = "Six", yield = 3 } };
-        yield return new object[] { typeof(SpecialMemberNameC), c, new { async = 1, await = 2, @class = "Zero", join = 8, @namespace = 5, @this = "Six", yield = 3 } };
+        yield return [typeof(SpecialMemberNameA), c, new { @namespace = 5, @this = 4, yield = 3 }];
+        yield return [typeof(SpecialMemberNameB), c, new { @class = 7, join = 8, @namespace = 5, @this = "Six", yield = 3 }];
+        yield return [typeof(SpecialMemberNameC), c, new { async = 1, await = 2, @class = "Zero", join = 8, @namespace = 5, @this = "Six", yield = 3 }];
     }
 
     [Theory(DisplayName = "Encode Decode Test")]

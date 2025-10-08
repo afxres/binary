@@ -25,7 +25,7 @@ public class MultipleContextTests
             [SourceGeneratorInclude<EmptyNamedObject>]
             partial class BravoGeneratorContext { }
             """;
-        yield return new object[] { a, "EmptyNamedObject", "No available member found", "NamedObject" };
+        yield return [a, "EmptyNamedObject", "No available member found", "NamedObject"];
     }
 
     [Theory(DisplayName = "Multiple Context Type Error Test")]
@@ -63,7 +63,7 @@ public class MultipleContextTests
             [SourceGeneratorInclude<EmptyObject>]
             partial class BravoGeneratorContext { }
             """;
-        yield return new object[] { a, "EmptyObject", "No available member found" };
+        yield return [a, "EmptyObject", "No available member found"];
     }
 
     [Theory(DisplayName = "Multiple Context Include Error Test")]

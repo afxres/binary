@@ -11,13 +11,13 @@ public class ConverterStreamTests
 {
     public static IEnumerable<object[]> NumberData()
     {
-        yield return new object[] { 0, 1 };
-        yield return new object[] { 63, 1 };
-        yield return new object[] { 127, 1 };
-        yield return new object[] { 128, 4 };
-        yield return new object[] { 65537, 4 };
-        yield return new object[] { 0x12345678, 4 };
-        yield return new object[] { int.MaxValue, 4 };
+        yield return [0, 1];
+        yield return [63, 1];
+        yield return [127, 1];
+        yield return [128, 4];
+        yield return [65537, 4];
+        yield return [0x12345678, 4];
+        yield return [int.MaxValue, 4];
     }
 
     [Theory(DisplayName = "Encode Decode Test")]
@@ -48,8 +48,8 @@ public class ConverterStreamTests
 
     public static IEnumerable<object[]> NumberInvalidData()
     {
-        yield return new object[] { -1 };
-        yield return new object[] { int.MinValue };
+        yield return [-1];
+        yield return [int.MinValue];
     }
 
     [Theory(DisplayName = "Encode Invalid Number")]
@@ -184,10 +184,10 @@ public class ConverterStreamTests
 
     public static IEnumerable<object[]> NotEnoughBytesData()
     {
-        yield return new object[] { Array.Empty<byte>() };
-        yield return new object[] { new byte[] { 0x80 } };
-        yield return new object[] { new byte[] { 0x80, 0 } };
-        yield return new object[] { new byte[] { 0x80, 0, 1 } };
+        yield return [Array.Empty<byte>()];
+        yield return [new byte[] { 0x80 }];
+        yield return [new byte[] { 0x80, 0 }];
+        yield return [new byte[] { 0x80, 0, 1 }];
     }
 
     [Theory(DisplayName = "Decode Without Enough Bytes")]

@@ -148,20 +148,20 @@ public class IntegrationTests
     {
         var a = Enumerable.Range(0, 100).ToList();
         var b = a.Select(x => x.ToString()).ToList();
-        yield return new object[] { new CustomEnumerable<int>(a), a };
-        yield return new object[] { new CustomEnumerable<string>(b), b };
-        yield return new object[] { new CustomValueEnumerable<int>(a), a };
-        yield return new object[] { new CustomValueEnumerable<string>(b), b };
+        yield return [new CustomEnumerable<int>(a), a];
+        yield return [new CustomEnumerable<string>(b), b];
+        yield return [new CustomValueEnumerable<int>(a), a];
+        yield return [new CustomValueEnumerable<string>(b), b];
     }
 
     public static IEnumerable<object[]> EnumerableKeyValuePairData()
     {
         var a = new[] { KeyValuePair.Create(0, "1") }.ToList();
         var b = new[] { KeyValuePair.Create("2", 3) }.ToList();
-        yield return new object[] { new CustomDictionaryEnumerableConstructor<int, string>(a), a };
-        yield return new object[] { new CustomReadOnlyDictionaryEnumerableConstructor<string, int>(b), b };
-        yield return new object[] { new CustomDictionary<int, string>(new Dictionary<int, string>(a)), a };
-        yield return new object[] { new CustomReadOnlyDictionary<string, int>(new Dictionary<string, int>(b)), b };
+        yield return [new CustomDictionaryEnumerableConstructor<int, string>(a), a];
+        yield return [new CustomReadOnlyDictionaryEnumerableConstructor<string, int>(b), b];
+        yield return [new CustomDictionary<int, string>(new Dictionary<int, string>(a)), a];
+        yield return [new CustomReadOnlyDictionary<string, int>(new Dictionary<string, int>(b)), b];
     }
 
     [Theory(DisplayName = "Enumerable Test")]
@@ -199,18 +199,18 @@ public class IntegrationTests
     {
         var a = Enumerable.Range(0, 100).ToList();
         var b = a.Select(x => x.ToString()).ToList();
-        yield return new object[] { new CustomEnumerableInternalConstructor<int>(a), a };
-        yield return new object[] { new CustomEnumerableInternalConstructor<string>(b), b };
-        yield return new object[] { new CustomValueEnumerableInternalConstructor<int>(a), a };
-        yield return new object[] { new CustomValueEnumerableInternalConstructor<string>(b), b };
+        yield return [new CustomEnumerableInternalConstructor<int>(a), a];
+        yield return [new CustomEnumerableInternalConstructor<string>(b), b];
+        yield return [new CustomValueEnumerableInternalConstructor<int>(a), a];
+        yield return [new CustomValueEnumerableInternalConstructor<string>(b), b];
     }
 
     public static IEnumerable<object[]> EnumerableKeyValuePairEncodeOnlyData()
     {
         var a = new[] { KeyValuePair.Create(0, "1") }.ToList();
         var b = new[] { KeyValuePair.Create("2", 3) }.ToList();
-        yield return new object[] { new CustomDictionaryInternalConstructor<int, string>(a), a };
-        yield return new object[] { new CustomReadOnlyDictionaryInternalConstructor<string, int>(b), b };
+        yield return [new CustomDictionaryInternalConstructor<int, string>(a), a];
+        yield return [new CustomReadOnlyDictionaryInternalConstructor<string, int>(b), b];
     }
 
     [Theory(DisplayName = "Enumerable Encode Only Test")]
@@ -240,20 +240,20 @@ public class IntegrationTests
     {
         var a = Enumerable.Range(0, 100).ToList();
         var b = a.Select(x => x.ToString()).ToList();
-        yield return new object[] { typeof(AbstractEnumerable<int>), new CustomEnumerable<int>(a), a };
-        yield return new object[] { typeof(AbstractEnumerable<string>), new CustomEnumerable<string>(b), b };
-        yield return new object[] { typeof(IAbstractEnumerable<int>), new CustomEnumerable<int>(a), a };
-        yield return new object[] { typeof(IAbstractEnumerable<string>), new CustomEnumerable<string>(b), b };
+        yield return [typeof(AbstractEnumerable<int>), new CustomEnumerable<int>(a), a];
+        yield return [typeof(AbstractEnumerable<string>), new CustomEnumerable<string>(b), b];
+        yield return [typeof(IAbstractEnumerable<int>), new CustomEnumerable<int>(a), a];
+        yield return [typeof(IAbstractEnumerable<string>), new CustomEnumerable<string>(b), b];
     }
 
     public static IEnumerable<object[]> EnumerableKeyValuePairInterfaceOrAbstractClassData()
     {
         var a = new[] { KeyValuePair.Create(0, "1") }.ToList();
         var b = new[] { KeyValuePair.Create("2", 3) }.ToList();
-        yield return new object[] { typeof(AbstractDictionary<int, string>), new CustomDictionary<int, string>(new Dictionary<int, string>(a)), a };
-        yield return new object[] { typeof(AbstractReadOnlyDictionary<string, int>), new CustomReadOnlyDictionary<string, int>(new Dictionary<string, int>(b)), b };
-        yield return new object[] { typeof(IAbstractDictionary<int, string>), new CustomDictionary<int, string>(new Dictionary<int, string>(a)), a };
-        yield return new object[] { typeof(IAbstractReadOnlyDictionary<string, int>), new CustomReadOnlyDictionary<string, int>(new Dictionary<string, int>(b)), b };
+        yield return [typeof(AbstractDictionary<int, string>), new CustomDictionary<int, string>(new Dictionary<int, string>(a)), a];
+        yield return [typeof(AbstractReadOnlyDictionary<string, int>), new CustomReadOnlyDictionary<string, int>(new Dictionary<string, int>(b)), b];
+        yield return [typeof(IAbstractDictionary<int, string>), new CustomDictionary<int, string>(new Dictionary<int, string>(a)), a];
+        yield return [typeof(IAbstractReadOnlyDictionary<string, int>), new CustomReadOnlyDictionary<string, int>(new Dictionary<string, int>(b)), b];
     }
 
     [Theory(DisplayName = "Enumerable Interface Or Abstract Class Test")]

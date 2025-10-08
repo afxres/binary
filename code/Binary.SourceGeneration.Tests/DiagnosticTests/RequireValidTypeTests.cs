@@ -30,8 +30,8 @@ public class RequireValidTypeTests
             [SourceGeneratorInclude<Predicate<int>>]
             public partial class TestGeneratorContext { }
             """;
-        yield return new object[] { a, "Action" };
-        yield return new object[] { b, "Predicate<Int32>" };
+        yield return [a, "Action"];
+        yield return [b, "Predicate<Int32>"];
     }
 
     [Theory(DisplayName = "Require Valid Type For Include Attribute")]
@@ -132,10 +132,10 @@ public class RequireValidTypeTests
                 public Span<byte> Buffer => throw new NotSupportedException();
             }
             """;
-        yield return new object[] { a, "Comparison<String>", "Method", "Alpha" };
-        yield return new object[] { b, "Int32*", "Function", "Bravo" };
-        yield return new object[] { c, "delegate*<String>", "Pointer", "Delta<String>" };
-        yield return new object[] { d, "Span<Byte>", "Buffer", "Hotel" };
+        yield return [a, "Comparison<String>", "Method", "Alpha"];
+        yield return [b, "Int32*", "Function", "Bravo"];
+        yield return [c, "delegate*<String>", "Pointer", "Delta<String>"];
+        yield return [d, "Span<Byte>", "Buffer", "Hotel"];
     }
 
     [Theory(DisplayName = "Require Valid Type For Member")]
@@ -171,7 +171,7 @@ public class RequireValidTypeTests
                 public int* Location;
             }
             """;
-        yield return new object[] { a };
+        yield return [a];
     }
 
     [Theory(DisplayName = "Require Valid Type For Member Of Plain Object")]

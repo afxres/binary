@@ -33,8 +33,8 @@ public class EncodeOnlyTests
 {
     public static IEnumerable<object[]> EncodeOnlyData()
     {
-        yield return new object[] { new TupleObjectWithInternalConstructor(3) };
-        yield return new object[] { new ValueTypeTupleObjectWithoutPublicSetter { Data = "Item" } };
+        yield return [new TupleObjectWithInternalConstructor(3)];
+        yield return [new ValueTypeTupleObjectWithoutPublicSetter { Data = "Item" }];
     }
 
     [Theory(DisplayName = "Encode Only Test")]
