@@ -50,7 +50,7 @@ public partial class UriConverterTests
         var allocator = new Allocator();
         converter.EncodeAuto(ref allocator, item);
         var a = allocator.ToArray();
-        var expectedBytes = Allocator.Invoke(item, (ref Allocator allocator, Uri data) => Allocator.AppendWithLengthPrefix(ref allocator, data.OriginalString.AsSpan(), encoding));
+        var expectedBytes = Allocator.Invoke(item, (ref allocator, data) => Allocator.AppendWithLengthPrefix(ref allocator, data.OriginalString.AsSpan(), encoding));
         Assert.Equal(expectedBytes, a);
         Assert.Equal(new[] { "EncodeAuto", }, stringConverter.CallingSteps);
         stringConverter.CallingSteps.Clear();
@@ -71,7 +71,7 @@ public partial class UriConverterTests
         var allocator = new Allocator();
         converter.EncodeWithLengthPrefix(ref allocator, item);
         var a = allocator.ToArray();
-        var expectedBytes = Allocator.Invoke(item, (ref Allocator allocator, Uri data) => Allocator.AppendWithLengthPrefix(ref allocator, data.OriginalString.AsSpan(), encoding));
+        var expectedBytes = Allocator.Invoke(item, (ref allocator, data) => Allocator.AppendWithLengthPrefix(ref allocator, data.OriginalString.AsSpan(), encoding));
         Assert.Equal(expectedBytes, a);
         Assert.Equal(new[] { "EncodeWithLengthPrefix", }, stringConverter.CallingSteps);
         stringConverter.CallingSteps.Clear();

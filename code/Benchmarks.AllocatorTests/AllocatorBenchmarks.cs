@@ -27,8 +27,8 @@ public class AllocatorBenchmarks
         this.buffer1024 = new byte[1024];
         this.maxCapacity512 = 512;
         this.maxCapacity2048 = 2048;
-        this.ignoreAction = (ref Allocator allocator, byte[]? data) => { };
-        this.appendAction = (ref Allocator allocator, byte[]? data) => Allocator.Append(ref allocator, data);
+        this.ignoreAction = (ref allocator, data) => { };
+        this.appendAction = (ref allocator, data) => Allocator.Append(ref allocator, data);
     }
 
     [Benchmark(Description = "Append (buffer length 1024, length: 0)")]

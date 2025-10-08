@@ -81,7 +81,7 @@ public class ConverterTests
         var converter = new CustomCallbackConverter<int>(sizeof(int))
         {
             DecodeDelegate = BinaryPrimitives.ReadInt32LittleEndian,
-            EncodeDelegate = (ref Allocator allocator, int data) => Allocator.Append(ref allocator, sizeof(int), data, BinaryPrimitives.WriteInt32LittleEndian),
+            EncodeDelegate = (ref allocator, data) => Allocator.Append(ref allocator, sizeof(int), data, BinaryPrimitives.WriteInt32LittleEndian),
         };
 
         var data = new[] { 1, 4, 16, int.MaxValue, int.MinValue, 65536, };
@@ -96,7 +96,7 @@ public class ConverterTests
         var converter = new CustomCallbackConverter<string>(0)
         {
             DecodeDelegate = Encoding.UTF8.GetString,
-            EncodeDelegate = (ref Allocator allocator, string? data) => Allocator.Append(ref allocator, data, Encoding.UTF8),
+            EncodeDelegate = (ref allocator, data) => Allocator.Append(ref allocator, data, Encoding.UTF8),
         };
 
         var data = new[] { "Alpha", "C#", "Hello, world!", "今天天气不错" };

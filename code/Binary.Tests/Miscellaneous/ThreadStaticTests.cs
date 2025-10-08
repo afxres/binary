@@ -96,7 +96,7 @@ public class ThreadStaticTests
         var threads = Enumerable.Range(0, ThreadCount).Select(id => new Thread(() =>
         {
             _ = handle.WaitOne();
-            _ = Allocator.Invoke(-1, (ref Allocator allocator, int item) =>
+            _ = Allocator.Invoke(-1, (ref allocator, item) =>
             {
                 var bufferHelper = threadStaticField.GetValue(null);
                 var buffer = Assert.IsAssignableFrom<byte[]>(bufferField.GetValue(bufferHelper));
@@ -134,21 +134,21 @@ public class ThreadStaticTests
             var buffer02 = default(byte[]);
             var buffer03 = default(byte[]);
 
-            buffer01 = Allocator.Invoke(0x11223344, (ref Allocator allocator01, int item) =>
+            buffer01 = Allocator.Invoke(0x11223344, (ref allocator01, item) =>
             {
                 Assert.Equal(0, allocator01.Length);
                 Assert.Equal(65536, allocator01.Capacity);
                 Assert.Equal(int.MaxValue, allocator01.MaxCapacity);
                 Allocator.Append(ref allocator01, BitConverter.GetBytes(item));
 
-                buffer02 = Allocator.Invoke(0x33445566, (ref Allocator allocator02, int item) =>
+                buffer02 = Allocator.Invoke(0x33445566, (ref allocator02, item) =>
                 {
                     Assert.Equal(0, allocator02.Length);
                     Assert.Equal(0, allocator02.Capacity);
                     Assert.Equal(int.MaxValue, allocator02.MaxCapacity);
                     Allocator.Append(ref allocator02, BitConverter.GetBytes(item));
 
-                    buffer03 = Allocator.Invoke(0x55667788, (ref Allocator allocator03, int item) =>
+                    buffer03 = Allocator.Invoke(0x55667788, (ref allocator03, item) =>
                     {
                         Assert.Equal(0, allocator03.Length);
                         Assert.Equal(0, allocator03.Capacity);
@@ -229,7 +229,7 @@ public class ThreadStaticTests
     {
         static IEnumerable<bool> TestGroup()
         {
-            var error = Assert.Throws<NotSupportedException>(() => Allocator.Invoke(0U, (ref Allocator allocator01, uint _) =>
+            var error = Assert.Throws<NotSupportedException>(() => Allocator.Invoke(0U, (ref allocator01, _) =>
             {
                 Assert.Equal(0, allocator01.Length);
                 Assert.Equal(65536, allocator01.Capacity);
@@ -237,7 +237,7 @@ public class ThreadStaticTests
                 throw new NotSupportedException("Test Message Alpha");
             }));
 
-            var buffer = Allocator.Invoke(0x778899AAU, (ref Allocator allocator02, uint item) =>
+            var buffer = Allocator.Invoke(0x778899AAU, (ref allocator02, item) =>
             {
                 Assert.Equal(0, allocator02.Length);
                 Assert.Equal(65536, allocator02.Capacity);

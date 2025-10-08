@@ -56,7 +56,7 @@ internal static class ContextMethodsOfNamedObject
             var converter = converters[i];
             var invoke = new List<Expression>();
             var target = members[i].Invoke(item);
-            var headed = Allocator.Invoke(headers[i], (ref Allocator allocator, ImmutableArray<byte> header) => Converter.EncodeWithLengthPrefix(ref allocator, header.AsSpan()));
+            var headed = Allocator.Invoke(headers[i], (ref allocator, header) => Converter.EncodeWithLengthPrefix(ref allocator, header.AsSpan()));
             // append named key with length prefix (cached), then append value with length prefix
             invoke.Add(Expression.Call(AppendMethodInfo, allocator, Expression.Constant(headed)));
             invoke.Add(Expression.Call(Expression.Constant(converter), Converter.GetMethod(converter, nameof(IConverter.EncodeWithLengthPrefix)), allocator, target));
