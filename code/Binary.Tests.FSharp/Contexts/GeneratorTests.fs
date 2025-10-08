@@ -12,13 +12,13 @@ type EmptyStructure = struct end
 [<Fact>]
 let ``Get Converter (via type)`` () =
     let alpha = generator.GetConverter(typeof<int * string>)
-    Assert.IsAssignableFrom<Converter<int * string>>(alpha) |> ignore
+    Assert.IsType<Converter<int * string>>(alpha, exactMatch = false) |> ignore
     ()
 
 [<Fact>]
 let ``Get Converter (generic)`` () =
     let alpha = generator.GetConverter<string * int>()
-    Assert.IsAssignableFrom<Converter<string * int>>(alpha) |> ignore
+    Assert.IsType<Converter<string * int>>(alpha, exactMatch = false) |> ignore
     ()
 
 [<Fact>]

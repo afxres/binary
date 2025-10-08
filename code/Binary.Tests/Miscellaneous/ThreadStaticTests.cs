@@ -31,7 +31,7 @@ public class ThreadStaticTests
     {
         private readonly EncodeAction<T> encodeAction = encodeAction;
 
-        public override void Encode(ref Allocator allocator, T? item) => this.encodeAction.Invoke(ref allocator, Assert.IsAssignableFrom<T>(item));
+        public override void Encode(ref Allocator allocator, T? item) => this.encodeAction.Invoke(ref allocator, Assert.IsType<T>(item));
 
         public override T Decode(in ReadOnlySpan<byte> span) => throw new NotSupportedException();
     }
@@ -51,10 +51,10 @@ public class ThreadStaticTests
         var threads = Enumerable.Range(0, ThreadCount).Select(id => new Thread(() =>
         {
             _ = handle.WaitOne();
-            _ = new FakeVariableConverter<int>((ref Allocator allocator, int item) =>
+            _ = new FakeVariableConverter<int>((ref allocator, item) =>
             {
                 var bufferHelper = threadStaticField.GetValue(null);
-                var buffer = Assert.IsAssignableFrom<byte[]>(bufferField.GetValue(bufferHelper));
+                var buffer = Assert.IsType<byte[]>(bufferField.GetValue(bufferHelper), exactMatch: false);
                 ref var head = ref MemoryMarshal.GetReference(allocator.AsSpan());
                 ref var data = ref MemoryMarshal.GetReference(new Span<byte>(buffer));
                 Assert.True(Unsafe.AreSame(ref head, ref data));
@@ -99,7 +99,7 @@ public class ThreadStaticTests
             _ = Allocator.Invoke(-1, (ref allocator, item) =>
             {
                 var bufferHelper = threadStaticField.GetValue(null);
-                var buffer = Assert.IsAssignableFrom<byte[]>(bufferField.GetValue(bufferHelper));
+                var buffer = Assert.IsType<byte[]>(bufferField.GetValue(bufferHelper), exactMatch: false);
                 ref var head = ref MemoryMarshal.GetReference(allocator.AsSpan());
                 ref var data = ref MemoryMarshal.GetReference(new Span<byte>(buffer));
                 Assert.True(Unsafe.AreSame(ref head, ref data));
@@ -158,9 +158,9 @@ public class ThreadStaticTests
                 });
             });
 
-            var result01 = BitConverter.ToInt32(Assert.IsAssignableFrom<byte[]>(buffer01), 0);
-            var result02 = BitConverter.ToInt32(Assert.IsAssignableFrom<byte[]>(buffer02), 0);
-            var result03 = BitConverter.ToInt32(Assert.IsAssignableFrom<byte[]>(buffer03), 0);
+            var result01 = BitConverter.ToInt32(Assert.IsType<byte[]>(buffer01), 0);
+            var result02 = BitConverter.ToInt32(Assert.IsType<byte[]>(buffer02), 0);
+            var result03 = BitConverter.ToInt32(Assert.IsType<byte[]>(buffer03), 0);
 
             yield return result01 == 0x11223344;
             yield return result02 == 0x33445566;
@@ -182,21 +182,21 @@ public class ThreadStaticTests
             var buffer02 = default(byte[]);
             var buffer03 = default(byte[]);
 
-            buffer01 = new FakeVariableConverter<uint>((ref Allocator allocator01, uint item01) =>
+            buffer01 = new FakeVariableConverter<uint>((ref allocator01, item01) =>
             {
                 Assert.Equal(0, allocator01.Length);
                 Assert.Equal(65536, allocator01.Capacity);
                 Assert.Equal(int.MaxValue, allocator01.MaxCapacity);
                 Allocator.Append(ref allocator01, BitConverter.GetBytes(item01));
 
-                buffer02 = new FakeVariableConverter<uint>((ref Allocator allocator02, uint item02) =>
+                buffer02 = new FakeVariableConverter<uint>((ref allocator02, item02) =>
                 {
                     Assert.Equal(0, allocator02.Length);
                     Assert.Equal(0, allocator02.Capacity);
                     Assert.Equal(int.MaxValue, allocator02.MaxCapacity);
                     Allocator.Append(ref allocator02, BitConverter.GetBytes(item02));
 
-                    buffer03 = new FakeVariableConverter<uint>((ref Allocator allocator03, uint item03) =>
+                    buffer03 = new FakeVariableConverter<uint>((ref allocator03, item03) =>
                     {
                         Assert.Equal(0, allocator03.Length);
                         Assert.Equal(0, allocator03.Capacity);
@@ -209,9 +209,9 @@ public class ThreadStaticTests
             })
             .Encode(0x99AABBCC);
 
-            var result01 = BitConverter.ToUInt32(Assert.IsAssignableFrom<byte[]>(buffer01), 0);
-            var result02 = BitConverter.ToUInt32(Assert.IsAssignableFrom<byte[]>(buffer02), 0);
-            var result03 = BitConverter.ToUInt32(Assert.IsAssignableFrom<byte[]>(buffer03), 0);
+            var result01 = BitConverter.ToUInt32(Assert.IsType<byte[]>(buffer01), 0);
+            var result02 = BitConverter.ToUInt32(Assert.IsType<byte[]>(buffer02), 0);
+            var result03 = BitConverter.ToUInt32(Assert.IsType<byte[]>(buffer03), 0);
 
             yield return result01 == 0x99AABBCC;
             yield return result02 == 0xBBCCDDEE;
@@ -262,7 +262,7 @@ public class ThreadStaticTests
     {
         static IEnumerable<bool> TestGroup()
         {
-            var error = Assert.Throws<NotSupportedException>(() => new FakeVariableConverter<uint>((ref Allocator allocator01, uint item01) =>
+            var error = Assert.Throws<NotSupportedException>(() => new FakeVariableConverter<uint>((ref allocator01, item01) =>
             {
                 Assert.Equal(0, allocator01.Length);
                 Assert.Equal(65536, allocator01.Capacity);
@@ -271,7 +271,7 @@ public class ThreadStaticTests
             })
             .Encode(0xFFEEDDCC));
 
-            var buffer = new FakeVariableConverter<uint>((ref Allocator allocator02, uint item02) =>
+            var buffer = new FakeVariableConverter<uint>((ref allocator02, item02) =>
             {
                 Assert.Equal(0, allocator02.Length);
                 Assert.Equal(65536, allocator02.Capacity);

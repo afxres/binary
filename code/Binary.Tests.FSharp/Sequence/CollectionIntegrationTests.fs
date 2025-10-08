@@ -33,15 +33,15 @@ let TestEncodeAutoAndEncodeWithLengthPrefix (converter: Converter<'a>) (collecti
 
 let TestDecode (converter: Converter<'a>) =
     let span = ReadOnlySpan<byte>()
-    converter.Decode &span |> Assert.IsAssignableFrom<'a> |> ignore
-    converter.Decode Array.empty |> Assert.IsAssignableFrom<'a> |> ignore
+    converter.Decode &span |> fun x -> Assert.IsType<'a>(x, exactMatch = false) |> ignore
+    converter.Decode Array.empty |> fun x -> Assert.IsType<'a>(x, exactMatch = false) |> ignore
     ()
 
 let TestDecodeAuto (converter: Converter<'a>) =
     let buffers = [| [| 0uy |]; [| 0x80uy; 0uy; 0uy; 0uy |] |]
     for i in buffers do
         let mutable span = ReadOnlySpan i
-        converter.DecodeAuto &span |> Assert.IsAssignableFrom<'a> |> ignore
+        converter.DecodeAuto &span |> fun x -> Assert.IsType<'a>(x, exactMatch = false) |> ignore
         Assert.True span.IsEmpty
         ()
     ()
@@ -50,7 +50,7 @@ let TestDecodeWithLengthPrefix (converter: Converter<'a>) =
     let buffers = [| [| 0uy |]; [| 0x80uy; 0uy; 0uy; 0uy |] |]
     for i in buffers do
         let mutable span = ReadOnlySpan i
-        converter.DecodeWithLengthPrefix &span |> Assert.IsAssignableFrom<'a> |> ignore
+        converter.DecodeWithLengthPrefix &span |> fun x -> Assert.IsType<'a>(x, exactMatch = false) |> ignore
         Assert.True span.IsEmpty
         ()
     ()

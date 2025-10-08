@@ -40,7 +40,7 @@ public class TupleObjectMemberWithConverterAttributeTests
     {
         var pair = Assert.Single(PersonSourceGeneratorContext.ConverterCreators);
         Assert.Equal(typeof(Person), pair.Key);
-        var converter = Assert.IsAssignableFrom<Converter<Person>>(pair.Value.GetConverter(null!, typeof(Person)));
+        var converter = Assert.IsType<Converter<Person>>(pair.Value.GetConverter(null!, typeof(Person)), exactMatch: false);
         Assert.Equal(converter.GetType().Assembly, typeof(PersonSourceGeneratorContext).Assembly);
 
         for (var i = 0; i < 16; i++)

@@ -23,7 +23,7 @@ public class CollectionContextTests
         var compilation = CompilationModule.CreateCompilation(string.Empty, references);
 
         var unsupportedTypeSymbols = unsupportedTypes
-            .Select(x => Assert.IsAssignableFrom<INamedTypeSymbol>(compilation.GetTypeByMetadataName(Assert.IsType<string>(x.FullName))))
+            .Select(x => Assert.IsType<INamedTypeSymbol>(compilation.GetTypeByMetadataName(Assert.IsType<string>(x.FullName)), exactMatch: false))
             .ToList();
         var context = new SourceGeneratorContext(compilation, _ => Assert.Fail("Invalid Call!"), CancellationToken.None);
         var tracker = new SourceGeneratorTracker(_ => Assert.Fail("Invalid Call!"));

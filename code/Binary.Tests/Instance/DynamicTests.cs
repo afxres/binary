@@ -168,7 +168,7 @@ public class DynamicTests
     {
         var types = typeof(Token).GetNestedTypes(BindingFlags.NonPublic);
         var type = types.Single(x => x.Name is "MetaObject");
-        var instance = Assert.IsAssignableFrom<DynamicMetaObject>(Activator.CreateInstance(type, [Expression.Parameter(typeof(Token)), null]));
+        var instance = Assert.IsType<DynamicMetaObject>(Activator.CreateInstance(type, [Expression.Parameter(typeof(Token)), null]), exactMatch: false);
         var keys = instance.GetDynamicMemberNames();
         Assert.Equal([], keys);
         Assert.Null(instance.Value);
@@ -183,7 +183,7 @@ public class DynamicTests
         var c = new { id = 3, data = "one" };
         var list = new dynamic[] { a, b, c };
         var converter = this.generator.GetConverter(list);
-        _ = Assert.IsAssignableFrom<Converter<object[]>>(converter);
+        _ = Assert.IsType<Converter<object[]>>(converter, exactMatch: false);
         var buffer = converter.Encode(list);
         var result = converter.Decode(buffer);
         Assert.All(result, x => _ = Assert.IsType<Token>(x));

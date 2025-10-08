@@ -100,7 +100,7 @@ public class InlineArrayContextTests
         var model = compilation.GetSemanticModel(tree);
         var nodes = tree.GetRoot().DescendantNodes();
         var declaration = nodes.OfType<StructDeclarationSyntax>().Last();
-        var symbol = Assert.IsAssignableFrom<ITypeSymbol>(model.GetDeclaredSymbol(declaration));
+        var symbol = Assert.IsType<ITypeSymbol>(model.GetDeclaredSymbol(declaration), exactMatch: false);
         var context = new SourceGeneratorContext(compilation, _ => Assert.Fail("Invalid Call!"), CancellationToken.None);
         var tracker = new SourceGeneratorTracker(_ => Assert.Fail("Invalid Call!"));
         var result = InlineArrayConverterContext.Invoke(context, tracker, symbol);

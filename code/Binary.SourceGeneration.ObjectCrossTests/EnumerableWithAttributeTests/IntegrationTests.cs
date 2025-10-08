@@ -205,8 +205,8 @@ public class IntegrationTests
 
         var result = converter.Decode(bufferSecond);
         var resultSecond = converterSecond.Decode(buffer);
-        Assert.True(Assert.IsAssignableFrom<IEquatable<T>>(data).Equals(result));
-        Assert.True(Assert.IsAssignableFrom<IEquatable<T>>(data).Equals(resultSecond));
+        Assert.True(Assert.IsType<IEquatable<T>>(data, exactMatch: false).Equals(result));
+        Assert.True(Assert.IsType<IEquatable<T>>(data, exactMatch: false).Equals(resultSecond));
     }
 
     [Theory]

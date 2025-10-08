@@ -56,6 +56,6 @@ internal static class ReflectionExtensions
     {
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name == typeName);
         var instance = Activator.CreateInstance(type);
-        return Assert.IsAssignableFrom<T>(instance);
+        return Assert.IsType<T>(instance, exactMatch: false);
     }
 }

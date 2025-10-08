@@ -124,14 +124,14 @@ public class InterfaceShadowingTests
         Assert.NotNull(symbol);
 
         var symbolResult = Symbols.GetAllFieldsAndProperties(compilation, symbol, out var conflict, default);
-        var symbolMember = Assert.IsAssignableFrom<IPropertySymbol>(Assert.Single(symbolResult, x => x.Name == memberName));
+        var symbolMember = Assert.IsType<IPropertySymbol>(Assert.Single(symbolResult, x => x.Name == memberName), exactMatch: false);
         var symbolUnique = symbolResult.Distinct(SymbolEqualityComparer.Default).ToList();
         Assert.Equal(memberType.Name, symbolMember.Type.Name);
         Assert.Empty(conflict);
         Assert.Equal(symbolUnique.Count, symbolResult.Length);
 
         var memberResult = reflectionFunction.Invoke(wanted, BindingFlags.Instance | BindingFlags.Public);
-        var memberActual = Assert.IsAssignableFrom<PropertyInfo>(Assert.Single(memberResult, x => x.Name == memberName));
+        var memberActual = Assert.IsType<PropertyInfo>(Assert.Single(memberResult, x => x.Name == memberName), exactMatch: false);
         var memberUnique = memberResult.Distinct().ToList();
         Assert.Equal(memberType, memberActual.PropertyType);
         Assert.Equal(memberUnique.Count, memberResult.Length);
@@ -150,8 +150,8 @@ public class InterfaceShadowingTests
         var reflectionFunction = (Comparison<Type>)Delegate.CreateDelegate(typeof(Comparison<Type>), reflectionMethod);
 
         var compilation = CompilationModule.CreateCompilationFromThisAssembly();
-        var symbolX = compilation.GetTypeByMetadataName(Assert.IsAssignableFrom<string>(x.FullName));
-        var symbolY = compilation.GetTypeByMetadataName(Assert.IsAssignableFrom<string>(y.FullName));
+        var symbolX = compilation.GetTypeByMetadataName(Assert.IsType<string>(x.FullName));
+        var symbolY = compilation.GetTypeByMetadataName(Assert.IsType<string>(y.FullName));
         Assert.NotNull(symbolX);
         Assert.NotNull(symbolY);
 
@@ -179,8 +179,8 @@ public class InterfaceShadowingTests
         var reflectionFunction = (Comparison<Type>)Delegate.CreateDelegate(typeof(Comparison<Type>), reflectionMethod);
 
         var compilation = CompilationModule.CreateCompilationFromThisAssembly();
-        var symbolX = compilation.GetTypeByMetadataName(Assert.IsAssignableFrom<string>(x.FullName));
-        var symbolY = compilation.GetTypeByMetadataName(Assert.IsAssignableFrom<string>(y.FullName));
+        var symbolX = compilation.GetTypeByMetadataName(Assert.IsType<string>(x.FullName));
+        var symbolY = compilation.GetTypeByMetadataName(Assert.IsType<string>(y.FullName));
         Assert.NotNull(symbolX);
         Assert.NotNull(symbolY);
 
@@ -202,7 +202,7 @@ public class InterfaceShadowingTests
         var reflectionFunction = (Func<Type, BindingFlags, ImmutableArray<MemberInfo>>)Delegate.CreateDelegate(typeof(Func<Type, BindingFlags, ImmutableArray<MemberInfo>>), reflectionMethod);
 
         var compilation = CompilationModule.CreateCompilationFromThisAssembly();
-        var symbol = compilation.GetTypeByMetadataName(Assert.IsAssignableFrom<string>(type.FullName));
+        var symbol = compilation.GetTypeByMetadataName(Assert.IsType<string>(type.FullName));
         Assert.NotNull(symbol);
 
         var alpha = Assert.Throws<ArgumentException>(() => Symbols.GetAllPropertiesForInterfaceType(compilation, symbol, out _, CancellationToken.None));
@@ -225,7 +225,7 @@ public class InterfaceShadowingTests
         var reflectionFunction = (Func<Type, BindingFlags, ImmutableArray<MemberInfo>>)Delegate.CreateDelegate(typeof(Func<Type, BindingFlags, ImmutableArray<MemberInfo>>), reflectionMethod);
 
         var compilation = CompilationModule.CreateCompilationFromThisAssembly();
-        var symbol = compilation.GetTypeByMetadataName(Assert.IsAssignableFrom<string>(type.FullName));
+        var symbol = compilation.GetTypeByMetadataName(Assert.IsType<string>(type.FullName));
         Assert.NotNull(symbol);
 
         var alpha = Assert.Throws<ArgumentException>(() => Symbols.GetAllFieldsAndPropertiesForNonInterfaceType(symbol, CancellationToken.None));

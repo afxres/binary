@@ -47,7 +47,7 @@ public class SymbolExtensionTests
         var model = compilation.GetSemanticModel(tree);
         var nodes = tree.GetRoot().DescendantNodes();
         var declaration = nodes.OfType<ClassDeclarationSyntax>().Last();
-        var symbol = Assert.IsAssignableFrom<ITypeSymbol>(model.GetDeclaredSymbol(declaration));
+        var symbol = Assert.IsType<ITypeSymbol>(model.GetDeclaredSymbol(declaration), exactMatch: false);
         var attribute = symbol.GetAttributes().Single();
         var status = SymbolExtensions.TryGetConstructorArgument<T>(attribute, out var result);
         Assert.True(status);
@@ -94,7 +94,7 @@ public class SymbolExtensionTests
         var model = compilation.GetSemanticModel(tree);
         var nodes = tree.GetRoot().DescendantNodes();
         var declaration = nodes.OfType<ClassDeclarationSyntax>().Last();
-        var symbol = Assert.IsAssignableFrom<ITypeSymbol>(model.GetDeclaredSymbol(declaration));
+        var symbol = Assert.IsType<ITypeSymbol>(model.GetDeclaredSymbol(declaration), exactMatch: false);
         var attribute = symbol.GetAttributes().Single();
         var status = SymbolExtensions.TryGetConstructorArgument<string>(attribute, out var result);
         Assert.False(status);

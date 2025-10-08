@@ -12,7 +12,7 @@ public class ConstantsTests
     {
         var members = typeof(Constants).GetMembers(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
         var descriptorProperties = members.OfType<PropertyInfo>().Where(x => x.PropertyType == typeof(DiagnosticDescriptor)).ToList();
-        var descriptors = descriptorProperties.Select(x => Assert.IsAssignableFrom<DiagnosticDescriptor>(x.GetValue(null))).ToList();
+        var descriptors = descriptorProperties.Select(x => Assert.IsType<DiagnosticDescriptor>(x.GetValue(null), exactMatch: false)).ToList();
         Assert.NotEmpty(descriptors);
         var ids = descriptors.Select(x => x.Id).ToList();
         Assert.All(ids, x => Assert.Matches(@"^BINSRCGEN\d\d$", x));
