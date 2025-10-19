@@ -4,6 +4,8 @@ open Mikodev.Binary
 open Mikodev.Binary.Internal
 open System
 
+#nowarn "3261" // Nullness warning
+
 [<CompiledName("FSharpSetConverter`1")>]
 type internal SetConverter<'T when 'T: comparison>(converter: Converter<'T>) =
     inherit Converter<Set<'T>>(0)

@@ -5,6 +5,8 @@ open System
 open System.Diagnostics
 open System.Runtime.CompilerServices
 
+#nowarn "3261" // Nullness warning
+
 type internal UnionEncoder<'T> = delegate of allocator: byref<Allocator> * item: 'T * mark: byref<int> -> unit
 
 type internal UnionDecoder<'T> = delegate of span: byref<ReadOnlySpan<byte>> * mark: byref<int> -> 'T
@@ -15,16 +17,16 @@ type internal UnionConverter<'T>() =
     [<Literal>]
     let constant = 0
 
-    [<DefaultValue>]
+    [<DefaultValue(false)>]
     val mutable encode: UnionEncoder<'T>
 
-    [<DefaultValue>]
+    [<DefaultValue(false)>]
     val mutable encodeAuto: UnionEncoder<'T>
 
-    [<DefaultValue>]
+    [<DefaultValue(false)>]
     val mutable decode: UnionDecoder<'T>
 
-    [<DefaultValue>]
+    [<DefaultValue(false)>]
     val mutable decodeAuto: UnionDecoder<'T>
 
     [<DefaultValue>]

@@ -4,9 +4,9 @@ open Mikodev.Binary
 open System
 open System.Runtime.CompilerServices
 
-let AllocatorByRefType = CommonHelper.GetType(typeof<IConverter>.Assembly, "Mikodev.Binary.Allocator").MakeByRefType()
+let AllocatorByRefType = (CommonHelper.GetType(typeof<IConverter>.Assembly, "Mikodev.Binary.Allocator") |> nonNull).MakeByRefType()
 
-let ReadOnlySpanByteByRefType = CommonHelper.GetType(typeof<MemoryExtensions>.Assembly, "System.ReadOnlySpan`1").MakeGenericType(typeof<byte>).MakeByRefType()
+let ReadOnlySpanByteByRefType = CommonHelper.GetMethod((AllocatorByRefType.GetElementType() |> nonNull), "AsSpan", Array.empty).ReturnType.MakeByRefType()
 
 let EncodeNumberMethodInfo = CommonHelper.GetMethod(typeof<Converter>, "Encode", [| AllocatorByRefType; typeof<int> |])
 

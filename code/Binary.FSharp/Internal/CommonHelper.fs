@@ -25,7 +25,7 @@ type internal CommonHelper =
             let converterType = converterDefinition.MakeGenericType itemTypes
             let converterArguments = itemTypes |> Seq.map (fun x -> CommonHelper.GetConverter(context, x) |> box) |> Seq.toArray
             let converter = Activator.CreateInstance(converterType, converterArguments)
-            converter :?> IConverter
+            converter :?> IConverter | null
         else
             null
 
@@ -36,7 +36,6 @@ type internal CommonHelper =
         result
 
     static member GetMethod(t: Type, name: string, types: Type array) =
-        let result = t.GetMethod(name, types)
-        if isNull (box result) then
-            raise (MissingMethodException $"Method not found, method name: {name}, type: {t}")
-        result
+        match t.GetMethod(name, types) with
+        | null -> raise (MissingMethodException $"Method not found, method name: {name}, type: {t}")
+        | item -> item

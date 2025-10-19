@@ -4,6 +4,8 @@ open Mikodev.Binary
 open Mikodev.Binary.Internal
 open System
 
+#nowarn "3261" // Nullness warning
+
 [<CompiledName("FSharpMapConverter`2")>]
 type internal MapConverter<'K, 'V when 'K: comparison>(init: Converter<'K>, tail: Converter<'V>) =
     inherit Converter<Map<'K, 'V>>(0)

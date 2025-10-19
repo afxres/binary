@@ -42,7 +42,7 @@ type internal UnionConverterCreator() =
             if properties |> Array.isEmpty then
                 Expression.Empty() :> Expression
             else
-                let dataType = properties |> Seq.map (fun x -> x.DeclaringType) |> Seq.distinct |> Seq.exactlyOne
+                let dataType = properties |> Seq.map (fun x -> x.DeclaringType |> nonNull) |> Seq.distinct |> Seq.exactlyOne
                 if t = dataType then
                     Expression.Block(MakeBody item properties) :> Expression
                 else
@@ -128,7 +128,7 @@ type internal UnionConverterCreator() =
                         for p in i.Value.GetParameters() -> p.ParameterType
                 }
                 let converterType = typedefof<UnionConverter<_>>.MakeGenericType t
-                let converter = Activator.CreateInstance(converterType, null) :?> IConverter
+                let converter = Activator.CreateInstance(converterType, null) |> nonNull :?> IConverter
                 let converters =
                     memberTypes |> Seq.distinct |> Seq.map (fun x -> x, if x = t then converter else CommonHelper.GetConverter(context, x)) |> readOnlyDict
                 let getConverter = fun x -> converters[x]

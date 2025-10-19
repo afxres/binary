@@ -4,6 +4,8 @@ open Mikodev.Binary
 open Mikodev.Binary.Internal
 open System
 
+#nowarn "3261" // Nullness warning
+
 [<CompiledName("FSharpListConverter`1")>]
 type internal ListConverter<'T>(converter: Converter<'T>) =
     inherit Converter<'T list>(0)
