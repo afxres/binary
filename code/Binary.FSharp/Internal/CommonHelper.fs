@@ -17,7 +17,7 @@ type internal CommonHelper =
             raise (ArgumentException $"Can not convert '{instanceType}' to '{expectedType}'")
         converter
 
-    static member GetConverter(context: IGeneratorContext, t: Type, typeDefinition: Type, converterDefinition: Type) =
+    static member TryCreateConverter(context: IGeneratorContext, t: Type, typeDefinition: Type, converterDefinition: Type) =
         assert (converterDefinition.IsGenericTypeDefinition)
         assert (converterDefinition.GetGenericArguments().Length = typeDefinition.GetGenericArguments().Length)
         if t.IsGenericType && t.GetGenericTypeDefinition() = typeDefinition then
@@ -30,10 +30,9 @@ type internal CommonHelper =
             null
 
     static member GetType(assembly: Assembly, name: string) =
-        let result = assembly.GetType(name)
-        if isNull (box result) then
-            raise (TypeLoadException $"Type not found, type name: {name}")
-        result
+        match assembly.GetType(name) with
+        | null -> raise (TypeLoadException $"Type not found, type name: {name}")
+        | item -> item
 
     static member GetMethod(t: Type, name: string, types: Type array) =
         match t.GetMethod(name, types) with

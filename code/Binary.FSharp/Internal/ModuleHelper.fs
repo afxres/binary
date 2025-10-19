@@ -1,12 +1,11 @@
 ﻿module internal Mikodev.Binary.Internal.ModuleHelper
 
 open Mikodev.Binary
-open System
 open System.Runtime.CompilerServices
 
-let AllocatorByRefType = (CommonHelper.GetType(typeof<IConverter>.Assembly, "Mikodev.Binary.Allocator") |> nonNull).MakeByRefType()
+let AllocatorByRefType = CommonHelper.GetType(typeof<IConverter>.Assembly, "Mikodev.Binary.Allocator").MakeByRefType()
 
-let ReadOnlySpanByteByRefType = CommonHelper.GetMethod((AllocatorByRefType.GetElementType() |> nonNull), "AsSpan", Array.empty).ReturnType.MakeByRefType()
+let ReadOnlySpanByteByRefType = CommonHelper.GetMethod(AllocatorByRefType.GetElementType() |> nonNull, "AsSpan", Array.empty).ReturnType.MakeByRefType()
 
 let EncodeNumberMethodInfo = CommonHelper.GetMethod(typeof<Converter>, "Encode", [| AllocatorByRefType; typeof<int> |])
 

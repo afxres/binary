@@ -7,4 +7,4 @@ open Mikodev.Binary.Internal
 type internal SetConverterCreator() =
     interface IConverterCreator with
         member __.GetConverter(context, t) =
-            CommonHelper.GetConverter(context, t, typedefof<Set<_>>, typedefof<SetConverter<_>>)
+            CommonHelper.TryCreateConverter(context, t, typedefof<Set<_>>, typedefof<SetConverter<_>>)

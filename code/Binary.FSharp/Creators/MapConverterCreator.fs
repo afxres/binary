@@ -7,4 +7,4 @@ open Mikodev.Binary.Internal
 type internal MapConverterCreator() =
     interface IConverterCreator with
         member __.GetConverter(context, t) =
-            CommonHelper.GetConverter(context, t, typedefof<Map<_, _>>, typedefof<MapConverter<_, _>>)
+            CommonHelper.TryCreateConverter(context, t, typedefof<Map<_, _>>, typedefof<MapConverter<_, _>>)
