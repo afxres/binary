@@ -3,7 +3,6 @@
 using Mikodev.Binary.Components;
 using Mikodev.Binary.Internal.Contexts.Decoders;
 using Mikodev.Binary.Internal.Contexts.Instance;
-using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -28,18 +27,17 @@ internal static class ContextMethodsOfNamedObject
 
     private static readonly Expression EnsureSufficientExecutionStackExpression = Expression.Call(new Action(RuntimeHelpers.EnsureSufficientExecutionStack).Method);
 
-    internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter> converters, ImmutableArray<bool> optional, ImmutableArray<string> names, ImmutableArray<ImmutableArray<byte>> headers, ImmutableArray<ContextMemberInitializer> members)
+    internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter?> converters, ImmutableArray<bool> optional, ImmutableArray<string> names, ImmutableArray<ImmutableArray<byte>> headers, ImmutableArray<ContextMemberInitializer> members)
     {
         Debug.Assert(members.Length == names.Length);
         Debug.Assert(members.Length == optional.Length);
         Debug.Assert(members.Length == converters.Length);
+        var hasSelfTypeReference = converters.Any(x => x is null);
         var converterType = typeof(NamedObjectDelegateConverter<>).MakeGenericType(type);
         var converter = (IConverter)CommonModule.CreateInstance(converterType, null);
-        var hasSelfTypeReference = converters.Any(x => x is IConverterPlaceholder);
-        if (hasSelfTypeReference)
-            converters = [.. converters.Select(x => x is IConverterPlaceholder ? converter : x)];
-        var encode = GetEncodeDelegateAsNamedObject(type, converters, optional, hasSelfTypeReference, headers, members);
-        var decode = GetDecodeDelegateAsNamedObject(type, converters, optional, hasSelfTypeReference, constructor);
+        var convertersWithSelf = converters.Select(x => x is null ? converter : x).ToImmutableArray();
+        var encode = GetEncodeDelegateAsNamedObject(type, convertersWithSelf, optional, hasSelfTypeReference, headers, members);
+        var decode = GetDecodeDelegateAsNamedObject(type, convertersWithSelf, optional, hasSelfTypeReference, constructor);
         var invoke = new NamedObjectDecoder(headers, names, optional, type);
         _ = CommonModule.GetPublicInstanceMethod(converterType, "Initialize").Invoke(converter, [encode, decode, invoke]);
         return converter;

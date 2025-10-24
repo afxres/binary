@@ -1,7 +1,6 @@
 ﻿namespace Mikodev.Binary.Internal.Contexts;
 
 using Mikodev.Binary.Attributes;
-using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -22,24 +21,31 @@ internal static class FallbackAttributesMethods
         var memberInfoArrayUnsorted = GetMemberVariables(typeInfo);
 
         if (attribute is ConverterAttribute or ConverterCreatorAttribute)
-            return GetConverter(context, typeInfo, null);
+            return GetConverter(context, attribute, typeInfo.Type, typeInfo.Type, null);
         if (memberInfoArrayUnsorted.Length is 0)
             throw new ArgumentException($"No available member found, type: {type}");
         if (memberInfoArrayUnsorted.All(x => x.IsOptional))
             throw new ArgumentException($"No available required member found, type: {type}");
 
         var members = GetSortedMembers(typeInfo, memberInfoArrayUnsorted, out var names);
-        var converters = members.Select(x => GetConverter(context, typeInfo, x)).ToImmutableArray();
         var initializers = members.Select(x => x.Initializer).ToImmutableArray();
         var constructor = GetConstructor(type, members, initializers);
 
         if (attribute is TupleObjectAttribute)
+        {
+            var converters = members.Select(x => GetConverter(context, type, x) ?? throw new ArgumentException($"Self type reference detected, type: {type}")).ToImmutableArray();
+            Debug.Assert(converters.Length == initializers.Length);
             return ContextMethodsOfTupleObject.GetConverterAsTupleObject(type, constructor, converters, initializers);
-
-        var converter = context.GetConverter<string>();
-        var headers = names.Select(x => Allocator.Invoke(x, converter.Encode).ToImmutableArray()).ToImmutableArray();
-        var optional = members.Select(x => x.IsOptional).ToImmutableArray();
-        return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, optional, names, headers, initializers);
+        }
+        else
+        {
+            var converter = context.GetConverter<string>();
+            var headers = names.Select(x => Allocator.Invoke(x, converter.Encode).ToImmutableArray()).ToImmutableArray();
+            var optional = members.Select(x => x.IsOptional).ToImmutableArray();
+            var converters = members.Select(x => GetConverter(context, type, x)).ToImmutableArray();
+            Debug.Assert(converters.Length == initializers.Length);
+            return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, optional, names, headers, initializers);
+        }
     }
 
     private static ImmutableArray<MetaMemberInfo> GetMemberVariables(MetaTypeInfo typeInfo)
@@ -109,22 +115,24 @@ internal static class FallbackAttributesMethods
         }
     }
 
-    private static IConverter GetConverter(IGeneratorContext context, MetaTypeInfo typeInfo, MetaMemberInfo? memberInfo)
+    private static IConverter GetConverter(IGeneratorContext context, Attribute attribute, Type reflected, Type expected, string? memberName)
     {
-        var reflected = typeInfo.Type;
-        var type = memberInfo is null ? reflected : memberInfo.Type;
-        var attribute = memberInfo is null ? typeInfo.Attribute : memberInfo.ConverterOrConverterCreatorAttribute;
+        Debug.Assert(attribute is ConverterAttribute or ConverterCreatorAttribute);
+        if (attribute is not ConverterCreatorAttribute creator)
+            return EnsureModule.GetConverter(GetConverterOrCreator<IConverter>(((ConverterAttribute)attribute).Type, reflected, memberName), expected, null);
+        else
+            return EnsureModule.GetConverter(GetConverterOrCreator<IConverterCreator>(creator.Type, reflected, memberName).GetConverter(context, expected), expected, creator.Type);
+    }
+
+    private static IConverter? GetConverter(IGeneratorContext context, Type reflected, MetaMemberInfo memberInfo)
+    {
+        var attribute = memberInfo.ConverterOrConverterCreatorAttribute;
         Debug.Assert(attribute is null or ConverterAttribute or ConverterCreatorAttribute);
-        if (attribute is ConverterAttribute alpha)
-            return EnsureModule.GetConverter(GetConverterOrCreator<IConverter>(alpha.Type, reflected, memberInfo?.Name), type, null);
-        if (attribute is ConverterCreatorAttribute bravo)
-            return EnsureModule.GetConverter(GetConverterOrCreator<IConverterCreator>(bravo.Type, reflected, memberInfo?.Name).GetConverter(context, type), type, bravo.Type);
-        Debug.Assert(attribute is null);
-        if (memberInfo is null || memberInfo.Type != reflected)
-            return context.GetConverter(type);
-        if (typeInfo.Attribute is TupleObjectAttribute)
-            throw new ArgumentException($"Self type reference detected, type: {reflected}");
-        return IConverterPlaceholder.Instance;
+        if (attribute is not null)
+            return GetConverter(context, attribute, reflected, memberInfo.Type, memberInfo.Name);
+        if (memberInfo.Type != reflected)
+            return context.GetConverter(memberInfo.Type);
+        return null;
     }
 
     private static ImmutableArray<MetaMemberInfo> GetSortedMembers(MetaTypeInfo typeInfo, ImmutableArray<MetaMemberInfo> source, out ImmutableArray<string> list)
