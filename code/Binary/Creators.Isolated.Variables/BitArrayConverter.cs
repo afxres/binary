@@ -5,14 +5,10 @@ using Mikodev.Binary.Internal;
 using System;
 using System.Collections;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 internal sealed class BitArrayConverter : Converter<BitArray?>
 {
-    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_array")]
-    private static extern ref byte[]? AccessFunction(BitArray array);
-
     private static void Transform(Span<byte> target, ReadOnlySpan<byte> source, int length)
     {
         var bounds = length >> 3;
@@ -35,7 +31,7 @@ internal sealed class BitArrayConverter : Converter<BitArray?>
             return;
         var required = (int)(((uint)length + 7U) >> 3);
         var buffer = MemoryMarshal.CreateSpan(ref Allocator.Assign(ref allocator, required), required);
-        var source = AccessFunction(item);
+        var source = CollectionsMarshal.AsBytes(item);
         Transform(buffer, source, length);
     }
 
@@ -52,7 +48,7 @@ internal sealed class BitArrayConverter : Converter<BitArray?>
             ThrowHelper.ThrowNotEnoughBytes();
         var length = checked((int)(((ulong)cursor.Length << 3) - (uint)margin));
         var result = new BitArray(length);
-        var target = AccessFunction(result);
+        var target = CollectionsMarshal.AsBytes(result);
         Transform(target, cursor, length);
         return result;
     }
