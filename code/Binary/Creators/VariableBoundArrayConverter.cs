@@ -12,16 +12,12 @@ internal sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T 
      * Layout: length for all ranks | lower bound for all ranks | array data ...
      */
 
-    private readonly int rank;
-
     private readonly Converter<E> converter;
 
     public VariableBoundArrayConverter(Converter<E> converter)
     {
         Debug.Assert(converter is not null);
         Debug.Assert(typeof(T).IsVariableBoundArray);
-        var rank = typeof(T).GetArrayRank();
-        this.rank = rank;
         this.converter = converter;
     }
 
@@ -29,7 +25,7 @@ internal sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T 
     {
         if (item is null)
             return;
-        var rank = this.rank;
+        var rank = typeof(T).GetArrayRank();
         var startsList = (stackalloc int[rank]);
         var lengthList = (stackalloc int[rank]);
         var origin = (Array)(object)item;
@@ -61,7 +57,7 @@ internal sealed class VariableBoundArrayConverter<T, E> : Converter<T?> where T 
 
         if (span.Length is 0)
             return null;
-        var rank = this.rank;
+        var rank = typeof(T).GetArrayRank();
         var startsList = new int[rank];
         var lengthList = new int[rank];
         var intent = span;
