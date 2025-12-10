@@ -15,7 +15,7 @@ type BadClassIndexerWithNamedKey() =
     [<Placeholder>]
     [<NamedKey("Indexer???")>]
     member __.Some
-        with private get (_: int) = String.Empty
+        with get (_: int) = String.Empty
         and set _ _ = ()
 
 [<Placeholder>]
@@ -41,7 +41,7 @@ type BadValueIndexerWithConverterCreator =
     [<Placeholder>]
     member __.None
         with get (_: single) = double 0
-        and private set _ _ = ()
+        and set _ _ = ()
 
 [<NamedObject>]
 [<TupleObject>]

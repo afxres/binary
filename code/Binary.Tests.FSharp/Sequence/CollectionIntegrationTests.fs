@@ -7,6 +7,7 @@ open System.Collections.Generic
 open System.Collections.Immutable
 open System.Reflection
 open Xunit
+open System.Collections
 
 type TestConverter<'a>(length: int) =
     inherit Converter<'a>(length)
@@ -75,7 +76,7 @@ let TestSequence<'a when 'a: null> (encoderName: string) (decoderName: string) (
     let encoderMethod = encoder.Method
     let encoderActualType = encoderMethod.DeclaringType
     let encoderActualName =
-        if isNull (box encoderActualType) then
+        if encoderMethod.Name.Contains("lambda") then
             "<lambda-encoder>"
         else
             encoderActualType.Name
@@ -84,7 +85,7 @@ let TestSequence<'a when 'a: null> (encoderName: string) (decoderName: string) (
     let decoderMethod = decoder.Method
     let decoderActualType = decoderMethod.DeclaringType
     let decoderActualName =
-        if isNull (box decoderActualType) then
+        if decoderMethod.Name.Contains("lambda") then
             "<lambda-decoder>"
         else
             decoderActualType.Name
@@ -111,10 +112,15 @@ let TestSequence<'a when 'a: null> (encoderName: string) (decoderName: string) (
 
 [<Fact>]
 let ``Collection Integration Test (collection, null or empty collection test, default interface implementation test)`` () =
-    TestSequence<IList<_>> "EnumerableEncoder`2" "SpanLikeNativeEndianMethods" (Array.zeroCreate<int> 0)
+    let bimodalDecoderName =
+        if BitConverter.IsLittleEndian then
+            "SpanLikeNativeEndianMethods"
+        else
+            "ListDecoder`1"
+    TestSequence<IList<_>> "EnumerableEncoder`2" bimodalDecoderName (Array.zeroCreate<int> 0)
     TestSequence<ICollection<_>> "EnumerableEncoder`2" "ListDecoder`1" (Array.zeroCreate<TimeSpan> 0)
     TestSequence<IEnumerable<_>> "EnumerableEncoder`2" "ListDecoder`1" (Array.zeroCreate<string> 0)
-    TestSequence<IReadOnlyList<_>> "EnumerableEncoder`2" "SpanLikeNativeEndianMethods" (ResizeArray<int>())
+    TestSequence<IReadOnlyList<_>> "EnumerableEncoder`2" bimodalDecoderName (ResizeArray<int>())
     TestSequence<IReadOnlyCollection<_>> "EnumerableEncoder`2" "ListDecoder`1" (ResizeArray<string>())
 
     TestSequence<Queue<_>> "<lambda-encoder>" "<lambda-decoder>" (Queue<int> 0)

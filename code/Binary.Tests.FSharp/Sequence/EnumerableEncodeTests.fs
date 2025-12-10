@@ -21,7 +21,6 @@ let TestType (collection: 'T) (steps: 'T -> string seq) =
     let converterType = converter.GetType()
     Assert.Equal("SequenceConverter`1", converterType.Name)
     let encoder = converterType.GetField("encode", BindingFlags.Instance ||| BindingFlags.NonPublic).GetValue converter |> unbox<Delegate>
-    Assert.Null(encoder.Method.DeclaringType)
     Assert.Contains("lambda", encoder.Method.Name)
     Assert.Empty(steps collection)
     converter

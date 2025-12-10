@@ -2,6 +2,7 @@ module Values.ValueTypeTests
 
 open Mikodev.Binary
 open System
+open System.Buffers.Binary
 open System.Collections.Specialized
 open System.Text
 open Xunit
@@ -145,7 +146,13 @@ let ``Decimal`` () =
         let number: decimal = decimal (Random.Shared.NextDouble())
         for converter in MakeConverters<decimal>() do
             let alpha = converter.Encode number
-            let bravo = Decimal.GetBits(number) |> Array.map (fun x -> BitConverter.GetBytes x) |> Array.concat
+            let bravo =
+                Decimal.GetBits(number)
+                |> Array.map (fun x ->
+                    let buffer = Array.zeroCreate<byte> sizeof<int>
+                    BinaryPrimitives.WriteInt32LittleEndian(Span buffer, x)
+                    buffer)
+                |> Array.concat
             Assert.Equal<byte>(alpha, bravo)
             Test number
     ()
