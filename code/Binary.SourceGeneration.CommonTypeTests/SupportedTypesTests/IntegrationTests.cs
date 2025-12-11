@@ -34,6 +34,8 @@ public class IntegrationTests
 {
     private static StrongBox<T> Box<T>(T data) => new StrongBox<T>(data);
 
+    private static readonly string BimodalArrayBasedStringConverterName = BitConverter.IsLittleEndian ? "ArrayBasedNativeEndianConverter`3" : "ArrayBasedConverter`3";
+
     public static IEnumerable<object[]> EnumData()
     {
         yield return [DayOfWeek.Sunday, "LittleEndianConverter`1.*DayOfWeek"];
@@ -54,25 +56,25 @@ public class IntegrationTests
 
     public static IEnumerable<object[]> ArrayData()
     {
-        yield return [new[] { 1 }, @"ArrayBasedNativeEndianConverter`3.*Int32\[\]"];
+        yield return [new[] { 1 }, BimodalArrayBasedStringConverterName + @".*Int32\[\]"];
         yield return [new[] { "2" }, @"ArrayBasedConverter`3.*String\[\]"];
     }
 
     public static IEnumerable<object[]> ArraySegmentData()
     {
-        yield return [new ArraySegment<int>([1]), "ArrayBasedNativeEndianConverter`3.*ArraySegment`1.*Int32"];
+        yield return [new ArraySegment<int>([1]), BimodalArrayBasedStringConverterName + ".*ArraySegment`1.*Int32"];
         yield return [new ArraySegment<string>(["2"]), "ArrayBasedConverter`3.*ArraySegment`1.*String"];
     }
 
     public static IEnumerable<object[]> MemoryData()
     {
-        yield return [new Memory<int>([3]), "ArrayBasedNativeEndianConverter`3.*Memory`1.*Int32"];
+        yield return [new Memory<int>([3]), BimodalArrayBasedStringConverterName + ".*Memory`1.*Int32"];
         yield return [new Memory<string>(["4"]), "ArrayBasedConverter`3.*Memory`1.*String"];
     }
 
     public static IEnumerable<object[]> ReadOnlyMemoryData()
     {
-        yield return [new ReadOnlyMemory<int>([5]), "ArrayBasedNativeEndianConverter`3.*ReadOnlyMemory`1.*Int32"];
+        yield return [new ReadOnlyMemory<int>([5]), BimodalArrayBasedStringConverterName + ".*ReadOnlyMemory`1.*Int32"];
         yield return [new ReadOnlyMemory<string>(["6"]), "ArrayBasedConverter`3.*ReadOnlyMemory`1.*String"];
     }
 
