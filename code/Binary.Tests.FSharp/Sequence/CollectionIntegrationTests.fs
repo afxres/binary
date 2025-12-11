@@ -7,7 +7,6 @@ open System.Collections.Generic
 open System.Collections.Immutable
 open System.Reflection
 open Xunit
-open System.Collections
 
 type TestConverter<'a>(length: int) =
     inherit Converter<'a>(length)
