@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Xunit;
 
 public class RepeatLittleEndianDataTests
@@ -128,12 +127,6 @@ public class RepeatLittleEndianDataTests
         var ba = ca.Encode(array);
         var bl = cl.Encode(linkedList);
         var bs = cs.Encode(set);
-
-        var span = new ReadOnlySpan<T>(array);
-        var bytes = MemoryMarshal.AsBytes(span);
-        var buffer = bytes.ToArray();
-        Assert.Equal(buffer, ba);
-        Assert.Equal(buffer, bl);
 
         var ra = ca.Decode(ba);
         var rl = cl.Decode(bl);

@@ -1,7 +1,6 @@
 ﻿namespace Mikodev.Binary.Tests.Creators;
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Xunit;
@@ -28,22 +27,7 @@ public class InlineArrayConverterTests
         internal static T?[]? InternalStaticArrayField;
     }
 
-    public static IEnumerable<object[]> InlineArrayData()
-    {
-        var a = new InlineInt32Array();
-        var b = Enumerable.Range(0, 10).ToArray();
-        new ReadOnlySpan<int>(b).CopyTo(a);
-        yield return [a, b, 40];
-
-        var c = new InlineGenericArray<string>();
-        var d = Enumerable.Range(0, 4).Select(x => x.ToString()).ToArray();
-        new ReadOnlySpan<string?>(d).CopyTo(c);
-        yield return [c, d, 0];
-    }
-
-    [Theory(DisplayName = "Integration Test")]
-    [MemberData(nameof(InlineArrayData))]
-    public void IntegrationTest<T, E>(T item, E[] expected, int converterLength)
+    private static void TestAll<T, E>(T item, E[] expected, int converterLength)
     {
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<T>();
@@ -58,6 +42,20 @@ public class InlineArrayConverterTests
         var result = converter.Decode(buffer);
         var bufferResult = converter.Encode(result);
         Assert.Equal(bufferExpected, bufferResult);
+    }
+
+    [Fact(DisplayName = "Integration Test")]
+    public void IntegrationTest()
+    {
+        var a = new InlineInt32Array();
+        var b = Enumerable.Range(0, 10).ToArray();
+        new ReadOnlySpan<int>(b).CopyTo(a);
+        TestAll(a, b, 40);
+
+        var c = new InlineGenericArray<string>();
+        var d = Enumerable.Range(0, 4).Select(x => x.ToString()).ToArray();
+        new ReadOnlySpan<string?>(d).CopyTo(c);
+        TestAll(c, d, 0);
     }
 
     private class FakeConverter<T>(int length) : Converter<T>(length)
