@@ -9,16 +9,10 @@ open Xunit
 type EnumerableTests() =
     let generator = Generator.CreateDefault()
 
-    let AssertIsArrayOrList (value: 'a seq) =
-        if BitConverter.IsLittleEndian then
-            Assert.IsType<'a array> value |> ignore
-        else
-            Assert.IsType<'a ResizeArray> value |> ignore
-
     [<Fact>]
     member __.``Assignable Interface Definitions``() =
         let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "FallbackCollectionMethods") |> Array.exactlyOne
-        let f = t.GetField("ArrayOrListAssignableDefinitions", BindingFlags.Static ||| BindingFlags.NonPublic)
+        let f = t.GetField("ListAssignableDefinitions", BindingFlags.Static ||| BindingFlags.NonPublic)
         let v = f.GetValue null :?> IReadOnlyList<Type>
         let arrayInterfaces = typeof<int array>.GetInterfaces()
         let listInterfaces = typeof<int ResizeArray>.GetInterfaces()
@@ -39,7 +33,7 @@ type EnumerableTests() =
         Assert.Equal(24, bytes |> Array.length)
         let value = generator.Decode<IList<float>> bytes
         Assert.Equal<float>(a, value)
-        AssertIsArrayOrList value
+        Assert.IsType<float ResizeArray> value |> ignore
         ()
 
     [<Fact>]
@@ -49,7 +43,7 @@ type EnumerableTests() =
         Assert.Equal(12, bytes |> Array.length)
         let value = generator.Decode<IList<int>> bytes
         Assert.Equal<int>(a, value)
-        AssertIsArrayOrList value
+        Assert.IsType<int ResizeArray> value |> ignore
         ()
 
     [<Fact>]
@@ -69,7 +63,7 @@ type EnumerableTests() =
         Assert.Equal(24, bytes |> Array.length)
         let value = generator.Decode<ICollection<float>> bytes
         Assert.Equal<float>(a, value)
-        AssertIsArrayOrList value
+        Assert.IsType<float ResizeArray> value |> ignore
         ()
 
     [<Fact>]
@@ -79,7 +73,7 @@ type EnumerableTests() =
         Assert.Equal(16, bytes |> Array.length)
         let value = generator.Decode<IReadOnlyCollection<int>> bytes
         Assert.Equal<int>(a, value)
-        AssertIsArrayOrList value
+        Assert.IsType<int ResizeArray> value |> ignore
         ()
 
     [<Fact>]

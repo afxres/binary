@@ -21,11 +21,11 @@ internal static class FallbackCollectionMethods
 {
     private static readonly ImmutableArray<Type> InvalidTypeDefinitions;
 
+    private static readonly ImmutableArray<Type> ListAssignableDefinitions;
+
     private static readonly ImmutableArray<Type> HashSetAssignableDefinitions;
 
     private static readonly ImmutableArray<Type> DictionaryAssignableDefinitions;
-
-    private static readonly ImmutableArray<Type> ArrayOrListAssignableDefinitions;
 
     private static readonly FrozenDictionary<Type, MethodInfo> ImmutableCollectionCreateMethods;
 
@@ -61,7 +61,7 @@ internal static class FallbackCollectionMethods
             typeof(IImmutableStack<>),
         ]);
 
-        var array = ImmutableArray.Create(
+        var list = ImmutableArray.Create(
         [
             typeof(IList<>),
             typeof(ICollection<>),
@@ -85,9 +85,9 @@ internal static class FallbackCollectionMethods
         ]);
 
         InvalidTypeDefinitions = invalid;
+        ListAssignableDefinitions = list;
         HashSetAssignableDefinitions = set;
         DictionaryAssignableDefinitions = dictionary;
-        ArrayOrListAssignableDefinitions = array;
         ImmutableCollectionCreateMethods = immutable.ToFrozenDictionary();
     }
 
@@ -139,7 +139,7 @@ internal static class FallbackCollectionMethods
 
     private static DecodePassSpanDelegate<IEnumerable<E>> GetCollectionDecodeDelegate<E>(Converter<E> converter)
     {
-        return NativeEndian.IsNativeEndianConverter(converter) ? SpanLikeNativeEndianMethods.GetArray<E> : new ListDecoder<E>(converter).Invoke;
+        return NativeEndian.IsNativeEndianConverter(converter) ? SpanLikeNativeEndianMethods.GetList<E> : new ListDecoder<E>(converter).Invoke;
     }
 
     private static DecodePassSpanDelegate<T> GetCollectionDecodeDelegate<T, E>(Converter<E> converter, Func<Expression, Expression>? method) where T : IEnumerable<E>
@@ -157,7 +157,7 @@ internal static class FallbackCollectionMethods
 
     private static DecodePassSpanDelegate<T>? GetCollectionDecodeDelegate<T, E>(Converter<E> converter) where T : IEnumerable<E>
     {
-        if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), ArrayOrListAssignableDefinitions.Contains))
+        if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), ListAssignableDefinitions.Contains))
             return GetCollectionDecodeDelegate<T, E>(converter, null);
         if (CommonModule.SelectGenericTypeDefinitionOrDefault(typeof(T), HashSetAssignableDefinitions.Contains))
             return GetDirectCastDecodeDelegate<T, HashSet<E>>(new HashSetDecoder<E>(converter).Invoke);
