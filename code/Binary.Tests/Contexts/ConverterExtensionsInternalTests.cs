@@ -1,6 +1,6 @@
 ﻿namespace Mikodev.Binary.Tests.Contexts;
 
-using Mikodev.Binary.Tests.Internal;
+using Mikodev.Binary.Tests;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -179,9 +179,9 @@ public class ConverterExtensionsInternalTests
     public static IEnumerable<object[]> EncodeBrotliArrayPoolRentReturnData()
     {
         var limits = 10_000_000;
-        yield return [0, new int[] { 1 << 16, BrotliEncoder.GetMaxCompressedLength(0) }];
+        yield return [0, new int[] { BrotliEncoder.GetMaxCompressedLength(0) }];
         yield return [1, new int[] { 1 << 16, BrotliEncoder.GetMaxCompressedLength(1) }];
-        yield return [limits, new int[] { 1 << 16, BrotliEncoder.GetMaxCompressedLength(limits) }];
+        yield return [limits, new int[] { 1 << 24, BrotliEncoder.GetMaxCompressedLength(limits) }];
     }
 
     [Theory(DisplayName = "Encode Brotli Array Pool Test")]

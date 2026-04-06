@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Internal;
+﻿namespace Mikodev.Binary.Tests;
 
 using System;
 using System.Diagnostics;
@@ -39,17 +39,6 @@ internal static class ReflectionExtensions
         if (result is null)
             throw new MissingFieldException();
         return result;
-    }
-
-    internal static object GetFieldValueNotNull(this object instance, string name, BindingFlags flags)
-    {
-        var type = instance.GetType();
-        var result = type.GetField(name, flags);
-        if (result is null)
-            throw new MissingFieldException();
-        var target = result.GetValue(instance);
-        Assert.NotNull(target);
-        return target;
     }
 
     internal static T CreateInstance<T>(string typeName)

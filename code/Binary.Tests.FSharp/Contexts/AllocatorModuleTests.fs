@@ -574,7 +574,7 @@ let ``Invoke (empty action)`` () =
                 maxCapacity <- allocator.MaxCapacity
         )
     Assert.Equal(0, length)
-    Assert.Equal(capacity, 65536)
+    Assert.Equal(0, capacity)
     Assert.Equal(Int32.MaxValue, maxCapacity)
     Assert.NotNull(buffer)
     Assert.Equal(0, buffer.Length)

@@ -1,6 +1,6 @@
 ﻿namespace Mikodev.Binary.Tests.Contexts;
 
-using Mikodev.Binary.Tests.Internal;
+using Mikodev.Binary.Tests;
 using System;
 using System.Linq;
 using System.Reflection;

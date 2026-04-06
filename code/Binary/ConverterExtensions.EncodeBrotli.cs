@@ -1,5 +1,6 @@
 ﻿namespace Mikodev.Binary;
 
+using Mikodev.Binary.Internal.Contexts;
 using System;
 using System.Buffers;
 using System.IO;
@@ -19,32 +20,18 @@ public static partial class ConverterExtensions
         var length = BrotliEncoder.GetMaxCompressedLength(source.Length);
         var memory = arrays.Rent(length);
 
-        try
-        {
-            var target = new Span<byte>(memory);
-            EncodeBrotliInternal(source, target, out var bytesWritten);
-            return target.Slice(0, bytesWritten).ToArray();
-        }
-        finally
-        {
-            arrays.Return(memory);
-        }
+        using var _ = new ArrayPoolReturnHelper<byte>(arrays, ref memory);
+        var target = new Span<byte>(memory);
+        EncodeBrotliInternal(source, target, out var bytesWritten);
+        return target.Slice(0, bytesWritten).ToArray();
     }
 
     private static byte[] EncodeBrotliInternal<T>(AllocatorAction<T> action, T item, ArrayPool<byte> arrays)
     {
-        var memory = arrays.Rent(64 * 1024);
-
-        try
-        {
-            var allocator = new Allocator(new Span<byte>(memory));
-            action.Invoke(ref allocator, item);
-            return EncodeBrotliInternal(allocator.AsSpan(), arrays);
-        }
-        finally
-        {
-            arrays.Return(memory);
-        }
+        using var underlying = new ArrayPoolAllocator(arrays);
+        var allocator = new Allocator(underlying);
+        action.Invoke(ref allocator, item);
+        return EncodeBrotliInternal(allocator.AsSpan(), arrays);
     }
 
     public static byte[] EncodeBrotli(this IConverter converter, object? item)

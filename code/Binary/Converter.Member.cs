@@ -1,7 +1,9 @@
 ﻿namespace Mikodev.Binary;
 
 using Mikodev.Binary.Internal;
+using Mikodev.Binary.Internal.Contexts;
 using System;
+using System.Buffers;
 
 public abstract partial class Converter<T>
 {
@@ -16,17 +18,10 @@ public abstract partial class Converter<T>
 
     private byte[] EncodeVariable(T? item)
     {
-        var handle = BufferModule.Borrow();
-        try
-        {
-            var allocator = new Allocator(BufferModule.Intent(handle));
-            Encode(ref allocator, item);
-            return allocator.ToArray();
-        }
-        finally
-        {
-            BufferModule.Return(handle);
-        }
+        using var underlying = new ArrayPoolAllocator(ArrayPool<byte>.Shared);
+        var allocator = new Allocator(underlying);
+        Encode(ref allocator, item);
+        return allocator.ToArray();
     }
 
     private void EncodeWithLengthPrefixConstant(ref Allocator allocator, T? item)

@@ -1,5 +1,6 @@
 ﻿namespace Mikodev.Binary;
 
+using Mikodev.Binary.Internal.Contexts;
 using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Buffers;
@@ -10,38 +11,31 @@ public static partial class ConverterExtensions
 {
     private static T DecodeBrotliInternal<T>(DecodeReadOnlyDelegate<T> decode, ReadOnlySpan<byte> source, ArrayPool<byte> arrays)
     {
-        var limits = Math.Max(64 * 1024, checked(source.Length * 2));
-        var memory = arrays.Rent(limits);
-        var handle = new BrotliDecoder();
+        var bounds = Math.Max(64 * 1024, checked(source.Length * 2));
+        var memory = arrays.Rent(bounds);
         var offset = 0;
         var length = 0;
 
-        try
+        using var handle = new BrotliDecoder();
+        using var _ = new ArrayPoolReturnHelper<byte>(arrays, ref memory);
+        while (true)
         {
-            while (true)
-            {
-                limits = Math.Max(limits, memory.Length);
-                var status = handle.Decompress(source.Slice(offset), new Span<byte>(memory, length, limits - length), out var bytesConsumed, out var bytesWritten);
-                offset += bytesConsumed;
-                length += bytesWritten;
+            bounds = Math.Max(bounds, memory.Length);
+            var status = handle.Decompress(source.Slice(offset), new Span<byte>(memory, length, bounds - length), out var bytesConsumed, out var bytesWritten);
+            offset += bytesConsumed;
+            length += bytesWritten;
 
-                var intent = new ReadOnlySpan<byte>(memory, 0, length);
-                if (status is OperationStatus.Done)
-                    return decode.Invoke(intent);
-                if (status is not OperationStatus.DestinationTooSmall)
-                    throw new IOException($"Brotli decode failed, status: {status}");
+            var intent = new ReadOnlySpan<byte>(memory, 0, length);
+            if (status is OperationStatus.Done)
+                return decode.Invoke(intent);
+            if (status is not OperationStatus.DestinationTooSmall)
+                throw new IOException($"Brotli decode failed, status: {status}");
 
-                limits = checked(limits * 2);
-                var buffer = arrays.Rent(limits);
-                intent.CopyTo(new Span<byte>(buffer));
-                arrays.Return(memory);
-                memory = buffer;
-            }
-        }
-        finally
-        {
-            handle.Dispose();
+            bounds = checked(bounds * 2);
+            var buffer = arrays.Rent(bounds);
+            intent.CopyTo(new Span<byte>(buffer));
             arrays.Return(memory);
+            memory = buffer;
         }
     }
 

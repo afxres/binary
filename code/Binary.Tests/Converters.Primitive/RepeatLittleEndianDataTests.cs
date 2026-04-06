@@ -1,7 +1,7 @@
 ﻿namespace Mikodev.Binary.Tests.Converters.Primitive;
 
+using Mikodev.Binary.Tests;
 using Mikodev.Binary.Tests.Contexts;
-using Mikodev.Binary.Tests.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;

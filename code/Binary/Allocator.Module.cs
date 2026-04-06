@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary;
 
 using Mikodev.Binary.Internal;
+using Mikodev.Binary.Internal.Contexts;
 using System;
 using System.Buffers;
 using System.Diagnostics;
@@ -89,16 +90,9 @@ public ref partial struct Allocator
     public static byte[] Invoke<T>(T data, AllocatorAction<T> action)
     {
         ArgumentNullException.ThrowIfNull(action);
-        var handle = BufferModule.Borrow();
-        try
-        {
-            var allocator = new Allocator(BufferModule.Intent(handle));
-            action.Invoke(ref allocator, data);
-            return allocator.ToArray();
-        }
-        finally
-        {
-            BufferModule.Return(handle);
-        }
+        using var underlying = new ArrayPoolAllocator(ArrayPool<byte>.Shared);
+        var allocator = new Allocator(underlying);
+        action.Invoke(ref allocator, data);
+        return allocator.ToArray();
     }
 }

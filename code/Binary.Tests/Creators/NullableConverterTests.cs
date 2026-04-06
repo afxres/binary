@@ -1,7 +1,7 @@
 ﻿namespace Mikodev.Binary.Tests.Creators;
 
 using Microsoft.FSharp.Core;
-using Mikodev.Binary.Tests.Internal;
+using Mikodev.Binary.Tests;
 using System;
 using System.Collections.Generic;
 using System.Linq;

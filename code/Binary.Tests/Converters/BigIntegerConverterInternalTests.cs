@@ -1,6 +1,6 @@
 ﻿namespace Mikodev.Binary.Tests.Converters;
 
-using Mikodev.Binary.Tests.Internal;
+using Mikodev.Binary.Tests;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
