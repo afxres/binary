@@ -12,8 +12,11 @@ internal sealed class ArrayPoolAllocator(ArrayPool<byte> arrays) : IAllocator, I
 
     private byte[]? buffer;
 
+    private bool disposed;
+
     public ref byte Resize(int length)
     {
+        ObjectDisposedException.ThrowIf(this.disposed, GetType());
         ArgumentOutOfRangeException.ThrowIfNegative(length);
         var wanted = Math.Max(length, MinBufferLength);
         var buffer = this.buffer;
@@ -34,6 +37,7 @@ internal sealed class ArrayPoolAllocator(ArrayPool<byte> arrays) : IAllocator, I
 
     public void Dispose()
     {
+        this.disposed = true;
         if (this.buffer == null)
             return;
         this.arrays.Return(this.buffer);
