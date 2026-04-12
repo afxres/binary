@@ -77,6 +77,7 @@ public class ArrayPoolAllocatorTests
     }
 
     [Theory(DisplayName = "Rent Return Test")]
+    [InlineData([new int[] { 0 }, new int[] { 64 * 1024 }])]
     [InlineData([new int[] { 1, 4 }, new int[] { 64 * 1024 }])]
     [InlineData([new int[] { 32 * 1024, 128 * 1024 }, new int[] { 64 * 1024, 128 * 1024 }])]
     public void RentReturnTest(int[] wanted, int[] actual)
@@ -88,6 +89,18 @@ public class ArrayPoolAllocatorTests
         ((IDisposable)allocator).Dispose();
         Assert.Equal(actual, arrays.RentedArrays.Select(x => x.Length));
         Assert.Equal(actual, arrays.ReturnedArrays.Select(x => x.Length));
+    }
+
+    [Theory(DisplayName = "Resize With Invalid Length Test")]
+    [InlineData(-1)]
+    [InlineData(int.MinValue)]
+    public void ResizeWithInvalidLengthTest(int length)
+    {
+        var arrays = new TestArrayPool<byte>();
+        var allocator = CreateInstance(arrays);
+        var error = Assert.Throws<ArgumentOutOfRangeException>(() => allocator.Resize(length));
+        var expectedParameterName = ReflectionExtensions.GetMethodNotNull(typeof(IAllocator), nameof(IAllocator.Resize), [typeof(int)]).GetParameters().Single().Name;
+        Assert.Equal(expectedParameterName, error.ParamName);
     }
 
     [Theory(DisplayName = "Invalid Size Returns Array Pool Rent Returns Test")]
