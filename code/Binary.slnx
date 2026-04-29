@@ -28,6 +28,7 @@
     <Project Path="Binary.SourceGeneration.ObjectCrossTests/Binary.SourceGeneration.ObjectCrossTests.csproj" />
     <Project Path="Binary.SourceGeneration.Tests/Binary.SourceGeneration.Tests.csproj" />
     <Project Path="Binary.SourceGeneration.TupleObjectTests/Binary.SourceGeneration.TupleObjectTests.csproj" />
+    <Project Path="Binary.SourceGeneration.UnionObjectTests/Binary.SourceGeneration.UnionObjectTests.csproj" Id="81aaf7fa-75d9-42a3-99b1-a89b1da21327" />
     <Project Path="Binary.Tests.FSharp/Binary.Tests.FSharp.fsproj" />
     <Project Path="Binary.Tests/Binary.Tests.csproj" />
   </Folder>

@@ -45,4 +45,7 @@ internal static class ThrowHelper
 
     [DoesNotReturn]
     internal static void ThrowInvalidNullableTag<T>(int tag) where T : struct => throw new ArgumentException($"Invalid nullable tag '{tag}', type: {typeof(T?)}");
+
+    [DoesNotReturn]
+    internal static void ThrowInvalidUnionTag<T>(int tag) => throw new ArgumentException($"Invalid union tag '{tag}', type: {typeof(T)}");
 }

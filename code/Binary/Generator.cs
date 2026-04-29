@@ -20,6 +20,7 @@ public static partial class Generator
         yield return new NullableConverterCreator();
         yield return new PriorityQueueConverterCreator();
         yield return new ReadOnlySequenceConverterCreator();
+        yield return new UnionConverterCreator();
         yield return new UriConverterCreator();
         yield return new VariableBoundArrayConverterCreator();
         yield return new IsolatedConverterCreator();
