@@ -211,12 +211,14 @@ public static partial class Symbols
 
     public static int CompareInheritance(Compilation compilation, ITypeSymbol x, ITypeSymbol y)
     {
-        if (x.IsValueType || y.IsValueType)
-            throw new ArgumentException("Require reference type.");
         var alpha = compilation.ClassifyCommonConversion(x, y);
         var bravo = compilation.ClassifyCommonConversion(y, x);
         if (alpha.IsIdentity || bravo.IsIdentity)
             throw new ArgumentException("Identical types detected.");
+        if (x.IsValueType)
+            return y.IsValueType ? 0 : 1;
+        if (y.IsValueType)
+            return -1;
         if (alpha.IsReference && alpha.IsImplicit)
             return -1;
         if (bravo.IsReference && bravo.IsImplicit)

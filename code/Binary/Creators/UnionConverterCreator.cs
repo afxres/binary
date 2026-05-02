@@ -16,30 +16,15 @@ internal sealed class UnionConverterCreator : IConverterCreator
 {
     private sealed record UnionCaseInfo(int Index, Type Type, ConstructorInfo Constructor, IConverter Converter);
 
-    private static readonly Comparer<UnionCaseInfo> UnionCaseInfoComparer = Comparer<UnionCaseInfo>.Create((x, y) => CompareInheritance(x.Type, y.Type));
-
     private static readonly MethodInfo DecodeMethodInfo = new DecodeDelegate<int>(Converter.Decode).Method;
 
     private static readonly MethodInfo EncodeMethodInfo = new EncodeDelegate<int>(Converter.Encode).Method;
 
     private static readonly MethodInfo DecodeFailedMethodInfo = new Action<int>(ThrowHelper.ThrowInvalidUnionTag<object>).Method.GetGenericMethodDefinition();
 
-    private static int CompareInheritance(Type? x, Type? y)
-    {
-        ArgumentNullException.ThrowIfNull(x);
-        ArgumentNullException.ThrowIfNull(y);
-        if (x.IsValueType || y.IsValueType)
-            throw new ArgumentException("Require reference type.");
-        if (x == y)
-            throw new ArgumentException("Identical types detected.");
-        if (x.IsAssignableTo(y))
-            return -1;
-        if (y.IsAssignableTo(x))
-            return 1;
-        return StringComparer.InvariantCulture.Compare(x.FullName, y.FullName);
-    }
+    private static readonly MethodInfo EncodeFailedMethodInfo = new Action(ThrowHelper.ThrowInvalidOrNullUnionValue<object>).Method.GetGenericMethodDefinition();
 
-    private static Delegate GetEncodeDelegate(Type type, ImmutableSortedSet<UnionCaseInfo> unionCaseInfoSet, bool auto)
+    private static Delegate GetEncodeDelegate(Type type, ImmutableArray<UnionCaseInfo> unionCaseInfoSet, bool auto)
     {
         var property = type.GetProperties(CommonDefine.PublicInstanceBindingFlags).Single(x => x.Name is "Value" && x.PropertyType == typeof(object));
         var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
@@ -57,13 +42,20 @@ internal sealed class UnionConverterCreator : IConverterCreator
                 Expression.Break(target));
             expressions.Add(Expression.IfThen(test, ifTrue));
         }
+        if (type.IsValueType is false)
+        {
+            var tests = Expression.Block(expressions);
+            expressions.Clear();
+            expressions.Add(Expression.IfThen(Expression.NotEqual(union, Expression.Constant(null, type)), tests));
+        }
+        expressions.Add(Expression.Call(EncodeFailedMethodInfo.MakeGenericMethod(type)));
         expressions.Add(Expression.Label(target));
         var delegateType = typeof(AllocatorAction<>).MakeGenericType(type);
         var lambda = Expression.Lambda(delegateType, Expression.Block(expressions), [allocator, union]);
         return lambda.Compile();
     }
 
-    private static Delegate GetDecodeDelegate(Type type, ImmutableSortedSet<UnionCaseInfo> unionCaseInfoSet, bool auto)
+    private static Delegate GetDecodeDelegate(Type type, ImmutableArray<UnionCaseInfo> unionCaseInfoSet, bool auto)
     {
         var span = Expression.Parameter(typeof(ReadOnlySpan<byte>).MakeByRefType(), "span");
         var index = Expression.Variable(typeof(int), "index");
@@ -89,7 +81,7 @@ internal sealed class UnionConverterCreator : IConverterCreator
     {
         if (type.GetCustomAttributes(false).Any(x => x.GetType().FullName is "System.Runtime.CompilerServices.UnionAttribute") is false)
             return null;
-        var unionCaseInfoSetBuilder = ImmutableSortedSet.CreateBuilder(UnionCaseInfoComparer);
+        var unionCaseInfoList = new List<UnionCaseInfo>();
         foreach (var i in type.GetConstructors())
         {
             var parameters = i.GetParameters();
@@ -97,13 +89,14 @@ internal sealed class UnionConverterCreator : IConverterCreator
                 continue;
             var unionCaseType = parameters.Single().ParameterType;
             var unionCaseConverter = context.GetConverter(unionCaseType);
-            _ = unionCaseInfoSetBuilder.Add(new UnionCaseInfo(unionCaseInfoSetBuilder.Count, unionCaseType, i, unionCaseConverter));
+            unionCaseInfoList.Add(new UnionCaseInfo(unionCaseInfoList.Count, unionCaseType, i, unionCaseConverter));
         }
-        var unionCaseInfoSet = unionCaseInfoSetBuilder.ToImmutable();
-        var encode = GetEncodeDelegate(type, unionCaseInfoSet, auto: false);
-        var encodeAuto = GetEncodeDelegate(type, unionCaseInfoSet, auto: true);
-        var decode = GetDecodeDelegate(type, unionCaseInfoSet, auto: false);
-        var decodeAuto = GetDecodeDelegate(type, unionCaseInfoSet, auto: true);
+        unionCaseInfoList.Sort((a, b) => CommonModule.CompareInheritance(a.Type, b.Type));
+        var unionCaseInfoArray = unionCaseInfoList.ToImmutableArray();
+        var encode = GetEncodeDelegate(type, unionCaseInfoArray, auto: false);
+        var encodeAuto = GetEncodeDelegate(type, unionCaseInfoArray, auto: true);
+        var decode = GetDecodeDelegate(type, unionCaseInfoArray, auto: false);
+        var decodeAuto = GetDecodeDelegate(type, unionCaseInfoArray, auto: true);
         var converter = CommonModule.CreateInstance(typeof(UnionConverter<>).MakeGenericType(type), [encode, encodeAuto, decode, decodeAuto]);
         return (IConverter)converter;
     }

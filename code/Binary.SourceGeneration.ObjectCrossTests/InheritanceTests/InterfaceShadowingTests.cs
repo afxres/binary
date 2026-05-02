@@ -143,6 +143,9 @@ public class InterfaceShadowingTests
     [InlineData(typeof(IShadowingA), typeof(IShadowingB), 0)]
     [InlineData(typeof(IShadowingB), typeof(IShadowingA), 0)]
     [InlineData(typeof(CustomImplicitConversionTypeA), typeof(CustomImplicitConversionTypeB), 0)]
+    [InlineData(typeof(float), typeof(long), 0)]
+    [InlineData(typeof(string), typeof(int), -1)]
+    [InlineData(typeof(double), typeof(Action), 1)]
     public void CompareInheritanceTest(Type x, Type y, int expected)
     {
         var reflectionModule = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "CommonModule");
@@ -161,14 +164,9 @@ public class InterfaceShadowingTests
         Assert.Equal(expected, memberResult);
     }
 
-    public const string CompareInheritanceRequireReferenceTypeMessage = "Require reference type.";
-
     public const string CompareInheritanceIdenticalTypesDetectedMessage = "Identical types detected.";
 
     [Theory(DisplayName = "Compare Inheritance With Invalid Type Test")]
-    [InlineData(typeof(float), typeof(long), CompareInheritanceRequireReferenceTypeMessage)]
-    [InlineData(typeof(string), typeof(int), CompareInheritanceRequireReferenceTypeMessage)]
-    [InlineData(typeof(double), typeof(Action), CompareInheritanceRequireReferenceTypeMessage)]
     [InlineData(typeof(string), typeof(string), CompareInheritanceIdenticalTypesDetectedMessage)]
     [InlineData(typeof(Action), typeof(Action), CompareInheritanceIdenticalTypesDetectedMessage)]
     [InlineData(typeof(IMessA0), typeof(IMessA0), CompareInheritanceIdenticalTypesDetectedMessage)]

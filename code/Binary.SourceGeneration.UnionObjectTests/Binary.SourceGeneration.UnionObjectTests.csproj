@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Binary\Binary.csproj" />
     <ProjectReference Include="..\Binary.SourceGeneration\Binary.SourceGeneration.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
+    <ProjectReference Include="..\Binary.FSharp\Binary.FSharp.fsproj" />
   </ItemGroup>
 
 </Project>

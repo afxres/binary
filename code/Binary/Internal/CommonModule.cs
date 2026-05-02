@@ -100,10 +100,12 @@ internal static class CommonModule
     {
         ArgumentNullException.ThrowIfNull(x);
         ArgumentNullException.ThrowIfNull(y);
-        if (x.IsValueType || y.IsValueType)
-            throw new ArgumentException("Require reference type.");
         if (x == y)
             throw new ArgumentException("Identical types detected.");
+        if (x.IsValueType)
+            return y.IsValueType ? 0 : 1;
+        if (y.IsValueType)
+            return -1;
         if (x.IsAssignableTo(y))
             return -1;
         if (y.IsAssignableTo(x))

@@ -48,4 +48,7 @@ internal static class ThrowHelper
 
     [DoesNotReturn]
     internal static void ThrowInvalidUnionTag<T>(int tag) => throw new ArgumentException($"Invalid union tag '{tag}', type: {typeof(T)}");
+
+    [DoesNotReturn]
+    internal static void ThrowInvalidOrNullUnionValue<T>() => throw new ArgumentException($"Invalid or null union value, type: {typeof(T)}");
 }
