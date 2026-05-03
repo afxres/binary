@@ -1,6 +1,7 @@
 ﻿namespace Mikodev.Binary.SourceGeneration.UnionObjectTests.IntegrationTests;
 
 using Microsoft.FSharp.Core;
+using Mikodev.Binary.Attributes;
 using System;
 using System.Runtime.CompilerServices;
 using Xunit;
@@ -14,6 +15,15 @@ public readonly union Pet(Cat, Dog);
 public record A(int Id);
 
 public record B(int Id, string Name) : A(Id);
+
+[SourceGeneratorContext]
+[SourceGeneratorInclude<Pet>]
+[SourceGeneratorInclude<Choice<int, string>>]
+[SourceGeneratorInclude<Choice<string, int>>]
+[SourceGeneratorInclude<Choice<double, string>>]
+[SourceGeneratorInclude<Choice<A, B>>]
+[SourceGeneratorInclude<Choice<B, A>>]
+public partial class IntegrationGeneratorContext { }
 
 [Union]
 public class Choice<A, B> : IUnion
@@ -37,9 +47,15 @@ public class IntegrationTests
     public void UnionBasicTest(Type type)
     {
         var generator = Generator.CreateDefault();
+        var generatorSecond = Generator.CreateAotBuilder()
+            .AddConverterCreators(IntegrationGeneratorContext.ConverterCreators.Values)
+            .Build();
         var converter = generator.GetConverter(type);
+        var converterSecond = generatorSecond.GetConverter(type);
         Assert.Equal(0, converter.Length);
+        Assert.Equal(0, converterSecond.Length);
         Assert.Equal("UnionConverter`1", converter.GetType().Name);
+        Assert.False(converterSecond.GetType().IsGenericType);
     }
 
     public static TheoryData<Pet, FSharpChoice<Cat, Dog>, Type, int> PetUnionAndFSharpChoiceTestData()
@@ -92,20 +108,34 @@ public class IntegrationTests
         var sourceIntent = (source as IUnion)?.Value;
         Assert.NotNull(sourceIntent);
         var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().Build();
+        var generatorSecond = Generator.CreateAotBuilder()
+            .AddConverterCreators(IntegrationGeneratorContext.ConverterCreators.Values)
+            .Build();
         var converter = generator.GetConverter<A>();
         var converterContrast = generator.GetConverter(contrastType);
+        var converterSecond = generatorSecond.GetConverter<A>();
         var buffer = converter.Encode(source);
         var bufferContrast = converterContrast.Encode(contrast);
-        Assert.Equal(buffer, bufferContrast);
+        var bufferSecond = converterSecond.Encode(source);
+        Assert.Equal(bufferContrast, buffer);
+        Assert.Equal(bufferContrast, bufferSecond);
         var span = new ReadOnlySpan<byte>(buffer);
         var head = Converter.Decode(ref span);
         var intent = generator.Encode(sourceIntent);
+        var spanSecond = new ReadOnlySpan<byte>(buffer);
+        var headSecond = Converter.Decode(ref spanSecond);
         Assert.Equal(tag, head);
-        Assert.Equal(span, intent);
+        Assert.Equal(tag, headSecond);
+        Assert.Equal(intent, span);
+        Assert.Equal(intent, spanSecond);
         var result = converter.Decode(buffer);
+        var resultSecond = converterSecond.Decode(buffer);
         Assert.NotNull(result as IUnion);
+        Assert.NotNull(resultSecond as IUnion);
         Assert.Equal(source, result);
+        Assert.Equal(source, resultSecond);
         Assert.Equal(sourceIntent, ((IUnion)result).Value);
+        Assert.Equal(sourceIntent, ((IUnion)resultSecond).Value);
     }
 
     [Theory(DisplayName = "Union Encode Auto Decode Auto Test")]
@@ -118,22 +148,38 @@ public class IntegrationTests
         var sourceIntent = (source as IUnion)?.Value;
         Assert.NotNull(sourceIntent);
         var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().Build();
+        var generatorSecond = Generator.CreateAotBuilder()
+            .AddConverterCreators(IntegrationGeneratorContext.ConverterCreators.Values)
+            .Build();
         var converter = generator.GetConverter<A>();
         var converterContrast = generator.GetConverter(contrastType);
+        var converterSecond = generatorSecond.GetConverter<A>();
         var buffer = Allocator.Invoke(source, converter.EncodeAuto);
         var bufferContrast = Allocator.Invoke((object)contrast, converterContrast.EncodeAuto);
-        Assert.Equal(buffer, bufferContrast);
+        var bufferSecond = Allocator.Invoke(source, converterSecond.EncodeAuto);
+        Assert.Equal(bufferContrast, buffer);
+        Assert.Equal(bufferContrast, bufferSecond);
         var span = new ReadOnlySpan<byte>(buffer);
         var head = Converter.Decode(ref span);
         var intent = Allocator.Invoke(sourceIntent, generator.GetConverter(sourceIntent.GetType()).EncodeAuto);
+        var spanSecond = new ReadOnlySpan<byte>(buffer);
+        var headSecond = Converter.Decode(ref spanSecond);
         Assert.Equal(tag, head);
-        Assert.Equal(span, intent);
+        Assert.Equal(tag, headSecond);
+        Assert.Equal(intent, span);
+        Assert.Equal(intent, spanSecond);
         var body = new ReadOnlySpan<byte>(buffer);
         var result = converter.DecodeAuto(ref body);
+        var bodySecond = new ReadOnlySpan<byte>(buffer);
+        var resultSecond = converterSecond.DecodeAuto(ref bodySecond);
         Assert.NotNull(result as IUnion);
+        Assert.NotNull(resultSecond as IUnion);
         Assert.Equal(0, body.Length);
+        Assert.Equal(0, bodySecond.Length);
         Assert.Equal(source, result);
+        Assert.Equal(source, resultSecond);
         Assert.Equal(sourceIntent, ((IUnion)result).Value);
+        Assert.Equal(sourceIntent, ((IUnion)resultSecond).Value);
     }
 
     public static TheoryData<Type, byte[], int> UnionDecodeDecodeAutoWithInvalidTagTestData()
@@ -155,17 +201,30 @@ public class IntegrationTests
     public void UnionDecodeDecodeAutoWithInvalidTagTest(Type type, byte[] buffer, int tag)
     {
         var generator = Generator.CreateDefault();
+        var generatorSecond = Generator.CreateAotBuilder()
+            .AddConverterCreators(IntegrationGeneratorContext.ConverterCreators.Values)
+            .Build();
         var converter = generator.GetConverter(type);
-        var a = Assert.Throws<ArgumentException>(() => converter.Decode(buffer));
-        var b = Assert.Throws<ArgumentException>(() =>
+        var converterSecond = generatorSecond.GetConverter(type);
+        var error = Assert.Throws<ArgumentException>(() => converter.Decode(buffer));
+        var errorAuto = Assert.Throws<ArgumentException>(() =>
         {
             var body = new ReadOnlySpan<byte>(buffer);
             _ = converter.DecodeAuto(ref body);
             Assert.Fail();
         });
+        var errorSecond = Assert.Throws<ArgumentException>(() => converterSecond.Decode(buffer));
+        var errorAutoSecond = Assert.Throws<ArgumentException>(() =>
+        {
+            var body = new ReadOnlySpan<byte>(buffer);
+            _ = converterSecond.DecodeAuto(ref body);
+            Assert.Fail();
+        });
         var message = $"Invalid union tag '{tag}', type: {type}";
-        Assert.Equal(message, a.Message);
-        Assert.Equal(message, b.Message);
+        Assert.Equal(message, error.Message);
+        Assert.Equal(message, errorAuto.Message);
+        Assert.Equal(message, errorSecond.Message);
+        Assert.Equal(message, errorAutoSecond.Message);
     }
 
     public static TheoryData<object?, Type> UnionWithNullOrNullValueTestData()
@@ -182,13 +241,35 @@ public class IntegrationTests
     public void UnionWithNullOrNullValueTest(object? source, Type type)
     {
         var generator = Generator.CreateDefault();
+        var generatorSecond = Generator.CreateAotBuilder()
+            .AddConverterCreators(IntegrationGeneratorContext.ConverterCreators.Values)
+            .Build();
         var converter = generator.GetConverter(type);
+        var converterSecond = generatorSecond.GetConverter(type);
         var error = Assert.Throws<ArgumentException>(() => converter.Encode(source));
-        var errorAuto = Assert.Throws<ArgumentException>(() => Allocator.Invoke(source, generator.GetConverter(type).EncodeAuto));
+        var errorAuto = Assert.Throws<ArgumentException>(() => Allocator.Invoke(source, converter.EncodeAuto));
+        var errorSecond = Assert.Throws<ArgumentException>(() => converterSecond.Encode(source));
+        var errorAutoSecond = Assert.Throws<ArgumentException>(() => Allocator.Invoke(source, converterSecond.EncodeAuto));
         var message = $"Invalid or null union value, type: {type}";
         Assert.Null(error.ParamName);
         Assert.Null(errorAuto.ParamName);
+        Assert.Null(errorSecond.ParamName);
+        Assert.Null(errorAutoSecond.ParamName);
         Assert.Equal(message, error.Message);
         Assert.Equal(message, errorAuto.Message);
+        Assert.Equal(message, errorSecond.Message);
+        Assert.Equal(message, errorAutoSecond.Message);
+    }
+
+    [Theory(DisplayName = "Union Case Type Duplicated Test")]
+    [InlineData(typeof(Choice<int, int>))]
+    [InlineData(typeof(Choice<string, string>))]
+    public void UnionCaseTypeDuplicatedTest(Type type)
+    {
+        var generator = Generator.CreateDefault();
+        var error = Assert.Throws<ArgumentException>(() => generator.GetConverter(type));
+        var message = $"Union case type duplicated, type: {type}";
+        Assert.Null(error.ParamName);
+        Assert.Equal(message, error.Message);
     }
 }

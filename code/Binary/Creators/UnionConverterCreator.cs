@@ -81,7 +81,7 @@ internal sealed class UnionConverterCreator : IConverterCreator
     {
         if (type.GetCustomAttributes(false).Any(x => x.GetType().FullName is "System.Runtime.CompilerServices.UnionAttribute") is false)
             return null;
-        var unionCaseInfoList = new List<UnionCaseInfo>();
+        var caseList = new List<UnionCaseInfo>();
         foreach (var i in type.GetConstructors())
         {
             var parameters = i.GetParameters();
@@ -89,14 +89,16 @@ internal sealed class UnionConverterCreator : IConverterCreator
                 continue;
             var unionCaseType = parameters.Single().ParameterType;
             var unionCaseConverter = context.GetConverter(unionCaseType);
-            unionCaseInfoList.Add(new UnionCaseInfo(unionCaseInfoList.Count, unionCaseType, i, unionCaseConverter));
+            caseList.Add(new UnionCaseInfo(caseList.Count, unionCaseType, i, unionCaseConverter));
         }
-        unionCaseInfoList.Sort((a, b) => CommonModule.CompareInheritance(a.Type, b.Type));
-        var unionCaseInfoArray = unionCaseInfoList.ToImmutableArray();
-        var encode = GetEncodeDelegate(type, unionCaseInfoArray, auto: false);
-        var encodeAuto = GetEncodeDelegate(type, unionCaseInfoArray, auto: true);
-        var decode = GetDecodeDelegate(type, unionCaseInfoArray, auto: false);
-        var decodeAuto = GetDecodeDelegate(type, unionCaseInfoArray, auto: true);
+        if (caseList.Select(x => x.Type).Distinct().Count() != caseList.Count)
+            throw new ArgumentException($"Union case type duplicated, type: {type}");
+        caseList.Sort((a, b) => CommonModule.CompareInheritance(a.Type, b.Type));
+        var cases = caseList.ToImmutableArray();
+        var encode = GetEncodeDelegate(type, cases, auto: false);
+        var encodeAuto = GetEncodeDelegate(type, cases, auto: true);
+        var decode = GetDecodeDelegate(type, cases, auto: false);
+        var decodeAuto = GetDecodeDelegate(type, cases, auto: true);
         var converter = CommonModule.CreateInstance(typeof(UnionConverter<>).MakeGenericType(type), [encode, encodeAuto, decode, decodeAuto]);
         return (IConverter)converter;
     }
