@@ -28,7 +28,7 @@ public class CollectionContextTests
         var context = new SourceGeneratorContext(compilation, _ => Assert.Fail("Invalid Call!"), CancellationToken.None);
         var tracker = new SourceGeneratorTracker(_ => Assert.Fail("Invalid Call!"));
         var results = unsupportedTypeSymbols.Select(x => CollectionConverterContext.Invoke(context, tracker, x)).ToList();
-        Assert.All(results, Assert.Null);
+        Assert.All(results, x => Assert.Equal(SourceStatus.Ignored, x?.Status));
 
         var arraySymbol = compilation.CreateArrayTypeSymbol(compilation.GetSpecialType(SpecialType.System_String), 1);
         Assert.Null(CollectionConverterContext.Invoke(context, tracker, arraySymbol));

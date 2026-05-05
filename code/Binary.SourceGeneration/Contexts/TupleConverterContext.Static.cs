@@ -38,7 +38,7 @@ public sealed partial class TupleConverterContext
         GetMembers(symbol, string.Empty, builder);
         var members = builder.DrainToImmutable();
         if (members.Length is 0)
-            return new SourceResult(SourceStatus.NoAvailableMember);
+            return new SourceResult(SourceStatus.Error);
         return new TupleConverterContext(context, tracker, symbol, members).Invoke();
     }
 }

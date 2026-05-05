@@ -139,24 +139,20 @@ public sealed partial class CollectionConverterContext
         return new TypeInfo(constructorArgumentKind, string.Empty, typeArguments ?? enumerableInterface.TypeArguments);
     }
 
-    private static TypeInfo? GetInfo(SourceGeneratorContext context, ITypeSymbol type)
+    public static SourceResult? Invoke(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol)
     {
-        if (type is not INamedTypeSymbol symbol)
+        if (symbol is not INamedTypeSymbol namedType)
             return null;
         const string ResourceKey = "Collections";
         var resource = (Resource)context.GetOrCreateResource(ResourceKey, CreateResource);
-        var unbound = symbol.IsGenericType ? symbol.ConstructUnboundGenericType() : null;
-        var unboundOrOriginal = unbound ?? symbol;
+        var unbound = namedType.IsGenericType ? namedType.ConstructUnboundGenericType() : null;
+        var unboundOrOriginal = unbound ?? namedType;
         if (resource.UnsupportedTypes.Contains(unboundOrOriginal))
-            return null;
-        if (unbound is not null && resource.SupportedTypes.TryGetValue(unbound, out var definition))
-            return new TypeInfo(definition.ConstructorArgumentKind, definition.ConstructorExpression, symbol.TypeArguments);
-        return GetInfo(symbol, resource);
-    }
-
-    public static SourceResult? Invoke(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol)
-    {
-        if (GetInfo(context, symbol) is not { } info)
+            return new SourceResult(SourceStatus.Ignored);
+        var info = unbound is not null && resource.SupportedTypes.TryGetValue(unbound, out var definition)
+            ? new TypeInfo(definition.ConstructorArgumentKind, definition.ConstructorExpression, namedType.TypeArguments)
+            : GetInfo(namedType, resource);
+        if (info is null)
             return null;
         return new CollectionConverterContext(context, tracker, symbol, info).Invoke();
     }

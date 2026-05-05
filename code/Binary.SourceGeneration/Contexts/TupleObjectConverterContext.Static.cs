@@ -42,7 +42,7 @@ public sealed partial class TupleObjectConverterContext
         }
         var members = dictionary.Values.ToImmutableArray();
         if (members.Length is 0)
-            return new SourceResult(SourceStatus.NoAvailableMember);
+            return new SourceResult(SourceStatus.Error);
         var constructor = Symbols.GetConstructor(context, typeInfo, members);
         return new TupleObjectConverterContext(context, tracker, symbol, members, constructor).Invoke();
     }

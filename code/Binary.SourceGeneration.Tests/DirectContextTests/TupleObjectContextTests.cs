@@ -31,6 +31,10 @@ public class TupleObjectContextTests
 
             using Mikodev.Binary.Attributes;
 
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<TupleObjectWithoutMember>]
+            public partial class TestSourceGeneratorContext { }
+
             [TupleObject]
             struct TupleObjectWithoutMember { }
             """;
@@ -41,6 +45,14 @@ public class TupleObjectContextTests
         var tracker = new SourceGeneratorTracker(_ => Assert.Fail("Invalid Call!"));
         var result = TupleObjectConverterContext.Invoke(context, tracker, valueTupleSymbol);
         Assert.NotNull(result);
-        Assert.Equal(SourceStatus.NoAvailableMember, result.Status);
+        Assert.Equal(SourceStatus.Error, result.Status);
+
+        var typeName = "TupleObjectWithoutMember";
+        var generator = new SourceGenerator();
+        _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
+        Assert.Equal("TupleObject", diagnostic.Location.GetSourceText());
+        Assert.EndsWith($"No available member found, type: {typeName}", diagnostic.ToString());
     }
 }

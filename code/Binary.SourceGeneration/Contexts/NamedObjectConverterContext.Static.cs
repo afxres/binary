@@ -37,7 +37,7 @@ public sealed partial class NamedObjectConverterContext
 
         var members = dictionary.Values.ToImmutableArray();
         if (members.Length is 0)
-            return new SourceResult(SourceStatus.NoAvailableMember);
+            return new SourceResult(SourceStatus.NamedObjectError);
         var constructor = Symbols.GetConstructor(context, typeInfo, members);
         return new NamedObjectConverterContext(context, tracker, symbol, members, constructor).Invoke();
     }

@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-public class SourceGeneratorContext(Compilation compilation, Action<Diagnostic> diagnosticCollector, CancellationToken cancellation)
+public class SourceGeneratorContext(Compilation compilation, Action<Diagnostic> collector, CancellationToken cancellation)
 {
-    private readonly Action<Diagnostic> diagnosticCollector = diagnosticCollector;
+    private readonly Action<Diagnostic> collector = collector;
 
     private readonly Dictionary<string, object> resources = [];
 
@@ -76,6 +76,6 @@ public class SourceGeneratorContext(Compilation compilation, Action<Diagnostic> 
 
     public void Collect(Diagnostic diagnostic)
     {
-        this.diagnosticCollector.Invoke(diagnostic);
+        this.collector.Invoke(diagnostic);
     }
 }

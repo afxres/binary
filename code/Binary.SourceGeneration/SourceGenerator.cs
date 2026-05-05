@@ -160,7 +160,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
             return null;
 
         var symbolText = Symbols.GetSymbolDiagnosticDisplayString(symbol);
-        if (result?.Status is SourceStatus.NoAvailableMember)
+        if (result?.Status is SourceStatus.NamedObjectError)
             if (context.GetTypeInfo(symbol).ConflictFieldsAndProperties is { Length: not 0 } targets)
                 targets.ForEach(name => context.Collect(Constants.AmbiguousMemberFound.With(attribute, [name, symbolText])));
             else

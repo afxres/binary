@@ -4,6 +4,7 @@ public enum SourceStatus
 {
     None,
     Ok,
+    Error,
     Ignored,
-    NoAvailableMember,
+    NamedObjectError,
 }
