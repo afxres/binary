@@ -156,18 +156,21 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
         if (result?.Status is SourceStatus.Ok)
             return result;
-        if (inclusions.TryGetValue(symbol, out var attribute) is false)
-            return null;
+        if (inclusions.TryGetValue(symbol, out var attribute) is true)
+            Report(context, symbol, attribute, result?.Status);
+        return null;
+    }
 
+    private static void Report(SourceGeneratorContext context, ITypeSymbol symbol, AttributeData attribute, SourceStatus? status)
+    {
         var symbolText = Symbols.GetSymbolDiagnosticDisplayString(symbol);
-        if (result?.Status is SourceStatus.NamedObjectError)
+        if (status is SourceStatus.NamedObjectError)
             if (context.GetTypeInfo(symbol).ConflictFieldsAndProperties is { Length: not 0 } targets)
                 targets.ForEach(name => context.Collect(Constants.AmbiguousMemberFound.With(attribute, [name, symbolText])));
             else
                 context.Collect(Constants.NoAvailableMemberFound.With(attribute, [symbolText]));
         else
             context.Collect(Constants.NoConverterGenerated.With(attribute, [symbolText]));
-        return null;
     }
 
     private static string Finish(ContextInfo info, SortedDictionary<string, SourceResult?> dictionary, CancellationToken cancellation)
