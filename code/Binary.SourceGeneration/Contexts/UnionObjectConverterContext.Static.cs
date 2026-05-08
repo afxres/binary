@@ -17,11 +17,14 @@ public sealed partial class UnionObjectConverterContext
             var parameters = i.Parameters;
             if (parameters.Length is not 1 || i.DeclaredAccessibility is not Accessibility.Public)
                 continue;
-            caseList.Add((caseList.Count, parameters.Single().Type));
+            var parameter = i.Parameters.Single();
+            if (parameter.RefKind is not RefKind.None and not RefKind.In)
+                continue;
+            caseList.Add((caseList.Count, parameter.Type));
         }
         if (caseList.Select(x => x.Type).Distinct(SymbolEqualityComparer.Default).Count() != caseList.Count)
             return null;
-        caseList.Sort((a, b) => Symbols.CompareInheritance(context.Compilation, a.Type, b.Type));
+        caseList.Sort((a, b) => Symbols.CompareConversion(context.Compilation, a.Type, b.Type));
         return new UnionObjectConverterContext(context, tracker, symbol, [.. caseList]).Invoke();
     }
 }

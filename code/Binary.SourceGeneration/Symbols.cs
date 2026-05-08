@@ -2,6 +2,7 @@
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Operations;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -209,20 +210,25 @@ public static partial class Symbols
         return result.ToImmutable();
     }
 
-    public static int CompareInheritance(Compilation compilation, ITypeSymbol x, ITypeSymbol y)
+    public static int CompareConversion(Compilation compilation, ITypeSymbol x, ITypeSymbol y)
     {
+        static bool IsConversionAllowed(CommonConversion conversion)
+        {
+            return conversion.Exists && conversion.IsImplicit && conversion.IsUserDefined is false && conversion.IsNumeric is false;
+        }
+
         var alpha = compilation.ClassifyCommonConversion(x, y);
         var bravo = compilation.ClassifyCommonConversion(y, x);
         if (alpha.IsIdentity || bravo.IsIdentity)
             throw new ArgumentException("Identical types detected.");
+        if (IsConversionAllowed(alpha))
+            return -1;
+        if (IsConversionAllowed(bravo))
+            return 1;
         if (x.IsValueType)
             return y.IsValueType ? 0 : 1;
         if (y.IsValueType)
             return -1;
-        if (alpha.IsReference && alpha.IsImplicit)
-            return -1;
-        if (bravo.IsReference && bravo.IsImplicit)
-            return 1;
         return 0;
     }
 
@@ -244,7 +250,7 @@ public static partial class Symbols
             {
                 foreach (var i in values)
                 {
-                    var signal = CompareInheritance(compilation, i.ContainingType, member.ContainingType);
+                    var signal = CompareConversion(compilation, i.ContainingType, member.ContainingType);
                     if (signal is 0)
                         same.Add(i);
                     else if (signal is -1)

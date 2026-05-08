@@ -96,20 +96,20 @@ internal static class CommonModule
         return property.GetIndexParameters().Length is not 0;
     }
 
-    internal static int CompareInheritance(Type? x, Type? y)
+    internal static int CompareConversion(Type? x, Type? y)
     {
         ArgumentNullException.ThrowIfNull(x);
         ArgumentNullException.ThrowIfNull(y);
         if (x == y)
             throw new ArgumentException("Identical types detected.");
-        if (x.IsValueType)
-            return y.IsValueType ? 0 : 1;
-        if (y.IsValueType)
-            return -1;
         if (x.IsAssignableTo(y))
             return -1;
         if (y.IsAssignableTo(x))
             return 1;
+        if (x.IsValueType)
+            return y.IsValueType ? 0 : 1;
+        if (y.IsValueType)
+            return -1;
         return 0;
     }
 
@@ -130,7 +130,7 @@ internal static class CommonModule
             {
                 foreach (var i in values)
                 {
-                    var signal = CompareInheritance(i.DeclaringType, member.DeclaringType);
+                    var signal = CompareConversion(i.DeclaringType, member.DeclaringType);
                     if (signal is 0)
                         same.Add(i);
                     else if (signal is -1)

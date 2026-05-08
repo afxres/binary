@@ -87,13 +87,21 @@ internal sealed class UnionConverterCreator : IConverterCreator
             var parameters = i.GetParameters();
             if (parameters.Length is not 1)
                 continue;
-            var unionCaseType = parameters.Single().ParameterType;
+            var parameter = parameters.Single();
+            var unionCaseType = parameter switch
+            {
+                { IsIn: true, ParameterType.IsByRef: true } => parameter.ParameterType.GetElementType(),
+                { ParameterType.IsByRef: false } => parameter.ParameterType,
+                _ => null,
+            };
+            if (unionCaseType is null)
+                continue;
             var unionCaseConverter = context.GetConverter(unionCaseType);
             caseList.Add(new UnionCaseInfo(caseList.Count, unionCaseType, i, unionCaseConverter));
         }
         if (caseList.Select(x => x.Type).Distinct().Count() != caseList.Count)
             throw new ArgumentException($"Union case type duplicated, type: {type}");
-        caseList.Sort((a, b) => CommonModule.CompareInheritance(a.Type, b.Type));
+        caseList.Sort((a, b) => CommonModule.CompareConversion(a.Type, b.Type));
         var cases = caseList.ToImmutableArray();
         var encode = GetEncodeDelegate(type, cases, auto: false);
         var encodeAuto = GetEncodeDelegate(type, cases, auto: true);

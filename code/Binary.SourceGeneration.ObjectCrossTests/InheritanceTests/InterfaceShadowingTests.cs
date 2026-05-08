@@ -137,28 +137,55 @@ public class InterfaceShadowingTests
         Assert.Equal(memberUnique.Count, memberResult.Length);
     }
 
-    [Theory(DisplayName = "Compare Inheritance Test")]
+    [Theory(DisplayName = "Compare Conversion Test")]
     [InlineData(typeof(IShadowingA), typeof(IShadowingC), 1)]
     [InlineData(typeof(IShadowingC), typeof(IShadowingB), -1)]
     [InlineData(typeof(IShadowingA), typeof(IShadowingB), 0)]
     [InlineData(typeof(IShadowingB), typeof(IShadowingA), 0)]
     [InlineData(typeof(CustomImplicitConversionTypeA), typeof(CustomImplicitConversionTypeB), 0)]
     [InlineData(typeof(float), typeof(long), 0)]
+    [InlineData(typeof(long), typeof(float), 0)]
+    [InlineData(typeof(int), typeof(long), 0)]
+    [InlineData(typeof(long), typeof(int), 0)]
     [InlineData(typeof(string), typeof(int), -1)]
     [InlineData(typeof(double), typeof(Action), 1)]
-    public void CompareInheritanceTest(Type x, Type y, int expected)
+    [InlineData(typeof(int), typeof(object), -1)]
+    [InlineData(typeof(int), typeof(ValueType), -1)]
+    [InlineData(typeof(ValueType), typeof(object), -1)]
+    [InlineData(typeof(object), typeof(ValueType), 1)]
+    [InlineData(typeof(char[]), typeof(ValueType), 0)]
+    [InlineData(typeof(char[]), typeof(object), -1)]
+    [InlineData(typeof(object), typeof(string[]), 1)]
+    [InlineData(typeof(int), typeof(int?), -1)]
+    [InlineData(typeof(int?), typeof(int), 1)]
+    public void CompareConversionTest(Type x, Type y, int expected)
     {
+        static ITypeSymbol GetTypeSymbol(Compilation compilation, Type type)
+        {
+            if (type.IsArray)
+            {
+                return compilation.CreateArrayTypeSymbol(GetTypeSymbol(compilation, Assert.IsType<Type>(type.GetElementType(), exactMatch: false)), type.GetArrayRank());
+            }
+            else if (type.IsGenericType)
+            {
+                var genericSymbols = type.GetGenericArguments().Select(x => GetTypeSymbol(compilation, x)).ToArray();
+                var genericDefinitionSymbol = compilation.GetTypeByMetadataName(Assert.IsType<string>(type.GetGenericTypeDefinition().FullName));
+                Assert.NotNull(genericDefinitionSymbol);
+                return genericDefinitionSymbol.Construct(genericSymbols);
+            }
+            var symbol = compilation.GetTypeByMetadataName(Assert.IsType<string>(type.FullName));
+            Assert.NotNull(symbol);
+            return symbol;
+        }
+
         var reflectionModule = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "CommonModule");
-        var reflectionMethod = reflectionModule.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name is "CompareInheritance");
+        var reflectionMethod = reflectionModule.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name is "CompareConversion");
         var reflectionFunction = (Comparison<Type>)Delegate.CreateDelegate(typeof(Comparison<Type>), reflectionMethod);
 
         var compilation = CompilationModule.CreateCompilationFromThisAssembly();
-        var symbolX = compilation.GetTypeByMetadataName(Assert.IsType<string>(x.FullName));
-        var symbolY = compilation.GetTypeByMetadataName(Assert.IsType<string>(y.FullName));
-        Assert.NotNull(symbolX);
-        Assert.NotNull(symbolY);
-
-        var symbolResult = Symbols.CompareInheritance(compilation, symbolX, symbolY);
+        var symbolX = GetTypeSymbol(compilation, x);
+        var symbolY = GetTypeSymbol(compilation, y);
+        var symbolResult = Symbols.CompareConversion(compilation, symbolX, symbolY);
         var memberResult = reflectionFunction.Invoke(x, y);
         Assert.Equal(expected, symbolResult);
         Assert.Equal(expected, memberResult);
@@ -173,7 +200,7 @@ public class InterfaceShadowingTests
     public void CompareInheritanceWithInvalidTypeTest(Type x, Type y, string message)
     {
         var reflectionModule = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "CommonModule");
-        var reflectionMethod = reflectionModule.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name is "CompareInheritance");
+        var reflectionMethod = reflectionModule.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name is "CompareConversion");
         var reflectionFunction = (Comparison<Type>)Delegate.CreateDelegate(typeof(Comparison<Type>), reflectionMethod);
 
         var compilation = CompilationModule.CreateCompilationFromThisAssembly();
@@ -182,7 +209,7 @@ public class InterfaceShadowingTests
         Assert.NotNull(symbolX);
         Assert.NotNull(symbolY);
 
-        var alpha = Assert.Throws<ArgumentException>(() => Symbols.CompareInheritance(compilation, symbolX, symbolY));
+        var alpha = Assert.Throws<ArgumentException>(() => Symbols.CompareConversion(compilation, symbolX, symbolY));
         var bravo = Assert.Throws<ArgumentException>(() => reflectionFunction.Invoke(x, y));
         Assert.Null(alpha.ParamName);
         Assert.Null(bravo.ParamName);

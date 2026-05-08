@@ -16,15 +16,6 @@ public record A(int Id);
 
 public record B(int Id, string Name) : A(Id);
 
-[SourceGeneratorContext]
-[SourceGeneratorInclude<Pet>]
-[SourceGeneratorInclude<Choice<int, string>>]
-[SourceGeneratorInclude<Choice<string, int>>]
-[SourceGeneratorInclude<Choice<double, string>>]
-[SourceGeneratorInclude<Choice<A, B>>]
-[SourceGeneratorInclude<Choice<B, A>>]
-public partial class IntegrationGeneratorContext { }
-
 [Union]
 public class Choice<A, B> : IUnion
 {
@@ -39,11 +30,48 @@ public class Choice<A, B> : IUnion
     public override int GetHashCode() => RuntimeHelpers.GetHashCode(Value);
 }
 
+[Union]
+public class UnionWithVariousConstructors<A, B, C, D> : IUnion
+{
+    public object? Value { get; init; }
+
+    public UnionWithVariousConstructors(A value) => Value = value;
+
+    public UnionWithVariousConstructors(in B value) => Value = value;
+
+    public UnionWithVariousConstructors(ref C value) => Value = value;
+
+    public UnionWithVariousConstructors(out D value) => throw new NotSupportedException();
+
+    public UnionWithVariousConstructors(A a, B b) => throw new NotSupportedException();
+
+    public UnionWithVariousConstructors(A a, B b, C c) => throw new NotSupportedException();
+
+    public UnionWithVariousConstructors(A a, B b, C c, D d) => throw new NotSupportedException();
+
+    public override bool Equals(object? obj) => Equals(Value, (obj as UnionWithVariousConstructors<A, B, C, D>)?.Value);
+
+    public override int GetHashCode() => RuntimeHelpers.GetHashCode(Value);
+}
+
+[SourceGeneratorContext]
+[SourceGeneratorInclude<Pet>]
+[SourceGeneratorInclude<Choice<int, string>>]
+[SourceGeneratorInclude<Choice<string, int>>]
+[SourceGeneratorInclude<Choice<double, string>>]
+[SourceGeneratorInclude<Choice<char[], object>>]
+[SourceGeneratorInclude<Choice<A, B>>]
+[SourceGeneratorInclude<Choice<B, A>>]
+[SourceGeneratorInclude<UnionWithVariousConstructors<int, string, double, object>>]
+public partial class IntegrationGeneratorContext { }
+
 public class IntegrationTests
 {
     [Theory(DisplayName = "Union Basic Test")]
     [InlineData(typeof(Pet))]
     [InlineData(typeof(Choice<int, string>))]
+    [InlineData(typeof(Choice<char[], object>))]
+    [InlineData(typeof(UnionWithVariousConstructors<int, string, double, object>))]
     public void UnionBasicTest(Type type)
     {
         var generator = Generator.CreateDefault();
@@ -98,11 +126,22 @@ public class IntegrationTests
         return data;
     }
 
+    public static TheoryData<UnionWithVariousConstructors<int, string, double, object>, FSharpChoice<int, string>, Type, int> UnionWithVariousConstructorsCommonTestData()
+    {
+        var data = new TheoryData<UnionWithVariousConstructors<int, string, double, object>, FSharpChoice<int, string>, Type, int>();
+        var a = 6;
+        var b = "Nice";
+        data.Add(a, FSharpChoice<int, string>.NewChoice1Of2(a), typeof(FSharpChoice<int, string>), 0);
+        data.Add(b, FSharpChoice<int, string>.NewChoice2Of2(b), typeof(FSharpChoice<int, string>), 1);
+        return data;
+    }
+
     [Theory(DisplayName = "Union Encode Decode Test")]
     [MemberData(nameof(PetUnionAndFSharpChoiceTestData))]
     [MemberData(nameof(ChoiceUnionAndFSharpChoiceDoubleStringTestData))]
     [MemberData(nameof(ChoiceUnionAndFSharpChoiceABTestData))]
     [MemberData(nameof(ChoiceUnionAndFSharpChoiceBATestData))]
+    [MemberData(nameof(UnionWithVariousConstructorsCommonTestData))]
     public void UnionEncodeDecodeTest<A, B>(A source, B contrast, Type contrastType, int tag)
     {
         var sourceIntent = (source as IUnion)?.Value;
@@ -143,6 +182,7 @@ public class IntegrationTests
     [MemberData(nameof(ChoiceUnionAndFSharpChoiceDoubleStringTestData))]
     [MemberData(nameof(ChoiceUnionAndFSharpChoiceABTestData))]
     [MemberData(nameof(ChoiceUnionAndFSharpChoiceBATestData))]
+    [MemberData(nameof(UnionWithVariousConstructorsCommonTestData))]
     public void UnionEncodeAutoDecodeAutoTest<A, B>(A source, B contrast, Type contrastType, int tag) where B : class
     {
         var sourceIntent = (source as IUnion)?.Value;
@@ -193,6 +233,10 @@ public class IntegrationTests
         data.Add(typeof(Choice<string, int>), [0x80, 0, 0, 2], 2);
         data.Add(typeof(Choice<string, int>), [0x80, 0, 0x04, 0], 1024);
         data.Add(typeof(Choice<string, int>), [0xFF, 0xFF, 0xFF, 0xFF], int.MaxValue);
+        data.Add(typeof(UnionWithVariousConstructors<int, string, double, object>), [0x02], 2);
+        data.Add(typeof(UnionWithVariousConstructors<int, string, double, object>), [0x80, 0, 0, 2], 2);
+        data.Add(typeof(UnionWithVariousConstructors<int, string, double, object>), [0x80, 0, 0x04, 0], 1024);
+        data.Add(typeof(UnionWithVariousConstructors<int, string, double, object>), [0xFF, 0xFF, 0xFF, 0xFF], int.MaxValue);
         return data;
     }
 
