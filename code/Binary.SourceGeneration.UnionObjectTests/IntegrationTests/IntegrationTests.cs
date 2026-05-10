@@ -84,6 +84,7 @@ public class IntegrationTests
         Assert.Equal(0, converterSecond.Length);
         Assert.Equal("UnionConverter`1", converter.GetType().Name);
         Assert.False(converterSecond.GetType().IsGenericType);
+        Assert.Equal(converterSecond.GetType().BaseType, typeof(Converter<>).MakeGenericType(type));
     }
 
     public static TheoryData<Pet, FSharpChoice<Cat, Dog>, Type, int> PetUnionAndFSharpChoiceTestData()
