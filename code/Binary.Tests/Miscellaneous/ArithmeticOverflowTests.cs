@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Xunit;
-using Xunit.Abstractions;
 
 public class ArithmeticOverflowTests(ITestOutputHelper output)
 {
@@ -32,7 +31,7 @@ public class ArithmeticOverflowTests(ITestOutputHelper output)
         var expand = (ArrayResizeDelegate<byte>)Delegate.CreateDelegate(typeof(ArrayResizeDelegate<byte>), method.MakeGenericMethod(typeof(byte)));
         var buffer = new byte[0x4000_0000];
         var error = Assert.Throws<OverflowException>(() => expand.Invoke(ref buffer, 0));
-        this.output.WriteLine(error.StackTrace);
+        this.output.WriteLine(error.StackTrace ?? string.Empty);
     }
 
     [Theory(DisplayName = "Get Converter Length Overflow")]
@@ -61,7 +60,7 @@ public class ArithmeticOverflowTests(ITestOutputHelper output)
             var data = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.NullRef<E>(), dataLength);
             invoke.Invoke(ref allocator, data);
         });
-        this.output.WriteLine(error.StackTrace);
+        this.output.WriteLine(error.StackTrace ?? string.Empty);
     }
 
     [Theory(DisplayName = "Encode Native Endian With Length Prefix Overflow Test")]
@@ -80,6 +79,6 @@ public class ArithmeticOverflowTests(ITestOutputHelper output)
             var data = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.NullRef<E>(), dataLength);
             invoke.Invoke(ref allocator, data);
         });
-        this.output.WriteLine(error.StackTrace);
+        this.output.WriteLine(error.StackTrace ?? string.Empty);
     }
 }

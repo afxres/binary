@@ -28,7 +28,6 @@ public class LargeIntegerTests
         [16, default(Int128)],
         [16, Int128.MinValue],
         [16, Int128.MaxValue],
-        [16, Int128.Zero],
         [16, Int128.One],
         [16, Int128.NegativeOne],
         [16, Int128.Parse("11223344_55667788_99AABBCC_DDEEFF00".Replace("_", string.Empty), NumberStyles.HexNumber)],
@@ -45,9 +44,7 @@ public class LargeIntegerTests
     public static IEnumerable<object[]> UInt128Data =>
     [
         [16, default(UInt128)],
-        [16, UInt128.MinValue],
         [16, UInt128.MaxValue],
-        [16, UInt128.Zero],
         [16, UInt128.One],
         [16, UInt128.Parse("11223344_55667788_99AABBCC_DDEEFF00".Replace("_", string.Empty), NumberStyles.HexNumber)],
     ];
