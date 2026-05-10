@@ -9,7 +9,7 @@ public sealed partial class UnionObjectConverterContext
 {
     public static SourceResult? Invoke(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol)
     {
-        if (symbol.Interfaces.Any(x => x.Name is "IUnion") is false || symbol is not INamedTypeSymbol namedType)
+        if (symbol.Interfaces.Any(x => x.Name is "IUnion" && context.GetTypeFullName(x) is "global::System.Runtime.CompilerServices.IUnion") is false || symbol is not INamedTypeSymbol namedType)
             return null;
         var caseList = new List<UnionCaseInfo>();
         foreach (var i in namedType.InstanceConstructors)
