@@ -10,20 +10,12 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using ContextInfo = (string NameInSourceCode, string NamespaceInSourceCode, System.Collections.Immutable.ImmutableDictionary<Microsoft.CodeAnalysis.ITypeSymbol, Microsoft.CodeAnalysis.AttributeData> Inclusions);
 
 [Generator]
 public sealed class SourceGenerator : IIncrementalGenerator
 {
     private delegate SourceResult? TypeHandler(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol);
-
-    private sealed class ContextInfo(INamedTypeSymbol symbol, ImmutableDictionary<ITypeSymbol, AttributeData> inclusions)
-    {
-        public string NameInSourceCode { get; } = Symbols.GetNameInSourceCode(symbol.Name);
-
-        public string NamespaceInSourceCode { get; } = Symbols.GetNamespaceInSourceCode(symbol.ContainingNamespace);
-
-        public ImmutableDictionary<ITypeSymbol, AttributeData> Inclusions { get; } = inclusions;
-    }
 
     private static readonly ImmutableArray<TypeHandler> CustomTypeHandlers =
     [
@@ -71,7 +63,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
             if (symbol is null || Symbols.ValidateContextType(context, declaration, symbol) is false)
                 continue;
             var inclusions = GetInclusions(context, symbol, include);
-            var info = new ContextInfo(symbol, inclusions);
+            var info = new ContextInfo(Symbols.GetNameInSourceCode(symbol.Name), Symbols.GetNamespaceInSourceCode(symbol.ContainingNamespace), inclusions);
             // order by type name, then by containing namespace
             if (dictionary.TryGetValue(symbol.Name, out var child) is false)
                 dictionary.Add(symbol.Name, child = []);
