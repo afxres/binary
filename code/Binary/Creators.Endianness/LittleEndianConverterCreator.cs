@@ -42,6 +42,13 @@ internal sealed class LittleEndianConverterCreator : IConverterCreator
         Register<Int128>(dictionary);
         Register<UInt128>(dictionary);
 
+#if NET11_0_OR_GREATER
+        Register<BFloat16>(dictionary);
+        Register<Decimal32>(dictionary);
+        Register<Decimal64>(dictionary);
+        Register<Decimal128>(dictionary);
+#endif
+
         RegisterRepeat<Range, int>(dictionary);
         RegisterRepeat<Complex, double>(dictionary);
         RegisterRepeat<Matrix3x2, float>(dictionary);

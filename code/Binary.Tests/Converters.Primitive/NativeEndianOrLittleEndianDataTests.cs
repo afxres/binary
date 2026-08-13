@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 using Xunit;
 
@@ -35,14 +36,97 @@ public class NativeEndianOrLittleEndianDataTests
 
     public static IEnumerable<object[]> NumberData =>
     [
+        // byte
+        [(byte)0],
+        [(byte)1],
+        [(byte)127],
+        [(byte)128],
+        [(byte)254],
+        [(byte)255],
+
+        // sbyte
+        [(sbyte)0],
+        [(sbyte)1],
+        [(sbyte)-1],
+        [(sbyte)127],
+        [(sbyte)-128],
+        [(sbyte)-100],
+
+        // short
+        [(short)0],
+        [(short)1],
+        [(short)12345],
+        [(short)-12345],
+        [short.MaxValue],
+        [short.MinValue],
+
+        // ushort
+        [(ushort)0],
+        [(ushort)1],
+        [(ushort)1000],
+        [(ushort)32768],
+        [ushort.MaxValue],
+        [(ushort)50000],
+
+        // int
         [0],
+        [1],
+        [-1],
         [int.MaxValue],
         [int.MinValue],
+        [123456789],
+
+        // uint
+        [0u],
+        [1u],
+        [123456789u],
+        [4000000000u],
+        [uint.MaxValue],
+        [2147483648u],
+
+        // long
+        [0L],
+        [1L],
+        [-1L],
+        [long.MaxValue],
+        [long.MinValue],
+        [1234567890123456789L],
+
+        // ulong
+        [0UL],
+        [1UL],
+        [12345678901234567890UL],
+        [9000000000000000000UL],
+        [ulong.MaxValue],
+        [18446744073709551615UL],
+
+        // float
+        [0F],
+        [1F],
+        [-1F],
+        [float.MaxValue],
+        [float.MinValue],
+        [float.NaN],
+        [float.PositiveInfinity],
+        [3.14159F],
+
+        // double
+        [0D],
+        [1D],
+        [-1D],
         [double.MaxValue],
         [double.MinValue],
         [double.NaN],
         [double.PositiveInfinity],
-        [double.NegativeInfinity],
+        [3.141592653589793],
+
+        // Half
+        [Half.MinValue],
+        [Half.MaxValue],
+        [Half.NaN],
+        [(Half)0F],
+        [(Half)1F],
+        [(Half)3.14F],
     ];
 
     public static IEnumerable<object[]> IndexData()
@@ -106,6 +190,52 @@ public class NativeEndianOrLittleEndianDataTests
         [TimeSpan.Parse("22:10:24.4096")],
     ];
 
+#if NET11_0_OR_GREATER
+    public static IEnumerable<object[]> BFloat16Data =>
+    [
+        [BFloat16.MaxValue],
+        [BFloat16.MinValue],
+        [BFloat16.Parse("3.14159")],
+        [BFloat16.Parse("-3.14159")],
+        [BFloat16.Parse("0")],
+        [BFloat16.Parse("1.0")],
+        [BFloat16.Parse("0.00097656")], // small normalized (~2^-10)
+    ];
+
+    public static IEnumerable<object[]> Decimal32Data =>
+    [
+        [Decimal32.MaxValue],
+        [Decimal32.MinValue],
+        [Decimal32.Parse("3.14159")],
+        [Decimal32.Parse("-3.14159")],
+        [Decimal32.Parse("0")],
+        [Decimal32.Parse("1")],
+        [Decimal32.Parse("1.2345e-6")],
+    ];
+
+    public static IEnumerable<object[]> Decimal64Data =>
+    [
+        [Decimal64.MaxValue],
+        [Decimal64.MinValue],
+        [Decimal64.Parse("3.14159")],
+        [Decimal64.Parse("-3.14159")],
+        [Decimal64.Parse("0")],
+        [Decimal64.Parse("1")],
+        [Decimal64.Parse("1.23456789012345")],
+    ];
+
+    public static IEnumerable<object[]> Decimal128Data =>
+    [
+        [Decimal128.MaxValue],
+        [Decimal128.MinValue],
+        [Decimal128.Parse("3.14159")],
+        [Decimal128.Parse("-3.14159")],
+        [Decimal128.Parse("0")],
+        [Decimal128.Parse("1")],
+        [Decimal128.Parse("123456789.123456789123456789")],
+    ];
+#endif
+
     [Theory(DisplayName = "Encode Decode")]
     [MemberData(nameof(NumberData))]
     [MemberData(nameof(IndexData))]
@@ -116,6 +246,12 @@ public class NativeEndianOrLittleEndianDataTests
     [MemberData(nameof(RuneData))]
     [MemberData(nameof(TimeOnlyData))]
     [MemberData(nameof(TimeSpanData))]
+#if NET11_0_OR_GREATER
+    [MemberData(nameof(BFloat16Data))]
+    [MemberData(nameof(Decimal32Data))]
+    [MemberData(nameof(Decimal64Data))]
+    [MemberData(nameof(Decimal128Data))]
+#endif
     public void EncodeDecode<T>(T item)
     {
         var generator = Generator.CreateDefault();
@@ -144,6 +280,12 @@ public class NativeEndianOrLittleEndianDataTests
     [MemberData(nameof(RuneData))]
     [MemberData(nameof(TimeOnlyData))]
     [MemberData(nameof(TimeSpanData))]
+#if NET11_0_OR_GREATER
+    [MemberData(nameof(BFloat16Data))]
+    [MemberData(nameof(Decimal32Data))]
+    [MemberData(nameof(Decimal64Data))]
+    [MemberData(nameof(Decimal128Data))]
+#endif
     public void EncodeDecodeAuto<T>(T item)
     {
         var generator = Generator.CreateDefault();
@@ -171,6 +313,12 @@ public class NativeEndianOrLittleEndianDataTests
     [MemberData(nameof(RuneData))]
     [MemberData(nameof(TimeOnlyData))]
     [MemberData(nameof(TimeSpanData))]
+#if NET11_0_OR_GREATER
+    [MemberData(nameof(BFloat16Data))]
+    [MemberData(nameof(Decimal32Data))]
+    [MemberData(nameof(Decimal64Data))]
+    [MemberData(nameof(Decimal128Data))]
+#endif
     public void EncodeDecodeWithLengthPrefix<T>(T item)
     {
         var generator = Generator.CreateDefault();
