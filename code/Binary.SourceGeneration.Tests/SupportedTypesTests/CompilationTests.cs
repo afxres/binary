@@ -945,6 +945,30 @@ public class CompilationTests
         yield return [b];
     }
 
+#if NET11_0_OR_GREATER
+    public static IEnumerable<object[]> UnionData()
+    {
+        var a =
+            """
+            // union
+            namespace UnionTests;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<Pet>]
+            partial class TestGeneratorContext { }
+
+            record Cat(string Name);
+
+            record Dog(string Name);
+
+            readonly union Pet(Cat, Dog);
+            """;
+        yield return [a];
+    }
+#endif
+
     [Theory(DisplayName = "Compilation Test")]
     [MemberData(nameof(SpanLikeTypesData))]
     [MemberData(nameof(VariableBoundArrayData))]
@@ -965,6 +989,9 @@ public class CompilationTests
     [MemberData(nameof(CustomCollectionData))]
     [MemberData(nameof(CustomInterfaceOrAbstractCollectionData))]
     [MemberData(nameof(InlineArrayData))]
+#if NET11_0_OR_GREATER
+    [MemberData(nameof(UnionData))]
+#endif
     public void CompilationTest(string source)
     {
         Assert.Contains("SourceGeneratorContext", source);
