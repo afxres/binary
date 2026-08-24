@@ -965,7 +965,40 @@ public class CompilationTests
 
             readonly union Pet(Cat, Dog);
             """;
+        var b =
+            """
+            // union with member provider
+            namespace UnionTests;
+
+            using Mikodev.Binary.Attributes;
+            using System;
+            using System.Runtime.CompilerServices;
+
+            [SourceGeneratorContext]
+            [SourceGeneratorInclude<UnionWithMemberProvider<string>>]
+            partial class TestGeneratorContext { }
+
+            [Union]
+            public readonly struct UnionWithMemberProvider<T> : UnionWithMemberProvider<T>.IUnionMembers
+            {
+                private readonly object? value;
+
+                private UnionWithMemberProvider(object? value) => this.value = value;
+
+                public interface IUnionMembers
+                {
+                    static UnionWithMemberProvider<T> Create(T? value) => new(value);
+
+                    static UnionWithMemberProvider<T> Create(Exception? value) => new(value);
+
+                    object? Value { get; }
+                }
+
+                readonly object? IUnionMembers.Value => this.value;
+            }
+            """;
         yield return [a];
+        yield return [b];
     }
 #endif
 

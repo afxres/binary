@@ -14,7 +14,9 @@ using System.Reflection;
 [RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal sealed class UnionConverterCreator : IConverterCreator
 {
-    private sealed record UnionCaseInfo(int Index, Type Type, ConstructorInfo Constructor, IConverter Converter);
+    private sealed record UnionCaseTypeWithCreateMethod(Type Type, MethodBase Create);
+
+    private sealed record UnionCaseInfo(int Index, Type Type, MethodBase Create, IConverter Converter);
 
     private static readonly MethodInfo DecodeMethodInfo = new DecodeDelegate<int>(Converter.Decode).Method;
 
@@ -24,15 +26,45 @@ internal sealed class UnionConverterCreator : IConverterCreator
 
     private static readonly MethodInfo EncodeFailedMethodInfo = new Action(ThrowHelper.ThrowInvalidOrNullUnionValue<object>).Method.GetGenericMethodDefinition();
 
-    private static Delegate GetEncodeDelegate(Type type, ImmutableArray<UnionCaseInfo> unionCaseInfoSet, bool auto)
+    private static bool FilterUnionCreateMethod(MethodInfo m)
     {
-        var property = type.GetProperties(CommonDefine.PublicInstanceBindingFlags).Single(x => x.Name is "Value" && x.PropertyType == typeof(object));
+        return m.Name is "Create" && m.IsStatic && m.GetParameters().Length is 1;
+    }
+
+    private static UnionCaseTypeWithCreateMethod? SelectUnionCaseTypeWithCreateMethod(MethodBase i)
+    {
+        var parameters = i.GetParameters();
+        if (parameters.Length is not 1)
+            return null;
+        var parameter = parameters.Single();
+        var unionCaseType = parameter switch
+        {
+            { IsIn: true, ParameterType.IsByRef: true } => parameter.ParameterType.GetElementType(),
+            { ParameterType.IsByRef: false } => parameter.ParameterType,
+            _ => null,
+        };
+        if (unionCaseType is null)
+            return null;
+        return new UnionCaseTypeWithCreateMethod(unionCaseType, i);
+    }
+
+    private static PropertyInfo GetUnionValueProperty(Type type, Type? systemUnionInterface, Type? customUnionInterface)
+    {
+        if (systemUnionInterface is not null)
+            return systemUnionInterface.GetProperty("Value")!;
+        if (customUnionInterface is not null)
+            return customUnionInterface.GetProperty("Value")!;
+        return type.GetProperty("Value")!;
+    }
+
+    private static Delegate GetEncodeDelegate(Type type, ImmutableArray<UnionCaseInfo> caseSet, PropertyInfo valueProperty, bool auto)
+    {
         var allocator = Expression.Parameter(typeof(Allocator).MakeByRefType(), "allocator");
         var union = Expression.Parameter(type, "item");
-        var value = Expression.Property(union, property);
+        var value = Expression.Property(union, valueProperty);
         var expressions = new List<Expression>();
         var target = Expression.Label("target");
-        foreach (var i in unionCaseInfoSet)
+        foreach (var i in caseSet)
         {
             var test = Expression.TypeIs(value, i.Type);
             var intent = Expression.Convert(value, i.Type);
@@ -55,7 +87,7 @@ internal sealed class UnionConverterCreator : IConverterCreator
         return lambda.Compile();
     }
 
-    private static Delegate GetDecodeDelegate(Type type, ImmutableArray<UnionCaseInfo> unionCaseInfoSet, bool auto)
+    private static Delegate GetDecodeDelegate(Type type, ImmutableArray<UnionCaseInfo> caseSet, bool auto)
     {
         var span = Expression.Parameter(typeof(ReadOnlySpan<byte>).MakeByRefType(), "span");
         var index = Expression.Variable(typeof(int), "index");
@@ -63,10 +95,12 @@ internal sealed class UnionConverterCreator : IConverterCreator
         var expressions = new List<Expression>();
         var cases = new List<SwitchCase>();
         expressions.Add(Expression.Assign(index, Expression.Call(DecodeMethodInfo, span)));
-        foreach (var i in unionCaseInfoSet)
+        foreach (var i in caseSet)
         {
             var decode = Expression.Call(Expression.Constant(i.Converter), Converter.GetMethod(i.Converter, auto ? nameof(IConverter.DecodeAuto) : nameof(IConverter.Decode)), span);
-            var create = Expression.New(i.Constructor, decode);
+            var create = i.Create is ConstructorInfo constructor
+                ? Expression.New(constructor, decode)
+                : Expression.Call((MethodInfo)i.Create, decode) as Expression;
             var assign = Expression.Assign(union, create);
             cases.Add(Expression.SwitchCase(Expression.Block(assign, Expression.Empty()), Expression.Constant(i.Index)));
         }
@@ -81,30 +115,21 @@ internal sealed class UnionConverterCreator : IConverterCreator
     {
         if (type.GetCustomAttributes(false).Any(x => x.GetType().FullName is "System.Runtime.CompilerServices.UnionAttribute") is false)
             return null;
-        var caseList = new List<UnionCaseInfo>();
-        foreach (var i in type.GetConstructors())
-        {
-            var parameters = i.GetParameters();
-            if (parameters.Length is not 1)
-                continue;
-            var parameter = parameters.Single();
-            var unionCaseType = parameter switch
-            {
-                { IsIn: true, ParameterType.IsByRef: true } => parameter.ParameterType.GetElementType(),
-                { ParameterType.IsByRef: false } => parameter.ParameterType,
-                _ => null,
-            };
-            if (unionCaseType is null)
-                continue;
-            var unionCaseConverter = context.GetConverter(unionCaseType);
-            caseList.Add(new UnionCaseInfo(caseList.Count, unionCaseType, i, unionCaseConverter));
-        }
-        if (caseList.Select(x => x.Type).Distinct().Count() != caseList.Count)
-            throw new ArgumentException($"Union case type duplicated, type: {type}");
+        var systemUnionInterface = type.GetInterfaces().SingleOrDefault(x => x.FullName is "System.Runtime.CompilerServices.IUnion");
+        var customUnionInterface = type.GetInterfaces().SingleOrDefault(x => x.Name is "IUnionMembers");
+        var caseTypeList = default(List<UnionCaseTypeWithCreateMethod>);
+        if (customUnionInterface is not null)
+            caseTypeList = [.. customUnionInterface.GetMethods().Where(FilterUnionCreateMethod).Select(SelectUnionCaseTypeWithCreateMethod).OfType<UnionCaseTypeWithCreateMethod>()];
+        if (caseTypeList is null or { Count: 0 })
+            caseTypeList = [.. type.GetConstructors().Select(SelectUnionCaseTypeWithCreateMethod).OfType<UnionCaseTypeWithCreateMethod>()];
+        if (caseTypeList is null or { Count: 0 } || caseTypeList.DistinctBy(x => x.Type).Count() != caseTypeList.Count)
+            throw new ArgumentException($"Union case detect failed, type: {type}");
+        var caseList = caseTypeList.Select((x, i) => new UnionCaseInfo(i, x.Type, x.Create, context.GetConverter(x.Type))).ToList();
         caseList.Sort((a, b) => CommonModule.CompareConversion(a.Type, b.Type));
         var cases = caseList.ToImmutableArray();
-        var encode = GetEncodeDelegate(type, cases, auto: false);
-        var encodeAuto = GetEncodeDelegate(type, cases, auto: true);
+        var valueProperty = GetUnionValueProperty(type, systemUnionInterface, customUnionInterface);
+        var encode = GetEncodeDelegate(type, cases, valueProperty, auto: false);
+        var encodeAuto = GetEncodeDelegate(type, cases, valueProperty, auto: true);
         var decode = GetDecodeDelegate(type, cases, auto: false);
         var decodeAuto = GetDecodeDelegate(type, cases, auto: true);
         var converter = CommonModule.CreateInstance(typeof(UnionConverter<>).MakeGenericType(type), [encode, encodeAuto, decode, decodeAuto]);

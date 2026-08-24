@@ -3,6 +3,7 @@
 using Microsoft.FSharp.Core;
 using Mikodev.Binary.Attributes;
 using System;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Xunit;
 
@@ -54,6 +55,35 @@ public class UnionWithVariousConstructors<A, B, C, D> : IUnion
     public override int GetHashCode() => RuntimeHelpers.GetHashCode(Value);
 }
 
+[Union]
+public readonly struct UnionWithMemberProvider<T> : UnionWithMemberProvider<T>.IUnionMembers
+{
+    private readonly object? value;
+
+    private UnionWithMemberProvider(object? value) => this.value = value;
+
+    public interface IUnionMembers
+    {
+        static UnionWithMemberProvider<T> Create(T? value) => new(value);
+
+        static UnionWithMemberProvider<T> Create(Uri? value) => new(value);
+
+        object? Value { get; }
+    }
+
+    readonly object? IUnionMembers.Value => this.value;
+}
+
+[Union]
+public readonly struct UnionWithoutAnyInterface<T, U>
+{
+    public UnionWithoutAnyInterface(T value) => Value = value;
+
+    public UnionWithoutAnyInterface(U value) => Value = value;
+
+    public object? Value { get; init; }
+}
+
 [SourceGeneratorContext]
 [SourceGeneratorInclude<Pet>]
 [SourceGeneratorInclude<Choice<int, string>>]
@@ -63,6 +93,9 @@ public class UnionWithVariousConstructors<A, B, C, D> : IUnion
 [SourceGeneratorInclude<Choice<A, B>>]
 [SourceGeneratorInclude<Choice<B, A>>]
 [SourceGeneratorInclude<UnionWithVariousConstructors<int, string, double, object>>]
+[SourceGeneratorInclude<UnionWithMemberProvider<double>>]
+[SourceGeneratorInclude<UnionWithMemberProvider<string>>]
+[SourceGeneratorInclude<UnionWithoutAnyInterface<double, string>>]
 public partial class IntegrationGeneratorContext { }
 
 public class IntegrationTests
@@ -72,6 +105,9 @@ public class IntegrationTests
     [InlineData(typeof(Choice<int, string>))]
     [InlineData(typeof(Choice<char[], object>))]
     [InlineData(typeof(UnionWithVariousConstructors<int, string, double, object>))]
+    [InlineData(typeof(UnionWithMemberProvider<string>))]
+    [InlineData(typeof(UnionWithMemberProvider<double>))]
+    [InlineData(typeof(UnionWithoutAnyInterface<double, string>))]
     public void UnionBasicTest(Type type)
     {
         var generator = Generator.CreateDefault();
@@ -137,15 +173,55 @@ public class IntegrationTests
         return data;
     }
 
+    public static TheoryData<UnionWithMemberProvider<double>, FSharpChoice<double, Uri>, Type, int> UnionWithMemberProviderDoubleTestData()
+    {
+        var data = new TheoryData<UnionWithMemberProvider<double>, FSharpChoice<double, Uri>, Type, int>();
+        var a = 6.0;
+        var b = new Uri("https://example.com");
+        data.Add(a, FSharpChoice<double, Uri>.NewChoice1Of2(a), typeof(FSharpChoice<double, Uri>), 0);
+        data.Add(b, FSharpChoice<double, Uri>.NewChoice2Of2(b), typeof(FSharpChoice<double, Uri>), 1);
+        return data;
+    }
+
+    public static TheoryData<UnionWithMemberProvider<string>, FSharpChoice<string, Uri>, Type, int> UnionWithMemberProviderStringTestData()
+    {
+        var data = new TheoryData<UnionWithMemberProvider<string>, FSharpChoice<string, Uri>, Type, int>();
+        var a = "Hello";
+        var b = new Uri("https://example.com");
+        data.Add(a, FSharpChoice<string, Uri>.NewChoice1Of2(a), typeof(FSharpChoice<string, Uri>), 0);
+        data.Add(b, FSharpChoice<string, Uri>.NewChoice2Of2(b), typeof(FSharpChoice<string, Uri>), 1);
+        return data;
+    }
+
+    public static TheoryData<UnionWithoutAnyInterface<double, string>, FSharpChoice<double, string>, Type, int> UnionWithoutAnyInterfaceTestData()
+    {
+        var data = new TheoryData<UnionWithoutAnyInterface<double, string>, FSharpChoice<double, string>, Type, int>();
+        var a = 3.14;
+        var b = "Pi";
+        data.Add(a, FSharpChoice<double, string>.NewChoice1Of2(a), typeof(FSharpChoice<double, string>), 0);
+        data.Add(b, FSharpChoice<double, string>.NewChoice2Of2(b), typeof(FSharpChoice<double, string>), 1);
+        return data;
+    }
+
     [Theory(DisplayName = "Union Encode Decode Test")]
     [MemberData(nameof(PetUnionAndFSharpChoiceTestData))]
     [MemberData(nameof(ChoiceUnionAndFSharpChoiceDoubleStringTestData))]
     [MemberData(nameof(ChoiceUnionAndFSharpChoiceABTestData))]
     [MemberData(nameof(ChoiceUnionAndFSharpChoiceBATestData))]
     [MemberData(nameof(UnionWithVariousConstructorsCommonTestData))]
+    [MemberData(nameof(UnionWithMemberProviderDoubleTestData))]
+    [MemberData(nameof(UnionWithMemberProviderStringTestData))]
+    [MemberData(nameof(UnionWithoutAnyInterfaceTestData))]
     public void UnionEncodeDecodeTest<A, B>(A source, B contrast, Type contrastType, int tag)
     {
-        var sourceIntent = (source as IUnion)?.Value;
+        var unionValueGetter = default(Func<A, object?>);
+        if (source is IUnion)
+            unionValueGetter = x => (x as IUnion)?.Value;
+        else if (source?.GetType().GetInterfaces().SingleOrDefault(x => x.Name is "IUnionMembers") is { } customUnionInterface)
+            unionValueGetter = x => customUnionInterface?.GetProperty("Value")?.GetValue(x);
+        else
+            unionValueGetter = x => typeof(A).GetProperty("Value")?.GetValue(x);
+        var sourceIntent = unionValueGetter.Invoke(source);
         Assert.NotNull(sourceIntent);
         var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().Build();
         var generatorSecond = Generator.CreateAotBuilder()
@@ -170,12 +246,10 @@ public class IntegrationTests
         Assert.Equal(intent, spanSecond);
         var result = converter.Decode(buffer);
         var resultSecond = converterSecond.Decode(buffer);
-        Assert.NotNull(result as IUnion);
-        Assert.NotNull(resultSecond as IUnion);
         Assert.Equal(source, result);
         Assert.Equal(source, resultSecond);
-        Assert.Equal(sourceIntent, ((IUnion)result).Value);
-        Assert.Equal(sourceIntent, ((IUnion)resultSecond).Value);
+        Assert.Equal(sourceIntent, unionValueGetter.Invoke(result));
+        Assert.Equal(sourceIntent, unionValueGetter.Invoke(resultSecond));
     }
 
     [Theory(DisplayName = "Union Encode Auto Decode Auto Test")]
@@ -184,9 +258,19 @@ public class IntegrationTests
     [MemberData(nameof(ChoiceUnionAndFSharpChoiceABTestData))]
     [MemberData(nameof(ChoiceUnionAndFSharpChoiceBATestData))]
     [MemberData(nameof(UnionWithVariousConstructorsCommonTestData))]
+    [MemberData(nameof(UnionWithMemberProviderDoubleTestData))]
+    [MemberData(nameof(UnionWithMemberProviderStringTestData))]
+    [MemberData(nameof(UnionWithoutAnyInterfaceTestData))]
     public void UnionEncodeAutoDecodeAutoTest<A, B>(A source, B contrast, Type contrastType, int tag) where B : class
     {
-        var sourceIntent = (source as IUnion)?.Value;
+        var unionValueGetter = default(Func<A, object?>);
+        if (source is IUnion)
+            unionValueGetter = x => (x as IUnion)?.Value;
+        else if (source?.GetType().GetInterfaces().SingleOrDefault(x => x.Name is "IUnionMembers") is { } customUnionInterface)
+            unionValueGetter = x => customUnionInterface?.GetProperty("Value")?.GetValue(x);
+        else
+            unionValueGetter = x => typeof(A).GetProperty("Value")?.GetValue(x);
+        var sourceIntent = unionValueGetter.Invoke(source);
         Assert.NotNull(sourceIntent);
         var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().Build();
         var generatorSecond = Generator.CreateAotBuilder()
@@ -213,14 +297,12 @@ public class IntegrationTests
         var result = converter.DecodeAuto(ref body);
         var bodySecond = new ReadOnlySpan<byte>(buffer);
         var resultSecond = converterSecond.DecodeAuto(ref bodySecond);
-        Assert.NotNull(result as IUnion);
-        Assert.NotNull(resultSecond as IUnion);
         Assert.Equal(0, body.Length);
         Assert.Equal(0, bodySecond.Length);
         Assert.Equal(source, result);
         Assert.Equal(source, resultSecond);
-        Assert.Equal(sourceIntent, ((IUnion)result).Value);
-        Assert.Equal(sourceIntent, ((IUnion)resultSecond).Value);
+        Assert.Equal(sourceIntent, unionValueGetter.Invoke(result));
+        Assert.Equal(sourceIntent, unionValueGetter.Invoke(resultSecond));
     }
 
     public static TheoryData<Type, byte[], int> UnionDecodeDecodeAutoWithInvalidTagTestData()
@@ -313,7 +395,7 @@ public class IntegrationTests
     {
         var generator = Generator.CreateDefault();
         var error = Assert.Throws<ArgumentException>(() => generator.GetConverter(type));
-        var message = $"Union case type duplicated, type: {type}";
+        var message = $"Union case detect failed, type: {type}";
         Assert.Null(error.ParamName);
         Assert.Equal(message, error.Message);
     }
