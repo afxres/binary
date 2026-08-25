@@ -48,13 +48,17 @@ internal sealed class UnionConverterCreator : IConverterCreator
         return new UnionCaseTypeWithCreateMethod(unionCaseType, i);
     }
 
-    private static PropertyInfo GetUnionValueProperty(Type type, Type? systemUnionInterface, Type? customUnionInterface)
+    private static bool FilterUnionValueProperty(PropertyInfo p)
     {
-        if (systemUnionInterface is not null)
-            return systemUnionInterface.GetProperty("Value")!;
-        if (customUnionInterface is not null)
-            return customUnionInterface.GetProperty("Value")!;
-        return type.GetProperty("Value")!;
+        return p.Name is "Value" && p.PropertyType == typeof(object) && p.GetGetMethod(nonPublic: false) is not null && p.GetIndexParameters().Length is 0;
+    }
+
+    private static PropertyInfo SelectUnionValueProperty(Type type, ImmutableArray<Type?> types)
+    {
+        var property = types.OfType<Type>().SelectMany(x => x.GetProperties(CommonDefine.PublicInstanceBindingFlags)).FirstOrDefault(FilterUnionValueProperty);
+        if (property is not null)
+            return property;
+        throw new ArgumentException($"Union value property detect failed, type: {type}");
     }
 
     private static Delegate GetEncodeDelegate(Type type, ImmutableArray<UnionCaseInfo> caseSet, PropertyInfo valueProperty, bool auto)
@@ -127,7 +131,7 @@ internal sealed class UnionConverterCreator : IConverterCreator
         var caseList = caseTypeList.Select((x, i) => new UnionCaseInfo(i, x.Type, x.Create, context.GetConverter(x.Type))).ToList();
         caseList.Sort((a, b) => CommonModule.CompareConversion(a.Type, b.Type));
         var cases = caseList.ToImmutableArray();
-        var valueProperty = GetUnionValueProperty(type, systemUnionInterface, customUnionInterface);
+        var valueProperty = SelectUnionValueProperty(type, [type, systemUnionInterface, customUnionInterface]);
         var encode = GetEncodeDelegate(type, cases, valueProperty, auto: false);
         var encodeAuto = GetEncodeDelegate(type, cases, valueProperty, auto: true);
         var decode = GetDecodeDelegate(type, cases, auto: false);
