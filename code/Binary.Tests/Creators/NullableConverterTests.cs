@@ -200,7 +200,7 @@ public class NullableConverterTests
         [10],
         [long.MaxValue],
         [(-1536, "Inner text")],
-        [("Value tuple", Guid.NewGuid())],
+        [("Value tuple", Guid.Parse("ca86e602-eaae-4653-b74b-fd1dd248f620"))],
     ];
 
     [Theory(DisplayName = "Nullable With F# Option")]
