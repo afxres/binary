@@ -37,7 +37,16 @@ public sealed partial class NamedObjectConverterContext
 
         var members = dictionary.Values.ToImmutableArray();
         if (members.Length is 0)
-            return new SourceResult(SourceStatus.NamedObjectError);
+        {
+            var diagnosticArguments = ImmutableArray.CreateBuilder<(DiagnosticDescriptor, object?[]?)>();
+            var symbolText = Symbols.GetSymbolDiagnosticDisplayString(symbol);
+            if (context.GetTypeInfo(symbol).ConflictFieldsAndProperties is { Length: not 0 } targets)
+                foreach (var name in targets)
+                    diagnosticArguments.Add((Constants.AmbiguousMemberFound, [name, symbolText]));
+            else
+                diagnosticArguments.Add((Constants.NoAvailableMemberFound, [symbolText]));
+            return new SourceResultWithDiagnostic(diagnosticArguments.ToImmutable());
+        }
         var constructor = Symbols.GetConstructor(context, typeInfo, members);
         return new NamedObjectConverterContext(context, tracker, symbol, members, constructor).Invoke();
     }

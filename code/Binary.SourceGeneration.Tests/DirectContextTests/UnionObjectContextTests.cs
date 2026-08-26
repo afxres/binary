@@ -1,4 +1,6 @@
-﻿namespace Mikodev.Binary.SourceGeneration.Tests.DirectContextTests;
+﻿#if NET11_0_OR_GREATER
+
+namespace Mikodev.Binary.SourceGeneration.Tests.DirectContextTests;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -11,71 +13,31 @@ using System.Reflection;
 using System.Threading;
 using Xunit;
 
-public class InlineArrayContextTests
+public class UnionObjectContextTests
 {
-    public static IEnumerable<object[]> InvalidInlineArrayData()
+    public static IEnumerable<object[]> InvalidUnionObjectData()
     {
         var a =
             """
-            // no field
-            namespace Tests;
+            // union empty body
+            namespace UnionTests;
 
             using Mikodev.Binary.Attributes;
             using System.Runtime.CompilerServices;
 
             [SourceGeneratorContext]
-            [SourceGeneratorInclude<InlineArrayWithoutField>]
+            [SourceGeneratorInclude<FakeUnion>]
             partial class TestGeneratorContext { }
 
-            [InlineArray(1)]
-            struct InlineArrayWithoutField { }
-            """;
-        var b =
-            """
-            // multiple fields
-            namespace Tests;
-
-            using Mikodev.Binary.Attributes;
-            using System.Runtime.CompilerServices;
-
-            [SourceGeneratorContext]
-            [SourceGeneratorInclude<InlineArrayMultipleFields>]
-            partial class TestGeneratorContext { }
-
-            [InlineArray(1)]
-            struct InlineArrayMultipleFields
-            {
-                public int A;
-
-                public int B;
-            }
-            """;
-        var c =
-            """
-            // no attribute parameter
-            namespace Tests;
-
-            using Mikodev.Binary.Attributes;
-            using System.Runtime.CompilerServices;
-
-            [SourceGeneratorContext]
-            [SourceGeneratorInclude<InlineArrayNoAttributeParameter>]
-            partial class TestGeneratorContext { }
-
-            [InlineArray()]
-            struct InlineArrayNoAttributeParameter
-            {
-                public int A;
-            }
+            [Union]
+            readonly struct FakeUnion { }
             """;
         yield return [a];
-        yield return [b];
-        yield return [c];
     }
 
-    [Theory(DisplayName = "Invalid Inline Array Test")]
-    [MemberData(nameof(InvalidInlineArrayData))]
-    public void InvalidInlineArrayTest(string source)
+    [Theory(DisplayName = "Invalid Union Object Test")]
+    [MemberData(nameof(InvalidUnionObjectData))]
+    public void InvalidUnionObjectTest(string source)
     {
         var references = new List<MetadataReference>
         {
@@ -103,8 +65,10 @@ public class InlineArrayContextTests
         var symbol = Assert.IsType<ITypeSymbol>(model.GetDeclaredSymbol(declaration), exactMatch: false);
         var context = new SourceGeneratorContext(compilation, _ => Assert.Fail("Invalid Call!"), CancellationToken.None);
         var tracker = new SourceGeneratorTracker(_ => Assert.Fail("Invalid Call!"));
-        var result = Assert.IsType<SourceResult>(InlineArrayConverterContext.Invoke(context, tracker, symbol));
+        var result = Assert.IsType<SourceResult>(UnionObjectConverterContext.Invoke(context, tracker, symbol));
         Assert.NotNull(result);
         Assert.Equal(SourceStatus.Error, result.Status);
     }
 }
+
+#endif

@@ -116,6 +116,6 @@ public abstract class SymbolConverterContext
         Handle();
         var code = Output.ToString();
         var name = OutputConverterCreatorTypeName;
-        return new SourceResult(name, code);
+        return new SourceResultWithSourceCode(name, code);
     }
 }

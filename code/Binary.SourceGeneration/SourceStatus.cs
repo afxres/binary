@@ -6,5 +6,4 @@ public enum SourceStatus
     Ok,
     Error,
     Ignored,
-    NamedObjectError,
 }

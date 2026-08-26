@@ -38,7 +38,7 @@ public sealed partial class UnionObjectConverterContext
         if (caseTypeList is null or { Count: 0 })
             caseTypeList = [.. namedType.InstanceConstructors.Select(SelectUnionCaseType).OfType<ITypeSymbol>()];
         if (caseTypeList is null or { Count: 0 } || caseTypeList.Distinct(SymbolEqualityComparer.Default).Count() != caseTypeList.Count)
-            return null;
+            return new SourceResult(SourceStatus.Error);
         var caseList = caseTypeList.Select((x, i) => new UnionCaseInfo(i, x)).ToList();
         caseList.Sort((a, b) => Symbols.CompareConversion(context.Compilation, a.Type, b.Type));
         return new UnionObjectConverterContext(context, tracker, symbol, [.. caseList]).Invoke();

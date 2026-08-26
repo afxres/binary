@@ -149,20 +149,17 @@ public sealed class SourceGenerator : IIncrementalGenerator
         if (result?.Status is SourceStatus.Ok)
             return result;
         if (inclusions.TryGetValue(symbol, out var attribute) is true)
-            Report(context, symbol, attribute, result?.Status);
+            Report(context, symbol, attribute, result);
         return null;
     }
 
-    private static void Report(SourceGeneratorContext context, ITypeSymbol symbol, AttributeData attribute, SourceStatus? status)
+    private static void Report(SourceGeneratorContext context, ITypeSymbol symbol, AttributeData attribute, SourceResult? result)
     {
-        var symbolText = Symbols.GetSymbolDiagnosticDisplayString(symbol);
-        if (status is SourceStatus.NamedObjectError)
-            if (context.GetTypeInfo(symbol).ConflictFieldsAndProperties is { Length: not 0 } targets)
-                targets.ForEach(name => context.Collect(Constants.AmbiguousMemberFound.With(attribute, [name, symbolText])));
-            else
-                context.Collect(Constants.NoAvailableMemberFound.With(attribute, [symbolText]));
+        if (result is SourceResultWithDiagnostic intent)
+            foreach (var (descriptor, messageArguments) in intent.DiagnosticArguments)
+                context.Collect(descriptor.With(attribute, messageArguments));
         else
-            context.Collect(Constants.NoConverterGenerated.With(attribute, [symbolText]));
+            context.Collect(Constants.NoConverterGenerated.With(attribute, [Symbols.GetSymbolDiagnosticDisplayString(symbol)]));
     }
 
     private static string Finish(ContextInfo info, SortedDictionary<string, SourceResult?> dictionary, CancellationToken cancellation)
@@ -176,8 +173,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         output.AppendIndent(1, $"{{");
         foreach (var i in dictionary)
         {
-            var content = i.Value;
-            if (content is null)
+            if (i.Value is not SourceResultWithSourceCode content)
                 continue;
             output.AppendIndent(2, $"{{ typeof({i.Key}), new {content.ConverterCreatorTypeName}() }},");
             cancellation.ThrowIfCancellationRequested();
@@ -185,8 +181,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
         output.AppendIndent(1, $"}});");
         foreach (var i in dictionary)
         {
-            var content = i.Value;
-            if (content is null)
+            if (i.Value is not SourceResultWithSourceCode content)
                 continue;
             output.AppendIndent();
             _ = output.Append(content.SourceCode);
