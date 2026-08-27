@@ -37,7 +37,7 @@ public class RequireKeyAttributeTests
         yield return [a, "Id", "Alpha"];
     }
 
-    [Theory(DisplayName = "Require Key Attribute For Converter Attribute Test")]
+    [Theory(DisplayName = "Key Attribute Required for Converter Attribute")]
     [MemberData(nameof(ConverterAttributeData))]
     public void RequireKeyAttributeForConverterAttributeTest(string source, string memberName, string typeName)
     {
@@ -46,7 +46,7 @@ public class RequireKeyAttributeTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"Require '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' for '{nameof(ConverterAttribute)}', member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
+        Assert.EndsWith($"A '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' is required for '{nameof(ConverterAttribute)}', member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
         Assert.Matches(@"Converter\(.*\)", diagnostic.Location.GetSourceText());
     }
 
@@ -78,7 +78,7 @@ public class RequireKeyAttributeTests
         yield return [a, "Name", "Delta"];
     }
 
-    [Theory(DisplayName = "Require Key Attribute For Converter Creator Attribute Test")]
+    [Theory(DisplayName = "Key Attribute Required for Converter Creator Attribute")]
     [MemberData(nameof(ConverterCreatorAttributeData))]
     public void RequireKeyAttributeForConverterCreatorAttributeTest(string source, string memberName, string typeName)
     {
@@ -87,7 +87,7 @@ public class RequireKeyAttributeTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"Require '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' for '{nameof(ConverterCreatorAttribute)}', member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
+        Assert.EndsWith($"A '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' is required for '{nameof(ConverterCreatorAttribute)}', member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
         Assert.Matches(@"ConverterCreator\(.*\)", diagnostic.Location.GetSourceText());
     }
 
@@ -195,8 +195,8 @@ public class RequireKeyAttributeTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.Equal($"Require {typeKind} Key Attribute For Required Member.", diagnostic.Descriptor.Title);
-        Assert.EndsWith($"Require '{typeKind}KeyAttribute' for required member, member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
+        Assert.Equal($"'{typeKind}KeyAttribute' Required for Required Member", diagnostic.Descriptor.Title);
+        Assert.EndsWith($"The required member must have a '{typeKind}KeyAttribute', member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
         Assert.Equal(memberName, diagnostic.Location.GetSourceText());
     }
 }

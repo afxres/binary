@@ -48,7 +48,7 @@ public class RequireNotByReferencePropertyTests
         yield return [b, "ReadOnlyLocation", "Bravo"];
     }
 
-    [Theory(DisplayName = "Require Not By Reference Property Test")]
+    [Theory(DisplayName = "By-Reference Property Not Allowed")]
     [MemberData(nameof(ByReferencePropertyObjectData))]
     public void RequireNotByReferencePropertyTest(string source, string memberName, string typeName)
     {
@@ -57,7 +57,7 @@ public class RequireNotByReferencePropertyTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"Require not by reference property, member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
+        Assert.EndsWith($"A property must not be passed by reference, member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
         Assert.Matches(memberName, diagnostic.Location.GetSourceText());
     }
 
@@ -109,7 +109,7 @@ public class RequireNotByReferencePropertyTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"No available member found, type: {typeName}", diagnostic.ToString());
+        Assert.EndsWith($"No available member was found, type: {typeName}", diagnostic.ToString());
         Assert.Equal($"SourceGeneratorInclude<{typeName}>", diagnostic.Location.GetSourceText());
     }
 }

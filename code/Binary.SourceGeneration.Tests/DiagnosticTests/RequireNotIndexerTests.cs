@@ -46,7 +46,7 @@ public class RequireNotIndexerTests
         yield return [b, "Bravo"];
     }
 
-    [Theory(DisplayName = "Require Not Indexer")]
+    [Theory(DisplayName = "Indexer Not Allowed")]
     [MemberData(nameof(IndexerData))]
     public void RequireNotIndexer(string source, string typeName)
     {
@@ -55,7 +55,7 @@ public class RequireNotIndexerTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"Require not an indexer, containing type: {typeName}", diagnostic.ToString());
+        Assert.EndsWith($"An indexer is not allowed, containing type: {typeName}", diagnostic.ToString());
         Assert.Equal("this", diagnostic.Location.GetSourceText());
     }
 }

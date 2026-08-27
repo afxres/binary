@@ -43,7 +43,7 @@ public class TupleObjectContextTests
         Assert.NotNull(valueTupleSymbol);
         var context = new SourceGeneratorContext(compilation, _ => Assert.Fail("Invalid Call!"), CancellationToken.None);
         var tracker = new SourceGeneratorTracker(_ => Assert.Fail("Invalid Call!"));
-        var result = TupleObjectConverterContext.Invoke(context, tracker, valueTupleSymbol);
+        var result = Assert.IsType<SourceResult>(TupleObjectConverterContext.Invoke(context, tracker, valueTupleSymbol));
         Assert.NotNull(result);
         Assert.Equal(SourceStatus.Error, result.Status);
 
@@ -53,6 +53,6 @@ public class TupleObjectContextTests
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
         Assert.Equal("TupleObject", diagnostic.Location.GetSourceText());
-        Assert.EndsWith($"No available member found, type: {typeName}", diagnostic.ToString());
+        Assert.EndsWith($"No available member was found, type: {typeName}", diagnostic.ToString());
     }
 }

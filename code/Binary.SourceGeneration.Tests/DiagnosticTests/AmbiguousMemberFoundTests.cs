@@ -137,7 +137,7 @@ public class AmbiguousMemberFoundTests
         var generator = new SourceGenerator();
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         Assert.Equal(memberNames.Count, diagnostics.Length);
-        var expected = new Regex("Ambiguous member found, member name: (\\w*), type: (\\S*)$");
+        var expected = new Regex("An ambiguous member was found, member name: (\\w*), type: (\\S*)$");
         var actualNames = new List<string>();
         foreach (var diagnostic in diagnostics)
         {

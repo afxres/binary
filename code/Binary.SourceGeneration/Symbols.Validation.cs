@@ -65,7 +65,7 @@ public static partial class Symbols
         if (declaration.Modifiers.Any(x => x.IsKind(SyntaxKind.PartialKeyword)) is false)
             return Constants.ContextTypeNotPartial;
         if (symbol.ContainingNamespace.IsGlobalNamespace)
-            return Constants.ContextTypeNotInNamespace;
+            return Constants.ContextTypeInGlobalNamespace;
         if (symbol.ContainingType is not null)
             return Constants.ContextTypeNested;
         if (symbol.IsGenericType)
@@ -76,9 +76,9 @@ public static partial class Symbols
     private static DiagnosticDescriptor? ValidateIncludeType(IReadOnlyDictionary<ITypeSymbol, AttributeData> dictionary, ITypeSymbol symbol)
     {
         if (IsTypeInvalid(symbol))
-            return Constants.RequireValidTypeForIncludeAttribute;
+            return Constants.InvalidTypeForIncludeAttribute;
         else if (dictionary.ContainsKey(symbol))
-            return Constants.IncludeTypeDuplicated;
+            return Constants.TypeInclusionDuplicated;
         return null;
     }
 
@@ -92,7 +92,7 @@ public static partial class Symbols
             ValidateMember(context, symbolText, typeAttribute?.Name, member, typeInfo.RequiredFieldsAndProperties, diagnostics, namedMembers, tupleMembers);
         var tupleKeys = tupleMembers.Keys;
         if (tupleKeys.Count is not 0 && (tupleKeys.First() is not 0 || tupleKeys.Last() != tupleKeys.Count - 1))
-            diagnostics.Add(Constants.TupleKeyNotSequential.With(symbol, [symbolText]));
+            diagnostics.Add(Constants.TupleKeyIsNotSequential.With(symbol, [symbolText]));
         if (diagnostics.Count is not 0)
             return;
 
@@ -117,7 +117,7 @@ public static partial class Symbols
             return;
         var argument = attribute.ConstructorArguments.Single();
         if (argument.Value is not ITypeSymbol type || type.AllInterfaces.Any(x => context.Equals(x, Constants.IConverterTypeName)) is false)
-            diagnostics.Add(Constants.RequireConverterType.With(attribute));
+            diagnostics.Add(Constants.ConverterTypeRequired.With(attribute));
         return;
     }
 
@@ -127,7 +127,7 @@ public static partial class Symbols
             return;
         var argument = attribute.ConstructorArguments.Single();
         if (argument.Value is not ITypeSymbol type || type.AllInterfaces.Any(x => context.Equals(x, Constants.IConverterCreatorTypeName)) is false)
-            diagnostics.Add(Constants.RequireConverterCreatorType.With(attribute));
+            diagnostics.Add(Constants.ConverterCreatorTypeRequired.With(attribute));
         return;
     }
 
@@ -137,7 +137,7 @@ public static partial class Symbols
             return;
         var key = (string?)attribute.ConstructorArguments.Single().Value;
         if (key is null || key.Length is 0)
-            diagnostics.Add(Constants.NamedKeyNullOrEmpty.With(attribute));
+            diagnostics.Add(Constants.NamedKeyIsNullOrEmpty.With(attribute));
         else if (namedMembers.TryAdd(key, member) is false)
             diagnostics.Add(Constants.NamedKeyDuplicated.With(attribute, [key]));
         return;
@@ -166,9 +166,9 @@ public static partial class Symbols
         var hasKey = namedKeyAttribute is not null || tupleKeyAttribute is not null;
         var requiredMemberWithoutKey = hasKey is false && requiredMembers.Count is not 0 && IsRequiredFieldOrProperty(member);
         if (requiredMemberWithoutKey && typeAttribute is NamedObjectAttribute)
-            diagnostics.Add(Constants.RequireNamedKeyAttributeForRequiredMember.With(member, [memberName, containingTypeName]));
+            diagnostics.Add(Constants.NamedKeyAttributeRequiredForRequiredMember.With(member, [memberName, containingTypeName]));
         if (requiredMemberWithoutKey && typeAttribute is TupleObjectAttribute)
-            diagnostics.Add(Constants.RequireTupleKeyAttributeForRequiredMember.With(member, [memberName, containingTypeName]));
+            diagnostics.Add(Constants.TupleKeyAttributeRequiredForRequiredMember.With(member, [memberName, containingTypeName]));
         cancellation.ThrowIfCancellationRequested();
 
         if (converterAttribute is null &&
@@ -187,26 +187,26 @@ public static partial class Symbols
         if (member.IsStatic || member.DeclaredAccessibility is not Accessibility.Public)
             diagnostics.Add(Constants.RequirePublicInstanceMember.With(member, [memberName, containingTypeName]));
         else if (property is not null && property.IsIndexer)
-            diagnostics.Add(Constants.RequireNotIndexer.With(member, [containingTypeName]));
+            diagnostics.Add(Constants.IndexerNotAllowed.With(member, [containingTypeName]));
         else if (property is not null && property.GetMethod?.DeclaredAccessibility is not Accessibility.Public)
-            diagnostics.Add(Constants.RequirePublicGetter.With(member, [memberName, containingTypeName]));
+            diagnostics.Add(Constants.PublicGetterRequired.With(member, [memberName, containingTypeName]));
         cancellation.ThrowIfCancellationRequested();
 
         if (converterAttribute is not null && converterCreatorAttribute is not null)
             diagnostics.Add(Constants.MultipleAttributesFoundOnMember.With(member, [memberName, containingTypeName]));
         if (namedKeyAttribute is not null && typeAttribute is not NamedObjectAttribute)
-            diagnostics.Add(Constants.RequireNamedObjectAttribute.With(namedKeyAttribute, [memberName, containingTypeName]));
+            diagnostics.Add(Constants.NamedObjectAttributeRequired.With(namedKeyAttribute, [memberName, containingTypeName]));
         if (tupleKeyAttribute is not null && typeAttribute is not TupleObjectAttribute)
-            diagnostics.Add(Constants.RequireTupleObjectAttribute.With(tupleKeyAttribute, [memberName, containingTypeName]));
+            diagnostics.Add(Constants.TupleObjectAttributeRequired.With(tupleKeyAttribute, [memberName, containingTypeName]));
         cancellation.ThrowIfCancellationRequested();
 
         if (property is not null && IsReturnsByRefOrReturnsByRefReadonly(property))
-            diagnostics.Add(Constants.RequireNotByReferenceProperty.With(member, [memberName, containingTypeName]));
+            diagnostics.Add(Constants.ByReferencePropertyNotAllowed.With(member, [memberName, containingTypeName]));
         cancellation.ThrowIfCancellationRequested();
 
         var memberType = property?.Type ?? ((IFieldSymbol)member).Type;
         if (IsTypeInvalid(memberType))
-            diagnostics.Add(Constants.RequireValidTypeForMember.With(member, [GetSymbolDiagnosticDisplayString(memberType), memberName, containingTypeName]));
+            diagnostics.Add(Constants.InvalidTypeForMember.With(member, [GetSymbolDiagnosticDisplayString(memberType), memberName, containingTypeName]));
         cancellation.ThrowIfCancellationRequested();
 
         if (tupleKeyAttribute is not null && converterAttribute is null && converterCreatorAttribute is null && SymbolEqualityComparer.Default.Equals(memberType, member.ContainingType))
@@ -214,9 +214,9 @@ public static partial class Symbols
         cancellation.ThrowIfCancellationRequested();
 
         if (hasKey is false && converterAttribute is not null)
-            diagnostics.Add(Constants.RequireKeyAttributeForConverterAttribute.With(converterAttribute, [memberName, containingTypeName]));
+            diagnostics.Add(Constants.KeyAttributeRequiredForConverterAttribute.With(converterAttribute, [memberName, containingTypeName]));
         if (hasKey is false && converterCreatorAttribute is not null)
-            diagnostics.Add(Constants.RequireKeyAttributeForConverterCreatorAttribute.With(converterCreatorAttribute, [memberName, containingTypeName]));
+            diagnostics.Add(Constants.KeyAttributeRequiredForConverterCreatorAttribute.With(converterCreatorAttribute, [memberName, containingTypeName]));
         cancellation.ThrowIfCancellationRequested();
     }
 }

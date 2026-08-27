@@ -74,7 +74,7 @@ public class RequireNamedObjectAttributeTests
         yield return [a, "Key", "Back"];
     }
 
-    [Theory(DisplayName = "Require 'NamedObjectAttribute' Test")]
+    [Theory(DisplayName = "'NamedObjectAttribute' Required")]
     [MemberData(nameof(ExplicitData))]
     [MemberData(nameof(ImplicitData))]
     public void RequireNamedObjectAttributeTest(string source, string memberName, string typeName)
@@ -84,7 +84,7 @@ public class RequireNamedObjectAttributeTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"Require 'NamedObjectAttribute' for 'NamedKeyAttribute', member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
+        Assert.EndsWith($"A 'NamedObjectAttribute' is required for 'NamedKeyAttribute', member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
         Assert.Matches(@"NamedKey\(.*\)", diagnostic.Location.GetSourceText());
     }
 }

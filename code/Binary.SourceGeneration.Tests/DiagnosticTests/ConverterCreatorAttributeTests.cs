@@ -90,7 +90,7 @@ public class ConverterCreatorAttributeTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"Require converter creator type.", diagnostic.ToString());
+        Assert.EndsWith("A converter creator type is required.", diagnostic.ToString());
         Assert.Contains(location, diagnostic.Location.GetSourceText());
     }
 }

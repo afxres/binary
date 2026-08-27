@@ -92,7 +92,7 @@ public class NoAvailableMemberFoundTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"No available member found, type: {typeName}", diagnostic.ToString());
+        Assert.EndsWith($"No available member was found, type: {typeName}", diagnostic.ToString());
         Assert.Contains(location, diagnostic.Location.GetSourceText());
     }
 
@@ -122,7 +122,7 @@ public class NoAvailableMemberFoundTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"No available member found, type: {typeName}", diagnostic.ToString());
+        Assert.EndsWith($"No available member was found, type: {typeName}", diagnostic.ToString());
         Assert.Equal($"SourceGeneratorInclude<{typeName}>", diagnostic.Location.GetSourceText());
     }
 

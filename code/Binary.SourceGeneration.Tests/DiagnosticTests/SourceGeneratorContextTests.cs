@@ -22,11 +22,11 @@ public class SourceGeneratorContextTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith("Require 'partial' keyword for source generator context, type: TestSourceGeneratorContext", diagnostic.ToString());
+        Assert.EndsWith("The 'partial' keyword is required for the source generator context, type: TestSourceGeneratorContext", diagnostic.ToString());
         Assert.Contains("TestSourceGeneratorContext", diagnostic.Location.GetSourceText());
     }
 
-    [Fact(DisplayName = "Source Generator Context Type Not In Namespace")]
+    [Fact(DisplayName = "Source Generator Context Type Is in the Global Namespace")]
     public void ContextNotInNamespace()
     {
         var source =
@@ -41,7 +41,7 @@ public class SourceGeneratorContextTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith("Require not global namespace for source generator context, type: AnotherTestSourceGeneratorContext", diagnostic.ToString());
+        Assert.EndsWith("The source generator context must not be in the global namespace, type: AnotherTestSourceGeneratorContext", diagnostic.ToString());
         Assert.Contains("AnotherTestSourceGeneratorContext", diagnostic.Location.GetSourceText());
     }
 
@@ -65,7 +65,7 @@ public class SourceGeneratorContextTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith("Require not nested type for source generator context, type: Outer.NestedSourceGeneratorContext", diagnostic.ToString());
+        Assert.EndsWith("The source generator context must not be a nested type, type: Outer.NestedSourceGeneratorContext", diagnostic.ToString());
         Assert.Contains("NestedSourceGeneratorContext", diagnostic.Location.GetSourceText());
     }
 
@@ -86,7 +86,7 @@ public class SourceGeneratorContextTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith("Require not generic type for source generator context, type: GenericSourceGeneratorContext<T>", diagnostic.ToString());
+        Assert.EndsWith("The source generator context must not be a generic type, type: GenericSourceGeneratorContext<T>", diagnostic.ToString());
         Assert.Contains("GenericSourceGeneratorContext", diagnostic.Location.GetSourceText());
     }
 
@@ -110,7 +110,7 @@ public class SourceGeneratorContextTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
-        Assert.EndsWith("Type inclusion duplicated, type: List<Int32>", diagnostic.ToString());
+        Assert.EndsWith("The type is included more than once, type: List<Int32>", diagnostic.ToString());
         Assert.Contains("SourceGeneratorInclude<List<int>>", diagnostic.Location.GetSourceText());
     }
 
@@ -132,7 +132,7 @@ public class SourceGeneratorContextTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
-        Assert.EndsWith("No converter generated, type: String", diagnostic.ToString());
+        Assert.EndsWith("The converter could not be generated because the type may have been explicitly excluded, type: String", diagnostic.ToString());
         Assert.Contains("SourceGeneratorInclude<string>", diagnostic.Location.GetSourceText());
     }
 
@@ -165,7 +165,7 @@ public class SourceGeneratorContextTests
         foreach (var diagnostic in diagnostics)
         {
             Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
-            Assert.Contains("No converter generated", diagnostic.ToString());
+            Assert.Contains("The converter could not be generated because the type may have been explicitly excluded", diagnostic.ToString());
             Assert.Contains("SourceGeneratorInclude", diagnostic.Location.GetSourceText());
         }
     }

@@ -113,7 +113,7 @@ public class CompilationTests
 
         var diagnostic = Assert.Single(outputDiagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.Equal("Require Valid Type.", diagnostic.Descriptor.Title);
-        Assert.Contains("Require valid type", diagnostic.ToString());
+        Assert.Equal("Invalid Type", diagnostic.Descriptor.Title);
+        Assert.Contains("A valid type is required", diagnostic.ToString());
     }
 }

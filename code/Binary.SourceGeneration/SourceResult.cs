@@ -15,7 +15,7 @@ public class SourceResultWithSourceCode(string converterCreatorTypeName, string 
     public string SourceCode { get; } = sourceCode;
 }
 
-public class SourceResultWithDiagnostic(ImmutableArray<(DiagnosticDescriptor Descriptor, object?[]? MessageArguments)> diagnosticArguments) : SourceResult(SourceStatus.Error)
+public class SourceResultWithDiagnostic(ImmutableArray<(DiagnosticDescriptor Descriptor, object?[]? MessageArguments)> diagnosticArguments) : SourceResult(SourceStatus.Diagnostic)
 {
     public ImmutableArray<(DiagnosticDescriptor Descriptor, object?[]? MessageArguments)> DiagnosticArguments { get; } = diagnosticArguments;
 }

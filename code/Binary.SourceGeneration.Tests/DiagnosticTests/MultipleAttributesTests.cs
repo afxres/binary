@@ -65,7 +65,7 @@ public class MultipleAttributesTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics.Where(x => x.ToString().Contains("Multiple attributes")));
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"Multiple attributes found, type: {typeName}", diagnostic.ToString());
+        Assert.EndsWith($"Multiple attributes were found, type: {typeName}", diagnostic.ToString());
         Assert.Contains(typeName, diagnostic.Location.GetSourceText());
     }
 
@@ -102,11 +102,11 @@ public class MultipleAttributesTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics.Where(x => x.ToString().Contains("Multiple attributes")));
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"Multiple attributes found, member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
+        Assert.EndsWith($"Multiple attributes were found, member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
         Assert.Contains(memberName, diagnostic.Location.GetSourceText());
 
         // not important
-        _ = Assert.Single(diagnostics.Where(x => x.ToString().Contains("Require converter type")));
-        _ = Assert.Single(diagnostics.Where(x => x.ToString().Contains("Require converter creator type")));
+        _ = Assert.Single(diagnostics.Where(x => x.ToString().Contains("A converter type is required")));
+        _ = Assert.Single(diagnostics.Where(x => x.ToString().Contains("A converter creator type is required")));
     }
 }

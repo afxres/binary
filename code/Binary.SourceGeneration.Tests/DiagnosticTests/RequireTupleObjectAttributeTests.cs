@@ -57,7 +57,7 @@ public class RequireTupleObjectAttributeTests
         yield return [b, "Value", "Hotel"];
     }
 
-    [Theory(DisplayName = "Require 'TupleObjectAttribute' Test")]
+    [Theory(DisplayName = "'TupleObjectAttribute' Required")]
     [MemberData(nameof(ExplicitData))]
     public void RequireTupleObjectAttributeTest(string source, string memberName, string typeName)
     {
@@ -66,7 +66,7 @@ public class RequireTupleObjectAttributeTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"Require 'TupleObjectAttribute' for 'TupleKeyAttribute', member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
+        Assert.EndsWith($"A 'TupleObjectAttribute' is required for 'TupleKeyAttribute', member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
         Assert.Matches(@"TupleKey\(.*\)", diagnostic.Location.GetSourceText());
     }
 }

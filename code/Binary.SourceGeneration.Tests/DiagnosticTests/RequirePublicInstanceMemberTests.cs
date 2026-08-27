@@ -144,7 +144,7 @@ public class RequirePublicInstanceMemberTests
         yield return [b, "InternalStaticField", "Bravo"];
     }
 
-    [Theory(DisplayName = "Require Public Instance Member")]
+    [Theory(DisplayName = "Public Instance Member Required")]
     [MemberData(nameof(NonPublicMemberData))]
     [MemberData(nameof(NonInstanceMemberData))]
     [MemberData(nameof(NonPublicInstanceMemberData))]
@@ -155,7 +155,7 @@ public class RequirePublicInstanceMemberTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"Require public instance member, member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
+        Assert.EndsWith($"A public instance member is required, member name: {memberName}, containing type: {typeName}", diagnostic.ToString());
         Assert.Contains(memberName, diagnostic.Location.GetSourceText());
     }
 }

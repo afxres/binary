@@ -34,7 +34,7 @@ public class RequireValidTypeTests
         yield return [b, "Predicate<Int32>"];
     }
 
-    [Theory(DisplayName = "Require Valid Type For Include Attribute")]
+    [Theory(DisplayName = "Invalid Type For Include Attribute")]
     [MemberData(nameof(RequireValidTypeForIncludeAttributeData))]
     public void RequireValidTypeForIncludeAttributeTest(string source, string typeName)
     {
@@ -43,8 +43,8 @@ public class RequireValidTypeTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.Equal("Require Valid Type.", diagnostic.Descriptor.Title);
-        Assert.EndsWith($"Require valid type (array, class, enum, interface or struct), type: {typeName}", diagnostic.ToString());
+        Assert.Equal("Invalid Type", diagnostic.Descriptor.Title);
+        Assert.EndsWith($"A valid type is required (array, class, enum, interface, or struct), type: {typeName}", diagnostic.ToString());
         Assert.Matches(@"SourceGeneratorInclude<.*>", diagnostic.Location.GetSourceText());
     }
 
@@ -138,7 +138,7 @@ public class RequireValidTypeTests
         yield return [d, "Span<Byte>", "Buffer", "Hotel"];
     }
 
-    [Theory(DisplayName = "Require Valid Type For Member")]
+    [Theory(DisplayName = "Invalid Type For Member")]
     [MemberData(nameof(RequireValidTypeForMemberData))]
     public void RequireValidTypeForMemberTest(string source, string typeName, string memberName, string containingTypeName)
     {
@@ -147,8 +147,8 @@ public class RequireValidTypeTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.Equal("Require Valid Type.", diagnostic.Descriptor.Title);
-        Assert.EndsWith($"Require valid type (array, class, enum, interface or struct), type: {typeName}, member name: {memberName}, containing type: {containingTypeName}", diagnostic.ToString());
+        Assert.Equal("Invalid Type", diagnostic.Descriptor.Title);
+        Assert.EndsWith($"A valid type is required (array, class, enum, interface, or struct), type: {typeName}, member name: {memberName}, containing type: {containingTypeName}", diagnostic.ToString());
         Assert.Contains(memberName, diagnostic.Location.GetSourceText());
     }
 
@@ -174,7 +174,7 @@ public class RequireValidTypeTests
         yield return [a];
     }
 
-    [Theory(DisplayName = "Require Valid Type For Member Of Plain Object")]
+    [Theory(DisplayName = "Invalid Type For Member Of Plain Object")]
     [MemberData(nameof(RequireValidTypeForMemberPlainObjectData))]
     public void RequireValidTypeForMemberPlainObjectTest(string source)
     {

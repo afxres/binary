@@ -65,9 +65,15 @@ public class UnionObjectContextTests
         var symbol = Assert.IsType<ITypeSymbol>(model.GetDeclaredSymbol(declaration), exactMatch: false);
         var context = new SourceGeneratorContext(compilation, _ => Assert.Fail("Invalid Call!"), CancellationToken.None);
         var tracker = new SourceGeneratorTracker(_ => Assert.Fail("Invalid Call!"));
-        var result = Assert.IsType<SourceResult>(UnionObjectConverterContext.Invoke(context, tracker, symbol));
+        var result = Assert.IsType<SourceResultWithDiagnostic>(UnionObjectConverterContext.Invoke(context, tracker, symbol));
+        var (descriptor, messageArguments) = Assert.Single(result.DiagnosticArguments);
+        Assert.NotNull(messageArguments);
+        Assert.Equal(2, messageArguments.Length);
         Assert.NotNull(result);
-        Assert.Equal(SourceStatus.Error, result.Status);
+        Assert.Equal(SourceStatus.Diagnostic, result.Status);
+        Assert.Equal(Constants.TypeNotRecognized, descriptor);
+        Assert.Equal("UnionObject", messageArguments[0]);
+        Assert.Equal(Symbols.GetSymbolDiagnosticDisplayString(symbol), messageArguments[1]);
     }
 }
 

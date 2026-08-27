@@ -6,4 +6,5 @@ public enum SourceStatus
     Ok,
     Error,
     Ignored,
+    Diagnostic,
 }

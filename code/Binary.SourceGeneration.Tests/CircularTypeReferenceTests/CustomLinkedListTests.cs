@@ -126,8 +126,8 @@ public class CustomLinkedListTests
         var diagnostic = Assert.Single(outputDiagnostics);
         Assert.Empty(outputCompilationDiagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.Equal("Self Type Reference Found.", diagnostic.Descriptor.Title);
-        var message = $"Self type reference found, member name: {memberName}, containing type: {typeName}";
+        Assert.Equal("Self-Type Reference Found", diagnostic.Descriptor.Title);
+        var message = $"A self-type reference was found, member name: {memberName}, containing type: {typeName}";
         Assert.Contains(message, diagnostic.ToString());
         Assert.Equal(memberName, diagnostic.Location.GetSourceText());
     }

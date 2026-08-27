@@ -66,7 +66,7 @@ public class CollectionContextTests
         var generator = new SourceGenerator();
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         Assert.All(diagnostics, x => Assert.Equal(DiagnosticSeverity.Warning, x.Severity));
-        Assert.All(diagnostics, x => Assert.Contains("No converter generated", x.ToString()));
+        Assert.All(diagnostics, x => Assert.Contains("The converter could not be generated because the type may have been explicitly excluded", x.ToString()));
         var locationTexts = diagnostics.Select(x => x.Location.GetSourceText()).ToHashSet();
         Assert.Equal(8, locationTexts.Count);
         Assert.All(locationTexts, x => Assert.Contains(x, source));

@@ -6,7 +6,7 @@ using Xunit;
 
 public class TupleObjectTests
 {
-    [Fact(DisplayName = "Tuple Key Duplicated")]
+    [Fact(DisplayName = "Tuple Key Is Duplicated")]
     public void KeyDuplicated()
     {
         var source =
@@ -40,7 +40,7 @@ public class TupleObjectTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.Contains("Tuple key duplicated, key: 2", diagnostic.ToString());
+        Assert.Contains("The tuple key is duplicated, key: 2", diagnostic.ToString());
         Assert.Contains("""TupleKey(2)""", diagnostic.Location.GetSourceText());
     }
 
@@ -105,7 +105,7 @@ public class TupleObjectTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith($"Tuple key must start at zero and must be sequential, type: {typeName}", diagnostic.ToString());
+        Assert.EndsWith($"Tuple keys must start at zero and be sequential, type: {typeName}", diagnostic.ToString());
         Assert.Equal(typeName, diagnostic.Location.GetSourceText());
     }
 }

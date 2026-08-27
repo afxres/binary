@@ -6,7 +6,7 @@ using Xunit;
 
 public class NamedObjectTests
 {
-    [Fact(DisplayName = "Named Key Duplicated")]
+    [Fact(DisplayName = "Named Key Is Duplicated")]
     public void KeyDuplicated()
     {
         var source =
@@ -34,7 +34,7 @@ public class NamedObjectTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith("Named key duplicated, key: entry", diagnostic.ToString());
+        Assert.EndsWith("The named key is duplicated, key: entry", diagnostic.ToString());
         Assert.Contains("""NamedKey("entry")""", diagnostic.Location.GetSourceText());
     }
 
@@ -87,7 +87,7 @@ public class NamedObjectTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith("Named key can not be null or empty.", diagnostic.ToString());
+        Assert.EndsWith("A named key cannot be null or empty.", diagnostic.ToString());
         Assert.Contains(location, diagnostic.Location.GetSourceText());
     }
 }
