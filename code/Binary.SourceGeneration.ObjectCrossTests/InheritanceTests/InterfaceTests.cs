@@ -113,7 +113,7 @@ public class InterfaceTests
         Assert.Equal(names, conflict);
 
         var error = Assert.Throws<ArgumentException>(() => reflectionFunction.Invoke(wanted, BindingFlags.Instance | BindingFlags.Public));
-        var expected = new Regex("Get members error, ambiguous members detected, member name: (\\w*), type: (\\S*)");
+        var expected = new Regex("Ambiguous members detected, member name: (\\w*), type: (\\S*)");
         var matches = expected.Matches(error.Message);
         var match = Assert.Single(matches);
         Assert.Equal(3, match.Groups.Count);

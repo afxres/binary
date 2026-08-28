@@ -142,7 +142,7 @@ let ``Invalid Null Value (encode & encode auto)`` () =
     let converter = generator.GetConverter<ABC>()
     Assert.StartsWith("UnionConverter`1", converter.GetType().Name)
 
-    let message = sprintf "Union can not be null, type: %O" typeof<ABC>
+    let message = sprintf "Union cannot be null, type: %O" typeof<ABC>
     let alpha = Assert.Throws<ArgumentNullException>(fun () -> Encode converter Unchecked.defaultof<ABC> |> ignore)
     let bravo = Assert.Throws<ArgumentNullException>(fun () -> EncodeAuto converter Unchecked.defaultof<ABC> |> ignore)
     Assert.Equal("item", alpha.ParamName)

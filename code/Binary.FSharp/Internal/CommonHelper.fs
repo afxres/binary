@@ -11,10 +11,10 @@ type internal CommonHelper =
         let converter = context.GetConverter t
         let expectedType = typedefof<Converter<_>>.MakeGenericType t
         if isNull (box converter) then
-            raise (ArgumentException $"Can not convert null to '{expectedType}'")
+            raise (ArgumentException $"Cannot convert null to '{expectedType}'")
         let instanceType = converter.GetType()
         if (expectedType.IsAssignableFrom instanceType = false) then
-            raise (ArgumentException $"Can not convert '{instanceType}' to '{expectedType}'")
+            raise (ArgumentException $"Cannot convert '{instanceType}' to '{expectedType}'")
         converter
 
     static member TryCreateConverter(context: IGeneratorContext, t: Type, typeDefinition: Type, converterDefinition: Type) =

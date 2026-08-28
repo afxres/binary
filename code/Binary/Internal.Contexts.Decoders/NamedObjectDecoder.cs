@@ -26,7 +26,7 @@ internal sealed class NamedObjectDecoder
         if (headers.Length is 0 || names.Length is 0 || optional.Length is 0)
             throw new ArgumentException($"Sequence is null or empty.");
         if (headers.Length != names.Length || headers.Length != optional.Length)
-            throw new ArgumentException($"Sequence lengths not match.");
+            throw new ArgumentException($"Sequence length mismatch.");
         this.type = type;
         this.names = [.. names];
         var view = BinaryObject.Create(headers, out var error);

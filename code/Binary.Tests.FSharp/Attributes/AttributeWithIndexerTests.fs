@@ -126,7 +126,7 @@ type AttributeWithIndexerTests() =
     [<MemberData("Data Indexer Invalid")>]
     member __.``Indexer With Attribute Invalid``(t: Type, attribute: Type) =
         let error = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter t |> ignore)
-        let message = sprintf "Can not apply '%s' to an indexer, type: %O" attribute.Name t
+        let message = sprintf "Cannot apply '%s' to an indexer, type: %O" attribute.Name t
         Assert.Null error.ParamName
         Assert.Equal(message, error.Message)
         ()

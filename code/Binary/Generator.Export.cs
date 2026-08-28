@@ -16,7 +16,7 @@ public static partial class Generator
     public static Converter<E> GetEnumConverter<E>() where E : unmanaged
     {
         if (typeof(E).IsEnum is false)
-            throw new ArgumentException($"Require an enumeration type!");
+            throw new ArgumentException("Enumeration type required.");
         return new LittleEndianConverter<E>();
     }
 
@@ -24,9 +24,9 @@ public static partial class Generator
     {
         ArgumentNullException.ThrowIfNull(converter);
         if (typeof(T).IsVariableBoundArray is false)
-            throw new ArgumentException("Require variable bound array type.");
+            throw new ArgumentException("Variable-bound array type required.");
         if (typeof(T).GetElementType() != typeof(E))
-            throw new ArgumentException("Element type not match.");
+            throw new ArgumentException("Element type mismatch.");
         return new VariableBoundArrayConverter<T, E>(converter);
     }
 

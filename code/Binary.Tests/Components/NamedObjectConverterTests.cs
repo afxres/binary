@@ -52,8 +52,8 @@ public class NamedObjectConverterTests
         Assert.Null(h.ParamName);
         Assert.Null(i.ParamName);
         Assert.Null(k.ParamName);
-        Assert.Equal($"Sequence lengths not match.", h.Message);
-        Assert.Equal($"Sequence lengths not match.", i.Message);
-        Assert.Equal($"Sequence lengths not match.", k.Message);
+        Assert.Equal($"Sequence length mismatch.", h.Message);
+        Assert.Equal($"Sequence length mismatch.", i.Message);
+        Assert.Equal($"Sequence length mismatch.", k.Message);
     }
 }

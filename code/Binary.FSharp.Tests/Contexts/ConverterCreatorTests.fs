@@ -54,7 +54,7 @@ type ConverterCreatorTests() =
         let context =
             [| typeof<int>, FakeIConverterImplementation() :> IConverter |] |> readOnlyDict |> FakeIGeneratorContextImplementation :> IGeneratorContext
         let error = Assert.Throws<ArgumentException>(fun () -> creator.GetConverter(context, itemType) |> ignore)
-        let message = sprintf "Can not convert '%O' to '%O'" typeof<FakeIConverterImplementation> typeof<Converter<int>>
+        let message = sprintf "Cannot convert '%O' to '%O'" typeof<FakeIConverterImplementation> typeof<Converter<int>>
         Assert.Equal(message, error.Message)
         ()
 
@@ -67,7 +67,7 @@ type ConverterCreatorTests() =
             [| typeof<int>, FakeGenericConverterImplementation<string>() :> IConverter |] |> readOnlyDict |> FakeIGeneratorContextImplementation
             :> IGeneratorContext
         let error = Assert.Throws<ArgumentException>(fun () -> creator.GetConverter(context, itemType) |> ignore)
-        let message = sprintf "Can not convert '%O' to '%O'" typeof<FakeGenericConverterImplementation<string>> typeof<Converter<int>>
+        let message = sprintf "Cannot convert '%O' to '%O'" typeof<FakeGenericConverterImplementation<string>> typeof<Converter<int>>
         Assert.Equal(message, error.Message)
         ()
 
@@ -78,6 +78,6 @@ type ConverterCreatorTests() =
         let creator = Activator.CreateInstance creatorType :?> IConverterCreator
         let context = Array.empty |> readOnlyDict |> FakeIGeneratorContextImplementation :> IGeneratorContext
         let error = Assert.Throws<ArgumentException>(fun () -> creator.GetConverter(context, itemType) |> ignore)
-        let message = sprintf "Can not convert null to '%O'" typeof<Converter<int>>
+        let message = sprintf "Cannot convert null to '%O'" typeof<Converter<int>>
         Assert.Equal(message, error.Message)
         ()

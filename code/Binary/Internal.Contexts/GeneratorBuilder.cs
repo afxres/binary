@@ -24,7 +24,7 @@ internal sealed class GeneratorBuilder : IGeneratorBuilder
         ArgumentNullException.ThrowIfNull(converter);
         var itemType = Converter.GetGenericArgument(converter);
         if (itemType == typeof(object))
-            throw new ArgumentException($"Can not add converter for '{typeof(object)}'");
+            throw new ArgumentException($"Cannot add converter for '{typeof(object)}'");
         this.converters[itemType] = converter;
         return this;
     }

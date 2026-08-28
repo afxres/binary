@@ -111,14 +111,14 @@ let ``Get Converter (non-generic collection)`` () =
 let ``Encode (obj, instance)`` () =
     let source = obj ()
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Encode source |> ignore)
-    Assert.Equal("Can not encode object, type: System.Object", error.Message)
+    Assert.Equal("Cannot encode object, type: System.Object", error.Message)
     ()
 
 [<Fact>]
 let ``Encode (obj, null)`` () =
     let error = Assert.Throws<ArgumentException>(fun () -> generator.Encode<obj> null |> ignore)
     Assert.Null(error.ParamName)
-    Assert.Equal("Can not get type of null object.", error.Message)
+    Assert.Equal("Cannot get type of null object.", error.Message)
     ()
 
 [<Theory>]

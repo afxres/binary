@@ -12,13 +12,13 @@ internal sealed class GeneratorObjectConverter(IGenerator generator) : Converter
     [DebuggerStepThrough, DoesNotReturn]
     private static void ExceptNull()
     {
-        throw new ArgumentException("Can not get type of null object.");
+        throw new ArgumentException("Cannot get type of null object.");
     }
 
     [DebuggerStepThrough, DoesNotReturn]
     private static void ExceptType()
     {
-        throw new ArgumentException($"Can not encode object, type: {typeof(object)}");
+        throw new ArgumentException($"Cannot encode object, type: {typeof(object)}");
     }
 
     private IConverter Ensure(object? item)

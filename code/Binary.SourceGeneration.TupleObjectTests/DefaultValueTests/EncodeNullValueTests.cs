@@ -55,7 +55,7 @@ public class EncodeNullValueTests
             converterSecond.EncodeAuto(ref allocator, null);
         });
 
-        var message = $"Tuple can not be null, type: {typeof(T)}";
+        var message = $"Tuple cannot be null, type: {typeof(T)}";
         var exceptions = new[] { a, b, c, d };
         Assert.All(exceptions, x => Assert.Null(x.ParamName));
         Assert.All(exceptions, x => Assert.StartsWith(message, x.Message));

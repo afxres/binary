@@ -176,7 +176,7 @@ public class AllocatorTests
             Assert.Equal(allocatorLength, allocator.Length);
             appendMethod.Invoke(ref allocator, anchor);
         });
-        var message = "Allocator has been modified unexpectedly!";
+        var message = "Allocator has been modified unexpectedly.";
         Assert.Equal(message, error.Message);
     }
 

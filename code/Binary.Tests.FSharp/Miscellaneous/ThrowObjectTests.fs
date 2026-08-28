@@ -16,7 +16,7 @@ let ``Type With Ambiguous Property Names`` () =
     let y = typeof<Test02>
     let a = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(x) |> ignore)
     let b = Assert.Throws<ArgumentException>(fun () -> generator.GetConverter(y) |> ignore)
-    let message t = $"Get members error, ambiguous members detected, member name: Tag, type: {t}"
+    let message t = $"Ambiguous members detected, member name: Tag, type: {t}"
     Assert.Null a.ParamName
     Assert.Null b.ParamName
     Assert.Equal(message x, a.Message)

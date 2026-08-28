@@ -8,7 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 internal static class ThrowHelper
 {
     [DoesNotReturn]
-    internal static void ThrowInvalidAllocator() => throw new InvalidOperationException("Allocator has been modified unexpectedly!");
+    internal static void ThrowInvalidAllocator() => throw new InvalidOperationException("Allocator has been modified unexpectedly.");
 
     [DoesNotReturn]
     internal static void ThrowMaxCapacityOverflow() => throw new ArgumentException("Maximum capacity has been reached.");
@@ -17,7 +17,7 @@ internal static class ThrowHelper
     internal static void ThrowInvalidReturnValue() => throw new InvalidOperationException("Invalid return value.");
 
     [DoesNotReturn]
-    internal static void ThrowTupleNull<T>() => throw new ArgumentException($"Tuple can not be null, type: {typeof(T)}");
+    internal static void ThrowTupleNull<T>() => throw new ArgumentException($"Tuple cannot be null, type: {typeof(T)}");
 
     [DoesNotReturn]
     internal static void ThrowNotEnoughBytesCollection<T>(int byteLength) => throw new ArgumentException($"Not enough bytes for collection element, byte length: {byteLength}, element type: {typeof(T)}");
@@ -35,7 +35,7 @@ internal static class ThrowHelper
     internal static void ThrowNotOverride(string auto, string prefix, Type type) => throw new InvalidOperationException($"Method '{auto}' should be overridden if method '{prefix}' has been overridden, type: {type}");
 
     [DoesNotReturn]
-    internal static void ThrowAmbiguousMembers(string memberName, Type type) => throw new ArgumentException($"Get members error, ambiguous members detected, member name: {memberName}, type: {type}");
+    internal static void ThrowAmbiguousMembers(string memberName, Type type) => throw new ArgumentException($"Ambiguous members detected, member name: {memberName}, type: {type}");
 
     [DoesNotReturn]
     internal static void ThrowNotConverter(Type type) => throw new ArgumentException($"Invalid converter instance, type: {type}");

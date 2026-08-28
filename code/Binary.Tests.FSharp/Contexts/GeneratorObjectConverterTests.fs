@@ -96,7 +96,7 @@ type GeneratorObjectConverterTests() =
     [<MemberData("Encode Arguments")>]
     member __.``Encode Null``(action: Action<obj>, _: string) =
         let error = Assert.Throws<ArgumentException>(fun () -> action.Invoke null)
-        let message = "Can not get type of null object."
+        let message = "Cannot get type of null object."
         Assert.Null error.ParamName
         Assert.Equal(message, error.Message)
         ()
@@ -105,7 +105,7 @@ type GeneratorObjectConverterTests() =
     [<MemberData("Encode Arguments")>]
     member __.``Encode Object Instance``(action: Action<obj>, _: string) =
         let error = Assert.Throws<ArgumentException>(fun () -> action.Invoke(obj ()))
-        let message = "Can not encode object, type: System.Object"
+        let message = "Cannot encode object, type: System.Object"
         Assert.Equal(message, error.Message)
         ()
 

@@ -63,7 +63,7 @@ internal static class FallbackAttributesMethods
             var conversion = conversionAttributes.FirstOrDefault();
             var indexer = property is not null && CommonModule.IsIndexer(property);
             if (indexer && (key ?? conversion) is { } instance)
-                throw new ArgumentException($"Can not apply '{instance.GetType().Name}' to an indexer, type: {type}");
+                throw new ArgumentException($"Cannot apply '{instance.GetType().Name}' to an indexer, type: {type}");
             if (indexer)
                 continue;
             if (property is not null && property.GetGetMethod() is null)
@@ -71,11 +71,11 @@ internal static class FallbackAttributesMethods
             if (keyAttributes.Length > 1 || conversionAttributes.Length > 1)
                 throw new ArgumentException($"Multiple attributes found, member name: {member.Name}, type: {type}");
             if (key is null && conversion is not null)
-                throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' for '{conversion.GetType().Name}', member name: {member.Name}, type: {type}");
+                throw new ArgumentException($"'{nameof(NamedKeyAttribute)}' or '{nameof(TupleKeyAttribute)}' required for '{conversion.GetType().Name}', member name: {member.Name}, type: {type}");
             if (key is NamedKeyAttribute && typeInfo.Attribute is not NamedObjectAttribute)
-                throw new ArgumentException($"Require '{nameof(NamedObjectAttribute)}' for '{nameof(NamedKeyAttribute)}', member name: {member.Name}, type: {type}");
+                throw new ArgumentException($"'{nameof(NamedObjectAttribute)}' required for '{nameof(NamedKeyAttribute)}', member name: {member.Name}, type: {type}");
             if (key is TupleKeyAttribute && typeInfo.Attribute is not TupleObjectAttribute)
-                throw new ArgumentException($"Require '{nameof(TupleObjectAttribute)}' for '{nameof(TupleKeyAttribute)}', member name: {member.Name}, type: {type}");
+                throw new ArgumentException($"'{nameof(TupleObjectAttribute)}' required for '{nameof(TupleKeyAttribute)}', member name: {member.Name}, type: {type}");
             var optional = GetMemberIsOptional(typeInfo, member, key);
             var memberInfo = new MetaMemberInfo(member, key, conversion, optional);
             builder.Add(memberInfo);
@@ -91,9 +91,9 @@ internal static class FallbackAttributesMethods
         if (required is false)
             return true;
         if (typeInfo.Attribute is NamedObjectAttribute && key is not NamedKeyAttribute)
-            throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' for required member, member name: {member.Name}, type: {typeInfo.Type}");
+            throw new ArgumentException($"'{nameof(NamedKeyAttribute)}' required for required member, member name: {member.Name}, type: {typeInfo.Type}");
         if (typeInfo.Attribute is TupleObjectAttribute && key is not TupleKeyAttribute)
-            throw new ArgumentException($"Require '{nameof(TupleKeyAttribute)}' for required member, member name: {member.Name}, type: {typeInfo.Type}");
+            throw new ArgumentException($"'{nameof(TupleKeyAttribute)}' required for required member, member name: {member.Name}, type: {typeInfo.Type}");
         return false;
     }
 
@@ -111,7 +111,7 @@ internal static class FallbackAttributesMethods
             var suffix = memberName is null
                 ? $"type: {reflected}"
                 : $"member name: {memberName}, type: {reflected}";
-            throw new ArgumentException($"Can not get custom {prefix} via attribute, {suffix}", e);
+            throw new ArgumentException($"Cannot get custom {prefix} via attribute, {suffix}", e);
         }
     }
 
@@ -150,9 +150,9 @@ internal static class FallbackAttributesMethods
         var named = Choose<NamedKeyAttribute>();
         var tuple = Choose<TupleKeyAttribute>();
         if (named.Count is 0 && typeInfo.Attribute is NamedObjectAttribute)
-            throw new ArgumentException($"Require '{nameof(NamedKeyAttribute)}' for '{nameof(NamedObjectAttribute)}', type: {type}");
+            throw new ArgumentException($"'{nameof(NamedKeyAttribute)}' required for '{nameof(NamedObjectAttribute)}', type: {type}");
         if (tuple.Count is 0 && typeInfo.Attribute is TupleObjectAttribute)
-            throw new ArgumentException($"Require '{nameof(TupleKeyAttribute)}' for '{nameof(TupleObjectAttribute)}', type: {type}");
+            throw new ArgumentException($"'{nameof(TupleKeyAttribute)}' required for '{nameof(TupleObjectAttribute)}', type: {type}");
 
         list = default;
         if (typeInfo.Attribute is TupleObjectAttribute)
@@ -172,7 +172,7 @@ internal static class FallbackAttributesMethods
         {
             var key = attribute.Key;
             if (string.IsNullOrEmpty(key))
-                throw new ArgumentException($"Named key can not be null or empty, member name: {member.Name}, type: {type}");
+                throw new ArgumentException($"Named key cannot be null or empty, member name: {member.Name}, type: {type}");
             if (map.ContainsKey(key))
                 throw new ArgumentException($"Named key '{key}' already exists, type: {type}");
             map.Add(key, member);

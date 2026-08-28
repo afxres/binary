@@ -88,7 +88,7 @@ let ``Last Added Creator First Executed`` () =
 let ``Invalid Converter For Object`` () =
     let builder = GeneratorBuilder()
     let error = Assert.Throws<ArgumentException>(fun () -> builder.AddConverter(FakeConverterA<obj>()) |> ignore)
-    Assert.Equal(sprintf "Can not add converter for '%O'" typeof<obj>, error.Message)
+    Assert.Equal(sprintf "Cannot add converter for '%O'" typeof<obj>, error.Message)
     ()
 
 [<Fact>]

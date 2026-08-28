@@ -29,7 +29,7 @@ let Test (ls: int) (ll: int) (value: 'T) =
 let TestNull<'T> () =
     let value = Unchecked.defaultof<'T>
     let converter = generator.GetConverter<'T>()
-    let message = sprintf "Tuple can not be null, type: %O" typeof<'T>
+    let message = sprintf "Tuple cannot be null, type: %O" typeof<'T>
     let alpha = Assert.Throws<ArgumentException>(fun () -> let mutable allocator = Allocator() in converter.Encode(&allocator, value))
     Assert.Null(alpha.ParamName)
     Assert.StartsWith(message, alpha.Message)

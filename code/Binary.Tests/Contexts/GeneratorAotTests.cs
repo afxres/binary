@@ -92,7 +92,7 @@ public class GeneratorAotTests
         _ = source;
         var error = Assert.Throws<ArgumentException>(Generator.GetEnumConverter<T>);
         Assert.Null(error.ParamName);
-        Assert.Equal("Require an enumeration type!", error.Message);
+        Assert.Equal("Enumeration type required.", error.Message);
     }
 
     [Fact(DisplayName = "Get Variable Bound Array Converter Not Array Type")]
@@ -101,7 +101,7 @@ public class GeneratorAotTests
         var converter = Generator.GetEnumConverter<DayOfWeek>();
         var error = Assert.Throws<ArgumentException>(() => Generator.GetVariableBoundArrayConverter<string, DayOfWeek>(converter));
         Assert.Null(error.ParamName);
-        Assert.Equal("Require variable bound array type.", error.Message);
+        Assert.Equal("Variable-bound array type required.", error.Message);
     }
 
     [Fact(DisplayName = "Get Variable Bound Array Converter Not Variable Bound Array")]
@@ -110,7 +110,7 @@ public class GeneratorAotTests
         var converter = Generator.GetEnumConverter<DayOfWeek>();
         var error = Assert.Throws<ArgumentException>(() => Generator.GetVariableBoundArrayConverter<DayOfWeek[], DayOfWeek>(converter));
         Assert.Null(error.ParamName);
-        Assert.Equal("Require variable bound array type.", error.Message);
+        Assert.Equal("Variable-bound array type required.", error.Message);
     }
 
     [Fact(DisplayName = "Get Variable Bound Array Converter Element Type Not Match")]
@@ -119,6 +119,6 @@ public class GeneratorAotTests
         var converter = Generator.GetEnumConverter<DayOfWeek>();
         var error = Assert.Throws<ArgumentException>(() => Generator.GetVariableBoundArrayConverter<int[,], DayOfWeek>(converter));
         Assert.Null(error.ParamName);
-        Assert.Equal("Element type not match.", error.Message);
+        Assert.Equal("Element type mismatch.", error.Message);
     }
 }

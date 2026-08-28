@@ -64,7 +64,7 @@ public class UnionConverterCreatorInternalTests
         var select = (SelectUnionValueProperty)Delegate.CreateDelegate(typeof(SelectUnionValueProperty), Assert.IsType<MethodInfo>(creatorType.GetMethod(nameof(SelectUnionValueProperty), BindingFlags.Static | BindingFlags.NonPublic), exactMatch: false));
         Assert.NotNull(select);
         var error = Assert.Throws<ArgumentException>(() => select.Invoke(type, [type]));
-        var message = $"Union value property detect failed, type: {type}";
+        var message = $"Union value property detection failed, type: {type}";
         Assert.Equal(message, error.Message);
     }
 
@@ -88,7 +88,7 @@ public class UnionConverterCreatorInternalTests
         var select = (SelectUnionValueProperty)Delegate.CreateDelegate(typeof(SelectUnionValueProperty), Assert.IsType<MethodInfo>(creatorType.GetMethod(nameof(SelectUnionValueProperty), BindingFlags.Static | BindingFlags.NonPublic), exactMatch: false));
         Assert.NotNull(select);
         var error = Assert.Throws<ArgumentException>(() => select.Invoke(typeof(object), [null]));
-        var message = $"Union value property detect failed, type: {typeof(object)}";
+        var message = $"Union value property detection failed, type: {typeof(object)}";
         Assert.Equal(message, error.Message);
     }
 }

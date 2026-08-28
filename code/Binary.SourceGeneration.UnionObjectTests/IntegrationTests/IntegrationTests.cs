@@ -395,7 +395,7 @@ public class IntegrationTests
     {
         var generator = Generator.CreateDefault();
         var error = Assert.Throws<ArgumentException>(() => generator.GetConverter(type));
-        var message = $"Union case detect failed, type: {type}";
+        var message = $"Union case detection failed, type: {type}";
         Assert.Null(error.ParamName);
         Assert.Equal(message, error.Message);
     }

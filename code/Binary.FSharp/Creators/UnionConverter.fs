@@ -34,7 +34,7 @@ type internal UnionConverter<'T>() =
 
     [<DebuggerStepThrough>]
     member private __.ExceptNull() : unit =
-        raise (ArgumentNullException("item", $"Union can not be null, type: {typeof<'T>}"))
+        raise (ArgumentNullException("item", $"Union cannot be null, type: {typeof<'T>}"))
 
     [<DebuggerStepThrough>]
     member private __.ExceptMark(mark: int) : unit = raise (ArgumentException $"Invalid union tag '{mark}', type: {typeof<'T>}")

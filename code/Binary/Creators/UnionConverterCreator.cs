@@ -58,7 +58,7 @@ internal sealed class UnionConverterCreator : IConverterCreator
         var property = types.OfType<Type>().SelectMany(x => x.GetProperties(CommonDefine.PublicInstanceBindingFlags)).FirstOrDefault(FilterUnionValueProperty);
         if (property is not null)
             return property;
-        throw new ArgumentException($"Union value property detect failed, type: {type}");
+        throw new ArgumentException($"Union value property detection failed, type: {type}");
     }
 
     private static Delegate GetEncodeDelegate(Type type, ImmutableArray<UnionCaseInfo> caseSet, PropertyInfo valueProperty, bool auto)
@@ -127,7 +127,7 @@ internal sealed class UnionConverterCreator : IConverterCreator
         if (caseTypeList is null or { Count: 0 })
             caseTypeList = [.. type.GetConstructors().Select(SelectUnionCaseTypeWithCreateMethod).OfType<UnionCaseTypeWithCreateMethod>()];
         if (caseTypeList is null or { Count: 0 } || caseTypeList.DistinctBy(x => x.Type).Count() != caseTypeList.Count)
-            throw new ArgumentException($"Union case detect failed, type: {type}");
+            throw new ArgumentException($"Union case detection failed, type: {type}");
         var caseList = caseTypeList.Select((x, i) => new UnionCaseInfo(i, x.Type, x.Create, context.GetConverter(x.Type))).ToList();
         caseList.Sort((a, b) => CommonModule.CompareConversion(a.Type, b.Type));
         var cases = caseList.ToImmutableArray();

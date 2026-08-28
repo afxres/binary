@@ -235,7 +235,7 @@ public static partial class Symbols
     public static ImmutableArray<ISymbol> GetAllPropertiesForInterfaceType(Compilation compilation, ITypeSymbol type, out ImmutableArray<string> conflict, CancellationToken cancellation)
     {
         if (type.TypeKind is not TypeKind.Interface)
-            throw new ArgumentException("Require interface type.");
+            throw new ArgumentException("Interface type required.");
 
         var source = ImmutableArray.CreateRange<ITypeSymbol>(type.AllInterfaces).Add(type);
         var result = ImmutableArray.CreateBuilder<ISymbol>();
@@ -299,7 +299,7 @@ public static partial class Symbols
     public static ImmutableArray<ISymbol> GetAllFieldsAndPropertiesForNonInterfaceType(ITypeSymbol type, CancellationToken cancellation)
     {
         if (type.TypeKind is TypeKind.Interface)
-            throw new ArgumentException("Require not interface type.");
+            throw new ArgumentException("Non-interface type required.");
 
         var result = ImmutableArray.CreateBuilder<ISymbol>();
         var dictionary = new SortedDictionary<string, ISymbol>();

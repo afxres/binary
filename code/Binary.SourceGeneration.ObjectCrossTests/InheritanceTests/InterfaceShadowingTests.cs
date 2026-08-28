@@ -234,7 +234,7 @@ public class InterfaceShadowingTests
         var bravo = Assert.Throws<ArgumentException>(() => reflectionFunction.Invoke(type, BindingFlags.Instance | BindingFlags.Public));
         Assert.Null(alpha.ParamName);
         Assert.Null(bravo.ParamName);
-        var message = "Require interface type.";
+        var message = "Interface type required.";
         Assert.Equal(message, alpha.Message);
         Assert.Equal(message, bravo.Message);
     }
@@ -257,7 +257,7 @@ public class InterfaceShadowingTests
         var bravo = Assert.Throws<ArgumentException>(() => reflectionFunction.Invoke(type, BindingFlags.Instance | BindingFlags.Public));
         Assert.Null(alpha.ParamName);
         Assert.Null(bravo.ParamName);
-        var message = "Require not interface type.";
+        var message = "Non-interface type required.";
         Assert.Equal(message, alpha.Message);
         Assert.Equal(message, bravo.Message);
     }

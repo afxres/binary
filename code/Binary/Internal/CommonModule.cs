@@ -116,7 +116,7 @@ internal static class CommonModule
     internal static ImmutableArray<MemberInfo> GetAllPropertiesForInterfaceType(Type type, BindingFlags flags)
     {
         if (type.IsInterface is false)
-            throw new ArgumentException("Require interface type.");
+            throw new ArgumentException("Interface type required.");
 
         var source = ImmutableArray.CreateRange(type.GetInterfaces()).Add(type);
         var result = ImmutableArray.CreateBuilder<MemberInfo>();
@@ -172,7 +172,7 @@ internal static class CommonModule
     internal static ImmutableArray<MemberInfo> GetAllFieldsAndPropertiesForNonInterfaceType(Type type, BindingFlags flags)
     {
         if (type.IsInterface)
-            throw new ArgumentException("Require not interface type.");
+            throw new ArgumentException("Non-interface type required.");
 
         var result = ImmutableArray.CreateBuilder<MemberInfo>();
         var dictionary = new SortedDictionary<string, MemberInfo>();
