@@ -32,12 +32,12 @@ record Person(string Name, int Age);
 | Category      | Details                                                                                                                                      | Comment                                  |
 | :------------ | :------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------- |
 | Primitive     | ``(U)Int(16,32,64,128)``, ``Boolean``, ``Byte``, ``Char``, ``Decimal``, ``Double``, ``Half``, ``SByte``, ``Single``, ``String``              | Default string encoding is UTF-8         |
-| Data & Time   | ``DateOnly``, ``DateTime``, ``DateTimeOffset``, ``TimeOnly``, ``TimeSpan``                                                                   |                                          |
+| Date & Time   | ``DateOnly``, ``DateTime``, ``DateTimeOffset``, ``TimeOnly``, ``TimeSpan``                                                                   |                                          |
 | Numeric       | ``BigInteger``, ``Complex``, ``Matrix3x2``, ``Matrix4x4``, ``Plane``, ``Quaternion``, ``Vector2``, ``Vector3``, ``Vector4``                  |                                          |
 | Memory        | ``T[...]``, ``Memory<>``, ``ReadOnlyMemory<>``, ``ReadOnlySequence<>``                                                                       |                                          |
-| Tuple         | ``KeyValuePair<,>``, ``Tuple<...>``, ``ValueTuple<...>``                                                                                     | Tuple can not be null                    |
+| Tuple         | ``KeyValuePair<,>``, ``Tuple<...>``, ``ValueTuple<...>``                                                                                     | Tuple cannot be null                     |
 | Miscellaneous | ``BitArray``, ``BitVector32``, ``Guid``, ``IPAddress``, ``IPEndPoint``, ``Nullable<>``, ``PriorityQueue<,>``, ``Rune``, ``Uri``, ``Version`` |                                          |
-| Collection    | Implements ``IEnumerable<>`` and have a constructor accept ``IEnumerable<>`` as parameter                                                    | Stack types are explicitly not supported |
+| Collection    | Implements ``IEnumerable<>`` and has a constructor that accepts ``IEnumerable<>`` as a parameter                                             | Stack types are explicitly not supported |
 
 ### Language Features
 
@@ -49,6 +49,7 @@ record Person(string Name, int Age);
 | Records                   | Yes  | Yes  |                    |
 | Required Members          | Yes  | Yes  |                    |
 | Inline Arrays             | Yes  | Yes  |                    |
+| Union                     | Yes  | Yes  |                    |
 | Discriminated Unions (F#) | Yes  |      |                    |
 
 ### AOT Support
@@ -70,8 +71,8 @@ using Mikodev.Binary.Attributes;
 partial class SomeSourceGeneratorContext { }
 ```
 
-This will generate a property named ``ConverterCreators`` which contains all generated converter creators.  
-Just add those converter creators to ``IGenerator`` and it will work.
+This generates a property named ``ConverterCreators`` that contains all generated converter creators.  
+Add those converter creators to ``IGenerator``, and it will work.
 ```csharp
 var generator = Generator.CreateAotBuilder()
     .AddConverterCreators(SomeSourceGeneratorContext.ConverterCreators.Values)
