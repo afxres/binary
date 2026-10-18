@@ -189,10 +189,10 @@ type TokenTests() =
 
     [<Fact>]
     member __.``Operate Without Valid String Converter``() =
-        let generator =
-            { new IGenerator with
+        let generator = {
+            new IGenerator with
                 member __.GetConverter t = raise (NotSupportedException(sprintf "Invalid type '%O'" t))
-            }
+        }
         let error = Assert.Throws<NotSupportedException>(fun () -> Token(generator, ReadOnlyMemory<byte>()) |> ignore)
         let message = sprintf "Invalid type '%O'" typeof<string>
         Assert.Equal(message, error.Message)
@@ -202,13 +202,13 @@ type TokenTests() =
     member __.``Operate With Calling Counter``() =
         let backup = Generator.CreateDefault()
         let mutable count = 0
-        let generator =
-            { new IGenerator with
+        let generator = {
+            new IGenerator with
                 member __.GetConverter t =
                     if t = typeof<string> then
                         Interlocked.Increment &count |> ignore
                     backup.GetConverter t
-            }
+        }
         let bytes = backup.Encode({| alpha = 10; beta = {| data = 20.0 |} |})
         let token = Token(generator, ReadOnlyMemory bytes)
         Assert.Equal(10, token.["alpha"].As<int>())
@@ -218,14 +218,14 @@ type TokenTests() =
 
     [<Fact>]
     member __.``Operate With Null String Converter``() =
-        let generator =
-            { new IGenerator with
+        let generator = {
+            new IGenerator with
                 member __.GetConverter t =
                     if t = typeof<string> then
                         null
                     else
                         raise (NotSupportedException(sprintf "Invalid type '%O'" t))
-            }
+        }
         let error = Assert.Throws<ArgumentException>(fun () -> Token(generator, ReadOnlyMemory<byte>()) |> ignore)
         let message = "No available string converter found."
         Assert.Equal(message, error.Message)
@@ -264,16 +264,16 @@ type TokenTests() =
 
     [<Fact>]
     member __.``Internal Exception Wrapper``() =
-        let converter =
-            { new Converter<string>() with
+        let converter = {
+            new Converter<string>() with
                 override __.Decode(_: inref<ReadOnlySpan<byte>>) : string = raise (Exception("Decode Test Message!"))
 
                 override __.Encode(_, _) = raise (NotSupportedException())
-            }
-        let generator =
-            { new IGenerator with
+        }
+        let generator = {
+            new IGenerator with
                 member __.GetConverter t = if t = typeof<string> then converter :> _ else raise (NotSupportedException())
-            }
+        }
         let token = Token(generator, ReadOnlyMemory(Array.zeroCreate 2))
         let field = typeof<Token>.GetField("create", BindingFlags.Instance ||| BindingFlags.NonPublic)
         let value = field.GetValue(token) |> unbox<Lazy<struct (ImmutableDictionary<string, Token> * Exception)>>
@@ -340,12 +340,12 @@ type TokenTests() =
     [<InlineData("α")>]
     [<InlineData("二")>]
     member __.``Key Not Found Converter Exception``(key: string) =
-        let converter =
-            { new Converter<string>() with
+        let converter = {
+            new Converter<string>() with
                 override __.Decode(_: inref<ReadOnlySpan<byte>>) : string = raise (Exception("Not a good idea!"))
 
                 override __.Encode(_, _) = raise (NotSupportedException())
-            }
+        }
         let generator = Generator.CreateDefaultBuilder().AddConverter(converter).Build()
         let token = Token(generator, ReadOnlyMemory [| 0uy; 0uy |])
         let error = Assert.Throws<KeyNotFoundException>(fun () -> token.[key] |> ignore)

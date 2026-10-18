@@ -48,10 +48,10 @@ type ListTests() =
     member __.``Fallback List Implementation (hack, integration test)``<'a>(array: 'a array) =
         let generator = Generator.CreateDefault()
         let types = [ typeof<int>; typeof<string> ] |> List.map (fun x -> x, generator.GetConverter x) |> readOnlyDict
-        let context =
-            { new IGeneratorContext with
+        let context = {
+            new IGeneratorContext with
                 member __.GetConverter t = types.[t]
-            }
+        }
 
         let methodType = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "FallbackCollectionMethods") |> Array.exactlyOne
         let method =

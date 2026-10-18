@@ -69,6 +69,6 @@ type CollectionOverflowTests() =
         let method = methods |> Array.filter (fun x -> x.Name.Contains "Expand" && x.GetParameters().Length = 2) |> Array.exactlyOne
         let expand = Delegate.CreateDelegate(typeof<Expand<byte>>, method.MakeGenericMethod(typeof<byte>)) :?> Expand<byte>
 
-        let mutable buffer = Array.zeroCreate<byte> (1 <<< 30)
+        let mutable buffer = Array.zeroCreate<byte>(1 <<< 30)
         Assert.Throws<OverflowException>(fun () -> expand.Invoke(&buffer, 0uy)) |> ignore
         ()

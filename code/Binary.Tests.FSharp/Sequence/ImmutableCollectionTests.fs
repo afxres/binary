@@ -18,12 +18,12 @@ type ImmutableCollectionTests() =
 
     let TestInternalConverter =
         let g = Generator.CreateDefault()
-        let context =
-            { new IGeneratorContext with
+        let context = {
+            new IGeneratorContext with
                 member __.GetConverter t =
                     Assert.Equal("System", t.Namespace)
                     g.GetConverter t
-            }
+        }
 
         let t = typeof<IConverter>.Assembly.GetTypes() |> Array.filter (fun x -> x.Name = "FallbackCollectionMethods") |> Array.exactlyOne
         let m = t.GetMethod("GetConverter", BindingFlags.Static ||| BindingFlags.NonPublic, null, [| typeof<IGeneratorContext>; typeof<Type> |], null)

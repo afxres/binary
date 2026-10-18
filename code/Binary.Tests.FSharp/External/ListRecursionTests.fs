@@ -66,7 +66,7 @@ let ``List Decode Recursion With Large Value Type`` (count: int) =
         head - last
 
     let length = Detect()
-    let buffer = NativePtr.stackalloc<byte> (int length + 1024)
+    let buffer = NativePtr.stackalloc<byte>(int length + 1024)
     Assert.NotEqual(IntPtr.Zero, buffer |> NativePtr.toVoidPtr |> IntPtr)
     Assert.False(RuntimeHelpers.TryEnsureSufficientExecutionStack())
 
