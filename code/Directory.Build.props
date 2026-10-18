@@ -1,0 +1,18 @@
+<Project>
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
+    <LangVersion>9</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Binary' Or '$(MSBuildProjectName)' == 'Binary.FSharp' Or '$(MSBuildProjectName)' == 'Binary.SourceGeneration'">
+    <Version>5.10.1</Version>
+    <Copyright>Mikodev $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
+    <Authors>Mikodev</Authors>
+    <Company>Mikodev</Company>
+    <Product>Mikodev.Binary</Product>
+  </PropertyGroup>
+</Project>

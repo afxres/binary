@@ -1,5 +1,12 @@
 root = true
 
+[*]
+end_of_line = lf
+
+[*.{csproj,fsproj}]
+indent_style = space
+indent_size = 2
+
 [*.cs]
 insert_final_newline = true
 csharp_style_prefer_range_operator = false
