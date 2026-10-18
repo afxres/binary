@@ -90,6 +90,27 @@ public class SourceGeneratorContextTests
         Assert.Contains("GenericSourceGeneratorContext", diagnostic.Location.GetSourceText());
     }
 
+    [Fact(DisplayName = "Source Generator Context Type Is a Record")]
+    public void ContextIsRecord()
+    {
+        var source =
+            """
+            namespace Tests;
+
+            using Mikodev.Binary.Attributes;
+
+            [SourceGeneratorContext]
+            partial record class RecordSourceGeneratorContext { }
+            """;
+        var compilation = CompilationModule.CreateCompilation(source);
+        var generator = new SourceGenerator();
+        _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
+        var diagnostic = Assert.Single(diagnostics);
+        Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
+        Assert.EndsWith("The source generator context must not be a record type, type: RecordSourceGeneratorContext", diagnostic.ToString());
+        Assert.Contains("RecordSourceGeneratorContext", diagnostic.Location.GetSourceText());
+    }
+
     [Fact(DisplayName = "Type Inclusion Duplicated")]
     public void InclusionDuplicated()
     {

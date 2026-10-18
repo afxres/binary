@@ -70,6 +70,8 @@ public static partial class Symbols
             return Constants.ContextTypeNested;
         if (symbol.IsGenericType)
             return Constants.ContextTypeGeneric;
+        if (symbol.IsRecord)
+            return Constants.ContextTypeRecord;
         return null;
     }
 

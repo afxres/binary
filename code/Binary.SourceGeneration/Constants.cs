@@ -63,6 +63,14 @@ public static class Constants
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    public static DiagnosticDescriptor ContextTypeRecord { get; } = new DiagnosticDescriptor(
+        id: "BINSRCGEN05",
+        title: "Source Generator Context Type Is a Record",
+        messageFormat: "The source generator context must not be a record type, type: {0}",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     // ↑ source generator context
 
     // ↓ include
