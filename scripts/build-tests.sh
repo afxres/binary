@@ -6,4 +6,4 @@ PROJECT_DIR="$PROJECT_ROOT/code"
 cd "$PROJECT_DIR"
 dotnet restore
 dotnet build
-dotnet test --collect:"XPlat Code Coverage;Format=lcov"
+dotnet test --coverlet --coverlet-output-format lcov
