@@ -7,19 +7,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: "10.0.x"
+          dotnet-version: |
+            10.0.x
+            11.0.x
+          dotnet-quality: "preview"
 
       - name: Setup Environment
-        run: sh scripts/setup.sh
+        run: bash scripts/setup.sh
 
       - name: Build Tests
-        run: sh scripts/build-tests.sh
+        run: bash scripts/build-tests.sh
 
       - name: Coverage
-        run: sh scripts/run-coverage.sh
+        run: bash scripts/run-coverage.sh
 
       - name: Coveralls
         uses: coverallsapp/github-action@v2
