@@ -146,7 +146,7 @@ public class BinaryModuleTests
         var set = result.ToHashSet();
         var percent = 1.0 * set.Count / result.Count;
 
-        // 哈希冲突不应当高于百分之一
+        // hash collisions should stay below one percent
         Assert.True(percent >= 0.99);
         Assert.True(percent <= 1.00);
         Assert.True(names.Length > 1000);

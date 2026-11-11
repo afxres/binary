@@ -16,7 +16,9 @@ public class FakeUnionTypeWithInvalidValuePropertyType
 
 public class FakeUnionTypeWithInvalidPrivateValueProperty
 {
+#pragma warning disable IDE0051 // Remove unused private members
     private object? Value { get; }
+#pragma warning restore IDE0051 // Remove unused private members
 }
 
 public class FakeUnionTypeWithInvalidIndexerValueProperty
