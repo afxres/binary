@@ -25,6 +25,7 @@
     <Project Path="Binary.SourceGeneration.CollectionTests/Binary.SourceGeneration.CollectionTests.csproj" />
     <Project Path="Binary.SourceGeneration.CommonTypeTests/Binary.SourceGeneration.CommonTypeTests.csproj" />
     <Project Path="Binary.SourceGeneration.NamedObjectTests/Binary.SourceGeneration.NamedObjectTests.csproj" />
+    <Project Path="Binary.SourceGeneration.RandomizedTests/Binary.SourceGeneration.RandomizedTests.csproj" />
     <Project Path="Binary.SourceGeneration.ObjectCrossTests/Binary.SourceGeneration.ObjectCrossTests.csproj" />
     <Project Path="Binary.SourceGeneration.Tests/Binary.SourceGeneration.Tests.csproj" />
     <Project Path="Binary.SourceGeneration.TupleObjectTests/Binary.SourceGeneration.TupleObjectTests.csproj" />

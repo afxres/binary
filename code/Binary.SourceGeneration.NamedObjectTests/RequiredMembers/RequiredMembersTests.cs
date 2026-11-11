@@ -4,6 +4,7 @@ using Mikodev.Binary.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Xunit;
 
 [SourceGeneratorContext]
@@ -125,5 +126,36 @@ public class RequiredMembersTests
 
         var result = converter.Decode(buffer);
         Assert.Equal(source, result);
+    }
+
+    private static byte[] CreateNamedObjectBuffer(params (string Key, int Value)[] items)
+    {
+        var generator = Generator.CreateAotBuilder()
+            .AddConverterCreators(RequiredMembersSourceGeneratorContext.ConverterCreators.Values)
+            .Build();
+        var converter = generator.GetConverter<int>();
+        var allocator = new Allocator();
+        foreach (var item in items)
+        {
+            Converter.EncodeWithLengthPrefix(ref allocator, Encoding.UTF8.GetBytes(item.Key));
+            converter.EncodeWithLengthPrefix(ref allocator, item.Value);
+        }
+        return allocator.ToArray();
+    }
+
+    [Fact(DisplayName = "Decode Missing Required Member")]
+    public void DecodeMissingRequiredMemberTest()
+    {
+        var generator = Generator.CreateAotBuilder()
+            .AddConverterCreators(RequiredMembersSourceGeneratorContext.ConverterCreators.Values)
+            .Build();
+        var converter = generator.GetConverter<FieldOnlyItem>();
+        var a = Assert.Throws<ArgumentException>(() => _ = converter.Decode(CreateNamedObjectBuffer(("bravo", 5))));
+        Assert.Null(a.ParamName);
+        Assert.Equal($"Named key 'alpha' does not exist, type: {typeof(FieldOnlyItem)}", a.Message);
+
+        var b = Assert.Throws<ArgumentException>(() => _ = converter.Decode(CreateNamedObjectBuffer(("alpha", 6), ("bravo", 7), ("alpha", 8))));
+        Assert.Null(b.ParamName);
+        Assert.Equal($"Named key 'alpha' already exists, type: {typeof(FieldOnlyItem)}", b.Message);
     }
 }

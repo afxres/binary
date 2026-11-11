@@ -30,7 +30,7 @@ public sealed partial class NamedObjectConverterContext
                 continue;
             var literal = Symbols.ToLiteral(key);
             var optional = required && (Symbols.IsRequiredFieldOrProperty(member) is false);
-            var memberInfo = new SymbolNamedObjectMemberInfo(member, literal, optional);
+            var memberInfo = new SymbolNamedObjectMemberInfo(member, key, literal, optional);
             dictionary.Add(key, memberInfo);
             cancellation.ThrowIfCancellationRequested();
         }
