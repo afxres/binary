@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.Tests.DiagnosticErrorTypeTests;
+namespace Mikodev.Binary.SourceGeneration.Tests.DiagnosticErrorTypeTests;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

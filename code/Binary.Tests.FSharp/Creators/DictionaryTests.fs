@@ -1,4 +1,4 @@
-﻿module Creators.DictionaryTests
+module Creators.DictionaryTests
 
 open Mikodev.Binary
 open System

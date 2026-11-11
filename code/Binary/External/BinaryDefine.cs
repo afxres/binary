@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.External;
+namespace Mikodev.Binary.External;
 
 using System.Collections.Immutable;
 

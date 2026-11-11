@@ -1,4 +1,4 @@
-﻿module Contexts.ConverterMemoryTests
+module Contexts.ConverterMemoryTests
 
 open Mikodev.Binary
 open System

@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.AllocatorStringTests;
+namespace Mikodev.Binary.Benchmarks.AllocatorStringTests;
 
 using BenchmarkDotNet.Attributes;
 using System.Text;

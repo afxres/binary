@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.TupleObjectTests.DefaultValueTests;
+namespace Mikodev.Binary.SourceGeneration.TupleObjectTests.DefaultValueTests;
 
 using Mikodev.Binary.Attributes;
 using System;

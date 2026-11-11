@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.Internal;
+namespace Mikodev.Binary.SourceGeneration.Internal;
 
 using System;
 using System.Collections.Generic;

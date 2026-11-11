@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.CommonTypeTests.SupportedTypesTests;
+namespace Mikodev.Binary.SourceGeneration.CommonTypeTests.SupportedTypesTests;
 
 using Mikodev.Binary.Attributes;
 using System;

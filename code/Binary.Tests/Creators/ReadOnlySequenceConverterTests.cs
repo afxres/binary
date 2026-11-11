@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Creators;
+namespace Mikodev.Binary.Tests.Creators;
 
 using System;
 using System.Buffers;

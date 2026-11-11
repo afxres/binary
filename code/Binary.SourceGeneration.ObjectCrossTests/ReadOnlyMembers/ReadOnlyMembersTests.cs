@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.ObjectCrossTests.ReadOnlyMembers;
+namespace Mikodev.Binary.SourceGeneration.ObjectCrossTests.ReadOnlyMembers;
 
 using Mikodev.Binary.Attributes;
 using System;

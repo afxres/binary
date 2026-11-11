@@ -1,4 +1,4 @@
-﻿#if NET11_0_OR_GREATER
+#if NET11_0_OR_GREATER
 
 namespace Mikodev.Binary.SourceGeneration.Tests.DirectContextTests;
 

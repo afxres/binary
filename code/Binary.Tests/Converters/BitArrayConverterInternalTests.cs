@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Converters;
+namespace Mikodev.Binary.Tests.Converters;
 
 using System;
 using System.Linq;

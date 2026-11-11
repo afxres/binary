@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.Tests.CircularTypeReferenceTests;
+namespace Mikodev.Binary.SourceGeneration.Tests.CircularTypeReferenceTests;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.ObjectCrossTests.Constructors;
+namespace Mikodev.Binary.SourceGeneration.ObjectCrossTests.Constructors;
 
 using Mikodev.Binary.Attributes;
 using System;

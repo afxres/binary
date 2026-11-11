@@ -1,4 +1,4 @@
-﻿namespace Metadata
+namespace Metadata
 
 open Mikodev.Binary
 open System

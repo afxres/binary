@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.CollectionTests.InlineArrayTests;
+namespace Mikodev.Binary.SourceGeneration.CollectionTests.InlineArrayTests;
 
 using Mikodev.Binary.Attributes;
 using System;

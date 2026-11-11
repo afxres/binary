@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.CollectionDecodeTests.Models;
+namespace Mikodev.Binary.Benchmarks.CollectionDecodeTests.Models;
 
 using System;
 using System.Collections.Generic;

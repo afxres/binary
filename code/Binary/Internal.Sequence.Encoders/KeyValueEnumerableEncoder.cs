@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Internal.Sequence.Encoders;
+namespace Mikodev.Binary.Internal.Sequence.Encoders;
 
 using System.Collections.Generic;
 

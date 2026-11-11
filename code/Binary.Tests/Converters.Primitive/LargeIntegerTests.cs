@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Converters.Primitive;
+namespace Mikodev.Binary.Tests.Converters.Primitive;
 
 using System;
 using System.Collections.Generic;

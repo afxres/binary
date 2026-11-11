@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.NamedObjectTests.LongKeyTests;
+namespace Mikodev.Binary.SourceGeneration.NamedObjectTests.LongKeyTests;
 
 using Mikodev.Binary.Attributes;
 using System.Collections.Generic;

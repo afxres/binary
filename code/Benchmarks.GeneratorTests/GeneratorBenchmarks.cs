@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.GeneratorTests;
+namespace Mikodev.Binary.Benchmarks.GeneratorTests;
 
 using BenchmarkDotNet.Attributes;
 using System;

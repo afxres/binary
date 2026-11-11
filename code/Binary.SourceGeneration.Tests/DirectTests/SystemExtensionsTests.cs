@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.Tests.DirectTests;
+namespace Mikodev.Binary.SourceGeneration.Tests.DirectTests;
 
 using Mikodev.Binary.SourceGeneration.Internal;
 using System;

@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.ConverterTests;
+namespace Mikodev.Binary.Benchmarks.ConverterTests;
 
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;

@@ -1,4 +1,4 @@
-﻿module Contexts.AllocatorLengthPrefixTests
+module Contexts.AllocatorLengthPrefixTests
 
 open Mikodev.Binary
 open System

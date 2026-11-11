@@ -1,4 +1,4 @@
-﻿module Contexts.CodeContractsTests
+module Contexts.CodeContractsTests
 
 open Mikodev.Binary
 open System.Collections.Generic

@@ -1,4 +1,4 @@
-﻿namespace Endianness
+namespace Endianness
 
 open Mikodev.Binary
 open System

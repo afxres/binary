@@ -1,4 +1,4 @@
-﻿module Miscellaneous.ValueLayoutTests
+module Miscellaneous.ValueLayoutTests
 
 open Mikodev.Binary
 open System

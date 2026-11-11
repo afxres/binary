@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.Tests.ExtensionTests;
+namespace Mikodev.Binary.SourceGeneration.Tests.ExtensionTests;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;

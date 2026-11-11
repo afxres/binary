@@ -1,4 +1,4 @@
-﻿module Implementations.TupleObjectTests
+module Implementations.TupleObjectTests
 
 open Mikodev.Binary
 open Mikodev.Binary.Attributes

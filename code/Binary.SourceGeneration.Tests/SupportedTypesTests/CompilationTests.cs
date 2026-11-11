@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.Tests.SupportedTypesTests;
+namespace Mikodev.Binary.SourceGeneration.Tests.SupportedTypesTests;
 
 using System.Collections.Generic;
 using System.Linq;

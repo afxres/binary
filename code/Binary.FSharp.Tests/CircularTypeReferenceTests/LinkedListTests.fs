@@ -1,4 +1,4 @@
-﻿module CircularTypeReferenceTests.LinkedListTests
+module CircularTypeReferenceTests.LinkedListTests
 
 open Microsoft.FSharp.NativeInterop
 open Mikodev.Binary

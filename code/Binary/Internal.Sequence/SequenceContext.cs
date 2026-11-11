@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Internal.Sequence;
+namespace Mikodev.Binary.Internal.Sequence;
 
 using System;
 using System.Diagnostics;

@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Creators;
+namespace Mikodev.Binary.Creators;
 
 using System;
 using System.Runtime.CompilerServices;

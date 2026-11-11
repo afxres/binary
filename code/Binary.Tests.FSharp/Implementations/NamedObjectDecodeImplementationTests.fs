@@ -1,4 +1,4 @@
-﻿module Implementations.NamedObjectDecodeImplementationTests
+module Implementations.NamedObjectDecodeImplementationTests
 
 open Mikodev.Binary
 open System

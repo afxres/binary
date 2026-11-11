@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary
+namespace Mikodev.Binary
 
 open Mikodev.Binary.Creators
 open System.Diagnostics.CodeAnalysis

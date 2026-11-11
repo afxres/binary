@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.LengthPrefixEncodeTests.Models;
+namespace Mikodev.Binary.Benchmarks.LengthPrefixEncodeTests.Models;
 
 using System;
 

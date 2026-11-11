@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Internal.SpanLike.Adapters;
+namespace Mikodev.Binary.Internal.SpanLike.Adapters;
 
 using Mikodev.Binary.Internal.SpanLike.Contexts;
 using System;

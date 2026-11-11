@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Internal.Metadata;
+namespace Mikodev.Binary.Internal.Metadata;
 
 using System;
 using System.Reflection;

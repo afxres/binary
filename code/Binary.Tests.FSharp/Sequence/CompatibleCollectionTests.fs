@@ -1,4 +1,4 @@
-﻿module Sequence.CompatibleCollectionTests
+module Sequence.CompatibleCollectionTests
 
 open Mikodev.Binary
 open System

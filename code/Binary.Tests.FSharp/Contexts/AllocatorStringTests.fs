@@ -1,4 +1,4 @@
-﻿module Contexts.AllocatorStringTests
+module Contexts.AllocatorStringTests
 
 open Mikodev.Binary
 open System

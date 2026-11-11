@@ -1,4 +1,4 @@
-﻿module Creators.SetTests
+module Creators.SetTests
 
 open Mikodev.Binary
 open System.Collections.Generic

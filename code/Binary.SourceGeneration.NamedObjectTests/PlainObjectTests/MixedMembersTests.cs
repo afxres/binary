@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.NamedObjectTests.PlainObjectTests;
+namespace Mikodev.Binary.SourceGeneration.NamedObjectTests.PlainObjectTests;
 
 using Mikodev.Binary.Attributes;
 using System.Collections.Generic;

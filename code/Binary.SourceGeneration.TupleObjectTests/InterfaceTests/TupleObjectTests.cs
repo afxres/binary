@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.TupleObjectTests.InterfaceTests;
+namespace Mikodev.Binary.SourceGeneration.TupleObjectTests.InterfaceTests;
 
 using Mikodev.Binary.Attributes;
 using System;

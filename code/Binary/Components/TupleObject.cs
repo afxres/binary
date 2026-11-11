@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Components;
+namespace Mikodev.Binary.Components;
 
 using Mikodev.Binary.Internal.Metadata;
 using System;

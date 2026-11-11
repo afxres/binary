@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Sequence;
+namespace Mikodev.Binary.Tests.Sequence;
 
 using Mikodev.Binary.Tests.Sequence.Models;
 using System.Collections.Generic;

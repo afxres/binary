@@ -1,4 +1,4 @@
-﻿module External.ListRecursionTests
+module External.ListRecursionTests
 
 open Microsoft.FSharp.NativeInterop
 open Mikodev.Binary

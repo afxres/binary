@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Creators.Isolated;
+namespace Mikodev.Binary.Creators.Isolated;
 
 using Mikodev.Binary.Creators.Isolated.Constants;
 using Mikodev.Binary.Creators.Isolated.Variables;

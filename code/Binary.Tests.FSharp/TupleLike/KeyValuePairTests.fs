@@ -1,4 +1,4 @@
-﻿module TupleLike.KeyValuePairTests
+module TupleLike.KeyValuePairTests
 
 open Mikodev.Binary
 open System

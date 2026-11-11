@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.IntegrationTests;
+namespace Mikodev.Binary.Benchmarks.IntegrationTests;
 
 using BenchmarkDotNet.Attributes;
 using Mikodev.Binary.Attributes;

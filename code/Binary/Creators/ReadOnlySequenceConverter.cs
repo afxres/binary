@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Creators;
+namespace Mikodev.Binary.Creators;
 
 using Mikodev.Binary.Internal.SpanLike;
 using System;

@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Attributes;
+namespace Mikodev.Binary.Attributes;
 
 using System;
 

@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.ObjectCrossTests.EnumerableWithAttributeTests;
+namespace Mikodev.Binary.SourceGeneration.ObjectCrossTests.EnumerableWithAttributeTests;
 
 using Mikodev.Binary.Attributes;
 using Mikodev.Binary.SourceGeneration.ObjectCrossTests.DefaultValueTests;

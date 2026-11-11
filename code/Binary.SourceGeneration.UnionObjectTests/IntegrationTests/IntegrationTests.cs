@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.UnionObjectTests.IntegrationTests;
+namespace Mikodev.Binary.SourceGeneration.UnionObjectTests.IntegrationTests;
 
 using Microsoft.FSharp.Core;
 using Mikodev.Binary.Attributes;

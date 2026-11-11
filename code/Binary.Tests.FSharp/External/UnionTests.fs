@@ -1,4 +1,4 @@
-﻿module External.UnionTests
+module External.UnionTests
 
 open Mikodev.Binary
 open System

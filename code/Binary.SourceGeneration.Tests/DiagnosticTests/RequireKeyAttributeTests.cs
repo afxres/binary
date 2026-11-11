@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.Tests.DiagnosticTests;
+namespace Mikodev.Binary.SourceGeneration.Tests.DiagnosticTests;
 
 using Microsoft.CodeAnalysis;
 using Mikodev.Binary.Attributes;

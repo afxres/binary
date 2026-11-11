@@ -1,4 +1,4 @@
-﻿module Creators.ListConverterTests
+module Creators.ListConverterTests
 
 open Mikodev.Binary
 open System.Linq

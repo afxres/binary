@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Sequence;
+namespace Mikodev.Binary.Tests.Sequence;
 
 using System;
 using System.Collections.Frozen;

@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Internal.SpanLike;
+namespace Mikodev.Binary.Internal.SpanLike;
 
 using Mikodev.Binary.Internal.Sequence;
 using System;

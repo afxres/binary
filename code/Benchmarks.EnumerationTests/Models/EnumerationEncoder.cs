@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.EnumerationTests.Models;
+namespace Mikodev.Binary.Benchmarks.EnumerationTests.Models;
 
 using System.Collections.Generic;
 

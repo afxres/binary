@@ -1,4 +1,4 @@
-﻿module TupleLike.TupleTests
+module TupleLike.TupleTests
 
 open Mikodev.Binary
 open System

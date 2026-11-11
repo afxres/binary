@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.Abstractions;
+namespace Mikodev.Binary.Benchmarks.Abstractions;
 
 public struct ValueNamedObject<T>
 {

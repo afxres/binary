@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.ObjectCrossTests;
+namespace Mikodev.Binary.SourceGeneration.ObjectCrossTests;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;

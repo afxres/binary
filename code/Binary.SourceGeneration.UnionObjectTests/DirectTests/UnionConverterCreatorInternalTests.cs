@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.UnionObjectTests.DirectTests;
+namespace Mikodev.Binary.SourceGeneration.UnionObjectTests.DirectTests;
 
 using System;
 using System.Collections.Immutable;

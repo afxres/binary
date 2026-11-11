@@ -1,4 +1,4 @@
-﻿namespace Internal
+namespace Internal
 
 open Mikodev.Binary
 open System

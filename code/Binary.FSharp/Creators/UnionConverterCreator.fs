@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Creators
+namespace Mikodev.Binary.Creators
 
 open Microsoft.FSharp.Reflection
 open Mikodev.Binary

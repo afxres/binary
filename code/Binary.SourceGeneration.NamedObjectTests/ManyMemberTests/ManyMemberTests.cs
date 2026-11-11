@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.NamedObjectTests.ManyMemberTests;
+namespace Mikodev.Binary.SourceGeneration.NamedObjectTests.ManyMemberTests;
 
 using Mikodev.Binary.Attributes;
 using System.Reflection;

@@ -1,4 +1,4 @@
-﻿module internal Mikodev.Binary.Internal.ModuleHelper
+module internal Mikodev.Binary.Internal.ModuleHelper
 
 open Mikodev.Binary
 open System.Runtime.CompilerServices

@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.NamedObjectTests.CircularTypeReferenceTests;
+namespace Mikodev.Binary.SourceGeneration.NamedObjectTests.CircularTypeReferenceTests;
 
 using Mikodev.Binary.Attributes;
 using System;

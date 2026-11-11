@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.AttributeTests.MemberConverterAttributeTests;
+namespace Mikodev.Binary.SourceGeneration.AttributeTests.MemberConverterAttributeTests;
 
 using Mikodev.Binary.Attributes;
 using System;

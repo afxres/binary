@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.ObjectConverterTests;
+namespace Mikodev.Binary.Benchmarks.ObjectConverterTests;
 
 using BenchmarkDotNet.Attributes;
 

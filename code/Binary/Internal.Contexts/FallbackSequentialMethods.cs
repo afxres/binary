@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Internal.Contexts;
+namespace Mikodev.Binary.Internal.Contexts;
 
 using Mikodev.Binary.Internal.SpanLike;
 using System;

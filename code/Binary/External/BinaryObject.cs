@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.External;
+namespace Mikodev.Binary.External;
 
 using Mikodev.Binary.External.Contexts;
 using Mikodev.Binary.Internal;

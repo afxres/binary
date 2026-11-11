@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Features.Contexts;
+namespace Mikodev.Binary.Features.Contexts;
 
 internal interface IConstantConverterFunctions<T>
 {

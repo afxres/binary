@@ -1,4 +1,4 @@
-﻿module Values.ClassTypeTests
+module Values.ClassTypeTests
 
 open Mikodev.Binary
 open System

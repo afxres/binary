@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Experimental;
+namespace Mikodev.Binary.Experimental;
 
 using System;
 

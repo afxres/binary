@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.ObjectTests;
+namespace Mikodev.Binary.Benchmarks.ObjectTests;
 
 using BenchmarkDotNet.Attributes;
 using Mikodev.Binary.Benchmarks.Abstractions;

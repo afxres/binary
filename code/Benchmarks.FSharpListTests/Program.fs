@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.FSharpListTests
+namespace Mikodev.Binary.Benchmarks.FSharpListTests
 
 open BenchmarkDotNet.Configs
 open BenchmarkDotNet.Jobs

@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.SpanLike;
+namespace Mikodev.Binary.Tests.SpanLike;
 
 using System;
 using System.Collections.Generic;

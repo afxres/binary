@@ -1,4 +1,4 @@
-﻿module TupleLike.ValueTupleAdvanceTests
+module TupleLike.ValueTupleAdvanceTests
 
 open Mikodev.Binary
 open System

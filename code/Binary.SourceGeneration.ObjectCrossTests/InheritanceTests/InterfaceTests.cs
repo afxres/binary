@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.ObjectCrossTests.InheritanceTests;
+namespace Mikodev.Binary.SourceGeneration.ObjectCrossTests.InheritanceTests;
 
 using System;
 using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.Tests.ImplementationTests;
+namespace Mikodev.Binary.SourceGeneration.Tests.ImplementationTests;
 
 using System.Collections.Generic;
 using Xunit;

@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.TupleObjectTests.CircularTypeReferenceTests;
+namespace Mikodev.Binary.SourceGeneration.TupleObjectTests.CircularTypeReferenceTests;
 
 using Mikodev.Binary.Attributes;
 using System;

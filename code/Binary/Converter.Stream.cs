@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary;
+namespace Mikodev.Binary;
 
 using System;
 using System.Buffers.Binary;

@@ -1,4 +1,4 @@
-﻿module Implementations.NamedObjectTests
+module Implementations.NamedObjectTests
 
 open Mikodev.Binary
 open System

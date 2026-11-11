@@ -1,4 +1,4 @@
-﻿namespace Converters
+namespace Converters
 
 open Mikodev.Binary
 open System

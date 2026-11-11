@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.RandomizedTests;
+namespace Mikodev.Binary.SourceGeneration.RandomizedTests;
 
 using Mikodev.Binary;
 using System;

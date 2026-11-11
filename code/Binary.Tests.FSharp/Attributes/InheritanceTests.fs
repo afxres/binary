@@ -1,4 +1,4 @@
-﻿module Attributes.InheritanceTests
+module Attributes.InheritanceTests
 
 open Mikodev.Binary
 open Mikodev.Binary.Attributes

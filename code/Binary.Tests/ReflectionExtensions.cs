@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests;
+namespace Mikodev.Binary.Tests;
 
 using System;
 using System.Diagnostics;

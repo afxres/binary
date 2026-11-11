@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.Tests;
+namespace Mikodev.Binary.SourceGeneration.Tests;
 
 using Microsoft.CodeAnalysis;
 using Xunit;

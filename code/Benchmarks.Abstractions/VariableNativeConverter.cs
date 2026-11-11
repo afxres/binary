@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.Abstractions;
+namespace Mikodev.Binary.Benchmarks.Abstractions;
 
 using System;
 using System.Runtime.CompilerServices;

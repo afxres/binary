@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Miscellaneous;
+namespace Mikodev.Binary.Tests.Miscellaneous;
 
 using System;
 using System.Collections;

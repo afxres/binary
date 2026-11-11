@@ -1,4 +1,4 @@
-﻿module Internal.ObjectHelperTests
+module Internal.ObjectHelperTests
 
 open Mikodev.Binary
 open System

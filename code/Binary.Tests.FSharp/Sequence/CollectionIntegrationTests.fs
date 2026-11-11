@@ -1,4 +1,4 @@
-﻿module Sequence.CollectionIntegrationTests
+module Sequence.CollectionIntegrationTests
 
 open Mikodev.Binary
 open System

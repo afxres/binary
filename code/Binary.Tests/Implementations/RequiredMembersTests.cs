@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Implementations;
+namespace Mikodev.Binary.Tests.Implementations;
 
 using Mikodev.Binary.Attributes;
 using System;

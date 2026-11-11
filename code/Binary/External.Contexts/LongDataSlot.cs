@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.External.Contexts;
+namespace Mikodev.Binary.External.Contexts;
 
 internal struct LongDataSlot
 {

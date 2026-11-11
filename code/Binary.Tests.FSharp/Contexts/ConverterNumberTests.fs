@@ -1,4 +1,4 @@
-﻿module Contexts.ConverterNumberTests
+module Contexts.ConverterNumberTests
 
 open Mikodev.Binary
 open System

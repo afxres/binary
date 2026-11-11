@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.Contexts;
+namespace Mikodev.Binary.SourceGeneration.Contexts;
 
 using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;

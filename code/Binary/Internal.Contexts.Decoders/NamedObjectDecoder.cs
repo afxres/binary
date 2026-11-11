@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Internal.Contexts.Decoders;
+namespace Mikodev.Binary.Internal.Contexts.Decoders;
 
 using Mikodev.Binary.External;
 using Mikodev.Binary.Internal;

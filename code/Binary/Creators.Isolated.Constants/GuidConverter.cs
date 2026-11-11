@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Creators.Isolated.Constants;
+namespace Mikodev.Binary.Creators.Isolated.Constants;
 
 using Mikodev.Binary.Features.Contexts;
 using System;

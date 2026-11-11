@@ -1,4 +1,4 @@
-﻿module Miscellaneous.ThrowObjectTests
+module Miscellaneous.ThrowObjectTests
 
 open Mikodev.Binary
 open System

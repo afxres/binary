@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Internal.Contexts.Instance;
+namespace Mikodev.Binary.Internal.Contexts.Instance;
 
 using Mikodev.Binary.Components;
 using Mikodev.Binary.Internal.Contexts.Decoders;

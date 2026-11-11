@@ -1,4 +1,4 @@
-﻿namespace SpanLike
+namespace SpanLike
 
 open Mikodev.Binary
 open System

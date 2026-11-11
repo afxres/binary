@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.External;
+namespace Mikodev.Binary.Tests.External;
 
 using System;
 using System.Collections.Generic;

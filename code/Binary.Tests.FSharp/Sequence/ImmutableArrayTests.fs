@@ -1,4 +1,4 @@
-﻿namespace Sequence
+namespace Sequence
 
 open Mikodev.Binary
 open System.Collections.Immutable

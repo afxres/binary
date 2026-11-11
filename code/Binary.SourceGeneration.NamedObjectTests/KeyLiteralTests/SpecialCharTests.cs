@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.NamedObjectTests.KeyLiteralTests;
+namespace Mikodev.Binary.SourceGeneration.NamedObjectTests.KeyLiteralTests;
 
 using Mikodev.Binary.Attributes;
 using System;

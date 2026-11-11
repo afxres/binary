@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.AllocatorTests;
+namespace Mikodev.Binary.Benchmarks.AllocatorTests;
 
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;

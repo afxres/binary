@@ -1,4 +1,4 @@
-﻿namespace Attributes
+namespace Attributes
 
 open Mikodev.Binary
 open Mikodev.Binary.Attributes

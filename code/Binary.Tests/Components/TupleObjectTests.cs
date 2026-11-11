@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Components;
+namespace Mikodev.Binary.Tests.Components;
 
 using Mikodev.Binary.Components;
 using System;

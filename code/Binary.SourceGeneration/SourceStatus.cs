@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration;
+namespace Mikodev.Binary.SourceGeneration;
 
 public enum SourceStatus
 {

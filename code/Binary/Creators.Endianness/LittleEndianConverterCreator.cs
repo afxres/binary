@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Creators.Endianness;
+namespace Mikodev.Binary.Creators.Endianness;
 
 using System;
 using System.Collections.Frozen;

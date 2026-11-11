@@ -1,4 +1,4 @@
-﻿namespace Miscellaneous
+namespace Miscellaneous
 
 open Mikodev.Binary
 open System

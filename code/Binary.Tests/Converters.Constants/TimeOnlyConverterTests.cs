@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Converters.Constants;
+namespace Mikodev.Binary.Tests.Converters.Constants;
 
 using Mikodev.Binary.Tests;
 using System;

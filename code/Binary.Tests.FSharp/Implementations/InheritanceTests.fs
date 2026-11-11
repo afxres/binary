@@ -1,4 +1,4 @@
-﻿module Implementations.InheritanceTests
+module Implementations.InheritanceTests
 
 open Mikodev.Binary
 open System

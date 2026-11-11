@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.ObjectCrossTests.DefaultValueTests;
+namespace Mikodev.Binary.SourceGeneration.ObjectCrossTests.DefaultValueTests;
 
 using Mikodev.Binary.Attributes;
 using System;

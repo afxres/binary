@@ -1,4 +1,4 @@
-﻿module Miscellaneous.ThrowDecodeTests
+module Miscellaneous.ThrowDecodeTests
 
 open Mikodev.Binary
 open System

@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.CollectionTests;
+namespace Mikodev.Binary.Benchmarks.CollectionTests;
 
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;

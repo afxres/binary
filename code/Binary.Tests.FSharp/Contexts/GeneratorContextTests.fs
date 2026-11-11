@@ -1,4 +1,4 @@
-﻿module Contexts.GeneratorContextTests
+module Contexts.GeneratorContextTests
 
 open Mikodev.Binary
 open System

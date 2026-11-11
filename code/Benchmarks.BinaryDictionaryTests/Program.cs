@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.BinaryDictionaryTests;
+namespace Mikodev.Binary.Benchmarks.BinaryDictionaryTests;
 
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;

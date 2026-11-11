@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Internal.Contexts;
+namespace Mikodev.Binary.Tests.Internal.Contexts;
 
 using System;
 using System.Buffers;

@@ -1,4 +1,4 @@
-﻿namespace Creators
+namespace Creators
 
 open Mikodev.Binary
 open System

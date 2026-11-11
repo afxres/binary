@@ -1,4 +1,4 @@
-﻿namespace Contexts
+namespace Contexts
 
 open Mikodev.Binary
 open Xunit

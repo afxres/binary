@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Internal.Sequence.Decoders;
+namespace Mikodev.Binary.Internal.Sequence.Decoders;
 
 using Mikodev.Binary.Components;
 using System;

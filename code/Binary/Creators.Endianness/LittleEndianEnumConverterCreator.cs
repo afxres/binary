@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Creators.Endianness;
+namespace Mikodev.Binary.Creators.Endianness;
 
 using Mikodev.Binary.Internal;
 using System;

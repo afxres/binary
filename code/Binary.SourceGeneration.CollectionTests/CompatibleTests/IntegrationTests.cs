@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.CollectionTests.CompatibleTests;
+namespace Mikodev.Binary.SourceGeneration.CollectionTests.CompatibleTests;
 
 using Mikodev.Binary.Attributes;
 using System;

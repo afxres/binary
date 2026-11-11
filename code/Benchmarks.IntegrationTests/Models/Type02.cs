@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.IntegrationTests.Models;
+namespace Mikodev.Binary.Benchmarks.IntegrationTests.Models;
 
 using System.Collections.Generic;
 

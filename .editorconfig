@@ -13,16 +13,14 @@ trim_trailing_whitespace = true
 [*.md]
 trim_trailing_whitespace = false
 
-# MSBuild and CI files use 2 spaces (csproj/fsproj carry a BOM, props/slnx do not)
+# MSBuild and CI files use 2 spaces
 [*.{csproj,fsproj}]
-charset = utf-8-bom
 indent_size = 2
 
 [*.{props,targets,yml,yaml,json,xml,slnx}]
 indent_size = 2
 
 [*.cs]
-charset = utf-8-bom
 
 # Qualify fields, properties and events with 'this.', never methods
 dotnet_style_qualification_for_field = true

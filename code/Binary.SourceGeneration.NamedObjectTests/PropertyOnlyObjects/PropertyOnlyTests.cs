@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.NamedObjectTests.PropertyOnlyObjects;
+namespace Mikodev.Binary.SourceGeneration.NamedObjectTests.PropertyOnlyObjects;
 
 using Mikodev.Binary.Attributes;
 using System;

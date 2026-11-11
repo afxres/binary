@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Internal.Sequence;
+namespace Mikodev.Binary.Internal.Sequence;
 
 using Mikodev.Binary.Internal.Metadata;
 using System;

@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Tests.Creators;
+namespace Mikodev.Binary.Tests.Creators;
 
 using Microsoft.FSharp.Core;
 using Mikodev.Binary.Tests;

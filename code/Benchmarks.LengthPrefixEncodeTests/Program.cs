@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.Benchmarks.LengthPrefixEncodeTests;
+namespace Mikodev.Binary.Benchmarks.LengthPrefixEncodeTests;
 
 using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Jobs;

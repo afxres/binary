@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.NamedObjectTests.RequiredMembers;
+namespace Mikodev.Binary.SourceGeneration.NamedObjectTests.RequiredMembers;
 
 using Mikodev.Binary.Attributes;
 using System;

@@ -1,4 +1,4 @@
-﻿namespace Mikodev.Binary.SourceGeneration.ObjectCrossTests.AbstractTypes;
+namespace Mikodev.Binary.SourceGeneration.ObjectCrossTests.AbstractTypes;
 
 using Mikodev.Binary.Attributes;
 using System;
