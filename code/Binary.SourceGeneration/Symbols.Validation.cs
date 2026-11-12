@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Mikodev.Binary.SourceGeneration.Internal;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -87,7 +88,7 @@ public static partial class Symbols
     private static void ValidateType(SourceGeneratorContext context, ITypeSymbol symbol, string symbolText, AttributeData? attribute, List<Diagnostic> diagnostics)
     {
         var tupleMembers = new SortedDictionary<int, ISymbol>();
-        var namedMembers = new SortedDictionary<string, ISymbol>();
+        var namedMembers = new SortedDictionary<string, ISymbol>(StringComparer.Ordinal);
         var typeInfo = context.GetTypeInfo(symbol);
         var typeAttribute = attribute?.AttributeClass;
         foreach (var member in typeInfo.OriginalFieldsAndProperties)

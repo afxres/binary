@@ -80,7 +80,7 @@ type Car(name: string, rank: int) =
 
 let Test (instance: 'a) (anonymous: 'b) =
     let converter = generator.GetConverter<'a>()
-    Assert.StartsWith("TupleObjectDelegateConverter`1", converter.GetType().Name)
+    Assert.StartsWith("TupleObjectConverter`1", converter.GetType().Name)
     let buffer = converter.Encode instance
     let target = generator.Encode anonymous
     Assert.Equal<byte>(target, buffer)

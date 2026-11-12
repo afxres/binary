@@ -100,7 +100,7 @@ public class MemberOrderTests
 
         var generatorSecond = Generator.CreateDefault();
         var converterSecond = generatorSecond.GetConverter<R>();
-        Assert.Equal("TupleObjectDelegateConverter`1", converterSecond.GetType().Name);
+        Assert.Equal("TupleObjectConverter`1", converterSecond.GetType().Name);
         Assert.Equal(typeof(IConverter).Assembly, converterSecond.GetType().Assembly);
 
         var a = converter.Encode(source);

@@ -23,17 +23,14 @@ internal sealed class NamedObjectDecoder
 
     public NamedObjectDecoder(ImmutableArray<ImmutableArray<byte>> headers, ImmutableArray<string> names, ImmutableArray<bool> optional, Type type)
     {
-        if (headers.Length is 0 || names.Length is 0 || optional.Length is 0)
-            throw new ArgumentException($"Sequence is null or empty.");
-        if (headers.Length != names.Length || headers.Length != optional.Length)
-            throw new ArgumentException($"Sequence length mismatch.");
+        // members, names, optional and headers are built from the same member list, and the key
+        // uniqueness is already verified while collecting attributes, see FallbackAttributesMethods
+        Debug.Assert(headers.Length is not 0 && headers.Length == names.Length && names.Length == optional.Length);
         this.type = type;
         this.names = [.. names];
         var view = BinaryObject.Create(headers, out var error);
-        Debug.Assert(view is null || error is -1);
-        if (view is null)
-            ExceptKeyFound(error);
-        this.view = view;
+        Debug.Assert(view is not null && error is -1);
+        this.view = view!;
         this.optional = [.. optional];
     }
 
@@ -71,6 +68,7 @@ internal sealed class NamedObjectDecoder
             ref var handle = ref slices[cursor];
             if (handle is not 0)
                 ExceptKeyFound(cursor);
+            // pack offset and length into a single 64-bit value, see GetValueSpan in ContextMethodsOfNamedObject
             handle = (long)((ulong)(uint)offset << 32 | (uint)length);
         }
 

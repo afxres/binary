@@ -1,6 +1,5 @@
 namespace Mikodev.Binary.Internal.Contexts;
 
-using Mikodev.Binary.Components;
 using Mikodev.Binary.Internal.Contexts.Decoders;
 using Mikodev.Binary.Internal.Contexts.Instance;
 using System;
@@ -12,28 +11,48 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 [RequiresDynamicCode(CommonDefine.RequiresDynamicCodeMessage)]
 [RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
 internal static class ContextMethodsOfNamedObject
 {
+    private delegate bool ExistsMethodDelegate(ReadOnlySpan<long> data, int index);
+
+    private delegate ReadOnlySpan<byte> InvokeMethodDelegate(ReadOnlySpan<byte> span, ReadOnlySpan<long> data, int index);
+
     private static readonly MethodInfo AppendMethodInfo = new AllocatorAction<byte[]>(ObjectModule.Append).Method;
 
-    private static readonly MethodInfo InvokeMethodInfo = CommonModule.GetPublicInstanceMethod(typeof(NamedObjectParameter), nameof(NamedObjectParameter.GetValue));
+    private static readonly MethodInfo InvokeMethodInfo = new InvokeMethodDelegate(GetValueSpan).Method;
 
-    private static readonly MethodInfo ExistsMethodInfo = CommonModule.GetPublicInstanceMethod(typeof(NamedObjectParameter), nameof(NamedObjectParameter.HasValue));
+    private static readonly MethodInfo ExistsMethodInfo = new ExistsMethodDelegate(HasValue).Method;
 
     private static readonly MethodInfo EnsureMethodInfo = new Func<object, bool>(ObjectModule.NotDefaultValue).Method.GetGenericMethodDefinition();
 
     private static readonly Expression EnsureSufficientExecutionStackExpression = Expression.Call(new Action(RuntimeHelpers.EnsureSufficientExecutionStack).Method);
 
-    internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter?> converters, ImmutableArray<bool> optional, ImmutableArray<string> names, ImmutableArray<ImmutableArray<byte>> headers, ImmutableArray<ContextMemberInitializer> members)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool HasValue(ReadOnlySpan<long> data, int index)
+    {
+        return data[index] is not 0;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static ReadOnlySpan<byte> GetValueSpan(ReadOnlySpan<byte> span, ReadOnlySpan<long> data, int index)
+    {
+        var item = data[index];
+        return span.Slice((int)(item >> 32), (int)item);
+    }
+
+    internal static IConverter GetConverterAsNamedObject(Type type, ContextObjectConstructor? constructor, ImmutableArray<IConverter?> converters, ImmutableArray<bool> optional, ImmutableArray<string> names, ImmutableArray<ContextMemberInitializer> members)
     {
         Debug.Assert(members.Length == names.Length);
         Debug.Assert(members.Length == optional.Length);
         Debug.Assert(members.Length == converters.Length);
+        // named keys are always encoded as utf-8, the same as the u8 literals emitted by the source generator
+        var headers = names.Select(x => ImmutableArray.Create(Encoding.UTF8.GetBytes(x))).ToImmutableArray();
         var hasSelfTypeReference = converters.Any(x => x is null);
-        var converterType = typeof(NamedObjectDelegateConverter<>).MakeGenericType(type);
+        var converterType = typeof(NamedObjectConverter<>).MakeGenericType(type);
         var converter = (IConverter)CommonModule.CreateInstance(converterType, null);
         var convertersWithSelf = converters.Select(x => x is null ? converter : x).ToImmutableArray();
         var encode = GetEncodeDelegateAsNamedObject(type, convertersWithSelf, optional, hasSelfTypeReference, headers, members);
@@ -73,20 +92,21 @@ internal static class ContextMethodsOfNamedObject
     {
         ContextObjectInitializationData Initialize(ImmutableArray<ParameterExpression> parameters)
         {
-            Debug.Assert(parameters.Length is 1);
+            Debug.Assert(parameters.Length is 2);
             var source = parameters[0];
+            var values = parameters[1];
             var result = ImmutableArray.CreateBuilder<Expression>(converters.Length);
             for (var i = 0; i < converters.Length; i++)
             {
                 var converter = converters[i];
                 var cursor = Expression.Constant(i);
                 var method = Converter.GetMethod(converter, nameof(IConverter.Decode));
-                var invoke = Expression.Call(source, InvokeMethodInfo, cursor);
+                var invoke = Expression.Call(InvokeMethodInfo, source, values, cursor);
                 var decode = Expression.Call(Expression.Constant(converter), method, invoke);
                 if (optional[i] is false)
                     result.Add(decode);
                 else
-                    result.Add(Expression.Condition(Expression.Call(source, ExistsMethodInfo, cursor), decode, Expression.Default(method.ReturnType)));
+                    result.Add(Expression.Condition(Expression.Call(ExistsMethodInfo, values, cursor), decode, Expression.Default(method.ReturnType)));
             }
             Debug.Assert(converters.Length == result.Count);
             Debug.Assert(converters.Length == result.Capacity);

@@ -22,7 +22,7 @@ public class MixedFieldPropertyTests
     {
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<MixedSimpleClass>();
-        Assert.Matches("NamedObjectDelegateConverter`1.*MixedSimpleClass", converter.GetType().FullName);
+        Assert.Matches("NamedObjectConverter`1.*MixedSimpleClass", converter.GetType().FullName);
 
         var source = new MixedSimpleClass { FiledA = 14, PropertyB = "Network", PropertyInitOnlyC = double.E };
         var buffer = converter.Encode(source);
@@ -56,7 +56,7 @@ public class MixedFieldPropertyTests
     {
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<MixedNamedObject>();
-        Assert.Matches("NamedObjectDelegateConverter`1.*MixedNamedObject", converter.GetType().FullName);
+        Assert.Matches("NamedObjectConverter`1.*MixedNamedObject", converter.GetType().FullName);
 
         var source = new MixedNamedObject { Id = 24, Name = "拼音", IgnoredField = float.Pi, IgnoredProperty = IPAddress.Loopback };
         var buffer = converter.Encode(source);
@@ -90,7 +90,7 @@ public class MixedFieldPropertyTests
     {
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<MixedTupleObject>();
-        Assert.Matches("TupleObjectDelegateConverter`1.*MixedTupleObject", converter.GetType().FullName);
+        Assert.Matches("TupleObjectConverter`1.*MixedTupleObject", converter.GetType().FullName);
 
         var source = new MixedTupleObject { Id = 30, Name = "input", IgnoredField = float.Epsilon, IgnoredProperty = IPAddress.IPv6Loopback };
         var buffer = converter.Encode(source);
@@ -134,7 +134,7 @@ public class MixedFieldPropertyTests
     {
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<MixedConstructedClass>();
-        Assert.Matches("NamedObjectDelegateConverter`1.*MixedConstructedClass", converter.GetType().FullName);
+        Assert.Matches("NamedObjectConverter`1.*MixedConstructedClass", converter.GetType().FullName);
 
         var source = new MixedConstructedClass("fsvc", IPAddress.Loopback, IPAddress.IPv6Loopback) { Field = 54, Property = double.Tau };
         var buffer = converter.Encode(source);

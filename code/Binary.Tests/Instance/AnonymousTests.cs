@@ -76,7 +76,7 @@ public class AnonymousTests
     {
         var a = new { name = "Tex", Name = 0 };
         var bytes = this.generator.Encode(a);
-        var bravo = this.generator.Encode(new SortedDictionary<string, object> { ["name"] = "Tex", ["Name"] = 0 });
+        var bravo = this.generator.Encode(new SortedDictionary<string, object>(StringComparer.Ordinal) { ["name"] = "Tex", ["Name"] = 0 });
         Assert.Equal(bravo, bytes);
         var error = Assert.Throws<NotSupportedException>(() => this.generator.Decode(bytes, anonymous: a));
         var message = $"No suitable constructor found, type: {a.GetType()}";

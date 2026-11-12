@@ -74,7 +74,7 @@ public class PropertyOnlyTests
 
         var generatorSecond = Generator.CreateDefault();
         var converterSecond = generatorSecond.GetConverter<T>();
-        Assert.Equal("NamedObjectDelegateConverter`1", converterSecond.GetType().Name);
+        Assert.Equal("NamedObjectConverter`1", converterSecond.GetType().Name);
 
         var buffer = converter.Encode(source);
         var bufferExpected = converterSecond.Encode(source);

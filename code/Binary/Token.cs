@@ -1,7 +1,6 @@
 namespace Mikodev.Binary;
 
 using Mikodev.Binary.Internal;
-using Mikodev.Binary.Internal.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -10,6 +9,7 @@ using System.Diagnostics;
 using System.Dynamic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using TokenValue = (System.Collections.Immutable.ImmutableDictionary<string, Token> Tokens, System.Exception? Error);
 
@@ -19,8 +19,6 @@ public sealed partial class Token : IDynamicMetaObjectProvider
     private readonly IGenerator generator;
 
     private readonly ReadOnlyMemory<byte> memory;
-
-    private readonly DecodeReadOnlyDelegate<string> decode;
 
     private readonly Token? parent;
 
@@ -32,14 +30,12 @@ public sealed partial class Token : IDynamicMetaObjectProvider
 
     public Token? Parent => this.parent;
 
-    private Token(IGenerator generator, ReadOnlyMemory<byte> memory, Token? parent, DecodeReadOnlyDelegate<string> decode)
+    private Token(IGenerator generator, ReadOnlyMemory<byte> memory, Token? parent)
     {
         Debug.Assert(generator is not null);
-        Debug.Assert(decode is not null);
         this.generator = generator;
         this.memory = memory;
         this.parent = parent;
-        this.decode = decode;
         this.create = new Lazy<TokenValue>(() => GetTokens(this), LazyThreadSafetyMode.ExecutionAndPublication);
     }
 
@@ -47,7 +43,6 @@ public sealed partial class Token : IDynamicMetaObjectProvider
     {
         var generator = origin.generator;
         var memory = origin.memory;
-        var decode = origin.decode;
         var intent = memory.Span;
 
         try
@@ -59,8 +54,9 @@ public sealed partial class Token : IDynamicMetaObjectProvider
                 var buffer = Converter.DecodeWithLengthPrefix(ref intent);
                 var offset = memory.Length - buffer.Length - intent.Length;
                 var target = memory.Slice(offset, buffer.Length);
-                var source = decode.Invoke(in header);
-                var result = new Token(generator, target, origin, decode);
+                // named keys are always encoded as utf-8, see ContextMethodsOfNamedObject
+                var source = Encoding.UTF8.GetString(header);
+                var result = new Token(generator, target, origin);
                 builder.Add(source, result);
             }
             return (builder.ToImmutable(), null);
@@ -69,15 +65,6 @@ public sealed partial class Token : IDynamicMetaObjectProvider
         {
             return (ImmutableDictionary.Create<string, Token>(), e);
         }
-    }
-
-    private static DecodeReadOnlyDelegate<string> GetDelegate(IGenerator generator)
-    {
-        ArgumentNullException.ThrowIfNull(generator);
-        var converter = generator.GetConverter<string>();
-        if (converter is null)
-            throw new ArgumentException("No available string converter found.");
-        return converter.Decode;
     }
 
     private static Token GetToken(Token origin, string key)
@@ -104,7 +91,7 @@ public sealed partial class Token : IDynamicMetaObjectProvider
 
     DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter) => new MetaObject(parameter, this);
 
-    public Token(IGenerator generator, ReadOnlyMemory<byte> memory) : this(generator, memory, null, GetDelegate(generator)) { }
+    public Token(IGenerator generator, ReadOnlyMemory<byte> memory) : this(generator ?? throw new ArgumentNullException(nameof(generator)), memory, null) { }
 
     public Token this[string key] => GetToken(this, key);
 

@@ -3,7 +3,7 @@ namespace Mikodev.Binary.Internal.Contexts.Instance;
 using Mikodev.Binary.Internal.Metadata;
 using System;
 
-internal sealed class TupleObjectDelegateConverter<T>(AllocatorAction<T> encode, AllocatorAction<T> encodeAuto, DecodeDelegate<T>? decode, DecodeDelegate<T>? decodeAuto, int length) : Converter<T>(length)
+internal sealed class TupleObjectConverter<T>(AllocatorAction<T> encode, AllocatorAction<T> encodeAuto, DecodeDelegate<T>? decode, DecodeDelegate<T>? decodeAuto, int length) : Converter<T>(length)
 {
     private readonly AllocatorAction<T> encode = encode;
 

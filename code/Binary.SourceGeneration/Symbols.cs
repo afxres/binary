@@ -36,7 +36,7 @@ public static partial class Symbols
     {
         static Dictionary<string, int>? CreateIgnoreCaseDictionary(ImmutableArray<T> members)
         {
-            var dictionary = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+            var dictionary = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             for (var i = 0; i < members.Length; i++)
             {
                 var symbol = members[i].Symbol;
@@ -302,7 +302,7 @@ public static partial class Symbols
             throw new ArgumentException("Non-interface type required.");
 
         var result = ImmutableArray.CreateBuilder<ISymbol>();
-        var dictionary = new SortedDictionary<string, ISymbol>();
+        var dictionary = new SortedDictionary<string, ISymbol>(StringComparer.Ordinal);
         for (var target = type; target is not null; target = target.BaseType)
         {
             cancellation.ThrowIfCancellationRequested();

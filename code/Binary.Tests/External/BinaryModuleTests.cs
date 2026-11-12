@@ -167,7 +167,7 @@ public class BinaryModuleTests
         var systemType = typeof(Dictionary<,>).Assembly.GetTypes().Single(x => x.Namespace is "System.Collections" && x.Name is "HashHelpers");
         var systemMembers = systemType.GetProperties(BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
         Assert.NotNull(systemType);
-        var systemMember = systemMembers.Single(x => x.Name.Contains("primes", StringComparison.InvariantCultureIgnoreCase));
+        var systemMember = systemMembers.Single(x => x.Name.Contains("primes", StringComparison.OrdinalIgnoreCase));
         Assert.NotNull(systemMember);
         var getMethod = systemMember.GetGetMethod(nonPublic: true);
         Assert.NotNull(getMethod);

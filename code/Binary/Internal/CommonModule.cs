@@ -175,7 +175,8 @@ internal static class CommonModule
             throw new ArgumentException("Non-interface type required.");
 
         var result = ImmutableArray.CreateBuilder<MemberInfo>();
-        var dictionary = new SortedDictionary<string, MemberInfo>();
+        // ordinal comparison matches the exact member name stored in metadata
+        var dictionary = new SortedDictionary<string, MemberInfo>(StringComparer.Ordinal);
         for (var target = type; target is not null; target = target.BaseType)
         {
             var members = target.GetMembers(flags);

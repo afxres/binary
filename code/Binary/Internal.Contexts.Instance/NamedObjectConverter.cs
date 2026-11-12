@@ -1,14 +1,13 @@
 namespace Mikodev.Binary.Internal.Contexts.Instance;
 
-using Mikodev.Binary.Components;
 using Mikodev.Binary.Internal.Contexts.Decoders;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-internal delegate T NamedObjectDecodeDelegate<out T>(scoped NamedObjectParameter parameter);
+internal delegate T NamedObjectDecodeDelegate<out T>(ReadOnlySpan<byte> span, ReadOnlySpan<long> data);
 
-internal sealed class NamedObjectDelegateConverter<T> : Converter<T?>
+internal sealed class NamedObjectConverter<T> : Converter<T?>
 {
     [AllowNull] private AllocatorAction<T> encode;
 
@@ -44,6 +43,6 @@ internal sealed class NamedObjectDelegateConverter<T> : Converter<T?>
         var invoke = this.invoke;
         var slices = (stackalloc long[invoke.Length]);
         invoke.Invoke(span, slices);
-        return decode.Invoke(new NamedObjectParameter(span, slices));
+        return decode.Invoke(span, slices);
     }
 }

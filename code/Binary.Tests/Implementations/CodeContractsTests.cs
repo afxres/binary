@@ -90,7 +90,7 @@ public class CodeContractsTests
         var types = typeof(IConverter).Assembly.GetTypes()
             .Where(x => (x.IsPublic || x.IsNestedPublic) && !(x.IsAbstract && x.IsSealed) && !typeof(Delegate).IsAssignableFrom(x) && !x.IsInterface && x.Namespace is not "Mikodev.Binary.Attributes")
             .ToList();
-        Assert.Equal(5, types.Count);
+        Assert.Equal(3, types.Count);
         foreach (var t in types)
         {
             var equalMethod = t.GetMethodNotNull("Equals", [typeof(object)]);
@@ -119,7 +119,7 @@ public class CodeContractsTests
         var types = typeof(IConverter).Assembly.GetTypes()
             .Where(x => x.IsPublic && x.IsByRefLike)
             .ToList();
-        Assert.Equal(2, types.Count);
+        _ = Assert.Single(types);
         foreach (var t in types)
         {
             var methods = t.GetMethods().Where(x => x.Name is "Equals" or "GetHashCode").ToList();
@@ -155,7 +155,7 @@ public class CodeContractsTests
         var selection = types.Where(x => x.Name.Contains('<') is false);
         var attributes = selection.Select(x => (Type: x, Attribute: x.GetCustomAttribute<DebuggerDisplayAttribute>(inherit: false))).Where(x => x.Attribute is not null).ToList();
         var overridden = types.Where(x => x.Name.Contains('<') is false && x.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic).Any(x => x.Name is "EqualityContract") is false && x.GetMethod("ToString")?.DeclaringType == x).ToList();
-        Assert.Equal(6, overridden.Count);
+        Assert.Equal(5, overridden.Count);
         Assert.Equal([.. overridden], attributes.Select(x => x.Type).ToHashSet());
         var display = attributes.Select(x => x.Attribute?.Value).Distinct().Single();
         Assert.Equal("{ToString(),nq}", display);
@@ -172,7 +172,7 @@ public class CodeContractsTests
 
         var parameters = methodBases.SelectMany(x => x.GetParameters()).ToList();
         var byteArrayParameters = parameters.Where(x => x.ParameterType == typeof(byte[])).ToList();
-        Assert.Equal(9, byteArrayParameters.Count);
+        Assert.Equal(8, byteArrayParameters.Count);
         var context = new NullabilityInfoContext();
         foreach (var x in byteArrayParameters)
         {
@@ -204,7 +204,7 @@ public class CodeContractsTests
         var expectedMethods = methods.Where(x => x.Name.Contains("Throw") || x.Name.Contains("Except")).ToList();
         Assert.Equal([.. attributedMethods], [.. expectedMethods]);
 
-        var misspelledMethods = methods.Where(x => x.Name.Contains("Expect", StringComparison.InvariantCultureIgnoreCase)).ToList();
+        var misspelledMethods = methods.Where(x => x.Name.Contains("Expect", StringComparison.OrdinalIgnoreCase)).ToList();
         Assert.Empty(misspelledMethods);
     }
 
@@ -279,7 +279,7 @@ public class CodeContractsTests
         var matches = parameters.Where(x => x.ParameterType.IsByRef is false && x.ParameterType.IsByRefLike).ToList();
         Assert.NotEmpty(matches);
         var hostTypes = matches.Select(x => x.Member.ReflectedType).Distinct().ToList();
-        Assert.Equal(6, hostTypes.Count);
+        Assert.Equal(5, hostTypes.Count);
         foreach (var parameter in matches)
         {
             var attributes = parameter.GetCustomAttributes();
@@ -293,7 +293,7 @@ public class CodeContractsTests
     {
         var types = typeof(IConverter).Assembly.GetTypes();
         var publicAbstractTypes = types.Where(x => x.IsPublic && x.IsAbstract && x.IsInterface is false && x.IsSealed is false).ToList();
-        var knownTypeNames = new HashSet<string> { "Converter`1", "NamedObjectConverter`1" };
+        var knownTypeNames = new HashSet<string> { "Converter`1" };
         Assert.Equal(knownTypeNames, [.. publicAbstractTypes.Select(x => x.Name)]);
 
         foreach (var type in publicAbstractTypes)

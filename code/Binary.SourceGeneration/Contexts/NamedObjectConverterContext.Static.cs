@@ -1,6 +1,7 @@
 namespace Mikodev.Binary.SourceGeneration.Contexts;
 
 using Microsoft.CodeAnalysis;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -19,7 +20,7 @@ public sealed partial class NamedObjectConverterContext
             return new SourceResult(SourceStatus.Ignored);
         var typeInfo = context.GetTypeInfo(symbol);
         var required = typeInfo.RequiredFieldsAndProperties.Count is not 0;
-        var dictionary = new SortedDictionary<string, SymbolNamedObjectMemberInfo>();
+        var dictionary = new SortedDictionary<string, SymbolNamedObjectMemberInfo>(StringComparer.Ordinal);
         var cancellation = context.CancellationToken;
         foreach (var member in typeInfo.FilteredFieldsAndProperties)
         {

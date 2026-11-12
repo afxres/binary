@@ -39,12 +39,10 @@ internal static class FallbackAttributesMethods
         }
         else
         {
-            var converter = context.GetConverter<string>();
-            var headers = names.Select(x => Allocator.Invoke(x, converter.Encode).ToImmutableArray()).ToImmutableArray();
             var optional = members.Select(x => x.IsOptional).ToImmutableArray();
             var converters = members.Select(x => GetConverter(context, type, x)).ToImmutableArray();
             Debug.Assert(converters.Length == initializers.Length);
-            return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, optional, names, headers, initializers);
+            return ContextMethodsOfNamedObject.GetConverterAsNamedObject(type, constructor, converters, optional, names, initializers);
         }
     }
 
@@ -159,7 +157,8 @@ internal static class FallbackAttributesMethods
             return GetSortedTupleMembers(type, tuple);
         if (typeInfo.Attribute is NamedObjectAttribute)
             return GetSortedNamedMembers(type, named, out list);
-        var result = source.OrderBy(x => x.Name).ToImmutableArray();
+        // ordinal order keeps the encoded key sequence identical to the source generator output
+        var result = source.OrderBy(x => x.Name, StringComparer.Ordinal).ToImmutableArray();
         list = [.. result.Select(x => x.Name)];
         return result;
     }
@@ -167,7 +166,8 @@ internal static class FallbackAttributesMethods
     private static ImmutableArray<MetaMemberInfo> GetSortedNamedMembers(Type type, ImmutableDictionary<MetaMemberInfo, NamedKeyAttribute> collection, out ImmutableArray<string> list)
     {
         Debug.Assert(collection.Count is not 0);
-        var map = new SortedDictionary<string, MetaMemberInfo>();
+        // ordinal comparison keeps the uniqueness rule identical to the utf-8 encoding used by the decoder
+        var map = new SortedDictionary<string, MetaMemberInfo>(StringComparer.Ordinal);
         foreach (var (member, attribute) in collection)
         {
             var key = attribute.Key;
@@ -202,7 +202,7 @@ internal static class FallbackAttributesMethods
     {
         static Dictionary<string, int>? CreateIgnoreCaseDictionary(ImmutableArray<MetaMemberInfo> members)
         {
-            var dictionary = new Dictionary<string, int>(StringComparer.InvariantCultureIgnoreCase);
+            var dictionary = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             for (var i = 0; i < members.Length; i++)
             {
                 var member = members[i];
