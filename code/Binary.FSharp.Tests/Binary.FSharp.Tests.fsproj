@@ -9,8 +9,11 @@
     <Compile Include="CircularTypeReferenceTests\LinkedListTests.fs" />
     <Compile Include="Contexts\CodeContractsTests.fs" />
     <Compile Include="Contexts\ConverterCreatorTests.fs" />
+    <Compile Include="Contexts\ConverterOverrideHideTests.fs" />
     <Compile Include="Creators\ListConverterTests.fs" />
+    <Compile Include="Creators\NullableConverterTests.fs" />
     <Compile Include="Creators\UnionConverterCreatorTests.fs" />
+    <Compile Include="Creators\UnionConverterTests.fs" />
     <Compile Include="Internal\HelperMethodTests.fs" />
     <Compile Include="Internal\ObjectHelperTests.fs" />
   </ItemGroup>

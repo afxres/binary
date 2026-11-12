@@ -1,6 +1,5 @@
 namespace Mikodev.Binary.Tests.Creators;
 
-using Microsoft.FSharp.Core;
 using Mikodev.Binary.Tests;
 using System;
 using System.Collections.Generic;
@@ -11,9 +10,7 @@ using Xunit;
 
 public class NullableConverterTests
 {
-    private readonly IGenerator generator = Generator.CreateDefaultBuilder()
-        .AddFSharpConverterCreators()
-        .Build();
+    private readonly IGenerator generator = Generator.CreateDefault();
 
     private static byte[] Encode<T>(Converter<T> converter, T value)
     {
@@ -193,34 +190,6 @@ public class NullableConverterTests
         var result = this.generator.Decode<(float, string)?[]>(buffer);
         Assert.False(ReferenceEquals(result, source));
         Assert.Equal(source, result);
-    }
-
-    public static readonly IEnumerable<object[]> OptionData =
-    [
-        [10],
-        [long.MaxValue],
-        [(-1536, "Inner text")],
-        [("Value tuple", Guid.Parse("ca86e602-eaae-4653-b74b-fd1dd248f620"))],
-    ];
-
-    [Theory(DisplayName = "Nullable With F# Option")]
-    [MemberData(nameof(OptionData))]
-    public void FSharpOptionTest<T>(T data) where T : struct
-    {
-        var converterItem = this.generator.GetConverter<T?>();
-        var converterOption = this.generator.GetConverter<FSharpOption<T>>();
-        Assert.StartsWith("NullableConverter`1", converterItem.GetType().Name);
-        Assert.StartsWith("UnionConverter`1", converterOption.GetType().Name);
-
-        var a = (T?)data;
-        var b = (T?)null;
-        var m = FSharpOption<T>.Some(data);
-        var n = FSharpOption<T>.None;
-
-        Assert.Equal(Encode(converterItem, a), Encode(converterOption, m));
-        Assert.Equal(EncodeAuto(converterItem, a), EncodeAuto(converterOption, m));
-        Assert.Equal(Encode(converterItem, b), Encode(converterOption, n));
-        Assert.Equal(EncodeAuto(converterItem, b), EncodeAuto(converterOption, n));
     }
 
     [Theory(DisplayName = "Invalid Nullable Tag (decode & decode auto)")]

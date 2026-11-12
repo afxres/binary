@@ -1,6 +1,5 @@
 namespace Mikodev.Binary.Tests.Contexts;
 
-using Microsoft.FSharp.Core;
 using System;
 using Xunit;
 
@@ -96,62 +95,6 @@ public class ConverterOverrideHideTests
         var error = Assert.Throws<NotSupportedException>(() =>
         {
             var span = new ReadOnlySpan<byte>();
-            _ = converter.DecodeAuto(ref span);
-        });
-        Assert.Equal("Fake 'DecodeAuto'", error.Message);
-    }
-
-    [Fact(DisplayName = "Encode With New 'Encode' Method For Union")]
-    public void EncodeWithHiddenEncodeMethodForUnion()
-    {
-        var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().AddConverter(new OverrideHideAllMember<int>()).Build();
-        var converter = generator.GetConverter<FSharpOption<int>>();
-        Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
-        var error = Assert.Throws<NotSupportedException>(() =>
-        {
-            var allocator = new Allocator();
-            converter.Encode(ref allocator, FSharpOption<int>.Some(0));
-        });
-        Assert.Equal("Fake 'Encode'", error.Message);
-    }
-
-    [Fact(DisplayName = "Encode With New 'EncodeAuto' Method For Union")]
-    public void EncodeWithHiddenEncodeAutoMethodForUnion()
-    {
-        var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().AddConverter(new OverrideHideAllMember<int>()).Build();
-        var converter = generator.GetConverter<FSharpOption<int>>();
-        Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
-        var error = Assert.Throws<NotSupportedException>(() =>
-        {
-            var allocator = new Allocator();
-            converter.EncodeAuto(ref allocator, FSharpOption<int>.Some(0));
-        });
-        Assert.Equal("Fake 'EncodeAuto'", error.Message);
-    }
-
-    [Fact(DisplayName = "Decode With New 'Decode' Method For Union")]
-    public void DecodeWithHiddenDecodeMethodForUnion()
-    {
-        var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().AddConverter(new OverrideHideAllMember<int>()).Build();
-        var converter = generator.GetConverter<FSharpOption<int>>();
-        Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
-        var error = Assert.Throws<NotSupportedException>(() =>
-        {
-            var span = new ReadOnlySpan<byte>([FSharpOption<int>.Tags.Some]);
-            _ = converter.Decode(in span);
-        });
-        Assert.Equal("Fake 'Decode'", error.Message);
-    }
-
-    [Fact(DisplayName = "Decode With New 'DecodeAuto' Method For Union")]
-    public void DecodeWithHiddenDecodeAutoMethodForUnion()
-    {
-        var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().AddConverter(new OverrideHideAllMember<int>()).Build();
-        var converter = generator.GetConverter<FSharpOption<int>>();
-        Assert.StartsWith("UnionConverter`1", converter.GetType().Name);
-        var error = Assert.Throws<NotSupportedException>(() =>
-        {
-            var span = new ReadOnlySpan<byte>([FSharpOption<int>.Tags.Some]);
             _ = converter.DecodeAuto(ref span);
         });
         Assert.Equal("Fake 'DecodeAuto'", error.Message);

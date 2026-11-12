@@ -12,9 +12,9 @@ public class FieldTests
     {
         public static int PublicStatic;
 
-        private static int PrivateStatic;
+        private static int privateStatic;
 
-        private string? PrivateInstance;
+        private string? privateInstance;
 
         public int A;
 
@@ -25,9 +25,9 @@ public class FieldTests
     {
         public static int PublicStatic;
 
-        private static int PrivateStatic;
+        private static int privateStatic;
 
-        private string? PrivateInstance;
+        private string? privateInstance;
 
         public int A;
 

@@ -1,6 +1,5 @@
 namespace Mikodev.Binary.SourceGeneration.UnionObjectTests.IntegrationTests;
 
-using Microsoft.FSharp.Core;
 using Mikodev.Binary.Attributes;
 using System;
 using System.Linq;
@@ -123,96 +122,96 @@ public class IntegrationTests
         Assert.Equal(converterSecond.GetType().BaseType, typeof(Converter<>).MakeGenericType(type));
     }
 
-    public static TheoryData<Pet, FSharpChoice<Cat, Dog>, Type, int> PetUnionAndFSharpChoiceTestData()
+    public static TheoryData<Pet, int> PetTestData()
     {
-        var data = new TheoryData<Pet, FSharpChoice<Cat, Dog>, Type, int>();
+        var data = new TheoryData<Pet, int>();
         var cat = new Cat(0xCCAA);
         var dog = new Dog("Spike");
-        data.Add(cat, FSharpChoice<Cat, Dog>.NewChoice1Of2(cat), typeof(FSharpChoice<Cat, Dog>), 0);
-        data.Add(dog, FSharpChoice<Cat, Dog>.NewChoice2Of2(dog), typeof(FSharpChoice<Cat, Dog>), 1);
+        data.Add(cat, 0);
+        data.Add(dog, 1);
         return data;
     }
 
-    public static TheoryData<Choice<double, string>, FSharpChoice<double, string>, Type, int> ChoiceUnionAndFSharpChoiceDoubleStringTestData()
+    public static TheoryData<Choice<double, string>, int> ChoiceDoubleStringTestData()
     {
-        var data = new TheoryData<Choice<double, string>, FSharpChoice<double, string>, Type, int>();
+        var data = new TheoryData<Choice<double, string>, int>();
         var a = new Choice<double, string>(1.0);
         var b = new Choice<double, string>("Two");
-        data.Add(a, FSharpChoice<double, string>.NewChoice1Of2(1.0), typeof(FSharpChoice<double, string>), 0);
-        data.Add(b, FSharpChoice<double, string>.NewChoice2Of2("Two"), typeof(FSharpChoice<double, string>), 1);
+        data.Add(a, 0);
+        data.Add(b, 1);
         return data;
     }
 
-    public static TheoryData<Choice<A, B>, FSharpChoice<A, B>, Type, int> ChoiceUnionAndFSharpChoiceABTestData()
+    public static TheoryData<Choice<A, B>, int> ChoiceABTestData()
     {
-        var data = new TheoryData<Choice<A, B>, FSharpChoice<A, B>, Type, int>();
+        var data = new TheoryData<Choice<A, B>, int>();
         var a = new A(4);
         var b = new B(7, "Seven");
-        data.Add(a, FSharpChoice<A, B>.NewChoice1Of2(a), typeof(FSharpChoice<A, B>), 0);
-        data.Add(b, FSharpChoice<A, B>.NewChoice2Of2(b), typeof(FSharpChoice<A, B>), 1);
+        data.Add(a, 0);
+        data.Add(b, 1);
         return data;
     }
 
-    public static TheoryData<Choice<B, A>, FSharpChoice<B, A>, Type, int> ChoiceUnionAndFSharpChoiceBATestData()
+    public static TheoryData<Choice<B, A>, int> ChoiceBATestData()
     {
-        var data = new TheoryData<Choice<B, A>, FSharpChoice<B, A>, Type, int>();
+        var data = new TheoryData<Choice<B, A>, int>();
         var a = new A(6);
         var b = new B(8, "Eight");
-        data.Add(b, FSharpChoice<B, A>.NewChoice1Of2(b), typeof(FSharpChoice<B, A>), 0);
-        data.Add(a, FSharpChoice<B, A>.NewChoice2Of2(a), typeof(FSharpChoice<B, A>), 1);
+        data.Add(b, 0);
+        data.Add(a, 1);
         return data;
     }
 
-    public static TheoryData<UnionWithVariousConstructors<int, string, double, object>, FSharpChoice<int, string>, Type, int> UnionWithVariousConstructorsCommonTestData()
+    public static TheoryData<UnionWithVariousConstructors<int, string, double, object>, int> UnionWithVariousConstructorsTestData()
     {
-        var data = new TheoryData<UnionWithVariousConstructors<int, string, double, object>, FSharpChoice<int, string>, Type, int>();
+        var data = new TheoryData<UnionWithVariousConstructors<int, string, double, object>, int>();
         var a = 6;
         var b = "Nice";
-        data.Add(a, FSharpChoice<int, string>.NewChoice1Of2(a), typeof(FSharpChoice<int, string>), 0);
-        data.Add(b, FSharpChoice<int, string>.NewChoice2Of2(b), typeof(FSharpChoice<int, string>), 1);
+        data.Add(a, 0);
+        data.Add(b, 1);
         return data;
     }
 
-    public static TheoryData<UnionWithMemberProvider<double>, FSharpChoice<double, Uri>, Type, int> UnionWithMemberProviderDoubleTestData()
+    public static TheoryData<UnionWithMemberProvider<double>, int> UnionWithMemberProviderDoubleTestData()
     {
-        var data = new TheoryData<UnionWithMemberProvider<double>, FSharpChoice<double, Uri>, Type, int>();
+        var data = new TheoryData<UnionWithMemberProvider<double>, int>();
         var a = 6.0;
         var b = new Uri("https://example.com");
-        data.Add(a, FSharpChoice<double, Uri>.NewChoice1Of2(a), typeof(FSharpChoice<double, Uri>), 0);
-        data.Add(b, FSharpChoice<double, Uri>.NewChoice2Of2(b), typeof(FSharpChoice<double, Uri>), 1);
+        data.Add(a, 0);
+        data.Add(b, 1);
         return data;
     }
 
-    public static TheoryData<UnionWithMemberProvider<string>, FSharpChoice<string, Uri>, Type, int> UnionWithMemberProviderStringTestData()
+    public static TheoryData<UnionWithMemberProvider<string>, int> UnionWithMemberProviderStringTestData()
     {
-        var data = new TheoryData<UnionWithMemberProvider<string>, FSharpChoice<string, Uri>, Type, int>();
+        var data = new TheoryData<UnionWithMemberProvider<string>, int>();
         var a = "Hello";
         var b = new Uri("https://example.com");
-        data.Add(a, FSharpChoice<string, Uri>.NewChoice1Of2(a), typeof(FSharpChoice<string, Uri>), 0);
-        data.Add(b, FSharpChoice<string, Uri>.NewChoice2Of2(b), typeof(FSharpChoice<string, Uri>), 1);
+        data.Add(a, 0);
+        data.Add(b, 1);
         return data;
     }
 
-    public static TheoryData<UnionWithoutAnyInterface<double, string>, FSharpChoice<double, string>, Type, int> UnionWithoutAnyInterfaceTestData()
+    public static TheoryData<UnionWithoutAnyInterface<double, string>, int> UnionWithoutAnyInterfaceTestData()
     {
-        var data = new TheoryData<UnionWithoutAnyInterface<double, string>, FSharpChoice<double, string>, Type, int>();
+        var data = new TheoryData<UnionWithoutAnyInterface<double, string>, int>();
         var a = 3.14;
         var b = "Pi";
-        data.Add(a, FSharpChoice<double, string>.NewChoice1Of2(a), typeof(FSharpChoice<double, string>), 0);
-        data.Add(b, FSharpChoice<double, string>.NewChoice2Of2(b), typeof(FSharpChoice<double, string>), 1);
+        data.Add(a, 0);
+        data.Add(b, 1);
         return data;
     }
 
     [Theory(DisplayName = "Union Encode Decode Test")]
-    [MemberData(nameof(PetUnionAndFSharpChoiceTestData))]
-    [MemberData(nameof(ChoiceUnionAndFSharpChoiceDoubleStringTestData))]
-    [MemberData(nameof(ChoiceUnionAndFSharpChoiceABTestData))]
-    [MemberData(nameof(ChoiceUnionAndFSharpChoiceBATestData))]
-    [MemberData(nameof(UnionWithVariousConstructorsCommonTestData))]
+    [MemberData(nameof(PetTestData))]
+    [MemberData(nameof(ChoiceDoubleStringTestData))]
+    [MemberData(nameof(ChoiceABTestData))]
+    [MemberData(nameof(ChoiceBATestData))]
+    [MemberData(nameof(UnionWithVariousConstructorsTestData))]
     [MemberData(nameof(UnionWithMemberProviderDoubleTestData))]
     [MemberData(nameof(UnionWithMemberProviderStringTestData))]
     [MemberData(nameof(UnionWithoutAnyInterfaceTestData))]
-    public void UnionEncodeDecodeTest<A, B>(A source, B contrast, Type contrastType, int tag)
+    public void UnionEncodeDecodeTest<A>(A source, int tag)
     {
         var unionValueGetter = default(Func<A, object?>);
         if (source is IUnion)
@@ -223,18 +222,15 @@ public class IntegrationTests
             unionValueGetter = x => typeof(A).GetProperty("Value")?.GetValue(x);
         var sourceIntent = unionValueGetter.Invoke(source);
         Assert.NotNull(sourceIntent);
-        var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().Build();
+        var generator = Generator.CreateDefault();
         var generatorSecond = Generator.CreateAotBuilder()
             .AddConverterCreators(IntegrationGeneratorContext.ConverterCreators.Values)
             .Build();
         var converter = generator.GetConverter<A>();
-        var converterContrast = generator.GetConverter(contrastType);
         var converterSecond = generatorSecond.GetConverter<A>();
         var buffer = converter.Encode(source);
-        var bufferContrast = converterContrast.Encode(contrast);
         var bufferSecond = converterSecond.Encode(source);
-        Assert.Equal(bufferContrast, buffer);
-        Assert.Equal(bufferContrast, bufferSecond);
+        Assert.Equal(buffer, bufferSecond);
         var span = new ReadOnlySpan<byte>(buffer);
         var head = Converter.Decode(ref span);
         var intent = generator.Encode(sourceIntent);
@@ -253,15 +249,15 @@ public class IntegrationTests
     }
 
     [Theory(DisplayName = "Union Encode Auto Decode Auto Test")]
-    [MemberData(nameof(PetUnionAndFSharpChoiceTestData))]
-    [MemberData(nameof(ChoiceUnionAndFSharpChoiceDoubleStringTestData))]
-    [MemberData(nameof(ChoiceUnionAndFSharpChoiceABTestData))]
-    [MemberData(nameof(ChoiceUnionAndFSharpChoiceBATestData))]
-    [MemberData(nameof(UnionWithVariousConstructorsCommonTestData))]
+    [MemberData(nameof(PetTestData))]
+    [MemberData(nameof(ChoiceDoubleStringTestData))]
+    [MemberData(nameof(ChoiceABTestData))]
+    [MemberData(nameof(ChoiceBATestData))]
+    [MemberData(nameof(UnionWithVariousConstructorsTestData))]
     [MemberData(nameof(UnionWithMemberProviderDoubleTestData))]
     [MemberData(nameof(UnionWithMemberProviderStringTestData))]
     [MemberData(nameof(UnionWithoutAnyInterfaceTestData))]
-    public void UnionEncodeAutoDecodeAutoTest<A, B>(A source, B contrast, Type contrastType, int tag) where B : class
+    public void UnionEncodeAutoDecodeAutoTest<A>(A source, int tag)
     {
         var unionValueGetter = default(Func<A, object?>);
         if (source is IUnion)
@@ -272,18 +268,15 @@ public class IntegrationTests
             unionValueGetter = x => typeof(A).GetProperty("Value")?.GetValue(x);
         var sourceIntent = unionValueGetter.Invoke(source);
         Assert.NotNull(sourceIntent);
-        var generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().Build();
+        var generator = Generator.CreateDefault();
         var generatorSecond = Generator.CreateAotBuilder()
             .AddConverterCreators(IntegrationGeneratorContext.ConverterCreators.Values)
             .Build();
         var converter = generator.GetConverter<A>();
-        var converterContrast = generator.GetConverter(contrastType);
         var converterSecond = generatorSecond.GetConverter<A>();
         var buffer = Allocator.Invoke(source, converter.EncodeAuto);
-        var bufferContrast = Allocator.Invoke((object)contrast, converterContrast.EncodeAuto);
         var bufferSecond = Allocator.Invoke(source, converterSecond.EncodeAuto);
-        Assert.Equal(bufferContrast, buffer);
-        Assert.Equal(bufferContrast, bufferSecond);
+        Assert.Equal(buffer, bufferSecond);
         var span = new ReadOnlySpan<byte>(buffer);
         var head = Converter.Decode(ref span);
         var intent = Allocator.Invoke(sourceIntent, generator.GetConverter(sourceIntent.GetType()).EncodeAuto);
