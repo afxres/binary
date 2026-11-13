@@ -36,7 +36,7 @@ let ``IReadOnlySet`` () =
     let buffer = converter.Encode set
     let result = converter.Decode buffer
     let target = Assert.IsType<HashSet<int>> result
-    Assert.Equal<int>(data |> HashSet, target)
+    Assert.Equal<int seq>(data |> HashSet, target)
     ()
 
 [<Fact>]

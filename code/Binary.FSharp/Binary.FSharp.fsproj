@@ -1,16 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>net10.0</TargetFrameworks>
     <AssemblyName>Mikodev.Binary.FSharp</AssemblyName>
     <RootNamespace>Mikodev.Binary</RootNamespace>
-    <Description>Serialization library for C# and F#.</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>binary;serialization;fsharp</PackageTags>
-    <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/afxres/binary.git</RepositoryUrl>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -39,5 +33,4 @@
   <ItemGroup>
     <PackageReference Include="FSharp.Core" />
   </ItemGroup>
-
 </Project>

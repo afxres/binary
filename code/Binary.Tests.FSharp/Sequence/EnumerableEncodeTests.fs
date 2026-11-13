@@ -41,14 +41,14 @@ let Test (collection: 'T :> FakeEnumerable<'E>) (expected: string seq) =
     let steps = collection.Steps
     Assert.Empty steps
     converter.Encode collection |> ignore
-    Assert.Equal<string>(expected, steps)
+    Assert.Equal<string seq>(expected, steps)
     ()
 
 let TestValue (collection: 'T) (expected: string seq) (steps: 'T -> string seq) =
     let converter = TestType collection steps
     Assert.Empty(steps collection)
     converter.Encode collection |> ignore
-    Assert.Equal<string>(expected, steps collection)
+    Assert.Equal<string seq>(expected, steps collection)
     ()
 
 type FakeValueTypeEnumerator<'T> =
@@ -327,7 +327,7 @@ let ``Encode Custom Value Type Enumerator 'MoveNext' Throw Exception`` () =
     let converter = TestType source (fun x -> x.Steps :> _)
     let error = Assert.Throws<Exception>(fun () -> converter.Encode source |> ignore)
     Assert.Equal("Error!", error.Message)
-    Assert.Equal<string>([| "Dispose" |], source.Steps)
+    Assert.Equal<string seq>([| "Dispose" |], source.Steps)
     ()
 
 [<Fact>]
@@ -361,7 +361,7 @@ let ``Encode Custom Value Type Enumerator 'Current' Throw Exception`` () =
     let converter = TestType source (fun x -> x.Steps :> _)
     let error = Assert.Throws<Exception>(fun () -> converter.Encode source |> ignore)
     Assert.Equal("Unknown!", error.Message)
-    Assert.Equal<string>([| "MoveNext"; "Dispose" |], source.Steps)
+    Assert.Equal<string seq>([| "MoveNext"; "Dispose" |], source.Steps)
     ()
 
 [<Fact>]

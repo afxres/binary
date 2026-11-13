@@ -18,8 +18,8 @@ type ListTests() =
         Assert.Equal(1 * 4 + 15, bytesB |> Array.length)
         let valueA = generator.Decode<int ResizeArray> bytesA
         let valueB = generator.Decode<string ResizeArray> bytesB
-        Assert.Equal<int>(a, valueA)
-        Assert.Equal<string>(b, valueB)
+        Assert.Equal<int seq>(a, valueA)
+        Assert.Equal<string seq>(b, valueB)
         ()
 
     [<Fact(DisplayName = "List (null and empty)")>]

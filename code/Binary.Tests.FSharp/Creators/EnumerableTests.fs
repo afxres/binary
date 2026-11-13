@@ -23,7 +23,7 @@ type EnumerableTests() =
         let arrayInterfacesGeneric = arrayInterfaces |> Array.filter (typeof<int seq>.IsAssignableFrom) in
         for i in arrayInterfacesGeneric do
             types.Add(i.GetGenericTypeDefinition()) |> ignore
-        Assert.Equal<Type>(HashSet v, types)
+        Assert.Equal<Type seq>(HashSet v, types)
         ()
 
     [<Fact>]
@@ -32,7 +32,7 @@ type EnumerableTests() =
         let bytes = generator.Encode a
         Assert.Equal(24, bytes |> Array.length)
         let value = generator.Decode<IList<float>> bytes
-        Assert.Equal<float>(a, value)
+        Assert.Equal<float seq>(a, value)
         Assert.IsType<float ResizeArray> value |> ignore
         ()
 
@@ -42,7 +42,7 @@ type EnumerableTests() =
         let bytes = generator.Encode a
         Assert.Equal(12, bytes |> Array.length)
         let value = generator.Decode<IList<int>> bytes
-        Assert.Equal<int>(a, value)
+        Assert.Equal<int seq>(a, value)
         Assert.IsType<int ResizeArray> value |> ignore
         ()
 
@@ -52,7 +52,7 @@ type EnumerableTests() =
         let bytes = generator.Encode a
         Assert.Equal(1 * 2 + 9, bytes |> Array.length)
         let value = generator.Decode<IReadOnlyList<string>> bytes
-        Assert.Equal<string>(a, value)
+        Assert.Equal<string seq>(a, value)
         Assert.IsType<string ResizeArray> value |> ignore
         ()
 
@@ -62,7 +62,7 @@ type EnumerableTests() =
         let bytes = generator.Encode a
         Assert.Equal(24, bytes |> Array.length)
         let value = generator.Decode<ICollection<float>> bytes
-        Assert.Equal<float>(a, value)
+        Assert.Equal<float seq>(a, value)
         Assert.IsType<float ResizeArray> value |> ignore
         ()
 
@@ -72,7 +72,7 @@ type EnumerableTests() =
         let bytes = generator.Encode a
         Assert.Equal(16, bytes |> Array.length)
         let value = generator.Decode<IReadOnlyCollection<int>> bytes
-        Assert.Equal<int>(a, value)
+        Assert.Equal<int seq>(a, value)
         Assert.IsType<int ResizeArray> value |> ignore
         ()
 
@@ -84,6 +84,6 @@ type EnumerableTests() =
         }
         let bytes = generator.Encode a
         let value = generator.Decode<string seq> bytes
-        Assert.Equal<string>(a, value)
+        Assert.Equal<string seq>(a, value)
         Assert.IsType<string ResizeArray> value |> ignore
         ()

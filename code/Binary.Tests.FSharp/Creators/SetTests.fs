@@ -12,7 +12,7 @@ let ``HashSet Instance`` () =
     let bytes = generator.Encode a
     Assert.Equal(16, bytes |> Array.length)
     let value = generator.Decode<HashSet<int>> bytes
-    Assert.Equal<int>(a, value)
+    Assert.Equal<int seq>(a, value)
     ()
 
 [<Fact>]
@@ -26,6 +26,6 @@ let ``ISet Interface`` () =
         :> ISet<string>
     let bytes = generator.Encode a
     let value = generator.Decode<ISet<string>> bytes
-    Assert.Equal<string>(a, value)
+    Assert.Equal<string seq>(a, value)
     Assert.IsType<HashSet<string>> value |> ignore
     ()

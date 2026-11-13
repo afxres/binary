@@ -1,19 +1,51 @@
 <Project>
+  <!-- Language version is pinned to an exact value instead of 'latest' / 'preview'
+       so that an SDK upgrade cannot silently change compilation semantics. -->
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
-    <LangVersion>latest</LangVersion>
+    <LangVersion>15.0</LangVersion>
     <Nullable>enable</Nullable>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
-    <LangVersion>9</LangVersion>
+    <LangVersion>11.0</LangVersion>
   </PropertyGroup>
 
+  <!-- Shared test project defaults. Test projects are the 'Binary*Tests' ones;
+       benchmark projects (Benchmarks.*Tests) are deliberately excluded. -->
+  <PropertyGroup>
+    <IsBinaryTestProject Condition="$(MSBuildProjectName.StartsWith('Binary')) And $(MSBuildProjectName.Contains('Tests'))">true</IsBinaryTestProject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsBinaryTestProject)' == 'true'">
+    <IsPackable>false</IsPackable>
+    <NoWarn>$(NoWarn);CA1861;xUnit1042</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsBinaryTestProject)' == 'true'">
+    <PackageReference Include="coverlet.MTP">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Product metadata shared by the shipped libraries. GeneratePackageOnBuild and
+       PackageTags stay in the owning project because they are not identical. -->
   <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Binary' Or '$(MSBuildProjectName)' == 'Binary.FSharp' Or '$(MSBuildProjectName)' == 'Binary.SourceGeneration'">
     <Version>5.10.1</Version>
     <Copyright>Mikodev $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
     <Authors>Mikodev</Authors>
     <Company>Mikodev</Company>
     <Product>Mikodev.Binary</Product>
+    <Description>Serialization library for C# and F#.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/afxres/binary</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/afxres/binary.git</RepositoryUrl>
   </PropertyGroup>
 </Project>

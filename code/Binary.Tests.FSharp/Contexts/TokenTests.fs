@@ -128,7 +128,7 @@ type TokenTests() =
         Assert.Null token.Parent
         let children = token.Children
         Assert.Equal(2, children.Count)
-        Assert.Equal<string>([| "id"; "name" |] |> SortedSet, children.Keys |> SortedSet)
+        Assert.Equal<string seq>([| "id"; "name" |] |> SortedSet, children.Keys |> SortedSet)
         ()
 
     [<Fact>]
@@ -264,7 +264,7 @@ type TokenTests() =
         let token = Token(generator, ReadOnlyMemory buffer)
         let meta = (token :> IDynamicMetaObjectProvider).GetMetaObject(Expression.Parameter(typeof<Token>))
         let names = meta.GetDynamicMemberNames()
-        Assert.Equal<string>(names |> SortedSet, token.Children.Keys |> SortedSet)
+        Assert.Equal<string seq>(names |> SortedSet, token.Children.Keys |> SortedSet)
         ()
 
     [<Fact>]
@@ -278,7 +278,7 @@ type TokenTests() =
         let generator = Generator.CreateDefaultBuilder().AddConverter(converter).Build()
         let buffer = Generator.CreateDefault().Encode({| alpha = 10; bravo = "text" |})
         let token = Token(generator, ReadOnlyMemory buffer)
-        Assert.Equal<string>([| "alpha"; "bravo" |], token.Children.Keys |> Seq.sort)
+        Assert.Equal<string seq>([| "alpha"; "bravo" |], token.Children.Keys |> Seq.sort)
         ()
 
     [<Fact>]

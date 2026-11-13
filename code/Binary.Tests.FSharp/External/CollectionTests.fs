@@ -49,7 +49,7 @@ let ``List (empty)`` () =
     let result: string list = generator.Decode buffer
 
     Assert.Empty(buffer)
-    Assert.Equal<string>(ResizeArray source, ResizeArray result)
+    Assert.Equal<string seq>(ResizeArray source, ResizeArray result)
     ()
 
 [<Fact>]
@@ -103,7 +103,7 @@ let ``List (class type, no stack overflow)`` (count: int) =
         |> Seq.toList
     let buffer = generator.Encode source
     let result = generator.Decode<string list> buffer
-    Assert.Equal<string>(ResizeArray source, ResizeArray result)
+    Assert.Equal<string seq>(ResizeArray source, ResizeArray result)
     ()
 
 [<Fact>]

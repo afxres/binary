@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>net10.0</TargetFrameworks>
     <AssemblyName>Mikodev.Binary.Experimental</AssemblyName>
@@ -19,5 +18,4 @@
   <ItemGroup>
     <ProjectReference Include="..\Binary\Binary.csproj" />
   </ItemGroup>
-
 </Project>

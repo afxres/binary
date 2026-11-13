@@ -131,8 +131,8 @@ let ``Class Via Constructor Ordered`` () =
     let properties = typeof<AlphaUnordered>.GetProperties()
     let parameterNames = parameters |> Array.map (fun x -> x.Name.ToUpperInvariant())
     let propertyNames = properties |> Array.map (fun x -> x.Name.ToUpperInvariant())
-    Assert.NotEqual<string>(parameterNames, propertyNames)
-    Assert.Equal<string>(parameterNames |> Set.ofArray, propertyNames |> Set.ofArray)
+    Assert.NotEqual<string seq>(parameterNames, propertyNames)
+    Assert.Equal<string seq>(parameterNames |> Set.ofArray, propertyNames |> Set.ofArray)
     let source = AlphaUnordered(100, "data source", 2.718)
     let buffer = generator.Encode source
     let result = generator.Decode<AlphaUnordered> buffer

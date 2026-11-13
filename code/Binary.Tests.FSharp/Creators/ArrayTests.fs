@@ -19,8 +19,8 @@ type ArrayTests() =
         Assert.Equal(1 * 3 + 5 + 4 + 7, bytesB.Length)
         let valueA = generator.Decode<int array> bytesA
         let valueB = generator.Decode<string array> bytesB
-        Assert.Equal<int>(a, valueA)
-        Assert.Equal<string>(b, valueB)
+        Assert.Equal<int seq>(a, valueA)
+        Assert.Equal<string seq>(b, valueB)
         ()
 
     [<Fact>]
@@ -31,7 +31,7 @@ type ArrayTests() =
             let buffer = converter.Encode source
             let result = converter.Decode buffer
             Assert.Equal(i, result.Length)
-            Assert.Equal<string>(source, result)
+            Assert.Equal<string seq>(source, result)
         ()
 
     [<Fact>]
