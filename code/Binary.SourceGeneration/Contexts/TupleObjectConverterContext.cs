@@ -32,7 +32,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     private void AppendConverterTail()
     {
         Output.AppendIndent(1, $"}}");
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
     }
 
     private void AppendExceptMethod()
@@ -44,7 +44,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
         Output.AppendIndent(2, $"{{");
         Output.AppendIndent(3, $"throw new System.ArgumentException($\"Tuple cannot be null, type: {{typeof({SymbolTypeFullName})}}\");");
         Output.AppendIndent(2, $"}}");
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
         CancellationToken.ThrowIfCancellationRequested();
     }
 
@@ -59,7 +59,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
         Output.AppendIndent(4, $"return;");
         Output.AppendIndent(3, $"Except();");
         Output.AppendIndent(2, $"}}");
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
         CancellationToken.ThrowIfCancellationRequested();
     }
 
@@ -75,14 +75,14 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     {
         var members = this.members;
         if (auto)
-            Output.AppendIndent();
+            Output.AppendEmptyLine();
         Output.AppendIndent(2, $"public override void {(auto ? "EncodeAuto" : "Encode")}(ref Mikodev.Binary.Allocator allocator, {SymbolTypeFullName} item)");
         Output.AppendIndent(2, $"{{");
         AppendEnsureContext();
         for (var i = 0; i < members.Length; i++)
         {
             var flag = auto || (i != members.Length - 1);
-            Output.AppendIndent(3, $"cvt{i}.{(flag ? "EncodeAuto" : "Encode")}(ref allocator, item.{members[i].NameInSourceCode});");
+            Output.AppendIndent(3, $"cvt{i}.{(flag ? "EncodeAuto" : "Encode")}(ref allocator, item.{members[i].EscapedName});");
             CancellationToken.ThrowIfCancellationRequested();
         }
         Output.AppendIndent(2, $"}}");
@@ -92,7 +92,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
     {
         var members = this.members;
         var constructor = this.constructor;
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
         Output.AppendIndent(2, $"public override {SymbolTypeFullName} {(auto ? "DecodeAuto" : "Decode")}({(auto ? "ref" : "in")} System.ReadOnlySpan<byte> span)");
         Output.AppendIndent(2, $"{{");
         if (constructor is null)
@@ -127,7 +127,7 @@ public sealed partial class TupleObjectConverterContext : SymbolConverterContext
         Output.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ");", members.Length, x => $"cvt{x}");
     }
 
-    protected override void Handle()
+    protected override void Emit()
     {
         AppendConverterHead();
         AppendExceptMethod();

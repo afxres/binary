@@ -29,7 +29,7 @@ public sealed partial class UnionObjectConverterContext
             return null;
         var attributes = symbol.GetAttributes();
         var systemUnionAttribute = context.GetAttribute(symbol, "System.Runtime.CompilerServices.UnionAttribute");
-        var systemUnionInterface = symbol.Interfaces.FirstOrDefault(x => context.Equals(x, "System.Runtime.CompilerServices.IUnion"));
+        var systemUnionInterface = symbol.Interfaces.FirstOrDefault(x => context.IsType(x, "System.Runtime.CompilerServices.IUnion"));
         if (systemUnionAttribute is null && systemUnionInterface is null)
             return null;
         var caseTypeList = default(List<ITypeSymbol>);
@@ -38,9 +38,9 @@ public sealed partial class UnionObjectConverterContext
         if (caseTypeList is null or { Count: 0 })
             caseTypeList = [.. namedType.InstanceConstructors.Select(SelectUnionCaseType).OfType<ITypeSymbol>()];
         if (caseTypeList is null or { Count: 0 } || caseTypeList.Distinct(SymbolEqualityComparer.Default).Count() != caseTypeList.Count)
-            return new SourceResultWithDiagnostic([(Constants.TypeNotRecognized, ["UnionObject", Symbols.GetSymbolDiagnosticDisplayString(symbol)])]);
+            return new SourceResult.Diagnostic([(Diagnostics.TypeNotRecognized, ["UnionObject", Symbols.GetSymbolDiagnosticDisplayString(symbol)])]);
         var caseList = caseTypeList.Select((x, i) => new UnionCaseInfo(i, x)).ToList();
         caseList.Sort((a, b) => Symbols.CompareConversion(context.Compilation, a.Type, b.Type));
-        return new UnionObjectConverterContext(context, tracker, symbol, [.. caseList]).Invoke();
+        return new UnionObjectConverterContext(context, tracker, symbol, [.. caseList]).Build();
     }
 }

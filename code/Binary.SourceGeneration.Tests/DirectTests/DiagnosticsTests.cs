@@ -5,12 +5,12 @@ using System.Linq;
 using System.Reflection;
 using Xunit;
 
-public class ConstantsTests
+public class DiagnosticsTests
 {
     [Fact(DisplayName = "Diagnostic Descriptors Test")]
     public void DiagnosticDescriptorsTest()
     {
-        var members = typeof(Constants).GetMembers(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+        var members = typeof(Diagnostics).GetMembers(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
         var descriptorProperties = members.OfType<PropertyInfo>().Where(x => x.PropertyType == typeof(DiagnosticDescriptor)).ToList();
         var descriptors = descriptorProperties.Select(x => Assert.IsType<DiagnosticDescriptor>(x.GetValue(null), exactMatch: false)).ToList();
         Assert.NotEmpty(descriptors);

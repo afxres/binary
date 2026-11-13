@@ -1,15 +1,18 @@
 namespace Mikodev.Binary.SourceGeneration.Contexts;
 
 using Microsoft.CodeAnalysis;
+using Mikodev.Binary.SourceGeneration.Internal;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 public sealed partial class TupleObjectConverterContext
 {
     private static int GetCustomTupleKey(SourceGeneratorContext context, ISymbol member)
     {
-        return context.GetAttribute(member, Constants.TupleKeyAttributeTypeName)?.ConstructorArguments.Single().Value as int? ?? -1;
+        var attribute = context.GetAttribute(member, Constants.TupleKeyAttributeTypeName);
+        if (attribute is null)
+            return -1;
+        return attribute.TryGetConstructorArgument<int>(out var key) ? key : -1;
     }
 
     private static bool IsSystemTuple(SourceGeneratorContext context, ITypeSymbol type)
@@ -42,8 +45,8 @@ public sealed partial class TupleObjectConverterContext
         }
         var members = dictionary.Values.ToImmutableArray();
         if (members.Length is 0)
-            return new SourceResult(SourceStatus.Error);
+            return new SourceResult.Ignored();
         var constructor = Symbols.GetConstructor(context, typeInfo, members);
-        return new TupleObjectConverterContext(context, tracker, symbol, members, constructor).Invoke();
+        return new TupleObjectConverterContext(context, tracker, symbol, members, constructor).Build();
     }
 }

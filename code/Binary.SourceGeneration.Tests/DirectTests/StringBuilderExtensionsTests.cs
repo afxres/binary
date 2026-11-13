@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using Xunit;
 
-public class SystemExtensionsTests
+public class StringBuilderExtensionsTests
 {
     [Theory(DisplayName = "Indent Levels Invalid Argument Test")]
     [InlineData(-1)]
@@ -14,8 +14,8 @@ public class SystemExtensionsTests
     public void IndentLevelsInvalidArgumentTest(int indent)
     {
         var builder = new StringBuilder();
-        var f = new Action<StringBuilder, int, string>(SystemExtensions.AppendIndent);
-        var g = new Action<StringBuilder, int, string, string, int, Func<int, string>>(SystemExtensions.AppendIndent);
+        var f = new Action<StringBuilder, int, string>(StringBuilderExtensions.AppendIndent);
+        var g = new Action<StringBuilder, int, string, string, int, Func<int, string>>(StringBuilderExtensions.AppendIndent);
         var a = Assert.Throws<ArgumentOutOfRangeException>(() => f.Invoke(builder, indent, string.Empty));
         var b = Assert.Throws<ArgumentOutOfRangeException>(() => g.Invoke(builder, indent, string.Empty, string.Empty, 0, _ => string.Empty));
         Assert.NotNull(a.ParamName);
@@ -32,8 +32,8 @@ public class SystemExtensionsTests
     {
         var a = new StringBuilder();
         var b = new StringBuilder();
-        SystemExtensions.AppendIndent(a, indent, string.Empty);
-        SystemExtensions.AppendIndent(b, indent, string.Empty, string.Empty, 0, _ => string.Empty);
+        StringBuilderExtensions.AppendIndent(a, indent, string.Empty);
+        StringBuilderExtensions.AppendIndent(b, indent, string.Empty, string.Empty, 0, _ => string.Empty);
         var buffer = (stackalloc char[expectedLength]);
         buffer.Fill(' ');
         var expected = string.Concat(buffer, Environment.NewLine);

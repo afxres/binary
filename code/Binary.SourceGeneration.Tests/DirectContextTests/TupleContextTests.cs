@@ -26,13 +26,11 @@ public class TupleContextTests
         Assert.NotNull(valueTupleSymbol);
         var context = new SourceGeneratorContext(compilation, _ => Assert.Fail("Invalid Call!"), CancellationToken.None);
         var tracker = new SourceGeneratorTracker(_ => Assert.Fail("Invalid Call!"));
-        var result = Assert.IsType<SourceResultWithDiagnostic>(TupleConverterContext.Invoke(context, tracker, valueTupleSymbol));
+        var result = Assert.IsType<SourceResult.Diagnostic>(TupleConverterContext.Invoke(context, tracker, valueTupleSymbol)?.Value);
         var (descriptor, messageArguments) = Assert.Single(result.DiagnosticArguments);
         Assert.NotNull(messageArguments);
         Assert.Equal(2, messageArguments.Length);
-        Assert.NotNull(result);
-        Assert.Equal(SourceStatus.Diagnostic, result.Status);
-        Assert.Equal(Constants.TypeNotRecognized, descriptor);
+        Assert.Equal(Diagnostics.TypeNotRecognized, descriptor);
         Assert.Equal("Tuple", messageArguments[0]);
         Assert.Equal(Symbols.GetSymbolDiagnosticDisplayString(valueTupleSymbol), messageArguments[1]);
 

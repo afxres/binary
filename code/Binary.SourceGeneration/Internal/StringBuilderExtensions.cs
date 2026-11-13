@@ -1,17 +1,15 @@
 namespace Mikodev.Binary.SourceGeneration.Internal;
 
 using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Text;
 
-public static class SystemExtensions
+public static class StringBuilderExtensions
 {
     public const int IndentSize = 4;
 
     public const int MaxIndentLevels = 16;
 
-    public static void AppendIndent(this StringBuilder target)
+    public static void AppendEmptyLine(this StringBuilder target)
     {
         _ = target.AppendLine();
     }
@@ -41,27 +39,5 @@ public static class SystemExtensions
         }
         _ = target.Append(tail);
         _ = target.AppendLine();
-    }
-
-    public static bool TryAdd<K, V>(this IDictionary<K, V> dictionary, K key, V value)
-    {
-        if (dictionary.ContainsKey(key))
-            return false;
-        dictionary.Add(key, value);
-        return true;
-    }
-
-    public static void ForEach<T>(this ImmutableArray<T> values, Action<T> action)
-    {
-        foreach (var i in values)
-            action.Invoke(i);
-        return;
-    }
-
-    public static void ForEach<T>(this ImmutableArray<T> values, Action<int, T> action)
-    {
-        for (var i = 0; i < values.Length; i++)
-            action.Invoke(i, values[i]);
-        return;
     }
 }

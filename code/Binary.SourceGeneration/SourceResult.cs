@@ -3,19 +3,11 @@ namespace Mikodev.Binary.SourceGeneration;
 using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
 
-public class SourceResult(SourceStatus status)
+public readonly union SourceResult(SourceResult.Success, SourceResult.Ignored, SourceResult.Diagnostic)
 {
-    public SourceStatus Status { get; } = status;
-}
+    public readonly record struct Success(string ConverterCreatorTypeName, string SourceCode);
 
-public class SourceResultWithSourceCode(string converterCreatorTypeName, string sourceCode) : SourceResult(SourceStatus.Ok)
-{
-    public string ConverterCreatorTypeName { get; } = converterCreatorTypeName;
+    public readonly record struct Ignored;
 
-    public string SourceCode { get; } = sourceCode;
-}
-
-public class SourceResultWithDiagnostic(ImmutableArray<(DiagnosticDescriptor Descriptor, object?[]? MessageArguments)> diagnosticArguments) : SourceResult(SourceStatus.Diagnostic)
-{
-    public ImmutableArray<(DiagnosticDescriptor Descriptor, object?[]? MessageArguments)> DiagnosticArguments { get; } = diagnosticArguments;
+    public readonly record struct Diagnostic(ImmutableArray<(DiagnosticDescriptor Descriptor, object?[]? MessageArguments)> DiagnosticArguments);
 }

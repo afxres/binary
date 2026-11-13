@@ -3,12 +3,13 @@ namespace Mikodev.Binary.SourceGeneration.Contexts;
 using Microsoft.CodeAnalysis;
 using Mikodev.Binary.SourceGeneration.Internal;
 using System;
+using static Mikodev.Binary.SourceGeneration.Contexts.CollectionSupportedTypes;
 
 public sealed partial class CollectionConverterContext : SymbolConverterContext
 {
-    private readonly TypeInfo info;
+    private readonly CollectionSupportedTypes.Info info;
 
-    private CollectionConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, TypeInfo info) : base(context, tracker, symbol)
+    private CollectionConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, CollectionSupportedTypes.Info info) : base(context, tracker, symbol)
     {
         var types = info.ElementTypes;
         types.ForEach(AddType);
@@ -28,7 +29,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
     private void AppendConverterTail()
     {
         Output.AppendIndent(1, $"}}");
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
     }
 
     private void AppendEnsureContext()
@@ -102,15 +103,15 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
     private void AppendDecodeMethod()
     {
         var info = this.info;
-        var action = info.ConstructorArgumentKind switch
+        var action = info.Kind switch
         {
-            ConstructorArgumentKind.List => AppendDecodeList,
-            ConstructorArgumentKind.HashSet => AppendDecodeHashSet,
-            ConstructorArgumentKind.Dictionary => AppendDecodeDictionary,
-            ConstructorArgumentKind.KeyValueEnumerable => AppendDecodeKeyValueEnumerable,
+            ConstructorKind.List => AppendDecodeList,
+            ConstructorKind.HashSet => AppendDecodeHashSet,
+            ConstructorKind.Dictionary => AppendDecodeDictionary,
+            ConstructorKind.KeyValueEnumerable => AppendDecodeKeyValueEnumerable,
             _ => default(Action),
         };
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
         Output.AppendIndent(2, $"public override {SymbolTypeFullName} Decode(in System.ReadOnlySpan<byte> span)");
         Output.AppendIndent(2, $"{{");
         if (action is null)
@@ -121,7 +122,7 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
         {
             Output.AppendIndent(3, $"var body = span;");
             action.Invoke();
-            var method = info.ConstructorExpression;
+            var method = info.Expression;
             if (string.IsNullOrEmpty(method))
                 method = $"new {SymbolTypeFullName}({ConstructorArgument})";
             Output.AppendIndent(3, $"return {method};");
@@ -137,13 +138,13 @@ public sealed partial class CollectionConverterContext : SymbolConverterContext
         for (var i = 0; i < elements.Length; i++)
         {
             var element = elements[i];
-            AppendAssignConverterExplicit(element, $"cvt{i}", GetTypeFullName(i));
+            AppendConverterFromContext(element, $"cvt{i}", GetTypeFullName(i));
             CancellationToken.ThrowIfCancellationRequested();
         }
         Output.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ");", elements.Length, x => $"cvt{x}");
     }
 
-    protected override void Handle()
+    protected override void Emit()
     {
         AppendConverterHead();
         AppendEncodeMethod();

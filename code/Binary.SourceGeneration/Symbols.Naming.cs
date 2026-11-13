@@ -23,32 +23,32 @@ public static partial class Symbols
         return symbol.ToDisplayString(SymbolDiagnosticDisplayFormat);
     }
 
-    public static string GetNameInSourceCode(string name)
+    public static string EscapeIdentifier(string name)
     {
         return IsKeyword(name) ? $"@{name}" : name;
     }
 
-    public static void GetNameInSourceCode(StringBuilder target, string name)
+    public static void EscapeIdentifier(StringBuilder target, string name)
     {
         if (IsKeyword(name))
             _ = target.Append('@');
         _ = target.Append(name);
     }
 
-    public static string GetNamespaceInSourceCode(INamespaceSymbol @namespace)
+    public static string EscapeNamespace(INamespaceSymbol @namespace)
     {
         var target = new StringBuilder();
-        GetNamespaceInSourceCode(target, @namespace);
+        EscapeNamespace(target, @namespace);
         return target.ToString();
     }
 
-    public static void GetNamespaceInSourceCode(StringBuilder target, INamespaceSymbol @namespace)
+    public static void EscapeNamespace(StringBuilder target, INamespaceSymbol @namespace)
     {
         var source = @namespace.ToDisplayParts();
         foreach (var i in source)
         {
             if (i.Symbol is { } symbol)
-                GetNameInSourceCode(target, symbol.Name);
+                EscapeIdentifier(target, symbol.Name);
             else
                 _ = target.Append('.');
         }
@@ -68,7 +68,7 @@ public static partial class Symbols
         {
             const string Global = "global::";
             _ = target.Append(Global);
-            GetNamespaceInSourceCode(target, @namespace);
+            EscapeNamespace(target, @namespace);
         }
 
         static void InvokeArrayTypeSymbol(StringBuilder target, IArrayTypeSymbol symbol)
@@ -90,7 +90,7 @@ public static partial class Symbols
 
             if (containing is not null || @namespace.IsGlobalNamespace is false)
                 _ = target.Append('.');
-            GetNameInSourceCode(target, symbol.Name);
+            EscapeIdentifier(target, symbol.Name);
             var arguments = symbol.TypeArguments;
             if (arguments.Length is 0)
                 return;

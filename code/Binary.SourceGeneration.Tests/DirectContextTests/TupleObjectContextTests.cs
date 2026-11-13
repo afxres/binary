@@ -43,9 +43,7 @@ public class TupleObjectContextTests
         Assert.NotNull(valueTupleSymbol);
         var context = new SourceGeneratorContext(compilation, _ => Assert.Fail("Invalid Call!"), CancellationToken.None);
         var tracker = new SourceGeneratorTracker(_ => Assert.Fail("Invalid Call!"));
-        var result = Assert.IsType<SourceResult>(TupleObjectConverterContext.Invoke(context, tracker, valueTupleSymbol));
-        Assert.NotNull(result);
-        Assert.Equal(SourceStatus.Error, result.Status);
+        _ = Assert.IsType<SourceResult.Ignored>(TupleObjectConverterContext.Invoke(context, tracker, valueTupleSymbol)?.Value);
 
         var typeName = "TupleObjectWithoutMember";
         var generator = new SourceGenerator();

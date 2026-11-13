@@ -29,14 +29,14 @@ public sealed partial class TupleConverterContext : SymbolConverterContext
     private void AppendConverterTail()
     {
         Output.AppendIndent(1, $"}}");
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
     }
 
     private void AppendEncodeMethod(bool auto)
     {
         var members = this.members;
         if (auto)
-            Output.AppendIndent();
+            Output.AppendEmptyLine();
         Output.AppendIndent(2, $"public override void {(auto ? "EncodeAuto" : "Encode")}(ref Mikodev.Binary.Allocator allocator, {SymbolTypeFullName} item)");
         Output.AppendIndent(2, $"{{");
         for (var i = 0; i < members.Length; i++)
@@ -51,7 +51,7 @@ public sealed partial class TupleConverterContext : SymbolConverterContext
     private void AppendDecodeMethod(bool auto)
     {
         var members = this.members;
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
         Output.AppendIndent(2, $"public override {SymbolTypeFullName} {(auto ? "DecodeAuto" : "Decode")}({(auto ? "ref" : "in")} System.ReadOnlySpan<byte> span)");
         Output.AppendIndent(2, $"{{");
         if (auto is false)
@@ -74,13 +74,13 @@ public sealed partial class TupleConverterContext : SymbolConverterContext
         for (var i = 0; i < members.Length; i++)
         {
             var member = members[i];
-            AppendAssignConverterExplicit(member.Type, $"cvt{i}", GetTypeFullName(i));
+            AppendConverterFromContext(member.Type, $"cvt{i}", GetTypeFullName(i));
             CancellationToken.ThrowIfCancellationRequested();
         }
         Output.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ");", members.Length, x => $"cvt{x}");
     }
 
-    protected override void Handle()
+    protected override void Emit()
     {
         AppendConverterHead();
         AppendEncodeMethod(auto: false);

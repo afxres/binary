@@ -8,6 +8,6 @@ public sealed partial class AttributeConverterCreatorContext
     {
         if (Symbols.GetConverterCreatorType(context, symbol) is not { } type)
             return null;
-        return new AttributeConverterCreatorContext(context, tracker, symbol, type).Invoke();
+        return new AttributeConverterCreatorContext(context, tracker, symbol, type).Build();
     }
 }

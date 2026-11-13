@@ -18,7 +18,7 @@ public class SymbolConstructorInfo<T>(ImmutableArray<T> members, ImmutableArray<
             foreach (var i in directIndexes)
             {
                 var member = members[i];
-                target.AppendIndent(4, $"{member.NameInSourceCode} = var{i},");
+                target.AppendIndent(4, $"{member.EscapedName} = var{i},");
                 cancellation.ThrowIfCancellationRequested();
             }
             target.AppendIndent(3, $"}};");

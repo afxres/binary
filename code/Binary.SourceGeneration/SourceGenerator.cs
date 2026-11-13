@@ -10,7 +10,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using ContextInfo = (string NameInSourceCode, string NamespaceInSourceCode, System.Collections.Immutable.ImmutableDictionary<Microsoft.CodeAnalysis.ITypeSymbol, Microsoft.CodeAnalysis.AttributeData> Inclusions);
+using ContextInfo = (string EscapedName, string EscapedNamespace, System.Collections.Immutable.ImmutableDictionary<Microsoft.CodeAnalysis.ITypeSymbol, Microsoft.CodeAnalysis.AttributeData> Inclusions);
 
 [Generator]
 public sealed class SourceGenerator : IIncrementalGenerator
@@ -63,7 +63,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
             if (symbol is null || Symbols.ValidateContextType(context, declaration, symbol) is false)
                 continue;
             var inclusions = GetInclusions(context, symbol, include);
-            var info = new ContextInfo(Symbols.GetNameInSourceCode(symbol.Name), Symbols.GetNamespaceInSourceCode(symbol.ContainingNamespace), inclusions);
+            var info = new ContextInfo(Symbols.EscapeIdentifier(symbol.Name), Symbols.EscapeNamespace(symbol.ContainingNamespace), inclusions);
             // order by type name, then by containing namespace
             if (dictionary.TryGetValue(symbol.Name, out var child) is false)
                 dictionary.Add(symbol.Name, child = []);
@@ -146,7 +146,7 @@ public sealed class SourceGenerator : IIncrementalGenerator
             .Select(x => x.Invoke(context, tracker, symbol))
             .FirstOrDefault(x => x is not null);
 
-        if (result?.Status is SourceStatus.Ok)
+        if (result is SourceResult.Success)
             return result;
         if (inclusions.TryGetValue(symbol, out var attribute) is true)
             Report(context, symbol, attribute, result);
@@ -155,25 +155,25 @@ public sealed class SourceGenerator : IIncrementalGenerator
 
     private static void Report(SourceGeneratorContext context, ITypeSymbol symbol, AttributeData attribute, SourceResult? result)
     {
-        if (result is SourceResultWithDiagnostic intent)
-            foreach (var (descriptor, messageArguments) in intent.DiagnosticArguments)
-                context.Collect(descriptor.With(attribute, messageArguments));
+        if (result is SourceResult.Diagnostic diagnostic)
+            foreach (var (descriptor, messageArguments) in diagnostic.DiagnosticArguments)
+                context.Collect(descriptor.ToDiagnostic(attribute, messageArguments));
         else
-            context.Collect(Constants.NoConverterGenerated.With(attribute, [Symbols.GetSymbolDiagnosticDisplayString(symbol)]));
+            context.Collect(Diagnostics.NoConverterGenerated.ToDiagnostic(attribute, [Symbols.GetSymbolDiagnosticDisplayString(symbol)]));
     }
 
     private static string Finish(ContextInfo info, SortedDictionary<string, SourceResult?> dictionary, CancellationToken cancellation)
     {
         var output = new StringBuilder();
-        output.AppendIndent(0, $"namespace {info.NamespaceInSourceCode};");
-        output.AppendIndent();
-        output.AppendIndent(0, $"partial class {info.NameInSourceCode}");
+        output.AppendIndent(0, $"namespace {info.EscapedNamespace};");
+        output.AppendEmptyLine();
+        output.AppendIndent(0, $"partial class {info.EscapedName}");
         output.AppendIndent(0, $"{{");
         output.AppendIndent(1, $"public static System.Collections.Generic.IReadOnlyDictionary<System.Type, Mikodev.Binary.IConverterCreator> ConverterCreators {{ get; }} = System.Collections.Frozen.FrozenDictionary.ToFrozenDictionary(new System.Collections.Generic.Dictionary<System.Type, Mikodev.Binary.IConverterCreator>");
         output.AppendIndent(1, $"{{");
         foreach (var i in dictionary)
         {
-            if (i.Value is not SourceResultWithSourceCode content)
+            if (i.Value is not SourceResult.Success content)
                 continue;
             output.AppendIndent(2, $"{{ typeof({i.Key}), new {content.ConverterCreatorTypeName}() }},");
             cancellation.ThrowIfCancellationRequested();
@@ -181,9 +181,9 @@ public sealed class SourceGenerator : IIncrementalGenerator
         output.AppendIndent(1, $"}});");
         foreach (var i in dictionary)
         {
-            if (i.Value is not SourceResultWithSourceCode content)
+            if (i.Value is not SourceResult.Success content)
                 continue;
-            output.AppendIndent();
+            output.AppendEmptyLine();
             _ = output.Append(content.SourceCode);
             cancellation.ThrowIfCancellationRequested();
         }

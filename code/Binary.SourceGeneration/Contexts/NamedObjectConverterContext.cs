@@ -39,7 +39,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         for (var i = 0; i < members.Length; i++)
         {
             Output.AppendIndent(2, $"private {GetConverterTypeFullName(i)} cvt{i};");
-            Output.AppendIndent();
+            Output.AppendEmptyLine();
             CancellationToken.ThrowIfCancellationRequested();
         }
     }
@@ -55,13 +55,13 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             CancellationToken.ThrowIfCancellationRequested();
         }
         Output.AppendIndent(2, $"}}");
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
     }
 
     private void AppendConverterTail()
     {
         Output.AppendIndent(1, $"}}");
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
     }
 
     private void AppendEnsureSufficientExecutionStack()
@@ -88,11 +88,11 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             if (members[i].IsOptional is false)
             {
                 Output.AppendIndent(3, $"Mikodev.Binary.Converter.EncodeWithLengthPrefix(ref allocator, {members[i].NamedKeyLiteral}u8);");
-                Output.AppendIndent(3, $"cvt{i}.EncodeWithLengthPrefix(ref allocator, item.{members[i].NameInSourceCode});");
+                Output.AppendIndent(3, $"cvt{i}.EncodeWithLengthPrefix(ref allocator, item.{members[i].EscapedName});");
             }
             else
             {
-                Output.AppendIndent(3, $"var var{i} = item.{members[i].NameInSourceCode};");
+                Output.AppendIndent(3, $"var var{i} = item.{members[i].EscapedName};");
                 Output.AppendIndent(3, $"if (System.Collections.Generic.EqualityComparer<{GetTypeFullName(i)}>.Default.Equals(var{i}, default) is false)");
                 Output.AppendIndent(3, $"{{");
                 Output.AppendIndent(4, $"Mikodev.Binary.Converter.EncodeWithLengthPrefix(ref allocator, {members[i].NamedKeyLiteral}u8);");
@@ -102,13 +102,11 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             CancellationToken.ThrowIfCancellationRequested();
         }
         Output.AppendIndent(2, $"}}");
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
     }
 
     private void AppendDecodeMethod()
     {
-        var members = this.members;
-        var constructor = this.constructor;
         Output.AppendIndent(2, $"public override {SymbolTypeFullName} Decode(in System.ReadOnlySpan<byte> span)");
         Output.AppendIndent(2, $"{{");
         if (Symbol.IsValueType)
@@ -122,16 +120,16 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             Output.AppendIndent(3, $"if (span.Length is 0)");
             Output.AppendIndent(4, $"return default!;");
         }
-        if (constructor is null)
+        if (this.constructor is { } constructor)
         {
-            Output.AppendIndent(3, $"throw new System.NotSupportedException($\"No suitable constructor found, type: {{typeof({SymbolTypeFullName})}}\");");
+            AppendDecodeBody(constructor);
         }
         else
         {
-            AppendDecodeBody();
+            Output.AppendIndent(3, $"throw new System.NotSupportedException($\"No suitable constructor found, type: {{typeof({SymbolTypeFullName})}}\");");
         }
         Output.AppendIndent(2, $"}}");
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
     }
 
     /// <summary>
@@ -139,10 +137,9 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
     /// <see cref="Mikodev.Binary.Converter"/> and <see cref="Mikodev.Binary.Converter{T}"/>, so the
     /// generated converter does not depend on the public named object components.
     /// </summary>
-    private void AppendDecodeBody()
+    private void AppendDecodeBody(SymbolConstructorInfo<SymbolNamedObjectMemberInfo> constructor)
     {
         var members = this.members;
-        var constructor = this.constructor!;
         AppendEnsureSufficientExecutionStack();
         Output.AppendIndent(3, $"System.Span<long> slices = stackalloc long[{members.Length}];");
         Output.AppendIndent(3, $"var total = span.Length;");
@@ -325,7 +322,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         Output.AppendIndent(5, $"return -1;");
         Output.AppendIndent(3, $"}}");
         Output.AppendIndent(2, $"}}");
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
 
         if (needByte)
             AppendByteReader();
@@ -341,7 +338,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             if (bytes.Length <= 15)
                 continue;
             Output.AppendIndent(2, $"private static System.ReadOnlySpan<byte> {GetNamedKeyPropertyName(i)} => new byte[] {{ ", $" }};", bytes.Length, x => $"0x{bytes[x]:X2}");
-            Output.AppendIndent();
+            Output.AppendEmptyLine();
             CancellationToken.ThrowIfCancellationRequested();
         }
     }
@@ -353,7 +350,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         Output.AppendIndent(2, $"{{");
         Output.AppendIndent(3, $"return source.Slice((int)(item >> 32), (int)item);");
         Output.AppendIndent(2, $"}}");
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
     }
 
     /// <summary>
@@ -376,7 +373,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         Output.AppendIndent(4, $"_ => string.Empty,");
         Output.AppendIndent(3, $"}};");
         Output.AppendIndent(2, $"}}");
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
     }
 
     /// <summary>
@@ -394,7 +391,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         if (optional.Count is 0 || optional.Count == this.members.Length)
             return;
         Output.AppendIndent(2, $"private static bool IsOptional(int cursor) => cursor is {string.Join(" or ", optional)};");
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
         CancellationToken.ThrowIfCancellationRequested();
     }
 
@@ -405,7 +402,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         Output.AppendIndent(2, $"{{");
         Output.AppendIndent(3, $"return System.Runtime.CompilerServices.Unsafe.Add(ref key, offset);");
         Output.AppendIndent(2, $"}}");
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
     }
 
     private void AppendWordReader(string type, string name, string read, bool used)
@@ -419,7 +416,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         Output.AppendIndent(2, $"{{");
         Output.AppendIndent(3, $"return System.Buffers.Binary.BinaryPrimitives.{read}(System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref System.Runtime.CompilerServices.Unsafe.Add(ref key, offset), sizeof({type})));");
         Output.AppendIndent(2, $"}}");
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
     }
 
     private void AppendConverterCreatorBody()
@@ -435,7 +432,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
         Output.AppendIndent(3, $"converter.Initialize(", ");", members.Length, x => $"cvt{x}");
     }
 
-    protected override void Handle()
+    protected override void Emit()
     {
         AppendConverterHead();
         AppendFields();

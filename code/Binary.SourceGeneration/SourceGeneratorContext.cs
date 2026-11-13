@@ -10,7 +10,7 @@ public class SourceGeneratorContext(Compilation compilation, Action<Diagnostic> 
 {
     private readonly Action<Diagnostic> collector = collector;
 
-    private readonly Dictionary<string, object> resources = [];
+    private readonly Dictionary<Type, object> resources = [];
 
     private readonly Dictionary<ITypeSymbol, string> typeFullNameCache = new Dictionary<ITypeSymbol, string>(SymbolEqualityComparer.Default);
 
@@ -24,12 +24,15 @@ public class SourceGeneratorContext(Compilation compilation, Action<Diagnostic> 
 
     public CancellationToken CancellationToken { get; } = cancellation;
 
-    public object GetOrCreateResource(string key, Func<Compilation, object> creator)
+    // the cache slot is identified by the type of the cached value,
+    // so each slot must own a distinct wrapper type instead of sharing one
+    public T GetOrCreateResource<T>(Func<Compilation, T> creator) where T : class
     {
         var dictionary = this.resources;
+        var key = typeof(T);
         if (dictionary.TryGetValue(key, out var result) is false)
             dictionary.Add(key, result = creator.Invoke(Compilation));
-        return result;
+        return (T)result;
     }
 
     public SymbolTypeInfo GetTypeInfo(ITypeSymbol symbol)
@@ -58,7 +61,7 @@ public class SourceGeneratorContext(Compilation compilation, Action<Diagnostic> 
 
     public AttributeData? GetAttribute(ISymbol symbol, string attributeTypeName)
     {
-        return symbol.GetAttributes().FirstOrDefault(x => Equals(x.AttributeClass, attributeTypeName));
+        return symbol.GetAttributes().FirstOrDefault(x => IsType(x.AttributeClass, attributeTypeName));
     }
 
     public SymbolTypeKind ValidateType(ITypeSymbol symbol)
@@ -69,7 +72,7 @@ public class SourceGeneratorContext(Compilation compilation, Action<Diagnostic> 
         return result;
     }
 
-    public bool Equals(ISymbol? symbol, string typeName)
+    public bool IsType(ISymbol? symbol, string typeName)
     {
         return SymbolEqualityComparer.Default.Equals(symbol, Compilation.GetTypeByMetadataName(typeName));
     }

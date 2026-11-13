@@ -26,7 +26,7 @@ public sealed partial class InlineArrayConverterContext : SymbolConverterContext
     private void AppendConverterTail()
     {
         Output.AppendIndent(1, $"}}");
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
     }
 
     private void AppendEncodeMethod()
@@ -42,7 +42,7 @@ public sealed partial class InlineArrayConverterContext : SymbolConverterContext
 
     private void AppendDecodeMethod()
     {
-        Output.AppendIndent();
+        Output.AppendEmptyLine();
         Output.AppendIndent(2, $"public override {SymbolTypeFullName} Decode(in System.ReadOnlySpan<byte> span)");
         Output.AppendIndent(2, $"{{");
         Output.AppendIndent(3, $"var body = span;");
@@ -59,11 +59,11 @@ public sealed partial class InlineArrayConverterContext : SymbolConverterContext
     {
         var info = this.info;
         var element = info.ElementType;
-        AppendAssignConverterExplicit(element, "cvt0", GetTypeFullName(0));
+        AppendConverterFromContext(element, "cvt0", GetTypeFullName(0));
         Output.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(cvt0);");
     }
 
-    protected override void Handle()
+    protected override void Emit()
     {
         AppendConverterHead();
         AppendEncodeMethod();

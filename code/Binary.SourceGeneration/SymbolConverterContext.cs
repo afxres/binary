@@ -41,21 +41,21 @@ public abstract class SymbolConverterContext
         OutputConverterCreatorTypeName = $"{output}_ConverterCreator";
     }
 
-    protected void AddType(int key, ITypeSymbol symbol)
+    protected void AddType(int position, ITypeSymbol symbol)
     {
         var fullName = this.context.GetTypeFullName(symbol);
         var converter = this.context.GetConverterTypeFullName(symbol);
-        this.fullNameCache.Add(key, (fullName, converter));
+        this.fullNameCache.Add(position, (fullName, converter));
     }
 
-    protected string GetTypeFullName(int key)
+    protected string GetTypeFullName(int position)
     {
-        return this.fullNameCache[key].TypeFullName;
+        return this.fullNameCache[position].TypeFullName;
     }
 
-    protected string GetConverterTypeFullName(int key)
+    protected string GetConverterTypeFullName(int position)
     {
-        return this.fullNameCache[key].ConverterTypeFullName;
+        return this.fullNameCache[position].ConverterTypeFullName;
     }
 
     protected void AppendConverterCreatorHead()
@@ -76,21 +76,21 @@ public abstract class SymbolConverterContext
         Output.AppendIndent(1, $"}}");
     }
 
-    protected void AppendAssignConverterExplicitConverter(ITypeSymbol converter, string variableName, string converterTypeAlias)
+    protected void AppendConverterFromType(ITypeSymbol converter, string variableName, string converterTypeAlias)
     {
         var fullName = this.context.GetTypeFullName(converter);
         Output.AppendIndent(3, $"var {variableName} = ({converterTypeAlias})(new {fullName}());");
         CancellationToken.ThrowIfCancellationRequested();
     }
 
-    protected void AppendAssignConverterExplicitConverterCreator(ITypeSymbol creator, string variableName, string converterTypeAlias, string memberTypeAlias)
+    protected void AppendConverterFromCreator(ITypeSymbol creator, string variableName, string converterTypeAlias, string memberTypeAlias)
     {
         var fullName = this.context.GetTypeFullName(creator);
         Output.AppendIndent(3, $"var {variableName} = ({converterTypeAlias})((({Constants.IConverterCreatorTypeName})(new {fullName}())).GetConverter(context, typeof({memberTypeAlias})));");
         CancellationToken.ThrowIfCancellationRequested();
     }
 
-    protected void AppendAssignConverterExplicit(ITypeSymbol member, string variableName, string memberTypeAlias)
+    protected void AppendConverterFromContext(ITypeSymbol member, string variableName, string memberTypeAlias)
     {
         Output.AppendIndent(3, $"var {variableName} = Mikodev.Binary.GeneratorContextExtensions.GetConverter<{memberTypeAlias}>(context);");
         this.tracker.Invoke(member);
@@ -100,22 +100,22 @@ public abstract class SymbolConverterContext
     protected void AppendAssignConverter(SymbolMemberInfo member, string variableName, string converterTypeAlias, string memberTypeAlias, bool allowsSelfTypeReference)
     {
         if (Symbols.GetConverterType(this.context, member.Symbol) is { } converter)
-            AppendAssignConverterExplicitConverter(converter, variableName, converterTypeAlias);
+            AppendConverterFromType(converter, variableName, converterTypeAlias);
         else if (Symbols.GetConverterCreatorType(this.context, member.Symbol) is { } creator)
-            AppendAssignConverterExplicitConverterCreator(creator, variableName, converterTypeAlias, memberTypeAlias);
+            AppendConverterFromCreator(creator, variableName, converterTypeAlias, memberTypeAlias);
         else if (allowsSelfTypeReference && SymbolEqualityComparer.Default.Equals(member.Type, Symbol))
             Output.AppendIndent(3, $"var {variableName} = converter;");
         else
-            AppendAssignConverterExplicit(member.Type, variableName, memberTypeAlias);
+            AppendConverterFromContext(member.Type, variableName, memberTypeAlias);
     }
 
-    protected abstract void Handle();
+    protected abstract void Emit();
 
-    protected SourceResult Invoke()
+    protected SourceResult Build()
     {
-        Handle();
+        Emit();
         var code = Output.ToString();
         var name = OutputConverterCreatorTypeName;
-        return new SourceResultWithSourceCode(name, code);
+        return new SourceResult.Success(name, code);
     }
 }

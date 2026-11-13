@@ -12,10 +12,10 @@ public sealed partial class AttributeConverterCreatorContext : SymbolConverterCo
         this.creator = creator;
     }
 
-    protected override void Handle()
+    protected override void Emit()
     {
         AppendConverterCreatorHead();
-        AppendAssignConverterExplicitConverterCreator(this.creator, "converter", SymbolConverterTypeFullName, SymbolTypeFullName);
+        AppendConverterFromCreator(this.creator, "converter", SymbolConverterTypeFullName, SymbolTypeFullName);
         AppendConverterCreatorTail();
     }
 }

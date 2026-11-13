@@ -26,13 +26,13 @@ public sealed partial class GenericConverterContext : SymbolConverterContext
         for (var i = 0; i < elements.Length; i++)
         {
             types.Add(GetTypeFullName(i));
-            AppendAssignConverterExplicit(elements[i], $"cvt{i}", GetTypeFullName(i));
+            AppendConverterFromContext(elements[i], $"cvt{i}", GetTypeFullName(i));
             CancellationToken.ThrowIfCancellationRequested();
         }
         Output.AppendIndent(3, $"var converter = Mikodev.Binary.Generator.Get{info.TypeName}Converter<{string.Join(", ", types)}>(", ");", elements.Length, x => $"cvt{x}");
     }
 
-    protected override void Handle()
+    protected override void Emit()
     {
         AppendConverterCreatorHead();
         AppendConverterCreatorBody();

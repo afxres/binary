@@ -2,11 +2,11 @@ namespace Mikodev.Binary.SourceGeneration;
 
 using Microsoft.CodeAnalysis;
 
-public class SymbolNamedObjectMemberInfo(ISymbol symbol, string namedKey, string namedKeyLiteral, bool optional) : SymbolObjectMemberInfo(symbol)
+public class SymbolNamedObjectMemberInfo(ISymbol symbol, bool optional, string namedKey, string namedKeyLiteral) : SymbolObjectMemberInfo(symbol)
 {
-    public string NamedKey { get; } = namedKey;
-
     public bool IsOptional { get; } = optional;
+
+    public string NamedKey { get; } = namedKey;
 
     public string NamedKeyLiteral { get; } = namedKeyLiteral;
 }

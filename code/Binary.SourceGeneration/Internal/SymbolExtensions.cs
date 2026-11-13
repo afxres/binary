@@ -1,12 +1,13 @@
 namespace Mikodev.Binary.SourceGeneration.Internal;
 
 using Microsoft.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 public static class SymbolExtensions
 {
-    public static bool TryGetConstructorArgument<T>(this AttributeData attribute, out T result)
+    public static bool TryGetConstructorArgument<T>(this AttributeData attribute, [MaybeNullWhen(false)] out T result)
     {
-        result = default!;
+        result = default;
         var arguments = attribute.ConstructorArguments;
         if (arguments.Length is not 1)
             return false;
@@ -16,12 +17,12 @@ public static class SymbolExtensions
         return true;
     }
 
-    public static Diagnostic With(this DiagnosticDescriptor descriptor, ISymbol symbol, object?[]? parameters = null)
+    public static Diagnostic ToDiagnostic(this DiagnosticDescriptor descriptor, ISymbol symbol, object?[]? parameters = null)
     {
         return Diagnostic.Create(descriptor, Symbols.GetLocation(symbol), parameters);
     }
 
-    public static Diagnostic With(this DiagnosticDescriptor descriptor, AttributeData? attribute, object?[]? parameters = null)
+    public static Diagnostic ToDiagnostic(this DiagnosticDescriptor descriptor, AttributeData? attribute, object?[]? parameters = null)
     {
         return Diagnostic.Create(descriptor, Symbols.GetLocation(attribute), parameters);
     }

@@ -3,6 +3,7 @@ namespace Mikodev.Binary.SourceGeneration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Operations;
+using Mikodev.Binary.SourceGeneration.Internal;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -106,7 +107,7 @@ public static partial class Symbols
         var attribute = context.GetAttribute(symbol, Constants.ConverterAttributeTypeName);
         if (attribute is null)
             return null;
-        return attribute.ConstructorArguments.Single().Value as ITypeSymbol;
+        return attribute.TryGetConstructorArgument<ITypeSymbol>(out var type) ? type : null;
     }
 
     public static ITypeSymbol? GetConverterCreatorType(SourceGeneratorContext context, ISymbol symbol)
@@ -114,7 +115,7 @@ public static partial class Symbols
         var attribute = context.GetAttribute(symbol, Constants.ConverterCreatorAttributeTypeName);
         if (attribute is null)
             return null;
-        return attribute.ConstructorArguments.Single().Value as ITypeSymbol;
+        return attribute.TryGetConstructorArgument<ITypeSymbol>(out var type) ? type : null;
     }
 
     public static Location GetLocation(ISymbol symbol)

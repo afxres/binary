@@ -678,12 +678,12 @@ public class SymbolsTests
         yield return ["Namespace", false, "Namespace"];
     }
 
-    [Theory(DisplayName = "Keyword In Source Code Test")]
+    [Theory(DisplayName = "Escape Identifier Test")]
     [MemberData(nameof(KeywordData))]
-    public void KeywordTest(string text, bool keyword, string expected)
+    public void EscapeIdentifierTest(string text, bool keyword, string expected)
     {
         var result = Symbols.IsKeyword(text);
-        var actual = Symbols.GetNameInSourceCode(text);
+        var actual = Symbols.EscapeIdentifier(text);
         Assert.Equal(keyword, result);
         Assert.Equal(expected, actual);
     }

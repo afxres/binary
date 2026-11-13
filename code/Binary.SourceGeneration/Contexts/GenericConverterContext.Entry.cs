@@ -57,8 +57,7 @@ public sealed partial class GenericConverterContext
                 : new TypeInfo("VariableBoundArray", TypeArgumentsOption.IncludeReturnType, [array.ElementType]);
         if (type is not INamedTypeSymbol symbol || symbol.IsGenericType is false)
             return null;
-        const string ResourceKey = "Generic";
-        var types = (ImmutableHashSet<INamedTypeSymbol>)context.GetOrCreateResource(ResourceKey, CreateResource);
+        var types = context.GetOrCreateResource(CreateResource);
         var unbound = symbol.ConstructUnboundGenericType();
         if (types.Contains(unbound))
             return new TypeInfo(symbol.Name, TypeArgumentsOption.None, symbol.TypeArguments);
@@ -69,6 +68,6 @@ public sealed partial class GenericConverterContext
     {
         if (GetInfo(context, symbol) is not { } info)
             return null;
-        return new GenericConverterContext(context, tracker, symbol, info).Invoke();
+        return new GenericConverterContext(context, tracker, symbol, info).Build();
     }
 }
