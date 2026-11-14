@@ -52,5 +52,32 @@ public class RepeatLittleEndianInfoTests
             Assert.Equal(i, arguments[0]);
             Assert.Equal(elementType, arguments[1]);
         }
+
+#if NET11_0_OR_GREATER
+        var knownGenericComplexTypes = new[]
+        {
+            typeof(Complex<float>),
+            typeof(Complex<double>),
+            typeof(Complex<Half>),
+            typeof(Complex<BFloat16>),
+            typeof(Complex<Decimal32>),
+            typeof(Complex<Decimal64>),
+            typeof(Complex<Decimal128>),
+        };
+
+        foreach (var i in knownGenericComplexTypes)
+        {
+            var converter = actual[i];
+            Assert.Equal("RepeatLittleEndianConverter`2", converter.GetType().Name);
+            var fields = i.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            Assert.Equal(2, fields.Length);
+            var elementType = Assert.Single(fields.Select(x => x.FieldType).Distinct());
+            var arguments = converter.GetType().GetGenericArguments();
+            Assert.Equal(2, arguments.Length);
+            Assert.Equal(i, arguments[0]);
+            Assert.Equal(elementType, arguments[1]);
+            Assert.Equal(elementType, i.GetGenericArguments().Single());
+        }
+#endif
     }
 }

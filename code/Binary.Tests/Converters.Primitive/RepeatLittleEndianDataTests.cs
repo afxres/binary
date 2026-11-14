@@ -30,6 +30,23 @@ public class RepeatLittleEndianDataTests
         yield return [new Complex(1.1, 2.2)];
     }
 
+#if NET11_0_OR_GREATER
+    public static IEnumerable<object[]> GenericComplexData()
+    {
+        yield return [new Complex<float>(0F, 0F)];
+        yield return [new Complex<float>(1.1F, 2.2F)];
+        yield return [new Complex<float>(-1.1F, float.MaxValue)];
+        yield return [new Complex<double>(0D, 0D)];
+        yield return [new Complex<double>(1.1, 2.2)];
+        yield return [new Complex<double>(-1.1, double.MaxValue)];
+        yield return [new Complex<Half>((Half)1.1F, (Half)2.2F)];
+        yield return [new Complex<BFloat16>(BFloat16.Parse("1.1"), BFloat16.Parse("2.2"))];
+        yield return [new Complex<Decimal32>(Decimal32.Parse("1.1"), Decimal32.Parse("2.2"))];
+        yield return [new Complex<Decimal64>(Decimal64.Parse("1.1"), Decimal64.Parse("2.2"))];
+        yield return [new Complex<Decimal128>(Decimal128.Parse("1.1"), Decimal128.Parse("2.2"))];
+    }
+#endif
+
     public static IEnumerable<object[]> Matrix3x2Data()
     {
         yield return [Matrix3x2.Identity];
@@ -94,6 +111,9 @@ public class RepeatLittleEndianDataTests
     [MemberData(nameof(Vector2Data))]
     [MemberData(nameof(Vector3Data))]
     [MemberData(nameof(Vector4Data))]
+#if NET11_0_OR_GREATER
+    [MemberData(nameof(GenericComplexData))]
+#endif
     public void EncodeDecode<T>(T data) where T : unmanaged
     {
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "LittleEndianConverterCreator");
@@ -113,6 +133,9 @@ public class RepeatLittleEndianDataTests
     [MemberData(nameof(Vector2Data))]
     [MemberData(nameof(Vector3Data))]
     [MemberData(nameof(Vector4Data))]
+#if NET11_0_OR_GREATER
+    [MemberData(nameof(GenericComplexData))]
+#endif
     public void EncodeDecodeMultiple<T>(T data) where T : unmanaged
     {
         var array = Enumerable.Repeat(data, 100).ToArray();

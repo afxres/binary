@@ -51,6 +51,16 @@ internal sealed class LittleEndianConverterCreator : IConverterCreator
 
         RegisterRepeat<Range, int>(dictionary);
         RegisterRepeat<Complex, double>(dictionary);
+#if NET11_0_OR_GREATER
+        // System.Runtime.InteropServices.NFloat is architecture dependent, do not register it.
+        RegisterRepeat<Complex<float>, float>(dictionary);
+        RegisterRepeat<Complex<double>, double>(dictionary);
+        RegisterRepeat<Complex<Half>, Half>(dictionary);
+        RegisterRepeat<Complex<BFloat16>, BFloat16>(dictionary);
+        RegisterRepeat<Complex<Decimal32>, Decimal32>(dictionary);
+        RegisterRepeat<Complex<Decimal64>, Decimal64>(dictionary);
+        RegisterRepeat<Complex<Decimal128>, Decimal128>(dictionary);
+#endif
         RegisterRepeat<Matrix3x2, float>(dictionary);
         RegisterRepeat<Matrix4x4, float>(dictionary);
         RegisterRepeat<Plane, float>(dictionary);
