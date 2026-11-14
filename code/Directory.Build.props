@@ -34,6 +34,16 @@
     </PackageReference>
   </ItemGroup>
 
+  <!-- Benchmark projects are the 'Benchmarks.*' ones. They are single-target for now;
+       adding another runtime is a one-line change here instead of seventeen. -->
+  <PropertyGroup>
+    <IsBinaryBenchmarkProject Condition="$(MSBuildProjectName.StartsWith('Benchmarks'))">true</IsBinaryBenchmarkProject>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsBinaryBenchmarkProject)' == 'true'">
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
   <!-- Product metadata shared by the shipped libraries. GeneratePackageOnBuild and
        PackageTags stay in the owning project because they are not identical. -->
   <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Binary' Or '$(MSBuildProjectName)' == 'Binary.FSharp' Or '$(MSBuildProjectName)' == 'Binary.SourceGeneration'">
