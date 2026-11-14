@@ -3,7 +3,6 @@ namespace Mikodev.Binary.SourceGeneration.Contexts;
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Linq;
-using UnionCaseInfo = (int Index, Microsoft.CodeAnalysis.ITypeSymbol Type);
 
 public sealed partial class UnionObjectConverterContext
 {
@@ -65,9 +64,8 @@ public sealed partial class UnionObjectConverterContext
             caseTypeList = [.. namedType.InstanceConstructors.Select(SelectUnionCaseType).OfType<ITypeSymbol>()];
         if (caseTypeList is null or { Count: 0 } || caseTypeList.Distinct(SymbolEqualityComparer.Default).Count() != caseTypeList.Count)
             return new SourceResult.Diagnostic([(Diagnostics.TypeNotRecognized, ["UnionObject", Symbols.GetSymbolDiagnosticDisplayString(symbol)])]);
-        var caseList = caseTypeList.Select((x, i) => new UnionCaseInfo(i, x)).ToList();
+        var caseList = caseTypeList.Select((x, i) => new UnionCaseInfo(i, x, IsEmptyUnionCaseType(context, symbol, x))).ToList();
         caseList.Sort((a, b) => Symbols.CompareConversion(context.Compilation, a.Type, b.Type));
-        var emptyTypes = caseList.Select(x => IsEmptyUnionCaseType(context, symbol, x.Type)).ToArray();
-        return new UnionObjectConverterContext(context, tracker, symbol, [.. caseList], [.. emptyTypes]).Build();
+        return new UnionObjectConverterContext(context, tracker, symbol, [.. caseList]).Build();
     }
 }

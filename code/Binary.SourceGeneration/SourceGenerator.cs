@@ -10,11 +10,12 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using ContextInfo = (string EscapedName, string EscapedNamespace, System.Collections.Immutable.ImmutableDictionary<Microsoft.CodeAnalysis.ITypeSymbol, Microsoft.CodeAnalysis.AttributeData> Inclusions);
 
 [Generator]
 public sealed class SourceGenerator : IIncrementalGenerator
 {
+    private sealed record ContextInfo(string EscapedName, string EscapedNamespace, ImmutableDictionary<ITypeSymbol, AttributeData> Inclusions);
+
     private delegate SourceResult? TypeHandler(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol);
 
     private static readonly ImmutableArray<TypeHandler> CustomTypeHandlers =

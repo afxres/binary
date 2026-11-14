@@ -4,22 +4,23 @@ using Microsoft.CodeAnalysis;
 using Mikodev.Binary.SourceGeneration.Internal;
 using System.Collections.Immutable;
 using System.Linq;
-using UnionCaseInfo = (int Index, Microsoft.CodeAnalysis.ITypeSymbol Type);
 
 public sealed partial class UnionObjectConverterContext : SymbolConverterContext
 {
+    private sealed record UnionCaseInfo(int Index, ITypeSymbol Type, bool Empty);
+
     private sealed record UnionCaseSlot(int Index, ITypeSymbol Type, int Position, string? ConverterName);
 
     private readonly ImmutableArray<UnionCaseSlot> slots;
 
-    private UnionObjectConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, ImmutableArray<UnionCaseInfo> cases, ImmutableArray<bool> empty) : base(context, tracker, symbol)
+    private UnionObjectConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, ImmutableArray<UnionCaseInfo> cases) : base(context, tracker, symbol)
     {
         var types = cases.Select(x => x.Type).ToImmutableArray();
         types.ForEach(AddType);
         var slots = ImmutableArray.CreateBuilder<UnionCaseSlot>(cases.Length);
         var converterCount = 0;
         for (var i = 0; i < cases.Length; i++)
-            slots.Add(new UnionCaseSlot(cases[i].Index, cases[i].Type, i, empty[i] ? null : $"cvt{converterCount++}"));
+            slots.Add(new UnionCaseSlot(cases[i].Index, cases[i].Type, i, cases[i].Empty ? null : $"cvt{converterCount++}"));
         this.slots = slots.ToImmutable();
     }
 
