@@ -55,7 +55,7 @@ public static class Diagnostics
     public static DiagnosticDescriptor TypeInclusionDuplicated { get; } = new DiagnosticDescriptor(
         id: "BINSRCGEN11",
         title: "Type Inclusion Is Duplicated",
-        messageFormat: "The type is included more than once, type: {0}",
+        messageFormat: "The type is included more than once: {0}",
         category: DiagnosticCategory,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
@@ -163,7 +163,7 @@ public static class Diagnostics
     public static DiagnosticDescriptor NamedKeyDuplicated { get; } = new DiagnosticDescriptor(
         id: "BINSRCGEN41",
         title: "Named Key Is Duplicated",
-        messageFormat: "The named key is duplicated, key: {0}",
+        messageFormat: "The named key is duplicated: {0}",
         category: DiagnosticCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -171,7 +171,7 @@ public static class Diagnostics
     public static DiagnosticDescriptor TupleKeyDuplicated { get; } = new DiagnosticDescriptor(
         id: "BINSRCGEN42",
         title: "Tuple Key Is Duplicated",
-        messageFormat: "The tuple key is duplicated, key: {0}",
+        messageFormat: "The tuple key is duplicated: {0}",
         category: DiagnosticCategory,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);

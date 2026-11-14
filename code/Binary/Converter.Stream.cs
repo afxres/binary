@@ -10,6 +10,7 @@ public static partial class Converter
 {
     public static void Encode(Stream stream, int number)
     {
+        ArgumentNullException.ThrowIfNull(stream);
         var buffer = (stackalloc byte[4]);
         Encode(buffer, number, out var length);
         stream.Write(buffer.Slice(0, length));
@@ -17,6 +18,7 @@ public static partial class Converter
 
     public static async ValueTask EncodeAsync(Stream stream, int number, CancellationToken cancellation = default)
     {
+        ArgumentNullException.ThrowIfNull(stream);
         var buffer = new byte[4];
         Encode(new Span<byte>(buffer), number, out var length);
         await stream.WriteAsync(new ReadOnlyMemory<byte>(buffer, 0, length), cancellation).ConfigureAwait(false);
@@ -24,6 +26,7 @@ public static partial class Converter
 
     public static int Decode(Stream stream)
     {
+        ArgumentNullException.ThrowIfNull(stream);
         var buffer = (stackalloc byte[4]);
         stream.ReadExactly(buffer.Slice(0, 1));
         var header = (uint)buffer[0];
@@ -36,6 +39,7 @@ public static partial class Converter
 
     public static async ValueTask<int> DecodeAsync(Stream stream, CancellationToken cancellation = default)
     {
+        ArgumentNullException.ThrowIfNull(stream);
         var buffer = new byte[4];
         await stream.ReadExactlyAsync(new Memory<byte>(buffer, 0, 1), cancellation).ConfigureAwait(false);
         var header = (uint)buffer[0];

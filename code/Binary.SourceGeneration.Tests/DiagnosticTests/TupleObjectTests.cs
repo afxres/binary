@@ -40,7 +40,7 @@ public class TupleObjectTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.Contains("The tuple key is duplicated, key: 2", diagnostic.ToString());
+        Assert.Contains("The tuple key is duplicated: 2", diagnostic.ToString());
         Assert.Contains("""TupleKey(2)""", diagnostic.Location.GetSourceText());
     }
 

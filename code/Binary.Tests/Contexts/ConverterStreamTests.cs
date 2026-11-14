@@ -46,6 +46,38 @@ public class ConverterStreamTests
         Assert.Equal(length, stream.Position);
     }
 
+    [Fact(DisplayName = "Encode Null Stream Test")]
+    public void EncodeNullStreamTest()
+    {
+        var error = Assert.Throws<ArgumentNullException>(() => Converter.Encode((Stream)null!, 0));
+        Assert.Equal("stream", error.ParamName);
+    }
+
+    [Fact(DisplayName = "Encode Null Stream Async Test")]
+    public async Task EncodeNullStreamTestAsync()
+    {
+        // the guard runs inside the async state machine, so the exception surfaces on await
+        var task = Converter.EncodeAsync((Stream)null!, 0).AsTask();
+        var error = await Assert.ThrowsAsync<ArgumentNullException>(() => task);
+        Assert.Equal("stream", error.ParamName);
+    }
+
+    [Fact(DisplayName = "Decode Null Stream Test")]
+    public void DecodeNullStreamTest()
+    {
+        var error = Assert.Throws<ArgumentNullException>(() => Converter.Decode((Stream)null!));
+        Assert.Equal("stream", error.ParamName);
+    }
+
+    [Fact(DisplayName = "Decode Null Stream Async Test")]
+    public async Task DecodeNullStreamTestAsync()
+    {
+        // the guard runs inside the async state machine, so the exception surfaces on await
+        var task = Converter.DecodeAsync((Stream)null!).AsTask();
+        var error = await Assert.ThrowsAsync<ArgumentNullException>(() => task);
+        Assert.Equal("stream", error.ParamName);
+    }
+
     public static IEnumerable<object[]> NumberInvalidData()
     {
         yield return [-1];

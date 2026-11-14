@@ -13,7 +13,7 @@ public static class TupleObject
         foreach (var i in converters)
         {
             if (i is not IConverterMetadata)
-                throw new ArgumentException($"Sequence contains null or invalid element.", nameof(converters));
+                throw new ArgumentException("Sequence contains null or invalid element.", nameof(converters));
             var length = i.Length;
             if (length is 0)
                 return 0;
@@ -21,7 +21,7 @@ public static class TupleObject
         }
 
         if (result is 0)
-            throw new ArgumentException($"Sequence is empty.", nameof(converters));
+            throw new ArgumentException("Sequence is empty.", nameof(converters));
         return result;
     }
 }

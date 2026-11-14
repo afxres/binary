@@ -24,7 +24,7 @@ internal sealed class ArrayPoolAllocator(ArrayPool<byte> arrays) : IAllocator, I
         {
             var rented = this.arrays.Rent(wanted);
             if (rented is null || rented.Length < wanted)
-                throw new InvalidOperationException($"Invalid array pool implementation detected");
+                throw new InvalidOperationException("Invalid array pool implementation detected");
             if (buffer != null)
             {
                 Array.Copy(buffer, 0, rented, 0, buffer.Length);

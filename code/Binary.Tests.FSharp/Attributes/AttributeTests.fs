@@ -721,7 +721,7 @@ type AttributeTests() =
     [<InlineData(typeof<ClassAsNamedObjectWithBadConverterOnProperty>, typeof<int>, typeof<BadConverter<string>>)>]
     member __.``Converter Attribute With Invalid Converter``(t: Type, expectedType: Type, converterType: Type) =
         let error = Assert.Throws<InvalidOperationException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = $"Invalid converter, expected: converter for '{expectedType}', actual: {converterType}"
+        let message = $"Invalid converter, expected type: {expectedType}, actual type: {converterType}"
         Assert.Equal(message, error.Message)
         ()
 
@@ -730,7 +730,7 @@ type AttributeTests() =
     [<InlineData(typeof<ClassAsTupleObjectWithNullConverterCreatorOnProperty>, typeof<int64>, typeof<AnotherNullConverterCreator>)>]
     member __.``Converter Creator Attribute With Null Converter``(t: Type, expectedType: Type, creatorType: Type) =
         let error = Assert.Throws<InvalidOperationException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = $"Invalid converter, expected: converter for '{expectedType}', actual: null, converter creator type: {creatorType}"
+        let message = $"Invalid converter, expected type: {expectedType}, actual type: null, converter creator type: {creatorType}"
         Assert.Equal(message, error.Message)
         ()
 
@@ -739,7 +739,7 @@ type AttributeTests() =
     [<InlineData(typeof<ClassAsTupleObjectWithBadConverterCreatorOnProperty>, typeof<double>, typeof<BadConverter<single>>, typeof<BadConverterCreator<single>>)>]
     member __.``Converter Creator Attribute With Invalid Converter``(t: Type, expectedType: Type, converterType: Type, creatorType: Type) =
         let error = Assert.Throws<InvalidOperationException>(fun () -> generator.GetConverter(t) |> ignore)
-        let message = $"Invalid converter, expected: converter for '{expectedType}', actual: {converterType}, converter creator type: {creatorType}"
+        let message = $"Invalid converter, expected type: {expectedType}, actual type: {converterType}, converter creator type: {creatorType}"
         Assert.Equal(message, error.Message)
         ()
 

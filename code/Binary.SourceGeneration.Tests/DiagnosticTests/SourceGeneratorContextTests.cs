@@ -131,7 +131,7 @@ public class SourceGeneratorContextTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Warning, diagnostic.Severity);
-        Assert.EndsWith("The type is included more than once, type: List<Int32>", diagnostic.ToString());
+        Assert.EndsWith("The type is included more than once: List<Int32>", diagnostic.ToString());
         Assert.Contains("SourceGeneratorInclude<List<int>>", diagnostic.Location.GetSourceText());
     }
 

@@ -127,6 +127,12 @@ dotnet_diagnostic.IDE0052.severity = warning
 dotnet_diagnostic.IDE0055.severity = warning
 dotnet_diagnostic.IDE0058.severity = warning
 
+# Prefer BCL throw helpers over hand-written exception construction for argument contracts
+dotnet_diagnostic.CA1510.severity = warning
+dotnet_diagnostic.CA1511.severity = warning
+dotnet_diagnostic.CA1512.severity = warning
+dotnet_diagnostic.CA1513.severity = warning
+
 # This case uses PascalCase names for private instance and private static fields on purpose
 [code/Binary.SourceGeneration.NamedObjectTests/PlainObjectTests/MixedMembersTests.cs]
 dotnet_naming_rule.private_field_should_be_camel_case.severity = none

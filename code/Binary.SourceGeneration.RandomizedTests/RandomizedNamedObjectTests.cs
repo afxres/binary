@@ -82,6 +82,7 @@ public class RandomizedNamedObjectTests
         ValidateReordered(converter, generated, item, plan, wire);
         ValidateMissingKey(converter, generated, plan, wire);
         ValidateUnknownKey(converter, generated, plan, wire, decoded);
+        ValidateNearMissKeys(converter, generated, plan, wire, decoded);
     }
 
     /// <summary>
@@ -150,12 +151,52 @@ public class RandomizedNamedObjectTests
         Assert.Contains(missing.Key, error.Message, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// Appends a key the lookup table has to reject: a real key with a single byte changed, so the
+    /// length and the first byte still match. A table that compares only the leading word of a nine
+    /// to fifteen byte key, or that stops before the trailing byte of a three byte key, still matches
+    /// every exact key; only such a near miss resolves to the member it was derived from, which turns
+    /// into the wrong value or a duplicated key error.
+    /// </summary>
+    private static void ValidateNearMissKeys(IConverter converter, IGenerator generator, RandomizedType plan, byte[] wire, object expected)
+    {
+        var members = plan.Members;
+        // keys shorter than three bytes have no position that is neither the first nor the last one
+        var member = members.FirstOrDefault(x => Encoding.UTF8.GetByteCount(x.Key) >= 3);
+        if (member is null)
+            return;
+        var key = Encoding.UTF8.GetBytes(member.Key);
+        var siblings = members.Select(x => Encoding.UTF8.GetBytes(x.Key)).Where(x => x.Length == key.Length).ToArray();
+        // the middle byte catches a comparison that stops after the leading word, the last byte
+        // catches one that stops before the trailing byte of a three byte key
+        var extras = new List<byte[]>(2);
+        foreach (var index in new HashSet<int> { key.Length / 2, key.Length - 1 })
+        {
+            // a byte no sibling key of the same length carries at this position, so the near miss can
+            // never collide with another member
+            var taken = siblings.Select(x => x[index]).ToHashSet();
+            var near = (byte[])key.Clone();
+            near[index] = Enumerable.Range(0, 256).Select(x => (byte)x).First(x => x != key[index] && taken.Contains(x) is false);
+            extras.Add(near);
+        }
+        AssertIgnoredKeys(converter, generator, plan, wire, expected, [.. extras]);
+    }
+
     private static void ValidateUnknownKey(IConverter converter, IGenerator generator, RandomizedType plan, byte[] wire, object expected)
+        => AssertIgnoredKeys(converter, generator, plan, wire, expected, "unknown_key_zzz"u8.ToArray());
+
+    /// <summary>
+    /// Rebuilds the wire with the given keys prepended and checks the decoder skipped all of them.
+    /// </summary>
+    private static void AssertIgnoredKeys(IConverter converter, IGenerator generator, RandomizedType plan, byte[] wire, object expected, params byte[][] extras)
     {
         var token = new Token(generator, wire);
         var allocator = new Allocator();
-        Converter.EncodeWithLengthPrefix(ref allocator, "unknown_key_zzz"u8);
-        Converter.EncodeWithLengthPrefix(ref allocator, BitConverter.GetBytes(12345));
+        foreach (var extra in extras)
+        {
+            Converter.EncodeWithLengthPrefix(ref allocator, extra);
+            Converter.EncodeWithLengthPrefix(ref allocator, BitConverter.GetBytes(12345));
+        }
         foreach (var member in plan.Members)
         {
             Converter.EncodeWithLengthPrefix(ref allocator, Encoding.UTF8.GetBytes(member.Key));

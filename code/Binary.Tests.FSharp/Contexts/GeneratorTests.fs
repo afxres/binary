@@ -229,7 +229,7 @@ let ``Bad Creator (item type mismatch)`` () =
     let generator = Generator.CreateDefaultBuilder().AddConverterCreator(BadConverterCreator()).Build()
     let error = Assert.Throws<InvalidOperationException>(fun () -> generator.GetConverter typeof<BadType> |> ignore)
     let message =
-        $"Invalid converter, expected: converter for '{typeof<BadType>}', actual: {generator.GetConverter<int>().GetType()}, converter creator type: {typeof<BadConverterCreator>}"
+        $"Invalid converter, expected type: {typeof<BadType>}, actual type: {generator.GetConverter<int>().GetType()}, converter creator type: {typeof<BadConverterCreator>}"
     Assert.Equal(message, error.Message)
     ()
 

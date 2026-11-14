@@ -36,11 +36,13 @@ public static partial class ConverterExtensions
 
     public static byte[] EncodeBrotli(this IConverter converter, object? item)
     {
+        ArgumentNullException.ThrowIfNull(converter);
         return EncodeBrotliInternal(converter.Encode, item, ArrayPool<byte>.Shared);
     }
 
     public static byte[] EncodeBrotli<T>(this Converter<T> converter, T item)
     {
+        ArgumentNullException.ThrowIfNull(converter);
         return EncodeBrotliInternal(converter.Encode, item, ArrayPool<byte>.Shared);
     }
 }

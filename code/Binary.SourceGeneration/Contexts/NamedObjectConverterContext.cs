@@ -240,7 +240,7 @@ public sealed partial class NamedObjectConverterContext : SymbolConverterContext
             2 => $"Word16(ref key, 0) == 0x{Load(bytes, 0, 2):X4}",
             1 => $"Byte(ref key, 0) == 0x{bytes[0]:X2}",
             0 => $"System.MemoryExtensions.SequenceEqual(System.Runtime.InteropServices.MemoryMarshal.CreateReadOnlySpan(ref key, length), {GetNamedKeyPropertyName(index)})",
-            _ => throw new ArgumentOutOfRangeException($"Invalid named key: '{this.members[index].NamedKey}'"),
+            _ => throw new InvalidOperationException($"Invalid named key: '{this.members[index].NamedKey}'"),
         };
     }
 

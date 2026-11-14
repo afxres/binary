@@ -20,8 +20,8 @@ public static partial class Converter
 
     public static MethodInfo GetMethod(IConverter converter, string name)
     {
-        ArgumentNullException.ThrowIfNull(name);
         ArgumentNullException.ThrowIfNull(converter);
+        ArgumentNullException.ThrowIfNull(name);
         var metadata = converter as IConverterMetadata;
         if (metadata is null)
             ThrowHelper.ThrowNotConverter(converter.GetType());

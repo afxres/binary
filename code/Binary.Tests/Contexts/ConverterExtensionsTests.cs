@@ -1,6 +1,7 @@
 namespace Mikodev.Binary.Tests.Contexts;
 
 using Mikodev.Binary.Attributes;
+using System;
 using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
@@ -62,5 +63,25 @@ public class ConverterExtensionsTests
         Assert.True(statusResult);
         Assert.Equal(bufferOrigin.Length, bytesWrittenResult);
         Assert.Equal(bufferOrigin, bufferResult);
+    }
+
+    [Fact(DisplayName = "Encode Brotli Null Converter Test")]
+    public void EncodeBrotliNullConverterTest()
+    {
+        IConverter converter = null!;
+        var a = Assert.Throws<ArgumentNullException>(() => ConverterExtensions.EncodeBrotli(converter, 1));
+        Assert.Equal("converter", a.ParamName);
+        var b = Assert.Throws<ArgumentNullException>(() => ConverterExtensions.EncodeBrotli<int>(null!, 1));
+        Assert.Equal("converter", b.ParamName);
+    }
+
+    [Fact(DisplayName = "Decode Brotli Null Converter Test")]
+    public void DecodeBrotliNullConverterTest()
+    {
+        IConverter converter = null!;
+        var a = Assert.Throws<ArgumentNullException>(() => _ = ConverterExtensions.DecodeBrotli(converter, ReadOnlySpan<byte>.Empty));
+        Assert.Equal("converter", a.ParamName);
+        var b = Assert.Throws<ArgumentNullException>(() => _ = ConverterExtensions.DecodeBrotli<int>(null!, ReadOnlySpan<byte>.Empty));
+        Assert.Equal("converter", b.ParamName);
     }
 }

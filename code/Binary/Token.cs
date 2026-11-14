@@ -63,6 +63,7 @@ public sealed partial class Token : IDynamicMetaObjectProvider
         }
         catch (Exception e)
         {
+            // token memory is decoded lazily, keep the failure for the later member access instead of throwing here
             return (ImmutableDictionary.Create<string, Token>(), e);
         }
     }

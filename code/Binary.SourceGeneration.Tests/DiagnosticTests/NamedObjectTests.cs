@@ -34,7 +34,7 @@ public class NamedObjectTests
         _ = CompilationModule.RunGenerators(compilation, out var diagnostics, generator);
         var diagnostic = Assert.Single(diagnostics);
         Assert.Equal(DiagnosticSeverity.Error, diagnostic.Severity);
-        Assert.EndsWith("The named key is duplicated, key: entry", diagnostic.ToString());
+        Assert.EndsWith("The named key is duplicated: entry", diagnostic.ToString());
         Assert.Contains("""NamedKey("entry")""", diagnostic.Location.GetSourceText());
     }
 

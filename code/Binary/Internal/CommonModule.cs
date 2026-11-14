@@ -26,18 +26,18 @@ internal static class CommonModule
 
     internal static object CreateInstance(Type type, object?[]? arguments)
     {
+        object? result;
         try
         {
-            if (Activator.CreateInstance(type, arguments) is { } result)
-                return result;
-            throw new InvalidOperationException($"Invalid null instance detected, type: {type}");
+            result = Activator.CreateInstance(type, arguments);
         }
-        catch (Exception e)
+        catch (TargetInvocationException e) when (e.InnerException is { } inner)
         {
-            if (e is TargetInvocationException { InnerException: { } inner })
-                ExceptionDispatchInfo.Throw(inner);
+            // ExceptionDispatchInfo.Throw is not annotated with DoesNotReturn, the trailing throw only satisfies the compiler
+            ExceptionDispatchInfo.Throw(inner);
             throw;
         }
+        return result ?? throw new InvalidOperationException($"Invalid null instance detected, type: {type}");
     }
 
     internal static bool TryGetInterfaceArguments(Type type, Type definition, [MaybeNullWhen(false)] out Type[] arguments)

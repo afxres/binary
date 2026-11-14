@@ -41,11 +41,13 @@ public static partial class ConverterExtensions
 
     public static object? DecodeBrotli(this IConverter converter, scoped ReadOnlySpan<byte> span)
     {
+        ArgumentNullException.ThrowIfNull(converter);
         return DecodeBrotliInternal(converter.Decode, span, ArrayPool<byte>.Shared);
     }
 
     public static T DecodeBrotli<T>(this Converter<T> converter, scoped ReadOnlySpan<byte> span)
     {
+        ArgumentNullException.ThrowIfNull(converter);
         return DecodeBrotliInternal(converter.Decode, span, ArrayPool<byte>.Shared);
     }
 }
