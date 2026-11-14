@@ -25,17 +25,24 @@ public static class StringBuilderExtensions
 
     public static void AppendIndent(this StringBuilder target, int indent, string head, string tail, int count, Func<int, string> func)
     {
+        AppendIndent(target, indent, head, tail, count, _ => true, func);
+    }
+
+    public static void AppendIndent(this StringBuilder target, int indent, string head, string tail, int count, Func<int, bool> filter, Func<int, string> func)
+    {
         if ((uint)indent > MaxIndentLevels)
             throw new ArgumentOutOfRangeException(nameof(indent));
         _ = target.Append(' ', IndentSize * indent);
         _ = target.Append(head);
+        var flag = false;
         for (var i = 0; i < count; i++)
         {
-            var part = func.Invoke(i);
-            _ = target.Append(part);
-            if (i == count - 1)
+            if (filter.Invoke(i) is false)
                 continue;
-            _ = target.Append(", ");
+            if (flag)
+                _ = target.Append(", ");
+            _ = target.Append(func.Invoke(i));
+            flag = true;
         }
         _ = target.Append(tail);
         _ = target.AppendLine();

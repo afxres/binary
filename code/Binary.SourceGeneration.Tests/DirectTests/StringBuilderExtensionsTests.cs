@@ -40,4 +40,19 @@ public class StringBuilderExtensionsTests
         Assert.Equal(expected, a.ToString());
         Assert.Equal(expected, b.ToString());
     }
+
+    [Theory(DisplayName = "Indent With Filter Test")]
+    [InlineData(new[] { true, true, true }, "v0, v1, v2")]
+    [InlineData(new[] { true, false, true }, "v0, v2")]
+    [InlineData(new[] { true, true, false }, "v0, v1")]
+    [InlineData(new[] { false, true, true }, "v1, v2")]
+    [InlineData(new[] { false, false, false }, "")]
+    public void IndentWithFilterTest(bool[] filter, string expected)
+    {
+        // the separator belongs between the emitted parts, not between the indexes,
+        // so a skipped last index must not leave a trailing separator behind
+        var builder = new StringBuilder();
+        StringBuilderExtensions.AppendIndent(builder, 0, "[", "]", filter.Length, i => filter[i], i => $"v{i}");
+        Assert.Equal($"[{expected}]{Environment.NewLine}", builder.ToString());
+    }
 }

@@ -57,13 +57,18 @@ public sealed partial class UnionObjectConverterContext
         var systemUnionInterface = symbol.Interfaces.FirstOrDefault(x => context.IsType(x, "System.Runtime.CompilerServices.IUnion"));
         if (systemUnionAttribute is null && systemUnionInterface is null)
             return null;
+        var customUnionInterface = symbol.Interfaces.FirstOrDefault(x => x.Name is "IUnionMembers");
+        if (customUnionInterface is not null && customUnionInterface.AllInterfaces.Any(x => x.GetMembers().OfType<IMethodSymbol>().Any(m => FilterUnionCreateMethod(m) && SymbolEqualityComparer.Default.Equals(m.ReturnType, symbol))))
+            return new SourceResult.Diagnostic([(Diagnostics.UnionCaseFactoryInherited, [Symbols.GetSymbolDiagnosticDisplayString(symbol)])]);
         var caseTypeList = default(List<ITypeSymbol>);
-        if (symbol.Interfaces.FirstOrDefault(x => x.Name is "IUnionMembers") is { } customUnionInterface)
+        if (customUnionInterface is not null)
             caseTypeList = [.. customUnionInterface.GetMembers().OfType<IMethodSymbol>().Where(FilterUnionCreateMethod).Select(SelectUnionCaseType).OfType<ITypeSymbol>()];
         if (caseTypeList is null or { Count: 0 })
             caseTypeList = [.. namedType.InstanceConstructors.Select(SelectUnionCaseType).OfType<ITypeSymbol>()];
         if (caseTypeList is null or { Count: 0 } || caseTypeList.Distinct(SymbolEqualityComparer.Default).Count() != caseTypeList.Count)
             return new SourceResult.Diagnostic([(Diagnostics.TypeNotRecognized, ["UnionObject", Symbols.GetSymbolDiagnosticDisplayString(symbol)])]);
+        if (caseTypeList.Any(x => Symbols.GetNullableUnderlyingType(x) is { } underlying && caseTypeList.Any(y => SymbolEqualityComparer.Default.Equals(y, underlying))))
+            return new SourceResult.Diagnostic([(Diagnostics.UnionCaseTypeAmbiguous, [Symbols.GetSymbolDiagnosticDisplayString(symbol)])]);
         var caseList = caseTypeList.Select((x, i) => new UnionCaseInfo(i, x, IsEmptyUnionCaseType(context, symbol, x))).ToList();
         caseList.Sort((a, b) => Symbols.CompareConversion(context.Compilation, a.Type, b.Type));
         return new UnionObjectConverterContext(context, tracker, symbol, [.. caseList]).Build();

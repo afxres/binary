@@ -9,7 +9,7 @@ public sealed partial class UnionObjectConverterContext : SymbolConverterContext
 {
     private sealed record UnionCaseInfo(int Index, ITypeSymbol Type, bool Empty);
 
-    private sealed record UnionCaseSlot(int Index, ITypeSymbol Type, int Position, string? ConverterName);
+    private sealed record UnionCaseSlot(int Index, ITypeSymbol Type, int Position, string PatternTypeName, string? ConverterName);
 
     private readonly ImmutableArray<UnionCaseSlot> slots;
 
@@ -20,19 +20,18 @@ public sealed partial class UnionObjectConverterContext : SymbolConverterContext
         var slots = ImmutableArray.CreateBuilder<UnionCaseSlot>(cases.Length);
         var converterCount = 0;
         for (var i = 0; i < cases.Length; i++)
-            slots.Add(new UnionCaseSlot(cases[i].Index, cases[i].Type, i, cases[i].Empty ? null : $"cvt{converterCount++}"));
+        {
+            var caseType = cases[i].Type;
+            var patternTypeName = context.GetTypeFullName(Symbols.GetNullableUnderlyingType(caseType) ?? caseType);
+            slots.Add(new UnionCaseSlot(cases[i].Index, cases[i].Type, i, patternTypeName, cases[i].Empty ? null : $"cvt{converterCount++}"));
+        }
         this.slots = slots.ToImmutable();
-    }
-
-    private ImmutableArray<UnionCaseSlot> GetConverterSlots()
-    {
-        return [.. this.slots.Where(x => x.ConverterName is not null)];
     }
 
     private void AppendConverterHead()
     {
-        var converters = GetConverterSlots();
-        Output.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", ")", converters.Length, i => $"{GetConverterTypeFullName(converters[i].Position)} {converters[i].ConverterName}");
+        var slots = this.slots;
+        Output.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", ")", slots.Length, i => slots[i].ConverterName is not null, i => $"{GetConverterTypeFullName(slots[i].Position)} {slots[i].ConverterName}");
         Output.AppendIndent(2, $": Mikodev.Binary.Converter<{SymbolTypeFullName}>(0)");
         Output.AppendIndent(1, $"{{");
         CancellationToken.ThrowIfCancellationRequested();
@@ -56,7 +55,7 @@ public sealed partial class UnionObjectConverterContext : SymbolConverterContext
         for (var i = 0; i < slots.Length; i++)
         {
             var slot = slots[i];
-            Output.AppendIndent(4, slot.ConverterName is null ? $"case {GetTypeFullName(slot.Position)}:" : $"case {GetTypeFullName(slot.Position)} var{i}:");
+            Output.AppendIndent(4, slot.ConverterName is null ? $"case {slot.PatternTypeName}:" : $"case {slot.PatternTypeName} var{i}:");
             Output.AppendIndent(5, $"Mikodev.Binary.Converter.Encode(ref allocator, {slot.Index});");
             if (slot.ConverterName is { } converter)
                 Output.AppendIndent(5, $"{converter}.{(auto ? "EncodeAuto" : "Encode")}(ref allocator, var{i});");
@@ -97,13 +96,15 @@ public sealed partial class UnionObjectConverterContext : SymbolConverterContext
 
     private void AppendConverterCreatorBody()
     {
-        var converters = GetConverterSlots();
-        foreach (var slot in converters)
+        var slots = this.slots;
+        foreach (var slot in slots)
         {
+            if (slot.ConverterName is null)
+                continue;
             AppendConverterFromContext(slot.Type, slot.ConverterName!, GetTypeFullName(slot.Position));
             CancellationToken.ThrowIfCancellationRequested();
         }
-        Output.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ");", converters.Length, i => converters[i].ConverterName!);
+        Output.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ");", slots.Length, i => slots[i].ConverterName is not null, i => slots[i].ConverterName!);
     }
 
     protected override void Emit()

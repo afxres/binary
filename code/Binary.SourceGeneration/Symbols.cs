@@ -131,6 +131,11 @@ public static partial class Symbols
         return Location.None;
     }
 
+    public static ITypeSymbol? GetNullableUnderlyingType(ITypeSymbol symbol)
+    {
+        return symbol is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } nullable ? nullable.TypeArguments[0] : null;
+    }
+
     public static bool HasPublicSetter(IPropertySymbol property)
     {
         var setter = property.SetMethod;

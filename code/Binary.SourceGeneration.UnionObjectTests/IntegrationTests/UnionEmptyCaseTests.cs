@@ -19,6 +19,9 @@ public readonly union UnionWithEmptyClass(BareEmptyClass, int);
 
 public readonly union UnionWithEmptyRecordClass(BareEmptyRecordClass, int);
 
+// the empty case sits last, so the converter argument list ends on a skipped slot
+public readonly union UnionWithTrailingEmptyCase(int, BareEmpty);
+
 // control group: an empty type with a hand written zero byte converter
 // such a converter is only meaningful inside a union, where the tag delimits the payload;
 // it is NOT a valid stand alone converter, see 'ZeroByteConverterIsInvalidOutsideUnionTest'
@@ -42,6 +45,7 @@ public readonly union UnionWithCoveredEmpty(CoveredEmpty, int);
 [SourceGeneratorInclude<UnionWithEmptyStruct>]
 [SourceGeneratorInclude<UnionWithEmptyClass>]
 [SourceGeneratorInclude<UnionWithEmptyRecordClass>]
+[SourceGeneratorInclude<UnionWithTrailingEmptyCase>]
 [SourceGeneratorInclude<UnionWithCoveredEmpty>]
 public partial class UnionEmptyCaseGeneratorContext { }
 
@@ -120,6 +124,22 @@ public class UnionEmptyCaseTests
             var autoBuffer = Allocator.Invoke(source, converter.EncodeAuto);
             Assert.Equal("012A000000", Convert.ToHexString(autoBuffer));
             Assert.Equal(source, converter.Decode(buffer));
+        }
+    }
+
+    [Fact(DisplayName = "Union With Trailing Empty Case Test")]
+    public void UnionWithTrailingEmptyCaseTest()
+    {
+        // the empty case is the last one, the generated converter type must not end
+        // its parameter list with a separator because that case is skipped
+        AssertEmptyCaseWire(new UnionWithTrailingEmptyCase(new BareEmpty()), "01");
+        var (jit, aot) = CreateGenerators();
+        var source = new UnionWithTrailingEmptyCase(0x2A);
+        foreach (var generator in new[] { jit, aot })
+        {
+            var converter = generator.GetConverter<UnionWithTrailingEmptyCase>();
+            Assert.Equal("002A000000", Convert.ToHexString(converter.Encode(source)));
+            Assert.Equal(source, converter.Decode(converter.Encode(source)));
         }
     }
 

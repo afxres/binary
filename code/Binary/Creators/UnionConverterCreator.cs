@@ -152,6 +152,8 @@ internal sealed class UnionConverterCreator : IConverterCreator
             return null;
         var systemUnionInterface = type.GetInterfaces().SingleOrDefault(x => x.FullName is "System.Runtime.CompilerServices.IUnion");
         var customUnionInterface = type.GetInterfaces().SingleOrDefault(x => x.Name is "IUnionMembers");
+        if (customUnionInterface is not null && customUnionInterface.GetInterfaces().Any(x => x.GetMethods().Any(m => FilterUnionCreateMethod(m) && m.ReturnType == type)))
+            throw new ArgumentException($"Union case factory is inherited, type: {type}");
         var caseTypeList = default(List<UnionCaseTypeWithCreateMethod>);
         if (customUnionInterface is not null)
             caseTypeList = [.. customUnionInterface.GetMethods().Where(FilterUnionCreateMethod).Select(SelectUnionCaseTypeWithCreateMethod).OfType<UnionCaseTypeWithCreateMethod>()];
@@ -159,6 +161,8 @@ internal sealed class UnionConverterCreator : IConverterCreator
             caseTypeList = [.. type.GetConstructors().Select(SelectUnionCaseTypeWithCreateMethod).OfType<UnionCaseTypeWithCreateMethod>()];
         if (caseTypeList is null or { Count: 0 } || caseTypeList.DistinctBy(x => x.Type).Count() != caseTypeList.Count)
             throw new ArgumentException($"Union case detection failed, type: {type}");
+        if (caseTypeList.Any(x => Nullable.GetUnderlyingType(x.Type) is { } underlying && caseTypeList.Any(y => y.Type == underlying)))
+            throw new ArgumentException($"Union case type is ambiguous, type: {type}");
         var caseList = caseTypeList.Select((x, i) => new UnionCaseInfo(i, x.Type, x.Create, IsEmptyUnionCaseType(type, x.Type) ? null : context.GetConverter(x.Type))).ToList();
         caseList.Sort((a, b) => CommonModule.CompareConversion(a.Type, b.Type));
         var cases = caseList.ToImmutableArray();

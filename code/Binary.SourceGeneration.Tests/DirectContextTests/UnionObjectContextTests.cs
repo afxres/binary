@@ -132,6 +132,140 @@ public class UnionObjectContextTests
         Assert.DoesNotContain("GetConverter<global::System.ValueTuple>", success.SourceCode);
     }
 
+    [Fact(DisplayName = "Inherited Union Case Factory Test")]
+    public void InheritedUnionCaseFactoryTest()
+    {
+        // a factory inherited from a base interface is not a member of the provider itself,
+        // so it would be dropped silently and the case would end up unreachable at runtime
+        var source =
+            """
+            namespace UnionTests;
+
+            using System.Runtime.CompilerServices;
+
+            interface IIntCaseFactory
+            {
+                static abstract Sample Create(int value);
+            }
+
+            [Union]
+            sealed class Sample : Sample.IUnionMembers, IIntCaseFactory
+            {
+                private readonly object? value;
+
+                private Sample(object? value) => this.value = value;
+
+                public interface IUnionMembers : IIntCaseFactory
+                {
+                    static Sample Create(string value) => new(value);
+
+                    object? Value { get; }
+                }
+
+                static Sample IIntCaseFactory.Create(int value) => new(value);
+
+                object? IUnionMembers.Value => this.value;
+            }
+            """;
+        var compilation = CompilationModule.CreateCompilation(source);
+        var symbol = compilation.GetTypeByMetadataName("UnionTests.Sample") ?? throw new InvalidOperationException("UnionTests.Sample");
+        var context = new SourceGeneratorContext(compilation, _ => Assert.Fail("Invalid Call!"), CancellationToken.None);
+        var tracker = new SourceGeneratorTracker(_ => Assert.Fail("Invalid Call!"));
+        var result = Assert.IsType<SourceResult.Diagnostic>(UnionObjectConverterContext.Invoke(context, tracker, symbol)?.Value);
+        var (descriptor, messageArguments) = Assert.Single(result.DiagnosticArguments);
+        Assert.Equal(Diagnostics.UnionCaseFactoryInherited, descriptor);
+        Assert.Equal(Symbols.GetSymbolDiagnosticDisplayString(symbol), Assert.Single(messageArguments!));
+    }
+
+    public static IEnumerable<object[]> UnionCaseFactoryData()
+    {
+        // a base interface without any case factory
+        var a =
+            """
+            namespace UnionTests;
+
+            using System.Runtime.CompilerServices;
+
+            interface IMarker { }
+
+            [Union]
+            sealed class Sample : Sample.IUnionMembers, IMarker
+            {
+                private readonly object? value;
+
+                private Sample(object? value) => this.value = value;
+
+                public interface IUnionMembers : IMarker
+                {
+                    static Sample Create(int value) => new(value);
+
+                    object? Value { get; }
+                }
+
+                object? IUnionMembers.Value => this.value;
+            }
+            """;
+        // the case factory declared by the provider itself
+        var b =
+            """
+            namespace UnionTests;
+
+            using System.Runtime.CompilerServices;
+
+            [Union]
+            sealed class Sample : Sample.IUnionMembers
+            {
+                private readonly object? value;
+
+                private Sample(object? value) => this.value = value;
+
+                public interface IUnionMembers
+                {
+                    static Sample Create(int value) => new(value);
+
+                    object? Value { get; }
+                }
+
+                object? IUnionMembers.Value => this.value;
+            }
+            """;
+        yield return [a];
+        yield return [b];
+    }
+
+    [Theory(DisplayName = "Union Case Factory Test")]
+    [MemberData(nameof(UnionCaseFactoryData))]
+    public void UnionCaseFactoryTest(string source)
+    {
+        var (success, tracked) = InvokeUnion(source, "UnionTests.Sample");
+        var trackedType = Assert.Single(tracked);
+        Assert.Equal(SpecialType.System_Int32, trackedType.SpecialType);
+        Assert.Contains("GetConverter<global::System.Int32>", success.SourceCode);
+    }
+
+    [Theory(DisplayName = "Ambiguous Union Case Type Test")]
+    [InlineData("readonly union Sample(int?, int);")]
+    [InlineData("readonly union Sample(long, string?, long?);")]
+    public void AmbiguousUnionCaseTypeTest(string declaration)
+    {
+        // a nullable case type and its underlying case type share one boxed representation,
+        // so a pattern cannot tell them apart and the generated switch would be unreachable
+        var source =
+            $$"""
+            namespace UnionTests;
+
+            {{declaration}}
+            """;
+        var compilation = CompilationModule.CreateCompilation(source);
+        var symbol = compilation.GetTypeByMetadataName("UnionTests.Sample") ?? throw new InvalidOperationException("UnionTests.Sample");
+        var context = new SourceGeneratorContext(compilation, _ => Assert.Fail("Invalid Call!"), CancellationToken.None);
+        var tracker = new SourceGeneratorTracker(_ => Assert.Fail("Invalid Call!"));
+        var result = Assert.IsType<SourceResult.Diagnostic>(UnionObjectConverterContext.Invoke(context, tracker, symbol)?.Value);
+        var (descriptor, messageArguments) = Assert.Single(result.DiagnosticArguments);
+        Assert.Equal(Diagnostics.UnionCaseTypeAmbiguous, descriptor);
+        Assert.Equal(Symbols.GetSymbolDiagnosticDisplayString(symbol), Assert.Single(messageArguments!));
+    }
+
     [Theory(DisplayName = "Invalid Union Object Test")]
     [MemberData(nameof(InvalidUnionObjectData))]
     public void InvalidUnionObjectTest(string source)

@@ -277,4 +277,24 @@ public static class Diagnostics
         isEnabledByDefault: true);
 
     // ↑ attributes
+
+    // ↓ union
+
+    public static DiagnosticDescriptor UnionCaseTypeAmbiguous { get; } = new DiagnosticDescriptor(
+        id: "BINSRCGEN71",
+        title: "Union Case Type Is Ambiguous",
+        messageFormat: "The converter could not be generated because the nullable case type shares one boxed representation with another case type, type: {0}",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor UnionCaseFactoryInherited { get; } = new DiagnosticDescriptor(
+        id: "BINSRCGEN72",
+        title: "Union Case Factory Is Inherited",
+        messageFormat: "The converter could not be generated because the union case factory is inherited from a base interface, type: {0}",
+        category: DiagnosticCategory,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
+
+    // ↑ union
 }
