@@ -1,5 +1,6 @@
 namespace Mikodev.Binary.Internal;
 
+using Mikodev.Binary.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -88,6 +89,14 @@ internal static class CommonModule
     {
         Debug.Assert(member is Type or FieldInfo or PropertyInfo);
         var attributes = member.GetCustomAttributes(false).OfType<Attribute>().Where(filter).ToImmutableArray();
+        return attributes;
+    }
+
+    internal static ImmutableArray<Attribute> GetObjectAttributes(Type type)
+    {
+        var attributes = GetAttributes(type, a => a is NamedObjectAttribute or TupleObjectAttribute or ConverterAttribute or ConverterCreatorAttribute);
+        if (attributes.Length > 1)
+            throw new ArgumentException($"Multiple attributes found, type: {type}");
         return attributes;
     }
 

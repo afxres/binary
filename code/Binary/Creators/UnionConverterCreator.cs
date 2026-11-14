@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 [RequiresDynamicCode(CommonDefine.RequiresDynamicCodeMessage)]
 [RequiresUnreferencedCode(CommonDefine.RequiresUnreferencedCodeMessage)]
@@ -16,7 +17,7 @@ internal sealed class UnionConverterCreator : IConverterCreator
 {
     private sealed record UnionCaseTypeWithCreateMethod(Type Type, MethodBase Create);
 
-    private sealed record UnionCaseInfo(int Index, Type Type, MethodBase Create, IConverter Converter);
+    private sealed record UnionCaseInfo(int Index, Type Type, MethodBase Create, IConverter? Converter);
 
     private static readonly MethodInfo DecodeMethodInfo = new DecodeDelegate<int>(Converter.Decode).Method;
 
@@ -25,6 +26,30 @@ internal sealed class UnionConverterCreator : IConverterCreator
     private static readonly MethodInfo DecodeFailedMethodInfo = new Action<int>(ThrowHelper.ThrowInvalidUnionTag<object>).Method.GetGenericMethodDefinition();
 
     private static readonly MethodInfo EncodeFailedMethodInfo = new Action(ThrowHelper.ThrowInvalidOrNullUnionValue<object>).Method.GetGenericMethodDefinition();
+
+    private static bool IsRecordEqualityContract(MemberInfo member)
+    {
+        return member is PropertyInfo { Name: "EqualityContract" } property
+            && property.PropertyType == typeof(Type)
+            && property.GetGetMethod(nonPublic: true)?.GetCustomAttribute<CompilerGeneratedAttribute>() is not null;
+    }
+
+    private static bool IsEmptyUnionCaseType(Type unionType, Type caseType)
+    {
+        if (caseType == typeof(ValueTuple))
+            return true;
+        if (caseType.IsAbstract || caseType.IsInterface)
+            return false;
+        if (unionType.Assembly != caseType.Assembly)
+            return false;
+        var attributes = CommonModule.GetObjectAttributes(caseType);
+        if (attributes.Length is not 0)
+            return false;
+        var members = CommonModule.GetAllFieldsAndPropertiesForNonInterfaceType(caseType, CommonDefine.InstanceBindingFlags);
+        if (members.Any(x => IsRecordEqualityContract(x) is false))
+            return false;
+        return caseType.IsValueType || caseType.GetConstructor([]) is not null;
+    }
 
     private static bool FilterUnionCreateMethod(MethodInfo m)
     {
@@ -70,13 +95,17 @@ internal sealed class UnionConverterCreator : IConverterCreator
         var target = Expression.Label("target");
         foreach (var i in caseSet)
         {
+            var body = new List<Expression>();
             var test = Expression.TypeIs(value, i.Type);
-            var intent = Expression.Convert(value, i.Type);
-            var ifTrue = Expression.Block(
-                Expression.Call(EncodeMethodInfo, allocator, Expression.Constant(i.Index)),
-                Expression.Call(Expression.Constant(i.Converter), Converter.GetMethod(i.Converter, auto ? nameof(IConverter.EncodeAuto) : nameof(IConverter.Encode)), allocator, intent),
-                Expression.Break(target));
-            expressions.Add(Expression.IfThen(test, ifTrue));
+            body.Add(Expression.Call(EncodeMethodInfo, allocator, Expression.Constant(i.Index)));
+            if (i.Converter is not null)
+            {
+                var intent = Expression.Convert(value, i.Type);
+                var encode = Expression.Call(Expression.Constant(i.Converter), Converter.GetMethod(i.Converter, auto ? nameof(IConverter.EncodeAuto) : nameof(IConverter.Encode)), allocator, intent);
+                body.Add(encode);
+            }
+            body.Add(Expression.Break(target));
+            expressions.Add(Expression.IfThen(test, Expression.Block(body)));
         }
         if (type.IsValueType is false)
         {
@@ -101,7 +130,9 @@ internal sealed class UnionConverterCreator : IConverterCreator
         expressions.Add(Expression.Assign(index, Expression.Call(DecodeMethodInfo, span)));
         foreach (var i in caseSet)
         {
-            var decode = Expression.Call(Expression.Constant(i.Converter), Converter.GetMethod(i.Converter, auto ? nameof(IConverter.DecodeAuto) : nameof(IConverter.Decode)), span);
+            var decode = i.Converter is null
+                ? Expression.New(i.Type) as Expression
+                : Expression.Call(Expression.Constant(i.Converter), Converter.GetMethod(i.Converter, auto ? nameof(IConverter.DecodeAuto) : nameof(IConverter.Decode)), span);
             var create = i.Create is ConstructorInfo constructor
                 ? Expression.New(constructor, decode)
                 : Expression.Call((MethodInfo)i.Create, decode) as Expression;
@@ -128,7 +159,7 @@ internal sealed class UnionConverterCreator : IConverterCreator
             caseTypeList = [.. type.GetConstructors().Select(SelectUnionCaseTypeWithCreateMethod).OfType<UnionCaseTypeWithCreateMethod>()];
         if (caseTypeList is null or { Count: 0 } || caseTypeList.DistinctBy(x => x.Type).Count() != caseTypeList.Count)
             throw new ArgumentException($"Union case detection failed, type: {type}");
-        var caseList = caseTypeList.Select((x, i) => new UnionCaseInfo(i, x.Type, x.Create, context.GetConverter(x.Type))).ToList();
+        var caseList = caseTypeList.Select((x, i) => new UnionCaseInfo(i, x.Type, x.Create, IsEmptyUnionCaseType(type, x.Type) ? null : context.GetConverter(x.Type))).ToList();
         caseList.Sort((a, b) => CommonModule.CompareConversion(a.Type, b.Type));
         var cases = caseList.ToImmutableArray();
         var valueProperty = SelectUnionValueProperty(type, [type, systemUnionInterface, customUnionInterface]);

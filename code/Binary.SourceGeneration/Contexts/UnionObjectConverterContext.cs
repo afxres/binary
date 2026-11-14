@@ -8,19 +8,30 @@ using UnionCaseInfo = (int Index, Microsoft.CodeAnalysis.ITypeSymbol Type);
 
 public sealed partial class UnionObjectConverterContext : SymbolConverterContext
 {
-    private readonly ImmutableArray<UnionCaseInfo> cases;
+    private sealed record UnionCaseSlot(int Index, ITypeSymbol Type, int Position, string? ConverterName);
 
-    private UnionObjectConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, ImmutableArray<UnionCaseInfo> cases) : base(context, tracker, symbol)
+    private readonly ImmutableArray<UnionCaseSlot> slots;
+
+    private UnionObjectConverterContext(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol, ImmutableArray<UnionCaseInfo> cases, ImmutableArray<bool> empty) : base(context, tracker, symbol)
     {
         var types = cases.Select(x => x.Type).ToImmutableArray();
         types.ForEach(AddType);
-        this.cases = cases;
+        var slots = ImmutableArray.CreateBuilder<UnionCaseSlot>(cases.Length);
+        var converterCount = 0;
+        for (var i = 0; i < cases.Length; i++)
+            slots.Add(new UnionCaseSlot(cases[i].Index, cases[i].Type, i, empty[i] ? null : $"cvt{converterCount++}"));
+        this.slots = slots.ToImmutable();
+    }
+
+    private ImmutableArray<UnionCaseSlot> GetConverterSlots()
+    {
+        return [.. this.slots.Where(x => x.ConverterName is not null)];
     }
 
     private void AppendConverterHead()
     {
-        var cases = this.cases;
-        Output.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", ")", cases.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
+        var converters = GetConverterSlots();
+        Output.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", ")", converters.Length, i => $"{GetConverterTypeFullName(converters[i].Position)} {converters[i].ConverterName}");
         Output.AppendIndent(2, $": Mikodev.Binary.Converter<{SymbolTypeFullName}>(0)");
         Output.AppendIndent(1, $"{{");
         CancellationToken.ThrowIfCancellationRequested();
@@ -34,18 +45,20 @@ public sealed partial class UnionObjectConverterContext : SymbolConverterContext
 
     private void AppendEncodeMethod(bool auto)
     {
-        var cases = this.cases;
+        var slots = this.slots;
         if (auto)
             Output.AppendEmptyLine();
         Output.AppendIndent(2, $"public override void {(auto ? "EncodeAuto" : "Encode")}(ref Mikodev.Binary.Allocator allocator, {SymbolTypeFullName} item)");
         Output.AppendIndent(2, $"{{");
         Output.AppendIndent(3, $"switch (item)");
         Output.AppendIndent(3, $"{{");
-        for (var i = 0; i < cases.Length; i++)
+        for (var i = 0; i < slots.Length; i++)
         {
-            Output.AppendIndent(4, $"case {GetTypeFullName(i)} var{i}:");
-            Output.AppendIndent(5, $"Mikodev.Binary.Converter.Encode(ref allocator, {cases[i].Index});");
-            Output.AppendIndent(5, $"cvt{i}.{(auto ? "EncodeAuto" : "Encode")}(ref allocator, var{i});");
+            var slot = slots[i];
+            Output.AppendIndent(4, slot.ConverterName is null ? $"case {GetTypeFullName(slot.Position)}:" : $"case {GetTypeFullName(slot.Position)} var{i}:");
+            Output.AppendIndent(5, $"Mikodev.Binary.Converter.Encode(ref allocator, {slot.Index});");
+            if (slot.ConverterName is { } converter)
+                Output.AppendIndent(5, $"{converter}.{(auto ? "EncodeAuto" : "Encode")}(ref allocator, var{i});");
             Output.AppendIndent(5, $"break;");
             CancellationToken.ThrowIfCancellationRequested();
         }
@@ -57,7 +70,7 @@ public sealed partial class UnionObjectConverterContext : SymbolConverterContext
 
     private void AppendDecodeMethod(bool auto)
     {
-        var cases = this.cases;
+        var slots = this.slots;
         Output.AppendEmptyLine();
         Output.AppendIndent(2, $"public override {SymbolTypeFullName} {(auto ? "DecodeAuto" : "Decode")}({(auto ? "ref" : "in")} System.ReadOnlySpan<byte> span)");
         Output.AppendIndent(2, $"{{");
@@ -67,9 +80,13 @@ public sealed partial class UnionObjectConverterContext : SymbolConverterContext
         Output.AppendIndent(3, $"var index = Mikodev.Binary.Converter.Decode(ref {bufferName});");
         Output.AppendIndent(3, $"return index switch");
         Output.AppendIndent(3, $"{{");
-        for (var i = 0; i < cases.Length; i++)
+        for (var i = 0; i < slots.Length; i++)
         {
-            Output.AppendIndent(4, $"{cases[i].Index} => cvt{i}.{(auto ? "DecodeAuto" : "Decode")}({(auto ? "ref" : "in")} {bufferName}),");
+            var slot = slots[i];
+            var decode = slot.ConverterName is { } converter
+                ? $"{converter}.{(auto ? "DecodeAuto" : "Decode")}({(auto ? "ref" : "in")} {bufferName})"
+                : $"new {GetTypeFullName(slot.Position)}()";
+            Output.AppendIndent(4, $"{slot.Index} => {decode},");
             CancellationToken.ThrowIfCancellationRequested();
         }
         Output.AppendIndent(4, $"_ => throw new System.ArgumentException($\"Invalid union tag '{{index}}', type: {{typeof({SymbolTypeFullName})}}\"),");
@@ -79,14 +96,13 @@ public sealed partial class UnionObjectConverterContext : SymbolConverterContext
 
     private void AppendConverterCreatorBody()
     {
-        var cases = this.cases;
-        for (var i = 0; i < cases.Length; i++)
+        var converters = GetConverterSlots();
+        foreach (var slot in converters)
         {
-            var @case = cases[i];
-            AppendConverterFromContext(@case.Type, $"cvt{i}", GetTypeFullName(i));
+            AppendConverterFromContext(slot.Type, slot.ConverterName!, GetTypeFullName(slot.Position));
             CancellationToken.ThrowIfCancellationRequested();
         }
-        Output.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ");", cases.Length, x => $"cvt{x}");
+        Output.AppendIndent(3, $"var converter = new {OutputConverterTypeName}(", ");", converters.Length, i => converters[i].ConverterName!);
     }
 
     protected override void Emit()

@@ -10,5 +10,7 @@ internal static class CommonDefine
 
     internal const string RequiresUnreferencedCodeMessage = "Public members required for binary serialization.";
 
+    internal const BindingFlags InstanceBindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
     internal const BindingFlags PublicInstanceBindingFlags = BindingFlags.Instance | BindingFlags.Public;
 }

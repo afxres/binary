@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Mikodev.Binary.SourceGeneration.Contexts;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -33,6 +34,102 @@ public class UnionObjectContextTests
             readonly struct FakeUnion { }
             """;
         yield return [a];
+    }
+
+    public static IEnumerable<object[]> EmptyUnionCaseTypeData()
+    {
+        yield return ["readonly record struct Empty;"];
+        yield return ["sealed class Empty { }"];
+        yield return ["sealed record Empty;"];
+    }
+
+    private static (SourceResult.Success Success, ImmutableArray<ITypeSymbol> Tracked) InvokeUnion(string source, string unionTypeName)
+    {
+        var compilation = CompilationModule.CreateCompilation(source);
+        var symbol = compilation.GetTypeByMetadataName(unionTypeName) ?? throw new InvalidOperationException(unionTypeName);
+        var diagnostics = ImmutableArray.CreateBuilder<Diagnostic>();
+        var tracked = ImmutableArray.CreateBuilder<ITypeSymbol>();
+        var context = new SourceGeneratorContext(compilation, diagnostics.Add, CancellationToken.None);
+        var tracker = new SourceGeneratorTracker(tracked.Add);
+        var result = UnionObjectConverterContext.Invoke(context, tracker, symbol)?.Value;
+        Assert.DoesNotContain(diagnostics, x => x.Severity is DiagnosticSeverity.Error);
+        return (Assert.IsType<SourceResult.Success>(result), tracked.ToImmutable());
+    }
+
+    [Theory(DisplayName = "Empty Union Case Type Test")]
+    [MemberData(nameof(EmptyUnionCaseTypeData))]
+    public void EmptyUnionCaseTypeTest(string declaration)
+    {
+        // 'record class' synthesizes 'EqualityContract', which is not state: it must not request a converter
+        var source =
+            $$"""
+            namespace UnionTests;
+
+            {{declaration}}
+
+            readonly union Sample(Empty, int);
+            """;
+        var (success, tracked) = InvokeUnion(source, "UnionTests.Sample");
+        var trackedType = Assert.Single(tracked);
+        Assert.Equal(SpecialType.System_Int32, trackedType.SpecialType);
+        Assert.Contains("case global::UnionTests.Empty:", success.SourceCode);
+        Assert.Contains("=> new global::UnionTests.Empty(),", success.SourceCode);
+        Assert.DoesNotContain("GetConverter<global::UnionTests.Empty>", success.SourceCode);
+    }
+
+    [Fact(DisplayName = "Non Empty Union Case Type Test")]
+    public void NonEmptyUnionCaseTypeTest()
+    {
+        var source =
+            """
+            namespace UnionTests;
+
+            sealed record Payload(int Value);
+
+            readonly union Sample(Payload, int);
+            """;
+        var (success, tracked) = InvokeUnion(source, "UnionTests.Sample");
+        Assert.Equal(2, tracked.Length);
+        Assert.Contains("GetConverter<global::UnionTests.Payload>", success.SourceCode);
+    }
+
+    [Fact(DisplayName = "Private State Union Case Type Test")]
+    public void PrivateStateUnionCaseTypeTest()
+    {
+        // non public members count as state, otherwise the private field would be dropped silently
+        var source =
+            """
+            namespace UnionTests;
+
+            readonly struct Hidden
+            {
+                private readonly int value;
+
+                public Hidden(int value) => this.value = value;
+
+                public int Read() => this.value;
+            }
+
+            readonly union Sample(Hidden, int);
+            """;
+        var (success, tracked) = InvokeUnion(source, "UnionTests.Sample");
+        Assert.Equal(2, tracked.Length);
+        Assert.Contains("GetConverter<global::UnionTests.Hidden>", success.SourceCode);
+    }
+
+    [Fact(DisplayName = "Value Tuple Union Case Type Test")]
+    public void ValueTupleUnionCaseTypeTest()
+    {
+        var source =
+            """
+            namespace UnionTests;
+
+            readonly union Sample(System.ValueTuple, int);
+            """;
+        var (success, tracked) = InvokeUnion(source, "UnionTests.Sample");
+        var trackedType = Assert.Single(tracked);
+        Assert.Equal(SpecialType.System_Int32, trackedType.SpecialType);
+        Assert.DoesNotContain("GetConverter<global::System.ValueTuple>", success.SourceCode);
     }
 
     [Theory(DisplayName = "Invalid Union Object Test")]

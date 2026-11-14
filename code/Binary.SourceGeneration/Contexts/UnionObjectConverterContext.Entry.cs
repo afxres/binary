@@ -23,6 +23,32 @@ public sealed partial class UnionObjectConverterContext
         return parameter.Type;
     }
 
+    private static bool IsRecordEqualityContract(SourceGeneratorContext context, ISymbol member)
+    {
+        return member is IPropertySymbol { Name: "EqualityContract", IsImplicitlyDeclared: true } property && context.IsType(property.Type, "System.Type");
+    }
+
+    private static bool IsEmptyUnionCaseType(SourceGeneratorContext context, ITypeSymbol unionType, ITypeSymbol caseType)
+    {
+        if (caseType.IsAbstract || caseType.TypeKind is TypeKind.Interface)
+            return false;
+        if (context.IsType(caseType, "System.ValueTuple"))
+            return true;
+        if (SymbolEqualityComparer.Default.Equals(unionType.ContainingAssembly, caseType.ContainingAssembly) is false)
+            return false;
+        if (Symbols.GetConverterType(context, caseType) is not null || Symbols.GetConverterCreatorType(context, caseType) is not null)
+            return false;
+        if (context.GetAttribute(caseType, Constants.NamedObjectAttributeTypeName) is not null || context.GetAttribute(caseType, Constants.TupleObjectAttributeTypeName) is not null)
+            return false;
+        var cancellation = context.CancellationToken;
+        var members = Symbols.GetAllFieldsAndPropertiesForNonInterfaceType(caseType, cancellation);
+        if (members.Any(x => x.IsStatic is false && IsRecordEqualityContract(context, x) is false))
+            return false;
+        if (caseType.IsValueType)
+            return true;
+        return caseType is INamedTypeSymbol namedType && namedType.InstanceConstructors.Any(x => x.Parameters.Length is 0 && x.DeclaredAccessibility is Accessibility.Public);
+    }
+
     public static SourceResult? Invoke(SourceGeneratorContext context, SourceGeneratorTracker tracker, ITypeSymbol symbol)
     {
         if (symbol is not INamedTypeSymbol namedType)
@@ -41,6 +67,7 @@ public sealed partial class UnionObjectConverterContext
             return new SourceResult.Diagnostic([(Diagnostics.TypeNotRecognized, ["UnionObject", Symbols.GetSymbolDiagnosticDisplayString(symbol)])]);
         var caseList = caseTypeList.Select((x, i) => new UnionCaseInfo(i, x)).ToList();
         caseList.Sort((a, b) => Symbols.CompareConversion(context.Compilation, a.Type, b.Type));
-        return new UnionObjectConverterContext(context, tracker, symbol, [.. caseList]).Build();
+        var emptyTypes = caseList.Select(x => IsEmptyUnionCaseType(context, symbol, x.Type)).ToArray();
+        return new UnionObjectConverterContext(context, tracker, symbol, [.. caseList], [.. emptyTypes]).Build();
     }
 }
