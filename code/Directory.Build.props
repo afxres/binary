@@ -47,7 +47,7 @@
   <!-- Product metadata shared by the shipped libraries. GeneratePackageOnBuild and
        PackageTags stay in the owning project because they are not identical. -->
   <PropertyGroup Condition="'$(MSBuildProjectName)' == 'Binary' Or '$(MSBuildProjectName)' == 'Binary.FSharp' Or '$(MSBuildProjectName)' == 'Binary.SourceGeneration'">
-    <Version>5.10.1</Version>
+    <Version>6.0.0</Version>
     <Copyright>Mikodev $([System.DateTime]::Now.ToString('yyyy'))</Copyright>
     <Authors>Mikodev</Authors>
     <Company>Mikodev</Company>
