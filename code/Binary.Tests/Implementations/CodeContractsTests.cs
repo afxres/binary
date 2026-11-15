@@ -72,7 +72,6 @@ public class CodeContractsTests
         {
             "Mikodev.Binary",
             "Mikodev.Binary.Attributes",
-            "Mikodev.Binary.Components",
         };
         var types = new HashSet<Type>(typeof(IConverter).Assembly.GetTypes());
         var alpha = new HashSet<Type>(types.Where(x => array.Contains(x.Namespace) && !x.IsNested));

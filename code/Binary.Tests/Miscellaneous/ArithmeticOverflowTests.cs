@@ -1,6 +1,5 @@
 namespace Mikodev.Binary.Tests.Miscellaneous;
 
-using Mikodev.Binary.Components;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -34,13 +33,13 @@ public class ArithmeticOverflowTests(ITestOutputHelper output)
         this.output.WriteLine(error.StackTrace ?? string.Empty);
     }
 
-    [Theory(DisplayName = "Get Converter Length Overflow")]
+    [Theory(DisplayName = "Get Tuple Converter Length Overflow")]
     [InlineData(new int[] { 0x4000_0000, 0x4000_0000 })]
     [InlineData(new int[] { 0x3000_0000, 0x3000_0000, 0x3000_0000 })]
-    public void GetConverterLengthOverflow(int[] lengths)
+    public void GetTupleConverterLengthOverflow(int[] lengths)
     {
         var converters = lengths.Select(x => new FakeConverter<object>(x)).ToList();
-        var error = Assert.Throws<OverflowException>(() => TupleObject.GetConverterLength(converters));
+        var error = Assert.Throws<OverflowException>(() => Generator.GetTupleConverterLength(converters));
         Assert.Equal(new OverflowException().Message, error.Message);
     }
 

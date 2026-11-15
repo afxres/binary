@@ -21,7 +21,7 @@ public sealed partial class TupleConverterContext : SymbolConverterContext
     {
         var members = this.members;
         Output.AppendIndent(1, $"private sealed class {OutputConverterTypeName}(", ")", members.Length, i => $"{GetConverterTypeFullName(i)} cvt{i}");
-        Output.AppendIndent(2, $": Mikodev.Binary.Converter<{SymbolTypeFullName}>(Mikodev.Binary.Components.TupleObject.GetConverterLength([", $"]))", members.Length, x => $"cvt{x}");
+        Output.AppendIndent(2, $": Mikodev.Binary.Converter<{SymbolTypeFullName}>(Mikodev.Binary.Generator.GetTupleConverterLength([", $"]))", members.Length, x => $"cvt{x}");
         Output.AppendIndent(1, $"{{");
         CancellationToken.ThrowIfCancellationRequested();
     }

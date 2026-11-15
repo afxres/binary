@@ -1,12 +1,11 @@
 namespace Mikodev.Binary.Internal.Sequence.Decoders;
 
-using Mikodev.Binary.Components;
 using System;
 using System.Collections.Generic;
 
 internal sealed class KeyValueEnumerableDecoder<K, V>(Converter<K> init, Converter<V> tail)
 {
-    private readonly int itemLength = TupleObject.GetConverterLength([init, tail]);
+    private readonly int itemLength = Generator.GetTupleConverterLength([init, tail]);
 
     private readonly Converter<K> init = init;
 

@@ -1,11 +1,10 @@
-namespace Mikodev.Binary.Tests.Components;
+namespace Mikodev.Binary.Tests.Contexts;
 
-using Mikodev.Binary.Components;
 using System;
 using System.Collections.Generic;
 using Xunit;
 
-public class TupleObjectTests
+public class GeneratorTupleConverterLengthTests
 {
     private sealed class HideConverter : IConverter
     {
@@ -35,11 +34,28 @@ public class TupleObjectTests
         public override T Decode(in ReadOnlySpan<byte> span) => throw new NotImplementedException();
     }
 
+    [Fact(DisplayName = "Fixed Length Test")]
+    public void FixedLengthTest()
+    {
+        var converter = new FakeConverter<int>(8);
+        var length = Generator.GetTupleConverterLength([converter, converter, converter]);
+        Assert.Equal(24, length);
+    }
+
+    [Fact(DisplayName = "Variable Length Test")]
+    public void VariableLengthTest()
+    {
+        var converter = new FakeConverter<int>(8);
+        var variable = new FakeConverter<string?>(0);
+        Assert.Equal(0, Generator.GetTupleConverterLength([converter, variable]));
+        Assert.Equal(0, Generator.GetTupleConverterLength([variable, converter]));
+    }
+
     [Fact(DisplayName = "Argument Null Test")]
     public void ArgumentNullTest()
     {
-        var methodInfo = new Func<IEnumerable<IConverter>, int>(TupleObject.GetConverterLength).Method;
-        var error = Assert.Throws<ArgumentNullException>(() => TupleObject.GetConverterLength(null!));
+        var methodInfo = new Func<IEnumerable<IConverter>, int>(Generator.GetTupleConverterLength).Method;
+        var error = Assert.Throws<ArgumentNullException>(() => Generator.GetTupleConverterLength(null!));
         var parameters = methodInfo.GetParameters();
         Assert.Equal(parameters[0].Name, error.ParamName);
     }
@@ -48,15 +64,15 @@ public class TupleObjectTests
     public void OverflowTest()
     {
         var converter = new FakeConverter<int>(0x4000_0000);
-        var error = Assert.Throws<OverflowException>(() => TupleObject.GetConverterLength([converter, converter]));
+        var error = Assert.Throws<OverflowException>(() => Generator.GetTupleConverterLength([converter, converter]));
         Assert.Equal(new OverflowException().Message, error.Message);
     }
 
     [Fact(DisplayName = "Sequence Null Test")]
     public void SequenceNullTest()
     {
-        var methodInfo = new Func<IEnumerable<IConverter>, int>(TupleObject.GetConverterLength).Method;
-        var error = Assert.Throws<ArgumentException>(() => TupleObject.GetConverterLength([null!]));
+        var methodInfo = new Func<IEnumerable<IConverter>, int>(Generator.GetTupleConverterLength).Method;
+        var error = Assert.Throws<ArgumentException>(() => Generator.GetTupleConverterLength([null!]));
         var parameters = methodInfo.GetParameters();
         Assert.Equal(parameters[0].Name, error.ParamName);
         Assert.StartsWith("Sequence contains null or invalid element.", error.Message);
@@ -65,8 +81,8 @@ public class TupleObjectTests
     [Fact(DisplayName = "Sequence Invalid Test")]
     public void SequenceInvalidTest()
     {
-        var methodInfo = new Func<IEnumerable<IConverter>, int>(TupleObject.GetConverterLength).Method;
-        var error = Assert.Throws<ArgumentException>(() => TupleObject.GetConverterLength([new HideConverter()]));
+        var methodInfo = new Func<IEnumerable<IConverter>, int>(Generator.GetTupleConverterLength).Method;
+        var error = Assert.Throws<ArgumentException>(() => Generator.GetTupleConverterLength([new HideConverter()]));
         var parameters = methodInfo.GetParameters();
         Assert.Equal(parameters[0].Name, error.ParamName);
         Assert.StartsWith("Sequence contains null or invalid element.", error.Message);
@@ -75,8 +91,8 @@ public class TupleObjectTests
     [Fact(DisplayName = "Sequence Empty Test")]
     public void SequenceEmptyTest()
     {
-        var methodInfo = new Func<IEnumerable<IConverter>, int>(TupleObject.GetConverterLength).Method;
-        var error = Assert.Throws<ArgumentException>(() => TupleObject.GetConverterLength([]));
+        var methodInfo = new Func<IEnumerable<IConverter>, int>(Generator.GetTupleConverterLength).Method;
+        var error = Assert.Throws<ArgumentException>(() => Generator.GetTupleConverterLength([]));
         var parameters = methodInfo.GetParameters();
         Assert.Equal(parameters[0].Name, error.ParamName);
         Assert.StartsWith("Sequence is empty.", error.Message);

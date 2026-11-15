@@ -2,6 +2,7 @@ namespace Mikodev.Binary;
 
 using Mikodev.Binary.Creators;
 using Mikodev.Binary.Creators.Endianness;
+using Mikodev.Binary.Internal.Metadata;
 using Mikodev.Binary.Internal.Sequence;
 using Mikodev.Binary.Internal.Sequence.Decoders;
 using Mikodev.Binary.Internal.Sequence.Encoders;
@@ -13,6 +14,25 @@ using System.Collections.Immutable;
 
 public static partial class Generator
 {
+    public static int GetTupleConverterLength(IEnumerable<IConverter> converters)
+    {
+        ArgumentNullException.ThrowIfNull(converters);
+        var result = 0;
+        foreach (var i in converters)
+        {
+            if (i is not IConverterMetadata)
+                throw new ArgumentException("Sequence contains null or invalid element.", nameof(converters));
+            var length = i.Length;
+            if (length is 0)
+                return 0;
+            result = checked(result + length);
+        }
+
+        if (result is 0)
+            throw new ArgumentException("Sequence is empty.", nameof(converters));
+        return result;
+    }
+
     public static Converter<E> GetEnumConverter<E>() where E : unmanaged
     {
         if (typeof(E).IsEnum is false)
