@@ -25,6 +25,9 @@ public class ArithmeticOverflowTests(ITestOutputHelper output)
     [Fact(DisplayName = "Array Resize Overflow")]
     public void ArrayResizeOverflowTest()
     {
+        // the buffer below needs one gigabyte of contiguous address space, a 32-bit process fails to allocate it
+        // and never reaches the overflow branch this test is about
+        Assert.SkipWhen(!Environment.Is64BitProcess, "requires a 64-bit process");
         var type = typeof(IConverter).Assembly.GetTypes().Single(x => x.Name is "SpanLikeMethods");
         var method = type.GetMethods(BindingFlags.Static | BindingFlags.NonPublic).Single(x => x.Name.Contains("Expand"));
         var expand = (ArrayResizeDelegate<byte>)Delegate.CreateDelegate(typeof(ArrayResizeDelegate<byte>), method.MakeGenericMethod(typeof(byte)));

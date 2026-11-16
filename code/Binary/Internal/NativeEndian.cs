@@ -9,13 +9,15 @@ internal static class NativeEndian
     {
         static bool Invoke(IConverter converter, bool isLittleEndian)
         {
-            if (isLittleEndian is false)
+            if (converter is null)
                 return false;
             var type = converter.GetType();
             if (type.IsGenericType is false)
                 return false;
             var definition = type.GetGenericTypeDefinition();
-            return definition == typeof(LittleEndianConverter<>) || definition == typeof(RepeatLittleEndianConverter<,>);
+            if (definition != typeof(LittleEndianConverter<>) && definition != typeof(RepeatLittleEndianConverter<,>))
+                return false;
+            return converter.Length is 1 || isLittleEndian;
         }
 
         return Invoke(converter, BitConverter.IsLittleEndian);

@@ -101,6 +101,9 @@ public class BitArrayConverterTests
     [Fact(DisplayName = "Large Array Decode")]
     public void LargeArrayDecode()
     {
+        // decoding bit length int.MaxValue needs about half a gigabyte of concurrent buffers,
+        // a 32-bit process runs out of memory depending on the current load
+        Assert.SkipWhen(!Environment.Is64BitProcess, "requires a 64-bit process");
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<BitArray>();
         var buffer = new byte[0x1000_0001];

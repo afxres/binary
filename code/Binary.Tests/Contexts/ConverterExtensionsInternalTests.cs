@@ -213,6 +213,9 @@ public class ConverterExtensionsInternalTests
     [Fact(DisplayName = "Decode Brotli Input Overflow Test")]
     public void DecodeBrotliSourceOverflowTest()
     {
+        // the buffer below needs one gigabyte of contiguous address space, a 32-bit process fails to allocate it
+        // and never reaches the overflow branch this test is about
+        Assert.SkipWhen(!Environment.Is64BitProcess, "requires a 64-bit process");
         var generator = Generator.CreateDefault();
         var converter = generator.GetConverter<byte[]>();
         var buffer = new byte[0x4000_0000];
@@ -223,6 +226,9 @@ public class ConverterExtensionsInternalTests
     [Fact(DisplayName = "Decode Brotli Output Overflow Test")]
     public void DecodeBrotliTargetOverflowTest()
     {
+        // the decoded length exceeds the address space of a 32-bit process, the buffer pool fails to rent it
+        // before the doubling check runs, so the expected overflow exception never surfaces there
+        Assert.SkipWhen(!Environment.Is64BitProcess, "requires a 64-bit process");
         var source =
             """
             CBFFFF3F002400E2B14072EFFFF8FFFF078004401C1680EEFD1FFFFFFF00900088C302D0BDFFE3FF
