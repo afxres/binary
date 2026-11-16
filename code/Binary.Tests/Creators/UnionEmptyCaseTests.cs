@@ -4,6 +4,8 @@ namespace Mikodev.Binary.Tests.Creators;
 
 using Mikodev.Binary.Attributes;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Xunit;
@@ -76,6 +78,76 @@ public class UnionEmptyCaseTests
     private abstract class AbstractCase { }
 
     private interface IEmptyInterface { }
+
+    // explicit interface implementations are private in metadata and are named after the interface,
+    // 'GetProperties()' without 'NonPublic' cannot see any of them
+    private sealed class ExplicitlyImplementedCollection : ICollection
+    {
+        int ICollection.Count => 0;
+
+        bool ICollection.IsSynchronized => false;
+
+        object ICollection.SyncRoot => this;
+
+        void ICollection.CopyTo(Array array, int index) { }
+
+        IEnumerator IEnumerable.GetEnumerator() => throw new NotSupportedException();
+    }
+
+    private sealed class ExplicitlyImplementedGenericCollection : ICollection<int>
+    {
+        int ICollection<int>.Count => 0;
+
+        bool ICollection<int>.IsReadOnly => false;
+
+        void ICollection<int>.Add(int item) { }
+
+        void ICollection<int>.Clear() { }
+
+        bool ICollection<int>.Contains(int item) => false;
+
+        void ICollection<int>.CopyTo(int[] array, int index) { }
+
+        bool ICollection<int>.Remove(int item) => false;
+
+        IEnumerator<int> IEnumerable<int>.GetEnumerator() => throw new NotSupportedException();
+
+        IEnumerator IEnumerable.GetEnumerator() => throw new NotSupportedException();
+    }
+
+    private readonly struct ExplicitlyImplementedStructCollection : ICollection
+    {
+        int ICollection.Count => 0;
+
+        bool ICollection.IsSynchronized => false;
+
+        object ICollection.SyncRoot => this;
+
+        void ICollection.CopyTo(Array array, int index) { }
+
+        IEnumerator IEnumerable.GetEnumerator() => throw new NotSupportedException();
+    }
+
+    private class CollectionBase : ICollection
+    {
+        int ICollection.Count => 0;
+
+        bool ICollection.IsSynchronized => false;
+
+        object ICollection.SyncRoot => this;
+
+        void ICollection.CopyTo(Array array, int index) { }
+
+        IEnumerator IEnumerable.GetEnumerator() => throw new NotSupportedException();
+    }
+
+    private sealed class DerivedFromCollectionBase : CollectionBase { }
+
+    // control group: same explicit implementation shape, but a method is not state
+    private sealed class ExplicitlyImplementedDisposable : IDisposable
+    {
+        void IDisposable.Dispose() { }
+    }
 
     private static readonly MethodInfo IsEmptyUnionCaseTypeMethod = typeof(Generator).Assembly
         .GetType("Mikodev.Binary.Creators.UnionConverterCreator", throwOnError: true)!
@@ -168,6 +240,22 @@ public class UnionEmptyCaseTests
         // is not mistaken for an empty case. This is what keeps int out of the branch as well, even
         // without the assembly guard.
         Assert.False(IsEmpty(typeof(StructWithPrivateField)));
+    }
+
+    [Fact(DisplayName = "Explicit Interface Implementations Test")]
+    public void ExplicitInterfaceImplementationsCountAsState()
+    {
+        // an explicit implementation lands in metadata as a private, interface prefixed member
+        // ('System.Collections.ICollection.Count'), so only the non public flags can see it.
+        // Missing it here would let a type whose whole surface is an explicit implementation
+        // pass for an empty case, and the payload would silently disappear from the wire.
+        Assert.False(IsEmpty(typeof(ExplicitlyImplementedCollection)));
+        Assert.False(IsEmpty(typeof(ExplicitlyImplementedGenericCollection)));
+        Assert.False(IsEmpty(typeof(ExplicitlyImplementedStructCollection)));
+        // the same members may be declared on a base type, the walk covers every level
+        Assert.False(IsEmpty(typeof(DerivedFromCollectionBase)));
+        // but an explicitly implemented method is not state, so this one stays an empty case
+        Assert.True(IsEmpty(typeof(ExplicitlyImplementedDisposable)));
     }
 
     private static void AssertEmptyCaseWire<TUnion>(TUnion source, Type expectedEmptyType)

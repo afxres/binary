@@ -61,6 +61,73 @@ public class UnionEmptyCaseTests
 
         public interface IEmptyInterface { }
 
+        public sealed class ExplicitlyImplementedCollection : System.Collections.ICollection
+        {
+            int System.Collections.ICollection.Count => 0;
+
+            bool System.Collections.ICollection.IsSynchronized => false;
+
+            object System.Collections.ICollection.SyncRoot => this;
+
+            void System.Collections.ICollection.CopyTo(System.Array array, int index) { }
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => throw new System.NotSupportedException();
+        }
+
+        public sealed class ExplicitlyImplementedGenericCollection : System.Collections.Generic.ICollection<int>
+        {
+            int System.Collections.Generic.ICollection<int>.Count => 0;
+
+            bool System.Collections.Generic.ICollection<int>.IsReadOnly => false;
+
+            void System.Collections.Generic.ICollection<int>.Add(int item) { }
+
+            void System.Collections.Generic.ICollection<int>.Clear() { }
+
+            bool System.Collections.Generic.ICollection<int>.Contains(int item) => false;
+
+            void System.Collections.Generic.ICollection<int>.CopyTo(int[] array, int index) { }
+
+            bool System.Collections.Generic.ICollection<int>.Remove(int item) => false;
+
+            System.Collections.Generic.IEnumerator<int> System.Collections.Generic.IEnumerable<int>.GetEnumerator() => throw new System.NotSupportedException();
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => throw new System.NotSupportedException();
+        }
+
+        public readonly struct ExplicitlyImplementedStructCollection : System.Collections.ICollection
+        {
+            int System.Collections.ICollection.Count => 0;
+
+            bool System.Collections.ICollection.IsSynchronized => false;
+
+            object System.Collections.ICollection.SyncRoot => this;
+
+            void System.Collections.ICollection.CopyTo(System.Array array, int index) { }
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => throw new System.NotSupportedException();
+        }
+
+        public class CollectionBase : System.Collections.ICollection
+        {
+            int System.Collections.ICollection.Count => 0;
+
+            bool System.Collections.ICollection.IsSynchronized => false;
+
+            object System.Collections.ICollection.SyncRoot => this;
+
+            void System.Collections.ICollection.CopyTo(System.Array array, int index) { }
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => throw new System.NotSupportedException();
+        }
+
+        public sealed class DerivedFromCollectionBase : CollectionBase { }
+
+        public sealed class ExplicitlyImplementedDisposable : System.IDisposable
+        {
+            void System.IDisposable.Dispose() { }
+        }
+
         readonly union Sample(EmptyStruct, int);
         """;
 
@@ -82,6 +149,11 @@ public class UnionEmptyCaseTests
         yield return ["UnionTests.ClassWithoutParameterlessConstructor", false];
         yield return ["UnionTests.AbstractCase", false];
         yield return ["UnionTests.IEmptyInterface", false];
+        yield return ["UnionTests.ExplicitlyImplementedCollection", false];
+        yield return ["UnionTests.ExplicitlyImplementedGenericCollection", false];
+        yield return ["UnionTests.ExplicitlyImplementedStructCollection", false];
+        yield return ["UnionTests.DerivedFromCollectionBase", false];
+        yield return ["UnionTests.ExplicitlyImplementedDisposable", true];
         yield return ["System.ValueTuple", true];
         yield return ["System.Int32", false];
         yield return ["System.Decimal", false];
