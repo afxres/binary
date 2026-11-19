@@ -132,12 +132,12 @@ A few details:
 
 `new { id = 1024, name = "C#" }` (16 bytes):
 
-| Bytes            | Meaning                                       |
-| :--------------- | :-------------------------------------------- |
-| `02 69 64`       | key `"id"`, length 2                          |
-| `04 00 04 00 00` | value `1024`, length 4, little-endian `int32` |
-| `04 6e 61 6d 65` | key `"name"`, length 4                        |
-| `02 43 23`       | value `"C#"`, length 2                        |
+| Bytes              | Meaning                                       |
+| :----------------- | :-------------------------------------------- |
+| `02` `69 64`       | key `"id"`, length 2                          |
+| `04` `00 04 00 00` | value `1024`, length 4, little-endian `int32` |
+| `04` `6e 61 6d 65` | key `"name"`, length 4                        |
+| `02` `43 23`       | value `"C#"`, length 2                        |
 
 Both the key and the value carry a length prefix. Members are written in name order to keep the
 output deterministic (the tests rely on it), but the format does not require any order: decoding
@@ -155,7 +155,7 @@ var value = (Time: time, User: user, Action: "login");
 | :------------------------ | :--------------------------------------- |
 | `b0 06 00 00 00 00 00 00` | `Time.Seconds = 1712`                    |
 | `f4 01 00 00`             | `Time.Nanos = 500`                       |
-| `03 61 6d 79`             | `User.Name = "amy"`, length 3            |
+| `03` `61 6d 79`           | `User.Name = "amy"`, length 3            |
 | `07 00 00 00`             | `User.Id = 7`                            |
 | `6c 6f 67 69 6e`          | `Action`, last element, no length prefix |
 
@@ -173,10 +173,10 @@ element, whose length is implied by the remaining bytes. Nested tuples are flatt
 
 `new string[] { "C#", ".Net" }` (8 bytes):
 
-| Bytes            | Meaning            |
-| :--------------- | :----------------- |
-| `02 43 23`       | `"C#"`, length 2   |
-| `04 2e 4e 65 74` | `".Net"`, length 4 |
+| Bytes              | Meaning            |
+| :----------------- | :----------------- |
+| `02` `43 23`       | `"C#"`, length 2   |
+| `04` `2e 4e 65 74` | `".Net"`, length 4 |
 
 ## License
 
