@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
+    <AssemblyName>Mikodev.Binary.WireTests</AssemblyName>
+    <RootNamespace>Mikodev.Binary.WireTests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Binary\Binary.csproj" />
+    <ProjectReference Include="..\Binary.SourceGeneration\Binary.SourceGeneration.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="fixtures\wire.tsv" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
