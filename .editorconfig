@@ -13,6 +13,12 @@ trim_trailing_whitespace = true
 [*.md]
 trim_trailing_whitespace = false
 
+[*.sh]
+# Read by shfmt as well, so `shfmt -w scripts/` and the editor agree.
+switch_case_indent = true
+binary_next_line = false
+space_redirects = false
+
 # MSBuild and CI files use 2 spaces
 [*.{csproj,fsproj}]
 indent_size = 2

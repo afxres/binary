@@ -19,9 +19,21 @@ let private CreateEmptyUnionType () =
     typeBuilder.SetCustomAttribute(CustomAttributeBuilder(constructor, [| box SourceConstructFlags.SumType |]))
     typeBuilder.CreateType()
 
+/// FSharp.Core reads Assembly.ReflectionOnly, which the Mono runtime used by the
+/// s390x build does not implement for dynamic assemblies, so an emitted type
+/// cannot be inspected there at all (mono/mono#13028).
+let private CanInspectEmittedType (t: Type) =
+    try
+        FSharpType.IsUnion(t) |> ignore
+        true
+    with
+    | :? NotImplementedException
+    | :? PlatformNotSupportedException -> false
+
 [<Fact>]
 let ``Empty Union Type`` () =
     let t = CreateEmptyUnionType()
+    Assert.SkipWhen(not (CanInspectEmittedType t), "the runtime cannot reflect over emitted types")
     Assert.True(FSharpType.IsUnion(t))
     Assert.Empty(FSharpType.GetUnionCases(t))
     let generator = Generator.CreateDefaultBuilder().AddFSharpConverterCreators().Build()

@@ -1,26 +1,68 @@
 name: build
+
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
 
-      - name: Setup .NET
+      - name: Install .NET
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: |
             10.0.x
             11.0.x
 
-      - name: Setup Environment
-        run: bash scripts/setup.sh
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shfmt shellcheck
 
-      - name: Build Tests
-        run: bash scripts/build-tests.sh
+      - name: Check C# formatting
+        run: bash scripts/check-format.sh --csharp
+
+      # fantomas follows the F# compiler service rather than the SDK and is not
+      # stable across releases, so a format it disagrees with is not a failure.
+      - name: Check F# formatting
+        continue-on-error: true
+        run: bash scripts/check-format.sh --fsharp
+
+      - name: Check project file formatting
+        run: bash scripts/check-format.sh --projects
+
+      - name: Shell scripts
+        run: bash scripts/check-shell.sh
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            10.0.x
+            11.0.x
+
+      - name: Install lcov
+        run: sudo apt-get update && sudo apt-get install -y lcov
+
+      - name: Test x86-64
+        # 'dotnet test' must run inside the directory: with a directory
+        # argument the MTP switches are forwarded to MSBuild verbatim and
+        # rejected as unknown switches.
+        run: |
+          cd code
+          dotnet restore
+          dotnet build
+          dotnet test --coverlet --coverlet-output-format lcov
 
       - name: Coverage
         run: bash scripts/run-coverage.sh
@@ -29,4 +71,106 @@ jobs:
         uses: coverallsapp/github-action@v2
         with:
           fail-on-error: false
-          file: "build-result/lcov.info"
+          file: build-result/lcov.info
+
+  test-x86:
+    runs-on: windows-latest
+    # .NET ships no linux-x86 SDK or runtime, so 32-bit means win-x86 here.
+    # Keep the version on the same major as the projects target.
+    #
+    # 'dotnet test' is deliberately not used: since SDK 10 it rejects
+    # Microsoft.Testing.Platform projects unless the new test experience is
+    # opted into, and publishing plus 'dotnet exec' is the same path the cross
+    # architecture jobs already take.
+    env:
+      DOTNET_X86: C:\dotnet-x86
+      DOTNET_X86_VERSION: 11.0.100
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install the 32-bit SDK
+        shell: pwsh
+        run: |
+          $url = "https://builds.dotnet.microsoft.com/dotnet/Sdk/$env:DOTNET_X86_VERSION/dotnet-sdk-$env:DOTNET_X86_VERSION-win-x86.zip"
+          Invoke-WebRequest -Uri $url -OutFile "$env:RUNNER_TEMP/dotnet-sdk-x86.zip"
+          Expand-Archive -Path "$env:RUNNER_TEMP/dotnet-sdk-x86.zip" -DestinationPath $env:DOTNET_X86
+          & "$env:DOTNET_X86/dotnet.exe" --info
+
+      - name: Test x86-32
+        shell: pwsh
+        run: |
+          $env:DOTNET_ROOT = $env:DOTNET_X86
+          $env:PATH = "$env:DOTNET_X86;$env:PATH"
+          bash scripts/publish-tests.sh build-result/cross/x86
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $output = bash scripts/run-published-tests.sh build-result/cross/x86 2>&1
+          $output | ForEach-Object { Write-Host $_ }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # every test host must report the 32-bit runtime, and none may be 64-bit
+          if ($output -like '*(64-bit *') { throw 'a test host ran on x64' }
+          if (-not ($output -like '*(32-bit *')) { throw 'no test host ran on x86' }
+
+  test-s390x:
+    # pinned: the ports sources entry and the package names below are written
+    # against noble (24.04), and newer releases drift from them
+    runs-on: ubuntu-24.04
+    # The s390x SDK is an unofficial port running under qemu-user emulation, so
+    # nothing here blocks the build. It exists to catch byte order mistakes
+    # early.
+    continue-on-error: true
+    env:
+      S390X_SDK: ${{ github.workspace }}/build-result/sdk-s390x
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            10.0.x
+            11.0.x
+
+      - name: Install the emulator and the s390x system libraries
+        run: sudo bash scripts/setup-s390x.sh
+
+      - name: Install the s390x SDK
+        env:
+          # the lookup is anonymous without this, and anonymous API requests are
+          # capped at 60 per hour and IP, which shared runner addresses exhaust
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/install-s390x.sh --dir "$S390X_SDK"
+
+      # the payloads of both sides must ask for the same framework version:
+      # IBM ships a release candidate, so a payload built by the GA SDK would
+      # refuse to start there
+      #
+      # only the two most byte order sensitive suites run here: the wire format
+      # suite and the randomized generator suite. The remaining twelve are a
+      # luxury the emulation cannot afford, and they keep running in the test
+      # job on x86-64.
+      - name: Read the s390x runtime version
+        run: |
+          version="$(bash scripts/run-on-s390x.sh 'dotnet --list-runtimes' | awk '/Microsoft.NETCore.App/ { print $2; exit }')"
+          if [ -z "$version" ]; then
+            echo 'error: the s390x SDK reports no runtime' >&2
+            exit 1
+          fi
+          echo "resolved s390x runtime: $version"
+          echo "S390X_RUNTIME_VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Build on x86-64
+        run: bash scripts/publish-tests.sh build-result/cross/x64 --runtime-version "$S390X_RUNTIME_VERSION" --only WireTests --only RandomizedTests
+
+      # the source generator runs on the machine that compiles, so a payload
+      # built here carries little endian decisions into a big endian process
+      - name: Build on s390x
+        run: bash scripts/run-on-s390x.sh 'bash scripts/publish-tests.sh build-result/cross/s390x --only WireTests --only RandomizedTests'
+
+      - name: Test on s390x
+        run: bash scripts/run-on-s390x.sh 'bash scripts/run-published-tests.sh build-result/cross/s390x $(nproc)'
+
+      - name: Run the x86-64 build on s390x
+        run: bash scripts/run-on-s390x.sh 'bash scripts/run-published-tests.sh build-result/cross/x64 $(nproc)'
+
+      - name: Run the s390x build on x86-64
+        run: bash scripts/run-published-tests.sh build-result/cross/s390x
